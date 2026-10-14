@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    # The job name is the required status check on main: keep it.
+    name: Lint · Typecheck · Tests · Build
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: yomizaka_db
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: yomizaka_db
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      # Test values only — no real secret anywhere.
+      DATABASE_URL: postgresql://yomizaka_db:ci-only-password@localhost:5432/yomizaka_db
+      YOMIZAKA_DB_IT: "1"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Lint (ESLint, i18n catalogues)
+        run: pnpm run lint
+      - name: Typecheck
+        run: pnpm run typecheck
+      - name: Unit and database tests (PostgreSQL 16)
+        run: pnpm run test
+      - name: Production build
+        run: pnpm run build
+      - name: SEO family contract on the built site (robots, AI crawlers, sitemap, llms.txt, canonical, JSON-LD → Krizaka)
+        env:
+          NODE_ENV: production
+          AUTH_SESSION_SECRET: ci-only-session-secret-0123456789abcdef
+          AI_API_KEY: oz_ci_only_not_a_key
+          PORT: "3000"
+        run: |
+          (cd apps/web && npx next start -p 3000 > ../../web.log 2>&1 &)
+          for i in $(seq 1 60); do curl -sf http://localhost:3000/api/healthz && break; sleep 1; done
+          pnpm run seo:check
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:3000/api/auth/sign-up)" = "403"
+      - if: failure()
+        run: tail -100 web.log || true

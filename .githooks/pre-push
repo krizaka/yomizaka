@@ -1,0 +1,6 @@
+#!/bin/sh
+# The local check before every push (krizaka org rule: never push to see what CI says). Skip only with
+# `git push --no-verify` when the push changes nothing the check covers (a README typo).
+set -e
+echo "pre-push: pnpm run check (lint · typecheck · tests)"
+pnpm run check
