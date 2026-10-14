@@ -8,7 +8,7 @@ export function GET() {
     (
       <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", padding: 80, background: "linear-gradient(135deg, #121321 0%, #111019 55%, #0c0c0e 100%)", color: "#f4f4f5", fontFamily: "sans-serif" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <div style={{ width: 64, height: 80, background: "linear-gradient(45deg, #5362c6, #6d5ec9)", clipPath: "polygon(0 0, 70% 0, 100% 22%, 100% 100%, 0 100%)" }} />
+          <div style={{ width: 64, height: 80, background: "linear-gradient(45deg, #5362c6, #6d5ec9)", borderRadius: 8 }} />
           <div style={{ fontSize: 64, fontWeight: 800 }}>Yomizaka</div>
         </div>
         <div style={{ fontSize: 48, fontWeight: 700, marginTop: 40 }}>Read before you sign.</div>
