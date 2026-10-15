@@ -41,16 +41,18 @@ export interface AdminDocument {
   mimeType: string;
   sizeBytes: number;
   analyses: number;
+  /** Declared a sample (non-personal): the only kind the public showcase may show. */
+  sample: boolean;
   createdAt: string;
 }
 
 export async function allDocuments(): Promise<AdminDocument[]> {
-  const rows = await query<{ id: string; title: string; owner: string; kind: string; mime_type: string; size_bytes: number; analyses: string; created_at: Date }>(
-    `SELECT d.id, d.title, a.email AS owner, d.kind, d.mime_type, d.size_bytes, d.created_at,
+  const rows = await query<{ id: string; title: string; owner: string; kind: string; mime_type: string; size_bytes: number; analyses: string; sample: boolean; created_at: Date }>(
+    `SELECT d.id, d.title, a.email AS owner, d.kind, d.mime_type, d.size_bytes, d.sample, d.created_at,
             (SELECT count(*) FROM analyses x WHERE x.document_id = d.id) AS analyses
        FROM documents d JOIN accounts a ON a.id = d.owner_id ORDER BY d.created_at DESC LIMIT 500`,
   );
-  return rows.map((r) => ({ id: r.id, title: r.title, owner: r.owner, kind: r.kind, mimeType: r.mime_type, sizeBytes: r.size_bytes, analyses: Number(r.analyses), createdAt: r.created_at.toISOString() }));
+  return rows.map((r) => ({ id: r.id, title: r.title, owner: r.owner, kind: r.kind, mimeType: r.mime_type, sizeBytes: r.size_bytes, analyses: Number(r.analyses), sample: r.sample, createdAt: r.created_at.toISOString() }));
 }
 
 export interface AdminRun {
@@ -62,6 +64,10 @@ export interface AdminRun {
   owner: string;
   durationSeconds: number | null;
   error: string | null;
+  /** The public showcase's check. */
+  showcase: boolean;
+  /** Can be promoted: a finished compliance check on a document declared a sample. */
+  showable: boolean;
   createdAt: string;
 }
 
@@ -69,12 +75,12 @@ export interface AdminRun {
 export const durationSeconds = (created: Date, finished: Date | null) => (finished ? Math.max(0, Math.round((finished.getTime() - created.getTime()) / 1000)) : null);
 
 export async function allRuns(): Promise<AdminRun[]> {
-  const rows = await query<{ id: string; studio: string; status: string; run_id: string | null; title: string; email: string; error: string | null; created_at: Date; finished_at: Date | null }>(
-    `SELECT x.id, x.studio, x.status, x.run_id, d.title, a.email, x.error, x.created_at, x.finished_at
+  const rows = await query<{ id: string; studio: string; status: string; run_id: string | null; title: string; email: string; error: string | null; showcase: boolean; sample: boolean; created_at: Date; finished_at: Date | null }>(
+    `SELECT x.id, x.studio, x.status, x.run_id, d.title, a.email, x.error, x.showcase, d.sample, x.created_at, x.finished_at
        FROM analyses x JOIN documents d ON d.id = x.document_id JOIN accounts a ON a.id = d.owner_id
       ORDER BY x.created_at DESC LIMIT 500`,
   );
-  return rows.map((r) => ({ id: r.id, studio: r.studio, status: r.status, runId: r.run_id, document: r.title, owner: r.email, durationSeconds: durationSeconds(r.created_at, r.finished_at), error: r.error, createdAt: r.created_at.toISOString() }));
+  return rows.map((r) => ({ id: r.id, studio: r.studio, status: r.status, runId: r.run_id, document: r.title, owner: r.email, durationSeconds: durationSeconds(r.created_at, r.finished_at), error: r.error, showcase: r.showcase, showable: r.sample && r.studio === "compliance-check" && r.status === "succeeded", createdAt: r.created_at.toISOString() }));
 }
 
 export interface AuditEntry {

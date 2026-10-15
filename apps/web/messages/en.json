@@ -151,7 +151,25 @@
         "studio": "Studio",
         "ruleset": "Rules",
         "when": "Ran on",
-        "none": "The first recorded run appears here once it has run on dev — nothing is shown before it is real."
+        "none": "The first recorded run appears here once it has run on dev — nothing is shown before it is real.",
+        "summary": "{total} checks · {fail} non-compliant · {pass} compliant",
+        "insufficient": " · {n} insufficient evidence",
+        "rule": "Rule",
+        "article": "Article",
+        "passage": "Passage",
+        "viewer": "The lease, the quoted passages lit",
+        "viewerHint": "Same text as the console's viewer: every passage a finding quotes is marked.",
+        "docHash": "Document SHA-256",
+        "report": "Signed report",
+        "reportHash": "SHA-256 of the file",
+        "key": "Signing key",
+        "copy": "Copy",
+        "copied": "Copied",
+        "download": "Download the signed report",
+        "verify": "Verify it yourself",
+        "review": "The Québec rules await a lawyer's review — the report says so.",
+        "noPassage": "No passage quoted",
+        "findings": "Findings"
       }
     },
     "closingTitle": "Have documents to check?",
@@ -409,7 +427,9 @@
       "INTERNAL": "Something went wrong.",
       "NETWORK": "The network did not answer.",
       "UNKNOWN": "Something went wrong.",
-      "SELF_SUSPEND": "You cannot suspend your own account."
+      "SELF_SUSPEND": "You cannot suspend your own account.",
+      "NOT_A_SAMPLE": "Only a check on a document marked as a sample can be shown publicly.",
+      "NOT_SHOWABLE": "Only a finished compliance check can be shown publicly."
     },
     "adminConsole": {
       "shell": {
@@ -448,7 +468,12 @@
         "owner": "Owner",
         "duration": "Duration",
         "error": "Error",
-        "started": "Started"
+        "started": "Started",
+        "showcase": "Public showcase",
+        "public": "Public",
+        "private": "Private",
+        "promote": "Show on the public page",
+        "withdraw": "Withdraw"
       },
       "documents": {
         "caption": "All documents (metadata only — never their content)",
@@ -458,7 +483,12 @@
         "type": "Type",
         "size": "Size",
         "analyses": "Checks",
-        "added": "Added"
+        "added": "Added",
+        "sample": "Sample",
+        "isSample": "Sample",
+        "isPersonal": "Personal",
+        "markSample": "Mark as a sample",
+        "unmarkSample": "Unmark"
       },
       "audit": {
         "caption": "Audit log",

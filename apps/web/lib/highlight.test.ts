@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { readText } from "./pdf-text";
 import { textPdf } from "./test-pdf";
 
-// The lease Yomizaka's demo uses (scripts/record-demo.mjs SAMPLE_LEASE) — Latin-1 only so a plain Helvetica PDF holds it.
+// The lease Yomizaka's demo uses (lib/sample-lease.ts) — Latin-1 only so a plain Helvetica PDF holds it.
 const LEASE = [
   "BAIL DE LOGEMENT - 4 1/2, rue Saint-Denis, Montreal",
   "Entre le locateur Monsieur Marc Tremblay, domicilie a Montreal,",

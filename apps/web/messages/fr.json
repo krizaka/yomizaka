@@ -151,7 +151,25 @@
         "studio": "Studio",
         "ruleset": "Règles",
         "when": "Exécuté le",
-        "none": "Le premier run enregistré apparaît ici dès qu'il a tourné en dev — rien n'est montré avant d'être réel."
+        "none": "Le premier run enregistré apparaît ici dès qu'il a tourné en dev — rien n'est montré avant d'être réel.",
+        "summary": "{total} contrôles · {fail} non conformes · {pass} conformes",
+        "insufficient": " · {n} preuve insuffisante",
+        "rule": "Règle",
+        "article": "Article",
+        "passage": "Passage",
+        "viewer": "Le bail, les passages cités éclairés",
+        "viewerHint": "Le même texte que le visualiseur de la console : chaque passage cité par un constat est marqué.",
+        "docHash": "SHA-256 du document",
+        "report": "Rapport signé",
+        "reportHash": "SHA-256 du fichier",
+        "key": "Clé de signature",
+        "copy": "Copier",
+        "copied": "Copié",
+        "download": "Télécharger le rapport signé",
+        "verify": "Vérifiez-le vous-même",
+        "review": "Les règles québécoises attendent la relecture d'un juriste — le rapport le dit.",
+        "noPassage": "Aucun passage cité",
+        "findings": "Constats"
       }
     },
     "closingTitle": "Des documents à vérifier ?",
@@ -409,7 +427,9 @@
       "INTERNAL": "Une erreur est survenue.",
       "NETWORK": "Le réseau n'a pas répondu.",
       "UNKNOWN": "Une erreur est survenue.",
-      "SELF_SUSPEND": "Vous ne pouvez pas suspendre votre propre compte."
+      "SELF_SUSPEND": "Vous ne pouvez pas suspendre votre propre compte.",
+      "NOT_A_SAMPLE": "Seul un contrôle d'un document marqué comme exemple peut être montré publiquement.",
+      "NOT_SHOWABLE": "Seul un contrôle de conformité terminé peut être montré publiquement."
     },
     "adminConsole": {
       "shell": {
@@ -448,7 +468,12 @@
         "owner": "Propriétaire",
         "duration": "Durée",
         "error": "Erreur",
-        "started": "Lancé"
+        "started": "Lancé",
+        "showcase": "Vitrine publique",
+        "public": "Publique",
+        "private": "Privée",
+        "promote": "Montrer sur la page publique",
+        "withdraw": "Retirer"
       },
       "documents": {
         "caption": "Tous les documents (métadonnées seulement — jamais leur contenu)",
@@ -458,7 +483,12 @@
         "type": "Format",
         "size": "Taille",
         "analyses": "Vérifications",
-        "added": "Ajouté"
+        "added": "Ajouté",
+        "sample": "Exemple",
+        "isSample": "Exemple",
+        "isPersonal": "Personnel",
+        "markSample": "Marquer comme exemple",
+        "unmarkSample": "Retirer le marquage"
       },
       "audit": {
         "caption": "Journal d'audit",
