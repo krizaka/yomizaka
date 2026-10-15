@@ -57,6 +57,10 @@ pnpm run check                             # lint · typecheck · tests (what th
 
 Rules for contributors and agents: [AGENTS.md](AGENTS.md). Security: [SECURITY.md](SECURITY.md).
 
+## License
+
+[Apache-2.0](LICENSE) © Krizaka
+
 ---
 
 A [Krizaka](https://www.krizaka.com) product · Made in Montréal · Apache-2.0
