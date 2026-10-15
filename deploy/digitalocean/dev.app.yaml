@@ -7,6 +7,8 @@ alerts:
 domains:
   - domain: dev.yomizaka.com
     type: PRIMARY
+  - domain: admin.yomizaka.com
+    type: ALIAS
 services:
   - name: web
     dockerfile_path: deploy/docker/Dockerfile

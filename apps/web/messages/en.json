@@ -171,7 +171,8 @@
       "signIn": "Sign in",
       "library": "Library",
       "search": "Search",
-      "users": "People"
+      "users": "People",
+      "admin": "Administration"
     },
     "signIn": {
       "promise": "Your documents, read and checked by Orazaka.",
@@ -390,7 +391,86 @@
       "BAD_REQUEST": "The request is not valid.",
       "INTERNAL": "Something went wrong.",
       "NETWORK": "The network did not answer.",
-      "UNKNOWN": "Something went wrong."
+      "UNKNOWN": "Something went wrong.",
+      "SELF_SUSPEND": "You cannot suspend your own account."
+    },
+    "adminConsole": {
+      "shell": {
+        "title": "Administration",
+        "overview": "Overview",
+        "users": "People",
+        "documents": "Documents",
+        "runs": "Orazaka runs",
+        "audit": "Audit log",
+        "dev": "DEV",
+        "signOut": "Sign out",
+        "openSite": "Open dev.yomizaka.com"
+      },
+      "overview": {
+        "health": "Health",
+        "version": "Version",
+        "database": "Database",
+        "orazaka": "Orazaka edge",
+        "up": "Up",
+        "down": "Unreachable",
+        "accounts": "Accounts",
+        "admins": "administrators",
+        "suspended": "suspended",
+        "documents": "Documents",
+        "stored": "stored",
+        "runs": "Orazaka runs",
+        "lastRun": "Last run",
+        "none": "None yet"
+      },
+      "runs": {
+        "caption": "Orazaka runs",
+        "studio": "Studio",
+        "status": "Status",
+        "runId": "Run id",
+        "document": "Document",
+        "owner": "Owner",
+        "duration": "Duration",
+        "error": "Error",
+        "started": "Started"
+      },
+      "documents": {
+        "caption": "All documents (metadata only — never their content)",
+        "title": "Document",
+        "owner": "Owner",
+        "kind": "Kind",
+        "type": "Type",
+        "size": "Size",
+        "analyses": "Checks",
+        "added": "Added"
+      },
+      "audit": {
+        "caption": "Audit log",
+        "at": "When",
+        "actor": "Who",
+        "action": "Action",
+        "target": "Target",
+        "ip": "Address"
+      },
+      "user": {
+        "back": "People",
+        "role": "Role",
+        "status": "State",
+        "created": "Created",
+        "lastSeen": "Last seen",
+        "documents": "Documents",
+        "sessions": "Open sessions",
+        "suspend": "Suspend",
+        "suspendConfirm": "Suspend this account (every session ends)",
+        "restore": "Restore",
+        "history": "Its history",
+        "self": "You cannot suspend your own account."
+      },
+      "signIn": {
+        "promise": "The administration of Yomizaka.",
+        "asideFooter": "Administrators only, from an allowed address.",
+        "title": "Administration",
+        "description": "Sign in with an administrator account."
+      }
     }
   }
 }

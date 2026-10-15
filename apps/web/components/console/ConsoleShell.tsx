@@ -1,6 +1,6 @@
 "use client";
 
-import { HomeIcon, LogoutIcon, SearchIcon, UsersIcon } from "@krizaka/icons";
+import { HomeIcon, LogoutIcon, SearchIcon } from "@krizaka/icons";
 import { krizakaFetch, useMutation } from "@krizaka/query";
 import { YomizakaLogo } from "@krizaka/ui";
 import { AppShell } from "@krizaka/ui/app-shell";
@@ -18,7 +18,7 @@ const VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? "";
  * header with the page's title), the library and search, and — only for an administrator on an allowed address — the
  * administration.
  */
-export function ConsoleShell({ locale, email, admin, children }: { locale: "en" | "fr"; email: string; admin: boolean; children: React.ReactNode }) {
+export function ConsoleShell({ locale, email, children }: { locale: "en" | "fr"; email: string; children: React.ReactNode }) {
   const { say } = useSay();
   const router = useRouter();
   const path = usePathname() ?? "";
@@ -33,7 +33,7 @@ export function ConsoleShell({ locale, email, admin, children }: { locale: "en" 
     },
   });
   const current = (to: string, exact = false) => (exact ? path === to : path === to || path.startsWith(`${to}/`));
-  const titleKey = path.startsWith(`${home}/admin`) ? "shell.users" : path.startsWith(`${home}/search`) ? "shell.search" : path.startsWith(`${home}/documents`) ? "shell.document" : "shell.library";
+  const titleKey = path.startsWith(`${home}/search`) ? "shell.search" : path.startsWith(`${home}/documents`) ? "shell.document" : "shell.library";
   const item = (to: string, label: string, icon: React.ReactNode, exact = false) => (
     <AppShell.Item asChild label={label} icon={icon} current={current(to, exact) || (exact && path.startsWith(`${home}/documents`))}>
       <Link href={to}>{label}</Link>
@@ -62,12 +62,6 @@ export function ConsoleShell({ locale, email, admin, children }: { locale: "en" 
         <AppShell.Group>{say("shell.groupDocuments")}</AppShell.Group>
         {item(home, say("shell.library"), <HomeIcon />, true)}
         {item(`${home}/search`, say("shell.search"), <SearchIcon />)}
-        {admin ? (
-          <>
-            <AppShell.Group>{say("shell.groupAdmin")}</AppShell.Group>
-            {item(`${home}/admin/users`, say("shell.users"), <UsersIcon />)}
-          </>
-        ) : null}
       </AppShell.Sidebar>
       <AppShell.Body>
         <AppShell.Header

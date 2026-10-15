@@ -171,7 +171,8 @@
       "signIn": "Connexion",
       "library": "Bibliothèque",
       "search": "Recherche",
-      "users": "Personnes"
+      "users": "Personnes",
+      "admin": "Administration"
     },
     "signIn": {
       "promise": "Vos documents, lus et vérifiés par Orazaka.",
@@ -390,7 +391,86 @@
       "BAD_REQUEST": "La demande n'est pas valide.",
       "INTERNAL": "Une erreur est survenue.",
       "NETWORK": "Le réseau n'a pas répondu.",
-      "UNKNOWN": "Une erreur est survenue."
+      "UNKNOWN": "Une erreur est survenue.",
+      "SELF_SUSPEND": "Vous ne pouvez pas suspendre votre propre compte."
+    },
+    "adminConsole": {
+      "shell": {
+        "title": "Administration",
+        "overview": "Vue d'ensemble",
+        "users": "Personnes",
+        "documents": "Documents",
+        "runs": "Runs Orazaka",
+        "audit": "Journal d'audit",
+        "dev": "DEV",
+        "signOut": "Se déconnecter",
+        "openSite": "Ouvrir dev.yomizaka.com"
+      },
+      "overview": {
+        "health": "Santé",
+        "version": "Version",
+        "database": "Base de données",
+        "orazaka": "Edge Orazaka",
+        "up": "Disponible",
+        "down": "Injoignable",
+        "accounts": "Comptes",
+        "admins": "administrateurs",
+        "suspended": "suspendus",
+        "documents": "Documents",
+        "stored": "stockés",
+        "runs": "Runs Orazaka",
+        "lastRun": "Dernier run",
+        "none": "Aucun pour l'instant"
+      },
+      "runs": {
+        "caption": "Runs Orazaka",
+        "studio": "Studio",
+        "status": "Statut",
+        "runId": "Identifiant du run",
+        "document": "Document",
+        "owner": "Propriétaire",
+        "duration": "Durée",
+        "error": "Erreur",
+        "started": "Lancé"
+      },
+      "documents": {
+        "caption": "Tous les documents (métadonnées seulement — jamais leur contenu)",
+        "title": "Document",
+        "owner": "Propriétaire",
+        "kind": "Type",
+        "type": "Format",
+        "size": "Taille",
+        "analyses": "Vérifications",
+        "added": "Ajouté"
+      },
+      "audit": {
+        "caption": "Journal d'audit",
+        "at": "Quand",
+        "actor": "Qui",
+        "action": "Action",
+        "target": "Cible",
+        "ip": "Adresse"
+      },
+      "user": {
+        "back": "Personnes",
+        "role": "Rôle",
+        "status": "État",
+        "created": "Créé",
+        "lastSeen": "Vu pour la dernière fois",
+        "documents": "Documents",
+        "sessions": "Sessions ouvertes",
+        "suspend": "Suspendre",
+        "suspendConfirm": "Suspendre ce compte (toutes ses sessions prennent fin)",
+        "restore": "Rétablir",
+        "history": "Son historique",
+        "self": "Vous ne pouvez pas suspendre votre propre compte."
+      },
+      "signIn": {
+        "promise": "L'administration de Yomizaka.",
+        "asideFooter": "Administrateurs seulement, depuis une adresse autorisée.",
+        "title": "Administration",
+        "description": "Connectez-vous avec un compte administrateur."
+      }
     }
   }
 }

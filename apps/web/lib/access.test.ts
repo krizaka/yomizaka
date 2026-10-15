@@ -31,3 +31,11 @@ describe("session tokens", () => {
     expect(tokenHash(a, "s".repeat(32))).not.toBe(tokenHash(a, "t".repeat(32)));
   });
 });
+
+describe("run durations", async () => {
+  const { durationSeconds } = await import("./admin");
+  it("are finished − created, null while running", () => {
+    expect(durationSeconds(new Date("2026-10-15T00:00:00Z"), new Date("2026-10-15T00:00:42Z"))).toBe(42);
+    expect(durationSeconds(new Date("2026-10-15T00:00:00Z"), null)).toBeNull();
+  });
+});
