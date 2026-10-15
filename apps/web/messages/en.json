@@ -613,6 +613,8 @@
       "browse": "Choose a file",
       "remove": "Remove {name}",
       "hint": "The .html file you downloaded, up to 2 MB."
-    }
+    },
+    "devLocked": "Development environment — sign in (invitation only)",
+    "devSignIn": "Sign in"
   }
 }

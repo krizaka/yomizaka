@@ -13,6 +13,11 @@ const PROD = {
 };
 
 describe("env", () => {
+  it("keeps the public actions on unless APP_PUBLIC_ACTIONS is exactly off (off on every dev deployment)", () => {
+    expect(readEnv({}).APP_PUBLIC_ACTIONS).toBe("on");
+    expect(readEnv({ APP_PUBLIC_ACTIONS: "off" }).APP_PUBLIC_ACTIONS).toBe("off");
+  });
+
   it("closes sign-up unless AUTH_SIGNUP_ENABLED is exactly true", () => {
     expect(readEnv({}).AUTH_SIGNUP_ENABLED).toBe(false);
     expect(readEnv({ AUTH_SIGNUP_ENABLED: "yes" }).AUTH_SIGNUP_ENABLED).toBe(false);
