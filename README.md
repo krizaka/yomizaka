@@ -22,13 +22,20 @@ and a real run.
 
 - **Library** — upload PDFs or text files (a queue that pauses, resumes and retries); each is kept as sent, its text
   layer read for search, its SHA-256 recorded; a file sent twice is one document.
-- **Against the law** — a lease checked rule by rule against the rules of its jurisdiction (France, Wallonia) in force
+- **Against the law** — a lease checked rule by rule against the rules of its jurisdiction (Québec, France, Wallonia) in force
   on a date: each finding gives its rule, severity, verdict, citation and the exact passage, highlighted in the text.
 - **Signs of editing** — a supplier's PDF examined as a file (producer, dates, successive saves, fonts): signals at three
   plain levels, never a score, never a "fake" stamp.
 - **Search** — every document and every finding, one field (PostgreSQL full text, French and English alike).
 - **Traced** — every analysis is an **Orazaka run** (the document-validation pack's Studios); its run id is kept and shown.
   Yomizaka never calls a model.
+
+## Next
+
+Yomizaka will also check **identity documents** (photos and scans as well as PDFs) for other Krizaka products that need a
+document verified before an account can be opened — served by API, analysed through Orazaka, every finding recorded with
+its evidence, and a human decides anything unclear. This is not built yet: it is tracked in
+[#7](https://github.com/krizaka/yomizaka/issues/7).
 
 ## Start
 
