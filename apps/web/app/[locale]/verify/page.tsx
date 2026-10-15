@@ -6,6 +6,7 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
 import { VerifyForm, type VerifyLabels } from "@/components/VerifyForm";
+import { pageSession } from "@/lib/access";
 import { asLocale, getDictionary } from "@/lib/i18n";
 import { publicKeyBase64 } from "@/lib/report-key";
 import { signingKey } from "@/lib/report-signer";
@@ -48,7 +49,7 @@ export default async function Verify({ params }: { params: Promise<{ locale: str
         <Page>
           <Section>
             <div className="max-w-3xl">
-              <VerifyForm labels={labels} locale={locale} />
+              <VerifyForm labels={labels} locale={locale} canAttachDocument={(await pageSession()) !== null} />
             </div>
           </Section>
           <Section divider>

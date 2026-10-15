@@ -26,6 +26,8 @@ services:
       period_seconds: 15
     envs:
       - { key: APP_PUBLIC_URL, scope: RUN_AND_BUILD_TIME, value: "https://dev.yomizaka.com" }
+      # Dev is closed to search engines: noindex everywhere, robots Disallow /, no sitemap, the dev line in the footer (lib/indexing.ts).
+      - { key: APP_SEARCH_INDEXING, scope: RUN_AND_BUILD_TIME, value: "off" }
       - { key: APP_COMMIT_SHA, scope: BUILD_TIME, value: "${_self.COMMIT_HASH}" }
       - { key: DATABASE_URL, scope: RUN_TIME, type: SECRET, value: "__DATABASE_URL__" }
       - { key: DATABASE_CA_CERT, scope: RUN_TIME, type: SECRET, value: "__DATABASE_CA_CERT__" }

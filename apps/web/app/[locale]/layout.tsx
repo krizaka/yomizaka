@@ -7,6 +7,7 @@ import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 
 import { getDictionary, type Locale, LOCALES } from "@/lib/i18n";
+import { indexable } from "@/lib/indexing";
 import { SITE_URL } from "@/lib/site";
 
 export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover" };
@@ -27,6 +28,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     applicationName: t.meta.siteName,
     authors: [{ name: "Krizaka", url: "https://www.krizaka.com" }],
     icons: { icon: "/icon.svg" },
+    // Not indexed (dev, preview): the page says so too — the header and robots.txt say it already (lib/indexing.ts).
+    ...(indexable() ? {} : { robots: { index: false, follow: false, noarchive: true } }),
   };
 }
 

@@ -3,6 +3,7 @@ import { Page } from "@krizaka/ui/page";
 import Link from "next/link";
 
 import { type Locale, translator } from "@/lib/i18n";
+import { indexable } from "@/lib/indexing";
 import { APP_VERSION, contactHref, KRIZAKA_URL, pagePath, REPO_URL } from "@/lib/site";
 
 import { Rich } from "./Rich";
@@ -41,6 +42,13 @@ export function SiteFooter({ locale }: { locale: Locale }) {
           </span>
         </div>
       </Page>
+      {indexable() ? null : (
+        <Page>
+          <p className="pb-6 text-center text-xs text-fg-muted" data-testid="dev-environment-notice">
+            {t("chrome.devNotice")}
+          </p>
+        </Page>
+      )}
     </footer>
   );
 }
