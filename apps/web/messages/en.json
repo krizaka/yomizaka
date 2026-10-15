@@ -430,7 +430,11 @@
       "UNKNOWN": "Something went wrong.",
       "SELF_SUSPEND": "You cannot suspend your own account.",
       "NOT_A_SAMPLE": "Only a check on a document marked as a sample can be shown publicly.",
-      "NOT_SHOWABLE": "Only a finished compliance check can be shown publicly."
+      "NOT_SHOWABLE": "Only a finished compliance check can be shown publicly.",
+      "SELF_ROLE": "You cannot change your own role.",
+      "LAST_ADMIN": "The last administrator keeps the role.",
+      "SELF_DELETE": "You cannot delete your own account.",
+      "CONFIRM_MISMATCH": "The e-mail typed does not match the account."
     },
     "adminConsole": {
       "shell": {
@@ -511,7 +515,16 @@
         "suspendConfirm": "Suspend this account (every session ends)",
         "restore": "Restore",
         "history": "Its history",
-        "self": "You cannot suspend your own account."
+        "self": "You cannot suspend your own account.",
+        "makeAdmin": "Make administrator",
+        "makeUser": "Withdraw administrator role",
+        "revokeSessions": "End all sessions",
+        "sessionsRevoked": "Sessions ended: {count}.",
+        "exportData": "Export data (Law 25)",
+        "dangerTitle": "Delete this account",
+        "dangerLead": "Law 25 erasure: the account, its sessions, its documents and their analyses are deleted for good. The audit log keeps the fact, not the person.",
+        "confirmLabel": "Type the account's e-mail to confirm",
+        "deleteAccount": "Delete the account and its documents"
       },
       "signIn": {
         "promise": "The administration of Yomizaka.",
