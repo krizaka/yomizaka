@@ -430,7 +430,11 @@
       "UNKNOWN": "Une erreur est survenue.",
       "SELF_SUSPEND": "Vous ne pouvez pas suspendre votre propre compte.",
       "NOT_A_SAMPLE": "Seul un contrôle d'un document marqué comme exemple peut être montré publiquement.",
-      "NOT_SHOWABLE": "Seul un contrôle de conformité terminé peut être montré publiquement."
+      "NOT_SHOWABLE": "Seul un contrôle de conformité terminé peut être montré publiquement.",
+      "SELF_ROLE": "Vous ne pouvez pas changer votre propre rôle.",
+      "LAST_ADMIN": "Le dernier administrateur garde son rôle.",
+      "SELF_DELETE": "Vous ne pouvez pas supprimer votre propre compte.",
+      "CONFIRM_MISMATCH": "Le courriel saisi ne correspond pas au compte."
     },
     "adminConsole": {
       "shell": {
@@ -511,7 +515,16 @@
         "suspendConfirm": "Suspendre ce compte (toutes ses sessions prennent fin)",
         "restore": "Rétablir",
         "history": "Son historique",
-        "self": "Vous ne pouvez pas suspendre votre propre compte."
+        "self": "Vous ne pouvez pas suspendre votre propre compte.",
+        "makeAdmin": "Nommer administrateur",
+        "makeUser": "Retirer le rôle d'administrateur",
+        "revokeSessions": "Terminer toutes les sessions",
+        "sessionsRevoked": "Sessions terminées : {count}.",
+        "exportData": "Exporter les données (Loi 25)",
+        "dangerTitle": "Supprimer ce compte",
+        "dangerLead": "Effacement Loi 25 : le compte, ses sessions, ses documents et leurs analyses sont supprimés définitivement. Le journal d'audit garde le fait, pas la personne.",
+        "confirmLabel": "Saisissez le courriel du compte pour confirmer",
+        "deleteAccount": "Supprimer le compte et ses documents"
       },
       "signIn": {
         "promise": "L'administration de Yomizaka.",

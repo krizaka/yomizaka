@@ -14,6 +14,7 @@ import { errorKey } from "@/lib/client";
 import { useSay } from "@/lib/i18n-client";
 
 import { formatDate } from "../console/format";
+import { UserActions } from "./UserActions";
 
 /** One account and the one action an administrator takes on it: suspend (every session ends) or restore. */
 export function UserCard({ initial }: { initial: UserDetail }) {
@@ -64,6 +65,7 @@ export function UserCard({ initial }: { initial: UserDetail }) {
           { term: say("adminConsole.user.lastSeen"), details: user.lastSeenAt ? formatDate(user.lastSeenAt, locale, true) : say("admin.never") },
         ]}
       />
+      <UserActions user={user} onChange={setUser} />
     </Card.Root>
   );
 }
