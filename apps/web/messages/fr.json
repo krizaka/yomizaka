@@ -7,7 +7,11 @@
   "chrome": {
     "brandHome": "Yomizaka, accueil",
     "navLabel": "Yomizaka",
-    "nav": { "how": "Comment ça marche", "demo": "Un vrai run", "privacy": "Confidentialité" },
+    "nav": {
+      "how": "Comment ça marche",
+      "demo": "Un vrai run",
+      "privacy": "Confidentialité"
+    },
     "signIn": "Se connecter",
     "talk": "Nous parler",
     "themeToggle": "Thème",
@@ -22,8 +26,12 @@
   "landing": {
     "mark": "Yomizaka · des documents lus et vérifiés",
     "title": "Lisez avant de signer.",
-    "lead": "Déposez un bail, un contrat, une facture. Orazaka le lit au regard de la loi, examine le PDF à la recherche de traces de modification, et vous montre chaque ligne sur laquelle il s'appuie — jamais un verdict sorti de nulle part.",
-    "facts": { "runs": "Chaque vérification est un run Orazaka tracé", "license": "Apache-2.0", "closed": "Dev · inscription fermée" },
+    "lead": "Déposez un bail, un contrat, une facture. Orazaka le lit au regard du Code civil du Québec, examine le PDF à la recherche de retouches, et vous montre chaque ligne sur laquelle il s'appuie — jamais un verdict sorti de nulle part.",
+    "facts": {
+      "runs": "Chaque vérification est un run Orazaka tracé",
+      "license": "Apache-2.0",
+      "closed": "Dev · inscription fermée"
+    },
     "talk": "Parlons de Yomizaka",
     "signIn": "Se connecter",
     "visualLabel": "dev.yomizaka.com — un bail, vérifié",
@@ -32,19 +40,33 @@
     "trap": "Le piège",
     "more": "Détails",
     "reasons": {
-      "check": { "title": "La clause lue en diagonale", "trap": "Un dépôt de trois mois, une interdiction de recevoir — écrits, réputés non écrits, signés quand même." },
-      "tamper": { "title": "Le PDF qui a été retouché", "trap": "Une facture réenregistrée après son émission, produite par un autre logiciel que celui attendu." },
-      "find": { "title": "Le document introuvable", "trap": "La clause est quelque part, dans l'un de quarante PDF, dans un dossier que vous n'ouvrez plus." }
+      "check": {
+        "title": "La clause lue en diagonale",
+        "trap": "Un dépôt de sécurité, des chèques postdatés, « pas d'enfants » — écrits au bail, interdits par le Code civil, signés quand même."
+      },
+      "tamper": {
+        "title": "Le PDF qui a été retouché",
+        "trap": "Une facture réenregistrée après son émission, produite par un autre logiciel que celui attendu."
+      },
+      "find": {
+        "title": "Le document introuvable",
+        "trap": "La clause est quelque part, dans l'un de quarante PDF, dans un dossier que vous n'ouvrez plus."
+      }
     },
     "decisionsEyebrow": "Décisions",
     "decisionsTitle": "Ce que nous avons choisi, et ce que ça vous coûte",
-    "decisionLabels": { "chose": "Nous avons choisi", "refused": "Nous avons refusé", "because": "Parce que", "cost": "Ce que ça vous coûte" },
+    "decisionLabels": {
+      "chose": "Nous avons choisi",
+      "refused": "Nous avons refusé",
+      "because": "Parce que",
+      "cost": "Ce que ça vous coûte"
+    },
     "decisions": {
       "rules": {
         "chose": "Des règles qui citent leur source, en vigueur à la date que vous choisissez.",
         "refused": "L'opinion d'un modèle sur votre bail.",
         "because": "Un constat que vous transmettez à un bailleur doit citer la loi et la ligne sur laquelle il repose.",
-        "cost": "La France et la Wallonie aujourd'hui ; une juridiction arrive en corpus de règles, pas en supposition."
+        "cost": "Le Québec d'abord (corpus à faire relire par un avocat), la France et la Wallonie ensuite ; une juridiction arrive en corpus de règles, pas en supposition."
       },
       "signals": {
         "chose": "Des signaux à trois niveaux clairs — observé, inhabituel, incohérent.",
@@ -67,33 +89,63 @@
         "title": "Trois étapes, une trace",
         "lead": "Yomizaka n'analyse rien lui-même : il garde vos documents, et c'est Orazaka qui lit.",
         "steps": {
-          "keep": { "title": "Garder", "text": "Déposez des PDF ou des fichiers texte dans votre bibliothèque. Le fichier est gardé tel quel, sa couche texte lue pour la recherche." },
-          "check": { "title": "Vérifier", "text": "Demandez à Orazaka : un bail au regard des règles de sa juridiction, un PDF à la recherche de retouches. L'identifiant du run reste avec le résultat." },
-          "find": { "title": "Retrouver", "text": "Cherchez dans tous les documents et tous les constats à la fois — le passage revient avec les mots en gras." }
+          "keep": {
+            "title": "1 · Garder",
+            "text": "Déposez des PDF ou des fichiers texte dans votre bibliothèque. Le fichier est gardé tel quel, sa couche texte lue pour la recherche."
+          },
+          "check": {
+            "title": "2 · Vérifier",
+            "text": "Demandez à Orazaka : un bail au regard des règles de sa juridiction, un PDF à la recherche de retouches. L'identifiant du run reste avec le résultat."
+          },
+          "find": {
+            "title": "3 · Retrouver",
+            "text": "Cherchez dans tous les documents et tous les constats à la fois — le passage revient avec les mots en gras."
+          }
         }
       },
       "check": {
-        "eyebrow": "Conformité",
-        "title": "Un bail au regard de la loi, règle par règle",
-        "lead": "Chaque constat donne sa règle, sa gravité, son verdict, la citation et le passage exact de votre document. Ce que le texte ne permet pas de trancher est dit tel quel : éléments insuffisants, jamais une supposition.",
-        "cta": "Se connecter pour vérifier un bail"
-      },
-      "tamper": {
-        "eyebrow": "Authenticité",
-        "title": "Le PDF d'un fournisseur, examiné en tant que fichier",
-        "lead": "Qui l'a produit, quand, avec quoi, s'il a été réenregistré ensuite. Un tri, pas une expertise — et le rapport le dit en tête.",
-        "cta": "Se connecter pour examiner un PDF"
+        "eyebrow": "Vérifications",
+        "title": "Deux vérifications, toutes deux faites par Orazaka",
+        "lead": "Chaque constat donne sa règle, l'article qui la fonde et le passage exact de votre document. Ce que le texte ne permet pas de trancher est dit tel quel.",
+        "cta": "Se connecter pour vérifier un bail",
+        "compliance": {
+          "title": "Un bail au regard de la loi",
+          "meta": "compliance-check · QC",
+          "hookLabel": "Ce qu'il lit",
+          "hook": "Le texte, règle par règle, au Code civil du Québec en vigueur à la date choisie.",
+          "rule": "Règle",
+          "source": "Source",
+          "passage": "Passage du bail d'exemple",
+          "noRun": "Le passage apparaît ici dès le premier run réel.",
+          "more": "Détails",
+          "panel": "La règle, son article, le passage"
+        },
+        "authenticity": {
+          "title": "Le PDF d'un fournisseur",
+          "meta": "document-authenticity",
+          "hookLabel": "Ce qu'il lit",
+          "hook": "Le fichier lui-même : producteur, dates, enregistrements successifs — jamais ce que le document raconte.",
+          "levels": "Trois niveaux, jamais un score",
+          "more": "Détails"
+        }
       },
       "find": {
         "eyebrow": "Recherche",
         "title": "Chaque document, chaque constat, un seul champ",
         "lead": "Vos archives et ce qu'Orazaka y a trouvé, cherchables ensemble — en français comme en anglais.",
-        "cta": "Se connecter pour chercher"
+        "cta": "Se connecter pour chercher",
+        "query": "dépôt",
+        "label": "Exemple : chercher « dépôt » dans le bail d'exemple",
+        "sources": {
+          "text": "Texte",
+          "finding": "Constat"
+        },
+        "finding": "Le bail exige un dépôt de garantie. L'article 1904 ne permet au locateur d'exiger d'avance que le premier mois de loyer."
       },
       "demo": {
         "eyebrow": "Un vrai run",
-        "title": "Pas une maquette : un bail vérifié en dev",
-        "lead": "Un bail d'exemple avec quatre clauses réputées non écrites, envoyé au Studio de conformité d'Orazaka sur dev.orazaka.com. Ce qui est revenu, tel quel.",
+        "title": "Pas une maquette : un bail québécois vérifié en dev",
+        "lead": "Un bail d'exemple de Montréal (loyer en dollars, quatre clauses interdites), envoyé au Studio de conformité d'Orazaka sur dev.orazaka.com, juridiction Québec. Ce qui est revenu, tel quel.",
         "run": "Run Orazaka",
         "studio": "Studio",
         "ruleset": "Règles",
@@ -103,7 +155,11 @@
     },
     "closingTitle": "Des documents à vérifier ?",
     "closingBody": "Yomizaka est en développement : l'inscription est fermée. Dites-nous ce que vous avez à lire — baux, factures fournisseurs, un inventaire Loi 25.",
-    "verdicts": { "PASS": "Conforme", "FAIL": "Non conforme", "INSUFFICIENT_EVIDENCE": "Éléments insuffisants" }
+    "verdicts": {
+      "PASS": "Conforme",
+      "FAIL": "Non conforme",
+      "INSUFFICIENT_EVIDENCE": "Éléments insuffisants"
+    }
   },
   "privacy": {
     "title": "Confidentialité",
@@ -111,7 +167,12 @@
     "body": "Yomizaka est en développement : seuls les comptes créés par notre équipe peuvent se connecter. Un document que vous déposez est gardé dans la base de données de Yomizaka (Toronto, Canada), visible de votre seul compte. Quand vous demandez une vérification, le document — son texte, ou le fichier PDF — est envoyé à Orazaka, le moteur d'analyse de Krizaka, en HTTPS, et le résultat est gardé avec l'identifiant du run. Rien n'est vendu, partagé ni utilisé pour entraîner un modèle. Supprimer un document supprime son fichier, son texte et ses analyses. Pour une question ou pour faire effacer vos données, utilisez le formulaire de contact."
   },
   "console": {
-    "meta": { "signIn": "Connexion", "library": "Bibliothèque", "search": "Recherche", "users": "Personnes" },
+    "meta": {
+      "signIn": "Connexion",
+      "library": "Bibliothèque",
+      "search": "Recherche",
+      "users": "Personnes"
+    },
     "signIn": {
       "promise": "Vos documents, lus et vérifiés par Orazaka.",
       "asideFooter": "Chaque constat cite sa règle et la ligne sur laquelle il repose.",
@@ -156,7 +217,13 @@
       "refusedCount": "{name} : trop de fichiers à la fois",
       "kindLabel": "Type des prochains documents",
       "caption": "Vos documents",
-      "columns": { "title": "Document", "kind": "Type", "status": "État", "size": "Taille", "added": "Ajouté" },
+      "columns": {
+        "title": "Document",
+        "kind": "Type",
+        "status": "État",
+        "size": "Taille",
+        "added": "Ajouté"
+      },
       "emptyTitle": "Rien ici pour l'instant",
       "emptyText": "Déposez un premier document ci-dessus : un bail à vérifier au regard de la loi, le PDF d'un fournisseur à examiner.",
       "duplicate": "{name} est déjà dans votre bibliothèque.",
@@ -177,8 +244,19 @@
       "cancel": "Annuler",
       "remove": "Retirer"
     },
-    "kinds": { "lease": "Bail", "contract": "Contrat", "invoice": "Facture", "other": "Autre" },
-    "statuses": { "stored": "Gardé", "analysing": "En lecture", "checked": "Vérifié", "attention": "À regarder", "failed": "Échec de la vérification" },
+    "kinds": {
+      "lease": "Bail",
+      "contract": "Contrat",
+      "invoice": "Facture",
+      "other": "Autre"
+    },
+    "statuses": {
+      "stored": "Gardé",
+      "analysing": "En lecture",
+      "checked": "Vérifié",
+      "attention": "À regarder",
+      "failed": "Échec de la vérification"
+    },
     "document": {
       "back": "Bibliothèque",
       "details": "Détails",
@@ -205,7 +283,11 @@
       "authenticityTitle": "Traces de modification",
       "authenticityText": "Le fichier PDF lui-même : producteur, dates, enregistrements successifs, polices.",
       "jurisdiction": "Juridiction",
-      "jurisdictions": { "FR": "France — bail d'habitation", "BE-WAL": "Wallonie — bail d'habitation" },
+      "jurisdictions": {
+        "QC": "Québec — bail de logement (C.c.Q., art. 1851 et suiv.)",
+        "FR": "France — bail d'habitation",
+        "BE-WAL": "Wallonie — bail d'habitation"
+      },
       "asOf": "Règles en vigueur le",
       "expectedIssuer": "Émetteur attendu (facultatif)",
       "expectedIssuerHint": "Qui devrait l'avoir produit, par exemple le nom de l'agence.",
@@ -216,20 +298,34 @@
       "ruleset": "Règles",
       "started": "Lancé",
       "finished": "Terminé",
-      "statuses": { "running": "En cours", "succeeded": "Terminé", "failed": "Échec", "cancelled": "Annulé" },
+      "statuses": {
+        "running": "En cours",
+        "succeeded": "Terminé",
+        "failed": "Échec",
+        "cancelled": "Annulé"
+      },
       "summary": "{failures} manquement(s) bloquant(s) sur {rules} règles",
-      "verdicts": { "PASS": "Conforme", "FAIL": "Non conforme", "INSUFFICIENT_EVIDENCE": "Éléments insuffisants" },
+      "verdicts": {
+        "PASS": "Conforme",
+        "FAIL": "Non conforme",
+        "INSUFFICIENT_EVIDENCE": "Éléments insuffisants"
+      },
       "severity": "Gravité",
       "citation": "Source",
       "passage": "Passage",
       "noPassage": "Aucun passage : le document ne dit rien sur ce point.",
-      "levels": { "observé": "Observé", "inhabituel": "Inhabituel", "incohérent": "Incohérent" },
+      "levels": {
+        "observé": "Observé",
+        "inhabituel": "Inhabituel",
+        "incohérent": "Incohérent"
+      },
       "where": "Où",
       "mayIndicate": "Peut indiquer",
       "language": "Les rapports d'Orazaka sont rédigés en français, la langue de leurs règles.",
       "history": "Runs précédents",
       "noPdf": "Seul un PDF peut être examiné en tant que fichier.",
-      "tooLarge": "Orazaka examine les PDF jusqu'à 1 Mo."
+      "tooLarge": "Orazaka examine les PDF jusqu'à 1 Mo.",
+      "toReview": "Corpus québécois à faire relire par un avocat : un tri de démonstration, pas un avis juridique."
     },
     "search": {
       "title": "Recherche",
@@ -238,14 +334,30 @@
       "hint": "Deux caractères au moins. Des guillemets pour une expression exacte, un signe moins pour exclure un mot.",
       "results": "{count} résultat(s)",
       "none": "Rien ne correspond à « {q} ».",
-      "sources": { "title": "Titre", "text": "Texte", "finding": "Constat" }
+      "sources": {
+        "title": "Titre",
+        "text": "Texte",
+        "finding": "Constat"
+      }
     },
     "admin": {
       "title": "Personnes",
       "caption": "Comptes",
-      "columns": { "email": "Courriel", "role": "Rôle", "status": "État", "documents": "Documents", "lastSeen": "Vu pour la dernière fois" },
-      "roles": { "USER": "Membre", "ADMIN": "Administrateur" },
-      "states": { "ACTIVE": "Actif", "SUSPENDED": "Suspendu" },
+      "columns": {
+        "email": "Courriel",
+        "role": "Rôle",
+        "status": "État",
+        "documents": "Documents",
+        "lastSeen": "Vu pour la dernière fois"
+      },
+      "roles": {
+        "USER": "Membre",
+        "ADMIN": "Administrateur"
+      },
+      "states": {
+        "ACTIVE": "Actif",
+        "SUSPENDED": "Suspendu"
+      },
       "never": "Jamais",
       "note": "Visible seulement par un administrateur, depuis une adresse autorisée."
     },

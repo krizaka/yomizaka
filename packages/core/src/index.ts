@@ -25,8 +25,8 @@ export const STUDIOS = ["compliance-check", "document-authenticity"] as const;
 export const studio = z.enum(STUDIOS);
 export type Studio = z.infer<typeof studio>;
 
-/** The rulesets the compliance Studio carries (orazaka-packs document-validation/rulesets). */
-export const JURISDICTIONS = ["FR", "BE-WAL"] as const;
+/** The rulesets the compliance Studio carries (orazaka-packs document-validation/rulesets). Québec first: our market. */
+export const JURISDICTIONS = ["QC", "FR", "BE-WAL"] as const;
 export const jurisdiction = z.enum(JURISDICTIONS);
 export type Jurisdiction = z.infer<typeof jurisdiction>;
 
@@ -77,6 +77,9 @@ export const complianceReport = z.object({
   jurisdiction: z.string(),
   asOf: z.string(),
   source: z.string().optional(),
+  /** `TO_REVIEW_BY_LAWYER` while the ruleset awaits a lawyer's review (the Québec one does). */
+  reviewStatus: z.string().optional(),
+  reviewNote: z.string().optional(),
   summary: z.object({ byVerdict: z.record(z.string(), z.number()), blockingFailures: z.number(), rulesEvaluated: z.number() }).partial().optional(),
   findings: z.array(finding),
 });
