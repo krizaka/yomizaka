@@ -18,6 +18,8 @@ const list = z
 
 export const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  /** `off` on every dev / preview deployment: noindex everywhere, robots `Disallow: /`, no sitemap, the dev line in the footer (lib/indexing.ts). */
+  APP_SEARCH_INDEXING: z.enum(["on", "off"]).default("on"),
   /** The public origin of the site (canonical URLs, sitemap, llms.txt). */
   APP_PUBLIC_URL: z.string().url().default("https://dev.yomizaka.com"),
   /** PostgreSQL (the cluster krizaka-dev-pg in dev: database yomizaka_db, role yomizaka_db). */

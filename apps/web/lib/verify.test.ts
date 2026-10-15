@@ -27,7 +27,7 @@ describe("POST /api/verify (the request behind the public page)", () => {
     const form = new FormData();
     form.set("report", new File([issued.html], "report.html", { type: "text/html" }));
     form.set("document", new File(["lease bytes"], "bail.pdf"));
-    expect(await verifyRequest(form)).toMatchObject({ ok: true, documentMatch: true, fileSha256: issued.fileSha256 });
+    expect(await verifyRequest(form, { signedIn: true })).toMatchObject({ ok: true, documentMatch: true, fileSha256: issued.fileSha256 });
   });
 
   it("verifies pasted text", async () => {
@@ -47,5 +47,18 @@ describe("POST /api/verify (the request behind the public page)", () => {
     const big = new FormData();
     big.set("report", new File([new Uint8Array(2 * 1024 * 1024 + 1)], "big.html"));
     await expect(verifyRequest(big)).rejects.toMatchObject({ status: 413 });
+  });
+
+  it("refuses an original document from a visitor (401) — only a signed-in account may attach one", async () => {
+    const form = new FormData();
+    form.set("report", new File([issued.html], "report.html", { type: "text/html" }));
+    form.set("document", new File(["lease bytes"], "bail.pdf"));
+    await expect(verifyRequest(form)).rejects.toMatchObject({ status: 401 });
+  });
+
+  it("accepts only an .html report as a file (415), however it is named otherwise", async () => {
+    const form = new FormData();
+    form.set("report", new File([issued.html], "report.pdf", { type: "application/pdf" }));
+    await expect(verifyRequest(form)).rejects.toMatchObject({ status: 415 });
   });
 });

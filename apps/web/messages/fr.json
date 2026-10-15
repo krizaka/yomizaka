@@ -22,7 +22,8 @@
     "footer": "Yomizaka est <b>un produit Krizaka</b> — fait à Montréal, open source (Apache-2.0).",
     "sourceCode": "Code source",
     "contact": "Contact",
-    "legal": "Confidentialité"
+    "legal": "Confidentialité",
+    "devNotice": "Environnement de développement — accès sur invitation"
   },
   "landing": {
     "mark": "Yomizaka · des documents lus et vérifiés",

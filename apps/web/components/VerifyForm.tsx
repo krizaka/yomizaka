@@ -33,7 +33,8 @@ const form = createKrizakaForm({
   defaultValues: { reportFiles: [] as File[], reportText: "", documentFiles: [] as File[] },
 });
 
-export function VerifyForm({ labels, locale }: { labels: VerifyLabels; locale: Locale }) {
+/** `canAttachDocument`: the original document is checked for a signed-in account only; a visitor sees the report fields alone. */
+export function VerifyForm({ labels, locale, canAttachDocument = false }: { labels: VerifyLabels; locale: Locale; canAttachDocument?: boolean }) {
   const [problem, setProblem] = useState<string | null>(null);
   const [result, setResult] = useState<Verification | null>(null);
   const f = form.useForm({
@@ -45,7 +46,7 @@ export function VerifyForm({ labels, locale }: { labels: VerifyLabels; locale: L
       const body = new FormData();
       if (values.reportFiles[0]) body.set("report", values.reportFiles[0]);
       else body.set("reportText", values.reportText);
-      if (values.documentFiles[0]) body.set("document", values.documentFiles[0]);
+      if (canAttachDocument && values.documentFiles[0]) body.set("document", values.documentFiles[0]);
       try {
         const res = await fetch("/api/verify", { method: "POST", body });
         if (!res.ok) return setProblem(res.status === 413 ? labels.tooLarge : labels.empty);
@@ -60,7 +61,7 @@ export function VerifyForm({ labels, locale }: { labels: VerifyLabels; locale: L
       <f.Form aria-label={labels.submit} className="flex flex-col gap-4">
         <f.FileUpload name="reportFiles" label={labels.reportFile} title={labels.drop.reportTitle} browseLabel={labels.drop.browse} hint={labels.drop.hint} accept=".html,text/html" maxSize={2 * 1024 * 1024} removeLabel={(name) => labels.drop.remove.replace("{name}", name)} refusalLabel={() => labels.tooLarge} />
         <f.TextArea name="reportText" label={labels.reportPaste} rows={4} />
-        <f.FileUpload name="documentFiles" label={labels.documentFile} title={labels.drop.documentTitle} browseLabel={labels.drop.browse} hint={labels.documentHint} maxSize={10 * 1024 * 1024} removeLabel={(name) => labels.drop.remove.replace("{name}", name)} refusalLabel={() => labels.tooLarge} />
+        {canAttachDocument ? <f.FileUpload name="documentFiles" label={labels.documentFile} title={labels.drop.documentTitle} browseLabel={labels.drop.browse} hint={labels.documentHint} maxSize={10 * 1024 * 1024} removeLabel={(name) => labels.drop.remove.replace("{name}", name)} refusalLabel={() => labels.tooLarge} /> : null}
         {problem ? <Alert tone="danger">{problem}</Alert> : null}
         <f.Submit shape="cut">
           {labels.submit}
