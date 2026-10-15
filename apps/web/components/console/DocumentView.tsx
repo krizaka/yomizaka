@@ -50,7 +50,7 @@ function placeOf(found: Located | null | undefined, say: (key: string, vars?: Re
 function DocumentText({ text, report }: { text: string; report: ComplianceReport | null }) {
   const { say } = useSay();
   const parts = useMemo(
-    () => passages(text, (report?.findings ?? []).filter((f) => f.evidenceSpan?.quote).map((f) => ({ id: f.ruleId, quote: f.evidenceSpan!.quote, start: f.evidenceSpan!.start }))),
+    () => passages(text, (report?.findings ?? []).filter((f) => f.evidenceSpan?.quote).map((f) => ({ id: f.ruleId, quote: f.evidenceSpan!.quote, start: f.evidenceSpan!.start ?? undefined }))),
     [text, report],
   );
   return (

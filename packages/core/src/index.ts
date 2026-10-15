@@ -63,7 +63,7 @@ export const finding = z.object({
   title: z.string().optional(),
   severity: z.string(),
   verdict: z.string(),
-  evidenceSpan: z.object({ start: z.number().optional(), end: z.number().optional(), quote: z.string() }).nullable().optional(),
+  evidenceSpan: z.object({ start: z.number().nullish(), end: z.number().nullish(), quote: z.string() }).nullable().optional(),
   explanation: z.string(),
   method: z.string().optional(),
   citation: z.string().optional(),
@@ -235,7 +235,7 @@ export const queryKeys = {
  * A quote is found by its offsets when they still match the text, else by its first occurrence; a quote that is not in
  * the text is left out (it is shown in the finding, never invented in the document).
  */
-export function passages(text: string, quotes: readonly { id: string; quote: string; start?: number; end?: number }[]): { text: string; mark?: string }[] {
+export function passages(text: string, quotes: readonly { id: string; quote: string; start?: number | null; end?: number | null }[]): { text: string; mark?: string }[] {
   const spans: { start: number; end: number; id: string }[] = [];
   for (const q of quotes) {
     if (!q.quote) continue;
