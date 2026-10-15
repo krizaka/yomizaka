@@ -30,14 +30,14 @@ importers:
         specifier: ^0.2.1
         version: 0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1)
       '@krizaka/tailwind':
-        specifier: ^3.13.0
-        version: 3.13.0(@krizaka/tokens@3.13.0)(@krizaka/ui@3.14.0)(tailwindcss@4.3.3)
+        specifier: ^3.16.0
+        version: 3.16.0(@krizaka/tokens@3.16.0)(@krizaka/ui@3.14.0)(tailwindcss@4.3.3)
       '@krizaka/tokens':
-        specifier: ^3.13.0
-        version: 3.13.0
+        specifier: ^3.16.0
+        version: 3.16.0
       '@krizaka/ui':
         specifier: file:../../../packs/krizaka-ui-3.14.0.tgz
-        version: file:../packs/krizaka-ui-3.14.0.tgz(@krizaka/query@0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.13.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)
+        version: file:../packs/krizaka-ui-3.14.0.tgz(@krizaka/query@0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.16.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)
       '@yomizaka/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -542,20 +542,16 @@ packages:
       pg:
         optional: true
 
-  '@krizaka/tailwind@3.13.0':
-    resolution: {integrity: sha512-fADFYzbxBFT0hJA5MN18Zc0B+s9olcLwaYnanumo4sinOKay5mqKleAL+Hy0sJwychYajh+0x0NJJdd1I5Tg3A==}
+  '@krizaka/tailwind@3.16.0':
+    resolution: {integrity: sha512-olRUY0uynhfDJj15pwNI4Fz26u3TMDI9n3Jj+HfKRpuoZwae3KsX7gBgmXdM5Yo8czW9bkcGUFeAVxyPH/MDTg==}
     engines: {node: '>=22'}
     peerDependencies:
-      '@krizaka/tokens': ^3.13.0
-      '@krizaka/ui': ^3.13.0
+      '@krizaka/tokens': ^3.16.0
+      '@krizaka/ui': ^3.16.0
       tailwindcss: ^4.1
 
-  '@krizaka/tokens@3.13.0':
-    resolution: {integrity: sha512-zyrQobUT0V7G0c3H9sBJM3XhjkYn21kpwvoAWDLj8H7q0pjnGhixElLb3bFapanHT+pL+MgVK5m7mbThbN9kwQ==}
-    engines: {node: '>=22'}
-
-  '@krizaka/tokens@3.15.0':
-    resolution: {integrity: sha512-rU+WIPYWjzMpsKYkdFBNULKOqSSwFi2QGmBmJ6ffpEvszFBX4AFblJvkWcGIT3I5KKDP8v7v+Z3wo5NeXAjODw==}
+  '@krizaka/tokens@3.16.0':
+    resolution: {integrity: sha512-i9ezOaF2xLuYKEhrM5S7nRk2ORtWZVnqXVNAsgyrJrKmK5JjBNb6n3PPEBGahYW6YNjAMtSeXZXzurZ/8cJ+LQ==}
     engines: {node: '>=22'}
 
   '@krizaka/ui@file:../packs/krizaka-ui-3.14.0.tgz':
@@ -4245,21 +4241,19 @@ snapshots:
     optionalDependencies:
       pg: 8.23.1
 
-  '@krizaka/tailwind@3.13.0(@krizaka/tokens@3.13.0)(@krizaka/ui@3.14.0)(tailwindcss@4.3.3)':
+  '@krizaka/tailwind@3.16.0(@krizaka/tokens@3.16.0)(@krizaka/ui@3.14.0)(tailwindcss@4.3.3)':
     dependencies:
-      '@krizaka/tokens': 3.13.0
-      '@krizaka/ui': file:../packs/krizaka-ui-3.14.0.tgz(@krizaka/query@0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.13.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)
+      '@krizaka/tokens': 3.16.0
+      '@krizaka/ui': file:../packs/krizaka-ui-3.14.0.tgz(@krizaka/query@0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.16.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)
       tailwindcss: 4.3.3
 
-  '@krizaka/tokens@3.13.0': {}
+  '@krizaka/tokens@3.16.0': {}
 
-  '@krizaka/tokens@3.15.0': {}
-
-  '@krizaka/ui@file:../packs/krizaka-ui-3.14.0.tgz(@krizaka/query@0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.13.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)':
+  '@krizaka/ui@file:../packs/krizaka-ui-3.14.0.tgz(@krizaka/query@0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.16.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)':
     dependencies:
       '@krizaka/intl': 0.2.1
       '@krizaka/pacer': 0.1.0(react@19.3.1)
-      '@krizaka/tokens': 3.15.0
+      '@krizaka/tokens': 3.16.0
       '@protomaps/basemaps': 5.7.2
       '@tanstack/highlight': 1.1.0
       '@tanstack/markdown': 1.0.0(react@19.3.1)
@@ -4276,7 +4270,7 @@ snapshots:
       tailwind-variants: 3.3.1(tailwindcss@4.3.3)
     optionalDependencies:
       '@krizaka/query': 0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1)
-      '@krizaka/tailwind': 3.13.0(@krizaka/tokens@3.13.0)(@krizaka/ui@3.14.0)(tailwindcss@4.3.3)
+      '@krizaka/tailwind': 3.16.0(@krizaka/tokens@3.16.0)(@krizaka/ui@3.14.0)(tailwindcss@4.3.3)
       pdfjs-dist: 6.4.299
       react-dom: 19.3.1(react@19.3.1)
       tailwindcss: 4.3.3
