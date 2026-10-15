@@ -6,7 +6,7 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
 import { asLocale, format, getDictionary } from "@/lib/i18n";
-import { pageMetadata } from "@/lib/seo";
+import { pageMetadata, siteJsonLd } from "@/lib/seo";
 import { pagePath, PRIVACY_UPDATED } from "@/lib/site";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -19,6 +19,7 @@ export default async function Privacy({ params }: { params: Promise<{ locale: st
   const t = getDictionary(locale);
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
       <SiteHeader locale={locale} current="privacy" />
       <main id="content" className="pt-20">
         <PageHero back={{ href: pagePath(locale, "home"), label: t.meta.siteName }} linkAs={Link} title={t.privacy.title} lead={format(t.privacy.updated, { date: PRIVACY_UPDATED })} />
