@@ -65,7 +65,8 @@ describe("Orazaka runs", () => {
 describe("the API's requests", () => {
   it("asks a jurisdiction for a compliance check, a date in ISO form", () => {
     expect(startAnalysis.parse({ studio: "compliance-check", jurisdiction: "FR" })).toEqual({ studio: "compliance-check", jurisdiction: "FR" });
-    expect(() => startAnalysis.parse({ studio: "compliance-check", jurisdiction: "QC" })).toThrow();
+    expect(startAnalysis.parse({ studio: "compliance-check", jurisdiction: "QC" })).toEqual({ studio: "compliance-check", jurisdiction: "QC" });
+    expect(() => startAnalysis.parse({ studio: "compliance-check", jurisdiction: "ON" })).toThrow();
     expect(() => startAnalysis.parse({ studio: "compliance-check", jurisdiction: "FR", asOf: "14/10/2026" })).toThrow();
     expect(startAnalysis.parse({ studio: "document-authenticity", expectedIssuer: "  Agence Dupont " })).toEqual({ studio: "document-authenticity", expectedIssuer: "Agence Dupont" });
     expect(() => startAnalysis.parse({ studio: "summarise" })).toThrow();

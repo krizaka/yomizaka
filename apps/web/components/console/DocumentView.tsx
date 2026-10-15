@@ -27,7 +27,7 @@ const RUN_TONE = { running: "accent", succeeded: "success", failed: "danger", ca
 
 const compliance = createKrizakaForm({
   schema: z.object({ jurisdiction: z.enum(JURISDICTIONS), asOf: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }),
-  defaultValues: { jurisdiction: "FR" as (typeof JURISDICTIONS)[number], asOf: new Date().toISOString().slice(0, 10) },
+  defaultValues: { jurisdiction: "QC" as (typeof JURISDICTIONS)[number], asOf: new Date().toISOString().slice(0, 10) },
 });
 const authenticity = createKrizakaForm({
   schema: z.object({ expectedIssuer: z.string().trim().max(120) }),
@@ -61,6 +61,7 @@ function ComplianceFindings({ report }: { report: ComplianceReport }) {
   const failures = report.summary?.blockingFailures ?? report.findings.filter((f) => f.verdict === "FAIL" && f.severity === "BLOCKING").length;
   return (
     <div className="flex flex-col gap-3">
+      {report.reviewStatus ? <Alert tone="warning">{say("analysis.toReview")}</Alert> : null}
       <p className="text-sm text-fg-secondary">{say("analysis.summary", { failures, rules: report.summary?.rulesEvaluated ?? report.findings.length })}</p>
       <ul className="flex flex-col gap-2">
         {report.findings.map((f) => (

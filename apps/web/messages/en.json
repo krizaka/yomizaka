@@ -7,7 +7,11 @@
   "chrome": {
     "brandHome": "Yomizaka, home",
     "navLabel": "Yomizaka",
-    "nav": { "how": "How it works", "demo": "A real run", "privacy": "Privacy" },
+    "nav": {
+      "how": "How it works",
+      "demo": "A real run",
+      "privacy": "Privacy"
+    },
     "signIn": "Sign in",
     "talk": "Talk to us",
     "themeToggle": "Theme",
@@ -22,8 +26,12 @@
   "landing": {
     "mark": "Yomizaka · documents, read and checked",
     "title": "Read before you sign.",
-    "lead": "Drop a lease, a contract, an invoice. Orazaka reads it against the law, examines the PDF for signs of editing, and shows you every line it relies on — never a verdict out of nowhere.",
-    "facts": { "runs": "Every check is a traced Orazaka run", "license": "Apache-2.0", "closed": "Dev · sign-up closed" },
+    "lead": "Drop a lease, a contract, an invoice. Orazaka reads it against the Civil Code of Québec, examines the PDF for signs of editing, and shows you every line it relies on — never a verdict out of nowhere.",
+    "facts": {
+      "runs": "Every check is a traced Orazaka run",
+      "license": "Apache-2.0",
+      "closed": "Dev · sign-up closed"
+    },
     "talk": "Talk to us about Yomizaka",
     "signIn": "Sign in",
     "visualLabel": "dev.yomizaka.com — a lease, checked",
@@ -32,19 +40,33 @@
     "trap": "The trap",
     "more": "Details",
     "reasons": {
-      "check": { "title": "The clause you skimmed", "trap": "A deposit of three months, a ban on guests — written in, legally void, signed anyway." },
-      "tamper": { "title": "The PDF that was edited", "trap": "An invoice re-saved after it was issued, its producer not the one you expected." },
-      "find": { "title": "The document you cannot find", "trap": "The clause is somewhere, in one of forty PDFs, in a folder you no longer open." }
+      "check": {
+        "title": "The clause you skimmed",
+        "trap": "A security deposit, postdated cheques, “no children” — written in, forbidden by the Civil Code, signed anyway."
+      },
+      "tamper": {
+        "title": "The PDF that was edited",
+        "trap": "An invoice re-saved after it was issued, its producer not the one you expected."
+      },
+      "find": {
+        "title": "The document you cannot find",
+        "trap": "The clause is somewhere, in one of forty PDFs, in a folder you no longer open."
+      }
     },
     "decisionsEyebrow": "Decisions",
     "decisionsTitle": "What we chose, and what it costs you",
-    "decisionLabels": { "chose": "We chose", "refused": "We refused", "because": "Because", "cost": "What it costs you" },
+    "decisionLabels": {
+      "chose": "We chose",
+      "refused": "We refused",
+      "because": "Because",
+      "cost": "What it costs you"
+    },
     "decisions": {
       "rules": {
         "chose": "Rules that cite their source, in force on the date you pick.",
         "refused": "A model's opinion of your lease.",
         "because": "A finding you forward to a landlord must quote the law and the line it rests on.",
-        "cost": "France and Wallonia today; a jurisdiction arrives as a ruleset, not as a guess."
+        "cost": "Québec first (rules to be reviewed by a lawyer), France and Wallonia next; a jurisdiction arrives as a ruleset, not as a guess."
       },
       "signals": {
         "chose": "Signals with three plain levels — observed, unusual, inconsistent.",
@@ -67,33 +89,63 @@
         "title": "Three steps, one trace",
         "lead": "Nothing is analysed by Yomizaka itself: it keeps your documents, and Orazaka does the reading.",
         "steps": {
-          "keep": { "title": "Keep", "text": "Drop PDFs or text files into your library. The file is kept as you sent it, its text layer read for search." },
-          "check": { "title": "Check", "text": "Ask Orazaka: a lease against the rules of its jurisdiction, a PDF for signs of editing. The run id stays with the result." },
-          "find": { "title": "Find", "text": "Search every document and every finding at once — the passage comes back with the words in bold." }
+          "keep": {
+            "title": "1 · Keep",
+            "text": "Drop PDFs or text files into your library. The file is kept as you sent it, its text layer read for search."
+          },
+          "check": {
+            "title": "2 · Check",
+            "text": "Ask Orazaka: a lease against the rules of its jurisdiction, a PDF for signs of editing. The run id stays with the result."
+          },
+          "find": {
+            "title": "3 · Find",
+            "text": "Search every document and every finding at once — the passage comes back with the words in bold."
+          }
         }
       },
       "check": {
-        "eyebrow": "Compliance",
-        "title": "A lease against the law, rule by rule",
-        "lead": "Each finding gives its rule, its severity, its verdict, the citation, and the exact passage of your document. What the text cannot settle is said so: insufficient evidence, never a guess.",
-        "cta": "Sign in to check a lease"
-      },
-      "tamper": {
-        "eyebrow": "Authenticity",
-        "title": "A supplier's PDF, examined as a file",
-        "lead": "Who produced it, when, with what, whether it was saved again afterwards. Triage, not an examination — and the report says so at the top.",
-        "cta": "Sign in to examine a PDF"
+        "eyebrow": "Checks",
+        "title": "Two checks, both run by Orazaka",
+        "lead": "Each finding gives its rule, the article it rests on and the exact passage of your document. What the text cannot settle is said so.",
+        "cta": "Sign in to check a lease",
+        "compliance": {
+          "title": "A lease against the law",
+          "meta": "compliance-check · QC",
+          "hookLabel": "What it reads",
+          "hook": "The text, rule by rule, against the Civil Code of Québec in force on the date you pick.",
+          "rule": "Rule",
+          "source": "Source",
+          "passage": "Passage of the sample lease",
+          "noRun": "The passage appears here after the first real run.",
+          "more": "Details",
+          "panel": "The rule, its article, the passage"
+        },
+        "authenticity": {
+          "title": "A supplier's PDF",
+          "meta": "document-authenticity",
+          "hookLabel": "What it reads",
+          "hook": "The file itself: producer, dates, successive saves — never what the document says.",
+          "levels": "Three levels, never a score",
+          "more": "Details"
+        }
       },
       "find": {
         "eyebrow": "Search",
         "title": "Every document, every finding, one field",
         "lead": "Your archive and what Orazaka found in it, searchable together — in French and English alike.",
-        "cta": "Sign in to search"
+        "cta": "Sign in to search",
+        "query": "dépôt",
+        "label": "Example: searching “dépôt” in the sample lease",
+        "sources": {
+          "text": "Text",
+          "finding": "Finding"
+        },
+        "finding": "Le bail exige un dépôt de garantie. L'article 1904 ne permet au locateur d'exiger d'avance que le premier mois de loyer."
       },
       "demo": {
         "eyebrow": "A real run",
-        "title": "Not a mock-up: a lease checked on dev",
-        "lead": "A sample lease with four void clauses, sent to Orazaka's compliance Studio on dev.orazaka.com. What came back, as it came back.",
+        "title": "Not a mock-up: a Québec lease checked on dev",
+        "lead": "A sample Montréal lease (rent in dollars, four forbidden clauses), sent to Orazaka's compliance Studio on dev.orazaka.com, jurisdiction Québec. What came back, as it came back.",
         "run": "Orazaka run",
         "studio": "Studio",
         "ruleset": "Rules",
@@ -103,7 +155,11 @@
     },
     "closingTitle": "Have documents to check?",
     "closingBody": "Yomizaka is in development: sign-up is closed. Tell us what you need to read — leases, supplier invoices, a Law 25 inventory.",
-    "verdicts": { "PASS": "Compliant", "FAIL": "Non-compliant", "INSUFFICIENT_EVIDENCE": "Insufficient evidence" }
+    "verdicts": {
+      "PASS": "Compliant",
+      "FAIL": "Non-compliant",
+      "INSUFFICIENT_EVIDENCE": "Insufficient evidence"
+    }
   },
   "privacy": {
     "title": "Privacy",
@@ -111,7 +167,12 @@
     "body": "Yomizaka is in development: only the accounts our team creates can sign in. A document you upload is kept in Yomizaka's database (Toronto, Canada), visible to your account alone. When you ask for a check, the document — its text, or the PDF file — is sent to Orazaka, Krizaka's analysis engine, over HTTPS, and the result is kept with the run's id. Nothing is sold, shared or used to train a model. Deleting a document deletes its file, its text and its analyses. To ask a question or have your data removed, use the contact form."
   },
   "console": {
-    "meta": { "signIn": "Sign in", "library": "Library", "search": "Search", "users": "People" },
+    "meta": {
+      "signIn": "Sign in",
+      "library": "Library",
+      "search": "Search",
+      "users": "People"
+    },
     "signIn": {
       "promise": "Your documents, read and checked by Orazaka.",
       "asideFooter": "Every finding quotes its rule and the line it rests on.",
@@ -156,7 +217,13 @@
       "refusedCount": "{name}: too many files at once",
       "kindLabel": "Kind of the next documents",
       "caption": "Your documents",
-      "columns": { "title": "Document", "kind": "Kind", "status": "State", "size": "Size", "added": "Added" },
+      "columns": {
+        "title": "Document",
+        "kind": "Kind",
+        "status": "State",
+        "size": "Size",
+        "added": "Added"
+      },
       "emptyTitle": "Nothing here yet",
       "emptyText": "Drop a first document above: a lease to check against the law, a supplier's PDF to examine.",
       "duplicate": "{name} is already in your library.",
@@ -177,8 +244,19 @@
       "cancel": "Cancel",
       "remove": "Remove"
     },
-    "kinds": { "lease": "Lease", "contract": "Contract", "invoice": "Invoice", "other": "Other" },
-    "statuses": { "stored": "Kept", "analysing": "Being read", "checked": "Checked", "attention": "To look at", "failed": "Check failed" },
+    "kinds": {
+      "lease": "Lease",
+      "contract": "Contract",
+      "invoice": "Invoice",
+      "other": "Other"
+    },
+    "statuses": {
+      "stored": "Kept",
+      "analysing": "Being read",
+      "checked": "Checked",
+      "attention": "To look at",
+      "failed": "Check failed"
+    },
     "document": {
       "back": "Library",
       "details": "Details",
@@ -205,7 +283,11 @@
       "authenticityTitle": "Signs of editing",
       "authenticityText": "The PDF file itself: producer, dates, successive saves, fonts.",
       "jurisdiction": "Jurisdiction",
-      "jurisdictions": { "FR": "France — residential lease", "BE-WAL": "Wallonia — residential lease" },
+      "jurisdictions": {
+        "QC": "Québec — residential lease (Civil Code, art. 1851 ff.)",
+        "FR": "France — residential lease",
+        "BE-WAL": "Wallonia — residential lease"
+      },
       "asOf": "Rules in force on",
       "expectedIssuer": "Expected issuer (optional)",
       "expectedIssuerHint": "Who should have produced it, e.g. the agency's name.",
@@ -216,20 +298,34 @@
       "ruleset": "Rules",
       "started": "Started",
       "finished": "Finished",
-      "statuses": { "running": "Running", "succeeded": "Done", "failed": "Failed", "cancelled": "Cancelled" },
+      "statuses": {
+        "running": "Running",
+        "succeeded": "Done",
+        "failed": "Failed",
+        "cancelled": "Cancelled"
+      },
       "summary": "{failures} blocking failure(s) out of {rules} rules",
-      "verdicts": { "PASS": "Compliant", "FAIL": "Non-compliant", "INSUFFICIENT_EVIDENCE": "Insufficient evidence" },
+      "verdicts": {
+        "PASS": "Compliant",
+        "FAIL": "Non-compliant",
+        "INSUFFICIENT_EVIDENCE": "Insufficient evidence"
+      },
       "severity": "Severity",
       "citation": "Source",
       "passage": "Passage",
       "noPassage": "No passage: the document says nothing on this point.",
-      "levels": { "observé": "Observed", "inhabituel": "Unusual", "incohérent": "Inconsistent" },
+      "levels": {
+        "observé": "Observed",
+        "inhabituel": "Unusual",
+        "incohérent": "Inconsistent"
+      },
       "where": "Where",
       "mayIndicate": "May indicate",
       "language": "Orazaka's reports are written in French, the language of their rules.",
       "history": "Earlier runs",
       "noPdf": "Only a PDF can be examined as a file.",
-      "tooLarge": "Orazaka examines PDFs up to 1 MB."
+      "tooLarge": "Orazaka examines PDFs up to 1 MB.",
+      "toReview": "Québec rules still to be reviewed by a lawyer: a demonstration screen, not legal advice."
     },
     "search": {
       "title": "Search",
@@ -238,14 +334,30 @@
       "hint": "Two characters at least. Quotes for an exact phrase, a minus sign to leave a word out.",
       "results": "{count} result(s)",
       "none": "Nothing matches “{q}”.",
-      "sources": { "title": "Title", "text": "Text", "finding": "Finding" }
+      "sources": {
+        "title": "Title",
+        "text": "Text",
+        "finding": "Finding"
+      }
     },
     "admin": {
       "title": "People",
       "caption": "Accounts",
-      "columns": { "email": "E-mail", "role": "Role", "status": "State", "documents": "Documents", "lastSeen": "Last seen" },
-      "roles": { "USER": "Member", "ADMIN": "Administrator" },
-      "states": { "ACTIVE": "Active", "SUSPENDED": "Suspended" },
+      "columns": {
+        "email": "E-mail",
+        "role": "Role",
+        "status": "State",
+        "documents": "Documents",
+        "lastSeen": "Last seen"
+      },
+      "roles": {
+        "USER": "Member",
+        "ADMIN": "Administrator"
+      },
+      "states": {
+        "ACTIVE": "Active",
+        "SUSPENDED": "Suspended"
+      },
       "never": "Never",
       "note": "Visible only to an administrator, from an allowed address."
     },

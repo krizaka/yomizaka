@@ -1,5 +1,6 @@
-import { KeepIcon, SearchIcon, ShieldIcon } from "@krizaka/icons";
+import { EyeIcon, KeepIcon, SearchIcon, ShieldIcon } from "@krizaka/icons";
 import { YomizakaLogo } from "@krizaka/ui";
+import { ArgumentCard } from "@krizaka/ui/argument-card";
 import { Badge } from "@krizaka/ui/badge";
 import { Button } from "@krizaka/ui/button";
 import { CardGrid } from "@krizaka/ui/card-grid";
@@ -17,13 +18,17 @@ import { DEMO_RUN } from "@/lib/demo-run";
 import { asLocale, getDictionary, type Locale, translator } from "@/lib/i18n";
 import { pageMetadata, siteJsonLd } from "@/lib/seo";
 import { contactHref } from "@/lib/site";
+import { SAMPLE_LEASE } from "@/scripts/record-demo.mjs";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   return pageMetadata(asLocale((await params).locale), "home");
 }
 
 /** A sample lease, written for the page: four clauses the French law deems void — the input of the demo run. */
-const SAMPLE = ["CONTRAT DE LOCATION", "Loyer mensuel : 850 € hors charges.", "Dépôt de garantie : 2 550 €.", "La solidarité du colocataire sortant se poursuit après le congé…", "Il est interdit au locataire de recevoir des visites après 22 heures."];
+/** The sample lease of the demo run: a Montréal lease (rent in dollars) with four clauses the Civil Code of Québec forbids. */
+const SAMPLE = SAMPLE_LEASE.split("\n");
+/** The Québec rule the sample breaks first (orazaka-packs document-validation, qc-residential-lease): its id, title and article. */
+const SHOWN_RULE = { id: "QC-LEASE-004", title: "Dépôt de garantie interdit — seul le premier mois peut être exigé d'avance", citation: "C.c.Q., art. 1904, al. 1" };
 
 const DATE_LOCALE: Record<Locale, string> = { en: "en-CA", fr: "fr-CA" };
 const tone = { PASS: "success", FAIL: "danger", INSUFFICIENT_EVIDENCE: "warning" } as const;
@@ -89,6 +94,91 @@ function DemoSection({ locale }: { locale: Locale }) {
   );
 }
 
+/** The two checks, as Orazaka runs them: the Québec rule the sample breaks (its article), the passage once a real run exists. */
+function ChecksSection({ locale, signIn }: { locale: Locale; signIn: string }) {
+  const t = getDictionary(locale).landing.sections.check;
+  const quoted = DEMO_RUN?.report.findings.find((f) => f.ruleId === SHOWN_RULE.id)?.evidenceSpan?.quote;
+  const levels = getDictionary(locale).console.analysis.levels;
+  return (
+    <Section id="check" eyebrow={t.eyebrow} title={t.title} lead={t.lead} divider>
+      <CardGrid min={300}>
+        <ArgumentCard
+          id="check-compliance"
+          icon={<ShieldIcon />}
+          title={t.compliance.title}
+          meta={t.compliance.meta}
+          mark={<Mascot bird="owl" size={36} animated={false} />}
+          hook={{ label: t.compliance.hookLabel, text: t.compliance.hook }}
+          details={[
+            { label: t.compliance.rule, text: `${SHOWN_RULE.id} — ${SHOWN_RULE.title}` },
+            { label: t.compliance.source, text: SHOWN_RULE.citation },
+            { label: t.compliance.passage, text: quoted ? `« ${quoted} »` : t.compliance.noRun },
+          ]}
+          panelLabel={t.compliance.panel}
+          more={{ href: signIn, label: t.cta }}
+          linkAs={Link}
+        />
+        <ArgumentCard
+          id="tamper"
+          icon={<EyeIcon />}
+          title={t.authenticity.title}
+          meta={t.authenticity.meta}
+          mark={<Mascot bird="falcon" size={36} animated={false} />}
+          hook={{ label: t.authenticity.hookLabel, text: t.authenticity.hook }}
+          points={{ label: t.authenticity.levels, items: [levels["observé"], levels["inhabituel"], levels["incohérent"]] }}
+          more={{ href: signIn, label: t.cta }}
+          linkAs={Link}
+        />
+      </CardGrid>
+    </Section>
+  );
+}
+
+/** Search, shown on the sample lease: the passages come back with the word in bold (the same markup as the console). */
+function FindSection({ locale, signIn }: { locale: Locale; signIn: string }) {
+  const t = getDictionary(locale).landing.sections.find;
+  const kinds = getDictionary(locale).console.kinds;
+  const line = SAMPLE.find((l) => l.includes("dépôt")) ?? "";
+  const hits = [
+    { source: "text" as const, html: line.replace("dépôt", "<b>dépôt</b>") },
+    { source: "finding" as const, html: t.finding.replace("dépôt", "<b>dépôt</b>") },
+  ];
+  return (
+    <Section
+      id="find"
+      eyebrow={t.eyebrow}
+      title={t.title}
+      lead={t.lead}
+      divider
+      actions={
+        <Button asChild variant="secondary" size="md" shape="cut">
+          <Link href={signIn}>{t.cta}</Link>
+        </Button>
+      }
+    >
+      <div className="max-w-2xl rounded-xl border border-border-default bg-surface-1 p-4" role="group" aria-label={t.label}>
+        <div className="flex items-center gap-2 rounded-lg border border-border-default bg-surface-0 px-3 py-2 text-sm text-fg">
+          <SearchIcon size={16} aria-hidden /> {t.query}
+        </div>
+        <ul className="mt-3 flex flex-col gap-2">
+          {hits.map((h) => (
+            <li key={h.source} className="rounded-lg border border-border-default bg-surface-0 p-3 text-sm">
+              <span className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-semibold text-fg">{SAMPLE[0]}</span>
+                <span className="flex gap-1">
+                  <Badge tone="neutral">{kinds.lease}</Badge>
+                  <Badge tone={h.source === "finding" ? "accent" : "neutral"}>{t.sources[h.source]}</Badge>
+                </span>
+              </span>
+              <span className="mt-1 block text-fg-secondary [&_b]:font-semibold [&_b]:text-fg" dangerouslySetInnerHTML={{ __html: h.html }} />
+            </li>
+          ))}
+        </ul>
+      </div>
+    </Section>
+  );
+}
+
 /** dev.yomizaka.com: what Yomizaka does, how, a real run — the product page template of @krizaka/ui, in ink indigo. */
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const locale = asLocale((await params).locale);
@@ -96,14 +186,14 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const d = getDictionary(locale).landing;
   const signIn = `/${locale}/sign-in`;
   const steps = [
-    { id: "keep", href: "#find", icon: <KeepIcon /> },
+    { id: "keep", href: signIn, icon: <KeepIcon /> },
     { id: "check", href: "#check", icon: <ShieldIcon /> },
     { id: "find", href: "#find", icon: <SearchIcon /> },
   ] as const;
   const details = [
-    { id: "check", bird: "owl" as const },
-    { id: "tamper", bird: "falcon" as const },
-    { id: "find", bird: "pigeon" as const },
+    { id: "check", href: "#check-compliance", bird: "owl" as const },
+    { id: "tamper", href: "#tamper", bird: "falcon" as const },
+    { id: "find", href: "#find", bird: "pigeon" as const },
   ];
   return (
     <>
@@ -135,12 +225,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           visual={<Visual locale={locale} />}
           reasonsHeading={{ eyebrow: d.reasonsEyebrow, title: d.reasonsTitle }}
           reasonLabels={{ trap: d.trap, more: d.more }}
-          reasons={details.map(({ id, bird }) => ({
+          reasons={details.map(({ id, href, bird }) => ({
             id,
             title: d.reasons[id as keyof typeof d.reasons].title,
             trap: d.reasons[id as keyof typeof d.reasons].trap,
             mark: <Mascot bird={bird} size={40} animated={false} />,
-            href: `#${id}`,
+            href,
           }))}
           decisions={{
             eyebrow: d.decisionsEyebrow,
@@ -166,24 +256,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               ))}
             </CardGrid>
           </Section>
-          {details.map(({ id }) => {
-            const section = d.sections[id as "check" | "tamper" | "find"];
-            return (
-              <Section
-                key={id}
-                id={id}
-                eyebrow={section.eyebrow}
-                title={section.title}
-                lead={section.lead}
-                divider
-                actions={
-                  <Button asChild variant="secondary" size="md" shape="cut">
-                    <Link href={signIn}>{section.cta}</Link>
-                  </Button>
-                }
-              />
-            );
-          })}
+          <ChecksSection locale={locale} signIn={signIn} />
+          <FindSection locale={locale} signIn={signIn} />
           <DemoSection locale={locale} />
         </ProductPage>
       </main>

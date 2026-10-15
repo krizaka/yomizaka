@@ -7,14 +7,14 @@
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-export const SAMPLE_LEASE = `CONTRAT DE LOCATION
-Entre le bailleur Monsieur Jean Martin
-et le locataire Madame Claire Dubois.
-Durée du bail : trois ans.
-Loyer mensuel : 850 € hors charges.
-Dépôt de garantie : 2 550 €.
-La solidarité du colocataire sortant se poursuit après le congé pendant vingt-quatre mois.
-Il est interdit au locataire de recevoir des visites après 22 heures.`;
+export const SAMPLE_LEASE = `BAIL DE LOGEMENT — 4½, rue Saint-Denis, Montréal
+Entre le locateur Monsieur Marc Tremblay, domicilié à Montréal,
+et la locataire Madame Sophie Gagnon.
+Durée : 12 mois, du 1er juillet 2026 au 30 juin 2027.
+Loyer mensuel : 1 450 $, payable le premier jour du mois.
+La locataire verse un dépôt de sécurité de 1 450 $ à la signature.
+La locataire remet douze chèques postdatés.
+Il est interdit d'avoir des enfants dans le logement.`;
 
 const base = (process.env.AI_API_URL ?? "https://dev.orazaka.com/edge").replace(/\/$/, "");
 const key = process.env.AI_API_KEY;
@@ -51,7 +51,7 @@ async function main() {
   if (!key?.startsWith("oz_")) throw new Error("AI_API_KEY (oz_…) is not set");
   const installed = await call("/api/v1/studios/installations");
   if (!installed.some((i) => i.studioKey === "compliance-check")) await call("/api/v1/studios/compliance-check/installations?locale=en", { method: "POST", body: JSON.stringify({ config: {} }) });
-  let run = await call("/api/v1/studios/compliance-check/runs", { method: "POST", body: JSON.stringify({ inputs: { document: SAMPLE_LEASE, jurisdiction: "FR", asOf: new Date().toISOString().slice(0, 10) } }) });
+  let run = await call("/api/v1/studios/compliance-check/runs", { method: "POST", body: JSON.stringify({ inputs: { document: SAMPLE_LEASE, jurisdiction: "QC", asOf: new Date().toISOString().slice(0, 10) } }) });
   console.log(`record-demo: run ${run.id} started`);
   for (let i = 0; i < 90 && !["SUCCEEDED", "FAILED", "CANCELLED"].includes(run.status); i++) {
     await new Promise((r) => setTimeout(r, 4000));

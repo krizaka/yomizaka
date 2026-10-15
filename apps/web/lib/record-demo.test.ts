@@ -16,7 +16,7 @@ describe("the demo-run recorder", () => {
     expect(data.document).toBe(SAMPLE_LEASE);
   });
 
-  it("sends a lease the rules can judge: a deposit, void clauses, the parties", () => {
-    for (const words of ["Dépôt de garantie : 2 550 €", "solidarité du colocataire sortant", "interdit au locataire de recevoir", "bailleur", "locataire"]) expect(SAMPLE_LEASE).toContain(words);
+  it("sends a Québec lease the rules can judge: a deposit, postdated cheques, a clause against children, the parties", () => {
+    for (const words of ["dépôt de sécurité de 1 450 $", "chèques postdatés", "enfants", "locateur", "locataire", "Montréal"]) expect(SAMPLE_LEASE).toContain(words);
   });
 });
