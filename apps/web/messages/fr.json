@@ -10,7 +10,8 @@
     "nav": {
       "how": "Comment ça marche",
       "demo": "Un vrai run",
-      "privacy": "Confidentialité"
+      "privacy": "Confidentialité",
+      "verify": "Vérifier un rapport"
     },
     "signIn": "Se connecter",
     "talk": "Nous parler",
@@ -267,7 +268,6 @@
       "added": "Ajouté",
       "fingerprint": "SHA-256",
       "viewer": "Le document",
-      "viewerFrame": "Le fichier {name}",
       "text": "Son texte",
       "noText": "Ce PDF n'a pas de couche texte (un scan) : il peut être examiné en tant que fichier, pas vérifié au regard de règles.",
       "openFile": "Ouvrir le fichier",
@@ -276,7 +276,13 @@
       "deleted": "Supprimé.",
       "checks": "Vérifications par Orazaka",
       "checksLead": "Chaque vérification est un run d'un Studio Orazaka ; son identifiant est la trace de ce qui a tourné.",
-      "passageOf": "Passage cité par {rule}"
+      "passageOf": "Passage cité par {rule}",
+      "viewerRegion": "Pages du document",
+      "loadingPdf": "Chargement du document…",
+      "pdfFailed": "Le fichier n’a pas pu être affiché. Ouvrez-le avec le bouton ci-dessus.",
+      "pageLabel": "Page {page} sur {total}",
+      "onPage": "Passage à la page {page} :",
+      "notFound": "Ce passage n’est pas dans la couche de texte du PDF :"
     },
     "analysis": {
       "complianceTitle": "Au regard de la loi",
@@ -326,7 +332,18 @@
       "history": "Runs précédents",
       "noPdf": "Seul un PDF peut être examiné en tant que fichier.",
       "tooLarge": "Orazaka examine les PDF jusqu'à 1 Mo.",
-      "toReview": "Corpus québécois à faire relire par un avocat : un tri de démonstration, pas un avis juridique."
+      "toReview": "Corpus québécois à faire relire par un avocat : un tri de démonstration, pas un avis juridique.",
+      "showInFile": "Voir dans le fichier",
+      "findingPage": "Page {page}",
+      "findingPageOnly": "Page {page} (emplacement exact introuvable)",
+      "findingNotFound": "Introuvable dans la couche de texte du fichier",
+      "orazakaRun": "Exécution Orazaka",
+      "exportReport": "Rapport d’audit",
+      "exportHint": "Un rapport HTML signé (imprimez-le en PDF depuis votre navigateur) : SHA-256 du document, version des règles, date, chaque constat avec son passage et son article, l’identifiant d’exécution Orazaka.",
+      "exportDownload": "Télécharger le rapport",
+      "exportVerify": "Vérifier un rapport",
+      "exportSha": "SHA-256 du rapport",
+      "exportKey": "Clé de signature"
     },
     "search": {
       "title": "Recherche",
@@ -471,6 +488,100 @@
         "title": "Administration",
         "description": "Connectez-vous avec un compte administrateur."
       }
+    }
+  },
+  "report": {
+    "title": "Rapport d’audit — {name}",
+    "eyebrow": "Yomizaka · rapport d’audit de conformité",
+    "summary": "{failures} manquement(s) bloquant(s) sur {rules} règles vérifiées.",
+    "toReview": "Règles du Québec encore à faire réviser par un avocat : un rapport de démonstration, pas un avis juridique.",
+    "documentHeading": "Le document",
+    "checkHeading": "La vérification",
+    "file": "Fichier",
+    "size": "Taille",
+    "documentSha": "SHA-256 du document",
+    "engine": "Moteur d’analyse",
+    "runId": "Exécution Orazaka",
+    "jurisdiction": "Juridiction",
+    "asOf": "Règles en vigueur le",
+    "ruleset": "Version des règles",
+    "model": "Modèle",
+    "modelValue": "Choisi par le Studio, non rapporté par l’exécution : le Studio et sa version ci-dessus en sont la trace.",
+    "started": "Vérification commencée",
+    "finished": "Vérification terminée",
+    "findingsHeading": "Constats ({count})",
+    "rule": "Règle",
+    "article": "Article cité",
+    "passage": "Passage",
+    "noPassage": "Aucun passage : le document ne dit rien sur ce point.",
+    "verdicts": {
+      "PASS": "Conforme",
+      "FAIL": "Non conforme",
+      "INSUFFICIENT_EVIDENCE": "Preuve insuffisante"
+    },
+    "guaranteeHeading": "Ce que ce rapport garantit",
+    "guarantees": "Ce rapport est signé avec la clé de Yomizaka (Ed25519, détenue par Krizaka). La signature couvre le SHA-256 du document, la juridiction et la version des règles, le Studio et sa version, l’identifiant d’exécution Orazaka, la date de la vérification, chaque constat avec son passage et son article, et le texte complet de ce rapport. Si un seul caractère de ce fichier change, la vérification échoue.",
+    "notGuaranteed": "Elle ne prouve pas que les constats sont justes en droit : Orazaka applique les règles, celles du Québec restent à faire réviser par un avocat, et ce n’est pas un avis juridique. Elle ne prouve pas que l’exécution existe chez Orazaka (seul son exploitant peut le dire), ni quand le rapport a été établi au-delà des dates de vérification ci-dessus : il n’y a ni horodatage indépendant ni chaîne de blocs. Ce à quoi vous faites confiance, c’est Krizaka, détentrice de la clé de signature.",
+    "howToVerify": "Pour le vérifier, ouvrez {url} sur le site de Yomizaka et donnez-lui ce fichier — et, pour confirmer quel document a été vérifié, le document d’origine.",
+    "footer": "Yomizaka, un produit Krizaka — analyse par Orazaka."
+  },
+  "verify": {
+    "title": "Vérifier un rapport",
+    "lead": "Vérifiez qu’un rapport d’audit vient bien de Yomizaka et n’a pas été modifié — n’importe qui, sans compte.",
+    "reportFile": "Le rapport (le fichier .html)",
+    "reportPaste": "Ou collez son texte",
+    "documentFile": "Le document d’origine (facultatif)",
+    "documentHint": "Ajoutez-le pour confirmer que le rapport porte bien sur ce fichier.",
+    "submit": "Vérifier",
+    "checking": "Vérification…",
+    "tooLarge": "Ce fichier est trop volumineux.",
+    "empty": "Donnez un fichier de rapport ou collez son texte.",
+    "okTitle": "Ce rapport est authentique et n’a pas été modifié.",
+    "failTitle": "On ne peut pas se fier à ce rapport.",
+    "reasons": {
+      "NOT_A_REPORT": "Ce n’est pas un rapport d’audit de Yomizaka : il n’a pas de bloc de signature.",
+      "UNREADABLE": "Le bloc de signature est abîmé ou dans un format que Yomizaka ne connaît pas.",
+      "BAD_SIGNATURE": "La signature ne correspond pas au contenu : le rapport a été modifié ou signé par une autre clé.",
+      "ALTERED": "La signature est valide pour le rapport d’origine, mais le fichier n’est plus ce rapport : quelque chose a été changé après la signature.",
+      "UNKNOWN_KEY": "Il a été signé par une clé qui n’est pas celle de ce serveur."
+    },
+    "facts": {
+      "fileSha": "SHA-256 de ce fichier",
+      "keyId": "Clé de signature",
+      "documentSha": "SHA-256 du document",
+      "runId": "Exécution Orazaka",
+      "ruleset": "Règles",
+      "checked": "Vérification terminée",
+      "findings": "Constats",
+      "jurisdiction": "Juridiction"
+    },
+    "documentMatch": {
+      "yes": "Le document que vous avez donné est bien celui qui a été vérifié.",
+      "no": "Le document que vous avez donné n’est PAS celui qui a été vérifié (son SHA-256 diffère).",
+      "none": "Aucun document donné : rien n’indique quel fichier a été vérifié, hormis son SHA-256 ci-dessus."
+    },
+    "guaranteesTitle": "Ce que garantit un résultat vert",
+    "guarantees": {
+      "a": "Le rapport a été produit par la clé de signature de Yomizaka, et pas un caractère n’a changé depuis.",
+      "b": "Une seule signature lie le SHA-256 du document, la juridiction et la version des règles, le Studio et sa version, l’identifiant d’exécution Orazaka, les dates de vérification et chaque constat avec son passage et son article.",
+      "c": "Avec le document d’origine, on sait que c’est bien celui qui a été vérifié."
+    },
+    "limitsTitle": "Ce qu’il ne garantit pas",
+    "limits": {
+      "a": "Que les constats sont justes en droit : Orazaka applique les règles, et celles du Québec restent à faire réviser par un avocat. Ce n’est pas un avis juridique.",
+      "b": "Que l’exécution existe chez Orazaka : seul son exploitant peut confirmer un identifiant d’exécution.",
+      "c": "Quand le rapport a été établi, au-delà des dates de vérification qu’il indique : il n’y a pas d’horodatage indépendant.",
+      "d": "Rien sur le détenteur de la clé : vous faites confiance à Krizaka pour la garder. Ni chaîne de blocs ni tiers."
+    },
+    "keyTitle": "La clé publique",
+    "keyLead": "Ed25519, SPKI en base64. Avec elle, vous pouvez vérifier un rapport sans ce site (par exemple avec OpenSSL sur le texte signé).",
+    "devKey": "Ce serveur utilise la clé de développement : ses rapports ne prouvent rien.",
+    "drop": {
+      "reportTitle": "Déposez le rapport ici",
+      "documentTitle": "Déposez le document d’origine ici",
+      "browse": "Choisir un fichier",
+      "remove": "Retirer {name}",
+      "hint": "Le fichier .html téléchargé, jusqu’à 2 Mo."
     }
   }
 }

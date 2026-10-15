@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { parseSigningKey } from "./report-key";
+
 /**
  * Every environment variable of the app, declared once (named by bounded context — APP_, DATABASE_, AUTH_, ABUSE_, AI_ —
  * never by product or vendor: the vendor is a value, `AI_PROVIDER=orazaka`). A production server refuses to start
@@ -31,6 +33,8 @@ export const envSchema = z.object({
   /** A header the edge sets with the client's address (`do-connecting-ip` on App Platform). */
   ABUSE_CLIENT_IP_HEADER: z.string().optional(),
   ABUSE_TRUSTED_PROXY_HOPS: z.coerce.number().int().min(1).max(10).default(1),
+  /** Signs the audit reports (Ed25519, base64 of the PKCS#8 DER — `node scripts/generate-report-key.mjs`), a DO SECRET. */
+  APP_REPORT_SIGNING_KEY: z.string().optional(),
   /** Where the analyses run: Orazaka, and only Orazaka. */
   AI_PROVIDER: z.literal("orazaka").default("orazaka"),
   /** Orazaka's edge (`https://dev.orazaka.com/edge`). */
@@ -52,6 +56,13 @@ export function productionProblems(env: Env): string[] {
   if (!env.DATABASE_URL) problems.push("DATABASE_URL is not set");
   if (!env.AUTH_SESSION_SECRET || env.AUTH_SESSION_SECRET.length < 32) problems.push("AUTH_SESSION_SECRET must be at least 32 characters");
   if (!env.AI_API_KEY?.startsWith("oz_")) problems.push("AI_API_KEY must be an Orazaka key (oz_…)");
+  if (!env.APP_REPORT_SIGNING_KEY) problems.push("APP_REPORT_SIGNING_KEY is not set");
+  else
+    try {
+      parseSigningKey(env.APP_REPORT_SIGNING_KEY);
+    } catch (error) {
+      problems.push((error as Error).message);
+    }
   if (env.DATABASE_URL && /sslmode=(require|verify)/.test(env.DATABASE_URL) && !env.DATABASE_CA_CERT) problems.push("DATABASE_CA_CERT is required for a TLS database");
   return problems;
 }

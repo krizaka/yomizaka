@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { assertProductionEnv, consoleAllowedIps, productionProblems, readEnv } from "./env";
+import { generateSigningKeyBase64 } from "./report-key";
 
 const PROD = {
   NODE_ENV: "production",
@@ -8,6 +9,7 @@ const PROD = {
   DATABASE_CA_CERT: "-----BEGIN CERTIFICATE-----",
   AUTH_SESSION_SECRET: "a".repeat(40),
   AI_API_KEY: "oz_live_key",
+  APP_REPORT_SIGNING_KEY: generateSigningKeyBase64(),
 };
 
 describe("env", () => {
@@ -29,10 +31,18 @@ describe("env", () => {
     expect(problems).toEqual([
       "AUTH_SESSION_SECRET must be at least 32 characters",
       "AI_API_KEY must be an Orazaka key (oz_…)",
+      "APP_REPORT_SIGNING_KEY is not set",
       "DATABASE_CA_CERT is required for a TLS database",
     ]);
     expect(problems.join(" ")).not.toContain("sk-not-orazaka");
     expect(productionProblems(readEnv({}))).toEqual([]);
+  });
+
+  it("refuses a production start without a usable report signing key, never showing it", () => {
+    expect(productionProblems(readEnv({ ...PROD, APP_REPORT_SIGNING_KEY: undefined }))).toEqual(["APP_REPORT_SIGNING_KEY is not set"]);
+    const problems = productionProblems(readEnv({ ...PROD, APP_REPORT_SIGNING_KEY: "garbage-SECRETVALUE" }));
+    expect(problems).toEqual(["APP_REPORT_SIGNING_KEY is not a base64 PKCS#8 private key"]);
+    expect(problems.join(" ")).not.toContain("SECRETVALUE");
   });
 
   it("lets nobody into the administration in production without an allow-list", () => {

@@ -24,6 +24,9 @@ export function SiteFooter({ locale }: { locale: Locale }) {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-4">
+          <Link href={pagePath(locale, "verify")} className={link}>
+            {t("chrome.nav.verify")}
+          </Link>
           <Link href={pagePath(locale, "privacy")} className={link}>
             {t("chrome.legal")}
           </Link>
