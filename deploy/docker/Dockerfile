@@ -8,7 +8,9 @@ COPY packages/core/package.json packages/core/package.json
 RUN pnpm install --frozen-lockfile --ignore-scripts
 COPY . .
 ARG APP_COMMIT_SHA=""
-ENV APP_COMMIT_SHA=$APP_COMMIT_SHA NEXT_TELEMETRY_DISABLED=1
+# The static pages (landing, privacy) bake the indexing flag at build: App Platform passes build variables as build args.
+ARG APP_SEARCH_INDEXING=""
+ENV APP_COMMIT_SHA=$APP_COMMIT_SHA APP_SEARCH_INDEXING=$APP_SEARCH_INDEXING NEXT_TELEMETRY_DISABLED=1
 RUN pnpm --filter @yomizaka/web build
 
 FROM node:22-alpine AS run
