@@ -1,0 +1,22 @@
+# Yomizaka web (Next.js standalone) — built by DigitalOcean App Platform from the repository root.
+FROM node:22-alpine AS build
+WORKDIR /repo
+RUN corepack enable
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json turbo.json ./
+COPY apps/web/package.json apps/web/package.json
+COPY packages/core/package.json packages/core/package.json
+RUN pnpm install --frozen-lockfile --ignore-scripts
+COPY . .
+ARG APP_COMMIT_SHA=""
+ENV APP_COMMIT_SHA=$APP_COMMIT_SHA NEXT_TELEMETRY_DISABLED=1
+RUN pnpm --filter @yomizaka/web build
+
+FROM node:22-alpine AS run
+WORKDIR /app
+ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=8080 HOSTNAME=0.0.0.0
+RUN addgroup -S yomizaka && adduser -S yomizaka -G yomizaka
+COPY --from=build --chown=yomizaka:yomizaka /repo/apps/web/.next/standalone ./
+COPY --from=build --chown=yomizaka:yomizaka /repo/apps/web/.next/static ./apps/web/.next/static
+USER yomizaka
+EXPOSE 8080
+CMD ["node", "apps/web/server.js"]
