@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { listUsers } from "./accounts";
+import { allDocuments, allRuns, auditLog, overview, setUserStatus, userDetail } from "./admin";
 import { migrate, pool, query } from "./db";
 import { deleteDocument, getDocument, getFile, listDocuments, storeDocument } from "./documents";
 import { hashPassword } from "./password";
@@ -65,6 +66,20 @@ describe.runIf(enabled)("database", () => {
   it("lists the accounts with their documents for the administration", async () => {
     const users = await listUsers();
     expect(users.find((u) => u.email === email)).toMatchObject({ role: "USER", status: "ACTIVE", documents: 1 });
+  });
+
+  it("gives the administration its overview, documents, runs, audit and the suspension of an account", async () => {
+    const o = await overview();
+    expect(o.accounts).toBeGreaterThanOrEqual(2);
+    expect(o.runs.succeeded).toBeGreaterThanOrEqual(1);
+    expect((await allDocuments()).find((d) => d.owner === email)).toMatchObject({ kind: "lease", analyses: 1 });
+    expect((await allRuns()).find((r) => r.owner === email)).toMatchObject({ status: "succeeded", runId: "8f6b1c2e-1d2c-4b8a-9a55-0d1e2f3a4b5c" });
+    const admin = { id: stranger!.id, email: `other-${email}` };
+    await expect(setUserStatus(admin, admin.id, "SUSPENDED")).rejects.toMatchObject({ status: 409 });
+    expect((await setUserStatus(admin, owner!.id, "SUSPENDED")).status).toBe("SUSPENDED");
+    expect((await userDetail(owner!.id)).sessions).toBe(0);
+    expect((await setUserStatus(admin, owner!.id, "ACTIVE")).status).toBe("ACTIVE");
+    expect((await auditLog(10, owner!.id)).map((e) => e.action)).toEqual(expect.arrayContaining(["admin.user_suspended", "admin.user_restored"]));
   });
 
   it("opens, resolves and ends a session — a suspended account has none", async () => {

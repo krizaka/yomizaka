@@ -39,7 +39,7 @@
 
 - **Sign-up is closed server-side** (`AUTH_SIGNUP_ENABLED` is not `true` → `/api/auth/sign-up` answers 403). Only the
   QA accounts of `company/QA.md` exist (`apps/web/scripts/qa-accounts.mjs`, passwords from the environment, never printed).
-- The administration (`/app/admin/*`, `/api/admin/*`) needs a session, the ADMIN role **and** an address of
+- The administration lives on **admin.yomizaka.com** (same app, host-routed by `proxy.ts`/`lib/host.ts` to `app/[locale]/(admin)/console`, never indexed; 404 on dev.yomizaka.com) and `/api/admin/*`; it needs a session, the ADMIN role **and** an address of
   `AUTH_ALLOWED_IPS` (empty in production = nobody); a failed lock is a 404 on pages, a 403 on the API.
 - Passwords: scrypt; sessions: random tokens kept as keyed hashes (`AUTH_SESSION_SECRET`), HttpOnly cookies; rate limits
   on sign-in, upload, analysis and search; security headers (CSP same-origin, HSTS, nosniff, frame-ancestors self).
