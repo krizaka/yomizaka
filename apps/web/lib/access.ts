@@ -2,6 +2,7 @@ import { cookies, headers } from "next/headers";
 
 import { clientIp } from "./client-ip";
 import { consoleAllowedIps } from "./env";
+import { isAdminHost } from "./host";
 import { refuse } from "./http";
 import { resolveSession, type Session, SESSION_COOKIE } from "./session";
 
@@ -15,6 +16,11 @@ export function ipAllowed(requestHeaders: Headers, env: Record<string, string | 
   if (allowed === null) return true;
   const ip = clientIp(requestHeaders, env);
   return !!ip && allowed.includes(ip);
+}
+
+/** admin.yomizaka.com answers only addresses of AUTH_ALLOWED_IPS, its sign-in page and sign-in call included; the product host is open. */
+export function hostAllowed(requestHeaders: Headers, env: Record<string, string | undefined> = process.env): boolean {
+  return !isAdminHost(requestHeaders.get("host")) || ipAllowed(requestHeaders, env);
 }
 
 const cookieToken = (header: string | null) =>

@@ -446,7 +446,8 @@
         "audit": "Audit log",
         "dev": "DEV",
         "signOut": "Sign out",
-        "openSite": "Open dev.yomizaka.com"
+        "openSite": "Open dev.yomizaka.com",
+        "operations": "Operations"
       },
       "overview": {
         "health": "Health",
@@ -531,6 +532,41 @@
         "asideFooter": "Administrators only, from an allowed address.",
         "title": "Administration",
         "description": "Sign in with an administrator account."
+      },
+      "operations": {
+        "database": "Database",
+        "pool": "This service's pool: {busy} busy of {max} ({open} open)",
+        "connections": "Connections on the database: {used} of {max}",
+        "poolNote": "{waiting} waiting. A waiting request means the pool is the bottleneck.",
+        "queue": "Orazaka runs",
+        "status": {
+          "running": "Running",
+          "succeeded": "Succeeded",
+          "failed": "Failed",
+          "cancelled": "Cancelled"
+        },
+        "stuck": "Running for more than {minutes} min",
+        "signing": "Report signing",
+        "keyId": "Key id",
+        "keyState": "Key",
+        "keyDevelopment": "Development key — reports prove nothing",
+        "keyProduction": "Production key",
+        "errors": "Recent errors",
+        "noErrors": "No failed run or refused sign-in.",
+        "when": "When",
+        "kind": "Kind",
+        "detail": "Detail",
+        "kinds": {
+          "run": "Run",
+          "sign-in": "Sign-in"
+        },
+        "rulesets": "Rulesets in use",
+        "noRulesets": "No compliance check has run yet.",
+        "ruleset": "Ruleset",
+        "version": "Version",
+        "jurisdiction": "Jurisdiction",
+        "checks": "Checks",
+        "lastCheck": "Last check"
       }
     }
   },

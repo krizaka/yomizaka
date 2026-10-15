@@ -1,9 +1,10 @@
 import { cookies } from "next/headers";
 import { z } from "zod";
 
+import { hostAllowed } from "@/lib/access";
 import { checkPassword } from "@/lib/accounts";
 import { clientIp } from "@/lib/client-ip";
-import { handle, readJson } from "@/lib/http";
+import { handle, readJson, refuse } from "@/lib/http";
 import { limit } from "@/lib/rate-limit";
 import { createSession, sessionCookie } from "@/lib/session";
 
@@ -12,6 +13,7 @@ const body = z.object({ email: z.string().trim().email().max(320), password: z.s
 /** E-mail and password → a session cookie. 10 tries per address and 30 per IP every 15 minutes. */
 export function POST(req: Request) {
   return handle(async () => {
+    if (!hostAllowed(req.headers)) throw refuse(403, "IP_NOT_ALLOWED", "This address may not use the administration");
     const { email, password } = await readJson(req, body);
     limit("sign-in", req, email, [30, 900], [10, 900]);
     const account = await checkPassword(email, password, req.headers);

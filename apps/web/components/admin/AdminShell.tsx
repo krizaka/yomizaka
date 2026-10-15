@@ -1,6 +1,6 @@
 "use client";
 
-import { ClockIcon, HomeIcon, KeepIcon, LogoutIcon, ServerIcon, UsersIcon } from "@krizaka/icons";
+import { ClockIcon, HomeIcon, KeepIcon, LogoutIcon, ServerIcon, ShieldIcon, UsersIcon } from "@krizaka/icons";
 import { krizakaFetch, useMutation } from "@krizaka/query";
 import { YomizakaLogo } from "@krizaka/ui";
 import { AppShell } from "@krizaka/ui/app-shell";
@@ -34,6 +34,7 @@ export function AdminShell({ locale, email, children }: { locale: "en" | "fr"; e
     { to: `${home}/users`, key: "users", icon: <UsersIcon /> },
     { to: `${home}/documents`, key: "documents", icon: <KeepIcon /> },
     { to: `${home}/runs`, key: "runs", icon: <ServerIcon /> },
+    { to: `${home}/operations`, key: "operations", icon: <ShieldIcon /> },
     { to: `${home}/audit`, key: "audit", icon: <ClockIcon /> },
   ];
   const isCurrent = (p: (typeof pages)[number]) => (p.exact ? path === p.to : path === p.to || path.startsWith(`${p.to}/`));
