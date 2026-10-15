@@ -34,7 +34,7 @@ export function SiteHeader({ locale, current }: { locale: Locale; current: PageI
 
         <NavBar.Items>
           {sections.map((s) => (
-            <NavBar.Link key={s.href} asChild>
+            <NavBar.Link key={s.href} asChild className="whitespace-nowrap">
               <Link href={s.href}>{s.label}</Link>
             </NavBar.Link>
           ))}

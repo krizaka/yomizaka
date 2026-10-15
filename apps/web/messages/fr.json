@@ -613,6 +613,8 @@
       "browse": "Choisir un fichier",
       "remove": "Retirer {name}",
       "hint": "Le fichier .html téléchargé, jusqu’à 2 Mo."
-    }
+    },
+    "devLocked": "Environnement de développement — connectez-vous (sur invitation seulement)",
+    "devSignIn": "Se connecter"
   }
 }

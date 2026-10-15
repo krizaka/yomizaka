@@ -1,3 +1,4 @@
+import { Button } from "@krizaka/ui/button";
 import { Page, Section, SectionHeading } from "@krizaka/ui/page";
 import { PageHero } from "@krizaka/ui/page-hero";
 import type { Metadata } from "next";
@@ -7,6 +8,7 @@ import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
 import { VerifyForm, type VerifyLabels } from "@/components/VerifyForm";
 import { pageSession } from "@/lib/access";
+import { readEnv } from "@/lib/env";
 import { asLocale, getDictionary } from "@/lib/i18n";
 import { publicKeyBase64 } from "@/lib/report-key";
 import { signingKey } from "@/lib/report-signer";
@@ -25,6 +27,9 @@ export default async function Verify({ params }: { params: Promise<{ locale: str
   const t = getDictionary(locale);
   const v = t.verify;
   const key = signingKey();
+  const signedIn = (await pageSession()) !== null;
+  // A development deployment (APP_PUBLIC_ACTIONS=off): a signed-out visitor runs nothing; the page is read-only.
+  const locked = !signedIn && readEnv().APP_PUBLIC_ACTIONS !== "on";
   const labels: VerifyLabels = {
     reportFile: v.reportFile,
     reportPaste: v.reportPaste,
@@ -49,7 +54,16 @@ export default async function Verify({ params }: { params: Promise<{ locale: str
         <Page>
           <Section>
             <div className="max-w-3xl">
-              <VerifyForm labels={labels} locale={locale} canAttachDocument={(await pageSession()) !== null} />
+              {locked ? (
+                <div className="flex flex-col items-start gap-4 rounded-xl border border-border-default bg-surface-1 p-5">
+                  <p className="text-sm text-fg-secondary">{v.devLocked}</p>
+                  <Button asChild variant="primary" size="md" shape="cut">
+                    <Link href={`/${locale}/sign-in`}>{v.devSignIn}</Link>
+                  </Button>
+                </div>
+              ) : (
+                <VerifyForm labels={labels} locale={locale} canAttachDocument={signedIn} />
+              )}
             </div>
           </Section>
           <Section divider>

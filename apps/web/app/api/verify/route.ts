@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 
+import { readEnv } from "@/lib/env";
 import { handle, refuse } from "@/lib/http";
 import { limit } from "@/lib/rate-limit";
 import { resolveSession, SESSION_COOKIE } from "@/lib/session";
@@ -16,6 +17,7 @@ export function POST(req: Request) {
   return handle(async () => {
     const session = await resolveSession((await cookies()).get(SESSION_COOKIE)?.value);
     const signedIn = session !== null;
+    if (!signedIn && readEnv().APP_PUBLIC_ACTIONS !== "on") throw refuse(401, "UNAUTHENTICATED", "Sign in first");
     limit("verify", req, session?.account.id ?? null, signedIn ? [60, 600] : [20, 600]);
     const length = Number(req.headers.get("content-length") ?? "0");
     const cap = signedIn ? MAX_REPORT_BYTES + MAX_DOCUMENT_BYTES + 64 * 1024 : MAX_VISITOR_BODY_BYTES;
