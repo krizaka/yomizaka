@@ -446,7 +446,8 @@
         "audit": "Journal d'audit",
         "dev": "DEV",
         "signOut": "Se déconnecter",
-        "openSite": "Ouvrir dev.yomizaka.com"
+        "openSite": "Ouvrir dev.yomizaka.com",
+        "operations": "Exploitation"
       },
       "overview": {
         "health": "Santé",
@@ -531,6 +532,41 @@
         "asideFooter": "Administrateurs seulement, depuis une adresse autorisée.",
         "title": "Administration",
         "description": "Connectez-vous avec un compte administrateur."
+      },
+      "operations": {
+        "database": "Base de données",
+        "pool": "Réserve de ce service : {busy} occupées sur {max} ({open} ouvertes)",
+        "connections": "Connexions sur la base : {used} sur {max}",
+        "poolNote": "{waiting} en attente. Une requête en attente signifie que la réserve est le goulot.",
+        "queue": "Analyses Orazaka",
+        "status": {
+          "running": "En cours",
+          "succeeded": "Réussies",
+          "failed": "Échouées",
+          "cancelled": "Annulées"
+        },
+        "stuck": "En cours depuis plus de {minutes} min",
+        "signing": "Signature des rapports",
+        "keyId": "Identifiant de clé",
+        "keyState": "Clé",
+        "keyDevelopment": "Clé de développement — les rapports ne prouvent rien",
+        "keyProduction": "Clé de production",
+        "errors": "Erreurs récentes",
+        "noErrors": "Aucune analyse échouée ni connexion refusée.",
+        "when": "Quand",
+        "kind": "Type",
+        "detail": "Détail",
+        "kinds": {
+          "run": "Analyse",
+          "sign-in": "Connexion"
+        },
+        "rulesets": "Référentiels utilisés",
+        "noRulesets": "Aucune vérification de conformité n'a encore eu lieu.",
+        "ruleset": "Référentiel",
+        "version": "Version",
+        "jurisdiction": "Juridiction",
+        "checks": "Vérifications",
+        "lastCheck": "Dernière vérification"
       }
     }
   },

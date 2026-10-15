@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { ipAllowed } from "./access";
+import { hostAllowed, ipAllowed } from "./access";
 import { isToken, newToken, tokenHash } from "./session";
 
 describe("the administration's address lock", () => {
@@ -18,6 +18,18 @@ describe("the administration's address lock", () => {
   it("never trusts the left of X-Forwarded-For (the client writes it)", () => {
     const env = { NODE_ENV: "production", AUTH_ALLOWED_IPS: "203.0.113.7" };
     expect(ipAllowed(new Headers({ "x-forwarded-for": "203.0.113.7, 198.51.100.9" }), env)).toBe(false);
+  });
+});
+
+describe("the administration host", () => {
+  const env = { NODE_ENV: "production", AUTH_ALLOWED_IPS: "203.0.113.7", ABUSE_CLIENT_IP_HEADER: "do-connecting-ip" };
+  const call = (host: string, ip: string) => new Headers({ host, "do-connecting-ip": ip });
+  it("refuses a foreign address everywhere on admin.yomizaka.com, the sign-in included", () => {
+    expect(hostAllowed(call("admin.yomizaka.com", "198.51.100.9"), env)).toBe(false);
+    expect(hostAllowed(call("admin.yomizaka.com", "203.0.113.7"), env)).toBe(true);
+  });
+  it("leaves the product host open to everyone", () => {
+    expect(hostAllowed(call("dev.yomizaka.com", "198.51.100.9"), env)).toBe(true);
   });
 });
 

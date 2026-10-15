@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { auditLog, deleteAccount, exportAccount, revokeUserSessions, setUserRole, userDetail } from "./admin";
 import { migrate, pool, query } from "./db";
+import { databaseBudget, poolUsage, queue, recentErrors, rulesetsInUse } from "./operations";
 import { createSession } from "./session";
 
 /** The administration's account actions against a real PostgreSQL (see db.integration.test.ts for how to run it). */
@@ -61,5 +62,15 @@ describe.runIf(enabled)("administration of an account", () => {
     expect(rows.length).toBeGreaterThan(0);
     for (const row of rows) expect(row).toEqual({ actor_label: "deleted account", ip: null });
     expect((await query<{ n: string }>("SELECT count(*) AS n FROM audit_log WHERE action = 'admin.account_deleted' AND target_id = $1", [person.id]))[0]!.n).toBe("1");
+  });
+
+  it("reads the operations page's figures from the real tables", async () => {
+    const budget = await databaseBudget();
+    expect(budget.open).toBeGreaterThan(0);
+    expect(budget.limit).toBeGreaterThan(0);
+    expect(typeof (await queue()).stuck).toBe("number");
+    expect(Array.isArray(await recentErrors())).toBe(true);
+    expect(Array.isArray(await rulesetsInUse())).toBe(true);
+    expect(poolUsage().max).toBe(5);
   });
 });

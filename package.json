@@ -13,10 +13,12 @@
     "test": "turbo run test && vitest run",
     "check": "pnpm run lint && pnpm run typecheck && pnpm run test",
     "prepare": "git config core.hooksPath .githooks 2>/dev/null || true",
-    "seo:check": "node scripts/check-seo-family.mjs --base http://localhost:3000 --host https://dev.yomizaka.com --types WebSite,SoftwareApplication"
+    "seo:check": "node scripts/check-seo-family.mjs --base http://localhost:3000 --host https://dev.yomizaka.com --types WebSite,SoftwareApplication",
+    "e2e:admin": "node scripts/e2e-admin.mjs"
   },
   "devDependencies": {
     "@krizaka/i18n": "^0.2.1",
+    "playwright-core": "1.64.0",
     "turbo": "^2.11.7",
     "vitest": "^4.1.11"
   },
