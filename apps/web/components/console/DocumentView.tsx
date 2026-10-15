@@ -6,13 +6,14 @@ import { Badge } from "@krizaka/ui/badge";
 import { Button } from "@krizaka/ui/button";
 import { Card } from "@krizaka/ui/card";
 import { DescriptionList } from "@krizaka/ui/description-list";
+import { DocumentViewer, type Located } from "@krizaka/ui/document-viewer";
 import { createKrizakaForm } from "@krizaka/ui/form";
 import { Spinner } from "@krizaka/ui/spinner";
 import { Tabs } from "@krizaka/ui/tabs";
 import { type Analysis, analysis as analysisSchema, AUTHENTICITY_MAX_BYTES, type AuthenticityReport, type ComplianceReport, type DocumentDetail, documentDetail, JURISDICTIONS, passages, queryKeys } from "@yomizaka/core";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { type ComponentProps, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
 import { errorKey } from "@/lib/client";
@@ -33,6 +34,17 @@ const authenticity = createKrizakaForm({
   schema: z.object({ expectedIssuer: z.string().trim().max(120) }),
   defaultValues: { expectedIssuer: "" },
 });
+
+/** pdf.js is loaded on this page only, and its worker is served from this origin (CSP: 'self'). */
+const loadPdfjs = () => import("pdfjs-dist") as unknown as ReturnType<ComponentProps<typeof DocumentViewer>["loadPdfjs"]>;
+const WORKER_SRC = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
+
+/** Where Orazaka's finding sits in the file, in words — never a place the PDF's text layer did not confirm. */
+function placeOf(found: Located | null | undefined, say: (key: string, vars?: Record<string, string | number>) => string): string | null {
+  if (found === undefined) return null;
+  if (found === null) return say("analysis.findingNotFound");
+  return found.match === "page" ? say("analysis.findingPageOnly", { page: found.page }) : say("analysis.findingPage", { page: found.page });
+}
 
 /** The document's text, the passages a compliance report quotes marked where they sit. */
 function DocumentText({ text, report }: { text: string; report: ComplianceReport | null }) {
@@ -56,7 +68,7 @@ function DocumentText({ text, report }: { text: string; report: ComplianceReport
   );
 }
 
-function ComplianceFindings({ report }: { report: ComplianceReport }) {
+function ComplianceFindings({ report, runId, selection }: { report: ComplianceReport; runId: string | null; selection?: Selection }) {
   const { say } = useSay();
   const failures = report.summary?.blockingFailures ?? report.findings.filter((f) => f.verdict === "FAIL" && f.severity === "BLOCKING").length;
   return (
@@ -64,39 +76,101 @@ function ComplianceFindings({ report }: { report: ComplianceReport }) {
       {report.reviewStatus ? <Alert tone="warning">{say("analysis.toReview")}</Alert> : null}
       <p className="text-sm text-fg-secondary">{say("analysis.summary", { failures, rules: report.summary?.rulesEvaluated ?? report.findings.length })}</p>
       <ul className="flex flex-col gap-2">
-        {report.findings.map((f) => (
-          <li key={f.ruleId} className="rounded-lg border border-border-default bg-surface-1 p-3 text-sm">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="font-semibold text-fg">{f.title ?? f.ruleId}</span>
-              <Badge tone={VERDICT_TONE[f.verdict] ?? "neutral"}>{say(`analysis.verdicts.${f.verdict}`)}</Badge>
-            </div>
-            <p className="mt-1 text-fg-secondary">{f.explanation}</p>
-            <dl className="mt-2 grid gap-1 text-xs text-fg-muted sm:grid-cols-[auto_1fr] sm:gap-x-3">
-              <dt>{say("analysis.severity")}</dt>
-              <dd className="font-mono">
-                {f.ruleId} · {f.severity}
-                {f.method ? ` · ${f.method}` : ""}
-              </dd>
-              {f.citation ? (
-                <>
-                  <dt>{say("analysis.citation")}</dt>
-                  <dd>{f.citation}</dd>
-                </>
+        {report.findings.map((f) => {
+          const active = selection?.activeId === f.ruleId;
+          const place = f.evidenceSpan?.quote ? placeOf(selection?.found[f.ruleId], say) : null;
+          return (
+            <li key={f.ruleId} id={`finding-${f.ruleId}`} data-active={active} className="rounded-lg border border-border-default bg-surface-1 p-3 text-sm data-[active=true]:border-accent data-[active=true]:bg-surface-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-semibold text-fg">{f.title ?? f.ruleId}</span>
+                <Badge tone={VERDICT_TONE[f.verdict] ?? "neutral"}>{say(`analysis.verdicts.${f.verdict}`)}</Badge>
+              </div>
+              <p className="mt-1 text-fg-secondary">{f.explanation}</p>
+              <dl className="mt-2 grid gap-1 text-xs text-fg-muted sm:grid-cols-[auto_1fr] sm:gap-x-3">
+                <dt>{say("analysis.severity")}</dt>
+                <dd className="font-mono">
+                  {f.ruleId} · {f.severity}
+                  {f.method ? ` · ${f.method}` : ""}
+                </dd>
+                {f.citation ? (
+                  <>
+                    <dt>{say("analysis.citation")}</dt>
+                    <dd data-testid="finding-citation">{f.citation}</dd>
+                  </>
+                ) : null}
+                <dt>{say("analysis.passage")}</dt>
+                <dd>
+                  {f.evidenceSpan?.quote ? (
+                    <>
+                      <a href={`#passage-${f.ruleId}`} className="italic text-fg-accent hover:underline">
+                        « {f.evidenceSpan.quote} »
+                      </a>
+                      {place ? <span className="ml-2 whitespace-nowrap" data-testid="finding-place">· {place}</span> : null}
+                    </>
+                  ) : (
+                    say("analysis.noPassage")
+                  )}
+                </dd>
+                {runId ? (
+                  <>
+                    <dt>{say("analysis.orazakaRun")}</dt>
+                    <dd className="break-all font-mono">{runId}</dd>
+                  </>
+                ) : null}
+              </dl>
+              {selection && f.evidenceSpan?.quote ? (
+                <Button className="mt-2" size="sm" variant={active ? "primary" : "secondary"} aria-pressed={active} onClick={() => selection.onSelect(active ? null : f.ruleId)}>
+                  {say("analysis.showInFile")}
+                </Button>
               ) : null}
-              <dt>{say("analysis.passage")}</dt>
-              <dd>
-                {f.evidenceSpan?.quote ? (
-                  <a href={`#passage-${f.ruleId}`} className="italic text-fg-accent hover:underline">
-                    « {f.evidenceSpan.quote} »
-                  </a>
-                ) : (
-                  say("analysis.noPassage")
-                )}
-              </dd>
-            </dl>
-          </li>
-        ))}
+            </li>
+          );
+        })}
       </ul>
+    </div>
+  );
+}
+
+/** What the document page shares with the findings of its latest compliance check: which finding is lit, and where each sits. */
+interface Selection {
+  activeId: string | null;
+  found: Record<string, Located | null>;
+  onSelect: (id: string | null) => void;
+}
+
+/** The signed audit report of a finished check: what it holds, its fingerprint, the download, and where anyone verifies it. */
+function ReportExport({ documentId, analysisId }: { documentId: string; analysisId: string }) {
+  const { say, locale } = useSay();
+  const base = `/api/documents/${documentId}/analyses/${analysisId}/report?lang=${locale}`;
+  const meta = useQuery({
+    queryKey: [...queryKeys.document(documentId), "report", analysisId, locale],
+    queryFn: () => krizakaFetch(`${base}&meta=1`, { schema: z.object({ report: z.object({ fileSha256: z.string(), keyId: z.string(), filename: z.string() }) }) }).then((r) => r.report),
+    staleTime: Infinity,
+  });
+  return (
+    <div className="flex flex-col gap-2 border-t border-border-default pt-3">
+      <h4 className="text-sm font-semibold text-fg">{say("analysis.exportReport")}</h4>
+      <p className="text-xs text-fg-secondary">{say("analysis.exportHint")}</p>
+      {meta.data ? (
+        <DescriptionList
+          items={[
+            { term: say("analysis.exportSha"), details: <code className="break-all font-mono text-xs" data-testid="report-sha256">{meta.data.fileSha256}</code> },
+            { term: say("analysis.exportKey"), details: <code className="font-mono text-xs">{meta.data.keyId}</code> },
+          ]}
+        />
+      ) : null}
+      <div className="flex flex-wrap gap-2">
+        <Button asChild size="sm" shape="cut">
+          <a href={base} download={meta.data?.filename} data-testid="report-download">
+            {say("analysis.exportDownload")}
+          </a>
+        </Button>
+        <Button asChild size="sm" variant="ghost">
+          <Link href={`/${locale}/verify`} target="_blank">
+            {say("analysis.exportVerify")}
+          </Link>
+        </Button>
+      </div>
     </div>
   );
 }
@@ -129,7 +203,7 @@ function AuthenticitySignals({ report }: { report: AuthenticityReport }) {
 }
 
 /** One analysis: its Orazaka run (id, version, status), polled while it runs, then its report. */
-function AnalysisCard({ documentId, initial }: { documentId: string; initial: Analysis }) {
+function AnalysisCard({ documentId, initial, selection }: { documentId: string; initial: Analysis; selection?: Selection }) {
   const { say, locale } = useSay();
   const client = useQueryClient();
   const live = useQuery({
@@ -163,7 +237,8 @@ function AnalysisCard({ documentId, initial }: { documentId: string; initial: An
       />
       {a.status === "running" ? <p className="text-sm text-fg-secondary">{say("analysis.running")}</p> : null}
       {a.error ? <Alert tone="danger">{a.error}</Alert> : null}
-      {a.report && "findings" in a.report ? <ComplianceFindings report={a.report} /> : null}
+      {a.report && "findings" in a.report ? <ComplianceFindings report={a.report} runId={a.runId} selection={selection} /> : null}
+      {a.status === "succeeded" && a.studio === "compliance-check" && a.report && "findings" in a.report ? <ReportExport documentId={documentId} analysisId={a.id} /> : null}
       {a.report && "signals" in a.report ? <AuthenticitySignals report={a.report} /> : null}
       {a.report ? <p className="text-xs text-fg-muted">{say("analysis.language")}</p> : null}
     </Card.Root>
@@ -252,10 +327,32 @@ export function DocumentView({ initial }: { initial: DocumentDetail }) {
     },
   });
   const [confirming, setConfirming] = useState(false);
+  const [tab, setTab] = useState(initial.mimeType === "application/pdf" ? "file" : "text");
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [found, setFound] = useState<Record<string, Located | null>>({});
+  const viewerRef = useRef<HTMLElement>(null);
   const fileUrl = `/api/documents/${doc.id}/file`;
   const latestCompliance = doc.analyses.find((a) => a.studio === "compliance-check" && a.report && "findings" in a.report);
   const running = (studio: Analysis["studio"]) => doc.analyses.some((a) => a.studio === studio && a.status === "running");
   const isPdf = doc.mimeType === "application/pdf";
+  const latestReport = latestCompliance?.report && "findings" in latestCompliance.report ? latestCompliance.report : null;
+  const highlights = useMemo(
+    () => (latestReport?.findings ?? []).filter((f) => f.evidenceSpan?.quote).map((f) => ({ id: f.ruleId, quote: f.evidenceSpan!.quote, label: f.title ?? f.ruleId })),
+    [latestReport],
+  );
+  const selection: Selection = {
+    activeId,
+    found,
+    onSelect: (id) => {
+      setActiveId(id);
+      if (id) {
+        setTab(isPdf ? "file" : "text");
+        // On a narrow screen the file sits above the findings: bring it into view; the viewer scrolls to the passage itself.
+        if (window.matchMedia?.("(max-width: 1279px)").matches) viewerRef.current?.scrollIntoView({ block: "start", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+        if (!isPdf) document.getElementById(`passage-${id}`)?.scrollIntoView({ block: "center" });
+      }
+    },
+  };
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -288,18 +385,28 @@ export function DocumentView({ initial }: { initial: DocumentDetail }) {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-        <section aria-label={say("document.viewer")} className="flex min-w-0 flex-col gap-3">
-          <Tabs.Root defaultValue={isPdf ? "file" : "text"}>
+        <section ref={viewerRef} aria-label={say("document.viewer")} className="flex min-w-0 flex-col gap-3 xl:sticky xl:top-4 xl:self-start">
+          <Tabs.Root value={tab} onValueChange={setTab}>
             <Tabs.List aria-label={say("document.viewer")}>
               {isPdf ? <Tabs.Trigger value="file">{say("document.file")}</Tabs.Trigger> : null}
               <Tabs.Trigger value="text">{say("document.text")}</Tabs.Trigger>
             </Tabs.List>
             {isPdf ? (
               <Tabs.Content value="file">
-                <iframe src={fileUrl} title={say("document.viewerFrame", { name: doc.filename })} className="h-[70vh] w-full rounded-lg border border-border-default bg-surface-1" />
+                <DocumentViewer
+                  src={fileUrl}
+                  loadPdfjs={loadPdfjs}
+                  workerSrc={WORKER_SRC}
+                  highlights={highlights}
+                  activeId={activeId}
+                  onActiveChange={setActiveId}
+                  onLocate={setFound}
+                  className="[--kz-document-viewer-height:72vh]"
+                  labels={{ region: say("document.viewerRegion"), loading: say("document.loadingPdf"), failed: say("document.pdfFailed"), page: say("document.pageLabel"), onPage: say("document.onPage"), notFound: say("document.notFound") }}
+                />
               </Tabs.Content>
             ) : null}
-            <Tabs.Content value="text">{doc.hasText ? <DocumentText text={doc.text} report={latestCompliance?.report && "findings" in latestCompliance.report ? latestCompliance.report : null} /> : <Alert tone="info">{say("document.noText")}</Alert>}</Tabs.Content>
+            <Tabs.Content value="text">{doc.hasText ? <DocumentText text={doc.text} report={latestReport} /> : <Alert tone="info">{say("document.noText")}</Alert>}</Tabs.Content>
           </Tabs.Root>
           <DescriptionList
             items={[
@@ -330,7 +437,7 @@ export function DocumentView({ initial }: { initial: DocumentDetail }) {
             </Card.Root>
           </div>
           {doc.analyses.map((a) => (
-            <AnalysisCard key={a.id} documentId={doc.id} initial={a} />
+            <AnalysisCard key={a.id} documentId={doc.id} initial={a} selection={a.id === latestCompliance?.id ? selection : undefined} />
           ))}
         </section>
       </div>

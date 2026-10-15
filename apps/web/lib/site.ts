@@ -7,7 +7,7 @@ export const PRIVACY_UPDATED = "2026-10-14";
 export const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? "0.1.0";
 
 /** The public pages, in both languages (sitemap, hreflang). */
-export const PAGES = ["home", "privacy"] as const;
+export const PAGES = ["home", "verify", "privacy"] as const;
 export type PageId = (typeof PAGES)[number];
 export const pagePath = (locale: "en" | "fr", page: PageId) => (page === "home" ? `/${locale}` : `/${locale}/${page}`);
 

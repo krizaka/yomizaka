@@ -10,7 +10,8 @@
     "nav": {
       "how": "How it works",
       "demo": "A real run",
-      "privacy": "Privacy"
+      "privacy": "Privacy",
+      "verify": "Verify a report"
     },
     "signIn": "Sign in",
     "talk": "Talk to us",
@@ -267,7 +268,6 @@
       "added": "Added",
       "fingerprint": "SHA-256",
       "viewer": "The document",
-      "viewerFrame": "The file {name}",
       "text": "Its text",
       "noText": "This PDF has no text layer (a scan): it can be examined as a file, not checked against rules.",
       "openFile": "Open the file",
@@ -276,7 +276,13 @@
       "deleted": "Deleted.",
       "checks": "Checks by Orazaka",
       "checksLead": "Each check is a run of an Orazaka Studio; its id is the trace of what ran.",
-      "passageOf": "Passage quoted by {rule}"
+      "passageOf": "Passage quoted by {rule}",
+      "viewerRegion": "Pages of the document",
+      "loadingPdf": "Loading the document…",
+      "pdfFailed": "The file could not be displayed. Open it with the button above.",
+      "pageLabel": "Page {page} of {total}",
+      "onPage": "Passage on page {page}:",
+      "notFound": "This passage is not in the PDF's text layer:"
     },
     "analysis": {
       "complianceTitle": "Against the law",
@@ -326,7 +332,18 @@
       "history": "Earlier runs",
       "noPdf": "Only a PDF can be examined as a file.",
       "tooLarge": "Orazaka examines PDFs up to 1 MB.",
-      "toReview": "Québec rules still to be reviewed by a lawyer: a demonstration screen, not legal advice."
+      "toReview": "Québec rules still to be reviewed by a lawyer: a demonstration screen, not legal advice.",
+      "showInFile": "Show in the file",
+      "findingPage": "Page {page}",
+      "findingPageOnly": "Page {page} (exact place not found)",
+      "findingNotFound": "Not found in the file's text layer",
+      "orazakaRun": "Orazaka run",
+      "exportReport": "Audit report",
+      "exportHint": "A signed HTML report (print it to PDF from your browser): document SHA-256, rules version, date, every finding with its passage and article, the Orazaka run id.",
+      "exportDownload": "Download the report",
+      "exportVerify": "Verify a report",
+      "exportSha": "Report SHA-256",
+      "exportKey": "Signing key"
     },
     "search": {
       "title": "Search",
@@ -471,6 +488,100 @@
         "title": "Administration",
         "description": "Sign in with an administrator account."
       }
+    }
+  },
+  "report": {
+    "title": "Audit report — {name}",
+    "eyebrow": "Yomizaka · compliance audit report",
+    "summary": "{failures} blocking failure(s) out of {rules} rules checked.",
+    "toReview": "Québec rules still to be reviewed by a lawyer: a demonstration report, not legal advice.",
+    "documentHeading": "The document",
+    "checkHeading": "The check",
+    "file": "File",
+    "size": "Size",
+    "documentSha": "Document SHA-256",
+    "engine": "Analysis engine",
+    "runId": "Orazaka run",
+    "jurisdiction": "Jurisdiction",
+    "asOf": "Rules in force on",
+    "ruleset": "Rules version",
+    "model": "Model",
+    "modelValue": "Chosen by the Studio, not reported by the run: the Studio and its version above are the trace.",
+    "started": "Check started",
+    "finished": "Check finished",
+    "findingsHeading": "Findings ({count})",
+    "rule": "Rule",
+    "article": "Article cited",
+    "passage": "Passage",
+    "noPassage": "No passage: the document says nothing on this point.",
+    "verdicts": {
+      "PASS": "Compliant",
+      "FAIL": "Non-compliant",
+      "INSUFFICIENT_EVIDENCE": "Insufficient evidence"
+    },
+    "guaranteeHeading": "What this report guarantees",
+    "guarantees": "This report is signed with Yomizaka's key (Ed25519, held by Krizaka). The signature covers the document's SHA-256, the jurisdiction and rules version, the Studio and its version, the Orazaka run id, the date of the check, every finding with its passage and article, and the full text of this report. If a single character of this file changes, verification fails.",
+    "notGuaranteed": "It does not prove that the findings are legally right: Orazaka applies the rules, the Québec ruleset is still to be reviewed by a lawyer, and this is not legal advice. It does not prove that the run exists on Orazaka's side (only its operator can say), nor when the report was made beyond the check dates above: there is no independent time-stamp and no blockchain. What you trust is Krizaka, the holder of the signing key.",
+    "howToVerify": "To verify it, open {url} on the Yomizaka site and give it this file — and, to confirm which document was checked, the original document.",
+    "footer": "Yomizaka, a Krizaka product — analysis by Orazaka."
+  },
+  "verify": {
+    "title": "Verify a report",
+    "lead": "Check that an audit report really comes from Yomizaka and has not been changed — by anyone, without an account.",
+    "reportFile": "The report (the .html file)",
+    "reportPaste": "Or paste its text",
+    "documentFile": "The original document (optional)",
+    "documentHint": "Add it to confirm that the report is about this very file.",
+    "submit": "Verify",
+    "checking": "Checking…",
+    "tooLarge": "This file is too large.",
+    "empty": "Give a report file or paste its text.",
+    "okTitle": "This report is authentic and unchanged.",
+    "failTitle": "This report cannot be trusted.",
+    "reasons": {
+      "NOT_A_REPORT": "This is not a Yomizaka audit report: it has no signature block.",
+      "UNREADABLE": "The signature block is damaged or not in a format Yomizaka knows.",
+      "BAD_SIGNATURE": "The signature does not match the content: the report was modified or signed by another key.",
+      "ALTERED": "The signature is valid for the original report, but the file is not that report any more: something was changed after signing.",
+      "UNKNOWN_KEY": "It was signed by a key that is not this server's."
+    },
+    "facts": {
+      "fileSha": "This file's SHA-256",
+      "keyId": "Signing key",
+      "documentSha": "Document SHA-256",
+      "runId": "Orazaka run",
+      "ruleset": "Rules",
+      "checked": "Check finished",
+      "findings": "Findings",
+      "jurisdiction": "Jurisdiction"
+    },
+    "documentMatch": {
+      "yes": "The document you gave is the one that was checked.",
+      "no": "The document you gave is NOT the one that was checked (its SHA-256 differs).",
+      "none": "No document given: nothing says which file was checked except its SHA-256 above."
+    },
+    "guaranteesTitle": "What a green result guarantees",
+    "guarantees": {
+      "a": "The report was produced by Yomizaka's signing key, and not one character of it has changed since.",
+      "b": "It binds, in one signature, the document's SHA-256, the jurisdiction and rules version, the Studio and its version, the Orazaka run id, the check dates and every finding with its passage and article.",
+      "c": "Given the original document, it is the one that was checked."
+    },
+    "limitsTitle": "What it does not guarantee",
+    "limits": {
+      "a": "That the findings are right in law: Orazaka applies the rules, and the Québec ruleset is still to be reviewed by a lawyer. This is not legal advice.",
+      "b": "That the run exists on Orazaka's side: only its operator can confirm a run id.",
+      "c": "When the report was made, beyond the check dates it states: there is no independent time-stamp.",
+      "d": "Anything about the key holder: you trust Krizaka to keep the key. No blockchain, no third party."
+    },
+    "keyTitle": "The public key",
+    "keyLead": "Ed25519, SPKI in base64. With it you can verify a report without this site (for instance with OpenSSL on the signed text).",
+    "devKey": "This server uses the development key: its reports prove nothing.",
+    "drop": {
+      "reportTitle": "Drop the report here",
+      "documentTitle": "Drop the original document here",
+      "browse": "Choose a file",
+      "remove": "Remove {name}",
+      "hint": "The .html file you downloaded, up to 2 MB."
     }
   }
 }

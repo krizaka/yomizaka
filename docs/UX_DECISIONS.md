@@ -31,3 +31,32 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
 - **Refused**: hiding the engine behind a generic "AI".
 - **Cost**: a technical detail on a business screen (kept in a small monospace line).
 - **Signal we are wrong**: nobody ever copies a run id when reporting a problem.
+
+## 4. The file and the findings side by side, the passage lit on the page
+
+- **Decision**: the PDF is drawn page by page (pdf.js, through `@krizaka/ui/document-viewer`) on the left, kept in view
+  while the findings scroll on the right; « Show in the file » scrolls to the quoted passage and lights it, one box per
+  line, found from the PDF's own text positions. A passage the text layer cannot place is never drawn at a guessed
+  place: the finding says « Page 3 (exact place not found) » or « Not found in the file's text layer ».
+- **Problem**: checking a verdict against the file means hunting for the sentence by eye.
+- **Principle**: evidence next to the claim, one action to see it (Nielsen #6; split-attention effect).
+- **Refused**: an iframe of the browser's PDF reader (no way to light anything), a screenshot of the page, lighting a
+  page when the quote is not found.
+- **Cost**: pdf.js (~1 MB) is loaded on the document page only; boxes are per line, not per word (positions inside a
+  text item are proportional); a scanned PDF has no text layer, so nothing is lit.
+- **Signal we are wrong**: people still open « Its text » or the raw file to confirm a passage.
+
+## 5. A signed audit report, and a page where anyone checks it
+
+- **Decision**: a finished compliance check exports a self-contained HTML report (print it to PDF) carrying the document's
+  SHA-256, jurisdiction, rules version, Studio version, Orazaka run id, dates, every finding with passage and article, and
+  an Ed25519 signature over those and over the report's own text. `/verify` (no account) checks a file, with the original
+  document if wanted, and says exactly what a green result guarantees and what it does not.
+- **Problem**: a firm must hand a client or an auditor something that cannot be quietly edited, and that says which
+  document and which rules it is about.
+- **Principle**: say what is guaranteed, no more (calibrated trust; Lee & See, 2004).
+- **Refused**: a blockchain, an unsigned PDF, a « verified » badge with no explanation, a report that changes on every
+  download (the same check always gives the same bytes).
+- **Cost**: the trust is in Krizaka as the key holder; no independent time-stamp; a key rotation needs the old public
+  key kept; the report is HTML, not a PDF file (printing it is the PDF).
+- **Signal we are wrong**: a reader asks whether the report « proves the lease is legal ».

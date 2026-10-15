@@ -1,0 +1,26 @@
+/** A minimal text PDF for tests: Helvetica, one line per entry, `linesPerPage` lines on each page (A4-ish, 612 × 792). */
+export function textPdf(lines: readonly string[], linesPerPage = 40): Uint8Array {
+  const pages: string[][] = [];
+  for (let i = 0; i < lines.length; i += linesPerPage) pages.push(lines.slice(i, i + linesPerPage));
+  const latin1 = (s: string) => Buffer.from(s, "latin1");
+  const esc = (s: string) => s.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+  const objects: Buffer[] = [];
+  const font = 3 + pages.length * 2;
+  objects.push(latin1("<< /Type /Catalog /Pages 2 0 R >>"));
+  objects.push(latin1(`<< /Type /Pages /Kids [${pages.map((_, i) => `${3 + i * 2} 0 R`).join(" ")}] /Count ${pages.length} >>`));
+  pages.forEach((page, i) => {
+    const stream = page.map((line, n) => `BT /F1 11 Tf 72 ${720 - n * 16} Td (${esc(line)}) Tj ET`).join("\n");
+    objects.push(latin1(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents ${4 + i * 2} 0 R /Resources << /Font << /F1 ${font} 0 R >> >> >>`));
+    objects.push(latin1(`<< /Length ${Buffer.byteLength(stream, "latin1")} >>\nstream\n${stream}\nendstream`));
+  });
+  objects.push(latin1("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>"));
+  let out = latin1("%PDF-1.4\n");
+  const offsets: number[] = [];
+  objects.forEach((body, i) => {
+    offsets.push(out.length);
+    out = Buffer.concat([out, latin1(`${i + 1} 0 obj\n`), body, latin1("\nendobj\n")]);
+  });
+  const xref = out.length;
+  const table = `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n${offsets.map((o) => `${String(o).padStart(10, "0")} 00000 n \n`).join("")}`;
+  return new Uint8Array(Buffer.concat([out, latin1(`${table}trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`)]));
+}
