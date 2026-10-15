@@ -25,7 +25,7 @@
 - Reading a file's **text layer** (pdf.js through `unpdf`) is parsing, not analysis: it feeds the compliance Studio and
   search. A scanned PDF has no text layer — the UI says so; reading images would be Orazaka's job.
 - A report is shown as Orazaka returned it (`packages/core` `reportOf`): a shape it did not send is `null`, never a guess.
-  Claims on the public page ("a real run") only from a run that really happened on dev (`lib/demo-run.ts`).
+  The public page's "a real run" is read from this platform at request time (ISR, 5 min): the one finished compliance check an administrator promoted (`analyses.showcase`) on a document declared a sample (`documents.sample`) — both set from the administration, audit-logged (`lib/showcase.ts`). Nothing promoted or unreachable → the section says so; never a copy kept in the repository.
 
 ## 3. The product is independent
 

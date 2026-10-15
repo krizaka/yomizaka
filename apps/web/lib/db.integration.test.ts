@@ -7,6 +7,7 @@ import { deleteDocument, getDocument, getFile, listDocuments, storeDocument } fr
 import { hashPassword } from "./password";
 import { search } from "./search";
 import { createSession, resolveSession, revokeSession } from "./session";
+import { getShowcase, setSample, setShowcase, showcaseFile } from "./showcase";
 
 /**
  * The SQL against a real PostgreSQL 16 (CI's service; locally `YOMIZAKA_DB_IT=1 DATABASE_URL=… pnpm test`): the
@@ -80,6 +81,30 @@ describe.runIf(enabled)("database", () => {
     expect((await userDetail(owner!.id)).sessions).toBe(0);
     expect((await setUserStatus(admin, owner!.id, "ACTIVE")).status).toBe("ACTIVE");
     expect((await auditLog(10, owner!.id)).map((e) => e.action)).toEqual(expect.arrayContaining(["admin.user_suspended", "admin.user_restored"]));
+  });
+
+  it("shows publicly only a promoted check on a sample document, one at a time", async () => {
+    const admin = { id: stranger!.id, email: `other-${email}` };
+    const [doc] = await query<{ id: string }>(
+      "INSERT INTO documents (owner_id, title, filename, mime_type, size_bytes, sha256, content, text) VALUES ($1, 'Showcase lease', 's.txt', 'text/plain', 4, $2, 'bail', 'bail') RETURNING id",
+      [owner!.id, `showcase-${Date.now()}`],
+    );
+    const run = async (n: number) =>
+      (await query<{ id: string }>("INSERT INTO analyses (document_id, studio, status, run_id, report, finished_at) VALUES ($1, 'compliance-check', 'succeeded', $2, $3, now()) RETURNING id", [doc!.id, `run-${n}`, JSON.stringify({ rulesetId: "r", rulesetVersion: "1", jurisdiction: "QC", asOf: "2026-10-15", findings: [] })]))[0]!.id;
+    const [a, b] = [await run(1), await run(2)];
+    await expect(setShowcase(admin, a, true)).rejects.toMatchObject({ body: { code: "NOT_A_SAMPLE" } });
+    expect(await getShowcase()).toBeNull();
+    await setSample(admin, doc!.id, true);
+    await setShowcase(admin, a, true);
+    expect((await getShowcase())?.runId).toBe("run-1");
+    await setShowcase(admin, b, true);
+    expect((await getShowcase())?.runId).toBe("run-2");
+    expect((await query("SELECT id FROM analyses WHERE showcase")).length).toBe(1);
+    expect((await showcaseFile())?.filename).toBe("s.txt");
+    await setSample(admin, doc!.id, false);
+    expect(await getShowcase()).toBeNull();
+    expect(await showcaseFile()).toBeNull();
+    expect((await auditLog(20, doc!.id)).map((e) => e.action)).toEqual(expect.arrayContaining(["admin.document_sample_set", "admin.document_sample_unset"]));
   });
 
   it("opens, resolves and ends a session — a suspended account has none", async () => {

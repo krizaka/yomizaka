@@ -1,15 +1,44 @@
 "use client";
 
+import { krizakaFetch, useMutation } from "@krizaka/query";
 import { Badge } from "@krizaka/ui/badge";
+import { Button } from "@krizaka/ui/button";
 import { DataTable, type DataTableColumn } from "@krizaka/ui/data-table";
+import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 
 import type { AdminDocument, AdminRun, AuditEntry } from "@/lib/admin";
+import { errorKey } from "@/lib/client";
 import { useSay } from "@/lib/i18n-client";
 
 import { formatBytes, formatDate } from "../console/format";
 
 const RUN_TONE: Record<string, "accent" | "success" | "danger" | "neutral"> = { running: "accent", succeeded: "success", failed: "danger", cancelled: "neutral" };
+
+/** An administrator's on/off flag on a row (a sample document, the showcase check): POST sets it, DELETE takes it away. */
+function FlagButton({ url, on, labels, disabled }: { url: string; on: boolean; labels: { on: string; off: string; set: string; unset: string }; disabled?: boolean }) {
+  const { say } = useSay();
+  const router = useRouter();
+  const change = useMutation({
+    mutationFn: () => krizakaFetch(url, { method: on ? "DELETE" : "POST" }),
+    onSuccess: () => router.refresh(),
+  });
+  return (
+    <span className="flex flex-wrap items-center gap-2">
+      <Badge tone={on ? "accent" : "neutral"}>{on ? labels.on : labels.off}</Badge>
+      {disabled && !on ? null : (
+        <Button variant="secondary" size="sm" loading={change.isPending} onClick={() => change.mutate()}>
+          {on ? labels.unset : labels.set}
+        </Button>
+      )}
+      {change.isError ? (
+        <span role="alert" className="text-xs text-danger">
+          {say(`errors.${errorKey(change.error)}`)}
+        </span>
+      ) : null}
+    </span>
+  );
+}
 
 export function RunsTable({ rows }: { rows: AdminRun[] }) {
   const { say, locale } = useSay();
@@ -22,6 +51,19 @@ export function RunsTable({ rows }: { rows: AdminRun[] }) {
       { id: "duration", header: say("adminConsole.runs.duration"), sortable: true, align: "end", value: (r) => r.durationSeconds ?? -1, cell: (r) => (r.durationSeconds === null ? "—" : `${r.durationSeconds} s`) },
       { id: "document", header: say("adminConsole.runs.document"), value: (r) => r.document },
       { id: "owner", header: say("adminConsole.runs.owner"), value: (r) => r.owner },
+      {
+        id: "showcase",
+        header: say("adminConsole.runs.showcase"),
+        value: (r) => (r.showcase ? "yes" : "no"),
+        cell: (r) => (
+          <FlagButton
+            url={`/api/admin/analyses/${r.id}/showcase`}
+            on={r.showcase}
+            disabled={!r.showable}
+            labels={{ on: say("adminConsole.runs.public"), off: say("adminConsole.runs.private"), set: say("adminConsole.runs.promote"), unset: say("adminConsole.runs.withdraw") }}
+          />
+        ),
+      },
       { id: "error", header: say("adminConsole.runs.error"), value: (r) => r.error ?? "", cell: (r) => (r.error ? <span className="text-danger">{r.error}</span> : "—") },
     ],
     [say, locale],
@@ -39,6 +81,18 @@ export function DocumentsTable({ rows }: { rows: AdminDocument[] }) {
       { id: "type", header: say("adminConsole.documents.type"), value: (d) => (d.mimeType === "application/pdf" ? "PDF" : "TXT") },
       { id: "size", header: say("adminConsole.documents.size"), sortable: true, align: "end", value: (d) => d.sizeBytes, cell: (d) => formatBytes(d.sizeBytes, locale) },
       { id: "analyses", header: say("adminConsole.documents.analyses"), sortable: true, align: "end", value: (d) => d.analyses },
+      {
+        id: "sample",
+        header: say("adminConsole.documents.sample"),
+        value: (d) => (d.sample ? "yes" : "no"),
+        cell: (d) => (
+          <FlagButton
+            url={`/api/admin/documents/${d.id}/sample`}
+            on={d.sample}
+            labels={{ on: say("adminConsole.documents.isSample"), off: say("adminConsole.documents.isPersonal"), set: say("adminConsole.documents.markSample"), unset: say("adminConsole.documents.unmarkSample") }}
+          />
+        ),
+      },
       { id: "added", header: say("adminConsole.documents.added"), sortable: true, align: "end", value: (d) => d.createdAt, cell: (d) => formatDate(d.createdAt, locale) },
     ],
     [say, locale],

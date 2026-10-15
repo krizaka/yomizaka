@@ -89,4 +89,14 @@ CREATE TABLE audit_log (
 CREATE INDEX audit_log_at ON audit_log(at DESC);
 `,
   },
+  {
+    version: "0002_showcase",
+    sql: `
+-- A document an administrator has declared a sample (non-personal): the only kind a public showcase may show.
+ALTER TABLE documents ADD COLUMN sample boolean NOT NULL DEFAULT false;
+-- The analysis the public page shows (at most one at a time: promoting another replaces it). Set by an administrator only.
+ALTER TABLE analyses ADD COLUMN showcase boolean NOT NULL DEFAULT false;
+CREATE INDEX analyses_showcase ON analyses(finished_at DESC) WHERE showcase;
+`,
+  },
 ];

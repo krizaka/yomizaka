@@ -4,7 +4,6 @@ import { ArgumentCard } from "@krizaka/ui/argument-card";
 import { Badge } from "@krizaka/ui/badge";
 import { Button } from "@krizaka/ui/button";
 import { CardGrid } from "@krizaka/ui/card-grid";
-import { DescriptionList } from "@krizaka/ui/description-list";
 import { LinkCard } from "@krizaka/ui/link-card";
 import { Mascot } from "@krizaka/ui/mascots";
 import { Section } from "@krizaka/ui/page";
@@ -12,13 +11,29 @@ import { ProductPage } from "@krizaka/ui/product-page";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { ShowcaseRun } from "@/components/ShowcaseRun";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
-import { DEMO_RUN } from "@/lib/demo-run";
 import { asLocale, getDictionary, type Locale, translator } from "@/lib/i18n";
+import { SAMPLE_LEASE } from "@/lib/sample-lease";
 import { pageMetadata, siteJsonLd } from "@/lib/seo";
+import { getShowcaseView } from "@/lib/showcase";
 import { contactHref } from "@/lib/site";
-import { SAMPLE_LEASE } from "@/scripts/record-demo.mjs";
+
+/** The « real run » comes from the platform itself, read at request time and kept five minutes (ISR) — never a copy in the repository. */
+export const revalidate = 300;
+
+type Run = Awaited<ReturnType<typeof getShowcaseView>>;
+
+/** The promoted check, or null when nothing is promoted or the platform cannot be reached: the section then says so. */
+async function loadRun(locale: Locale): Promise<Run> {
+  try {
+    return await getShowcaseView(locale);
+  } catch (error) {
+    console.error("home: the showcase run could not be read", error instanceof Error ? error.message : error);
+    return null;
+  }
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   return pageMetadata(asLocale((await params).locale), "home");
@@ -30,12 +45,11 @@ const SAMPLE = SAMPLE_LEASE.split("\n");
 /** The Québec rule the sample breaks first (orazaka-packs document-validation, qc-residential-lease): its id, title and article. */
 const SHOWN_RULE = { id: "QC-LEASE-004", title: "Dépôt de garantie interdit — seul le premier mois peut être exigé d'avance", citation: "C.c.Q., art. 1904, al. 1" };
 
-const DATE_LOCALE: Record<Locale, string> = { en: "en-CA", fr: "fr-CA" };
 const tone = { PASS: "success", FAIL: "danger", INSUFFICIENT_EVIDENCE: "warning" } as const;
 
-function Visual({ locale }: { locale: Locale }) {
+function Visual({ locale, run }: { locale: Locale; run: Run }) {
   const t = getDictionary(locale).landing;
-  const failed = DEMO_RUN?.report.findings.filter((f) => f.verdict !== "PASS").slice(0, 3);
+  const failed = run?.report.findings.filter((f) => f.verdict !== "PASS").slice(0, 3);
   return (
     <div className="flex flex-col gap-3 p-5 text-sm">
       <pre className="whitespace-pre-wrap rounded-lg border border-border-default bg-surface-1 p-4 font-mono text-xs leading-relaxed text-fg-secondary">{SAMPLE.join("\n")}</pre>
@@ -59,45 +73,19 @@ function Visual({ locale }: { locale: Locale }) {
   );
 }
 
-function DemoSection({ locale }: { locale: Locale }) {
+function DemoSection({ locale, run }: { locale: Locale; run: Run }) {
   const t = getDictionary(locale).landing.sections.demo;
-  const verdicts = getDictionary(locale).landing.verdicts;
   return (
     <Section id="demo" eyebrow={t.eyebrow} title={t.title} lead={t.lead} divider>
-      {DEMO_RUN ? (
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-          <DescriptionList
-            items={[
-              { term: t.run, details: <code className="break-all font-mono text-xs">{DEMO_RUN.runId}</code> },
-              { term: t.studio, details: `${DEMO_RUN.studio}${DEMO_RUN.blueprintVersion ? ` · ${DEMO_RUN.blueprintVersion}` : ""}` },
-              { term: t.ruleset, details: `${DEMO_RUN.report.rulesetId} · ${DEMO_RUN.report.rulesetVersion}` },
-              { term: t.when, details: new Date(DEMO_RUN.finishedAt).toLocaleString(DATE_LOCALE[locale], { dateStyle: "medium", timeStyle: "short", timeZone: "America/Toronto" }) },
-            ]}
-          />
-          <ul className="flex flex-col gap-2">
-            {DEMO_RUN.report.findings.map((f) => (
-              <li key={f.ruleId} className="rounded-lg border border-border-default bg-surface-1 p-3 text-sm">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-semibold text-fg">{f.title ?? f.ruleId}</span>
-                  <Badge tone={tone[f.verdict as keyof typeof tone] ?? "neutral"}>{verdicts[f.verdict as keyof typeof verdicts] ?? f.verdict}</Badge>
-                </div>
-                <p className="mt-1 text-fg-secondary">{f.explanation}</p>
-                {f.citation ? <p className="mt-1 font-mono text-xs text-fg-muted">{f.citation}</p> : null}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : (
-        <p className="max-w-2xl text-fg-secondary">{t.none}</p>
-      )}
+      {run ? <ShowcaseRun run={run} locale={locale} /> : <p className="max-w-2xl text-fg-secondary">{t.none}</p>}
     </Section>
   );
 }
 
 /** The two checks, as Orazaka runs them: the Québec rule the sample breaks (its article), the passage once a real run exists. */
-function ChecksSection({ locale, signIn }: { locale: Locale; signIn: string }) {
+function ChecksSection({ locale, signIn, run }: { locale: Locale; signIn: string; run: Run }) {
   const t = getDictionary(locale).landing.sections.check;
-  const quoted = DEMO_RUN?.report.findings.find((f) => f.ruleId === SHOWN_RULE.id)?.evidenceSpan?.quote;
+  const quoted = run?.report.findings.find((f) => f.ruleId === SHOWN_RULE.id)?.evidenceSpan?.quote;
   const levels = getDictionary(locale).console.analysis.levels;
   return (
     <Section id="check" eyebrow={t.eyebrow} title={t.title} lead={t.lead} divider>
@@ -184,6 +172,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const locale = asLocale((await params).locale);
   const t = translator(locale);
   const d = getDictionary(locale).landing;
+  const run = await loadRun(locale);
   const signIn = `/${locale}/sign-in`;
   const steps = [
     { id: "keep", href: signIn, icon: <KeepIcon /> },
@@ -222,7 +211,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             </>
           }
           visualLabel={d.visualLabel}
-          visual={<Visual locale={locale} />}
+          visual={<Visual locale={locale} run={run} />}
           reasonsHeading={{ eyebrow: d.reasonsEyebrow, title: d.reasonsTitle }}
           reasonLabels={{ trap: d.trap, more: d.more }}
           reasons={details.map(({ id, href, bird }) => ({
@@ -256,9 +245,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               ))}
             </CardGrid>
           </Section>
-          <ChecksSection locale={locale} signIn={signIn} />
+          <ChecksSection locale={locale} signIn={signIn} run={run} />
           <FindSection locale={locale} signIn={signIn} />
-          <DemoSection locale={locale} />
+          <DemoSection locale={locale} run={run} />
         </ProductPage>
       </main>
       <SiteFooter locale={locale} />

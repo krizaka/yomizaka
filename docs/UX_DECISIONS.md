@@ -60,3 +60,18 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
 - **Cost**: the trust is in Krizaka as the key holder; no independent time-stamp; a key rotation needs the old public
   key kept; the report is HTML, not a PDF file (printing it is the PDF).
 - **Signal we are wrong**: a reader asks whether the report « proves the lease is legal ».
+
+## 6. The landing's proof is a real run read from the platform
+
+- **Decision**: « A real run » shows the one finished compliance check an administrator promoted on a sample document: a
+  summary line (counted, not typed), the findings as compact cards with the non-compliant first, the sample lease with
+  the quoted passages lit, the Orazaka run id (copy), the signed report (downloaded from the app) and a link to /verify.
+  It is read from the platform at request time (five minutes of cache), not recorded in the repository.
+- **Problem**: a claim of « a real run » is only credible if it is the platform's current, checkable output — a snapshot
+  in the code goes stale and cannot be told from a mock-up.
+- **Principle**: show the evidence and the way to check it, not an assertion (calibrated trust; Lee & See, 2004); proof
+  first, detail on demand (progressive disclosure).
+- **Refused**: a committed copy of a run, a screenshot of the viewer, an unflagged personal document, several showcases.
+- **Cost**: an administrator keeps the showcase (marks a sample, promotes a check); a page cached for up to five minutes;
+  a deploy with no database shows the honest « nothing to show yet » until the cache renews.
+- **Signal we are wrong**: visitors open the signed report but never /verify, or ask whether the sample is a real client.
