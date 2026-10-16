@@ -1,5 +1,5 @@
 id: no-get-time-arithmetic
-language: TypeScript
+language: Tsx
 severity: error
 message: "Time arithmetic on `getTime()`: use date-fns (`differenceInMilliseconds`, `addMinutes`, `isBefore`…)."
 rule:
@@ -19,6 +19,7 @@ ignores:
   - "**/tests/**"
   - "**/*.test.tsx"
   - "**/*.spec.ts"
+  - "**/*.spec.tsx"
   - "e2e/**"
   - "scripts/**"
   - "**/scripts/**"

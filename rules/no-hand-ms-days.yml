@@ -1,5 +1,5 @@
 id: no-hand-ms-days
-language: TypeScript
+language: Tsx
 severity: error
 message: "Hand-written time arithmetic (`n * 24 * 60 * 60 * 1000`). Use date-fns `hoursToMilliseconds(n * 24)` (date-fns has no days helper), or read the duration from the settings (parameters-from-DB rule)."
 note: "Codemod: `npm run sg:fix`. Behaviour is identical."
@@ -15,6 +15,7 @@ ignores: &ignores
   - "**/tests/**"
   - "**/*.test.tsx"
   - "**/*.spec.ts"
+  - "**/*.spec.tsx"
   - "e2e/**"
   - "scripts/**"
   - "**/scripts/**"

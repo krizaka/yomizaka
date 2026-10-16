@@ -80,7 +80,7 @@
 
 The org code rules (addendum 2026-10-15) are lint rules, not review comments. [`@ast-grep/cli`](https://ast-grep.github.io)
 is a **pinned devDependency** (no global install, CI reproduces local): `sgconfig.yml` + `rules/*.yml` (one rule per file,
-with a message and, where safe, a `fix:`), `rule-tests/` (valid/invalid cases of each rule).
+with a message and, where safe, a `fix:`; written for Tsx and `.ts` is parsed as Tsx too, so each rule covers `.ts` and `.tsx`), `rule-tests/` (valid/invalid cases of each rule).
 
 | Rule | What it refuses |
 | :--- | :--- |

@@ -1,5 +1,5 @@
 id: no-hand-ms-minutes
-language: TypeScript
+language: Tsx
 severity: error
 message: "Hand-written time arithmetic (`n * 60 * 1000`). Use date-fns `minutesToMilliseconds(n)`, or read the duration from the settings."
 note: "Codemod: `npm run sg:fix`. Behaviour is identical."
@@ -23,6 +23,7 @@ ignores:
   - "**/tests/**"
   - "**/*.test.tsx"
   - "**/*.spec.ts"
+  - "**/*.spec.tsx"
   - "e2e/**"
   - "scripts/**"
   - "**/scripts/**"
