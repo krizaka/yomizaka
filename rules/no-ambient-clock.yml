@@ -1,0 +1,16 @@
+id: no-ambient-clock
+language: TypeScript
+severity: error
+message: "No `new Date()` / `Date.now()` in domain code: the clock is injected (`now: Date` parameter or a `Clock`), so the rule is testable."
+rule:
+  any:
+    - pattern: new Date()
+    - pattern: Date.now()
+files:
+  - "packages/*/src/**/*.ts"
+  - "apps/*/lib/**/*.ts"
+ignores:
+  - "**/node_modules/**"
+  - "**/*.test.ts"
+  - "**/__tests__/**"
+  - "**/tests/**"

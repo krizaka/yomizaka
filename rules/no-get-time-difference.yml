@@ -1,0 +1,20 @@
+id: no-get-time-difference
+language: TypeScript
+severity: error
+message: "`a.getTime() - b.getTime()`: use date-fns `differenceInMilliseconds(a, b)`."
+note: "Codemod: `npm run sg:fix`. Same result, same sign (a minus b)."
+rule:
+  pattern: $A.getTime() - $B.getTime()
+fix: differenceInMilliseconds($A, $B)
+ignores:
+  - "**/node_modules/**"
+  - "**/.next/**"
+  - "**/dist/**"
+  - "**/*.test.ts"
+  - "**/__tests__/**"
+  - "**/tests/**"
+  - "**/*.test.tsx"
+  - "**/*.spec.ts"
+  - "e2e/**"
+  - "scripts/**"
+  - "**/scripts/**"

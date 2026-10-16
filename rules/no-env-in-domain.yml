@@ -1,0 +1,20 @@
+id: no-env-in-domain
+language: TypeScript
+severity: error
+message: "No `env` import in domain code: the value arrives as a parameter (read from the settings, or from `lib/env` at the edge)."
+rule:
+  kind: import_statement
+  has:
+    field: source
+    has:
+      kind: string_fragment
+      regex: '(^|/)env($|\.js$|/)'
+files:
+  - "packages/*/src/**/*.ts"
+  - "apps/*/lib/**/*.ts"
+ignores:
+  - "**/node_modules/**"
+  - "**/*.test.ts"
+  - "**/__tests__/**"
+  - "**/tests/**"
+  - "**/env.ts"

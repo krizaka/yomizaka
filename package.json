@@ -7,16 +7,21 @@
   "scripts": {
     "dev": "turbo run dev --filter=@yomizaka/web",
     "build": "turbo run build",
-    "lint": "turbo run lint && pnpm run check:i18n",
+    "lint": "turbo run lint && pnpm run check:i18n && ast-grep test --skip-snapshot-tests && node scripts/sg-ratchet.mjs",
     "check:i18n": "krizaka-i18n check apps/web/messages",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test && vitest run",
     "check": "pnpm run lint && pnpm run typecheck && pnpm run test",
     "prepare": "git config core.hooksPath .githooks 2>/dev/null || true",
     "seo:check": "node scripts/check-seo-family.mjs --base http://localhost:3000 --host https://dev.yomizaka.com --types WebSite,SoftwareApplication",
-    "e2e:admin": "node scripts/e2e-admin.mjs"
+    "e2e:admin": "node scripts/e2e-admin.mjs",
+    "lint:sg": "node scripts/sg-ratchet.mjs",
+    "lint:sg:test": "ast-grep test --skip-snapshot-tests",
+    "sg:ratchet:update": "node scripts/sg-ratchet.mjs --update",
+    "sg:fix": "node scripts/sg-fix.mjs"
   },
   "devDependencies": {
+    "@ast-grep/cli": "0.51.0",
     "@krizaka/i18n": "^0.2.1",
     "playwright-core": "1.64.0",
     "turbo": "^2.11.7",

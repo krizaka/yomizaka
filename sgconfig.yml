@@ -1,0 +1,6 @@
+# ast-grep — the org's code rules (addendum 2026-10-15). `npm run lint:sg` runs them through the ratchet
+# (scripts/sg-ratchet.mjs, counts in sg-ratchet.json: they only go down). `npm run lint:sg:test` runs rule-tests/.
+ruleDirs:
+  - rules
+testConfigs:
+  - testDir: rule-tests
