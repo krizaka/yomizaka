@@ -1,0 +1,11 @@
+id: no-hand-ms-minutes
+valid:
+  - |
+    const a = minutesToMilliseconds(5);
+  - |
+    const a = 5 * 60 * 60 * 1000;
+  - |
+    const a = 60 * 60 * 1000;
+invalid:
+  - |
+    const a = 5 * 60 * 1000;
