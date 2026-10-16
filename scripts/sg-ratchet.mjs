@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console -- a command-line tool: its output is the interface */
 // The ast-grep ratchet: runs `ast-grep scan` (rules/, sgconfig.yml), counts the violations per rule and refuses any
 // increase against sg-ratchet.json. The counts only go down.
 //   node scripts/sg-ratchet.mjs            check (CI, npm run lint)
@@ -55,14 +56,20 @@ export function compare(recorded, found, ruleIds) {
   return { ok: increased.length === 0 && unrecorded.length === 0, increased, decreased, unrecorded, next };
 }
 
+/**
+ * The pinned ast-grep of the repository, or the one on the PATH.
+ * @param {string} root
+ * @returns {string}
+ */
+export function localBin(root) {
+  const local = resolve(root, "node_modules/.bin/ast-grep");
+  return existsSync(local) ? local : "ast-grep";
+}
+
 function run() {
   const root = process.cwd();
   const update = process.argv.includes("--update");
-  const bin = process.env.SG_BIN ?? resolve(root, "node_modules/.bin/ast-grep");
-  if (!existsSync(bin)) {
-    console.error(`sg-ratchet: ${bin} not found — run npm install (@ast-grep/cli is a pinned devDependency).`);
-    process.exit(2);
-  }
+  const bin = localBin(root);
   const scan = spawnSync(bin, ["scan", "--json=stream"], { cwd: root, encoding: "utf8", maxBuffer: 256 * 1024 * 1024 });
   if (scan.error || (scan.status !== 0 && scan.status !== 1)) {
     console.error(`sg-ratchet: ast-grep failed (${scan.error?.message ?? `exit ${scan.status}`})\n${scan.stderr}`);

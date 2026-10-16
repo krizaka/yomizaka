@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console -- a command-line tool: its output is the interface */
 // The codemods: applies the `fix:` of the ast-grep rules (rules/*.yml) — hand-written time arithmetic → date-fns —
 // then adds the date-fns import to each file that now uses one. Behaviour is identical; run the tests after.
 //   node scripts/sg-fix.mjs [paths…]     (default: the whole repository)
@@ -7,6 +8,8 @@ import { spawnSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+import { localBin } from "./sg-ratchet.mjs";
 
 export const DATE_FNS = ["hoursToMilliseconds", "minutesToMilliseconds", "differenceInMilliseconds"];
 
@@ -33,7 +36,7 @@ export function withDateFnsImports(source) {
 
 function run() {
   const root = process.cwd();
-  const bin = process.env.SG_BIN ?? resolve(root, "node_modules/.bin/ast-grep");
+  const bin = localBin(root);
   const paths = process.argv.slice(2);
   const before = spawnSync("git", ["diff", "--name-only"], { cwd: root, encoding: "utf8" }).stdout.split("\n");
   const scan = spawnSync(bin, ["scan", "--update-all", ...paths], { cwd: root, encoding: "utf8" });
