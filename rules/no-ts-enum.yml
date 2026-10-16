@@ -1,5 +1,5 @@
 id: no-ts-enum
-language: TypeScript
+language: Tsx
 severity: error
 message: "No TypeScript `enum`. Persisted values: a Postgres enum (Drizzle `pgEnum`) with the derived type; otherwise `export const X = { … } as const` + `typeof X[keyof typeof X]`."
 rule:

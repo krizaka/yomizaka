@@ -1,5 +1,5 @@
 id: no-db-in-service-or-rules
-language: TypeScript
+language: Tsx
 severity: error
 message: "No database client or schema import in a service or a rules file: the repository reads and writes, the service and the rules decide."
 rule:
@@ -11,11 +11,16 @@ rule:
       regex: '(^|/)(db|drizzle|schema|database)($|/)|^drizzle-orm|^postgres$|^pg$|@orochia/db'
 files:
   - "**/*.service.ts"
+  - "**/*.service.tsx"
   - "**/*.rules.ts"
+  - "**/*.rules.tsx"
   - "**/*-service.ts"
+  - "**/*-service.tsx"
   - "**/*-rules.ts"
+  - "**/*-rules.tsx"
 ignores:
   - "**/node_modules/**"
   - "**/*.test.ts"
   - "**/__tests__/**"
   - "**/tests/**"
+  - "**/*.test.tsx"
