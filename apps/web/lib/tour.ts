@@ -5,7 +5,8 @@
  * (`site/products/yomizaka/tour/<device>-<step>.<hash>.<ext>`, a URL never changes content); a new recording is new
  * hashes here and the old files pruned. The page's CSP lets this one host serve images and media (next.config.mjs).
  */
-import { MEDIA_CDN } from "./owl-loop";
+/** The Krizaka media CDN — the one host the page's CSP lets serve images and media (next.config.mjs). */
+export const MEDIA_CDN = "https://krizaka-assets.b-cdn.net";
 
 export const TOUR_STEPS = ["keep", "check", "find"] as const;
 export const TOUR_DEVICES = ["phone", "desktop"] as const;
