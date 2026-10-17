@@ -17,6 +17,9 @@ import type { Showcase } from "./showcase";
  */
 export class RecordedRunError extends Error {}
 
+/** Orazaka's status of a finished, successful run. */
+const RUN_SUCCEEDED = "SUCCEEDED";
+
 const FILES: Record<Perspective, unknown> = { tenant, landlord };
 
 export interface RecordedRun extends Showcase {
@@ -31,7 +34,7 @@ export function readRecording(side: Perspective, raw: unknown): { run: RecordedR
   const file = raw as { side?: string; recordedAt?: string; source?: string; studio?: string; document?: { title: string; filename: string; text: string }; inputs?: unknown; run?: unknown } | null;
   if (!file || file.side !== side || file.studio !== "compliance-check" || !file.document?.text || !file.recordedAt) throw fail("the file is not a recording");
   const parsed = orazakaRun.safeParse(file.run);
-  if (!parsed.success || parsed.data.status !== "SUCCEEDED" || !parsed.data.finishedAt) throw fail("Orazaka did not return a finished run");
+  if (!parsed.success || parsed.data.status !== RUN_SUCCEEDED || !parsed.data.finishedAt) throw fail("Orazaka did not return a finished run");
   const run = parsed.data;
   const finishedAt = run.finishedAt!; // checked just above
   const report = reportOf("compliance-check", run.outputs) as ComplianceReport | null;
