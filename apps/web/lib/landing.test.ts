@@ -78,9 +78,9 @@ describe("the bar", () => {
 
 describe("the first screen is light, sharp and clear", () => {
   const home = read("app/[locale]/page.tsx");
-  it("the hero's visual is the before/after (HTML, sharp at any width), not a recording; the recorded tour sits below", () => {
+  it("the hero's visual is the continuous flow (HTML and CSS, sharp at any width), not a recording; the recorded tour sits below", () => {
     expect(home).not.toMatch(/rel="preload"/);
-    expect(home).toContain("visual={<BeforeAfter");
+    expect(home).toContain("visual={<HeroFlow");
     expect(home.indexOf("<AppTake")).toBeGreaterThan(home.indexOf("<AudienceCards"));
   });
 
@@ -128,7 +128,7 @@ describe("Yomizaka is named first; Orazaka is the engine, named only where it be
 describe("the proof is read from the recording, never typed", () => {
   it("the hero's finding and the band's figures are counted from the recorded run", () => {
     const run = recordedRun("tenant");
-    expect(read("components/home/BeforeAfter.tsx")).toContain('recordedRun("tenant")');
+    expect(read("components/home/HeroFlow.tsx")).toContain('recordedRun("tenant")');
     expect(run.report.findings.find((f) => f.ruleId === "QC-LEASE-004")?.citation).toMatch(/art\. 1904/);
     const figures = HERO_FIGURES(run.report);
     expect(figures.rules).toBe(run.report.summary?.rulesEvaluated);

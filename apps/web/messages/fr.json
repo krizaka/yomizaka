@@ -403,6 +403,28 @@
           "a": "Pas encore : Yomizaka est en développement et l'inscription est fermée. Écrivez-nous pour en parler."
         }
       }
+    },
+    "flow": {
+      "label": "Du bail au rapport partagé, en un seul parcours",
+      "rail": {
+        "drop": "Déposer",
+        "read": "Lire",
+        "rules": "Règles",
+        "finding": "Constat",
+        "report": "Rapport",
+        "share": "Partager"
+      },
+      "dropTitle": "Déposez votre bail",
+      "reading": "Le hibou lit chaque ligne",
+      "rulesTitle": "Règles du bail québécois",
+      "reportTitle": "Rapport d'audit",
+      "runLabel": "Exécution",
+      "summary": "{fail} non conformes · {pass} conformes",
+      "signed": "Signé",
+      "member": "Gestionnaire (fictif)",
+      "memberInitial": "G",
+      "shared": "Accès donné : il vérifie le rapport avec un compte Yomizaka.",
+      "caption": "Parcours d'une vraie vérification enregistrée (exécution {run}). Le rapport montré est une illustration de spécimen : non signée, sans valeur."
     }
   },
   "run": {

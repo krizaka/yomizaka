@@ -403,6 +403,28 @@
           "a": "Not yet: Yomizaka is in development and sign-up is closed. Write to us to talk about it."
         }
       }
+    },
+    "flow": {
+      "label": "From the lease to the shared report, in one flow",
+      "rail": {
+        "drop": "Drop",
+        "read": "Read",
+        "rules": "Rules",
+        "finding": "Finding",
+        "report": "Report",
+        "share": "Share"
+      },
+      "dropTitle": "Drop your lease",
+      "reading": "The owl reads every line",
+      "rulesTitle": "Québec residential lease rules",
+      "reportTitle": "Audit report",
+      "runLabel": "Run",
+      "summary": "{fail} non-compliant · {pass} compliant",
+      "signed": "Signed",
+      "member": "Manager (fictitious)",
+      "memberInitial": "M",
+      "shared": "Access given: they verify the report with a Yomizaka account.",
+      "caption": "The flow of a real recorded check (run {run}). The report shown is an illustration of a specimen: unsigned, no value."
     }
   },
   "run": {
