@@ -10,9 +10,10 @@ import { Section } from "@krizaka/ui/page";
 import { PageHero } from "@krizaka/ui/page-hero";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { preconnect } from "react-dom";
 
+import { BeforeAfter } from "@/components/BeforeAfter";
 import { JourneyTour } from "@/components/JourneyTour";
+import { ProofSection } from "@/components/ProofSection";
 import { SideSwitch } from "@/components/SideSwitch";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -20,7 +21,7 @@ import { asLocale, format, getDictionary } from "@/lib/i18n";
 import { HOW_STEPS, OUTCOMES, productStatus, TRUST } from "@/lib/landing";
 import { pageMetadata, siteJsonLd } from "@/lib/seo";
 import { contactHref, pagePath, REPO_URL } from "@/lib/site";
-import { MEDIA_CDN, TOUR_RUNS, TOUR_STEPS, tourClip, type TourDevice } from "@/lib/tour";
+import { TOUR_RUNS, TOUR_STEPS, tourClip, type TourDevice } from "@/lib/tour";
 
 import preview from "../../../../dev-preview.json";
 
@@ -38,7 +39,8 @@ const TRUST_ICONS = { canada: <GlobeIcon />, traced: <SearchIcon />, open: <Keep
  */
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const locale = asLocale((await params).locale);
-  const d = getDictionary(locale).landing;
+  const dict = getDictionary(locale);
+  const d = dict.landing;
   const status = productStatus(preview);
   const signIn = `/${locale}/sign-in`;
   const destination = { run: pagePath(locale, "run"), verify: pagePath(locale, "verify"), "sign-in": signIn } as const;
@@ -49,35 +51,23 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       const w = d.tour.steps[id];
       return { id, title: w.title, description: w.text, alt: w.alt, poster: clip.poster, video: { webm: clip.webm, mp4: clip.mp4 } };
     });
-  // The first poster is the page's LCP: open the CDN's connection now and fetch the poster of the frame shown (phone below
-  // md, browser from md) at once — React hoists these links into <head>.
-  preconnect(MEDIA_CDN);
   return (
     <>
-      <link rel="preload" as="image" href={tourClip("phone", "keep").poster} media="(max-width: 767px)" fetchPriority="high" />
-      <link rel="preload" as="image" href={tourClip("desktop", "keep").poster} media="(min-width: 768px)" fetchPriority="high" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
       <SiteHeader locale={locale} current="home" />
       <main id="content">
-        {/* 1 · The promise, and the real journey as its proof — painted at once (LCP), never revealed. */}
+        {/* 0 · Who it is for — a segmented control above the hero. */}
+        <SideSwitch locale={locale} label={dict.sides.switchLabel} hint={d.switchHint} words={{ tenant: dict.sides.tenant.switch, landlord: dict.sides.landlord.switch }} />
+
+        {/* 1 · The promise, and one clear before/after as its proof — painted at once (LCP), never revealed. */}
         <PageHero id="hero" eyebrow={d.eyebrow} title={d.title} lead={d.lead}>
-          <SideSwitch locale={locale} label={getDictionary(locale).sides.switchLabel} words={{ tenant: getDictionary(locale).sides.tenant.switch, landlord: getDictionary(locale).sides.landlord.switch }} />
           <Button asChild variant="primary" size="lg" shape="cut" shimmer magnetic>
             <a href={contactHref("dev-yomizaka-hero")}>{d.talk}</a>
           </Button>
           <Button asChild variant="secondary" size="lg" shape="cut">
             <Link href={pagePath(locale, "run")}>{d.seeRun}</Link>
           </Button>
-          <figure className="m-0 mt-8 flex basis-full flex-col gap-3">
-            <JourneyTour
-              label={d.tour.label}
-              phone={steps("phone")}
-              desktop={steps("desktop")}
-              address={d.tour.address}
-              words={{ play: d.tour.play, pause: d.tour.pause, step: d.tour.step }}
-            />
-            <figcaption className="text-center font-mono text-xs text-fg-muted md:text-start">{format(d.tour.recorded, { run: TOUR_RUNS.desktop.slice(0, 8) })}</figcaption>
-          </figure>
+          <BeforeAfter locale={locale} />
         </PageHero>
 
         {/* 2 · What you can do — outcomes, each card a way in. */}
@@ -97,6 +87,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             ))}
           </CardGrid>
         </Section>
+
+        {/* 2b · Proof — the real run, the signed report, the verification by grant. */}
+        <ProofSection locale={locale} />
 
         {/* 3 · How it works — who does what, in three steps; the owl keeps its promise. */}
         <Section id="how" eyebrow={d.how.eyebrow} title={d.how.title} lead={d.how.lead} reveal divider>
@@ -119,6 +112,20 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               {d.how.owl}
             </MascotQuote>
           </div>
+        </Section>
+
+        {/* 3b · The app, recorded — below the fold, so the hero stays light. */}
+        <Section id="app" eyebrow={d.app.eyebrow} title={d.app.title} lead={d.app.lead} reveal divider>
+          <figure className="m-0 flex flex-col gap-3">
+            <JourneyTour
+              label={d.tour.label}
+              phone={steps("phone")}
+              desktop={steps("desktop")}
+              address={d.tour.address}
+              words={{ play: d.tour.play, pause: d.tour.pause, step: d.tour.step }}
+            />
+            <figcaption className="text-center font-mono text-xs text-fg-muted md:text-start">{format(d.tour.recorded, { run: TOUR_RUNS.desktop.slice(0, 8) })}</figcaption>
+          </figure>
         </Section>
 
         {/* 4 · Trust — where the documents live, what is traced, the code; the engine named once; the honest status. */}

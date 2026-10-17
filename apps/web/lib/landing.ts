@@ -1,8 +1,8 @@
 /**
  * The landing's structure — ids and destinations, never words (the words are in messages/, keyed by the same ids).
- * One story in five sections: the promise and its living proof, what you can do, how it works, trust, the closing call.
+ * One story: the promise with one clear before/after, what you can do, the proof (a real recorded run), how it works, the app recorded, trust, the closing call.
  */
-export const HOME_SECTIONS = ["hero", "outcomes", "how", "trust", "closing"] as const;
+export const HOME_SECTIONS = ["hero", "outcomes", "proof", "how", "app", "trust", "closing"] as const;
 
 /** What a visitor gets — outcomes, not features — and where each card leads (no dead-end card). */
 export const OUTCOMES = [

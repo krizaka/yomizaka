@@ -64,8 +64,8 @@ export default async function SideLanding({ params }: { params: Promise<{ locale
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
       <SiteHeader locale={locale} current="home" />
       <main id="content">
+        <SideSwitch locale={locale} current={side} label={t.sides.switchLabel} hint={t.landing.switchHint} words={{ tenant: t.sides.tenant.switch, landlord: t.sides.landlord.switch }} />
         <PageHero id="hero" eyebrow={w.eyebrow} title={w.title} lead={w.lead}>
-          <SideSwitch locale={locale} current={side} label={t.sides.switchLabel} words={{ tenant: t.sides.tenant.switch, landlord: t.sides.landlord.switch }} />
           <Button asChild variant="primary" size="lg" shape="cut" shimmer magnetic>
             <a href={contactHref(`dev-yomizaka-${side}`)}>{t.landing.talk}</a>
           </Button>

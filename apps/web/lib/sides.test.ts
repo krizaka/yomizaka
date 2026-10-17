@@ -59,11 +59,11 @@ describe("the two sides of the lease have their own address", () => {
 describe("the switch — « Je suis locataire / Je suis propriétaire »", () => {
   const words = { tenant: fr.sides.tenant.switch, landlord: fr.sides.landlord.switch };
   it("is two crawlable links to the two addresses, the current one marked", () => {
-    const home = renderToStaticMarkup(createElement(SideSwitch, { locale: "fr", label: fr.sides.switchLabel, words }));
+    const home = renderToStaticMarkup(createElement(SideSwitch, { locale: "fr", label: fr.sides.switchLabel, hint: fr.landing.switchHint, words }));
     expect(home).toContain('href="/fr/locataire"');
     expect(home).toContain('href="/fr/proprietaire"');
     expect(home).not.toContain("aria-current");
-    const tenant = renderToStaticMarkup(createElement(SideSwitch, { locale: "fr", current: "tenant", label: fr.sides.switchLabel, words }));
+    const tenant = renderToStaticMarkup(createElement(SideSwitch, { locale: "fr", current: "tenant", label: fr.sides.switchLabel, hint: fr.landing.switchHint, words }));
     expect(tenant).toMatch(/aria-current="page"[^>]*>Je suis locataire|Je suis locataire/);
     expect(tenant.match(/aria-current/g)).toHaveLength(1);
   });
