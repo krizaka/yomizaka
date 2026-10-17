@@ -77,6 +77,7 @@ export function llmsText(): string {
 
 - [${en.meta.siteName}](${SITE_URL}/en) · [Yomizaka (fr)](${SITE_URL}/fr): what it does, how it works, recorded on the real app
 - [${en.run.title}](${SITE_URL}/en/run): a Québec lease checked by Orazaka, its findings and its signed report
+- [Yomizaka for tenants](${SITE_URL}/en/tenant) · [Yomizaka for landlords](${SITE_URL}/en/landlord): check a lease before signing, or a lease template and the tenant's papers before sending (fr: /fr/locataire, /fr/proprietaire)
 - Signed reports are verified by signed-in members the report's owner gave access to; there is no public verification.
 - [${en.privacy.title}](${SITE_URL}/en/privacy) · [${getDictionary("fr").privacy.title} (fr)](${SITE_URL}/fr/privacy)
 - [Talk to us about Yomizaka](${KRIZAKA_URL}/contact?topic=yomizaka): the one way to reach the team

@@ -20,5 +20,5 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
     throw error;
   });
   if (!document) notFound();
-  return <DocumentView initial={document} />;
+  return <DocumentView initial={document} perspective={session.account.perspective} />;
 }

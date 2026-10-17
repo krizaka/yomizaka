@@ -93,3 +93,22 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
 - **Cost**: the recording must be redone when the console changes (`scripts/landing-journey.mjs`, new hashes in
   `lib/tour.ts`); the app is recorded in English, which the French caption says.
 - **Signal we are wrong**: visitors leave the hero before the second step plays, or ask whether the recording is a mock-up.
+
+## 8. Both sides of the lease: a landing per side, a role in the app
+
+- **Decision**: the service is offered to the tenant (« locataire ») and the landlord (« locateur » in the legal sense,
+  « propriétaire » in everyday copy). The home carries « Je suis locataire / Je suis propriétaire »: two links to two
+  static, indexable addresses (`/fr/locataire`, `/fr/proprietaire`, `/en/tenant`, `/en/landlord`) whose hero, steps and
+  examples speak to that side. In the app the side is asked once at onboarding (the library) and changeable in settings;
+  it picks the check offered first (a landlord's « other » documents — the tenant's papers — start with the PDF
+  examination) and the wording of the checks. The rules do not change: both sides run the same Orazaka Studios on the same
+  rulesets (a side-specific rule would be data of the pack, not code here).
+- **Problem**: the product spoke from one side only (the tenant checking a lease), while the landlord has the same need —
+  a compliant template, the tenant's papers, a report to keep and share.
+- **Principle**: speak to the person's task (jobs-to-be-done; Christensen, 2016) and let the URL carry the state, so a side
+  is shareable and crawlable (progressive enhancement).
+- **Refused**: a client-side toggle that hides the other side's copy (no address, no SEO), a different set of rules per
+  side hard-coded here, a forced choice before the library opens (it asks, it does not block).
+- **Cost**: two copies of the pitch in two languages to keep honest — every example is a finding of a real run; rent
+  increase and other TAL rules are not in the Québec ruleset yet and are not promised.
+- **Signal we are wrong**: visitors take the wrong side's page and bounce to the other, or never choose a side in the app.

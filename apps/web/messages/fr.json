@@ -303,7 +303,12 @@
       "pdfFailed": "Le fichier n’a pas pu être affiché. Ouvrez-le avec le bouton ci-dessus.",
       "pageLabel": "Page {page} sur {total}",
       "onPage": "Passage à la page {page} :",
-      "notFound": "Ce passage n’est pas dans la couche de texte du PDF :"
+      "notFound": "Ce passage n’est pas dans la couche de texte du PDF :",
+      "checksLeadBy": {
+        "neutral": "Choisissez ce qu'Orazaka doit lire : le texte au regard de la loi, ou le fichier PDF lui-même.",
+        "tenant": "Avant de signer : le texte de votre bail au regard des règles du Québec, puis, si une pièce vous paraît douteuse, le fichier lui-même.",
+        "landlord": "Avant d'envoyer : votre modèle de bail au regard des règles du Québec ; pour une pièce du locataire en PDF, l'examen du fichier lui-même."
+      }
     },
     "analysis": {
       "complianceTitle": "Au regard de la loi",
@@ -590,6 +595,18 @@
         "expired": "Expiré",
         "revoked": "Révoqué"
       }
+    },
+    "profile": {
+      "title": "De quel côté du bail êtes-vous ?",
+      "lead": "Yomizaka adapte les vérifications proposées en premier et ses mots. Les règles, elles, sont les mêmes pour tous. Vous pouvez changer à tout moment dans les réglages.",
+      "legend": "Votre rôle",
+      "tenant": "Locataire — je vérifie mon bail avant de signer",
+      "landlord": "Propriétaire (locateur) — je vérifie mon modèle de bail et les pièces du locataire",
+      "save": "Enregistrer",
+      "saved": "Enregistré.",
+      "settingsTitle": "Réglages",
+      "settingsLead": "Votre rôle change les vérifications proposées en premier et les mots de l'application.",
+      "open": "Réglages"
     }
   },
   "report": {
@@ -690,6 +707,113 @@
       "text": "Seules les personnes à qui le propriétaire du rapport a donné accès peuvent le vérifier. Vous pouvez le lui demander.",
       "request": "Demander l’accès",
       "requested": "Le propriétaire a été prévenu. Vous pourrez vérifier le rapport dès qu’il vous aura donné l’accès."
+    }
+  },
+  "sides": {
+    "switchLabel": "Pour qui ?",
+    "tenant": {
+      "switch": "Je suis locataire",
+      "seoTitle": "Yomizaka pour les locataires — vérifiez votre bail avant de signer",
+      "seoDescription": "Déposez le bail que l'on vous propose : Orazaka le lit selon les règles du Québec et cite la clause, l'article du Code civil et la ligne exacte. Dépôt de garantie, chèques postdatés, clauses sans effet.",
+      "eyebrow": "Yomizaka · pour les locataires",
+      "title": "Vérifiez votre bail avant de le signer.",
+      "lead": "Déposez le bail que l'on vous propose. Orazaka le lit selon les règles du Québec et vous montre, ligne par ligne, ce qui ne tient pas — et ce qu'il faut demander au locateur.",
+      "outcomesTitle": "Ce que vous saurez avant de signer",
+      "outcomes": {
+        "a": {
+          "title": "Repérer les clauses interdites",
+          "text": "Un dépôt de garantie, des chèques postdatés, « pas d'enfants » : chaque constat nomme la règle, l'article du Code civil du Québec et la ligne citée.",
+          "cta": "Voir une vraie vérification"
+        },
+        "b": {
+          "title": "Garder votre bail et ses constats",
+          "text": "Le bail reste dans votre bibliothèque, visible par votre seul compte ; vous le retrouvez par un mot, avec les passages cités.",
+          "cta": "Se connecter (sur invitation)"
+        },
+        "c": {
+          "title": "Savoir quoi demander",
+          "text": "Chaque constat non conforme est une question prête pour le locateur, avec l'article qui la fonde. Ce n'est pas un avis juridique.",
+          "cta": "Vérifier un rapport"
+        }
+      },
+      "how": {
+        "keep": {
+          "title": "Vous déposez votre bail",
+          "text": "Il est gardé tel quel, visible par votre seul compte ; sa couche texte est lue pour la recherche."
+        },
+        "read": {
+          "title": "Orazaka le lit",
+          "text": "Selon les règles du Québec en vigueur à la date de votre choix. Yomizaka n'appelle jamais de modèle."
+        },
+        "prove": {
+          "title": "Vous gardez la preuve",
+          "text": "Chaque constat garde l'identifiant de son exécution Orazaka ; le rapport est signé, et seules les personnes à qui vous donnez accès peuvent le vérifier, avec un compte Yomizaka."
+        }
+      },
+      "examples": {
+        "eyebrow": "Des exemples",
+        "title": "Ce que Yomizaka relève dans un bail",
+        "lead": "Tirés d'une vraie vérification d'un bail québécois d'exemple, tels qu'Orazaka les a renvoyés.",
+        "items": {
+          "a": "« Un dépôt de sécurité de 1 450 $ à la signature » : interdit, seul le premier mois peut être exigé d'avance (C.c.Q., art. 1904).",
+          "b": "« Douze chèques postdatés » : interdit (C.c.Q., art. 1904, al. 2).",
+          "c": "« Il est interdit d'avoir des enfants dans le logement » : clause sans effet (C.c.Q., art. 1899 et 1901).",
+          "d": "Le montant du loyer et l'avis du loyer le plus bas des douze derniers mois (section G du bail obligatoire) : présents, ou à demander au locateur."
+        }
+      },
+      "owl": "Le hibou lit votre bail ligne par ligne et vous dit ce qu'il a trouvé, pas ce que vous devriez faire."
+    },
+    "landlord": {
+      "switch": "Je suis propriétaire",
+      "seoTitle": "Yomizaka pour les propriétaires — un bail conforme avant de l'envoyer",
+      "seoDescription": "Déposez votre modèle de bail : Orazaka le lit selon les règles du Québec et cite l'article derrière chaque constat. Pièces du locataire examinées, rapport signé à garder, accès partagé avec votre gestionnaire.",
+      "eyebrow": "Yomizaka · pour les propriétaires",
+      "title": "Un bail conforme avant de l'envoyer.",
+      "lead": "Déposez votre modèle de bail. Orazaka le lit selon les règles du Québec, cite l'article derrière chaque constat, et vous gardez un rapport signé à conserver ou à partager.",
+      "outcomesTitle": "Ce que vous saurez avant d'envoyer",
+      "outcomes": {
+        "a": {
+          "title": "Valider votre modèle de bail",
+          "text": "Identification du locateur et du locataire, loyer, avis du loyer le plus bas, clauses interdites : vous corrigez avant d'envoyer, pas après le litige.",
+          "cta": "Voir une vraie vérification"
+        },
+        "b": {
+          "title": "Lire les pièces du locataire",
+          "text": "Pièce d'identité, preuve de revenu en PDF : le hibou examine le fichier lui-même (producteur, dates, enregistrements successifs) et signale ce qui est inhabituel, jamais un tampon « faux ».",
+          "cta": "Se connecter (sur invitation)"
+        },
+        "c": {
+          "title": "Garder et partager la preuve",
+          "text": "Un rapport signé, avec l'identifiant de l'exécution Orazaka. Vous le partagez avec un copropriétaire ou un gestionnaire en lui donnant accès, et vous pouvez le retirer.",
+          "cta": "Vérifier un rapport"
+        }
+      },
+      "how": {
+        "keep": {
+          "title": "Vous déposez votre modèle ou une pièce",
+          "text": "Il est gardé tel quel, visible par votre seul compte ; sa couche texte est lue pour la recherche."
+        },
+        "read": {
+          "title": "Orazaka le lit",
+          "text": "Le bail, selon les règles du Québec à la date de votre choix ; une pièce en PDF, examinée comme fichier. Yomizaka n'appelle jamais de modèle."
+        },
+        "prove": {
+          "title": "Vous gardez la preuve",
+          "text": "Chaque constat garde l'identifiant de son exécution Orazaka ; le rapport est signé, et seules les personnes à qui vous donnez accès peuvent le vérifier, avec un compte Yomizaka."
+        }
+      },
+      "examples": {
+        "eyebrow": "Des exemples",
+        "title": "Ce que Yomizaka relève avant que vous envoyiez",
+        "lead": "Les constats viennent d'une vraie vérification d'un bail québécois d'exemple ; l'examen d'un PDF suit les trois niveaux d'Orazaka.",
+        "items": {
+          "a": "Un modèle qui exige un dépôt de sécurité à la signature : non conforme, avec l'article (C.c.Q., art. 1904).",
+          "b": "Un bail sans l'identification du locateur ou du locataire : un constat à corriger avant l'envoi (art. 1895).",
+          "c": "Une preuve de revenu en PDF enregistrée plusieurs fois par un logiciel de retouche : « inhabituel », avec ce qui a été observé.",
+          "d": "Un rapport partagé avec votre gestionnaire jusqu'à la fin du mois, puis retiré d'un clic."
+        }
+      },
+      "owl": "Le hibou lit chaque page et reconnaît chaque visage : il montre ce qu'il observe, la décision reste la vôtre."
     }
   }
 }

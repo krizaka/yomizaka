@@ -12,5 +12,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 /** The library: the first list is read on the server, the rest is @krizaka/query. */
 export default async function LibraryPage() {
   const session = await pageSession();
-  return <LibraryView initial={session ? await listDocuments(session.account.id) : []} />;
+  const perspective = session?.account.perspective ?? null;
+  return <LibraryView initial={session ? await listDocuments(session.account.id) : []} perspective={perspective} />;
 }

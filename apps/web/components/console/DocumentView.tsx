@@ -10,7 +10,7 @@ import { DocumentViewer, type Located } from "@krizaka/ui/document-viewer";
 import { createKrizakaForm } from "@krizaka/ui/form";
 import { Spinner } from "@krizaka/ui/spinner";
 import { Tabs } from "@krizaka/ui/tabs";
-import { type Analysis, analysis as analysisSchema, AUTHENTICITY_MAX_BYTES, type AuthenticityReport, type ComplianceReport, type DocumentDetail, documentDetail, JURISDICTIONS, passages, queryKeys } from "@yomizaka/core";
+import { type Analysis, analysis as analysisSchema, AUTHENTICITY_MAX_BYTES, type AuthenticityReport, type ComplianceReport, type DocumentDetail, documentDetail, JURISDICTIONS, passages, type Perspective, queryKeys } from "@yomizaka/core";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ComponentProps, useEffect, useMemo, useRef, useState } from "react";
@@ -18,6 +18,7 @@ import { z } from "zod";
 
 import { errorKey } from "@/lib/client";
 import { useSay } from "@/lib/i18n-client";
+import { firstCheck, wordingOf } from "@/lib/perspective-defaults";
 
 import { formatBytes, formatDate } from "./format";
 import { STATUS_TONE } from "./LibraryView";
@@ -312,7 +313,7 @@ function StartAuthenticity({ documentId, disabled }: { documentId: string; disab
 }
 
 /** The document page: the file and its text on one side, Orazaka's checks on the other — each a traced run. */
-export function DocumentView({ initial }: { initial: DocumentDetail }) {
+export function DocumentView({ initial, perspective = null }: { initial: DocumentDetail; perspective?: Perspective | null }) {
   const { say, locale } = useSay();
   const router = useRouter();
   const client = useQueryClient();
@@ -337,6 +338,18 @@ export function DocumentView({ initial }: { initial: DocumentDetail }) {
   const latestCompliance = doc.analyses.find((a) => a.studio === "compliance-check" && a.report && "findings" in a.report);
   const running = (studio: Analysis["studio"]) => doc.analyses.some((a) => a.studio === studio && a.status === "running");
   const isPdf = doc.mimeType === "application/pdf";
+  const complianceCard = (
+    <Card.Root key="compliance-check" className="p-4">
+      <h3 className="mb-2 font-display text-base font-bold text-fg">{say("analysis.complianceTitle")}</h3>
+      {doc.hasText ? <StartCompliance documentId={doc.id} disabled={running("compliance-check")} /> : <Alert tone="info">{say("document.noText")}</Alert>}
+    </Card.Root>
+  );
+  const authenticityCard = (
+    <Card.Root key="document-authenticity" className="p-4">
+      <h3 className="mb-2 font-display text-base font-bold text-fg">{say("analysis.authenticityTitle")}</h3>
+      {!isPdf ? <Alert tone="info">{say("analysis.noPdf")}</Alert> : doc.sizeBytes > AUTHENTICITY_MAX_BYTES ? <Alert tone="info">{say("analysis.tooLarge")}</Alert> : <StartAuthenticity documentId={doc.id} disabled={running("document-authenticity")} />}
+    </Card.Root>
+  );
   const latestReport = latestCompliance?.report && "findings" in latestCompliance.report ? latestCompliance.report : null;
   const highlights = useMemo(
     () => (latestReport?.findings ?? []).filter((f) => f.evidenceSpan?.quote).map((f) => ({ id: f.ruleId, quote: f.evidenceSpan!.quote, label: f.title ?? f.ruleId })),
@@ -426,17 +439,10 @@ export function DocumentView({ initial }: { initial: DocumentDetail }) {
             <h2 id="checks" className="font-display text-lg font-bold text-fg">
               {say("document.checks")}
             </h2>
-            <p className="text-sm text-fg-secondary">{say("document.checksLead")}</p>
+            <p className="text-sm text-fg-secondary">{say(`document.checksLeadBy.${wordingOf(perspective)}`)}</p>
           </div>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-            <Card.Root className="p-4">
-              <h3 className="mb-2 font-display text-base font-bold text-fg">{say("analysis.complianceTitle")}</h3>
-              {doc.hasText ? <StartCompliance documentId={doc.id} disabled={running("compliance-check")} /> : <Alert tone="info">{say("document.noText")}</Alert>}
-            </Card.Root>
-            <Card.Root className="p-4">
-              <h3 className="mb-2 font-display text-base font-bold text-fg">{say("analysis.authenticityTitle")}</h3>
-              {!isPdf ? <Alert tone="info">{say("analysis.noPdf")}</Alert> : doc.sizeBytes > AUTHENTICITY_MAX_BYTES ? <Alert tone="info">{say("analysis.tooLarge")}</Alert> : <StartAuthenticity documentId={doc.id} disabled={running("document-authenticity")} />}
-            </Card.Root>
+            {firstCheck(perspective, doc.kind) === "compliance-check" ? [complianceCard, authenticityCard] : [authenticityCard, complianceCard]}
           </div>
           {doc.analyses.map((a) => (
             <AnalysisCard key={a.id} documentId={doc.id} initial={a} selection={a.id === latestCompliance?.id ? selection : undefined} />
