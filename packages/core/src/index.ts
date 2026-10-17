@@ -20,6 +20,15 @@ export const DOCUMENT_KINDS = ["lease", "contract", "invoice", "other"] as const
 export const documentKind = z.enum(DOCUMENT_KINDS);
 export type DocumentKind = z.infer<typeof documentKind>;
 
+/**
+ * Which side of the lease a person is on: the tenant (locataire) checks a lease before signing, the landlord (locateur,
+ * « propriétaire » in everyday words) checks a template and the tenant's papers. It changes the defaults and the wording,
+ * never the rules: both sides run the same Orazaka Studios on the same rulesets.
+ */
+export const PERSPECTIVES = ["tenant", "landlord"] as const;
+export const perspective = z.enum(PERSPECTIVES);
+export type Perspective = z.infer<typeof perspective>;
+
 /** The two Orazaka Studios of the document-validation pack Yomizaka runs. */
 export const STUDIOS = ["compliance-check", "document-authenticity"] as const;
 export const studio = z.enum(STUDIOS);

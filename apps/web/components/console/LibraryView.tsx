@@ -8,7 +8,7 @@ import { EmptyState } from "@krizaka/ui/empty-state";
 import { Dropzone, type FileRejection, UploadList, useUploadQueue } from "@krizaka/ui/file-upload";
 import { Mascot } from "@krizaka/ui/mascots";
 import { RadioGroup } from "@krizaka/ui/radio-group";
-import { DOCUMENT_KINDS, type DocumentKind, type DocumentSummary, documentSummary, MAX_FILE_BYTES, queryKeys } from "@yomizaka/core";
+import { DOCUMENT_KINDS, type DocumentKind, type DocumentSummary, documentSummary, MAX_FILE_BYTES, type Perspective, queryKeys } from "@yomizaka/core";
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { z } from "zod";
@@ -16,6 +16,7 @@ import { z } from "zod";
 import { useSay } from "@/lib/i18n-client";
 
 import { formatBytes, formatDate } from "./format";
+import { PerspectiveChooser } from "./PerspectiveChooser";
 
 export const STATUS_TONE = { stored: "neutral", analysing: "accent", checked: "success", attention: "warning", failed: "danger" } as const;
 
@@ -37,7 +38,7 @@ function send(file: File, kind: DocumentKind, signal: AbortSignal, onProgress: (
 }
 
 /** The library: drop files (a queue that pauses, resumes and retries), then every document with its state. */
-export function LibraryView({ initial }: { initial: DocumentSummary[] }) {
+export function LibraryView({ initial, perspective = null }: { initial: DocumentSummary[]; perspective?: Perspective | null }) {
   const { say, locale } = useSay();
   const client = useQueryClient();
   const [kind, setKind] = useState<DocumentKind>("lease");
@@ -96,6 +97,11 @@ export function LibraryView({ initial }: { initial: DocumentSummary[] }) {
   const rows = documents.data ?? [];
   return (
     <div className="flex flex-col gap-6">
+      {perspective === null ? <PerspectiveChooser current={null} onboarding /> : (
+        <p className="text-right text-xs text-fg-muted">
+          <Link className="underline" href={`/${locale}/app/settings`}>{say("profile.open")}</Link>
+        </p>
+      )}
       <section className="flex flex-col gap-3" aria-label={say("library.dropTitle")}>
         <RadioGroup.Root variant="segmented" label={say("library.kindLabel")} value={kind} onValueChange={(v: string) => {
             kindRef.current = v as DocumentKind;

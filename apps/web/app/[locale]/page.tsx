@@ -13,6 +13,7 @@ import Link from "next/link";
 import { preconnect } from "react-dom";
 
 import { JourneyTour } from "@/components/JourneyTour";
+import { SideSwitch } from "@/components/SideSwitch";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
 import { asLocale, format, getDictionary } from "@/lib/i18n";
@@ -60,6 +61,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <main id="content">
         {/* 1 · The promise, and the real journey as its proof — painted at once (LCP), never revealed. */}
         <PageHero id="hero" eyebrow={d.eyebrow} title={d.title} lead={d.lead}>
+          <SideSwitch locale={locale} label={getDictionary(locale).sides.switchLabel} words={{ tenant: getDictionary(locale).sides.tenant.switch, landlord: getDictionary(locale).sides.landlord.switch }} />
           <Button asChild variant="primary" size="lg" shape="cut" shimmer magnetic>
             <a href={contactHref("dev-yomizaka-hero")}>{d.talk}</a>
           </Button>

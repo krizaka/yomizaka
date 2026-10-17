@@ -129,4 +129,11 @@ CREATE TABLE report_access_requests (
 CREATE UNIQUE INDEX report_access_requests_open ON report_access_requests(analysis_id, requester_id) WHERE handled_at IS NULL;
 `,
   },
+  {
+    version: "0004_perspective",
+    sql: `
+-- Which side of the lease the person is on (chosen at onboarding, changeable in settings): drives the default checks and the wording.
+ALTER TABLE accounts ADD COLUMN perspective text CHECK (perspective IN ('tenant', 'landlord'));
+`,
+  },
 ];

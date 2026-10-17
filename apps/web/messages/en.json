@@ -303,7 +303,12 @@
       "pdfFailed": "The file could not be displayed. Open it with the button above.",
       "pageLabel": "Page {page} of {total}",
       "onPage": "Passage on page {page}:",
-      "notFound": "This passage is not in the PDF's text layer:"
+      "notFound": "This passage is not in the PDF's text layer:",
+      "checksLeadBy": {
+        "neutral": "Choose what Orazaka reads: the text against the law, or the PDF file itself.",
+        "tenant": "Before signing: your lease's text against Québec's rules, then, if a paper looks doubtful, the file itself.",
+        "landlord": "Before sending: your lease template against Québec's rules; for a tenant's PDF paper, the examination of the file itself."
+      }
     },
     "analysis": {
       "complianceTitle": "Against the law",
@@ -590,6 +595,18 @@
         "expired": "Expired",
         "revoked": "Revoked"
       }
+    },
+    "profile": {
+      "title": "Which side of the lease are you on?",
+      "lead": "Yomizaka adapts the checks it offers first and its words. The rules are the same for everyone. You can change this at any time in settings.",
+      "legend": "Your role",
+      "tenant": "Tenant — I check my lease before signing",
+      "landlord": "Landlord (lessor) — I check my lease template and the tenant's papers",
+      "save": "Save",
+      "saved": "Saved.",
+      "settingsTitle": "Settings",
+      "settingsLead": "Your role changes the checks offered first and the app's wording.",
+      "open": "Settings"
     }
   },
   "report": {
@@ -690,6 +707,113 @@
       "text": "Only the people the report's owner gave access to can verify it. You can ask the owner.",
       "request": "Request access",
       "requested": "The owner has been notified. You can verify the report once they give you access."
+    }
+  },
+  "sides": {
+    "switchLabel": "Who is it for?",
+    "tenant": {
+      "switch": "I'm a tenant",
+      "seoTitle": "Yomizaka for tenants — check your lease before you sign",
+      "seoDescription": "Upload the lease you are offered: Orazaka reads it against Québec's rules and quotes the clause, the Civil Code article and the exact line. Deposits, post-dated cheques, clauses without effect.",
+      "eyebrow": "Yomizaka · for tenants",
+      "title": "Check your lease before you sign it.",
+      "lead": "Upload the lease you are offered. Orazaka reads it against Québec's rules and shows you, line by line, what does not hold — and what to ask the landlord.",
+      "outcomesTitle": "What you will know before you sign",
+      "outcomes": {
+        "a": {
+          "title": "Spot the forbidden clauses",
+          "text": "A security deposit, post-dated cheques, « no children »: each finding names the rule, the Civil Code of Québec article and the quoted line.",
+          "cta": "See a real check"
+        },
+        "b": {
+          "title": "Keep your lease and its findings",
+          "text": "The lease stays in your library, visible to your account alone; find it again by a word, with the quoted passages.",
+          "cta": "Sign in (by invitation)"
+        },
+        "c": {
+          "title": "Know what to ask",
+          "text": "Each non-compliant finding is a ready question for the landlord, with the article behind it. It is not legal advice.",
+          "cta": "Verify a report"
+        }
+      },
+      "how": {
+        "keep": {
+          "title": "You upload your lease",
+          "text": "It is kept as it is, visible to your account alone; its text layer is read for search."
+        },
+        "read": {
+          "title": "Orazaka reads it",
+          "text": "Against Québec's rules in force on the date you choose. Yomizaka never calls a model."
+        },
+        "prove": {
+          "title": "You keep the proof",
+          "text": "Each finding keeps the id of its Orazaka run; the report is signed, and only the people you give access to can verify it, with a Yomizaka account."
+        }
+      },
+      "examples": {
+        "eyebrow": "Examples",
+        "title": "What Yomizaka finds in a lease",
+        "lead": "Taken from a real check of a sample Québec lease, as Orazaka returned them.",
+        "items": {
+          "a": "« A security deposit of $1,450 at signing »: forbidden, only the first month may be asked in advance (C.c.Q., art. 1904).",
+          "b": "« Twelve post-dated cheques »: forbidden (C.c.Q., art. 1904, para. 2).",
+          "c": "« Children are not allowed in the dwelling »: a clause without effect (C.c.Q., arts. 1899 and 1901).",
+          "d": "The rent and the notice of the lowest rent of the last twelve months (section G of the mandatory lease form): present, or to ask the landlord for."
+        }
+      },
+      "owl": "The owl reads your lease line by line and tells you what it found, not what you should do."
+    },
+    "landlord": {
+      "switch": "I'm a landlord",
+      "seoTitle": "Yomizaka for landlords — a compliant lease before you send it",
+      "seoDescription": "Upload your lease template: Orazaka reads it against Québec's rules and quotes the article behind each finding. The tenant's papers examined, a signed report to keep, access shared with your manager.",
+      "eyebrow": "Yomizaka · for landlords",
+      "title": "A compliant lease before you send it.",
+      "lead": "Upload your lease template. Orazaka reads it against Québec's rules, quotes the article behind each finding, and you keep a signed report to store or share.",
+      "outcomesTitle": "What you will know before you send",
+      "outcomes": {
+        "a": {
+          "title": "Validate your lease template",
+          "text": "Landlord and tenant identification, rent, notice of the lowest rent, forbidden clauses: fix before sending, not after the dispute.",
+          "cta": "See a real check"
+        },
+        "b": {
+          "title": "Read the tenant's papers",
+          "text": "Identity document, proof of income as a PDF: the owl examines the file itself (producer, dates, successive saves) and flags what is unusual, never a « fake » stamp.",
+          "cta": "Sign in (by invitation)"
+        },
+        "c": {
+          "title": "Keep and share the proof",
+          "text": "A signed report with the Orazaka run id. Share it with a co-owner or a manager by giving them access, and withdraw it when you want.",
+          "cta": "Verify a report"
+        }
+      },
+      "how": {
+        "keep": {
+          "title": "You upload your template or a paper",
+          "text": "It is kept as it is, visible to your account alone; its text layer is read for search."
+        },
+        "read": {
+          "title": "Orazaka reads it",
+          "text": "The lease, against Québec's rules on the date you choose; a PDF paper, examined as a file. Yomizaka never calls a model."
+        },
+        "prove": {
+          "title": "You keep the proof",
+          "text": "Each finding keeps the id of its Orazaka run; the report is signed, and only the people you give access to can verify it, with a Yomizaka account."
+        }
+      },
+      "examples": {
+        "eyebrow": "Examples",
+        "title": "What Yomizaka flags before you send",
+        "lead": "The findings come from a real check of a sample Québec lease; a PDF's examination follows Orazaka's three levels.",
+        "items": {
+          "a": "A template that asks for a security deposit at signing: non-compliant, with the article (C.c.Q., art. 1904).",
+          "b": "A lease without the landlord's or the tenant's identification: a finding to fix before sending (art. 1895).",
+          "c": "A proof of income PDF saved several times by an editing tool: « unusual », with what was observed.",
+          "d": "A report shared with your manager until the end of the month, then withdrawn in one click."
+        }
+      },
+      "owl": "The owl reads every page and knows every face: it shows what it observes, the decision stays yours."
     }
   }
 }
