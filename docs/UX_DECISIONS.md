@@ -115,3 +115,19 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
 - **Cost**: two copies of the pitch in two languages to keep honest — every example is a finding of a real run; rent
   increase and other TAL rules are not in the Québec ruleset yet and are not promised.
 - **Signal we are wrong**: visitors take the wrong side's page and bounce to the other, or never choose a side in the app.
+
+## 9. The signed report is also a PDF
+
+- **Decision**: a member (the owner, or someone the owner gave access to) downloads the report as an HTML file and as a signed
+  PDF: the report's pages, then a visible signature page (key id, text fingerprint, signature), the attestation embedded in the
+  file's Info dictionary. Verification reads it back, checks the Ed25519 signature, extracts the text of the pages and compares
+  it with the signed fingerprint: a changed word is `ALTERED`. It signs what the file **says**, not its bytes (a viewer that
+  re-saves a PDF changes the bytes). Same key, same grants, same audit as the HTML report; a specimen is rejected.
+- **Problem**: people print and file reports, and send them to an accountant or a manager; HTML is not what they attach.
+- **Principle**: meet the person's format (recognition over recall); say exactly what the signature covers (calibrated trust).
+- **Refused**: PAdES/CMS certificate signatures (they need a certificate authority the product does not have: the trust is in
+  Krizaka's key, as the report says), signing the bytes, a PDF served to anyone.
+- **Cost**: standard fonts only (WinAnsi: other characters print as « ? » — in the signed text too); the file is not signed
+  at the PDF-reader level, so a reader shows no « signed » badge.
+- **Signal we are wrong**: people ask why their PDF reader does not show a signature, or re-save PDFs and expect them to verify.
+

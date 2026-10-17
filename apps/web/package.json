@@ -21,6 +21,7 @@
     "@krizaka/ui": "^3.23.0",
     "@yomizaka/core": "workspace:*",
     "next": "^16.4.1",
+    "pdf-lib": "1.17.1",
     "pdfjs-dist": "6.4.299",
     "pg": "^8.16.3",
     "react": "^19.2.0",

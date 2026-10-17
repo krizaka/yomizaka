@@ -4,6 +4,7 @@ import { resetRateLimits } from "./rate-limit";
 import { buildPayload, issueReport, sha256 } from "./report";
 import type { Grant, Target } from "./report-access";
 import { reportLabels } from "./report-labels";
+import { issuePdf } from "./report-pdf";
 import { signingKey } from "./report-signer";
 
 /**
@@ -36,6 +37,8 @@ const analysis = {
   finishedAt: "2026-10-14T10:00:05.000Z",
 };
 const issued = issueReport(buildPayload(doc, analysis, "en"), reportLabels("en"), signingKey());
+
+const pdfIssued = await issuePdf(buildPayload(doc, analysis, "en"), reportLabels("en"), signingKey());
 
 const grant = (over: Partial<Grant> = {}): Grant => ({ id: "g1", email: GUEST.email, createdAt: new Date("2026-10-01"), expiresAt: null, revokedAt: null, ...over });
 const held = (grants: Grant[]): Target => ({ analysisId: "an-1", documentId: "doc-1", ownerId: OWNER.id, grants });
@@ -166,5 +169,47 @@ describe("the audit trail — who verified what, and when", () => {
     state.target = held([]);
     await post();
     expect(state.audits[0]).toMatchObject({ action: "report.verify_denied", actorId: GUEST.id, detail: { runId: "run-123", known: true } });
+  });
+});
+
+const postPdf = async (bytes: Uint8Array = pdfIssued.bytes) => {
+  const { POST } = await import("../app/api/verify/route");
+  const form = new FormData();
+  form.set("report", new File([new Uint8Array(bytes)], "report.pdf", { type: "application/pdf" }));
+  return POST(new Request("https://dev.yomizaka.com/api/verify", { method: "POST", body: form, headers: { "x-forwarded-for": "203.0.113.9" } }));
+};
+
+describe("POST /api/verify — a signed PDF report follows the same rules as the HTML one", () => {
+  it("401 signed out, 403 without a grant, 200 with a grant or as the owner, 403 once revoked", async () => {
+    expect((await postPdf()).status).toBe(401);
+    state.session = { account: GUEST };
+    state.target = held([]);
+    const denied = await postPdf();
+    expect(denied.status).toBe(403);
+    expect(await denied.json()).toMatchObject({ code: "NO_ACCESS", runId: "run-123" });
+    state.target = held([grant()]);
+    const ok = await postPdf();
+    expect(ok.status).toBe(200);
+    expect(await ok.json()).toMatchObject({ result: { ok: true, payload: { check: { runId: "run-123" } } } });
+    state.target = held([grant({ revokedAt: new Date("2026-10-02") })]);
+    expect((await postPdf()).status).toBe(403);
+    state.session = { account: OWNER };
+    state.target = held([]);
+    expect((await postPdf()).status).toBe(200);
+  });
+
+  it("audits a PDF verification like any other", async () => {
+    state.session = { account: GUEST };
+    state.target = held([grant()]);
+    await postPdf();
+    expect(state.audits[0]).toMatchObject({ action: "report.verified", detail: { runId: "run-123", ok: true, via: "grant" } });
+  });
+
+  it("a PDF with no attestation is a failed check, not a crash, and reveals nothing", async () => {
+    state.session = { account: GUEST };
+    const { PDFDocument } = await import("pdf-lib");
+    const res = await postPdf(await (await PDFDocument.create()).save());
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ result: { ok: false, reason: "UNREADABLE" } });
   });
 });

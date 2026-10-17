@@ -69,7 +69,7 @@ export function VerifyForm({ labels, locale }: { labels: VerifyLabels; locale: L
   return (
     <div className="flex flex-col gap-6">
       <f.Form aria-label={labels.submit} className="flex flex-col gap-4">
-        <f.FileUpload name="reportFiles" label={labels.reportFile} title={labels.drop.reportTitle} browseLabel={labels.drop.browse} hint={labels.drop.hint} accept=".html,text/html" maxSize={2 * 1024 * 1024} removeLabel={(name) => labels.drop.remove.replace("{name}", name)} refusalLabel={() => labels.tooLarge} />
+        <f.FileUpload name="reportFiles" label={labels.reportFile} title={labels.drop.reportTitle} browseLabel={labels.drop.browse} hint={labels.drop.hint} accept=".html,.pdf,text/html,application/pdf" maxSize={2 * 1024 * 1024} removeLabel={(name) => labels.drop.remove.replace("{name}", name)} refusalLabel={() => labels.tooLarge} />
         <f.TextArea name="reportText" label={labels.reportPaste} rows={4} />
         <f.FileUpload name="documentFiles" label={labels.documentFile} title={labels.drop.documentTitle} browseLabel={labels.drop.browse} hint={labels.documentHint} maxSize={10 * 1024 * 1024} removeLabel={(name) => labels.drop.remove.replace("{name}", name)} refusalLabel={() => labels.tooLarge} />
         {problem ? <Alert tone="danger">{problem}</Alert> : null}

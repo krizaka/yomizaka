@@ -53,9 +53,17 @@ describe("readVerifyForm (the request behind the members-only page)", () => {
     await expect(readVerifyForm(big)).rejects.toMatchObject({ status: 413 });
   });
 
-  it("accepts only an .html report as a file (415), however it is named otherwise", async () => {
+  it("accepts only an .html or .pdf report as a file (415), however it is named otherwise", async () => {
     const form = new FormData();
-    form.set("report", new File([issued.html], "report.pdf", { type: "application/pdf" }));
+    form.set("report", new File([issued.html], "report.txt", { type: "text/plain" }));
     await expect(readVerifyForm(form)).rejects.toMatchObject({ status: 415 });
+  });
+
+  it("reads an uploaded .pdf report as bytes (the PDF carries its own attestation)", async () => {
+    const form = new FormData();
+    form.set("report", new File([new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d])], "report.pdf", { type: "application/pdf" }));
+    const read = await readVerifyForm(form);
+    expect(read.text).toBe("");
+    expect(read.pdf).toHaveLength(5);
   });
 });

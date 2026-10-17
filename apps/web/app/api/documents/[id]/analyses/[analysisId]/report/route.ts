@@ -3,7 +3,7 @@ import { audit } from "@/lib/audit";
 import { handle } from "@/lib/http";
 import { asLocale } from "@/lib/i18n";
 import { limit } from "@/lib/rate-limit";
-import { reportFor } from "@/lib/reports";
+import { reportFor, reportPdfFor } from "@/lib/reports";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +17,13 @@ export function GET(req: Request, { params }: { params: Promise<{ id: string; an
     limit("report", req, session.account.id, [120, 3600], [60, 3600]);
     const { id, analysisId } = await params;
     const url = new URL(req.url);
+    if (url.searchParams.get("format") === "pdf" && !url.searchParams.get("meta")) {
+      const pdf = await reportPdfFor(session.account.id, id, analysisId, asLocale(url.searchParams.get("lang") ?? undefined));
+      await audit({ action: "report.issued", actorId: session.account.id, actorLabel: session.account.email, targetId: id, detail: { analysisId, format: "pdf", runId: pdf.issued.attestation.payload.check.runId, fileSha256: pdf.issued.fileSha256, keyId: pdf.issued.attestation.keyId }, headers: req.headers });
+      return new Response(new Uint8Array(pdf.issued.bytes), {
+        headers: { "Content-Type": "application/pdf", "Content-Disposition": `attachment; filename="${pdf.filename}"`, "X-Report-SHA256": pdf.issued.fileSha256, "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" },
+      });
+    }
     const { issued, filename } = await reportFor(session.account.id, id, analysisId, asLocale(url.searchParams.get("lang") ?? undefined));
     if (url.searchParams.get("meta")) {
       return Response.json({ report: { fileSha256: issued.fileSha256, keyId: issued.attestation.keyId, filename, lang: issued.attestation.payload.lang }, }, { headers: { "Cache-Control": "private, no-store" } });
