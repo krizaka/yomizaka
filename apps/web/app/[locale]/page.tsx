@@ -10,9 +10,9 @@ import Link from "next/link";
 import { AppTake } from "@/components/home/AppTake";
 import { AudienceCards } from "@/components/home/AudienceCards";
 import { AudiencePicker } from "@/components/home/AudiencePicker";
-import { BeforeAfter } from "@/components/home/BeforeAfter";
 import { ComparisonSection } from "@/components/home/ComparisonSection";
 import { FaqSection } from "@/components/home/FaqSection";
+import { HeroFlow } from "@/components/home/HeroFlow";
 import { ProofSection } from "@/components/home/ProofSection";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -55,7 +55,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           title={d.title}
           lead={d.lead}
           visualLabel={d.hero.visualLabel}
-          visual={<BeforeAfter locale={locale} />}
+          visual={<HeroFlow locale={locale} />}
           actions={
             <>
               <Button asChild variant="primary" size="lg" shape="cut" shimmer magnetic className="w-full sm:w-auto">

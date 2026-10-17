@@ -4,6 +4,9 @@
  */
 export const HOME_SECTIONS = ["hero", "features", "audiences", "proof", "app", "comparison", "promise", "faq", "closing"] as const;
 
+/** The finding the hero and the proof show: the forbidden deposit (QC-LEASE-004) of the recorded tenant run — a real answer, never typed. */
+export const HERO_RULE = "QC-LEASE-004";
+
 type DevPreview = { criteria: Record<string, { evidence: string | null; na?: boolean }> };
 
 /**

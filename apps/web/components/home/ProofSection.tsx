@@ -9,10 +9,10 @@ import Link from "next/link";
 
 import { Specimen } from "@/components/Specimen";
 import { getDictionary, type Locale } from "@/lib/i18n";
+import { HERO_RULE } from "@/lib/landing";
 import { recordedRun } from "@/lib/recorded-runs";
 import { pagePath } from "@/lib/site";
 
-import { HERO_RULE } from "./BeforeAfter";
 
 const DATE: Record<Locale, string> = { en: "en-CA", fr: "fr-CA" };
 
