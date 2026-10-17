@@ -76,7 +76,7 @@
     "ops.cost": {
       "evidence": null,
       "gap": "The organisation's cloud total is ≈ 106 USD/month (> 100 USD target, INFRA-COST 2026-10-16); ops.cost cannot be evidenced for any product until it is …",
-      "issue": "https://github.com/krizaka/.github/issues/79"
+      "issue": "https://github.com/krizaka/.github/issues/78"
     },
     "admin.gated": {
       "evidence": null,
