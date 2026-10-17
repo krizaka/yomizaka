@@ -1,54 +1,39 @@
-import { YomizakaLogo } from "@krizaka/ui";
-import { Page } from "@krizaka/ui/page";
+import { SiteFooter as FamilyFooter, SiteFooterColumn, SiteFooterLink } from "@krizaka/ui/site-footer";
+import { familyLabels } from "@krizaka/ui/sites";
 import Link from "next/link";
 
 import { type Locale, translator } from "@/lib/i18n";
 import { indexable } from "@/lib/indexing";
-import { APP_VERSION, contactHref, KRIZAKA_URL, pagePath, REPO_URL } from "@/lib/site";
+import { APP_VERSION, contactHref, pagePath, REPO_URL } from "@/lib/site";
 
-import { Rich } from "./Rich";
-
-/** The footer: the product, its source, the contact, the privacy notice — and the publisher, Krizaka, here only. */
+/**
+ * The footer is @krizaka/ui's SiteFooter in product mode (`family={false}`): the product's pages, its source and contact,
+ * the publisher line « A Krizaka product » (→ www.krizaka.com), DEV · the version, Montréal. On a deployment kept out of
+ * search engines the invitation line ends the signature row — one footer, no strip under it.
+ */
 export function SiteFooter({ locale }: { locale: Locale }) {
   const t = translator(locale);
-  const link = "underline-offset-4 hover:text-fg hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm";
   return (
-    <footer className="mt-16 border-t border-border-default">
-      <Page className="flex flex-col gap-4 py-8 text-sm text-fg-muted md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-3">
-          <YomizakaLogo size={22} animated={false} />
-          <p>
-            <Rich text={t("chrome.footer")} />{" "}
-            <a href={KRIZAKA_URL} className={link}>
-              krizaka.com
-            </a>
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-4">
-          <Link href={pagePath(locale, "verify")} className={link}>
-            {t("chrome.nav.verify")}
-          </Link>
-          <Link href={pagePath(locale, "privacy")} className={link}>
-            {t("chrome.legal")}
-          </Link>
-          <a href={REPO_URL} className={link}>
-            {t("chrome.sourceCode")}
-          </a>
-          <a href={contactHref("dev-yomizaka-footer")} className={link}>
-            {t("chrome.contact")}
-          </a>
-          <span className="font-mono text-xs" data-testid="app-version">
-            {t("chrome.dev", { version: APP_VERSION })}
-          </span>
-        </div>
-      </Page>
-      {indexable() ? null : (
-        <Page>
-          <p className="pb-6 text-center text-xs text-fg-muted" data-testid="dev-environment-notice">
-            {t("chrome.devNotice")}
-          </p>
-        </Page>
-      )}
-    </footer>
+    <FamilyFooter
+      current="yomizaka"
+      family={false}
+      labels={familyLabels[locale]}
+      aria-label={t("chrome.footerLabel")}
+      version={APP_VERSION}
+      env={indexable() ? undefined : "DEV"}
+      data-testid="app-version"
+      legal={indexable() ? undefined : <span data-testid="dev-environment-notice">{t("chrome.devNotice")}</span>}
+    >
+      <SiteFooterColumn title="Yomizaka">
+        <SiteFooterLink asChild>
+          <Link href={pagePath(locale, "verify")}>{t("chrome.nav.verify")}</Link>
+        </SiteFooterLink>
+        <SiteFooterLink asChild>
+          <Link href={pagePath(locale, "privacy")}>{t("chrome.legal")}</Link>
+        </SiteFooterLink>
+        <SiteFooterLink href={REPO_URL}>{t("chrome.sourceCode")}</SiteFooterLink>
+        <SiteFooterLink href={contactHref("dev-yomizaka-footer")}>{t("chrome.contact")}</SiteFooterLink>
+      </SiteFooterColumn>
+    </FamilyFooter>
   );
 }
