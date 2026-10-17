@@ -4,10 +4,7 @@ import { audit } from "./audit";
 import { query } from "./db";
 import { type AnalysisRow, isUuid, toAnalysis } from "./documents";
 import { refuse } from "./http";
-import { type Locale } from "./i18n";
-import { buildPayload, type IssuedReport, issueReport } from "./report";
-import { reportLabels } from "./report-labels";
-import { signingKey } from "./report-signer";
+import type { buildPayload } from "./report";
 
 /**
  * The public showcase: ONE finished compliance check an administrator has promoted, on a document an administrator has
@@ -68,14 +65,6 @@ export async function getShowcase(): Promise<Showcase | null> {
   return (await load())?.showcase ?? null;
 }
 
-/** The signed audit report of the showcase (the same bytes its owner would download), in a language. */
-export async function showcaseReport(lang: Locale): Promise<{ issued: IssuedReport; filename: string } | null> {
-  const found = await load();
-  if (!found) return null;
-  const issued = issueReport(buildPayload(found.document, found.analysis, lang), reportLabels(lang), signingKey());
-  return { issued, filename: `yomizaka-audit-sample-${found.showcase.runId.slice(0, 8)}.html` };
-}
-
 /** The sample document's file, for the viewer — only when it is the showcase's. */
 export async function showcaseFile(): Promise<{ filename: string; mimeType: string; content: Buffer } | null> {
   const [row] = await query<{ filename: string; mime_type: string; content: Buffer }>(
@@ -116,10 +105,7 @@ export async function setShowcase(actor: Actor, analysisId: string, on: boolean,
   return { id: analysisId, showcase: on };
 }
 
-/** The showcase with the fingerprint and key of the signed report in a language — what the public section shows next to « Download ». */
-export async function getShowcaseView(lang: Locale): Promise<(Showcase & { file: { sha256: string; keyId: string } }) | null> {
-  const found = await load();
-  if (!found) return null;
-  const issued = issueReport(buildPayload(found.document, found.analysis, lang), reportLabels(lang), signingKey());
-  return { ...found.showcase, file: { sha256: issued.fileSha256, keyId: issued.attestation.keyId } };
+/** The showcase as the public page shows it: the run, the sample and the findings — never a signed file (ADR-0002, specimens). */
+export async function getShowcaseView(): Promise<Showcase | null> {
+  return (await load())?.showcase ?? null;
 }

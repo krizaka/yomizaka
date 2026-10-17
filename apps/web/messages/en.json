@@ -161,9 +161,9 @@
       "rules": "rules of the Québec residential lease evaluated in each check",
       "found": "findings on this sample lease: {fail} non-compliant, {pass} compliant",
       "report": {
-        "title": "The signed report",
-        "text": "The same check as a signed file: document fingerprint, rules version, every finding with its passage and article, and the signature.",
-        "cta": "Download the signed report"
+        "title": "The report, as a specimen",
+        "text": "Each check can become a signed report for your own documents. Here, an unsigned preview of a fictitious lease.",
+        "cta": "See the specimen"
       },
       "access": {
         "title": "Verified by the people you choose",
@@ -201,12 +201,8 @@
     "viewerHint": "Same text as the console's viewer: every passage a finding quotes is marked.",
     "docHash": "Document SHA-256",
     "report": "Signed report",
-    "reportHash": "SHA-256 of the file",
-    "key": "Signing key",
     "copy": "Copy",
     "copied": "Copied",
-    "download": "Download the signed report",
-    "verify": "Verify it (members with access)",
     "review": "The Québec rules await a lawyer's review — the report says so.",
     "noPassage": "No passage quoted",
     "findings": "Findings",
@@ -225,7 +221,12 @@
         "lead": "Before sending, what the template must fix to be compliant."
       }
     },
-    "recorded": "Recorded on {date} on {source} · run {run}. The findings below are Orazaka's answer, untouched."
+    "recorded": "Recorded on {date} on {source} · run {run}. The findings below are Orazaka's answer, untouched.",
+    "specimen": {
+      "mark": "SPECIMEN — fictitious lease, no value",
+      "title": "Report specimen",
+      "note": "A visual preview, unsigned: it is not an attestation. A signed report exists only for your own documents, and only the people you give access to can verify it."
+    }
   },
   "privacy": {
     "title": "Privacy",
@@ -706,7 +707,8 @@
       "UNREADABLE": "The signature block is damaged or not in a format Yomizaka knows.",
       "BAD_SIGNATURE": "The signature does not match the content: the report was modified or signed by another key.",
       "ALTERED": "The signature is valid for the original report, but the file is not that report any more: something was changed after signing.",
-      "UNKNOWN_KEY": "It was signed by a key that is not this server's."
+      "UNKNOWN_KEY": "It was signed by a key that is not this server's.",
+      "SPECIMEN": "This report is a specimen: it proves nothing."
     },
     "facts": {
       "fileSha": "This file's SHA-256",

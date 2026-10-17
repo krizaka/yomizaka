@@ -4,15 +4,13 @@ import { join } from "node:path";
 import { PERSPECTIVES } from "@yomizaka/core";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import landlordFile from "@/content/recorded-runs/landlord.json";
 import tenantFile from "@/content/recorded-runs/tenant.json";
 
 import { ShowcaseRun, summaryLine } from "../components/ShowcaseRun";
-import { readRecording, recordedReport, recordedRun, RecordedRunError, recordedRuns,recordedRunView } from "./recorded-runs";
-import { verifyReport } from "./report";
-import { signingKey } from "./report-signer";
+import { readRecording, recordedRun, RecordedRunError, recordedRuns } from "./recorded-runs";
 
 const ROOT = join(__dirname, "..");
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -53,26 +51,17 @@ describe("« A real run » — a recorded run per side of the lease, or the page
   it("the page imports the recordings, so a page without one cannot be built", () => {
     const page = readFileSync(join(ROOT, "app/[locale]/run/page.tsx"), "utf8");
     expect(page).toContain('from "@/lib/recorded-runs"');
-    expect(page).toContain("recordedRunView(side, locale)");
+    expect(page).toContain("recordedRun(side)");
     expect(page).not.toContain("getShowcaseView");
   });
 
-  it("renders each side's run: the run id, the counted summary, the signed report", () => {
-    for (const side of PERSPECTIVES) {
-      const r = recordedRunView(side, "fr");
-      const html = renderToStaticMarkup(createElement(ShowcaseRun, { run: r, locale: "fr", reportHref: `/api/recorded-runs/${r.side}/report?lang=fr`, verifyHref: null }));
+  it("renders each side's run: the run id, the counted summary, an unsigned specimen", () => {
+    for (const r of recordedRuns()) {
+      const html = renderToStaticMarkup(createElement(ShowcaseRun, { run: r, locale: "fr" }));
       expect(html).toContain(r.runId);
       expect(html).toContain(summaryLine(r.report.findings, { summary: "{total} contrôles · {fail} non conformes · {pass} conformes", insufficient: "" }));
-      expect(html).toContain(`/api/recorded-runs/${r.side}/report?lang=fr`);
-      expect(html).not.toContain("/verify");
-    }
-  });
-
-  it("signs a report per run that checks out, for the sample document it was made from", () => {
-    for (const side of PERSPECTIVES) {
-      const { issued } = recordedReport(side, "fr");
-      const doc = new TextEncoder().encode(recordedRun(side).document.text);
-      expect(verifyReport(issued.html, signingKey(), doc)).toMatchObject({ ok: true, documentMatch: true, payload: { check: { runId: recordedRun(side).runId } } });
+      expect(html).toContain("SPÉCIMEN — bail fictif, sans valeur");
+      expect(html).not.toMatch(/download|report\?lang|\/verify/);
     }
   });
 
@@ -81,16 +70,5 @@ describe("« A real run » — a recorded run per side of the lease, or the page
     expect(t.document.sha256).not.toBe(l.document.sha256);
     expect(t.report.findings.filter((f) => f.verdict === "FAIL").length).toBeGreaterThan(0);
     expect(l.report.findings.filter((f) => f.verdict === "FAIL").length).toBeGreaterThan(0);
-  });
-
-  it("is read at build with no signing key (the production build has none): only the signed report needs it, at request time", () => {
-    vi.stubEnv("NODE_ENV", "production");
-    vi.stubEnv("APP_REPORT_SIGNING_KEY", "");
-    try {
-      expect(() => readRecording("tenant", tenantFile)).not.toThrow();
-      expect(() => recordedRunView("tenant", "en")).toThrow(/APP_REPORT_SIGNING_KEY/);
-    } finally {
-      vi.unstubAllEnvs();
-    }
   });
 });

@@ -54,6 +54,8 @@ export const reportPayload = z.object({
   }),
   summary: z.object({ rulesEvaluated: z.number(), blockingFailures: z.number(), byVerdict: z.record(z.string(), z.number()) }),
   findings: z.array(payloadFinding),
+  /** Set only by a demo key: a specimen is never an attestation, and verification rejects it (ADR-0002). */
+  specimen: z.literal(true).optional(),
 });
 export type ReportPayload = z.infer<typeof reportPayload>;
 
@@ -198,7 +200,7 @@ export function issueReport(payload: ReportPayload, labels: ReportLabels, key: S
   return { html, fileSha256: sha256(html), attestation };
 }
 
-export type VerifyFailure = "NOT_A_REPORT" | "UNREADABLE" | "BAD_SIGNATURE" | "ALTERED" | "UNKNOWN_KEY";
+export type VerifyFailure = "NOT_A_REPORT" | "UNREADABLE" | "BAD_SIGNATURE" | "ALTERED" | "UNKNOWN_KEY" | "SPECIMEN";
 
 export type Verification =
   | { ok: true; fileSha256: string; keyId: string; payload: ReportPayload; documentMatch: boolean | null }
@@ -231,5 +233,7 @@ export function verifyReport(file: string, key: Pick<SigningKey, "keyId" | "publ
   // The signature is good for this payload and this body hash: the file must still BE that body.
   const body = text.replace(match[0], ATTESTATION_MARKER);
   if (sha256(body) !== attestation.bodySha256) return fail("ALTERED");
+  // A specimen is a demonstration, never an attestation: however valid its signature, it proves nothing.
+  if (attestation.payload.specimen) return fail("SPECIMEN");
   return { ok: true, fileSha256, keyId: attestation.keyId, payload: attestation.payload, documentMatch: document ? sha256(document) === attestation.payload.document.sha256 : null };
 }

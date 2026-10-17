@@ -41,3 +41,18 @@ confirmation oracle on a confidential document, and a door a shared link or a pr
   downloaded; verifying it needs a grant like any report.
 - There is no e-mail delivery yet: an invitation is a pending grant the owner tells the person about; the owner is
   notified of a request in the report's sharing panel and the audit log, not by mail.
+
+## Specimens — a sample is never a signed file (added 2026-10-17, after a review by Oussama)
+
+A first version of the landing let anyone download a report of a fictitious lease **validly signed with Yomizaka's key**,
+with nothing in its text or its signed payload saying it was a sample: a file that could be passed off as a real attestation,
+and a public door around the members-only verification above. Removed (routes deleted, so 404). The rules:
+
+1. **No public route serves a signed artifact**, and no public page shows the fingerprint or the key id of one. Tested:
+   `lib/no-public-signature.test.ts` scans every route that is not behind a session for the signing code.
+2. **A sample is a visual specimen**: an unsigned, watermarked preview (« SPÉCIMEN — bail fictif, sans valeur »), no signature
+   block, no fingerprint, no key material.
+3. **If a downloadable sample is ever wanted**, it is signed with a **separate demo key** (never `APP_REPORT_SIGNING_KEY`)
+   and its payload carries `"specimen": true`. **Verification rejects a specimen** (`SPECIMEN`) even when its signature is
+   valid (`verifyReport`, tested).
+4. **Sample parties are obviously fictitious**: every name in a sample carries « (fictif) ».

@@ -3,10 +3,7 @@ import { type Analysis, type ComplianceReport, orazakaRun, type Perspective, PER
 import landlord from "@/content/recorded-runs/landlord.json";
 import tenant from "@/content/recorded-runs/tenant.json";
 
-import type { Locale } from "./i18n";
-import { buildPayload, type IssuedReport, issueReport, sha256 } from "./report";
-import { reportLabels } from "./report-labels";
-import { signingKey } from "./report-signer";
+import { type buildPayload, sha256 } from "./report";
 import type { Showcase } from "./showcase";
 
 /**
@@ -22,7 +19,7 @@ const RUN_SUCCEEDED = "SUCCEEDED";
 
 const FILES: Record<Perspective, unknown> = { tenant, landlord };
 
-/** What a recording says; the signed report's fingerprint is added at request time (`recordedRunView`) — the key is a runtime secret. */
+/** What a recording says — never a signed file: a sample is a visual specimen (ADR-0002). */
 export interface RecordedRun extends Showcase {
   side: Perspective;
   recordedAt: string;
@@ -75,15 +72,3 @@ const ALL = Object.fromEntries(PERSPECTIVES.map((side) => [side, readRecording(s
 
 export const recordedRun = (side: Perspective): RecordedRun => ALL[side].run;
 export const recordedRuns = (): RecordedRun[] => PERSPECTIVES.map(recordedRun);
-
-/** The signed audit report of a recorded run, in a language (the same bytes every time). */
-export function recordedReport(side: Perspective, lang: Locale): { issued: IssuedReport; filename: string } {
-  const { analysis, document } = ALL[side];
-  return { issued: issueReport(buildPayload(document, analysis, lang), reportLabels(lang), signingKey()), filename: `yomizaka-audit-sample-${side}-${analysis.runId!.slice(0, 8)}.html` };
-}
-
-/** A recorded run with the fingerprint and key of its signed report — read at request time (the signing key is a runtime secret). */
-export function recordedRunView(side: Perspective, lang: Locale): RecordedRun & { file: { sha256: string; keyId: string } } {
-  const { issued } = recordedReport(side, lang);
-  return { ...recordedRun(side), file: { sha256: issued.fileSha256, keyId: issued.attestation.keyId } };
-}
