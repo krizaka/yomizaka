@@ -49,6 +49,8 @@
 - Environment variables are named by bounded context (`APP_`, `DATABASE_`, `AUTH_`, `ABUSE_`, `AI_`), never by product or
   vendor; each is declared once in `apps/web/lib/env.ts`.
 
+- **The live DO spec must equal `deploy/digitalocean/dev.app.yaml`** (the repository is the intent; `doctl apps update` is not run by CI). The sitemap was a 404 on dev because the live app still had `APP_SEARCH_INDEXING=off` while the file said `on`: after any spec change, run `node scripts/check-seo-family.mjs --base https://dev.yomizaka.com --host https://dev.yomizaka.com`.
+
 ## 5. Storage and cost
 
 - Documents (≤ 10 MB) are kept **in the database** (`documents.content`, bytea) for the MVP: no storage service to pay
