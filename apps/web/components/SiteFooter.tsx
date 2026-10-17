@@ -1,4 +1,4 @@
-import { SiteFooter as FamilyFooter } from "@krizaka/ui/site-footer";
+import { SiteFooter as FamilyFooter, SiteFooterColumn, SiteFooterLink } from "@krizaka/ui/site-footer";
 import { familyLabels } from "@krizaka/ui/sites";
 import Link from "next/link";
 
@@ -24,16 +24,16 @@ export function SiteFooter({ locale }: { locale: Locale }) {
       data-testid="app-version"
       legal={indexable() ? undefined : <span data-testid="dev-environment-notice">{t("chrome.devNotice")}</span>}
     >
-      <FamilyFooter.Column title="Yomizaka">
-        <FamilyFooter.Link asChild>
+      <SiteFooterColumn title="Yomizaka">
+        <SiteFooterLink asChild>
           <Link href={pagePath(locale, "verify")}>{t("chrome.nav.verify")}</Link>
-        </FamilyFooter.Link>
-        <FamilyFooter.Link asChild>
+        </SiteFooterLink>
+        <SiteFooterLink asChild>
           <Link href={pagePath(locale, "privacy")}>{t("chrome.legal")}</Link>
-        </FamilyFooter.Link>
-        <FamilyFooter.Link href={REPO_URL}>{t("chrome.sourceCode")}</FamilyFooter.Link>
-        <FamilyFooter.Link href={contactHref("dev-yomizaka-footer")}>{t("chrome.contact")}</FamilyFooter.Link>
-      </FamilyFooter.Column>
+        </SiteFooterLink>
+        <SiteFooterLink href={REPO_URL}>{t("chrome.sourceCode")}</SiteFooterLink>
+        <SiteFooterLink href={contactHref("dev-yomizaka-footer")}>{t("chrome.contact")}</SiteFooterLink>
+      </SiteFooterColumn>
     </FamilyFooter>
   );
 }
