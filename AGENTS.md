@@ -25,7 +25,7 @@
 - Reading a file's **text layer** (pdf.js through `unpdf`) is parsing, not analysis: it feeds the compliance Studio and
   search. A scanned PDF has no text layer — the UI says so; reading images would be Orazaka's job.
 - A report is shown as Orazaka returned it (`packages/core` `reportOf`): a shape it did not send is `null`, never a guess.
-  The public page's "a real run" is read from this platform at request time (ISR, 5 min): the one finished compliance check an administrator promoted (`analyses.showcase`) on a document declared a sample (`documents.sample`) — both set from the administration, audit-logged (`lib/showcase.ts`). Nothing promoted or unreachable → the section says so; never a copy kept in the repository.
+  The public page's « a real run » (`/run`) shows **one recorded run per side of the lease** (tenant, landlord): a fictitious sample lease sent to Orazaka's compliance Studio on dev (Québec ruleset), the answer kept exactly as Orazaka returned it in `apps/web/content/recorded-runs/<side>.json` — written by `scripts/record-runs.mjs` (key from the environment, never by hand; re-run it when the ruleset or the Studio changes). `lib/recorded-runs.ts` validates both at build: a page without a recorded run does not build (`lib/recorded-runs.test.ts`). The platform's own showcase (an administrator promotes a check on a sample document, `lib/showcase.ts`, `/api/showcase/*`) stays available but the page no longer depends on it.
 
 ## 3. The product is independent
 
