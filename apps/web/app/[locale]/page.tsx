@@ -10,6 +10,7 @@ import { Section } from "@krizaka/ui/page";
 import { PageHero } from "@krizaka/ui/page-hero";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { preconnect } from "react-dom";
 
 import { JourneyTour } from "@/components/JourneyTour";
 import { SiteHeader } from "@/components/SiteChrome";
@@ -18,7 +19,7 @@ import { asLocale, format, getDictionary } from "@/lib/i18n";
 import { HOW_STEPS, OUTCOMES, productStatus, TRUST } from "@/lib/landing";
 import { pageMetadata, siteJsonLd } from "@/lib/seo";
 import { contactHref, pagePath, REPO_URL } from "@/lib/site";
-import { TOUR_RUNS, TOUR_STEPS, tourClip, type TourDevice } from "@/lib/tour";
+import { MEDIA_CDN, TOUR_RUNS, TOUR_STEPS, tourClip, type TourDevice } from "@/lib/tour";
 
 import preview from "../../../../dev-preview.json";
 
@@ -47,8 +48,13 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       const w = d.tour.steps[id];
       return { id, title: w.title, description: w.text, alt: w.alt, poster: clip.poster, video: { webm: clip.webm, mp4: clip.mp4 } };
     });
+  // The first poster is the page's LCP: open the CDN's connection now and fetch the poster of the frame shown (phone below
+  // md, browser from md) at once — React hoists these links into <head>.
+  preconnect(MEDIA_CDN);
   return (
     <>
+      <link rel="preload" as="image" href={tourClip("phone", "keep").poster} media="(max-width: 767px)" fetchPriority="high" />
+      <link rel="preload" as="image" href={tourClip("desktop", "keep").poster} media="(min-width: 768px)" fetchPriority="high" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
       <SiteHeader locale={locale} current="home" />
       <main id="content">

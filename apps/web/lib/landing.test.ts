@@ -57,3 +57,12 @@ describe("the bar", () => {
     expect(read("components/SiteFooter.tsx")).toContain("version={APP_VERSION}");
   });
 });
+
+describe("the first screen loads its proof first", () => {
+  it("preconnects to the media CDN and preloads the tour's first poster (phone or desktop), at high priority", () => {
+    const home = read("app/[locale]/page.tsx");
+    expect(home).toMatch(/preconnect\(MEDIA_CDN/);
+    expect(home).toMatch(/<link rel="preload" as="image" href=\{tourClip\("phone", "keep"\)\.poster\} media="\(max-width: 767px\)" fetchPriority="high" \/>/);
+    expect(home).toMatch(/<link rel="preload" as="image" href=\{tourClip\("desktop", "keep"\)\.poster\} media="\(min-width: 768px\)" fetchPriority="high" \/>/);
+  });
+});
