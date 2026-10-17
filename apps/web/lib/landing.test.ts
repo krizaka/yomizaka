@@ -31,8 +31,8 @@ describe("the landing is the product landing template of @krizaka/ui", () => {
     expect([...body].sort((a, b) => a - b)).toEqual(body);
   });
 
-  it("uses the family's blocks: StepShowcase (the tour), ComparisonTable, MascotQuote (the owl), NumberTicker (real figures), CtaPanel (the closing)", () => {
-    expect(read("components/JourneyTour.tsx")).toContain("@krizaka/ui/step-showcase");
+  it("uses the family's blocks: DeviceFrame (the phone take), ComparisonTable, MascotQuote (the owl), NumberTicker (real figures), CtaPanel (the closing)", () => {
+    expect(read("components/home/AppTake.tsx")).toContain("DeviceFrame");
     expect(read("components/home/ComparisonSection.tsx")).toContain("@krizaka/ui/comparison-table");
     expect(home).toContain("@krizaka/ui/mascot-quote");
     expect(home).toContain("<NumberTicker");
@@ -72,7 +72,7 @@ describe("the first screen is light, sharp and clear", () => {
   it("the hero's visual is the before/after (HTML, sharp at any width), not a recording; the recorded tour sits below", () => {
     expect(home).not.toMatch(/rel="preload"/);
     expect(home).toContain("visual={<BeforeAfter");
-    expect(home.indexOf("<JourneyTour")).toBeGreaterThan(home.indexOf("<AudienceCards"));
+    expect(home.indexOf("<AppTake")).toBeGreaterThan(home.indexOf("<AudienceCards"));
   });
 
   it("« Pour qui ? » is a chip row in the hero (scrolls with snap on a phone, 44 px targets) and a card per audience below", () => {

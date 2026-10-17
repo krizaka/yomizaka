@@ -7,13 +7,13 @@ import { Section } from "@krizaka/ui/page";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { AppTake } from "@/components/home/AppTake";
 import { AudienceCards } from "@/components/home/AudienceCards";
 import { AudiencePicker } from "@/components/home/AudiencePicker";
 import { BeforeAfter } from "@/components/home/BeforeAfter";
 import { ComparisonSection } from "@/components/home/ComparisonSection";
 import { FaqSection } from "@/components/home/FaqSection";
 import { ProofSection } from "@/components/home/ProofSection";
-import { JourneyTour } from "@/components/JourneyTour";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
 import { asLocale, format, getDictionary } from "@/lib/i18n";
@@ -21,7 +21,7 @@ import { HERO_FIGURES, productStatus } from "@/lib/landing";
 import { recordedRun } from "@/lib/recorded-runs";
 import { pageMetadata, siteJsonLd } from "@/lib/seo";
 import { contactHref, pagePath } from "@/lib/site";
-import { TOUR_RUNS, TOUR_STEPS, tourClip, type TourDevice } from "@/lib/tour";
+import { TAKE_CHAPTERS, takeFor } from "@/lib/tour";
 
 import preview from "../../../../dev-preview.json";
 
@@ -44,12 +44,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const status = productStatus(preview);
   const run = recordedRun("tenant");
   const figures = HERO_FIGURES(run.report);
-  const steps = (device: TourDevice) =>
-    TOUR_STEPS.map((id) => {
-      const clip = tourClip(device, id);
-      const w = d.tour.steps[id];
-      return { id, title: w.title, description: w.text, alt: w.alt, poster: clip.poster, video: { webm: clip.webm, mp4: clip.mp4 } };
-    });
+  const take = takeFor(locale);
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
@@ -106,11 +101,20 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <AudienceCards locale={locale} />
           <ProofSection locale={locale} />
 
-          {/* The app, recorded — below the fold, so the hero stays light. */}
+          {/* The app, recorded as one take on a phone — below the fold, so the hero stays light. */}
           <Section id="app" eyebrow={d.app.eyebrow} title={d.app.title} lead={d.app.lead} reveal divider>
             <figure className="m-0 flex flex-col gap-3">
-              <JourneyTour label={d.tour.label} phone={steps("phone")} desktop={steps("desktop")} address={d.tour.address} words={{ play: d.tour.play, pause: d.tour.pause, step: d.tour.step }} />
-              <figcaption className="text-center font-mono text-xs text-fg-muted md:text-start">{format(d.tour.recorded, { run: TOUR_RUNS.desktop.slice(0, 8) })}</figcaption>
+              <AppTake
+                label={d.tour.label}
+                address={d.tour.address}
+                poster={take.poster}
+                webm={take.webm}
+                mp4={take.mp4}
+                chapters={TAKE_CHAPTERS.map((id) => ({ id, title: d.app.chapters[id].title, text: d.app.chapters[id].text, at: take.chapters[id] }))}
+                playLabel={d.tour.play}
+                pauseLabel={d.tour.pause}
+              />
+              <figcaption className="text-center font-mono text-xs text-fg-muted md:text-start">{format(d.tour.recorded, { run: take.runId.slice(0, 8) })}</figcaption>
             </figure>
           </Section>
 

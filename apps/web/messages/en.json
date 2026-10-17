@@ -62,10 +62,10 @@
     "tour": {
       "label": "Yomizaka, recorded on the real app",
       "address": "dev.yomizaka.com",
-      "play": "Play the steps",
-      "pause": "Pause the steps",
+      "play": "Play the take",
+      "pause": "Pause the take",
       "step": "Step {n} of {total}",
-      "recorded": "Recorded on dev.yomizaka.com (English interface) on October 17, 2026 · run {run}",
+      "recorded": "Recorded on dev.yomizaka.com on October 17, 2026 · run {run}",
       "steps": {
         "keep": {
           "title": "Keep it",
@@ -168,7 +168,21 @@
       "access": {
         "title": "Verified by the people you choose",
         "text": "Only the people you give access to can verify a report, signed in with a Yomizaka account. You grant, you revoke, and every verification is logged.",
-        "cta": "How verification works"
+        "cta": "How verification works",
+        "steps": {
+          "share": {
+            "title": "The owner shares",
+            "text": "They give access to the report, by e-mail."
+          },
+          "signin": {
+            "title": "You sign in",
+            "text": "With a Yomizaka account."
+          },
+          "verify": {
+            "title": "You verify",
+            "text": "The signature, the fingerprint, the run."
+          }
+        }
       },
       "see": "See the whole run",
       "before": "Before: the lease",
@@ -179,7 +193,25 @@
     "app": {
       "eyebrow": "In the app",
       "title": "From the file to the finding, recorded",
-      "lead": "The real journey on dev.yomizaka.com: keep, check, find."
+      "lead": "The real journey on dev.yomizaka.com, in one take, on a phone.",
+      "chapters": {
+        "drop": {
+          "title": "Drop the lease",
+          "text": "A text or PDF file: it is kept as it is, in your library."
+        },
+        "check": {
+          "title": "The check runs",
+          "text": "Against Québec's rules, on the date you choose."
+        },
+        "finding": {
+          "title": "The finding, with its line",
+          "text": "The clause is lit in the lease, with the article of law."
+        },
+        "search": {
+          "title": "Find it in a second",
+          "text": "One word, and the passages come back, in documents and in findings alike."
+        }
+      }
     },
     "switchHint": "Who is it for?",
     "hero": {
