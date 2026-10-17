@@ -181,7 +181,7 @@
       "title": "Du fichier au constat, enregistré",
       "lead": "Le vrai parcours sur dev.yomizaka.com : garder, vérifier, retrouver."
     },
-    "switchHint": "Qui êtes-vous ?"
+    "switchHint": "Pour qui ?"
   },
   "run": {
     "eyebrow": "Un vrai run",
@@ -352,7 +352,9 @@
       "checksLeadBy": {
         "neutral": "Choisissez ce que Yomizaka doit lire : le texte au regard de la loi, ou le fichier PDF lui-même.",
         "tenant": "Avant de signer : le texte de votre bail au regard des règles du Québec, puis, si une pièce vous paraît douteuse, le fichier lui-même.",
-        "landlord": "Avant d'envoyer : votre modèle de bail au regard des règles du Québec ; pour une pièce du locataire en PDF, l'examen du fichier lui-même."
+        "landlord": "Avant d'envoyer : votre modèle de bail au regard des règles du Québec ; pour une pièce du locataire en PDF, l'examen du fichier lui-même.",
+        "freelancer": "Aujourd'hui, Yomizaka examine le fichier PDF lui-même ; les règles pour les contrats et les factures arrivent bientôt.",
+        "business": "Aujourd'hui, Yomizaka examine le fichier PDF lui-même ; les règles pour les contrats et les factures arrivent bientôt."
       }
     },
     "analysis": {
@@ -651,7 +653,10 @@
       "saved": "Enregistré.",
       "settingsTitle": "Réglages",
       "settingsLead": "Votre rôle change les vérifications proposées en premier et les mots de l'application.",
-      "open": "Réglages"
+      "open": "Réglages",
+      "freelancer": "Travailleur autonome — contrats de service et factures",
+      "business": "Entreprise — contrats de fournisseurs et factures reçues",
+      "soon": "bientôt"
     }
   },
   "report": {
@@ -860,6 +865,124 @@
         }
       },
       "owl": "Le hibou lit chaque page et reconnaît chaque visage : il montre ce qu'il observe, la décision reste la vôtre."
-    }
+    },
+    "freelancer": {
+      "switch": "Travailleur autonome",
+      "seoTitle": "Yomizaka pour les travailleurs autonomes — lisez avant de signer (bientôt)",
+      "seoDescription": "Contrats de service et factures : règles en préparation (paiement, propriété intellectuelle, non-concurrence, taxes). Aujourd'hui : examen d'un PDF, bibliothèque, recherche, rapport signé partagé par accès.",
+      "eyebrow": "Yomizaka · pour les travailleurs autonomes",
+      "title": "Lisez votre contrat de service avant de le signer.",
+      "lead": "Yomizaka garde vos contrats et vos factures, examine le fichier PDF lui-même et retrouve n'importe quel passage. Les règles pour lire un contrat de service et une facture arrivent bientôt : rien n'est promis tant qu'elles ne tournent pas.",
+      "outcomesTitle": "Ce que vous pouvez faire",
+      "outcomes": {
+        "a": {
+          "title": "Contrat de service : bientôt",
+          "text": "Conditions de paiement, propriété intellectuelle, non-concurrence : les règles sont en préparation. Elles ne tournent pas encore.",
+          "cta": "Voir comment ça marche sur un bail"
+        },
+        "b": {
+          "title": "Examiner un PDF dès aujourd'hui",
+          "text": "Une facture ou un contrat reçu en PDF : Yomizaka examine le fichier lui-même (producteur, dates, enregistrements successifs) et signale ce qui est inhabituel.",
+          "cta": "Se connecter (sur invitation)"
+        },
+        "c": {
+          "title": "Garder la trace",
+          "text": "Chaque vérification garde l'identifiant de son exécution ; un rapport signé se partage avec les personnes de votre choix.",
+          "cta": "Vérifier un rapport"
+        }
+      },
+      "how": {
+        "keep": {
+          "title": "Vous déposez le fichier",
+          "text": "Il est gardé tel quel, visible par votre seul compte ; sa couche texte est lue pour la recherche."
+        },
+        "read": {
+          "title": "Yomizaka l'examine",
+          "text": "Le PDF, comme fichier. Les règles d'un contrat de service ou d'une facture s'ajouteront ici quand elles existeront. Aucun modèle n'est appelé pour juger vos documents."
+        },
+        "prove": {
+          "title": "Vous gardez la preuve",
+          "text": "Chaque constat garde l'identifiant de son exécution ; le rapport est signé, et seules les personnes à qui vous donnez accès peuvent le vérifier, avec un compte Yomizaka."
+        }
+      },
+      "examples": {
+        "eyebrow": "À venir",
+        "title": "Ce que Yomizaka lira",
+        "lead": "Les trois premiers exemples n'existent pas encore (bientôt) ; le dernier fonctionne déjà.",
+        "items": {
+          "a": "Contrat de service : délai de paiement et intérêts de retard (bientôt).",
+          "b": "Contrat de service : cession de propriété intellectuelle, non-concurrence, exclusivité (bientôt).",
+          "c": "Facture : numéros de TPS et de TVQ et mentions exigées au Québec (bientôt).",
+          "d": "Facture reçue : un PDF retouché est signalé, et le même fichier déposé deux fois est reconnu (disponible)."
+        }
+      },
+      "owl": "Le hibou examine le fichier dès aujourd'hui ; il lira vos contrats quand leurs règles seront écrites et sourcées."
+    },
+    "business": {
+      "switch": "Entreprise",
+      "seoTitle": "Yomizaka pour les entreprises — lisez avant de signer, avant de payer (bientôt)",
+      "seoDescription": "Contrats de fournisseurs et factures reçues : Yomizaka prépare ses règles. Aujourd'hui : l'examen d'un PDF pour les signes de retouche, la bibliothèque, la recherche et le rapport signé partagé par accès.",
+      "eyebrow": "Yomizaka · pour les entreprises",
+      "title": "Lisez avant de signer, lisez avant de payer.",
+      "lead": "Contrats de fournisseurs, factures reçues : Yomizaka les garde, examine le fichier PDF lui-même et retrouve n'importe quel passage. Les règles de lecture des contrats et des factures arrivent bientôt ; rien n'est promis tant qu'elles ne tournent pas.",
+      "outcomesTitle": "Ce que vous pouvez faire",
+      "outcomes": {
+        "a": {
+          "title": "Contrats de fournisseurs : bientôt",
+          "text": "Renouvellement automatique, pénalités, exclusivité : les règles sont en préparation. Elles ne tournent pas encore.",
+          "cta": "Voir comment ça marche sur un bail"
+        },
+        "b": {
+          "title": "Examiner une facture reçue",
+          "text": "Un PDF retouché avant de payer : Yomizaka examine le fichier lui-même (producteur, dates, enregistrements successifs) et signale ce qui est inhabituel.",
+          "cta": "Se connecter (sur invitation)"
+        },
+        "c": {
+          "title": "Garder et partager la trace",
+          "text": "Un rapport signé, avec l'identifiant de l'exécution, partagé avec votre comptable ou votre gestionnaire en lui donnant accès.",
+          "cta": "Vérifier un rapport"
+        }
+      },
+      "how": {
+        "keep": {
+          "title": "Vous déposez le fichier",
+          "text": "Il est gardé tel quel, visible par votre seul compte ; sa couche texte est lue pour la recherche."
+        },
+        "read": {
+          "title": "Yomizaka l'examine",
+          "text": "Le PDF, comme fichier. Les règles d'un contrat ou d'une facture s'ajouteront ici quand elles existeront. Aucun modèle n'est appelé pour juger vos documents."
+        },
+        "prove": {
+          "title": "Vous gardez la preuve",
+          "text": "Chaque constat garde l'identifiant de son exécution ; le rapport est signé, et seules les personnes à qui vous donnez accès peuvent le vérifier, avec un compte Yomizaka."
+        }
+      },
+      "examples": {
+        "eyebrow": "À venir",
+        "title": "Ce que Yomizaka lira",
+        "lead": "Les deux premiers exemples n'existent pas encore (bientôt) ; les deux derniers fonctionnent déjà.",
+        "items": {
+          "a": "Contrat de fournisseur : renouvellement automatique, pénalités, exclusivité (bientôt).",
+          "b": "Facture : numéros de TPS et de TVQ du fournisseur et mentions exigées (bientôt).",
+          "c": "Facture retouchée : signes de modification dans le PDF (disponible).",
+          "d": "La même facture déposée deux fois : reconnue (disponible)."
+        }
+      },
+      "owl": "Le hibou examine le fichier dès aujourd'hui ; il lira vos contrats quand leurs règles seront écrites et sourcées."
+    },
+    "soonInfo": {
+      "freelancer": {
+        "title": "Bientôt",
+        "today": "Disponible aujourd'hui : l'examen d'un PDF, la bibliothèque, la recherche, le rapport signé partagé par accès.",
+        "next": "En préparation : des règles sourcées pour ce type de document, écrites comme celles du bail québécois et relues avant d'être annoncées."
+      },
+      "business": {
+        "title": "Bientôt",
+        "today": "Disponible aujourd'hui : l'examen d'un PDF, la bibliothèque, la recherche, le rapport signé partagé par accès.",
+        "next": "En préparation : des règles sourcées pour ce type de document, écrites comme celles du bail québécois et relues avant d'être annoncées."
+      }
+    },
+    "soon": "Bientôt",
+    "other": "Autre"
   }
 }

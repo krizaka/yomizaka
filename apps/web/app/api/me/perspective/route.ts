@@ -1,4 +1,4 @@
-import { perspective } from "@yomizaka/core";
+import { audience } from "@yomizaka/core";
 import { z } from "zod";
 
 import { requireSession } from "@/lib/access";
@@ -22,7 +22,7 @@ export function PUT(req: Request) {
   return handle(async () => {
     const session = await requireSession(req);
     limit("perspective", req, session.account.id, [60, 3600], [30, 3600]);
-    const input = await readJson(req, z.object({ perspective }));
+    const input = await readJson(req, z.object({ perspective: audience }));
     await setPerspective(session.account.id, input.perspective);
     await audit({ action: "profile.perspective_set", actorId: session.account.id, actorLabel: session.account.email, targetId: session.account.id, detail: { from: session.account.perspective, to: input.perspective }, headers: req.headers });
     return Response.json({ perspective: input.perspective }, { headers: { "Cache-Control": "private, no-store" } });

@@ -181,7 +181,7 @@
       "title": "From the file to the finding, recorded",
       "lead": "The real journey on dev.yomizaka.com: keep, check, find."
     },
-    "switchHint": "Who are you?"
+    "switchHint": "Who is it for?"
   },
   "run": {
     "eyebrow": "A real run",
@@ -352,7 +352,9 @@
       "checksLeadBy": {
         "neutral": "Choose what Yomizaka reads: the text against the law, or the PDF file itself.",
         "tenant": "Before signing: your lease's text against Québec's rules, then, if a paper looks doubtful, the file itself.",
-        "landlord": "Before sending: your lease template against Québec's rules; for a tenant's PDF paper, the examination of the file itself."
+        "landlord": "Before sending: your lease template against Québec's rules; for a tenant's PDF paper, the examination of the file itself.",
+        "freelancer": "Today, Yomizaka examines the PDF file itself; the rules for contracts and invoices are coming soon.",
+        "business": "Today, Yomizaka examines the PDF file itself; the rules for contracts and invoices are coming soon."
       }
     },
     "analysis": {
@@ -651,7 +653,10 @@
       "saved": "Saved.",
       "settingsTitle": "Settings",
       "settingsLead": "Your role changes the checks offered first and the app's wording.",
-      "open": "Settings"
+      "open": "Settings",
+      "freelancer": "Freelancer — service contracts and invoices",
+      "business": "Business — supplier contracts and received invoices",
+      "soon": "soon"
     }
   },
   "report": {
@@ -860,6 +865,124 @@
         }
       },
       "owl": "The owl reads every page and knows every face: it shows what it observes, the decision stays yours."
-    }
+    },
+    "freelancer": {
+      "switch": "Freelancer",
+      "seoTitle": "Yomizaka for freelancers — read before you sign (soon)",
+      "seoDescription": "Service contracts and invoices: Yomizaka is preparing its rules (payment, intellectual property, non-compete, taxes). Today: PDF examination, the library, search and the signed report shared by access.",
+      "eyebrow": "Yomizaka · for freelancers",
+      "title": "Read your service contract before you sign it.",
+      "lead": "Yomizaka keeps your contracts and invoices, examines the PDF file itself and finds any passage again. The rules to read a service contract and an invoice are coming soon: nothing is promised until they run.",
+      "outcomesTitle": "What you can do",
+      "outcomes": {
+        "a": {
+          "title": "Service contract: soon",
+          "text": "Payment terms, intellectual property, non-compete: the rules are being prepared. They do not run yet.",
+          "cta": "See how it works on a lease"
+        },
+        "b": {
+          "title": "Examine a PDF today",
+          "text": "An invoice or a contract received as a PDF: Yomizaka examines the file itself (producer, dates, successive saves) and flags what is unusual.",
+          "cta": "Sign in (by invitation)"
+        },
+        "c": {
+          "title": "Keep the trace",
+          "text": "Each check keeps the id of its run; a signed report is shared with the people you choose.",
+          "cta": "Verify a report"
+        }
+      },
+      "how": {
+        "keep": {
+          "title": "You upload the file",
+          "text": "It is kept as it is, visible to your account alone; its text layer is read for search."
+        },
+        "read": {
+          "title": "Yomizaka examines it",
+          "text": "The PDF, as a file. The rules for a service contract or an invoice will be added here once they exist. No model is ever called to judge your documents."
+        },
+        "prove": {
+          "title": "You keep the proof",
+          "text": "Each finding keeps the id of its run; the report is signed, and only the people you give access to can verify it, with a Yomizaka account."
+        }
+      },
+      "examples": {
+        "eyebrow": "Coming",
+        "title": "What Yomizaka will read",
+        "lead": "The first three examples do not exist yet (soon); the last one already works.",
+        "items": {
+          "a": "Service contract: payment deadline and late-payment interest (soon).",
+          "b": "Service contract: assignment of intellectual property, non-compete, exclusivity (soon).",
+          "c": "Invoice: GST and QST numbers and the mentions required in Québec (soon).",
+          "d": "Invoice received: an edited PDF is flagged, and the same file uploaded twice is recognised (available)."
+        }
+      },
+      "owl": "The owl examines the file today; it will read your contracts once their rules are written and sourced."
+    },
+    "business": {
+      "switch": "Business",
+      "seoTitle": "Yomizaka for businesses — read before you sign, before you pay (soon)",
+      "seoDescription": "Supplier contracts and received invoices: Yomizaka is preparing its rules. Today: PDF examination for signs of editing, the library, search and the signed report shared by access.",
+      "eyebrow": "Yomizaka · for businesses",
+      "title": "Read before you sign, read before you pay.",
+      "lead": "Supplier contracts, received invoices: Yomizaka keeps them, examines the PDF file itself and finds any passage again. The rules to read contracts and invoices are coming soon; nothing is promised until they run.",
+      "outcomesTitle": "What you can do",
+      "outcomes": {
+        "a": {
+          "title": "Supplier contracts: soon",
+          "text": "Automatic renewal, penalties, exclusivity: the rules are being prepared. They do not run yet.",
+          "cta": "See how it works on a lease"
+        },
+        "b": {
+          "title": "Examine a received invoice",
+          "text": "A PDF edited before you pay: Yomizaka examines the file itself (producer, dates, successive saves) and flags what is unusual.",
+          "cta": "Sign in (by invitation)"
+        },
+        "c": {
+          "title": "Keep and share the trace",
+          "text": "A signed report with the run id, shared with your accountant or manager by giving them access.",
+          "cta": "Verify a report"
+        }
+      },
+      "how": {
+        "keep": {
+          "title": "You upload the file",
+          "text": "It is kept as it is, visible to your account alone; its text layer is read for search."
+        },
+        "read": {
+          "title": "Yomizaka examines it",
+          "text": "The PDF, as a file. The rules for a contract or an invoice will be added here once they exist. No model is ever called to judge your documents."
+        },
+        "prove": {
+          "title": "You keep the proof",
+          "text": "Each finding keeps the id of its run; the report is signed, and only the people you give access to can verify it, with a Yomizaka account."
+        }
+      },
+      "examples": {
+        "eyebrow": "Coming",
+        "title": "What Yomizaka will read",
+        "lead": "The first two examples do not exist yet (soon); the last two already work.",
+        "items": {
+          "a": "Supplier contract: automatic renewal, penalties, exclusivity (soon).",
+          "b": "Invoice: the supplier's GST and QST numbers and the required mentions (soon).",
+          "c": "Edited invoice: signs of modification in the PDF (available).",
+          "d": "The same invoice uploaded twice: recognised (available)."
+        }
+      },
+      "owl": "The owl examines the file today; it will read your contracts once their rules are written and sourced."
+    },
+    "soonInfo": {
+      "freelancer": {
+        "title": "Soon",
+        "today": "Available today: PDF examination, the library, search, the signed report shared by access.",
+        "next": "In preparation: sourced rules for this kind of document, written like the Québec lease rules and reviewed before they are announced."
+      },
+      "business": {
+        "title": "Soon",
+        "today": "Available today: PDF examination, the library, search, the signed report shared by access.",
+        "next": "In preparation: sourced rules for this kind of document, written like the Québec lease rules and reviewed before they are announced."
+      }
+    },
+    "soon": "Soon",
+    "other": "Other"
   }
 }

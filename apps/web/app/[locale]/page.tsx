@@ -11,10 +11,10 @@ import { PageHero } from "@krizaka/ui/page-hero";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { AudiencePicker } from "@/components/AudiencePicker";
 import { BeforeAfter } from "@/components/BeforeAfter";
 import { JourneyTour } from "@/components/JourneyTour";
 import { ProofSection } from "@/components/ProofSection";
-import { SideSwitch } from "@/components/SideSwitch";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
 import { asLocale, format, getDictionary } from "@/lib/i18n";
@@ -57,7 +57,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <SiteHeader locale={locale} current="home" />
       <main id="content">
         {/* 0 · Who it is for — a segmented control above the hero. */}
-        <SideSwitch locale={locale} label={dict.sides.switchLabel} hint={d.switchHint} words={{ tenant: dict.sides.tenant.switch, landlord: dict.sides.landlord.switch }} />
+        <AudiencePicker locale={locale} label={dict.sides.switchLabel} hint={d.switchHint} words={{ tenant: dict.sides.tenant.switch, landlord: dict.sides.landlord.switch, freelancer: dict.sides.freelancer.switch, business: dict.sides.business.switch }} soon={dict.sides.soon} other={dict.sides.other} />
 
         {/* 1 · The promise, and one clear before/after as its proof — painted at once (LCP), never revealed. */}
         <PageHero id="hero" eyebrow={d.eyebrow} title={d.title} lead={d.lead}>

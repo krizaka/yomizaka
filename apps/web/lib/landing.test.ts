@@ -73,8 +73,8 @@ describe("the first screen is light and clear", () => {
 
   it("puts the who-is-it-for control above the hero, as one segmented control — not two buttons beside the call to action", () => {
     const home = read("app/[locale]/page.tsx");
-    expect(home.indexOf("<SideSwitch")).toBeLessThan(home.indexOf("<PageHero"));
-    expect(read("components/SideSwitch.tsx")).toContain("rounded-full");
+    expect(home.indexOf("<AudiencePicker")).toBeLessThan(home.indexOf("<PageHero"));
+    expect(read("components/AudiencePicker.tsx")).toContain("rounded-full");
   });
 });
 
