@@ -19,8 +19,9 @@ const url = (locale: Locale, page: PageId) => `${SITE_URL}${pagePath(locale, pag
 
 export function pageMetadata(locale: Locale, page: PageId): Metadata {
   const t = getDictionary(locale);
-  const title = page === "home" ? `${t.meta.siteName} — ${t.landing.title}` : `${page === "verify" ? t.verify.title : t.privacy.title} — ${t.meta.siteName}`;
-  const description = t.meta.description;
+  const titles: Record<Exclude<PageId, "home">, string> = { run: t.run.title, verify: t.verify.title, privacy: t.privacy.title };
+  const title = page === "home" ? `${t.meta.siteName} — ${t.landing.title}` : `${titles[page]} — ${t.meta.siteName}`;
+  const description = page === "run" ? t.run.lead : t.meta.description;
   return {
     title: { absolute: title },
     description,
@@ -74,7 +75,8 @@ export function llmsText(): string {
 
 ## Key pages
 
-- [${en.meta.siteName}](${SITE_URL}/en) · [Yomizaka (fr)](${SITE_URL}/fr): what it does, how, and a real run
+- [${en.meta.siteName}](${SITE_URL}/en) · [Yomizaka (fr)](${SITE_URL}/fr): what it does, how it works, recorded on the real app
+- [${en.run.title}](${SITE_URL}/en/run): a Québec lease checked by Orazaka, its findings and its signed report
 - [${en.privacy.title}](${SITE_URL}/en/privacy) · [${getDictionary("fr").privacy.title} (fr)](${SITE_URL}/fr/privacy)
 - [Talk to us about Yomizaka](${KRIZAKA_URL}/contact?topic=yomizaka): the one way to reach the team
 

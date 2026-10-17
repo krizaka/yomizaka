@@ -26,6 +26,9 @@ export function SiteFooter({ locale }: { locale: Locale }) {
     >
       <SiteFooterColumn title="Yomizaka">
         <SiteFooterLink asChild>
+          <Link href={pagePath(locale, "run")}>{t("chrome.nav.run")}</Link>
+        </SiteFooterLink>
+        <SiteFooterLink asChild>
           <Link href={pagePath(locale, "verify")}>{t("chrome.nav.verify")}</Link>
         </SiteFooterLink>
         <SiteFooterLink asChild>

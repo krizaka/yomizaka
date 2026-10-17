@@ -8,8 +8,9 @@
     "brandHome": "Yomizaka, home",
     "navLabel": "Yomizaka",
     "nav": {
+      "product": "Product",
       "how": "How it works",
-      "demo": "A real run",
+      "run": "A real run",
       "privacy": "Privacy",
       "verify": "Verify a report"
     },
@@ -22,159 +23,160 @@
     "sourceCode": "Source code",
     "contact": "Contact",
     "legal": "Privacy",
-    "devNotice": "Development environment — access by invitation"
+    "devNotice": "Development environment — access by invitation",
+    "menu": {
+      "label": "Menu",
+      "home": {
+        "title": "Overview",
+        "text": "What Yomizaka does, on one page."
+      },
+      "how": {
+        "title": "How it works",
+        "text": "Keep, read, prove: recorded on the real app."
+      },
+      "run": {
+        "title": "A real run",
+        "text": "A Québec lease checked by Orazaka, as it came back."
+      },
+      "verify": {
+        "title": "Verify a report",
+        "text": "Check a signed report and its file, no account needed."
+      }
+    }
   },
   "landing": {
-    "mark": "Yomizaka · documents, read and checked",
+    "eyebrow": "Yomizaka · leases, contracts, invoices",
     "title": "Read before you sign.",
-    "lead": "Drop a lease, a contract, an invoice. Orazaka reads it against the Civil Code of Québec, examines the PDF for signs of editing, and shows you every line it relies on — never a verdict out of nowhere.",
-    "facts": {
-      "runs": "Every check is a traced Orazaka run",
-      "license": "Apache-2.0",
-      "closed": "Dev · sign-up closed"
+    "lead": "Drop a lease, a contract or an invoice. Orazaka reads it against the rules in force and shows you the exact line behind every finding.",
+    "status": {
+      "label": "Status",
+      "development": "In development: sign-up is closed while we test it on real Québec leases.",
+      "preview": "Dev preview: sign-up is closed, access by invitation."
+    },
+    "statusChip": {
+      "development": "In development",
+      "preview": "Dev preview"
     },
     "talk": "Talk to us about Yomizaka",
-    "signIn": "Sign in",
-    "visualLabel": "dev.yomizaka.com — a lease, checked",
-    "reasonsEyebrow": "Why",
-    "reasonsTitle": "Three traps it takes off your desk",
-    "trap": "The trap",
-    "more": "Details",
-    "reasons": {
-      "check": {
-        "title": "The clause you skimmed",
-        "trap": "A security deposit, postdated cheques, “no children” — written in, forbidden by the Civil Code, signed anyway."
-      },
-      "tamper": {
-        "title": "The PDF that was edited",
-        "trap": "An invoice re-saved after it was issued, its producer not the one you expected."
-      },
-      "find": {
-        "title": "The document you cannot find",
-        "trap": "The clause is somewhere, in one of forty PDFs, in a folder you no longer open."
+    "seeRun": "See a real run",
+    "tour": {
+      "label": "Yomizaka, recorded on the real app",
+      "address": "dev.yomizaka.com",
+      "play": "Play the steps",
+      "pause": "Pause the steps",
+      "step": "Step {n} of {total}",
+      "recorded": "Recorded on dev.yomizaka.com (English interface) on October 17, 2026 · Orazaka run {run}",
+      "steps": {
+        "keep": {
+          "title": "Keep it",
+          "text": "Your leases, contracts and invoices in one library.",
+          "alt": "The library on dev.yomizaka.com: three documents kept, the drop zone above them."
+        },
+        "check": {
+          "title": "Check it",
+          "text": "Orazaka runs the Québec lease rules; the forbidden clauses come back marked.",
+          "alt": "A Québec lease checked by Orazaka: a non-compliant finding, its article and the quoted line."
+        },
+        "find": {
+          "title": "Find it",
+          "text": "One word, every document and every finding.",
+          "alt": "Searching « dépôt »: the passages come back with the word in bold."
+        }
       }
     },
-    "decisionsEyebrow": "Decisions",
-    "decisionsTitle": "What we chose, and what it costs you",
-    "decisionLabels": {
-      "chose": "We chose",
-      "refused": "We refused",
-      "because": "Because",
-      "cost": "What it costs you"
-    },
-    "decisions": {
-      "rules": {
-        "chose": "Rules that cite their source, in force on the date you pick.",
-        "refused": "A model's opinion of your lease.",
-        "because": "A finding you forward to a landlord must quote the law and the line it rests on.",
-        "cost": "Québec first (rules to be reviewed by a lawyer), France and Wallonia next; a jurisdiction arrives as a ruleset, not as a guess."
+    "outcomes": {
+      "eyebrow": "What you can do",
+      "title": "Three things off your desk",
+      "clauses": {
+        "title": "Know which clauses won't hold",
+        "text": "A deposit, postdated cheques, “no children”: each finding names the rule, the article of the Civil Code and the line it rests on.",
+        "cta": "See a real run"
       },
-      "signals": {
-        "chose": "Signals with three plain levels — observed, unusual, inconsistent.",
-        "refused": "A tampering score, a “fake” stamp.",
-        "because": "A percentage without a measured base rate is a lie that gets quoted in a dispute.",
-        "cost": "You get the questions to ask, not a conclusion to hide behind."
+      "edits": {
+        "title": "Question a PDF before you pay it",
+        "text": "Producer, dates, successive saves: three plain levels (observed, unusual, inconsistent), never a “fake” stamp.",
+        "cta": "Sign in (by invitation)"
       },
-      "engine": {
-        "chose": "Every analysis is an Orazaka run, its id kept with the result.",
-        "refused": "A model called straight from the app.",
-        "because": "What ran, on which version of the rules, can always be traced and replayed.",
-        "cost": "Analyses wait for Orazaka: seconds, sometimes a minute."
+      "proof": {
+        "title": "Show what was checked",
+        "text": "Every report is signed. Anyone can verify it, and the file it was made from, without an account.",
+        "cta": "Verify a report"
       }
     },
-    "promiseLabel": "The owl's promise",
-    "promise": "I read every line and I quote it. I never tell you a document is genuine or fake — I show you what deserves a question.",
-    "sections": {
-      "how": {
-        "eyebrow": "How it works",
-        "title": "Three steps, one trace",
-        "lead": "Nothing is analysed by Yomizaka itself: it keeps your documents, and Orazaka does the reading.",
-        "steps": {
-          "keep": {
-            "title": "1 · Keep",
-            "text": "Drop PDFs or text files into your library. The file is kept as you sent it, its text layer read for search."
-          },
-          "check": {
-            "title": "2 · Check",
-            "text": "Ask Orazaka: a lease against the rules of its jurisdiction, a PDF for signs of editing. The run id stays with the result."
-          },
-          "find": {
-            "title": "3 · Find",
-            "text": "Search every document and every finding at once — the passage comes back with the words in bold."
-          }
+    "how": {
+      "eyebrow": "How it works",
+      "title": "Yomizaka keeps, Orazaka reads",
+      "lead": "Three steps, one trace from the file to the report.",
+      "steps": {
+        "keep": {
+          "title": "You drop the file",
+          "text": "It is kept as you sent it, visible to your account alone; its text layer is read for search."
+        },
+        "read": {
+          "title": "Orazaka reads it",
+          "text": "Against the rules of a jurisdiction on the date you pick, or the PDF itself for signs of editing. Yomizaka never calls a model."
+        },
+        "prove": {
+          "title": "You keep the proof",
+          "text": "Each finding keeps the id of its Orazaka run; the report is signed, and anyone can verify it."
         }
       },
-      "check": {
-        "eyebrow": "Checks",
-        "title": "Two checks, both run by Orazaka",
-        "lead": "Each finding gives its rule, the article it rests on and the exact passage of your document. What the text cannot settle is said so.",
-        "owl": "The owl reads your lease line by line, then gives its check — and says what the text cannot settle.",
-        "cta": "Sign in to check a lease",
-        "compliance": {
-          "title": "A lease against the law",
-          "meta": "compliance-check · QC",
-          "hookLabel": "What it reads",
-          "hook": "The text, rule by rule, against the Civil Code of Québec in force on the date you pick.",
-          "rule": "Rule",
-          "source": "Source",
-          "passage": "Passage of the sample lease",
-          "noRun": "The passage appears here after the first real run.",
-          "more": "Details",
-          "panel": "The rule, its article, the passage"
-        },
-        "authenticity": {
-          "title": "A supplier's PDF",
-          "meta": "document-authenticity",
-          "hookLabel": "What it reads",
-          "hook": "The file itself: producer, dates, successive saves — never what the document says.",
-          "levels": "Three levels, never a score",
-          "more": "Details"
-        }
-      },
-      "find": {
-        "eyebrow": "Search",
-        "title": "Every document, every finding, one field",
-        "lead": "Your archive and what Orazaka found in it, searchable together — in French and English alike.",
-        "cta": "Sign in to search",
-        "query": "dépôt",
-        "label": "Example: searching “dépôt” in the sample lease",
-        "sources": {
-          "text": "Text",
-          "finding": "Finding"
-        },
-        "finding": "Le bail exige un dépôt de garantie. L'article 1904 ne permet au locateur d'exiger d'avance que le premier mois de loyer."
-      },
-      "demo": {
-        "eyebrow": "A real run",
-        "title": "Not a mock-up: a Québec lease checked on dev",
-        "lead": "A sample Montréal lease (rent in dollars, four forbidden clauses), sent to Orazaka's compliance Studio on dev.orazaka.com, jurisdiction Québec. What came back, as it came back.",
-        "run": "Orazaka run",
-        "studio": "Studio",
-        "ruleset": "Rules",
-        "when": "Ran on",
-        "none": "The first recorded run appears here once it has run on dev — nothing is shown before it is real.",
-        "summary": "{total} checks · {fail} non-compliant · {pass} compliant",
-        "insufficient": " · {n} insufficient evidence",
-        "rule": "Rule",
-        "article": "Article",
-        "passage": "Passage",
-        "viewer": "The lease, the quoted passages lit",
-        "viewerHint": "Same text as the console's viewer: every passage a finding quotes is marked.",
-        "docHash": "Document SHA-256",
-        "report": "Signed report",
-        "reportHash": "SHA-256 of the file",
-        "key": "Signing key",
-        "copy": "Copy",
-        "copied": "Copied",
-        "download": "Download the signed report",
-        "verify": "Verify it yourself",
-        "review": "The Québec rules await a lawyer's review — the report says so.",
-        "noPassage": "No passage quoted",
-        "findings": "Findings"
-      }
+      "owlLabel": "The owl's promise",
+      "owl": "The owl reads every page and knows every face."
     },
-    "closingTitle": "Have documents to check?",
-    "closingBody": "Yomizaka is in development: sign-up is closed. Tell us what you need to read — leases, supplier invoices, a Law 25 inventory.",
+    "trust": {
+      "eyebrow": "Trust",
+      "title": "Your documents, in Canada, under your control",
+      "lead": "Designed for Québec firms and Law 25: nothing is sold, shared or used to train a model.",
+      "canada": {
+        "title": "Kept in Canada",
+        "text": "In Yomizaka's database in Toronto, seen by your account alone. Deleting a document deletes its file, its text and its analyses.",
+        "cta": "Privacy"
+      },
+      "traced": {
+        "title": "Nothing out of nowhere",
+        "text": "No score, no verdict without its source: the rule, the article, the line, and the run that produced them.",
+        "cta": "See a real run"
+      },
+      "open": {
+        "title": "Open source",
+        "text": "The app, its API and its contracts are on GitHub under Apache-2.0.",
+        "cta": "Read the code"
+      },
+      "powered": "Powered by Orazaka, the engine that does the reading."
+    },
+    "closing": {
+      "title": "Have documents to check?",
+      "body": "Yomizaka is in development and sign-up is closed. Tell us what you need to read: leases, supplier invoices, a Law 25 inventory."
+    }
+  },
+  "run": {
+    "eyebrow": "A real run",
+    "title": "Not a mock-up: a Québec lease checked on dev",
+    "lead": "A sample Montréal lease (rent in dollars, four forbidden clauses), sent to Orazaka's compliance Studio on dev.orazaka.com, jurisdiction Québec. What came back, as it came back.",
+    "run": "Orazaka run",
+    "studio": "Studio",
+    "ruleset": "Rules",
+    "when": "Ran on",
+    "none": "The first recorded run appears here once it has run on dev — nothing is shown before it is real.",
+    "summary": "{total} checks · {fail} non-compliant · {pass} compliant",
+    "insufficient": " · {n} insufficient evidence",
+    "rule": "Rule",
+    "article": "Article",
+    "passage": "Passage",
+    "viewer": "The lease, the quoted passages lit",
+    "viewerHint": "Same text as the console's viewer: every passage a finding quotes is marked.",
+    "docHash": "Document SHA-256",
+    "report": "Signed report",
+    "reportHash": "SHA-256 of the file",
+    "key": "Signing key",
+    "copy": "Copy",
+    "copied": "Copied",
+    "download": "Download the signed report",
+    "verify": "Verify it yourself",
+    "review": "The Québec rules await a lawyer's review — the report says so.",
+    "noPassage": "No passage quoted",
+    "findings": "Findings",
     "verdicts": {
       "PASS": "Compliant",
       "FAIL": "Non-compliant",
