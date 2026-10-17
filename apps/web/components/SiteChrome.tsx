@@ -3,11 +3,12 @@
 import { CheckIcon, HomeIcon, InfoIcon, PlayIcon } from "@krizaka/icons";
 import { YomizakaLogo } from "@krizaka/ui";
 import { Button } from "@krizaka/ui/button";
+import { languagesFor } from "@krizaka/ui/language-switch";
 import { NavBar } from "@krizaka/ui/nav-bar";
 import { ThemeToggle } from "@krizaka/ui/theme";
 import Link from "next/link";
 
-import { type Locale, otherLocale, translator } from "@/lib/i18n";
+import { type Locale, translator } from "@/lib/i18n";
 import { contactHref, type PageId, pagePath, REPO_URL } from "@/lib/site";
 
 /** The product's pages, in the one « Product » menu (the products' bar standard): no Platforms (web only), no Docs yet. */
@@ -25,7 +26,7 @@ const MENU = [
  */
 export function SiteHeader({ locale, current }: { locale: Locale; current: PageId }) {
   const t = translator(locale);
-  const other = otherLocale(locale);
+  const languages = languagesFor(pagePath(locale, current));
   const home = pagePath(locale, "home");
   const items = MENU.map((m) => ({ ...m, href: `${pagePath(locale, m.page)}${"hash" in m ? m.hash : ""}`, active: m.page === current && !("hash" in m) }));
   return (
@@ -52,12 +53,9 @@ export function SiteHeader({ locale, current }: { locale: Locale; current: PageI
           <span className="hidden md:inline-flex">
             <ThemeToggle label={t("chrome.themeToggle")} variant="ghost" />
           </span>
-          <Button asChild variant="outline" size="sm" className="hidden h-7 w-auto px-2 font-mono text-[11px] font-semibold tracking-wide md:inline-flex">
-            <Link href={pagePath(other, current)} hrefLang={other} lang={other}>
-              <span className="sr-only">{t("chrome.languageLabel")} · </span>
-              {t("chrome.otherLanguage")}
-            </Link>
-          </Button>
+          <span className="hidden md:inline-flex">
+            <NavBar.Language label={t("chrome.languageLabel")} current={locale} languages={languages} linkAs={Link} />
+          </span>
           <Button asChild variant="ghost" size="sm" className="hidden md:inline-flex">
             <Link href={`/${locale}/sign-in`}>{t("chrome.signIn")}</Link>
           </Button>
@@ -77,14 +75,10 @@ export function SiteHeader({ locale, current }: { locale: Locale; current: PageI
             <NavBar.MobileLink asChild>
               <Link href={`/${locale}/sign-in`}>{t("chrome.signIn")}</Link>
             </NavBar.MobileLink>
-            <NavBar.MobileLink asChild>
-              <Link href={pagePath(other, current)} hrefLang={other} lang={other}>
-                {t("chrome.otherLanguage")}
-              </Link>
-            </NavBar.MobileLink>
-            <div className="flex items-center gap-2 px-3 py-1">
+            <NavBar.MobilePreferences label={t("chrome.preferences")}>
               <ThemeToggle label={t("chrome.themeToggle")} variant="ghost" />
-            </div>
+              <NavBar.Language label={t("chrome.languageLabel")} current={locale} languages={languages} linkAs={Link} />
+            </NavBar.MobilePreferences>
             <Button asChild variant="primary" size="md" shape="cut" className="mt-2 font-bold">
               <a href={contactHref("dev-yomizaka-bar")}>{t("chrome.talk")}</a>
             </Button>
