@@ -4,6 +4,7 @@ import { handle, refuse } from "@/lib/http";
 import { limit } from "@/lib/rate-limit";
 import { verifyReport } from "@/lib/report";
 import { accessTo, loadTarget, referenceOf } from "@/lib/report-access";
+import { attestationOfPdf, verifyPdf } from "@/lib/report-pdf";
 import { signingKey } from "@/lib/report-signer";
 import { MAX_BODY_BYTES, readVerifyForm } from "@/lib/verify";
 
@@ -28,8 +29,10 @@ export function POST(req: Request) {
     } catch {
       throw refuse(400, "BAD_REQUEST", "Expected a multipart form");
     }
-    const { text, document } = await readVerifyForm(form);
-    const reference = referenceOf(text);
+    const { text, pdf, document } = await readVerifyForm(form);
+    // A PDF carries its attestation in its Info dictionary; an HTML report in its script block.
+    const embedded = pdf ? await attestationOfPdf(pdf) : null;
+    const reference = pdf ? (embedded ? { runId: embedded.payload.check.runId, documentSha256: embedded.payload.document.sha256 } : null) : referenceOf(text);
     // A file that is not a report holds nothing to protect: it fails like before (NOT_A_REPORT / UNREADABLE).
     const target = reference ? await loadTarget(reference.runId, reference.documentSha256) : null;
     const access = target ? accessTo(target, who, new Date()) : ({ allowed: false } as const);
@@ -37,7 +40,7 @@ export function POST(req: Request) {
       await audit({ action: "report.verify_denied", actorId: who.id, actorLabel: who.email, targetId: target?.analysisId ?? null, detail: { runId: reference.runId, known: target !== null }, headers: req.headers });
       throw refuse(403, "NO_ACCESS", "You do not have access to this report", { requestable: true, runId: reference.runId, documentSha256: reference.documentSha256 });
     }
-    const result = verifyReport(text, signingKey(), document);
+    const result = pdf ? await verifyPdf(pdf, signingKey(), document) : verifyReport(text, signingKey(), document);
     await audit({
       action: "report.verified",
       actorId: who.id,

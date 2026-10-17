@@ -117,7 +117,7 @@ export function canonicalJson(value: unknown): string {
 export const sha256 = (data: string | Uint8Array) => crypto.createHash("sha256").update(data).digest("hex");
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const fill = (template: string, vars: Record<string, string | number>) => template.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
+export const fill = (template: string, vars: Record<string, string | number>) => template.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
 
 /** Where the attestation goes. The body is hashed with this marker removed, the file has the block in its place. */
 export const ATTESTATION_MARKER = "<!--yomizaka-attestation-->";
@@ -179,7 +179,7 @@ export interface Attestation {
   signature: string;
 }
 
-const signedMessage = (payload: ReportPayload, bodySha256: string) => Buffer.from(canonicalJson({ bodySha256, payload }), "utf8");
+export const signedMessage = (payload: ReportPayload, bodySha256: string) => Buffer.from(canonicalJson({ bodySha256, payload }), "utf8");
 
 export interface IssuedReport {
   html: string;

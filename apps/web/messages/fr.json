@@ -412,11 +412,12 @@
       "findingNotFound": "Introuvable dans la couche de texte du fichier",
       "orazakaRun": "Exécution Orazaka",
       "exportReport": "Rapport d’audit",
-      "exportHint": "Un rapport HTML signé (imprimez-le en PDF depuis votre navigateur) : SHA-256 du document, version des règles, date, chaque constat avec son passage et son article, l’identifiant d’exécution Orazaka.",
+      "exportHint": "Un rapport signé en fichier HTML et en PDF (les pages du rapport, puis une page de signature visible ; l'attestation est intégrée au fichier) : SHA-256 du document, version des règles, date, chaque constat avec son passage et son article, l'identifiant d'exécution Orazaka.",
       "exportDownload": "Télécharger le rapport",
       "exportVerify": "Vérifier un rapport",
       "exportSha": "SHA-256 du rapport",
-      "exportKey": "Clé de signature"
+      "exportKey": "Clé de signature",
+      "exportPdf": "Télécharger le PDF"
     },
     "search": {
       "title": "Recherche",
@@ -692,12 +693,18 @@
     "guarantees": "Ce rapport est signé avec la clé de Yomizaka (Ed25519, détenue par Krizaka). La signature couvre le SHA-256 du document, la juridiction et la version des règles, le Studio et sa version, l’identifiant d’exécution Orazaka, la date de la vérification, chaque constat avec son passage et son article, et le texte complet de ce rapport. Si un seul caractère de ce fichier change, la vérification échoue.",
     "notGuaranteed": "Elle ne prouve pas que les constats sont justes en droit : Orazaka applique les règles, celles du Québec restent à faire réviser par un avocat, et ce n’est pas un avis juridique. Elle ne prouve pas que l’exécution existe chez Orazaka (seul son exploitant peut le dire), ni quand le rapport a été établi au-delà des dates de vérification ci-dessus : il n’y a ni horodatage indépendant ni chaîne de blocs. Ce à quoi vous faites confiance, c’est Krizaka, détentrice de la clé de signature.",
     "howToVerify": "Pour le vérifier, connectez-vous à Yomizaka et ouvrez {url} — seules les personnes à qui le propriétaire du rapport a donné accès le peuvent, avec leur compte Yomizaka. Donnez-lui ce fichier et, pour confirmer quel document a été vérifié, le document d’origine.",
-    "footer": "Yomizaka, un produit Krizaka — analyse par Orazaka."
+    "footer": "Yomizaka, un produit Krizaka — analyse par Orazaka.",
+    "signatureHeading": "Page de signature",
+    "signatureKey": "Clé de signature",
+    "signatureAlgorithm": "Algorithme",
+    "signatureBody": "SHA-256 du texte du rapport (pages précédentes)",
+    "signatureValue": "Signature (base64)",
+    "signatureNote": "L'attestation — le contenu signé, l'empreinte du texte et cette signature — est aussi intégrée au fichier PDF. Un membre à qui le propriétaire a donné accès la vérifie en donnant ce fichier à la page de vérification ; tout changement au texte des pages précédentes la fait échouer."
   },
   "verify": {
     "title": "Vérifier un rapport",
     "lead": "Vérifiez qu’un rapport d’audit vient bien de Yomizaka et n’a pas été modifié. Réservé aux membres, pour un rapport qui est à vous ou dont on vous a donné l’accès.",
-    "reportFile": "Le rapport (le fichier .html)",
+    "reportFile": "Le rapport (le fichier .html ou .pdf)",
     "reportPaste": "Ou collez son texte",
     "documentFile": "Le document d’origine (facultatif)",
     "documentHint": "Ajoutez-le pour confirmer que le rapport porte bien sur ce fichier.",
@@ -751,7 +758,7 @@
       "documentTitle": "Déposez le document d’origine ici",
       "browse": "Choisir un fichier",
       "remove": "Retirer {name}",
-      "hint": "Le fichier .html téléchargé, jusqu’à 2 Mo."
+      "hint": "Le fichier .html ou .pdf téléchargé, jusqu’à 2 Mo."
     },
     "noAccess": {
       "title": "Vous n’avez pas accès à ce rapport",

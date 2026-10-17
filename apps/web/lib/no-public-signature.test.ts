@@ -71,4 +71,10 @@ describe("the samples are obviously fictitious", () => {
       for (const name of text.match(/(?:Monsieur|Madame) [A-ZÉ][\wéèï-]+ [A-ZÉ][\wéèï-]+/g) ?? []) expect(text, name).toContain(`${name} (fictif)`);
     }
   });
+
+  it("the signed PDF is only issued behind a session, to the owner", () => {
+    const route = readFileSync(join(API, "documents/[id]/analyses/[analysisId]/report/route.ts"), "utf8");
+    expect(route).toContain("requireSession");
+    expect(route.indexOf("requireSession")).toBeLessThan(route.indexOf("reportPdfFor"));
+  });
 });

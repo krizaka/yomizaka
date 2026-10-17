@@ -167,6 +167,11 @@ function ReportExport({ documentId, analysisId }: { documentId: string; analysis
             {say("analysis.exportDownload")}
           </a>
         </Button>
+        <Button asChild size="sm" shape="cut" variant="secondary">
+          <a href={`${base}&format=pdf`} download data-testid="report-download-pdf">
+            {say("analysis.exportPdf")}
+          </a>
+        </Button>
         <Button asChild size="sm" variant="ghost">
           <Link href={`/${locale}/verify`} target="_blank">
             {say("analysis.exportVerify")}
