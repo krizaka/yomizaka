@@ -17,14 +17,12 @@
       "checked": "2026-10-16"
     },
     "journey.core": {
-      "evidence": null,
-      "gap": "The home's « A real run » is not backed by a bundled recording of a real Orazaka run on dev.",
-      "issue": "https://github.com/krizaka/yomizaka/issues/13"
+      "evidence": "https://github.com/krizaka/yomizaka/pull/53",
+      "checked": "2026-10-17"
     },
     "journey.ai-via-orazaka": {
-      "evidence": null,
-      "gap": "The home's « A real run » is not backed by a bundled recording of a real Orazaka run on dev.",
-      "issue": "https://github.com/krizaka/yomizaka/issues/13"
+      "evidence": "https://github.com/krizaka/yomizaka/pull/53",
+      "checked": "2026-10-17"
     },
     "ui.krizaka-ui": {
       "evidence": null,
