@@ -18,10 +18,8 @@ vi.mock("./audit", () => ({ audit: vi.fn(async () => undefined) }));
 import { ShowcaseRun, sortFindings, summaryLine } from "@/components/ShowcaseRun";
 
 import { audit } from "./audit";
-import { verifyReport } from "./report";
-import { signingKey } from "./report-signer";
 import { SAMPLE_LEASE } from "./sample-lease";
-import { getShowcase, getShowcaseView, setSample, setShowcase, SHOWCASE_SQL, showcaseFile, showcaseReport } from "./showcase";
+import { getShowcase, getShowcaseView, setSample, setShowcase, SHOWCASE_SQL, showcaseFile } from "./showcase";
 
 // A real Orazaka compliance report (blueprint 1.2.0, jurisdiction Québec, nine findings), as the showcase row holds it.
 const REPORT = reportOf("compliance-check", [{ key: "report", type: "JSON", value: readFileSync(new URL("./fixtures/orazaka-compliance-qc-1.2.0.json", import.meta.url), "utf8") }])!;
@@ -63,8 +61,7 @@ describe("what the public can see", () => {
 
   it("answers null — never a guess — when nothing is promoted", async () => {
     expect(await getShowcase()).toBeNull();
-    expect(await showcaseReport("en")).toBeNull();
-    expect(await getShowcaseView("en")).toBeNull();
+    expect(await getShowcaseView()).toBeNull();
   });
 
   it("answers the promoted check: run id, Studio version, the report as Orazaka returned it", async () => {
@@ -87,20 +84,9 @@ describe("what the public can see", () => {
     expect(queries[0]!.values).toEqual([]);
   });
 
-  it("issues a signed report whose signature verifies, and which fails once a finding is edited", async () => {
-    answers = [[row()]];
-    const made = await showcaseReport("fr");
-    expect(made).not.toBeNull();
-    expect(verifyReport(made!.issued.html, signingKey())).toMatchObject({ ok: true, payload: { check: { runId: RUN, studioVersion: "1.2.0" }, document: { sha256: "a".repeat(64) } } });
-    expect(verifyReport(made!.issued.html.replace("QC-LEASE-004", "QC-LEASE-994"), signingKey())).toMatchObject({ ok: false });
-  });
-
-  it("gives the same file fingerprint on the page as the download", async () => {
-    answers = [[row()], [row()]];
-    const view = await getShowcaseView("en");
-    const made = await showcaseReport("en");
-    expect(view?.file.sha256).toBe(made?.issued.fileSha256);
-    expect(view?.file.keyId).toBe(made?.issued.attestation.keyId);
+  it("has no signed report to issue: the public showcase module exports no signing function (ADR-0002)", async () => {
+    const mod = await import("./showcase");
+    expect(Object.keys(mod).filter((k) => /report/i.test(k))).toEqual([]);
   });
 });
 
@@ -147,7 +133,7 @@ describe("what an administrator may promote", () => {
 describe("the landing section, rendered from a mocked platform answer", () => {
   it("says 9 checks · N non-compliant · N compliant, with the non-compliant findings first", async () => {
     answers = [[row()]];
-    const view = (await getShowcaseView("en"))!;
+    const view = (await getShowcaseView())!;
     const findings = view.report.findings;
     const fails = findings.filter((f) => f.verdict === "FAIL").length;
     const passes = findings.filter((f) => f.verdict === "PASS").length;
@@ -155,17 +141,17 @@ describe("the landing section, rendered from a mocked platform answer", () => {
     expect(html).toContain(`9 checks · ${fails} non-compliant · ${passes} compliant`);
     expect(html).toContain(RUN);
     expect(html).toContain("a".repeat(64));
-    expect(html).toContain("/api/showcase/report?lang=en");
-    expect(html).toContain("/en/verify");
-    expect(html).toContain("Download the signed report");
-    expect(html).toContain("Verify it (members with access)");
+    expect(html).not.toContain("/api/showcase/report");
+    expect(html).toContain("SPECIMEN — fictitious lease, no value");
     expect(html).toContain("ym-passage");
-    const firstPass = html.indexOf(">Compliant<");
-    const lastFail = html.lastIndexOf(">Non-compliant<");
+    // The findings list (the specimen above it is sorted the same way, checked on its own).
+    const list = html.slice(html.indexOf('aria-label="Findings"'));
+    const firstPass = list.indexOf(">Compliant<");
+    const lastFail = list.lastIndexOf(">Non-compliant<");
     expect(lastFail).toBeLessThan(firstPass);
     const fr = renderToStaticMarkup(createElement(ShowcaseRun, { run: view, locale: "fr" }));
     expect(fr).toContain(`9 contrôles · ${fails} non conformes · ${passes} conformes`);
-    expect(fr).toContain("Télécharger le rapport signé");
+    expect(fr).toContain("SPÉCIMEN — bail fictif, sans valeur");
   });
 
   it("sorts and counts without mutating", () => {

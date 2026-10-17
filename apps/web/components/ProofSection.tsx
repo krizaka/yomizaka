@@ -68,9 +68,7 @@ export function ProofSection({ locale }: { locale: Locale }) {
           </span>
           <p className="text-sm text-fg-secondary">{t.report.text}</p>
           <Button asChild variant="secondary" size="md" shape="cut">
-            <a href={`/api/recorded-runs/tenant/report?lang=${locale}`} download>
-              {t.report.cta}
-            </a>
+            <Link href={`${pagePath(locale, "run")}#specimen`}>{t.report.cta}</Link>
           </Button>
         </Card.Root>
         <Card.Root className="flex flex-col gap-3 p-5">

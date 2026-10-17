@@ -161,9 +161,9 @@
       "rules": "règles du bail de logement québécois évaluées à chaque vérification",
       "found": "constats sur ce bail d'exemple : {fail} non conformes, {pass} conformes",
       "report": {
-        "title": "Le rapport signé",
-        "text": "La même vérification en fichier signé : empreinte du document, version des règles, chaque constat avec son passage et son article, et la signature.",
-        "cta": "Télécharger le rapport signé"
+        "title": "Le rapport, en spécimen",
+        "text": "Chaque vérification peut devenir un rapport signé pour vos propres documents. Ici, un aperçu non signé d'un bail fictif.",
+        "cta": "Voir le spécimen"
       },
       "access": {
         "title": "Vérifié par les personnes que vous choisissez",
@@ -201,12 +201,8 @@
     "viewerHint": "Le même texte que le visualiseur de la console : chaque passage cité par un constat est marqué.",
     "docHash": "SHA-256 du document",
     "report": "Rapport signé",
-    "reportHash": "SHA-256 du fichier",
-    "key": "Clé de signature",
     "copy": "Copier",
     "copied": "Copié",
-    "download": "Télécharger le rapport signé",
-    "verify": "Le vérifier (membres autorisés)",
     "review": "Les règles québécoises attendent la relecture d'un juriste — le rapport le dit.",
     "noPassage": "Aucun passage cité",
     "findings": "Constats",
@@ -225,7 +221,12 @@
         "lead": "Avant d'envoyer, ce que le modèle doit corriger pour être conforme."
       }
     },
-    "recorded": "Enregistré le {date} sur {source} · exécution {run}. Les constats ci-dessous sont la réponse d'Orazaka, sans retouche."
+    "recorded": "Enregistré le {date} sur {source} · exécution {run}. Les constats ci-dessous sont la réponse d'Orazaka, sans retouche.",
+    "specimen": {
+      "mark": "SPÉCIMEN — bail fictif, sans valeur",
+      "title": "Spécimen du rapport",
+      "note": "Un aperçu visuel, non signé : ce n'est pas une attestation. Un rapport signé n'existe que pour vos propres documents, et seules les personnes à qui vous donnez accès peuvent le vérifier."
+    }
   },
   "privacy": {
     "title": "Confidentialité",
@@ -706,7 +707,8 @@
       "UNREADABLE": "Le bloc de signature est abîmé ou dans un format que Yomizaka ne connaît pas.",
       "BAD_SIGNATURE": "La signature ne correspond pas au contenu : le rapport a été modifié ou signé par une autre clé.",
       "ALTERED": "La signature est valide pour le rapport d’origine, mais le fichier n’est plus ce rapport : quelque chose a été changé après la signature.",
-      "UNKNOWN_KEY": "Il a été signé par une clé qui n’est pas celle de ce serveur."
+      "UNKNOWN_KEY": "Il a été signé par une clé qui n’est pas celle de ce serveur.",
+      "SPECIMEN": "Ce rapport est un spécimen : il ne prouve rien."
     },
     "facts": {
       "fileSha": "SHA-256 de ce fichier",
