@@ -14,7 +14,7 @@ export function SideSwitch({ locale, current = null, label, words }: { locale: L
     <nav aria-label={label} className="flex flex-wrap items-center gap-2" data-testid="side-switch">
       {PERSPECTIVES.map((side) => (
         <Button key={side} asChild variant={current === side ? "primary" : "secondary"} size="md" shape="cut">
-          <Link href={sidePath(locale, side)} aria-current={current === side ? "page" : undefined} hrefLang={locale}>
+          <Link href={sidePath(locale, side)} aria-current={current === side ? "page" : undefined}>
             {words[side]}
           </Link>
         </Button>
