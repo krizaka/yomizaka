@@ -99,4 +99,34 @@ ALTER TABLE analyses ADD COLUMN showcase boolean NOT NULL DEFAULT false;
 CREATE INDEX analyses_showcase ON analyses(finished_at DESC) WHERE showcase;
 `,
   },
+  {
+    version: "0003_report_grants",
+    sql: `
+-- Verifying a signed report is for the people the report's owner gave access to (ADR-0002). A grant names an e-mail:
+-- a member of that address has access at once, and an address with no account yet is an invitation honoured the day the
+-- account exists (sign-up is closed on dev, so the row waits). Revoked or past its expiry, a grant opens nothing.
+CREATE TABLE report_grants (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  analysis_id   uuid NOT NULL REFERENCES analyses(id) ON DELETE CASCADE,
+  granted_by    uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  grantee_email text NOT NULL CHECK (grantee_email = lower(grantee_email)),
+  created_at    timestamptz NOT NULL DEFAULT now(),
+  expires_at    timestamptz,
+  revoked_at    timestamptz
+);
+CREATE UNIQUE INDEX report_grants_live ON report_grants(analysis_id, grantee_email) WHERE revoked_at IS NULL;
+CREATE INDEX report_grants_email ON report_grants(grantee_email);
+
+-- "Request access": a signed-in member asks the owner for a report they cannot verify; the owner sees it beside the grants.
+CREATE TABLE report_access_requests (
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  analysis_id     uuid NOT NULL REFERENCES analyses(id) ON DELETE CASCADE,
+  requester_id    uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  requester_email text NOT NULL,
+  created_at      timestamptz NOT NULL DEFAULT now(),
+  handled_at      timestamptz
+);
+CREATE UNIQUE INDEX report_access_requests_open ON report_access_requests(analysis_id, requester_id) WHERE handled_at IS NULL;
+`,
+  },
 ];

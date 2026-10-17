@@ -1,55 +1,170 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { resetRateLimits } from "./rate-limit";
+import { buildPayload, issueReport, sha256 } from "./report";
+import type { Grant, Target } from "./report-access";
+import { reportLabels } from "./report-labels";
+import { signingKey } from "./report-signer";
+
+/**
+ * ADR-0002 — verifying a report is for members the owner gave access to. The route's whole chain runs for real (session
+ * gate, reference, access rule, signature check, audit); only the database edges are faked: the session, the report
+ * lookup and the audit sink.
+ */
+const OWNER = { id: "11111111-1111-4111-8111-111111111111", email: "owner@example.test" };
+const GUEST = { id: "22222222-2222-4222-8222-222222222222", email: "guest@example.test" };
+
+const state = vi.hoisted(() => ({ session: null as null | { account: { id: string; email: string } }, target: null as unknown, audits: [] as Record<string, unknown>[] }));
 
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => undefined }) }));
+vi.mock("./session", async (orig) => ({ ...(await orig<typeof import("./session")>()), resolveSession: async () => state.session }));
+vi.mock("./audit", () => ({ audit: async (entry: Record<string, unknown>) => void state.audits.push(entry) }));
+vi.mock("./report-access", async (orig) => ({ ...(await orig<typeof import("./report-access")>()), loadTarget: async () => state.target }));
+vi.mock("./db", () => ({ query: async () => [] }));
 
-const post = async (body: BodyInit | null, headers: Record<string, string> = {}) => {
+const doc = { sha256: sha256("lease bytes"), filename: "bail.pdf", title: "Bail", sizeBytes: 11, pages: 1 };
+const analysis = {
+  id: "a1",
+  studio: "compliance-check" as const,
+  status: "succeeded" as const,
+  runId: "run-123",
+  blueprintVersion: "1.0.0",
+  inputs: {},
+  report: { rulesetId: "qc", rulesetVersion: "1", jurisdiction: "QC", asOf: "2026-10-14", findings: [{ ruleId: "r1", severity: "BLOCKING", verdict: "FAIL", explanation: "x", evidenceSpan: { quote: "q" } }] },
+  error: null,
+  createdAt: "2026-10-14T10:00:00.000Z",
+  finishedAt: "2026-10-14T10:00:05.000Z",
+};
+const issued = issueReport(buildPayload(doc, analysis, "en"), reportLabels("en"), signingKey());
+
+const grant = (over: Partial<Grant> = {}): Grant => ({ id: "g1", email: GUEST.email, createdAt: new Date("2026-10-01"), expiresAt: null, revokedAt: null, ...over });
+const held = (grants: Grant[]): Target => ({ analysisId: "an-1", documentId: "doc-1", ownerId: OWNER.id, grants });
+
+const post = async (html = issued.html) => {
   const { POST } = await import("../app/api/verify/route");
-  return POST(new Request("https://dev.yomizaka.com/api/verify", { method: "POST", body, headers: { "x-forwarded-for": "203.0.113.9", ...headers } }));
+  const form = new FormData();
+  form.set("report", new File([html], "report.html", { type: "text/html" }));
+  return POST(new Request("https://dev.yomizaka.com/api/verify", { method: "POST", body: form, headers: { "x-forwarded-for": "203.0.113.9" } }));
 };
 
-describe("POST /api/verify as a visitor (no account): memory only, small, rate-limited", () => {
-  beforeEach(() => resetRateLimits());
+beforeEach(() => {
+  resetRateLimits();
+  state.session = null;
+  state.target = null;
+  state.audits = [];
+});
 
-  it("refuses an original document with 401", async () => {
-    const form = new FormData();
-    form.set("reportText", "<html></html>");
-    form.set("document", new File(["x"], "lease.pdf"));
-    expect((await post(form)).status).toBe(401);
+describe("POST /api/verify — members only, by grant", () => {
+  it("answers 401 to a signed-out caller, whatever it sends — the old public path is closed", async () => {
+    expect((await post()).status).toBe(401);
+    expect((await post("<html></html>")).status).toBe(401);
+    expect(state.audits).toEqual([]);
   });
 
-  it("refuses a body over the visitor cap (2 MB + 64 KB) with 413 before reading it", async () => {
-    const res = await post("x", { "content-length": String(2 * 1024 * 1024 + 64 * 1024 + 1), "content-type": "multipart/form-data; boundary=x" });
+  it("answers 403 NO_ACCESS to a member with no grant, and offers to request access", async () => {
+    state.session = { account: GUEST };
+    state.target = held([]);
+    const res = await post();
+    expect(res.status).toBe(403);
+    expect(await res.json()).toMatchObject({ code: "NO_ACCESS", requestable: true, runId: "run-123" });
+  });
+
+  it("answers the same 403 for a report this server does not hold (nothing to learn about what exists)", async () => {
+    state.session = { account: GUEST };
+    state.target = null;
+    expect((await post()).status).toBe(403);
+  });
+
+  it("answers 200 with the full check to a member holding a live grant", async () => {
+    state.session = { account: GUEST };
+    state.target = held([grant()]);
+    const res = await post();
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ result: { ok: true, fileSha256: issued.fileSha256, payload: { check: { runId: "run-123" } } } });
+  });
+
+  it("answers 200 to the owner without any grant", async () => {
+    state.session = { account: OWNER };
+    state.target = held([]);
+    expect((await post()).status).toBe(200);
+  });
+
+  it("matches the grant's e-mail whatever its case", async () => {
+    state.session = { account: { ...GUEST, email: "Guest@Example.Test" } };
+    state.target = held([grant()]);
+    expect((await post()).status).toBe(200);
+  });
+
+  it("answers 403 once the grant is revoked", async () => {
+    state.session = { account: GUEST };
+    state.target = held([grant({ revokedAt: new Date("2026-10-02") })]);
+    expect((await post()).status).toBe(403);
+  });
+
+  it("answers 403 once the grant has expired, and 200 while its date is ahead", async () => {
+    state.session = { account: GUEST };
+    state.target = held([grant({ expiresAt: new Date("2020-01-01") })]);
+    expect((await post()).status).toBe(403);
+    state.target = held([grant({ expiresAt: new Date(Date.now() + 86_400_000) })]);
+    expect((await post()).status).toBe(200);
+  });
+
+  it("does not let another person's grant open the report", async () => {
+    state.session = { account: GUEST };
+    state.target = held([grant({ email: "someone-else@example.test" })]);
+    expect((await post()).status).toBe(403);
+  });
+
+  it("still fails a tampered report for a member with access — the signature is the second lock", async () => {
+    state.session = { account: GUEST };
+    state.target = held([grant()]);
+    const res = await post(issued.html.replace("Bail", "Bail 2"));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ result: { ok: false, reason: "ALTERED" } });
+  });
+
+  it("turns a file that is not a report into NOT_A_REPORT without touching the grants", async () => {
+    state.session = { account: GUEST };
+    const res = await post("<html></html>");
+    expect(await res.json()).toMatchObject({ result: { ok: false, reason: "NOT_A_REPORT" } });
+  });
+
+  it("refuses a body over the cap with 413 before reading it", async () => {
+    state.session = { account: GUEST };
+    const { POST } = await import("../app/api/verify/route");
+    const res = await POST(new Request("https://dev.yomizaka.com/api/verify", { method: "POST", body: "x", headers: { "content-length": String(13 * 1024 * 1024), "content-type": "multipart/form-data; boundary=x" } }));
     expect(res.status).toBe(413);
   });
 
-  it("is limited per address: the 21st attempt in ten minutes is 429", async () => {
+  it("is limited per account: the 61st attempt in ten minutes is 429", async () => {
+    state.session = { account: GUEST };
+    state.target = held([grant()]);
     let last = 0;
-    for (let i = 0; i < 21; i++) last = (await post(new FormData())).status;
+    for (let i = 0; i < 61; i++) last = (await post()).status;
     expect(last).toBe(429);
   });
 });
 
-describe("POST /api/verify with APP_PUBLIC_ACTIONS=off (dev): a signed-out visitor cannot run anything", () => {
-  const before = process.env.APP_PUBLIC_ACTIONS;
-  beforeEach(() => resetRateLimits());
-  afterEach(() => {
-    if (before === undefined) delete process.env.APP_PUBLIC_ACTIONS;
-    else process.env.APP_PUBLIC_ACTIONS = before;
+describe("the audit trail — who verified what, and when", () => {
+  it("writes report.verified with the actor, the run, the way in (grant) and the outcome", async () => {
+    state.session = { account: GUEST };
+    state.target = held([grant()]);
+    await post();
+    expect(state.audits).toHaveLength(1);
+    expect(state.audits[0]).toMatchObject({ action: "report.verified", actorId: GUEST.id, actorLabel: GUEST.email, targetId: "an-1", detail: { runId: "run-123", ok: true, via: "grant", grantId: "g1", fileSha256: issued.fileSha256 } });
   });
 
-  it("answers 401 to a signed-out POST, whatever it sends", async () => {
-    process.env.APP_PUBLIC_ACTIONS = "off";
-    const form = new FormData();
-    form.set("reportText", "<html></html>");
-    expect((await post(form)).status).toBe(401);
+  it("records the owner's own check as via: owner", async () => {
+    state.session = { account: OWNER };
+    state.target = held([]);
+    await post();
+    expect(state.audits[0]).toMatchObject({ action: "report.verified", detail: { via: "owner" } });
   });
 
-  it("still answers 200 to the same POST when the public actions are on", async () => {
-    process.env.APP_PUBLIC_ACTIONS = "on";
-    const form = new FormData();
-    form.set("reportText", "<html></html>");
-    expect((await post(form)).status).not.toBe(401);
+  it("writes report.verify_denied for a refusal", async () => {
+    state.session = { account: GUEST };
+    state.target = held([]);
+    await post();
+    expect(state.audits[0]).toMatchObject({ action: "report.verify_denied", actorId: GUEST.id, detail: { runId: "run-123", known: true } });
   });
 });

@@ -5,7 +5,7 @@ import { showcaseReport } from "@/lib/showcase";
 
 export const dynamic = "force-dynamic";
 
-/** The signed audit report of the showcase, as the file anyone can check on /verify. `?lang=en|fr`. */
+/** The signed audit report of the showcase, a non-personal sample's file; checking it on /verify needs a member with a grant (ADR-0002). `?lang=en|fr`. */
 export function GET(req: Request) {
   return handle(async () => {
     limit("showcase-report", req, null, [60, 3600]);

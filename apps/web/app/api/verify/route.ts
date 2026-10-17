@@ -1,33 +1,51 @@
-import { cookies } from "next/headers";
-
-import { readEnv } from "@/lib/env";
+import { requireSession } from "@/lib/access";
+import { audit } from "@/lib/audit";
 import { handle, refuse } from "@/lib/http";
 import { limit } from "@/lib/rate-limit";
-import { resolveSession, SESSION_COOKIE } from "@/lib/session";
-import { MAX_DOCUMENT_BYTES, MAX_REPORT_BYTES, MAX_VISITOR_BODY_BYTES, verifyRequest } from "@/lib/verify";
+import { verifyReport } from "@/lib/report";
+import { accessTo, loadTarget, referenceOf } from "@/lib/report-access";
+import { signingKey } from "@/lib/report-signer";
+import { MAX_BODY_BYTES, readVerifyForm } from "@/lib/verify";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Checks a Yomizaka audit report (multipart: `report` file or `reportText`). Open to anyone for the report alone;
- * the optional original `document` needs a signed-in account (a visitor sending one gets 401). Nothing is kept — files are
- * read in memory, checked and dropped — and nothing is analysed by a model. Rate-limited by address (stricter for visitors).
+ * Checks a Yomizaka audit report (multipart: `report` file or `reportText`, optionally the original `document`).
+ * Members only, and only for a report the caller owns or was granted (ADR-0002):
+ *   no session → 401 · a report without a grant (or one this server does not hold) → 403 NO_ACCESS · a grant → 200.
+ * Every verification, and every refusal, is written to the audit log: who checked what, and when.
+ * Nothing is kept — files are read in memory, checked and dropped — and nothing is analysed by a model.
  */
 export function POST(req: Request) {
   return handle(async () => {
-    const session = await resolveSession((await cookies()).get(SESSION_COOKIE)?.value);
-    const signedIn = session !== null;
-    if (!signedIn && readEnv().APP_PUBLIC_ACTIONS !== "on") throw refuse(401, "UNAUTHENTICATED", "Sign in first");
-    limit("verify", req, session?.account.id ?? null, signedIn ? [60, 600] : [20, 600]);
-    const length = Number(req.headers.get("content-length") ?? "0");
-    const cap = signedIn ? MAX_REPORT_BYTES + MAX_DOCUMENT_BYTES + 64 * 1024 : MAX_VISITOR_BODY_BYTES;
-    if (length > cap) throw refuse(413, "FILE_TOO_LARGE", "Too large");
+    const session = await requireSession(req);
+    const who = { id: session.account.id, email: session.account.email };
+    limit("verify", req, who.id, [60, 600]);
+    if (Number(req.headers.get("content-length") ?? "0") > MAX_BODY_BYTES) throw refuse(413, "FILE_TOO_LARGE", "Too large");
     let form: FormData;
     try {
       form = await req.formData();
     } catch {
       throw refuse(400, "BAD_REQUEST", "Expected a multipart form");
     }
-    return Response.json({ result: await verifyRequest(form, { signedIn }) }, { headers: { "Cache-Control": "no-store" } });
+    const { text, document } = await readVerifyForm(form);
+    const reference = referenceOf(text);
+    // A file that is not a report holds nothing to protect: it fails like before (NOT_A_REPORT / UNREADABLE).
+    const target = reference ? await loadTarget(reference.runId, reference.documentSha256) : null;
+    const access = target ? accessTo(target, who, new Date()) : ({ allowed: false } as const);
+    if (reference && !access.allowed) {
+      await audit({ action: "report.verify_denied", actorId: who.id, actorLabel: who.email, targetId: target?.analysisId ?? null, detail: { runId: reference.runId, known: target !== null }, headers: req.headers });
+      throw refuse(403, "NO_ACCESS", "You do not have access to this report", { requestable: true, runId: reference.runId, documentSha256: reference.documentSha256 });
+    }
+    const result = verifyReport(text, signingKey(), document);
+    await audit({
+      action: "report.verified",
+      actorId: who.id,
+      actorLabel: who.email,
+      targetId: target?.analysisId ?? null,
+      detail: { runId: reference?.runId ?? null, ok: result.ok, ...(result.ok ? {} : { reason: result.reason }), via: access.allowed ? access.via : "none", ...(access.allowed && access.via === "grant" ? { grantId: access.grantId } : {}), fileSha256: result.fileSha256 },
+      headers: req.headers,
+    });
+    return Response.json({ result }, { headers: { "Cache-Control": "no-store" } });
   });
 }

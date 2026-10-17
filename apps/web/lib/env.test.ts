@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { assertProductionEnv, consoleAllowedIps, productionProblems, readEnv } from "./env";
+import { assertProductionEnv, consoleAllowedIps, envSchema, productionProblems, readEnv } from "./env";
 import { generateSigningKeyBase64 } from "./report-key";
 
 const PROD = {
@@ -13,9 +13,8 @@ const PROD = {
 };
 
 describe("env", () => {
-  it("keeps the public actions on unless APP_PUBLIC_ACTIONS is exactly off (off on every dev deployment)", () => {
-    expect(readEnv({}).APP_PUBLIC_ACTIONS).toBe("on");
-    expect(readEnv({ APP_PUBLIC_ACTIONS: "off" }).APP_PUBLIC_ACTIONS).toBe("off");
+  it("has no switch that re-opens public verification (ADR-0002): only a member with a grant verifies", () => {
+    expect(Object.keys(envSchema.shape)).not.toContain("APP_PUBLIC_ACTIONS");
   });
 
   it("closes sign-up unless AUTH_SIGNUP_ENABLED is exactly true", () => {

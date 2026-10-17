@@ -158,7 +158,7 @@ describe("the landing section, rendered from a mocked platform answer", () => {
     expect(html).toContain("/api/showcase/report?lang=en");
     expect(html).toContain("/en/verify");
     expect(html).toContain("Download the signed report");
-    expect(html).toContain("Verify it yourself");
+    expect(html).toContain("Verify it (members with access)");
     expect(html).toContain("ym-passage");
     const firstPass = html.indexOf(">Compliant<");
     const lastFail = html.lastIndexOf(">Non-compliant<");
