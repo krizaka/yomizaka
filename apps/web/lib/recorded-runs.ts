@@ -22,11 +22,11 @@ const RUN_SUCCEEDED = "SUCCEEDED";
 
 const FILES: Record<Perspective, unknown> = { tenant, landlord };
 
+/** What a recording says; the signed report's fingerprint is added at request time (`recordedRunView`) — the key is a runtime secret. */
 export interface RecordedRun extends Showcase {
   side: Perspective;
   recordedAt: string;
   source: string;
-  file: { sha256: string; keyId: string };
 }
 
 export function readRecording(side: Perspective, raw: unknown): { run: RecordedRun; analysis: Analysis; document: Parameters<typeof buildPayload>[0] } {
@@ -53,7 +53,6 @@ export function readRecording(side: Perspective, raw: unknown): { run: RecordedR
     createdAt: run.startedAt ?? finishedAt,
     finishedAt,
   };
-  const issued = issueReport(buildPayload(document, analysis, "en"), reportLabels("en"), signingKey());
   return {
     run: {
       side,
@@ -65,7 +64,6 @@ export function readRecording(side: Perspective, raw: unknown): { run: RecordedR
       finishedAt,
       document: { title: document.title, filename: document.filename, sha256: document.sha256, pages: null, text: file.document.text, mimeType: "text/plain" },
       report,
-      file: { sha256: issued.fileSha256, keyId: issued.attestation.keyId },
     },
     analysis,
     document,
@@ -82,4 +80,10 @@ export const recordedRuns = (): RecordedRun[] => PERSPECTIVES.map(recordedRun);
 export function recordedReport(side: Perspective, lang: Locale): { issued: IssuedReport; filename: string } {
   const { analysis, document } = ALL[side];
   return { issued: issueReport(buildPayload(document, analysis, lang), reportLabels(lang), signingKey()), filename: `yomizaka-audit-sample-${side}-${analysis.runId!.slice(0, 8)}.html` };
+}
+
+/** A recorded run with the fingerprint and key of its signed report — read at request time (the signing key is a runtime secret). */
+export function recordedRunView(side: Perspective, lang: Locale): RecordedRun & { file: { sha256: string; keyId: string } } {
+  const { issued } = recordedReport(side, lang);
+  return { ...recordedRun(side), file: { sha256: issued.fileSha256, keyId: issued.attestation.keyId } };
 }

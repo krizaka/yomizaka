@@ -10,10 +10,14 @@ import { ShowcaseRun } from "@/components/ShowcaseRun";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
 import { asLocale, format, getDictionary } from "@/lib/i18n";
-import { recordedRun } from "@/lib/recorded-runs";
+import { recordedRunView } from "@/lib/recorded-runs";
 import { pageMetadata, siteJsonLd } from "@/lib/seo";
 import { SIDE_ANCHORS } from "@/lib/sides";
 import { contactHref, pagePath } from "@/lib/site";
+
+// Rendered per request: the signed report's fingerprint needs the signing key, a runtime secret. The recordings themselves are
+// validated when the module loads, so a missing one still fails the build.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   return pageMetadata(asLocale((await params).locale), "run");
@@ -35,7 +39,7 @@ export default async function RunPage({ params }: { params: Promise<{ locale: st
         <PageHero back={{ href: pagePath(locale, "home"), label: t.meta.siteName }} linkAs={Link} eyebrow={t.run.eyebrow} title={t.run.title} lead={t.run.lead} />
         <Page>
           {PERSPECTIVES.map((side) => {
-            const run = recordedRun(side);
+            const run = recordedRunView(side, locale);
             const w = t.run.sides[side];
             return (
               <Section key={side} id={SIDE_ANCHORS[locale][side]} spacing="sm" title={w.title} lead={w.lead} divider>

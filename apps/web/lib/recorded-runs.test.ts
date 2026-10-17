@@ -4,13 +4,13 @@ import { join } from "node:path";
 import { PERSPECTIVES } from "@yomizaka/core";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import landlordFile from "@/content/recorded-runs/landlord.json";
 import tenantFile from "@/content/recorded-runs/tenant.json";
 
 import { ShowcaseRun, summaryLine } from "../components/ShowcaseRun";
-import { readRecording, recordedReport, recordedRun, RecordedRunError, recordedRuns } from "./recorded-runs";
+import { readRecording, recordedReport, recordedRun, RecordedRunError, recordedRuns,recordedRunView } from "./recorded-runs";
 import { verifyReport } from "./report";
 import { signingKey } from "./report-signer";
 
@@ -53,12 +53,13 @@ describe("« A real run » — a recorded run per side of the lease, or the page
   it("the page imports the recordings, so a page without one cannot be built", () => {
     const page = readFileSync(join(ROOT, "app/[locale]/run/page.tsx"), "utf8");
     expect(page).toContain('from "@/lib/recorded-runs"');
-    expect(page).toContain("recordedRun(side)");
+    expect(page).toContain("recordedRunView(side, locale)");
     expect(page).not.toContain("getShowcaseView");
   });
 
   it("renders each side's run: the run id, the counted summary, the signed report", () => {
-    for (const r of recordedRuns()) {
+    for (const side of PERSPECTIVES) {
+      const r = recordedRunView(side, "fr");
       const html = renderToStaticMarkup(createElement(ShowcaseRun, { run: r, locale: "fr", reportHref: `/api/recorded-runs/${r.side}/report?lang=fr`, verifyHref: null }));
       expect(html).toContain(r.runId);
       expect(html).toContain(summaryLine(r.report.findings, { summary: "{total} contrôles · {fail} non conformes · {pass} conformes", insufficient: "" }));
@@ -80,5 +81,16 @@ describe("« A real run » — a recorded run per side of the lease, or the page
     expect(t.document.sha256).not.toBe(l.document.sha256);
     expect(t.report.findings.filter((f) => f.verdict === "FAIL").length).toBeGreaterThan(0);
     expect(l.report.findings.filter((f) => f.verdict === "FAIL").length).toBeGreaterThan(0);
+  });
+
+  it("is read at build with no signing key (the production build has none): only the signed report needs it, at request time", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("APP_REPORT_SIGNING_KEY", "");
+    try {
+      expect(() => readRecording("tenant", tenantFile)).not.toThrow();
+      expect(() => recordedRunView("tenant", "en")).toThrow(/APP_REPORT_SIGNING_KEY/);
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });
