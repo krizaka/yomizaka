@@ -10,7 +10,7 @@ import { DocumentViewer, type Located } from "@krizaka/ui/document-viewer";
 import { createKrizakaForm } from "@krizaka/ui/form";
 import { Spinner } from "@krizaka/ui/spinner";
 import { Tabs } from "@krizaka/ui/tabs";
-import { type Analysis, analysis as analysisSchema, type Audience, AUTHENTICITY_MAX_BYTES, type AuthenticityReport, type ComplianceReport, type DocumentDetail, documentDetail, JURISDICTIONS, passages, queryKeys } from "@yomizaka/core";
+import { type Analysis, analysis as analysisSchema, type Audience, AUTHENTICITY_MAX_BYTES, type AuthenticityReport, type ComplianceReport, type DocumentDetail, documentDetail, type Jurisdiction, JURISDICTIONS, passages, queryKeys,type Studio } from "@yomizaka/core";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ComponentProps, useEffect, useMemo, useRef, useState } from "react";
@@ -253,7 +253,7 @@ function AnalysisCard({ documentId, initial, selection }: { documentId: string; 
   );
 }
 
-function StartCompliance({ documentId, disabled }: { documentId: string; disabled: boolean }) {
+function StartCompliance({ documentId, disabled, jurisdictions }: { documentId: string; disabled: boolean; jurisdictions: readonly (typeof JURISDICTIONS)[number][] }) {
   const { say, locale } = useSay();
   const client = useQueryClient();
   const [problem, setProblem] = useState<string | null>(null);
@@ -275,7 +275,7 @@ function StartCompliance({ documentId, disabled }: { documentId: string; disable
   return (
     <form.Form aria-label={say("analysis.complianceTitle")} className="flex flex-col gap-3">
       <p className="text-sm text-fg-secondary">{say("analysis.complianceText")}</p>
-      <form.Select name="jurisdiction" label={say("analysis.jurisdiction")} options={JURISDICTIONS.map((j) => ({ value: j, label: say(`analysis.jurisdictions.${j}`) }))} />
+      <form.Select name="jurisdiction" label={say("analysis.jurisdiction")} options={jurisdictions.map((j) => ({ value: j, label: say(`analysis.jurisdictions.${j}`) }))} />
       <form.DateField name="asOf" label={say("analysis.asOf")} />
       {problem ? <Alert tone="danger">{problem}</Alert> : null}
       <form.Submit shape="cut" disabled={disabled}>
@@ -318,7 +318,7 @@ function StartAuthenticity({ documentId, disabled }: { documentId: string; disab
 }
 
 /** The document page: the file and its text on one side, Orazaka's checks on the other — each a traced run. */
-export function DocumentView({ initial, perspective = null }: { initial: DocumentDetail; perspective?: Audience | null }) {
+export function DocumentView({ initial, perspective = null, offer }: { initial: DocumentDetail; perspective?: Audience | null; offer: { studios: readonly Studio[]; jurisdictions: readonly Jurisdiction[] } }) {
   const { say, locale } = useSay();
   const router = useRouter();
   const client = useQueryClient();
@@ -346,7 +346,7 @@ export function DocumentView({ initial, perspective = null }: { initial: Documen
   const complianceCard = (
     <Card.Root key="compliance-check" className="p-4">
       <h3 className="mb-2 font-display text-base font-bold text-fg">{say("analysis.complianceTitle")}</h3>
-      {doc.hasText ? <StartCompliance documentId={doc.id} disabled={running("compliance-check")} /> : <Alert tone="info">{say("document.noText")}</Alert>}
+      {doc.hasText ? <StartCompliance documentId={doc.id} disabled={running("compliance-check")} jurisdictions={offer.jurisdictions} /> : <Alert tone="info">{say("document.noText")}</Alert>}
     </Card.Root>
   );
   const authenticityCard = (
@@ -447,7 +447,7 @@ export function DocumentView({ initial, perspective = null }: { initial: Documen
             <p className="text-sm text-fg-secondary">{say(`document.checksLeadBy.${wordingOf(perspective)}`)}</p>
           </div>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-            {firstCheck(perspective, doc.kind) === "compliance-check" ? [complianceCard, authenticityCard] : [authenticityCard, complianceCard]}
+            {(firstCheck(perspective, doc.kind) === "compliance-check" ? [complianceCard, authenticityCard] : [authenticityCard, complianceCard]).filter((c) => offer.studios.includes(c.key as Studio))}
           </div>
           {doc.analyses.map((a) => (
             <AnalysisCard key={a.id} documentId={doc.id} initial={a} selection={a.id === latestCompliance?.id ? selection : undefined} />

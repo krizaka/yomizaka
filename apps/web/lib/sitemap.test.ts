@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
 import sitemap from "../app/sitemap";
 import { proxy } from "../proxy";
@@ -7,8 +7,12 @@ import { SITE_URL } from "./site";
 
 /** The sitemap lists every indexable page in both languages, each the other's hreflang alternate — and is served when indexing is on. */
 describe("sitemap.xml", () => {
-  const entries = sitemap();
-  const urls = entries.map((e) => e.url);
+  let entries: Awaited<ReturnType<typeof sitemap>> = [];
+  let urls: string[] = [];
+  beforeAll(async () => {
+    entries = await sitemap();
+    urls = entries.map((e) => e.url);
+  });
 
   it("lists the home, the run, privacy and both sides, in en and fr", () => {
     for (const path of ["", "/run", "/privacy", "/tenant", "/landlord"]) expect(urls).toContain(`${SITE_URL}/en${path}`);

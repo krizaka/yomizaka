@@ -1,5 +1,5 @@
 import { ChipLink } from "@krizaka/ui/chip-link";
-import { type Audience, AUDIENCE_STATUS, AUDIENCES } from "@yomizaka/core";
+import { type Audience } from "@yomizaka/core";
 import Link from "next/link";
 
 import { type Locale } from "@/lib/i18n";
@@ -15,6 +15,7 @@ import { sidePath } from "@/lib/sides";
  */
 export function AudiencePicker({
   locale,
+  audiences,
   current = null,
   label,
   hint,
@@ -23,6 +24,8 @@ export function AudiencePicker({
   other,
 }: {
   locale: Locale;
+  /** The audiences the enabled flows offer (lib/flows.ts `audiencesOf`), in order, each available or soon. */
+  audiences: readonly { audience: Audience; status: "available" | "soon" }[];
   current?: Audience | null;
   label: string;
   hint: string;
@@ -36,12 +39,12 @@ export function AudiencePicker({
       <span className="text-sm font-semibold text-fg-secondary">{hint}</span>
       <nav aria-label={label} className="-mx-(--kz-page-gutter,1rem) overflow-x-auto px-(--kz-page-gutter,1rem) pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:overflow-visible md:px-0 [mask-image:linear-gradient(to_right,#000_90%,transparent)] md:[mask-image:none]">
         <ul className="m-0 flex w-max list-none snap-x snap-mandatory gap-2 p-0 md:w-auto md:flex-wrap">
-          {AUDIENCES.map((a) => (
+          {audiences.map(({ audience: a, status }) => (
             <li key={a} className="shrink-0">
               <ChipLink asChild selected={current === a} className={chip}>
                 <Link href={sidePath(locale, a)}>
                   {words[a]}
-                  {AUDIENCE_STATUS[a] === "soon" ? (
+                  {status === "soon" ? (
                     <span className="ms-2 rounded-full border border-current px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider opacity-80" data-testid={`soon-${a}`}>
                       {soon}
                     </span>

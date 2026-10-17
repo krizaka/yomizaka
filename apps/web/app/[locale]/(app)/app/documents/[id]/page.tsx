@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { DocumentView } from "@/components/console/DocumentView";
 import { pageSession } from "@/lib/access";
 import { getDocument } from "@/lib/documents";
+import { appEnvironment } from "@/lib/env";
+import { availableFlows, offerFor } from "@/lib/flows";
 import { HttpError } from "@/lib/http";
 import { asLocale, getDictionary } from "@/lib/i18n";
 
@@ -20,5 +22,5 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
     throw error;
   });
   if (!document) notFound();
-  return <DocumentView initial={document} perspective={session.account.perspective} />;
+  return <DocumentView initial={document} perspective={session.account.perspective} offer={offerFor(await availableFlows(appEnvironment()), session.account.perspective)} />;
 }

@@ -748,7 +748,8 @@
         "dev": "DEV",
         "signOut": "Sign out",
         "openSite": "Open dev.yomizaka.com",
-        "operations": "Operations"
+        "operations": "Operations",
+        "flows": "Flows"
       },
       "overview": {
         "health": "Health",
@@ -868,6 +869,68 @@
         "jurisdiction": "Jurisdiction",
         "checks": "Checks",
         "lastCheck": "Last check"
+      },
+      "flows": {
+        "title": "Flows",
+        "lead": "Each flow is data: who it is offered to, the Orazaka Studio and rulesets of its steps, the consents it requires, its price. A published version never changes; enable it per environment.",
+        "caption": "The flows",
+        "columns": {
+          "key": "Flow",
+          "title": "Title",
+          "audiences": "Audiences",
+          "version": "Version",
+          "status": "Status",
+          "dev": "dev",
+          "prod": "prod"
+        },
+        "status": {
+          "available": "Available",
+          "soon": "Soon"
+        },
+        "new": "New flow",
+        "open": "Open",
+        "editor": {
+          "create": "Create the flow",
+          "save": "Save the draft",
+          "publish": "Publish this draft",
+          "saved": "Draft saved.",
+          "published": "Published.",
+          "key": "Key (letters, digits, dashes)",
+          "titleEn": "Title (English)",
+          "titleFr": "Title (French)",
+          "leadEn": "Lead (English)",
+          "leadFr": "Lead (French)",
+          "status": "Status",
+          "audiences": "Offered to",
+          "studios": "Orazaka Studios",
+          "compliance": "Compliance check (a ruleset per jurisdiction)",
+          "authenticity": "Document authenticity (the PDF examined)",
+          "jurisdictions": "Jurisdictions and their rulesets",
+          "consents": "Required consents (comma-separated keys)",
+          "providers": "External providers (comma-separated)",
+          "pricing": "Pricing",
+          "pricingModel": "Model",
+          "amount": "Amount (CAD per run or per month)",
+          "environments": "Environments",
+          "enabledIn": "Enabled in {env}",
+          "versions": "Versions",
+          "draftHint": "Saving edits the open draft, or opens a new one — a published version is never edited.",
+          "noDraft": "No open draft: save to open one.",
+          "tenant": "Tenant",
+          "landlord": "Landlord",
+          "freelancer": "Freelancer",
+          "business": "Business"
+        },
+        "models": {
+          "free": "Free",
+          "perRun": "Per run",
+          "subscription": "Subscription"
+        },
+        "versionStatus": {
+          "draft": "Draft",
+          "published": "Published",
+          "retired": "Retired"
+        }
       }
     },
     "share": {

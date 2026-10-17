@@ -30,8 +30,8 @@ describe("verification copy — members with a grant only", () => {
     expect(llmsText()).toMatch(/no public verification/);
   });
 
-  it("the sitemap does not list the members-only /verify", () => {
-    expect(sitemap().filter((e) => e.url.includes("/verify"))).toEqual([]);
+  it("the sitemap does not list the members-only /verify", async () => {
+    expect((await sitemap()).filter((e) => e.url.includes("/verify"))).toEqual([]);
   });
 });
 

@@ -748,7 +748,8 @@
         "dev": "DEV",
         "signOut": "Se déconnecter",
         "openSite": "Ouvrir dev.yomizaka.com",
-        "operations": "Exploitation"
+        "operations": "Exploitation",
+        "flows": "Parcours"
       },
       "overview": {
         "health": "Santé",
@@ -868,6 +869,68 @@
         "jurisdiction": "Juridiction",
         "checks": "Vérifications",
         "lastCheck": "Dernière vérification"
+      },
+      "flows": {
+        "title": "Parcours",
+        "lead": "Chaque parcours est une donnée : à qui il est offert, le Studio Orazaka et les jeux de règles de ses étapes, les consentements exigés, son prix. Une version publiée ne change jamais ; on l'active par environnement.",
+        "caption": "Les parcours",
+        "columns": {
+          "key": "Parcours",
+          "title": "Titre",
+          "audiences": "Publics",
+          "version": "Version",
+          "status": "Statut",
+          "dev": "dev",
+          "prod": "prod"
+        },
+        "status": {
+          "available": "Disponible",
+          "soon": "Bientôt"
+        },
+        "new": "Nouveau parcours",
+        "open": "Ouvrir",
+        "editor": {
+          "create": "Créer le parcours",
+          "save": "Enregistrer le brouillon",
+          "publish": "Publier ce brouillon",
+          "saved": "Brouillon enregistré.",
+          "published": "Publié.",
+          "key": "Clé (lettres, chiffres, tirets)",
+          "titleEn": "Titre (anglais)",
+          "titleFr": "Titre (français)",
+          "leadEn": "Résumé (anglais)",
+          "leadFr": "Résumé (français)",
+          "status": "Statut",
+          "audiences": "Offert à",
+          "studios": "Studios Orazaka",
+          "compliance": "Contrôle de conformité (un jeu de règles par juridiction)",
+          "authenticity": "Authenticité du document (le PDF examiné)",
+          "jurisdictions": "Juridictions et leurs jeux de règles",
+          "consents": "Consentements exigés (clés séparées par des virgules)",
+          "providers": "Fournisseurs externes (séparés par des virgules)",
+          "pricing": "Tarification",
+          "pricingModel": "Modèle",
+          "amount": "Montant (CAD par vérification ou par mois)",
+          "environments": "Environnements",
+          "enabledIn": "Activé en {env}",
+          "versions": "Versions",
+          "draftHint": "Enregistrer modifie le brouillon ouvert, ou en ouvre un nouveau : une version publiée n'est jamais modifiée.",
+          "noDraft": "Aucun brouillon ouvert : enregistrez pour en ouvrir un.",
+          "tenant": "Locataire",
+          "landlord": "Propriétaire",
+          "freelancer": "Travailleur autonome",
+          "business": "Entreprise"
+        },
+        "models": {
+          "free": "Gratuit",
+          "perRun": "À la vérification",
+          "subscription": "Abonnement"
+        },
+        "versionStatus": {
+          "draft": "Brouillon",
+          "published": "Publié",
+          "retired": "Retiré"
+        }
       }
     },
     "share": {

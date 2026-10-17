@@ -38,6 +38,59 @@ export const audience = z.enum(AUDIENCES);
 export type Audience = z.infer<typeof audience>;
 export const AUDIENCE_STATUS = { tenant: "available", landlord: "available", freelancer: "soon", business: "soon" } as const satisfies Record<Audience, "available" | "soon">;
 
+/**
+ * A flow is data administered in the database (ADR-0003): who it is offered to, the Orazaka Studio and the rulesets of each
+ * step, the consents it requires, the providers it uses, its price. The app only reads it.
+ */
+export const FLOW_ENVIRONMENTS = ["dev", "prod"] as const;
+export const flowEnvironment = z.enum(FLOW_ENVIRONMENTS);
+export type FlowEnvironment = z.infer<typeof flowEnvironment>;
+export const FLOW_VERSION_STATUSES = ["draft", "published", "retired"] as const;
+export const flowVersionStatus = z.enum(FLOW_VERSION_STATUSES);
+export type FlowVersionStatus = z.infer<typeof flowVersionStatus>;
+/** Named values, so no code compares a field to a magic string. */
+export const VERSION_STATUS = { draft: "draft", published: "published", retired: "retired" } as const satisfies Record<FlowVersionStatus, FlowVersionStatus>;
+export const FLOW_STATUS = { available: "available", soon: "soon" } as const;
+export const STEP_KIND = { studio: "studio", provider: "provider" } as const;
+
+const localised = z.object({ en: z.string().trim().min(1).max(300), fr: z.string().trim().min(1).max(300) });
+export const flowStep = z.object({
+  id: z.string().regex(/^[a-z0-9-]{1,40}$/),
+  /** `studio`: an Orazaka Studio of a pack. `provider`: an external provider (a credit bureau…). */
+  kind: z.enum(["studio", "provider"]),
+  studio: z.enum(["compliance-check", "document-authenticity"]).optional(),
+  pack: z.string().max(60).optional(),
+  /** The rulesets of the compliance Studio, by jurisdiction — data of the pack, never code here. */
+  jurisdictions: z.array(z.object({ code: z.enum(["QC", "FR", "BE-WAL"]), ruleset: z.string().min(1).max(80) })).max(10).default([]),
+  provider: z.string().max(60).optional(),
+});
+export type FlowStep = z.infer<typeof flowStep>;
+export const flowDefinition = z.object({
+  title: localised,
+  lead: localised,
+  status: z.enum(["available", "soon"]),
+  audiences: z.array(z.enum(["tenant", "landlord", "freelancer", "business"])).min(1),
+  steps: z.array(flowStep).max(12),
+  consents: z.array(z.string().regex(/^[a-z0-9-]{1,40}$/)).max(8).default([]),
+  providers: z.array(z.string().max(60)).max(8).default([]),
+  pricing: z.object({ model: z.enum(["free", "per-run", "subscription"]), amountCents: z.number().int().min(0).max(1_000_000).optional() }).default({ model: "free" }),
+});
+export type FlowDefinition = z.infer<typeof flowDefinition>;
+
+/** What flows offer on a document: the Studios and, for the compliance Studio, the jurisdictions (with their rulesets). A « soon » flow offers the steps that run today. */
+export function offerOf(definitions: readonly FlowDefinition[]): { studios: Studio[]; jurisdictions: Jurisdiction[] } {
+  const studios = new Set<Studio>();
+  const jurisdictions = new Set<Jurisdiction>();
+  for (const d of definitions) {
+    for (const s of d.steps) {
+      if (s.kind !== STEP_KIND.studio || !s.studio) continue;
+      studios.add(s.studio);
+      for (const j of s.jurisdictions) jurisdictions.add(j.code);
+    }
+  }
+  return { studios: STUDIOS.filter((s) => studios.has(s)), jurisdictions: JURISDICTIONS.filter((j) => jurisdictions.has(j)) };
+}
+
 /** The two Orazaka Studios of the document-validation pack Yomizaka runs. */
 export const STUDIOS = ["compliance-check", "document-authenticity"] as const;
 export const studio = z.enum(STUDIOS);

@@ -29,7 +29,7 @@ export function searchText(report: ReturnType<typeof reportOf>): string {
   return report.signals.flatMap((s) => [s.signalId, s.observation, s.mayIndicate ?? "", s.where ?? ""]).join("\n");
 }
 
-export async function startAnalysis(ownerId: string, documentId: string, request: StartAnalysis): Promise<Analysis> {
+export async function startAnalysis(ownerId: string, documentId: string, request: StartAnalysis, flowVersionId: string | null = null): Promise<Analysis> {
   if (!isUuid(documentId)) throw refuse(404, "NOT_FOUND", "No such document");
   const [doc] = await query<{ mime_type: string; text: string; content: Buffer }>("SELECT mime_type, text, content FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, documentId]);
   if (!doc) throw refuse(404, "NOT_FOUND", "No such document");
@@ -39,8 +39,8 @@ export async function startAnalysis(ownerId: string, documentId: string, request
   const run = await orazaka().startRun(request.studio, inputs);
   const kept = Object.fromEntries(Object.entries(inputs).filter(([k]) => k !== "document" && k !== "documentBase64"));
   const [row] = await query<AnalysisRow>(
-    "INSERT INTO analyses (document_id, studio, status, run_id, blueprint_version, inputs) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-    [documentId, request.studio, fromRunStatus(run.status), run.id, run.blueprintVersion ?? null, JSON.stringify(kept)],
+    "INSERT INTO analyses (document_id, studio, status, run_id, blueprint_version, inputs, flow_version_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
+    [documentId, request.studio, fromRunStatus(run.status), run.id, run.blueprintVersion ?? null, JSON.stringify(kept), flowVersionId],
   );
   return isTerminal(row!.status) ? refresh(row!, run) : toAnalysis(row!);
 }

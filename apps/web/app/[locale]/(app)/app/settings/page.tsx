@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 
 import { PerspectiveChooser } from "@/components/console/PerspectiveChooser";
 import { pageSession } from "@/lib/access";
+import { appEnvironment } from "@/lib/env";
+import { audiencesOf, availableFlows } from "@/lib/flows";
 import { asLocale, getDictionary } from "@/lib/i18n";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -21,7 +23,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
         <h1 className="font-display text-xl font-bold text-fg">{t.settingsTitle}</h1>
         <p className="text-sm text-fg-secondary">{t.settingsLead}</p>
       </div>
-      <PerspectiveChooser current={session.account.perspective} />
+      <PerspectiveChooser current={session.account.perspective} audiences={audiencesOf(await availableFlows(appEnvironment()))} />
     </div>
   );
 }

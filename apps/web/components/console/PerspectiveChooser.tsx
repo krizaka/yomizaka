@@ -5,7 +5,7 @@ import { Alert } from "@krizaka/ui/alert";
 import { Button } from "@krizaka/ui/button";
 import { Card } from "@krizaka/ui/card";
 import { RadioGroup } from "@krizaka/ui/radio-group";
-import { type Audience, AUDIENCE_STATUS, AUDIENCES } from "@yomizaka/core";
+import { type Audience } from "@yomizaka/core";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -16,7 +16,7 @@ import { useSay } from "@/lib/i18n-client";
  * Which side of the lease the person is on: asked once at onboarding (the library shows it until a side is chosen) and
  * changeable in settings. It changes the checks offered first and the wording, never the rules.
  */
-export function PerspectiveChooser({ current, onboarding = false }: { current: Audience | null; onboarding?: boolean }) {
+export function PerspectiveChooser({ current, audiences, onboarding = false }: { current: Audience | null; audiences: readonly { audience: Audience; status: "available" | "soon" }[]; onboarding?: boolean }) {
   const { say } = useSay();
   const router = useRouter();
   const [value, setValue] = useState<Audience | null>(current);
@@ -34,10 +34,10 @@ export function PerspectiveChooser({ current, onboarding = false }: { current: A
       <h2 className="font-display text-lg font-bold text-fg">{say("profile.title")}</h2>
       <p className="text-sm text-fg-secondary">{say("profile.lead")}</p>
       <RadioGroup.Root label={say("profile.legend")} value={value ?? ""} onValueChange={(v: string) => { setSaved(false); setValue(v as Audience); }}>
-        {AUDIENCES.map((p) => (
+        {audiences.map(({ audience: p, status }) => (
           <RadioGroup.Item key={p} value={p}>
             {say(`profile.${p}`)}
-            {AUDIENCE_STATUS[p] === "soon" ? ` · ${say("profile.soon")}` : ""}
+            {status === "soon" ? ` · ${say("profile.soon")}` : ""}
           </RadioGroup.Item>
         ))}
       </RadioGroup.Root>

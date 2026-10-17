@@ -35,10 +35,10 @@ describe("the two sides of the lease have their own address", () => {
     for (const other of ["run", "verify", "privacy", "app", "sign-in", "owner", ""]) expect(sideOfSlug(other)).toBeNull();
   });
 
-  it("is in the sitemap in both languages, each the other's alternate", () => {
-    const urls = sitemap().map((e) => e.url);
+  it("is in the sitemap in both languages, each the other's alternate", async () => {
+    const urls = (await sitemap()).map((e) => e.url);
     for (const { locale, side } of SIDE_LANDINGS) expect(urls).toContain(sideUrl(locale, side));
-    const fr = sitemap().find((e) => e.url === sideUrl("fr", "tenant"));
+    const fr = (await sitemap()).find((e) => e.url === sideUrl("fr", "tenant"));
     expect(fr?.alternates?.languages).toMatchObject({ en: sideUrl("en", "tenant"), fr: sideUrl("fr", "tenant") });
   });
 
@@ -63,7 +63,8 @@ describe("the two sides of the lease have their own address", () => {
 
 describe("« Pour qui ? » — the picker", () => {
   const words = { tenant: fr.sides.tenant.switch, landlord: fr.sides.landlord.switch, freelancer: fr.sides.freelancer.switch, business: fr.sides.business.switch };
-  const props = { locale: "fr" as const, label: fr.sides.switchLabel, hint: fr.landing.switchHint, words, soon: fr.sides.soon, other: fr.sides.other };
+  const audiences = [{ audience: "tenant" as const, status: "available" as const }, { audience: "landlord" as const, status: "available" as const }, { audience: "freelancer" as const, status: "soon" as const }, { audience: "business" as const, status: "soon" as const }];
+  const props = { locale: "fr" as const, audiences, label: fr.sides.switchLabel, hint: fr.landing.switchHint, words, soon: fr.sides.soon, other: fr.sides.other };
 
   it("is a link per audience plus « Autre » (the generic home), the current one marked", () => {
     const home = renderToStaticMarkup(createElement(AudiencePicker, props));
