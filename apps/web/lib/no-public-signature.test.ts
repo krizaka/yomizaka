@@ -42,7 +42,7 @@ describe("no public route serves a signed artifact", () => {
   });
 
   it("the public components never import the signing modules", () => {
-    for (const f of ["components/ShowcaseRun.tsx", "components/ProofSection.tsx", "components/BeforeAfter.tsx", "app/[locale]/run/page.tsx", "app/[locale]/page.tsx"]) {
+    for (const f of ["components/ShowcaseRun.tsx", "components/home/ProofSection.tsx", "components/home/BeforeAfter.tsx", "app/[locale]/run/page.tsx", "app/[locale]/page.tsx"]) {
       expect(readFileSync(join(ROOT, f), "utf8"), f).not.toMatch(/report-signer|issueReport|recordedReport|recordedRunView|\/report\?lang|api\/recorded-runs/);
     }
   });

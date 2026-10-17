@@ -10,7 +10,7 @@ import en from "@/messages/en.json";
 import fr from "@/messages/fr.json";
 
 import sitemap from "../app/sitemap";
-import { AudiencePicker } from "../components/AudiencePicker";
+import { AudiencePicker } from "../components/home/AudiencePicker";
 import { llmsText } from "./seo";
 import { SIDE_LANDINGS, sideOfSlug, sidePath, sideUrl } from "./sides";
 
@@ -96,10 +96,10 @@ describe("« Pour qui ? » — the picker", () => {
     }
   });
 
-  it("is on the home, above the hero", () => {
+  it("is on the home, in the hero", () => {
     const home = readFileSync(join(ROOT, "app/[locale]/page.tsx"), "utf8");
-    expect(home).toContain("<AudiencePicker");
-    expect(home.indexOf("<AudiencePicker")).toBeLessThan(home.indexOf("<PageHero"));
+    expect(home.indexOf("<AudiencePicker")).toBeGreaterThan(home.indexOf("<LandingPage"));
+    expect(home.indexOf("<AudiencePicker")).toBeLessThan(home.indexOf("proofs={["));
   });
 });
 

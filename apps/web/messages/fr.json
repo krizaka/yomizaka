@@ -181,7 +181,197 @@
       "title": "Du fichier au constat, enregistré",
       "lead": "Le vrai parcours sur dev.yomizaka.com : garder, vérifier, retrouver."
     },
-    "switchHint": "Pour qui ?"
+    "switchHint": "Pour qui ?",
+    "hero": {
+      "visualLabel": "dev.yomizaka.com — bail-saint-denis",
+      "before": "Le bail",
+      "after": "Le constat",
+      "leaseCaption": "Une clause du bail, en évidence",
+      "findingCaption": "Ce que Yomizaka renvoie, avec sa source"
+    },
+    "figures": {
+      "rules": "règles du bail québécois évaluées à chaque vérification",
+      "articles": "articles du Code civil cités dans cette vérification",
+      "found": "constats sur ce bail d'exemple",
+      "label": "Chiffres de la vraie vérification enregistrée"
+    },
+    "features": {
+      "eyebrow": "Ce que Yomizaka fait",
+      "title": "Lire, prouver, retrouver",
+      "lead": "Trois gestes, une seule trace du fichier au rapport.",
+      "items": {
+        "line": {
+          "title": "La ligne exacte derrière chaque constat",
+          "text": "Chaque constat nomme la règle, cite l'article de loi et surligne la phrase du bail sur laquelle il repose."
+        },
+        "file": {
+          "title": "L'examen du PDF lui-même",
+          "text": "Producteur, dates, enregistrements successifs : trois niveaux (observé, inhabituel, incohérent), jamais un tampon « faux »."
+        },
+        "find": {
+          "title": "Tout retrouver en une seconde",
+          "text": "Un mot, et tous vos documents et tous leurs constats reviennent, le passage en gras."
+        },
+        "proof": {
+          "title": "Un rapport signé, partagé par accès",
+          "text": "Les personnes que vous choisissez vérifient le rapport avec un compte Yomizaka ; vous retirez l'accès quand vous voulez."
+        }
+      }
+    },
+    "audiences": {
+      "eyebrow": "Pour qui ?",
+      "title": "Votre document, votre situation",
+      "lead": "Choisissez votre cas : chaque page montre ce que Yomizaka vérifie pour vous, et dit franchement ce qui n'existe pas encore.",
+      "open": "Voir cette page",
+      "items": {
+        "tenant": {
+          "checks": {
+            "a": "Dépôt de garantie et chèques postdatés interdits",
+            "b": "Clauses sans effet : enfants, renonciation au maintien dans les lieux",
+            "c": "Loyer et avis du loyer le plus bas des douze derniers mois"
+          }
+        },
+        "landlord": {
+          "checks": {
+            "a": "Votre modèle de bail, article par article",
+            "b": "Les pièces du locataire en PDF : retouches, dates, producteur",
+            "c": "Un rapport signé à garder et à partager par accès"
+          }
+        },
+        "freelancer": {
+          "checks": {
+            "a": "Contrat de service : paiement, propriété intellectuelle (bientôt)",
+            "b": "Facture : numéros de taxes et mentions exigées (bientôt)",
+            "c": "Dès aujourd'hui : examen du PDF et bibliothèque"
+          }
+        },
+        "business": {
+          "checks": {
+            "a": "Contrats de fournisseurs : renouvellement, pénalités (bientôt)",
+            "b": "Factures reçues : mentions et numéros de taxes (bientôt)",
+            "c": "Dès aujourd'hui : un PDF retouché est signalé"
+          }
+        }
+      }
+    },
+    "comparison": {
+      "eyebrow": "Honnêtement",
+      "title": "Yomizaka, lire seul, ou un avocat",
+      "lead": "Yomizaka ne remplace pas un avocat : il vous dit où regarder, avec la source.",
+      "topic": "La question",
+      "columns": {
+        "yomizaka": "Yomizaka",
+        "alone": "Lire seul",
+        "lawyer": "Un avocat"
+      },
+      "rows": {
+        "what": {
+          "topic": "Ce que vous obtenez",
+          "yomizaka": {
+            "key": "Un constat par règle.",
+            "detail": "La clause citée, l'article, la ligne."
+          },
+          "alone": {
+            "key": "Votre lecture.",
+            "detail": "Sans source, sans liste de règles."
+          },
+          "lawyer": {
+            "key": "Un avis.",
+            "detail": "Adapté à votre situation précise."
+          }
+        },
+        "time": {
+          "topic": "Le temps",
+          "yomizaka": {
+            "key": "Quelques secondes.",
+            "detail": "Le fichier déposé, les constats reviennent."
+          },
+          "alone": {
+            "key": "Variable.",
+            "detail": "Une clause oubliée passe inaperçue."
+          },
+          "lawyer": {
+            "key": "Un rendez-vous.",
+            "detail": "Selon sa disponibilité."
+          }
+        },
+        "advice": {
+          "topic": "Peut-il vous conseiller ?",
+          "yomizaka": {
+            "key": "Non.",
+            "detail": "Il montre ce qu'il trouve, pas quoi faire."
+          },
+          "alone": {
+            "key": "Non.",
+            "detail": "—"
+          },
+          "lawyer": {
+            "key": "Oui.",
+            "detail": "Et il en porte la responsabilité."
+          }
+        },
+        "proof": {
+          "topic": "La preuve",
+          "yomizaka": {
+            "key": "Un rapport signé.",
+            "detail": "L'identifiant de l'exécution, vérifiable par accès."
+          },
+          "alone": {
+            "key": "Vos notes.",
+            "detail": "—"
+          },
+          "lawyer": {
+            "key": "Une opinion écrite.",
+            "detail": "Si vous la demandez."
+          }
+        },
+        "review": {
+          "topic": "Relecture juridique",
+          "yomizaka": {
+            "key": "Pas encore.",
+            "detail": "Le corpus québécois est à faire relire, et le rapport le dit."
+          },
+          "alone": {
+            "key": "—",
+            "detail": "—"
+          },
+          "lawyer": {
+            "key": "C'est son métier.",
+            "detail": "—"
+          }
+        }
+      }
+    },
+    "faq": {
+      "eyebrow": "Questions",
+      "title": "Ce qu'on nous demande",
+      "items": {
+        "lawyer": {
+          "q": "Yomizaka remplace-t-il un avocat ?",
+          "a": "Non. Il applique des règles écrites et sourcées et montre la ligne derrière chaque constat. Il ne donne pas de conseil juridique, et le corpus québécois reste à faire relire par une avocate ou un avocat : chaque rapport le dit."
+        },
+        "private": {
+          "q": "Mes documents sont-ils partagés ?",
+          "a": "Non. Un document est visible par votre seul compte. Un rapport signé ne se vérifie que par les personnes à qui vous donnez accès, avec un compte Yomizaka, et chaque vérification est journalisée."
+        },
+        "ai": {
+          "q": "Une IA juge-t-elle mon bail ?",
+          "a": "Les règles écrites décident. Un modèle n'est consulté que pour la seule question de jugement (la clause abusive), et le rapport l'indique ; si le modèle est indisponible, le constat dit « preuve insuffisante » plutôt que de deviner."
+        },
+        "rules": {
+          "q": "Quelles règles existent aujourd'hui ?",
+          "a": "Le bail de logement québécois (dix règles), plus le bail de logement français et wallon. Pour les contrats de service, les factures et les contrats de travail, les règles ne sont pas encore écrites : ces cas sont marqués « bientôt »."
+        },
+        "engine": {
+          "q": "D'où vient le moteur ?",
+          "a": "Yomizaka s'appuie sur Orazaka, le moteur d'IA souverain de Krizaka : chaque vérification est une exécution dont l'identifiant est gardé. Le code de Yomizaka est ouvert (Apache-2.0)."
+        },
+        "access": {
+          "q": "Puis-je m'inscrire ?",
+          "a": "Pas encore : Yomizaka est en développement et l'inscription est fermée. Écrivez-nous pour en parler."
+        }
+      }
+    }
   },
   "run": {
     "eyebrow": "Un vrai run",
@@ -801,7 +991,7 @@
         },
         "read": {
           "title": "Yomizaka le lit",
-          "text": "Selon les règles du Québec en vigueur à la date de votre choix. Aucun modèle n'est appelé pour juger votre bail."
+          "text": "Selon les règles du Québec en vigueur à la date de votre choix. Les règles écrites décident ; seule la question de la clause abusive est posée à un modèle, et le rapport l'indique."
         },
         "prove": {
           "title": "Vous gardez la preuve",
@@ -853,7 +1043,7 @@
         },
         "read": {
           "title": "Yomizaka le lit",
-          "text": "Le bail, selon les règles du Québec à la date de votre choix ; une pièce en PDF, examinée comme fichier. Aucun modèle n'est appelé pour juger vos documents."
+          "text": "Le bail, selon les règles du Québec à la date de votre choix ; une pièce en PDF, examinée comme fichier. Les règles écrites décident ; seule la question de la clause abusive est posée à un modèle, et le rapport l'indique."
         },
         "prove": {
           "title": "Vous gardez la preuve",

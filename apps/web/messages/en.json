@@ -181,7 +181,197 @@
       "title": "From the file to the finding, recorded",
       "lead": "The real journey on dev.yomizaka.com: keep, check, find."
     },
-    "switchHint": "Who is it for?"
+    "switchHint": "Who is it for?",
+    "hero": {
+      "visualLabel": "dev.yomizaka.com — saint-denis-lease",
+      "before": "The lease",
+      "after": "The finding",
+      "leaseCaption": "One clause of the lease, lit",
+      "findingCaption": "What Yomizaka returns, with its source"
+    },
+    "figures": {
+      "rules": "rules of the Québec residential lease evaluated in each check",
+      "articles": "Civil Code articles cited in this check",
+      "found": "findings on this sample lease",
+      "label": "Figures of the real recorded check"
+    },
+    "features": {
+      "eyebrow": "What Yomizaka does",
+      "title": "Read, prove, find again",
+      "lead": "Three gestures, one trace from the file to the report.",
+      "items": {
+        "line": {
+          "title": "The exact line behind every finding",
+          "text": "Each finding names the rule, quotes the article of law and lights the sentence of the lease it rests on."
+        },
+        "file": {
+          "title": "The PDF examined as a file",
+          "text": "Producer, dates, successive saves: three levels (observed, unusual, inconsistent), never a « fake » stamp."
+        },
+        "find": {
+          "title": "Find everything in a second",
+          "text": "One word, and every document and every finding comes back, the passage in bold."
+        },
+        "proof": {
+          "title": "A signed report, shared by access",
+          "text": "The people you choose verify the report with a Yomizaka account; you withdraw their access whenever you want."
+        }
+      }
+    },
+    "audiences": {
+      "eyebrow": "Who is it for?",
+      "title": "Your document, your situation",
+      "lead": "Pick your case: each page shows what Yomizaka checks for you, and says plainly what does not exist yet.",
+      "open": "See this page",
+      "items": {
+        "tenant": {
+          "checks": {
+            "a": "Forbidden deposit and post-dated cheques",
+            "b": "Clauses without effect: children, waiver of the right to stay",
+            "c": "Rent and the notice of the lowest rent of the last twelve months"
+          }
+        },
+        "landlord": {
+          "checks": {
+            "a": "Your lease template, article by article",
+            "b": "The tenant's PDF papers: edits, dates, producer",
+            "c": "A signed report to keep and share by access"
+          }
+        },
+        "freelancer": {
+          "checks": {
+            "a": "Service contract: payment, intellectual property (soon)",
+            "b": "Invoice: tax numbers and required mentions (soon)",
+            "c": "Today: PDF examination and the library"
+          }
+        },
+        "business": {
+          "checks": {
+            "a": "Supplier contracts: renewal, penalties (soon)",
+            "b": "Received invoices: mentions and tax numbers (soon)",
+            "c": "Today: an edited PDF is flagged"
+          }
+        }
+      }
+    },
+    "comparison": {
+      "eyebrow": "Honestly",
+      "title": "Yomizaka, reading alone, or a lawyer",
+      "lead": "Yomizaka does not replace a lawyer: it tells you where to look, with the source.",
+      "topic": "The question",
+      "columns": {
+        "yomizaka": "Yomizaka",
+        "alone": "Reading alone",
+        "lawyer": "A lawyer"
+      },
+      "rows": {
+        "what": {
+          "topic": "What you get",
+          "yomizaka": {
+            "key": "One finding per rule.",
+            "detail": "The clause quoted, the article, the line."
+          },
+          "alone": {
+            "key": "Your own reading.",
+            "detail": "No source, no list of rules."
+          },
+          "lawyer": {
+            "key": "An opinion.",
+            "detail": "Fitted to your exact situation."
+          }
+        },
+        "time": {
+          "topic": "The time",
+          "yomizaka": {
+            "key": "A few seconds.",
+            "detail": "Upload the file, the findings come back."
+          },
+          "alone": {
+            "key": "It varies.",
+            "detail": "A forgotten clause goes unnoticed."
+          },
+          "lawyer": {
+            "key": "An appointment.",
+            "detail": "Depending on their availability."
+          }
+        },
+        "advice": {
+          "topic": "Can it advise you?",
+          "yomizaka": {
+            "key": "No.",
+            "detail": "It shows what it finds, not what to do."
+          },
+          "alone": {
+            "key": "No.",
+            "detail": "—"
+          },
+          "lawyer": {
+            "key": "Yes.",
+            "detail": "And they carry the responsibility."
+          }
+        },
+        "proof": {
+          "topic": "The proof",
+          "yomizaka": {
+            "key": "A signed report.",
+            "detail": "The run id, verifiable by access."
+          },
+          "alone": {
+            "key": "Your notes.",
+            "detail": "—"
+          },
+          "lawyer": {
+            "key": "A written opinion.",
+            "detail": "If you ask for one."
+          }
+        },
+        "review": {
+          "topic": "Legal review",
+          "yomizaka": {
+            "key": "Not yet.",
+            "detail": "The Québec corpus awaits review, and the report says so."
+          },
+          "alone": {
+            "key": "—",
+            "detail": "—"
+          },
+          "lawyer": {
+            "key": "It is their trade.",
+            "detail": "—"
+          }
+        }
+      }
+    },
+    "faq": {
+      "eyebrow": "Questions",
+      "title": "What people ask",
+      "items": {
+        "lawyer": {
+          "q": "Does Yomizaka replace a lawyer?",
+          "a": "No. It applies written, sourced rules and shows the line behind every finding. It gives no legal advice, and the Québec corpus still awaits a lawyer's review: every report says so."
+        },
+        "private": {
+          "q": "Are my documents shared?",
+          "a": "No. A document is visible to your account alone. A signed report can only be verified by the people you give access to, with a Yomizaka account, and every verification is logged."
+        },
+        "ai": {
+          "q": "Does an AI judge my lease?",
+          "a": "The written rules decide. A model is consulted only for the single judgment question (the abusive clause), and the report says so; if the model is unavailable, the finding says « insufficient evidence » rather than guess."
+        },
+        "rules": {
+          "q": "Which rules exist today?",
+          "a": "The Québec residential lease (ten rules), plus the French and Walloon residential leases. For service contracts, invoices and employment contracts the rules are not written yet: those cases are marked « soon »."
+        },
+        "engine": {
+          "q": "Where does the engine come from?",
+          "a": "Yomizaka runs on Orazaka, Krizaka's sovereign AI engine: each check is a run whose id is kept. Yomizaka's code is open (Apache-2.0)."
+        },
+        "access": {
+          "q": "Can I sign up?",
+          "a": "Not yet: Yomizaka is in development and sign-up is closed. Write to us to talk about it."
+        }
+      }
+    }
   },
   "run": {
     "eyebrow": "A real run",
@@ -801,7 +991,7 @@
         },
         "read": {
           "title": "Yomizaka reads it",
-          "text": "Against Québec's rules in force on the date you choose. No model is ever called to judge your lease."
+          "text": "Against Québec's rules in force on the date you choose. The written rules decide; only the abusive-clause question is put to a model, and the report says so."
         },
         "prove": {
           "title": "You keep the proof",
@@ -853,7 +1043,7 @@
         },
         "read": {
           "title": "Yomizaka reads it",
-          "text": "The lease, against Québec's rules on the date you choose; a PDF paper, examined as a file. No model is ever called to judge your documents."
+          "text": "The lease, against Québec's rules on the date you choose; a PDF paper, examined as a file. The written rules decide; only the abusive-clause question is put to a model, and the report says so."
         },
         "prove": {
           "title": "You keep the proof",
