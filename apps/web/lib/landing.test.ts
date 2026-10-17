@@ -65,6 +65,15 @@ describe("the bar", () => {
     expect(bar).toContain("NavBar.Menu");
     expect(read("components/SiteFooter.tsx")).toContain("#${APP_VERSION}");
   });
+
+  it("uses the family's language switch (a globe and the current code), in the bar and in the phone panel's preferences — never a pill naming the other language", () => {
+    const bar = read("components/SiteChrome.tsx");
+    expect(bar).toContain("NavBar.Language");
+    expect(bar).toContain("NavBar.MobilePreferences");
+    expect(bar).toContain("languagesFor(");
+    expect(bar).not.toContain("hrefLang");
+    expect(bar).not.toContain("otherLocale");
+  });
 });
 
 describe("the first screen is light, sharp and clear", () => {

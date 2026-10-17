@@ -18,7 +18,6 @@
     "talk": "Nous parler",
     "themeToggle": "Thème",
     "languageLabel": "Langue",
-    "otherLanguage": "English",
     "footerLabel": "Pied de page",
     "sourceCode": "Code source",
     "contact": "Contact",
@@ -42,7 +41,8 @@
         "title": "Vérifier un rapport",
         "text": "Réservé aux membres : contrôlez un rapport signé qui est à vous ou dont on vous a donné l'accès."
       }
-    }
+    },
+    "preferences": "Préférences"
   },
   "landing": {
     "eyebrow": "Yomizaka · baux, contrats, factures",
@@ -493,7 +493,6 @@
       "signedInAs": "Connecté en tant que {email}",
       "devBuild": "DEV · v{version}",
       "language": "Langue",
-      "otherLanguage": "English",
       "theme": "Thème",
       "signOut": "Se déconnecter"
     },

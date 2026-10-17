@@ -18,7 +18,6 @@
     "talk": "Talk to us",
     "themeToggle": "Theme",
     "languageLabel": "Language",
-    "otherLanguage": "Français",
     "footerLabel": "Site footer",
     "sourceCode": "Source code",
     "contact": "Contact",
@@ -42,7 +41,8 @@
         "title": "Verify a report",
         "text": "Members only: check a signed report you own or were given access to."
       }
-    }
+    },
+    "preferences": "Preferences"
   },
   "landing": {
     "eyebrow": "Yomizaka · leases, contracts, invoices",
@@ -493,7 +493,6 @@
       "signedInAs": "Signed in as {email}",
       "devBuild": "DEV · v{version}",
       "language": "Language",
-      "otherLanguage": "Français",
       "theme": "Theme",
       "signOut": "Sign out"
     },
