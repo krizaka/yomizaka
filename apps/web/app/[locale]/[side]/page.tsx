@@ -12,7 +12,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 
-import { AudiencePicker } from "@/components/AudiencePicker";
+import { AudiencePicker } from "@/components/home/AudiencePicker";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
 import { asLocale, getDictionary, LOCALES } from "@/lib/i18n";
@@ -68,7 +68,6 @@ export default async function SideLanding({ params }: { params: Promise<{ locale
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
       <SiteHeader locale={locale} current="home" />
       <main id="content">
-        <AudiencePicker locale={locale} current={side} label={t.sides.switchLabel} hint={t.landing.switchHint} words={{ tenant: t.sides.tenant.switch, landlord: t.sides.landlord.switch, freelancer: t.sides.freelancer.switch, business: t.sides.business.switch }} soon={t.sides.soon} other={t.sides.other} />
         <PageHero id="hero" eyebrow={w.eyebrow} title={w.title} lead={w.lead}>
           {soon ? (
             <Badge tone="warning" data-testid="soon-badge">
@@ -81,6 +80,7 @@ export default async function SideLanding({ params }: { params: Promise<{ locale
           <Button asChild variant="secondary" size="lg" shape="cut">
             <Link href={pagePath(locale, "run")}>{t.landing.seeRun}</Link>
           </Button>
+          <AudiencePicker locale={locale} current={side} label={t.sides.switchLabel} hint={t.landing.switchHint} words={{ tenant: t.sides.tenant.switch, landlord: t.sides.landlord.switch, freelancer: t.sides.freelancer.switch, business: t.sides.business.switch }} soon={t.sides.soon} other={t.sides.other} />
         </PageHero>
 
         {info ? (

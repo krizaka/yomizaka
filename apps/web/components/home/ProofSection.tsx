@@ -7,16 +7,17 @@ import { DescriptionList } from "@krizaka/ui/description-list";
 import { Section } from "@krizaka/ui/page";
 import Link from "next/link";
 
-import { HERO_RULE } from "@/components/BeforeAfter";
-import { format, getDictionary, type Locale } from "@/lib/i18n";
+import { getDictionary, type Locale } from "@/lib/i18n";
 import { recordedRun } from "@/lib/recorded-runs";
 import { pagePath } from "@/lib/site";
+
+import { HERO_RULE } from "./BeforeAfter";
 
 const DATE: Record<Locale, string> = { en: "en-CA", fr: "fr-CA" };
 
 /**
  * « Proof »: the real recorded run (rule, line, article, run id, date), the signed report of that check, the verification by
- * grant — and two figures, both counted from the recording, never typed. The run id is an Orazaka run: this section is where
+ * grant. The run id is an Orazaka run: this section is where
  * the engine is named.
  */
 export function ProofSection({ locale }: { locale: Locale }) {
@@ -24,21 +25,8 @@ export function ProofSection({ locale }: { locale: Locale }) {
   const t = d.landing.proof;
   const run = recordedRun("tenant");
   const finding = run.report.findings.find((f) => f.ruleId === HERO_RULE)!;
-  const fail = run.report.findings.filter((f) => f.verdict === "FAIL").length;
-  const pass = run.report.findings.filter((f) => f.verdict === "PASS").length;
-  const rules = run.report.summary?.rulesEvaluated ?? run.report.findings.length;
   return (
     <Section id="proof" eyebrow={t.eyebrow} title={t.title} lead={t.lead} reveal divider>
-      <ul className="mb-6 flex flex-wrap gap-6" aria-label={t.title}>
-        <li className="flex flex-col">
-          <span className="font-display text-3xl font-bold text-fg-accent" data-testid="figure-rules">{rules}</span>
-          <span className="max-w-60 text-sm text-fg-secondary">{t.rules}</span>
-        </li>
-        <li className="flex flex-col">
-          <span className="font-display text-3xl font-bold text-fg-accent" data-testid="figure-found">{fail + pass}</span>
-          <span className="max-w-60 text-sm text-fg-secondary">{format(t.found, { fail, pass })}</span>
-        </li>
-      </ul>
       <CardGrid min={300}>
         <Card.Root className="flex flex-col gap-3 p-5" data-testid="proof-run">
           <span className="flex items-center gap-2 text-fg-accent [&_svg]:h-5 [&_svg]:w-5">

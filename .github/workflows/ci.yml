@@ -60,6 +60,9 @@ jobs:
           (cd apps/web && npx next start -p 3000 > ../../web.log 2>&1 &)
           for i in $(seq 1 60); do curl -sf http://localhost:3000/api/healthz && break; sleep 1; done
           pnpm run seo:check
+          # Responsive guard: no horizontal overflow at 360–1440 px in both themes, chips of at least 44 px.
+          npx playwright-core install --with-deps chromium
+          pnpm run check:overflow -- --base http://localhost:3000
           test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:3000/api/auth/sign-up)" = "403"
       - if: failure()
         run: tail -100 web.log || true
