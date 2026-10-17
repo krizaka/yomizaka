@@ -1,0 +1,184 @@
+#!/usr/bin/env node
+// « Du fichier au constat » — the landing's recorded journey as ONE smooth take, phone first (390×844 at 2×): drop the
+// lease → the check runs → the finding with its line lit → search. Recorded for real on dev.yomizaka.com as the QA member
+// (never the administrator, the e-mail hidden), in the language asked; the clip goes to Bunny, never into the repository.
+//
+//   YOMIZAKA_USER_EMAIL=… YOMIZAKA_USER_PASSWORD=… node scripts/landing-take.mjs <out-dir> --locale fr|en
+//
+// Writes <out-dir>/<locale>/take.{webm,mp4,jpg} and evidence.json (the Orazaka run id, the chapter times). The waiting is
+// sped up uniformly (never edited otherwise) to keep the take under 25 s. Needs a Chromium for playwright-core and ffmpeg.
+import { execFileSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
+import os from "node:os";
+import path from "node:path";
+
+const require = createRequire(import.meta.url);
+const { chromium } = require("playwright-core");
+
+const args = process.argv.slice(2);
+const flag = (name, fallback) => {
+  const i = args.indexOf(`--${name}`);
+  return i >= 0 ? args[i + 1] : fallback;
+};
+const outRoot = path.resolve(args[0] ?? "take");
+const locale = flag("locale", "fr");
+const BASE = process.env.APP_BASE_URL ?? "https://dev.yomizaka.com";
+const email = process.env.YOMIZAKA_USER_EMAIL;
+const password = process.env.YOMIZAKA_USER_PASSWORD;
+if (!email || !password) throw new Error("YOMIZAKA_USER_EMAIL and YOMIZAKA_USER_PASSWORD are required");
+
+const VIEWPORT = { width: 390, height: 844 };
+const SCALE = 2;
+const MAX_SECONDS = 25;
+const dir = path.join(outRoot, locale);
+mkdirSync(dir, { recursive: true });
+
+// The sample lease the take drops: fictitious parties, unique bytes per take (a new document every time).
+const stamp = new Date().toISOString();
+const lease = `BAIL DE LOGEMENT — 4½, rue Saint-Denis, Montréal (exemple fictif)
+Entre le locateur Monsieur Marc Tremblay (fictif), domicilié à Montréal,
+et la locataire Madame Sophie Gagnon (fictif).
+Durée : 12 mois, du 1er juillet 2026 au 30 juin 2027.
+Loyer mensuel : 1 450 $, payable le premier jour du mois.
+La locataire verse un dépôt de sécurité de 1 450 $ à la signature.
+La locataire remet douze chèques postdatés.
+Il est interdit d'avoir des enfants dans le logement.
+Enregistré le ${stamp}.
+`;
+const file = path.join(os.tmpdir(), "bail-exemple-fictif.txt");
+(await import("node:fs")).writeFileSync(file, lease);
+
+const browser = await chromium.launch();
+const base = { viewport: VIEWPORT, deviceScaleFactor: SCALE, colorScheme: "dark", locale, isMobile: true, hasTouch: true };
+
+// Sign in once, off camera, and choose a side so the onboarding card does not cover the library.
+const auth = await browser.newContext(base);
+const signIn = await auth.newPage();
+await signIn.goto(`${BASE}/${locale}/sign-in`, { waitUntil: "networkidle" });
+await signIn.fill('input[type="email"]', email);
+await signIn.fill('input[type="password"]', password);
+await signIn.locator('form button[type="submit"]').first().click();
+await signIn.waitForURL(/\/app/, { timeout: 30_000 });
+await auth.request.put(`${BASE}/api/me/perspective`, { data: { perspective: "tenant" } });
+const storageState = await auth.storageState();
+await auth.close();
+
+const hideEmail = () => {
+  const hide = () => {
+    for (const el of document.querySelectorAll("body *")) if (el.childElementCount === 0 && /@[a-z0-9.-]+\.[a-z]{2,}/i.test(el.textContent ?? "")) el.style.visibility = "hidden";
+  };
+  document.addEventListener("DOMContentLoaded", () => {
+    hide();
+    new MutationObserver(hide).observe(document.body, { childList: true, subtree: true, characterData: true });
+  });
+};
+
+const ctx = await browser.newContext({ ...base, storageState });
+await ctx.addInitScript(hideEmail);
+const page = await ctx.newPage();
+// Neither Playwright's recorder nor the protocol's screencast film a phone at its device pixels (a 390 px page would be
+// blurry), so frames are taken as screenshots at the device's real pixels (390×844 at 2× = 780×1688) in a tight loop, each
+// with its wall-clock time, and assembled afterwards (about a dozen frames a second: enough for an interface).
+const frames = [];
+let filming = true;
+const film = (async () => {
+  while (filming) {
+    const at = Date.now() / 1000;
+    const data = await page.screenshot({ type: "jpeg", quality: 85, scale: "device" }).catch(() => null);
+    if (data) frames.push({ at, data: data.toString("base64") });
+  }
+})();
+const t0 = Date.now();
+const marks = {};
+const mark = (name) => (marks[name] = (Date.now() - t0) / 1000);
+
+// 1 · the library, then the lease dropped.
+await page.goto(`${BASE}/${locale}/app`, { waitUntil: "networkidle" });
+mark("ready");
+await page.waitForTimeout(1400);
+mark("drop");
+await page.setInputFiles('input[type="file"]', file);
+const row = page.locator('a[href*="/app/documents/"]').filter({ hasText: /bail.exemple.fictif/i }).first();
+await row.waitFor({ timeout: 60_000 });
+await page.waitForTimeout(1200);
+// 2 · the document opens, the check runs.
+await row.click();
+await page.waitForLoadState("networkidle");
+await page.waitForSelector("form[aria-label]");
+const form = page.locator("form[aria-label]").filter({ has: page.locator('[name="jurisdiction"], select') }).first();
+await form.scrollIntoViewIfNeeded();
+await page.waitForTimeout(1100);
+mark("check");
+const before = new Set((await page.locator('[data-testid="orazaka-run-id"]').allTextContents()).map((s) => s.trim()));
+await form.locator('button[type="submit"]').click();
+await page.waitForFunction((known) => [...document.querySelectorAll('[data-testid="orazaka-run-id"]')].some((el) => !known.includes(el.textContent.trim())), [...before], { timeout: 120_000 });
+const runId = (await page.locator('[data-testid="orazaka-run-id"]').allTextContents()).map((s) => s.trim()).find((id) => !before.has(id));
+await page.waitForFunction(() => /NON-COMPLIANT|NON CONFORME/i.test(document.body.innerText), null, { timeout: 240_000 });
+// 3 · the finding, with the line lit in the document.
+mark("finding");
+await page.waitForTimeout(900);
+await page.locator("mark").first().scrollIntoViewIfNeeded().catch(() => undefined);
+await page.waitForTimeout(1800);
+await page.getByText(/NON-COMPLIANT|NON CONFORME/i).first().scrollIntoViewIfNeeded();
+await page.waitForTimeout(2000);
+mark("poster");
+// 4 · search.
+await page.goto(`${BASE}/${locale}/app/search`, { waitUntil: "networkidle" });
+mark("search");
+await page.waitForTimeout(700);
+const box = page.locator('input[type="search"], input').first();
+await box.click();
+await box.pressSequentially("dépôt", { delay: 150 });
+await box.press("Enter");
+await page.waitForTimeout(2600);
+mark("end");
+filming = false;
+await film;
+// Leave the QA library as found: the documents this take created are deleted (they are all « bail exemple fictif »).
+const mine = await ctx.request.get(`${BASE}/api/documents`);
+for (const d of (await mine.json()).documents ?? []) if (/^bail exemple fictif/i.test(d.title)) await ctx.request.delete(`${BASE}/api/documents/${d.id}`);
+await ctx.close();
+await browser.close();
+
+// Frames → one constant-rate file (the frames come at the page's own pace): a concat list with each frame's duration.
+const raw = path.join(dir, "take.raw.mp4");
+const tmp = mkdtempSync(path.join(os.tmpdir(), "take-frames-"));
+const list = [];
+frames.forEach((f, i) => {
+  const name = path.join(tmp, `${String(i).padStart(5, "0")}.jpg`);
+  writeFileSync(name, Buffer.from(f.data, "base64"));
+  const next = frames[i + 1]?.at ?? f.at + 0.04;
+  list.push(`file '${name}'`, `duration ${Math.max(0.001, next - f.at).toFixed(4)}`);
+});
+list.push(`file '${path.join(tmp, `${String(frames.length - 1).padStart(5, "0")}.jpg`)}'`);
+writeFileSync(path.join(tmp, "list.txt"), `${list.join("\n")}\n`);
+execFileSync("ffmpeg", ["-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", path.join(tmp, "list.txt"), "-vf", "fps=30,scale=trunc(iw/2)*2:trunc(ih/2)*2", "-c:v", "libx264", "-crf", "12", "-preset", "fast", "-pix_fmt", "yuv420p", raw], { stdio: "inherit" });
+// The raw file starts at the first frame: shift every mark onto its clock.
+const shift = frames[0].at - t0 / 1000;
+for (const k of Object.keys(marks)) marks[k] -= shift;
+const start = marks.ready;
+const real = marks.end - start;
+// The wait for the check (Orazaka reading) is sped up; the rest plays at its own pace. Never cut otherwise.
+const waitFrom = marks.check + 1.6 - start;
+const waitTo = marks.finding - start;
+const WAIT_SPEED = Math.max(1, (waitTo - waitFrom) / 3);
+const segs = [[0, waitFrom, 1], [waitFrom, waitTo, WAIT_SPEED], [waitTo, real, 1]];
+const total = segs.reduce((n, [x, y, k]) => n + (y - x) / k, 0);
+const ff = (...a) => execFileSync("ffmpeg", ["-y", "-v", "error", ...a], { stdio: "inherit" });
+const graph = segs.map(([x, y, k], i) => `[0:v]trim=start=${(start + x).toFixed(3)}:end=${(start + y).toFixed(3)},setpts=(PTS-STARTPTS)/${k.toFixed(4)}[v${i}]`).join(";") + `;${segs.map((_, i) => `[v${i}]`).join("")}concat=n=${segs.length}:v=1:a=0,fps=30[out]`;
+const input = ["-i", raw, "-an", "-filter_complex", graph, "-map", "[out]"];
+ff(...input, "-c:v", "libvpx-vp9", "-crf", "32", "-b:v", "0", "-row-mt", "1", path.join(dir, "take.webm"));
+ff(...input, "-c:v", "libx264", "-crf", "22", "-preset", "slow", "-pix_fmt", "yuv420p", "-movflags", "+faststart", path.join(dir, "take.mp4"));
+ff("-ss", marks.poster.toFixed(2), "-i", raw, "-frames:v", "1", "-q:v", "3", path.join(dir, "take.jpg"));
+const speed = real / total;
+// Chapter times in the sped-up take (seconds): what the page highlights while the clip plays.
+const at = (name) => {
+  const t = marks[name] - start;
+    if (t <= waitFrom) return +t.toFixed(2);
+  if (t <= waitTo) return +(waitFrom + (t - waitFrom) / WAIT_SPEED).toFixed(2);
+  return +(waitFrom + (waitTo - waitFrom) / WAIT_SPEED + (t - waitTo)).toFixed(2);
+};
+const evidence = { locale, base: BASE, recordedAt: new Date().toISOString(), runId, seconds: +total.toFixed(1), waitSpeed: +WAIT_SPEED.toFixed(2), chapters: { drop: at("drop"), check: at("check"), finding: at("finding"), search: at("search") } };
+writeFileSync(path.join(dir, "evidence.json"), `${JSON.stringify(evidence, null, 2)}\n`);
+process.stdout.write(`✓ ${locale}: ${evidence.seconds} s (wait x${evidence.waitSpeed}) · run ${runId} · ${dir}\n`);

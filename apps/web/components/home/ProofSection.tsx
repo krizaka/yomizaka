@@ -7,6 +7,7 @@ import { DescriptionList } from "@krizaka/ui/description-list";
 import { Section } from "@krizaka/ui/page";
 import Link from "next/link";
 
+import { Specimen } from "@/components/Specimen";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { recordedRun } from "@/lib/recorded-runs";
 import { pagePath } from "@/lib/site";
@@ -28,7 +29,7 @@ export function ProofSection({ locale }: { locale: Locale }) {
   return (
     <Section id="proof" eyebrow={t.eyebrow} title={t.title} lead={t.lead} reveal divider>
       <CardGrid min={300}>
-        <Card.Root className="flex flex-col gap-3 p-5" data-testid="proof-run">
+        <Card.Root className="flex h-full flex-col gap-3 p-5" data-testid="proof-run">
           <span className="flex items-center gap-2 text-fg-accent [&_svg]:h-5 [&_svg]:w-5">
             <ShieldIcon />
             <span className="text-sm font-semibold text-fg">{t.run}</span>
@@ -49,23 +50,43 @@ export function ProofSection({ locale }: { locale: Locale }) {
             <Link href={`${pagePath(locale, "run")}`}>{t.see}</Link>
           </Button>
         </Card.Root>
-        <Card.Root className="flex flex-col gap-3 p-5">
+        <Card.Root className="flex h-full flex-col gap-3 p-5" data-testid="proof-specimen">
           <span className="flex items-center gap-2 text-fg-accent [&_svg]:h-5 [&_svg]:w-5">
             <CheckIcon />
             <span className="text-sm font-semibold text-fg">{t.report.title}</span>
           </span>
           <p className="text-sm text-fg-secondary">{t.report.text}</p>
-          <Button asChild variant="secondary" size="md" shape="cut">
+          {/* A thumbnail of the watermarked specimen: decorative (the link says where it leads), faded at the bottom. */}
+          <Link href={`${pagePath(locale, "run")}#specimen`} aria-label={t.report.cta} tabIndex={-1} className="block max-h-44 overflow-hidden rounded-xl [mask-image:linear-gradient(#000_55%,transparent)]" data-testid="specimen-thumbnail">
+            <span aria-hidden className="pointer-events-none block origin-top-left">
+              <Specimen run={run} locale={locale} />
+            </span>
+          </Link>
+          <Button asChild variant="secondary" size="md" shape="cut" className="mt-auto">
             <Link href={`${pagePath(locale, "run")}#specimen`}>{t.report.cta}</Link>
           </Button>
         </Card.Root>
-        <Card.Root className="flex flex-col gap-3 p-5">
+        <Card.Root className="flex h-full flex-col gap-3 p-5" data-testid="proof-access">
           <span className="flex items-center gap-2 text-fg-accent [&_svg]:h-5 [&_svg]:w-5">
             <LockIcon />
             <span className="text-sm font-semibold text-fg">{t.access.title}</span>
           </span>
           <p className="text-sm text-fg-secondary">{t.access.text}</p>
-          <Button asChild variant="secondary" size="md" shape="cut">
+          <ol className="m-0 flex list-none flex-col gap-0 p-0" data-testid="access-steps">
+            {(["share", "signin", "verify"] as const).map((id, i) => (
+              <li key={id} className="flex items-stretch gap-3">
+                <span className="flex flex-col items-center">
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-accent bg-accent-soft font-mono text-xs font-bold text-fg">{i + 1}</span>
+                  {i < 2 ? <span aria-hidden className="my-1 w-px flex-1 bg-border-strong" /> : null}
+                </span>
+                <span className="flex flex-col pb-3">
+                  <span className="text-sm font-semibold text-fg">{t.access.steps[id].title}</span>
+                  <span className="text-xs leading-snug text-fg-secondary">{t.access.steps[id].text}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+          <Button asChild variant="secondary" size="md" shape="cut" className="mt-auto">
             <Link href={pagePath(locale, "verify")}>{t.access.cta}</Link>
           </Button>
         </Card.Root>

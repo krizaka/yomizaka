@@ -62,10 +62,10 @@
     "tour": {
       "label": "Yomizaka, enregistré sur la vraie application",
       "address": "dev.yomizaka.com",
-      "play": "Lire les étapes",
-      "pause": "Mettre les étapes en pause",
+      "play": "Lire la prise",
+      "pause": "Mettre en pause",
       "step": "Étape {n} sur {total}",
-      "recorded": "Enregistré sur dev.yomizaka.com (interface en anglais) le 17 octobre 2026 · exécution {run}",
+      "recorded": "Enregistré sur dev.yomizaka.com le 17 octobre 2026 · exécution {run}",
       "steps": {
         "keep": {
           "title": "Le garder",
@@ -168,7 +168,21 @@
       "access": {
         "title": "Vérifié par les personnes que vous choisissez",
         "text": "Seules les personnes à qui vous donnez accès peuvent vérifier un rapport, connectées avec un compte Yomizaka. Vous donnez, vous retirez, et chaque vérification est journalisée.",
-        "cta": "Comment fonctionne la vérification"
+        "cta": "Comment fonctionne la vérification",
+        "steps": {
+          "share": {
+            "title": "Le propriétaire partage",
+            "text": "Il donne accès au rapport, par courriel."
+          },
+          "signin": {
+            "title": "Vous vous connectez",
+            "text": "Avec un compte Yomizaka."
+          },
+          "verify": {
+            "title": "Vous vérifiez",
+            "text": "La signature, l'empreinte, l'exécution."
+          }
+        }
       },
       "see": "Voir toute l'exécution",
       "before": "Avant : le bail",
@@ -179,7 +193,25 @@
     "app": {
       "eyebrow": "Dans l'application",
       "title": "Du fichier au constat, enregistré",
-      "lead": "Le vrai parcours sur dev.yomizaka.com : garder, vérifier, retrouver."
+      "lead": "Le vrai parcours sur dev.yomizaka.com, en une prise, sur un téléphone.",
+      "chapters": {
+        "drop": {
+          "title": "Déposez le bail",
+          "text": "Un fichier texte ou PDF : il est gardé tel quel, dans votre bibliothèque."
+        },
+        "check": {
+          "title": "La vérification s'exécute",
+          "text": "Au regard des règles du Québec, à la date de votre choix."
+        },
+        "finding": {
+          "title": "Le constat, avec sa ligne",
+          "text": "La clause est en évidence dans le bail, avec l'article de loi."
+        },
+        "search": {
+          "title": "Retrouvez-le en une seconde",
+          "text": "Un mot, et les passages reviennent, dans les documents comme dans les constats."
+        }
+      }
     },
     "switchHint": "Pour qui ?",
     "hero": {
