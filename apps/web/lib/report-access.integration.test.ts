@@ -34,16 +34,16 @@ describe.runIf(enabled)("report grants (database)", () => {
   it("grants, lists (member), honours, expires, revokes", async () => {
     const now = new Date();
     expect(accessTo((await loadTarget(runId, sha))!, guest, now).allowed).toBe(false);
-    const made = await createGrant(owner, documentId, analysisId, { email: guest.email.toUpperCase(), expiresAt: null });
+    const made = await createGrant(owner, documentId, analysisId, { email: guest.email.toUpperCase(), expiresAt: null }, new Date());
     expect(made.member).toBe(true);
     expect(accessTo((await loadTarget(runId, sha))!, guest, now)).toMatchObject({ allowed: true, via: "grant" });
-    expect((await listSharing(owner.id, documentId, analysisId)).grants[0]).toMatchObject({ email: guest.email, status: "member" });
+    expect((await listSharing(owner.id, documentId, analysisId, new Date())).grants[0]).toMatchObject({ email: guest.email, status: "member" });
     // expired
     await query("UPDATE report_grants SET expires_at = now() - interval '1 minute' WHERE id = $1", [made.grantId]);
     expect(accessTo((await loadTarget(runId, sha))!, guest, new Date()).allowed).toBe(false);
-    expect((await listSharing(owner.id, documentId, analysisId)).grants[0]!.status).toBe("expired");
+    expect((await listSharing(owner.id, documentId, analysisId, new Date())).grants[0]!.status).toBe("expired");
     // renewed, then revoked
-    const renewed = await createGrant(owner, documentId, analysisId, { email: guest.email, expiresAt: null });
+    const renewed = await createGrant(owner, documentId, analysisId, { email: guest.email, expiresAt: null }, new Date());
     expect(accessTo((await loadTarget(runId, sha))!, guest, new Date()).allowed).toBe(true);
     await revokeGrant(owner.id, documentId, analysisId, renewed.grantId);
     expect(accessTo((await loadTarget(runId, sha))!, guest, new Date()).allowed).toBe(false);
@@ -51,17 +51,17 @@ describe.runIf(enabled)("report grants (database)", () => {
 
   it("an invitation for an address with no account waits, then is honoured when the account exists", async () => {
     const email = `later-${stamp}@yomizaka.test`;
-    expect((await createGrant(owner, documentId, analysisId, { email, expiresAt: null })).member).toBe(false);
-    expect((await listSharing(owner.id, documentId, analysisId)).grants.find((g) => g.email === email)!.status).toBe("invited");
+    expect((await createGrant(owner, documentId, analysisId, { email, expiresAt: null }, new Date())).member).toBe(false);
+    expect((await listSharing(owner.id, documentId, analysisId, new Date())).grants.find((g) => g.email === email)!.status).toBe("invited");
     const [later] = await query<{ id: string }>("INSERT INTO accounts (email) VALUES ($1) RETURNING id", [email]);
     expect(accessTo((await loadTarget(runId, sha))!, { id: later!.id, email }, new Date()).allowed).toBe(true);
   });
 
   it("keeps sharing to the owner, refuses their own address and a past expiry", async () => {
-    await expect(listSharing(guest.id, documentId, analysisId)).rejects.toMatchObject({ status: 404 });
-    await expect(createGrant(guest, documentId, analysisId, { email: "x@y.test", expiresAt: null })).rejects.toMatchObject({ status: 404 });
-    await expect(createGrant(owner, documentId, analysisId, { email: owner.email, expiresAt: null })).rejects.toMatchObject({ status: 400 });
-    await expect(createGrant(owner, documentId, analysisId, { email: "z@y.test", expiresAt: new Date(0) })).rejects.toMatchObject({ status: 400 });
+    await expect(listSharing(guest.id, documentId, analysisId, new Date())).rejects.toMatchObject({ status: 404 });
+    await expect(createGrant(guest, documentId, analysisId, { email: "x@y.test", expiresAt: null }, new Date())).rejects.toMatchObject({ status: 404 });
+    await expect(createGrant(owner, documentId, analysisId, { email: owner.email, expiresAt: null }, new Date())).rejects.toMatchObject({ status: 400 });
+    await expect(createGrant(owner, documentId, analysisId, { email: "z@y.test", expiresAt: new Date(0) }, new Date())).rejects.toMatchObject({ status: 400 });
   });
 
   it("records one access request, shown to the owner, and closes it when access is given", async () => {
@@ -69,11 +69,11 @@ describe.runIf(enabled)("report grants (database)", () => {
     const [s] = await query<{ id: string }>("INSERT INTO accounts (email) VALUES ($1) RETURNING id", [stranger.email]);
     const who = { id: s!.id, email: stranger.email };
     const target = (await loadTarget(runId, sha))!;
-    expect(await requestAccess(who, target)).toEqual({ recorded: true });
-    expect(await requestAccess(who, target)).toEqual({ recorded: false });
-    expect((await listSharing(owner.id, documentId, analysisId)).requests.map((r) => r.email)).toContain(stranger.email);
-    await createGrant(owner, documentId, analysisId, { email: stranger.email, expiresAt: null });
-    expect((await listSharing(owner.id, documentId, analysisId)).requests.map((r) => r.email)).not.toContain(stranger.email);
-    expect(await requestAccess(who, null)).toEqual({ recorded: false });
+    expect(await requestAccess(who, target, new Date())).toEqual({ recorded: true });
+    expect(await requestAccess(who, target, new Date())).toEqual({ recorded: false });
+    expect((await listSharing(owner.id, documentId, analysisId, new Date())).requests.map((r) => r.email)).toContain(stranger.email);
+    await createGrant(owner, documentId, analysisId, { email: stranger.email, expiresAt: null }, new Date());
+    expect((await listSharing(owner.id, documentId, analysisId, new Date())).requests.map((r) => r.email)).not.toContain(stranger.email);
+    expect(await requestAccess(who, null, new Date())).toEqual({ recorded: false });
   });
 });
