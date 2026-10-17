@@ -2,7 +2,7 @@
   "meta": {
     "siteName": "Yomizaka",
     "titleTemplate": "{title} — Yomizaka",
-    "description": "Your leases, contracts and invoices, read and checked by Orazaka: every finding quotes its rule and the line it rests on, every PDF examined for signs of editing, every document found again in a second."
+    "description": "Your leases, contracts and invoices, read and checked by Yomizaka: every finding quotes its rule and the line it rests on, every PDF examined for signs of editing, every document found again in a second."
   },
   "chrome": {
     "brandHome": "Yomizaka, home",
@@ -36,7 +36,7 @@
       },
       "run": {
         "title": "A real run",
-        "text": "A Québec lease checked by Orazaka, as it came back."
+        "text": "A Québec lease checked, as it came back."
       },
       "verify": {
         "title": "Verify a report",
@@ -47,7 +47,7 @@
   "landing": {
     "eyebrow": "Yomizaka · leases, contracts, invoices",
     "title": "Read before you sign.",
-    "lead": "Drop a lease, a contract or an invoice. Orazaka reads it against the rules in force and shows you the exact line behind every finding.",
+    "lead": "Drop a lease, a contract or an invoice. Yomizaka reads it against the rules in force and shows you the exact line behind every finding.",
     "status": {
       "label": "Status",
       "development": "In development: sign-up is closed while we test it on real Québec leases.",
@@ -65,7 +65,7 @@
       "play": "Play the steps",
       "pause": "Pause the steps",
       "step": "Step {n} of {total}",
-      "recorded": "Recorded on dev.yomizaka.com (English interface) on October 17, 2026 · Orazaka run {run}",
+      "recorded": "Recorded on dev.yomizaka.com (English interface) on October 17, 2026 · run {run}",
       "steps": {
         "keep": {
           "title": "Keep it",
@@ -74,8 +74,8 @@
         },
         "check": {
           "title": "Check it",
-          "text": "Orazaka runs the Québec lease rules; the forbidden clauses come back marked.",
-          "alt": "A Québec lease checked by Orazaka: a non-compliant finding, its article and the quoted line."
+          "text": "Yomizaka applies the Québec lease rules; the forbidden clauses come back marked.",
+          "alt": "A Québec lease checked by Yomizaka: a non-compliant finding, its article and the quoted line."
         },
         "find": {
           "title": "Find it",
@@ -105,7 +105,7 @@
     },
     "how": {
       "eyebrow": "How it works",
-      "title": "Yomizaka keeps, Orazaka reads",
+      "title": "Yomizaka keeps, reads and proves",
       "lead": "Three steps, one trace from the file to the report.",
       "steps": {
         "keep": {
@@ -113,12 +113,12 @@
           "text": "It is kept as you sent it, visible to your account alone; its text layer is read for search."
         },
         "read": {
-          "title": "Orazaka reads it",
+          "title": "Yomizaka reads it",
           "text": "Against the rules of a jurisdiction on the date you pick, or the PDF itself for signs of editing. Yomizaka never calls a model."
         },
         "prove": {
           "title": "You keep the proof",
-          "text": "Each finding keeps the id of its Orazaka run; the report is signed, and only the people you give access to can verify it, with a Yomizaka account."
+          "text": "Each finding keeps the id of its run; the report is signed, and only the people you give access to can verify it, with a Yomizaka account."
         }
       },
       "owlLabel": "The owl's promise",
@@ -143,12 +143,45 @@
         "text": "The app, its API and its contracts are on GitHub under Apache-2.0.",
         "cta": "Read the code"
       },
-      "powered": "Powered by Orazaka, the engine that does the reading."
+      "powered": "Powered by Orazaka, our sovereign AI engine."
     },
     "closing": {
       "title": "Have documents to check?",
       "body": "Yomizaka is in development and sign-up is closed. Tell us what you need to read: leases, supplier invoices, a Law 25 inventory."
-    }
+    },
+    "proof": {
+      "eyebrow": "Proof",
+      "title": "What Yomizaka really found",
+      "lead": "One real check, recorded: the rule, the line, the article of law, the run id, the date. Nothing typed by hand.",
+      "finding": "The finding",
+      "run": "The run",
+      "runLabel": "Run id",
+      "dateLabel": "Recorded",
+      "rulesetLabel": "Québec rules",
+      "rules": "rules of the Québec residential lease evaluated in each check",
+      "found": "findings on this sample lease: {fail} non-compliant, {pass} compliant",
+      "report": {
+        "title": "The signed report",
+        "text": "The same check as a signed file: document fingerprint, rules version, every finding with its passage and article, and the signature.",
+        "cta": "Download the signed report"
+      },
+      "access": {
+        "title": "Verified by the people you choose",
+        "text": "Only the people you give access to can verify a report, signed in with a Yomizaka account. You grant, you revoke, and every verification is logged.",
+        "cta": "How verification works"
+      },
+      "see": "See the whole run",
+      "before": "Before: the lease",
+      "after": "After: the finding",
+      "beforeLabel": "The lease, with the forbidden clause lit",
+      "afterLabel": "What Yomizaka returns for this line"
+    },
+    "app": {
+      "eyebrow": "In the app",
+      "title": "From the file to the finding, recorded",
+      "lead": "The real journey on dev.yomizaka.com: keep, check, find."
+    },
+    "switchHint": "Who are you?"
   },
   "run": {
     "eyebrow": "A real run",
@@ -208,7 +241,7 @@
       "admin": "Administration"
     },
     "signIn": {
-      "promise": "Your documents, read and checked by Orazaka.",
+      "promise": "Your documents, read and checked by Yomizaka.",
       "asideFooter": "Every finding quotes its rule and the line it rests on.",
       "title": "Sign in",
       "description": "With the account our team gave you.",
@@ -306,8 +339,8 @@
       "delete": "Delete",
       "deleteConfirm": "Delete for good",
       "deleted": "Deleted.",
-      "checks": "Checks by Orazaka",
-      "checksLead": "Each check is a run of an Orazaka Studio; its id is the trace of what ran.",
+      "checks": "Checks",
+      "checksLead": "Each check is a run of Yomizaka's engine (Orazaka); its id is the trace of what ran.",
       "passageOf": "Passage quoted by {rule}",
       "viewerRegion": "Pages of the document",
       "loadingPdf": "Loading the document…",
@@ -316,7 +349,7 @@
       "onPage": "Passage on page {page}:",
       "notFound": "This passage is not in the PDF's text layer:",
       "checksLeadBy": {
-        "neutral": "Choose what Orazaka reads: the text against the law, or the PDF file itself.",
+        "neutral": "Choose what Yomizaka reads: the text against the law, or the PDF file itself.",
         "tenant": "Before signing: your lease's text against Québec's rules, then, if a paper looks doubtful, the file itself.",
         "landlord": "Before sending: your lease template against Québec's rules; for a tenant's PDF paper, the examination of the file itself."
       }
@@ -336,7 +369,7 @@
       "expectedIssuer": "Expected issuer (optional)",
       "expectedIssuerHint": "Who should have produced it, e.g. the agency's name.",
       "run": "Run the check",
-      "running": "Orazaka is reading…",
+      "running": "Yomizaka is reading…",
       "runId": "Orazaka run",
       "blueprint": "Studio version",
       "ruleset": "Rules",
@@ -365,10 +398,10 @@
       },
       "where": "Where",
       "mayIndicate": "May indicate",
-      "language": "Orazaka's reports are written in French, the language of their rules.",
+      "language": "Reports are written in French, the language of their rules.",
       "history": "Earlier runs",
       "noPdf": "Only a PDF can be examined as a file.",
-      "tooLarge": "Orazaka examines PDFs up to 1 MB.",
+      "tooLarge": "Yomizaka examines PDFs up to 1 MB.",
       "toReview": "Québec rules still to be reviewed by a lawyer: a demonstration screen, not legal advice.",
       "showInFile": "Show in the file",
       "findingPage": "Page {page}",
@@ -432,7 +465,7 @@
       "NO_TEXT": "This document has no text layer to check.",
       "TEXT_TOO_LONG": "This document is longer than the check reads (60 000 characters).",
       "NOT_A_PDF": "Only a PDF can be examined as a file.",
-      "PDF_TOO_LARGE": "Orazaka examines PDFs up to 1 MB.",
+      "PDF_TOO_LARGE": "Yomizaka examines PDFs up to 1 MB.",
       "ALREADY_RUNNING": "This check is already running.",
       "ORAZAKA_NOT_CONFIGURED": "The connection to Orazaka is not configured.",
       "ORAZAKA_UNAVAILABLE": "Orazaka did not answer. Try again in a moment.",
@@ -725,10 +758,10 @@
     "tenant": {
       "switch": "I'm a tenant",
       "seoTitle": "Yomizaka for tenants — check your lease before you sign",
-      "seoDescription": "Upload the lease you are offered: Orazaka reads it against Québec's rules and quotes the clause, the Civil Code article and the exact line. Deposits, post-dated cheques, clauses without effect.",
+      "seoDescription": "Upload the lease you are offered: Yomizaka reads it against Québec's rules and quotes the clause, the Civil Code article and the exact line. Deposits, post-dated cheques, clauses without effect.",
       "eyebrow": "Yomizaka · for tenants",
       "title": "Check your lease before you sign it.",
-      "lead": "Upload the lease you are offered. Orazaka reads it against Québec's rules and shows you, line by line, what does not hold — and what to ask the landlord.",
+      "lead": "Upload the lease you are offered. Yomizaka reads it against Québec's rules and shows you, line by line, what does not hold — and what to ask the landlord.",
       "outcomesTitle": "What you will know before you sign",
       "outcomes": {
         "a": {
@@ -753,18 +786,18 @@
           "text": "It is kept as it is, visible to your account alone; its text layer is read for search."
         },
         "read": {
-          "title": "Orazaka reads it",
-          "text": "Against Québec's rules in force on the date you choose. Yomizaka never calls a model."
+          "title": "Yomizaka reads it",
+          "text": "Against Québec's rules in force on the date you choose. No model is ever called to judge your lease."
         },
         "prove": {
           "title": "You keep the proof",
-          "text": "Each finding keeps the id of its Orazaka run; the report is signed, and only the people you give access to can verify it, with a Yomizaka account."
+          "text": "Each finding keeps the id of its run; the report is signed, and only the people you give access to can verify it, with a Yomizaka account."
         }
       },
       "examples": {
         "eyebrow": "Examples",
         "title": "What Yomizaka finds in a lease",
-        "lead": "Taken from a real check of a sample Québec lease, as Orazaka returned them.",
+        "lead": "Taken from a real check of a sample Québec lease, as it came back (the run is on the proof page).",
         "items": {
           "a": "« A security deposit of $1,450 at signing »: forbidden, only the first month may be asked in advance (C.c.Q., art. 1904).",
           "b": "« Twelve post-dated cheques »: forbidden (C.c.Q., art. 1904, para. 2).",
@@ -777,10 +810,10 @@
     "landlord": {
       "switch": "I'm a landlord",
       "seoTitle": "Yomizaka for landlords — a compliant lease before you send it",
-      "seoDescription": "Upload your lease template: Orazaka reads it against Québec's rules and quotes the article behind each finding. The tenant's papers examined, a signed report to keep, access shared with your manager.",
+      "seoDescription": "Upload your lease template: Yomizaka reads it against Québec's rules and quotes the article behind each finding. The tenant's papers examined, a signed report to keep, access shared with your manager.",
       "eyebrow": "Yomizaka · for landlords",
       "title": "A compliant lease before you send it.",
-      "lead": "Upload your lease template. Orazaka reads it against Québec's rules, quotes the article behind each finding, and you keep a signed report to store or share.",
+      "lead": "Upload your lease template. Yomizaka reads it against Québec's rules, quotes the article behind each finding, and you keep a signed report to store or share.",
       "outcomesTitle": "What you will know before you send",
       "outcomes": {
         "a": {
@@ -795,7 +828,7 @@
         },
         "c": {
           "title": "Keep and share the proof",
-          "text": "A signed report with the Orazaka run id. Share it with a co-owner or a manager by giving them access, and withdraw it when you want.",
+          "text": "A signed report with the run id. Share it with a co-owner or a manager by giving them access, and withdraw it when you want.",
           "cta": "Verify a report"
         }
       },
@@ -805,18 +838,18 @@
           "text": "It is kept as it is, visible to your account alone; its text layer is read for search."
         },
         "read": {
-          "title": "Orazaka reads it",
-          "text": "The lease, against Québec's rules on the date you choose; a PDF paper, examined as a file. Yomizaka never calls a model."
+          "title": "Yomizaka reads it",
+          "text": "The lease, against Québec's rules on the date you choose; a PDF paper, examined as a file. No model is ever called to judge your documents."
         },
         "prove": {
           "title": "You keep the proof",
-          "text": "Each finding keeps the id of its Orazaka run; the report is signed, and only the people you give access to can verify it, with a Yomizaka account."
+          "text": "Each finding keeps the id of its run; the report is signed, and only the people you give access to can verify it, with a Yomizaka account."
         }
       },
       "examples": {
         "eyebrow": "Examples",
         "title": "What Yomizaka flags before you send",
-        "lead": "The findings come from a real check of a sample Québec lease; a PDF's examination follows Orazaka's three levels.",
+        "lead": "The findings come from a real check of a sample Québec lease; a PDF's examination follows three levels (observed, unusual, inconsistent).",
         "items": {
           "a": "A template that asks for a security deposit at signing: non-compliant, with the article (C.c.Q., art. 1904).",
           "b": "A lease without the landlord's or the tenant's identification: a finding to fix before sending (art. 1895).",

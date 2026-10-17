@@ -2,7 +2,7 @@
   "meta": {
     "siteName": "Yomizaka",
     "titleTemplate": "{title} — Yomizaka",
-    "description": "Vos baux, contrats et factures, lus et vérifiés par Orazaka : chaque constat cite sa règle et la ligne sur laquelle il repose, chaque PDF examiné pour des traces de modification, chaque document retrouvé en une seconde."
+    "description": "Vos baux, contrats et factures, lus et vérifiés par Yomizaka : chaque constat cite sa règle et la ligne sur laquelle il repose, chaque PDF examiné pour des signes de retouche, chaque document retrouvé en une seconde."
   },
   "chrome": {
     "brandHome": "Yomizaka, accueil",
@@ -36,7 +36,7 @@
       },
       "run": {
         "title": "Une vraie vérification",
-        "text": "Un bail québécois vérifié par Orazaka, tel qu'il est revenu."
+        "text": "Un bail québécois vérifié, tel qu'il est revenu."
       },
       "verify": {
         "title": "Vérifier un rapport",
@@ -47,7 +47,7 @@
   "landing": {
     "eyebrow": "Yomizaka · baux, contrats, factures",
     "title": "Lisez avant de signer.",
-    "lead": "Déposez un bail, un contrat ou une facture. Orazaka le lit selon les règles en vigueur et vous montre la ligne exacte derrière chaque constat.",
+    "lead": "Déposez un bail, un contrat ou une facture. Yomizaka le lit selon les règles en vigueur et vous montre la ligne exacte derrière chaque constat.",
     "status": {
       "label": "Statut",
       "development": "En développement : les inscriptions sont fermées pendant nos essais sur de vrais baux québécois.",
@@ -65,7 +65,7 @@
       "play": "Lire les étapes",
       "pause": "Mettre les étapes en pause",
       "step": "Étape {n} sur {total}",
-      "recorded": "Enregistré sur dev.yomizaka.com (interface en anglais) le 17 octobre 2026 · exécution Orazaka {run}",
+      "recorded": "Enregistré sur dev.yomizaka.com (interface en anglais) le 17 octobre 2026 · exécution {run}",
       "steps": {
         "keep": {
           "title": "Le garder",
@@ -74,8 +74,8 @@
         },
         "check": {
           "title": "Le vérifier",
-          "text": "Orazaka applique les règles du bail québécois ; les clauses interdites ressortent marquées.",
-          "alt": "Un bail québécois vérifié par Orazaka : un constat non conforme, son article et la ligne citée."
+          "text": "Yomizaka applique les règles du bail québécois ; les clauses interdites ressortent marquées.",
+          "alt": "Un bail québécois vérifié par Yomizaka : un constat non conforme, son article et la ligne citée."
         },
         "find": {
           "title": "Le retrouver",
@@ -105,7 +105,7 @@
     },
     "how": {
       "eyebrow": "Comment ça marche",
-      "title": "Yomizaka garde, Orazaka lit",
+      "title": "Yomizaka garde, lit et prouve",
       "lead": "Trois étapes, une seule trace du fichier au rapport.",
       "steps": {
         "keep": {
@@ -113,12 +113,12 @@
           "text": "Il est gardé tel quel, visible par votre seul compte ; sa couche texte est lue pour la recherche."
         },
         "read": {
-          "title": "Orazaka le lit",
+          "title": "Yomizaka le lit",
           "text": "Selon les règles d'une juridiction à la date choisie, ou le PDF lui-même pour des traces de retouche. Yomizaka n'appelle jamais de modèle."
         },
         "prove": {
           "title": "Vous gardez la preuve",
-          "text": "Chaque constat garde l'identifiant de son exécution Orazaka ; le rapport est signé, et seules les personnes à qui vous donnez accès peuvent le vérifier, avec un compte Yomizaka."
+          "text": "Chaque constat garde l'identifiant de son exécution ; le rapport est signé, et seules les personnes à qui vous donnez accès peuvent le vérifier, avec un compte Yomizaka."
         }
       },
       "owlLabel": "La promesse du hibou",
@@ -143,12 +143,45 @@
         "text": "L'application, son API et ses contrats sont sur GitHub, sous licence Apache-2.0.",
         "cta": "Lire le code"
       },
-      "powered": "Propulsé par Orazaka, le moteur qui fait la lecture."
+      "powered": "Propulsé par Orazaka, notre moteur d'IA souverain."
     },
     "closing": {
       "title": "Des documents à vérifier ?",
       "body": "Yomizaka est en développement et les inscriptions sont fermées. Dites-nous ce que vous devez lire : baux, factures de fournisseurs, un inventaire Loi 25."
-    }
+    },
+    "proof": {
+      "eyebrow": "Preuves",
+      "title": "Ce que Yomizaka a vraiment trouvé",
+      "lead": "Une vraie vérification, enregistrée : la règle, la ligne, l'article de loi, l'identifiant de l'exécution, la date. Rien n'est tapé à la main.",
+      "finding": "Le constat",
+      "run": "L'exécution",
+      "runLabel": "Identifiant",
+      "dateLabel": "Enregistrée le",
+      "rulesetLabel": "Règles du Québec",
+      "rules": "règles du bail de logement québécois évaluées à chaque vérification",
+      "found": "constats sur ce bail d'exemple : {fail} non conformes, {pass} conformes",
+      "report": {
+        "title": "Le rapport signé",
+        "text": "La même vérification en fichier signé : empreinte du document, version des règles, chaque constat avec son passage et son article, et la signature.",
+        "cta": "Télécharger le rapport signé"
+      },
+      "access": {
+        "title": "Vérifié par les personnes que vous choisissez",
+        "text": "Seules les personnes à qui vous donnez accès peuvent vérifier un rapport, connectées avec un compte Yomizaka. Vous donnez, vous retirez, et chaque vérification est journalisée.",
+        "cta": "Comment fonctionne la vérification"
+      },
+      "see": "Voir toute l'exécution",
+      "before": "Avant : le bail",
+      "after": "Après : le constat",
+      "beforeLabel": "Le bail, la clause interdite en évidence",
+      "afterLabel": "Ce que Yomizaka renvoie pour cette ligne"
+    },
+    "app": {
+      "eyebrow": "Dans l'application",
+      "title": "Du fichier au constat, enregistré",
+      "lead": "Le vrai parcours sur dev.yomizaka.com : garder, vérifier, retrouver."
+    },
+    "switchHint": "Qui êtes-vous ?"
   },
   "run": {
     "eyebrow": "Un vrai run",
@@ -208,7 +241,7 @@
       "admin": "Administration"
     },
     "signIn": {
-      "promise": "Vos documents, lus et vérifiés par Orazaka.",
+      "promise": "Vos documents, lus et vérifiés par Yomizaka.",
       "asideFooter": "Chaque constat cite sa règle et la ligne sur laquelle il repose.",
       "title": "Connexion",
       "description": "Avec le compte que notre équipe vous a remis.",
@@ -306,8 +339,8 @@
       "delete": "Supprimer",
       "deleteConfirm": "Supprimer définitivement",
       "deleted": "Supprimé.",
-      "checks": "Vérifications par Orazaka",
-      "checksLead": "Chaque vérification est un run d'un Studio Orazaka ; son identifiant est la trace de ce qui a tourné.",
+      "checks": "Vérifications",
+      "checksLead": "Chaque vérification est un run du moteur de Yomizaka (Orazaka) ; son identifiant est la trace de ce qui a tourné.",
       "passageOf": "Passage cité par {rule}",
       "viewerRegion": "Pages du document",
       "loadingPdf": "Chargement du document…",
@@ -316,7 +349,7 @@
       "onPage": "Passage à la page {page} :",
       "notFound": "Ce passage n’est pas dans la couche de texte du PDF :",
       "checksLeadBy": {
-        "neutral": "Choisissez ce qu'Orazaka doit lire : le texte au regard de la loi, ou le fichier PDF lui-même.",
+        "neutral": "Choisissez ce que Yomizaka doit lire : le texte au regard de la loi, ou le fichier PDF lui-même.",
         "tenant": "Avant de signer : le texte de votre bail au regard des règles du Québec, puis, si une pièce vous paraît douteuse, le fichier lui-même.",
         "landlord": "Avant d'envoyer : votre modèle de bail au regard des règles du Québec ; pour une pièce du locataire en PDF, l'examen du fichier lui-même."
       }
@@ -336,7 +369,7 @@
       "expectedIssuer": "Émetteur attendu (facultatif)",
       "expectedIssuerHint": "Qui devrait l'avoir produit, par exemple le nom de l'agence.",
       "run": "Lancer la vérification",
-      "running": "Orazaka lit…",
+      "running": "Yomizaka lit…",
       "runId": "Run Orazaka",
       "blueprint": "Version du Studio",
       "ruleset": "Règles",
@@ -365,10 +398,10 @@
       },
       "where": "Où",
       "mayIndicate": "Peut indiquer",
-      "language": "Les rapports d'Orazaka sont rédigés en français, la langue de leurs règles.",
+      "language": "Les rapports sont rédigés en français, la langue de leurs règles.",
       "history": "Runs précédents",
       "noPdf": "Seul un PDF peut être examiné en tant que fichier.",
-      "tooLarge": "Orazaka examine les PDF jusqu'à 1 Mo.",
+      "tooLarge": "Yomizaka examine les PDF jusqu'à 1 Mo.",
       "toReview": "Corpus québécois à faire relire par un avocat : un tri de démonstration, pas un avis juridique.",
       "showInFile": "Voir dans le fichier",
       "findingPage": "Page {page}",
@@ -432,7 +465,7 @@
       "NO_TEXT": "Ce document n'a pas de couche texte à vérifier.",
       "TEXT_TOO_LONG": "Ce document dépasse ce que la vérification lit (60 000 caractères).",
       "NOT_A_PDF": "Seul un PDF peut être examiné en tant que fichier.",
-      "PDF_TOO_LARGE": "Orazaka examine les PDF jusqu'à 1 Mo.",
+      "PDF_TOO_LARGE": "Yomizaka examine les PDF jusqu'à 1 Mo.",
       "ALREADY_RUNNING": "Cette vérification est déjà en cours.",
       "ORAZAKA_NOT_CONFIGURED": "La connexion à Orazaka n'est pas configurée.",
       "ORAZAKA_UNAVAILABLE": "Orazaka n'a pas répondu. Réessayez dans un instant.",
@@ -725,10 +758,10 @@
     "tenant": {
       "switch": "Je suis locataire",
       "seoTitle": "Yomizaka pour les locataires — vérifiez votre bail avant de signer",
-      "seoDescription": "Déposez le bail que l'on vous propose : Orazaka le lit selon les règles du Québec et cite la clause, l'article du Code civil et la ligne exacte. Dépôt de garantie, chèques postdatés, clauses sans effet.",
+      "seoDescription": "Déposez le bail que l'on vous propose : Yomizaka le lit selon les règles du Québec et cite la clause, l'article du Code civil et la ligne exacte. Dépôt de garantie, chèques postdatés, clauses sans effet.",
       "eyebrow": "Yomizaka · pour les locataires",
       "title": "Vérifiez votre bail avant de le signer.",
-      "lead": "Déposez le bail que l'on vous propose. Orazaka le lit selon les règles du Québec et vous montre, ligne par ligne, ce qui ne tient pas — et ce qu'il faut demander au locateur.",
+      "lead": "Déposez le bail que l'on vous propose. Yomizaka le lit selon les règles du Québec et vous montre, ligne par ligne, ce qui ne tient pas — et ce qu'il faut demander au locateur.",
       "outcomesTitle": "Ce que vous saurez avant de signer",
       "outcomes": {
         "a": {
@@ -753,18 +786,18 @@
           "text": "Il est gardé tel quel, visible par votre seul compte ; sa couche texte est lue pour la recherche."
         },
         "read": {
-          "title": "Orazaka le lit",
-          "text": "Selon les règles du Québec en vigueur à la date de votre choix. Yomizaka n'appelle jamais de modèle."
+          "title": "Yomizaka le lit",
+          "text": "Selon les règles du Québec en vigueur à la date de votre choix. Aucun modèle n'est appelé pour juger votre bail."
         },
         "prove": {
           "title": "Vous gardez la preuve",
-          "text": "Chaque constat garde l'identifiant de son exécution Orazaka ; le rapport est signé, et seules les personnes à qui vous donnez accès peuvent le vérifier, avec un compte Yomizaka."
+          "text": "Chaque constat garde l'identifiant de son exécution ; le rapport est signé, et seules les personnes à qui vous donnez accès peuvent le vérifier, avec un compte Yomizaka."
         }
       },
       "examples": {
         "eyebrow": "Des exemples",
         "title": "Ce que Yomizaka relève dans un bail",
-        "lead": "Tirés d'une vraie vérification d'un bail québécois d'exemple, tels qu'Orazaka les a renvoyés.",
+        "lead": "Tirés d'une vraie vérification d'un bail québécois d'exemple, tels qu'ils sont revenus (l'exécution est sur la page des preuves).",
         "items": {
           "a": "« Un dépôt de sécurité de 1 450 $ à la signature » : interdit, seul le premier mois peut être exigé d'avance (C.c.Q., art. 1904).",
           "b": "« Douze chèques postdatés » : interdit (C.c.Q., art. 1904, al. 2).",
@@ -777,10 +810,10 @@
     "landlord": {
       "switch": "Je suis propriétaire",
       "seoTitle": "Yomizaka pour les propriétaires — un bail conforme avant de l'envoyer",
-      "seoDescription": "Déposez votre modèle de bail : Orazaka le lit selon les règles du Québec et cite l'article derrière chaque constat. Pièces du locataire examinées, rapport signé à garder, accès partagé avec votre gestionnaire.",
+      "seoDescription": "Déposez votre modèle de bail : Yomizaka le lit selon les règles du Québec et cite l'article derrière chaque constat. Pièces du locataire examinées, rapport signé à garder, accès partagé avec votre gestionnaire.",
       "eyebrow": "Yomizaka · pour les propriétaires",
       "title": "Un bail conforme avant de l'envoyer.",
-      "lead": "Déposez votre modèle de bail. Orazaka le lit selon les règles du Québec, cite l'article derrière chaque constat, et vous gardez un rapport signé à conserver ou à partager.",
+      "lead": "Déposez votre modèle de bail. Yomizaka le lit selon les règles du Québec, cite l'article derrière chaque constat, et vous gardez un rapport signé à conserver ou à partager.",
       "outcomesTitle": "Ce que vous saurez avant d'envoyer",
       "outcomes": {
         "a": {
@@ -795,7 +828,7 @@
         },
         "c": {
           "title": "Garder et partager la preuve",
-          "text": "Un rapport signé, avec l'identifiant de l'exécution Orazaka. Vous le partagez avec un copropriétaire ou un gestionnaire en lui donnant accès, et vous pouvez le retirer.",
+          "text": "Un rapport signé, avec l'identifiant de l'exécution. Vous le partagez avec un copropriétaire ou un gestionnaire en lui donnant accès, et vous pouvez le retirer.",
           "cta": "Vérifier un rapport"
         }
       },
@@ -805,18 +838,18 @@
           "text": "Il est gardé tel quel, visible par votre seul compte ; sa couche texte est lue pour la recherche."
         },
         "read": {
-          "title": "Orazaka le lit",
-          "text": "Le bail, selon les règles du Québec à la date de votre choix ; une pièce en PDF, examinée comme fichier. Yomizaka n'appelle jamais de modèle."
+          "title": "Yomizaka le lit",
+          "text": "Le bail, selon les règles du Québec à la date de votre choix ; une pièce en PDF, examinée comme fichier. Aucun modèle n'est appelé pour juger vos documents."
         },
         "prove": {
           "title": "Vous gardez la preuve",
-          "text": "Chaque constat garde l'identifiant de son exécution Orazaka ; le rapport est signé, et seules les personnes à qui vous donnez accès peuvent le vérifier, avec un compte Yomizaka."
+          "text": "Chaque constat garde l'identifiant de son exécution ; le rapport est signé, et seules les personnes à qui vous donnez accès peuvent le vérifier, avec un compte Yomizaka."
         }
       },
       "examples": {
         "eyebrow": "Des exemples",
         "title": "Ce que Yomizaka relève avant que vous envoyiez",
-        "lead": "Les constats viennent d'une vraie vérification d'un bail québécois d'exemple ; l'examen d'un PDF suit les trois niveaux d'Orazaka.",
+        "lead": "Les constats viennent d'une vraie vérification d'un bail québécois d'exemple ; l'examen d'un PDF suit trois niveaux (observé, inhabituel, incohérent).",
         "items": {
           "a": "Un modèle qui exige un dépôt de sécurité à la signature : non conforme, avec l'article (C.c.Q., art. 1904).",
           "b": "Un bail sans l'identification du locateur ou du locataire : un constat à corriger avant l'envoi (art. 1895).",
