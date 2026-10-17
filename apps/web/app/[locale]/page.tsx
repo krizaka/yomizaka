@@ -16,6 +16,8 @@ import { HeroFlow } from "@/components/home/HeroFlow";
 import { ProofSection } from "@/components/home/ProofSection";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
+import { appEnvironment } from "@/lib/env";
+import { audiencesOf, availableFlows } from "@/lib/flows";
 import { asLocale, format, getDictionary } from "@/lib/i18n";
 import { HERO_FIGURES, productStatus } from "@/lib/landing";
 import { recordedRun } from "@/lib/recorded-runs";
@@ -24,6 +26,9 @@ import { contactHref, pagePath } from "@/lib/site";
 import { TAKE_CHAPTERS, takeFor } from "@/lib/tour";
 
 import preview from "../../../../dev-preview.json";
+
+/** The audiences come from the flows enabled in this environment (ADR-0003), re-read every minute. */
+export const revalidate = 60;
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   return pageMetadata(asLocale((await params).locale), "home");
@@ -42,6 +47,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const dict = getDictionary(locale);
   const d = dict.landing;
   const status = productStatus(preview);
+  const audiences = audiencesOf(await availableFlows(appEnvironment()));
   const run = recordedRun("tenant");
   const figures = HERO_FIGURES(run.report);
   const take = takeFor(locale);
@@ -68,6 +74,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               </Button>
               <AudiencePicker
                 locale={locale}
+                audiences={audiences}
                 label={dict.sides.switchLabel}
                 hint={d.switchHint}
                 words={{ tenant: dict.sides.tenant.switch, landlord: dict.sides.landlord.switch, freelancer: dict.sides.freelancer.switch, business: dict.sides.business.switch }}
@@ -98,7 +105,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             ),
           }}
         >
-          <AudienceCards locale={locale} />
+          <AudienceCards locale={locale} audiences={audiences} />
           <ProofSection locale={locale} />
 
           {/* The app, recorded as one take on a phone — below the fold, so the hero stays light. */}

@@ -1,7 +1,7 @@
 import { CheckIcon } from "@krizaka/icons";
 import { Badge } from "@krizaka/ui/badge";
 import { Section } from "@krizaka/ui/page";
-import { type Audience, AUDIENCE_STATUS, AUDIENCES } from "@yomizaka/core";
+import { type Audience } from "@yomizaka/core";
 import Link from "next/link";
 
 import { getDictionary, type Locale } from "@/lib/i18n";
@@ -12,14 +12,14 @@ import { sidePath } from "@/lib/sides";
  * 84 % wide, snapping, the next one peeking); from `md` a grid. « Bientôt » is a badge, and the checks that do not run yet
  * say so in their own line — a card never claims a check that does not run.
  */
-export function AudienceCards({ locale }: { locale: Locale }) {
+export function AudienceCards({ locale, audiences }: { locale: Locale; audiences: readonly { audience: Audience; status: "available" | "soon" }[] }) {
   const d = getDictionary(locale);
   const t = d.landing.audiences;
   return (
     <Section id="audiences" eyebrow={t.eyebrow} title={t.title} lead={t.lead} reveal divider>
       <ul className="-mx-(--kz-page-gutter,1rem) m-0 flex list-none snap-x snap-mandatory gap-3 overflow-x-auto px-(--kz-page-gutter,1rem) pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0 xl:grid-cols-4" data-testid="audience-cards">
-        {AUDIENCES.map((a: Audience) => {
-          const soon = AUDIENCE_STATUS[a] === "soon";
+        {audiences.map(({ audience: a, status }) => {
+          const soon = status === "soon";
           const checks = t.items[a].checks;
           return (
             <li key={a} className="flex w-[84%] shrink-0 snap-start md:w-auto" data-reveal="">

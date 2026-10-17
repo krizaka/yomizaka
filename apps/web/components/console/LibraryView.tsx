@@ -38,7 +38,7 @@ function send(file: File, kind: DocumentKind, signal: AbortSignal, onProgress: (
 }
 
 /** The library: drop files (a queue that pauses, resumes and retries), then every document with its state. */
-export function LibraryView({ initial, perspective = null }: { initial: DocumentSummary[]; perspective?: Audience | null }) {
+export function LibraryView({ initial, perspective = null, audiences }: { initial: DocumentSummary[]; perspective?: Audience | null; audiences: readonly { audience: Audience; status: "available" | "soon" }[] }) {
   const { say, locale } = useSay();
   const client = useQueryClient();
   const [kind, setKind] = useState<DocumentKind>("lease");
@@ -97,7 +97,7 @@ export function LibraryView({ initial, perspective = null }: { initial: Document
   const rows = documents.data ?? [];
   return (
     <div className="flex flex-col gap-6">
-      {perspective === null ? <PerspectiveChooser current={null} onboarding /> : (
+      {perspective === null ? <PerspectiveChooser current={null} audiences={audiences} onboarding /> : (
         <p className="text-right text-xs text-fg-muted">
           <Link className="underline" href={`/${locale}/app/settings`}>{say("profile.open")}</Link>
         </p>

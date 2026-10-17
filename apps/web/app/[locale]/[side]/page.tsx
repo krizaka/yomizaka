@@ -7,7 +7,7 @@ import { LinkCard } from "@krizaka/ui/link-card";
 import { MascotQuote } from "@krizaka/ui/mascot-quote";
 import { Section } from "@krizaka/ui/page";
 import { PageHero } from "@krizaka/ui/page-hero";
-import { type Audience, AUDIENCE_STATUS } from "@yomizaka/core";
+import { type Audience } from "@yomizaka/core";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
@@ -15,12 +15,16 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { AudiencePicker } from "@/components/home/AudiencePicker";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
+import { appEnvironment } from "@/lib/env";
+import { audiencesOf, availableFlows } from "@/lib/flows";
 import { asLocale, getDictionary, LOCALES } from "@/lib/i18n";
 import { OG_IMAGE, siteJsonLd } from "@/lib/seo";
 import { SIDE_LANDINGS, sideOfSlug, sidePath, sideUrl } from "@/lib/sides";
 import { contactHref, pagePath } from "@/lib/site";
 
 export const dynamicParams = false;
+/** An audience whose flows are all disabled is hidden: its page is a 404 (ADR-0003). Re-read every minute. */
+export const revalidate = 60;
 export function generateStaticParams() {
   // Both languages' words for each side, so the other language's word redirects instead of answering 404.
   return LOCALES.flatMap((locale) => SIDE_LANDINGS.map(({ locale: slugLocale, side }) => ({ locale, side: sidePath(slugLocale, side).split("/")[2]! })));
@@ -57,7 +61,10 @@ export default async function SideLanding({ params }: { params: Promise<{ locale
   if (!found) notFound();
   const t0 = getDictionary(locale);
   const side: Audience = found.side;
-  const soon = AUDIENCE_STATUS[side] === "soon";
+  const audiences = audiencesOf(await availableFlows(appEnvironment()));
+  const offered = audiences.find((a) => a.audience === side);
+  if (!offered) notFound();
+  const soon = offered.status === "soon";
   const info = side === "freelancer" || side === "business" ? t0.sides.soonInfo[side] : null;
   // The other language's word for the side goes to this language's address.
   if (found.slugLocale !== locale) permanentRedirect(sidePath(locale, side));
@@ -80,7 +87,7 @@ export default async function SideLanding({ params }: { params: Promise<{ locale
           <Button asChild variant="secondary" size="lg" shape="cut">
             <Link href={pagePath(locale, "run")}>{t.landing.seeRun}</Link>
           </Button>
-          <AudiencePicker locale={locale} current={side} label={t.sides.switchLabel} hint={t.landing.switchHint} words={{ tenant: t.sides.tenant.switch, landlord: t.sides.landlord.switch, freelancer: t.sides.freelancer.switch, business: t.sides.business.switch }} soon={t.sides.soon} other={t.sides.other} />
+          <AudiencePicker locale={locale} audiences={audiences} current={side} label={t.sides.switchLabel} hint={t.landing.switchHint} words={{ tenant: t.sides.tenant.switch, landlord: t.sides.landlord.switch, freelancer: t.sides.freelancer.switch, business: t.sides.business.switch }} soon={t.sides.soon} other={t.sides.other} />
         </PageHero>
 
         {info ? (

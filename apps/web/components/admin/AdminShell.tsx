@@ -33,6 +33,7 @@ export function AdminShell({ locale, email, children }: { locale: "en" | "fr"; e
     { to: home, key: "overview", icon: <HomeIcon />, exact: true },
     { to: `${home}/users`, key: "users", icon: <UsersIcon /> },
     { to: `${home}/documents`, key: "documents", icon: <KeepIcon /> },
+    { to: `${home}/flows`, key: "flows", icon: <ShieldIcon /> },
     { to: `${home}/runs`, key: "runs", icon: <ServerIcon /> },
     { to: `${home}/operations`, key: "operations", icon: <ShieldIcon /> },
     { to: `${home}/audit`, key: "audit", icon: <ClockIcon /> },
