@@ -104,7 +104,7 @@ async function ownedAnalysis(ownerId: string, documentId: string, analysisId: st
   return { runId: row.run_id };
 }
 
-export async function listSharing(ownerId: string, documentId: string, analysisId: string, now = new Date()): Promise<Sharing> {
+export async function listSharing(ownerId: string, documentId: string, analysisId: string, now: Date): Promise<Sharing> {
   await ownedAnalysis(ownerId, documentId, analysisId);
   const rows = await query<GrantRow & { member: boolean }>(
     `SELECT g.id, g.grantee_email, g.created_at, g.expires_at, g.revoked_at, EXISTS (SELECT 1 FROM accounts a WHERE a.email = g.grantee_email) AS member
@@ -126,7 +126,7 @@ export async function listSharing(ownerId: string, documentId: string, analysisI
 }
 
 /** Gives an e-mail access to the report. A member has it at once; an address with no account is an invitation. Returns the grant and whether the address is a member. */
-export async function createGrant(owner: { id: string; email: string }, documentId: string, analysisId: string, input: { email: string; expiresAt: Date | null }, now = new Date()): Promise<{ grantId: string; member: boolean; runId: string | null }> {
+export async function createGrant(owner: { id: string; email: string }, documentId: string, analysisId: string, input: { email: string; expiresAt: Date | null }, now: Date): Promise<{ grantId: string; member: boolean; runId: string | null }> {
   const { runId } = await ownedAnalysis(owner.id, documentId, analysisId);
   const email = input.email.trim().toLowerCase();
   if (email === owner.email.toLowerCase()) throw refuse(400, "OWN_ADDRESS", "You already own this report");
@@ -148,7 +148,7 @@ export async function revokeGrant(ownerId: string, documentId: string, analysisI
 }
 
 /** A member asks the owner for access. Idempotent, and a no-op for a report this server does not hold. */
-export async function requestAccess(requester: { id: string; email: string }, target: Target | null, now = new Date()): Promise<{ recorded: boolean }> {
+export async function requestAccess(requester: { id: string; email: string }, target: Target | null, now: Date): Promise<{ recorded: boolean }> {
   if (!target || accessTo(target, requester, now).allowed) return { recorded: false };
   const rows = await query("INSERT INTO report_access_requests (analysis_id, requester_id, requester_email) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING RETURNING id", [target.analysisId, requester.id, requester.email.toLowerCase()]);
   return { recorded: rows.length > 0 };
