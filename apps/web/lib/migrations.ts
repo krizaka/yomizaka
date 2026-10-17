@@ -185,4 +185,31 @@ CREATE UNIQUE INDEX consents_live ON consents(account_id, key) WHERE revoked_at 
 ALTER TABLE analyses ADD COLUMN flow_version_id uuid REFERENCES flow_versions(id) ON DELETE SET NULL;
 `,
   },
+  {
+    version: "0007_screenings",
+    sql: `
+-- A landlord asks, the tenant consents (or declines), sees the result first, shares it or contests it. Minimal data: a short
+-- summary is kept, never a provider's raw report, and it is deleted when result_expires_at passes (docs/product/tenant-screening-research.md).
+CREATE TABLE screenings (
+  id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  landlord_id       uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  tenant_name       text NOT NULL,
+  tenant_email      text NOT NULL CHECK (tenant_email = lower(tenant_email)),
+  scope             text[] NOT NULL DEFAULT '{payment-history}',
+  provider          text NOT NULL,
+  status            text NOT NULL DEFAULT 'requested' CHECK (status IN ('requested', 'consented', 'shared', 'declined', 'contested', 'expired')),
+  token_hash        text NOT NULL UNIQUE,
+  created_at        timestamptz NOT NULL DEFAULT now(),
+  expires_at        timestamptz NOT NULL,
+  consented_at      timestamptz,
+  shared_at         timestamptz,
+  contested_at      timestamptz,
+  contest_comment   text,
+  result            jsonb,
+  result_expires_at timestamptz,
+  purged_at         timestamptz
+);
+CREATE INDEX screenings_landlord ON screenings(landlord_id, created_at DESC);
+`,
+  },
 ];

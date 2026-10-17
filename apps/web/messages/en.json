@@ -541,7 +541,8 @@
       "uploaded": "{name} is in your library.",
       "open": "Open {title}",
       "noText": "no text layer",
-      "pages": "{count} p."
+      "pages": "{count} p.",
+      "screening": "Check a tenant's application (with their consent)"
     },
     "upload": {
       "queued": "Waiting",
@@ -1331,5 +1332,83 @@
     "feedDescription": "What shipped in Yomizaka, week by week.",
     "footerVersion": "v{version}",
     "langTag": "en"
+  },
+  "screening": {
+    "tenant": {
+      "title": "A request to check your application",
+      "lead": "{landlord} asks your agreement to check your rental application. You decide: nothing is checked without your consent.",
+      "whatTitle": "What would be checked",
+      "scope": {
+        "payment-history": "Your payment history"
+      },
+      "provider": "Provider: {provider}",
+      "why": "Why: the landlord is assessing your application for a dwelling.",
+      "notAsked": "Never asked: social insurance number, bank details, employer, salary, criminal record.",
+      "whoSees": "Who sees the result: you first; the landlord only if you pass it on.",
+      "retention": "Duration: the result is deleted {days} days after your consent.",
+      "rights": "You may decline (it is not an admission), contest the result, or not pass it on.",
+      "consent": "I consent to this check",
+      "decline": "I decline",
+      "share": "Pass it on to the landlord",
+      "contest": "Contest the result",
+      "comment": "Your comment (optional)",
+      "send": "Send the contestation",
+      "demo": "Demonstration provider: the data is fictitious.",
+      "state": {
+        "requested": "Waiting for your answer",
+        "consented": "You consented. Here is the result: only you see it for now.",
+        "shared": "You passed this result on to the landlord.",
+        "declined": "You declined: nothing was checked, and the landlord is told so without more detail.",
+        "contested": "You contested this result: the landlord does not see it.",
+        "expired": "This request expired or its result was deleted."
+      },
+      "resultTitle": "Your result",
+      "band": {
+        "no-concern": "Nothing to report",
+        "review": "To review"
+      },
+      "item": {
+        "payment-history": "Payment history",
+        "identity-match": "Identity"
+      },
+      "outcome": {
+        "clear": "nothing to report",
+        "review": "to review"
+      },
+      "deleteOn": "Deleted on {date}.",
+      "contested": "Your contestation: « {comment} »"
+    },
+    "landlord": {
+      "title": "Tenant application",
+      "lead": "Ask an applicant's consent to check their payment history. They see the result first and decide whether to pass it on to you or contest it.",
+      "undertakingTitle": "Your undertaking",
+      "undertaking": "I undertake to use these checks only to assess an application for a dwelling, to ask only what is necessary, and never to refuse an applicant on a discriminatory ground (Charter of human rights and freedoms; C.c.Q., art. 1899). I know an applicant may decline or contest, and that refusing to give unnecessary information is not a ground for rejection.",
+      "accept": "I accept the undertaking",
+      "lawfulTitle": "What the law lets you ask",
+      "lawful": "The name, the current address, an identity document looked at without keeping a copy, the previous landlord's contact — and, with consent, a credit report. No social insurance number, bank details, employer or salary. Yomizaka offers no criminal-record check.",
+      "name": "Applicant's name",
+      "email": "Applicant's e-mail",
+      "scope": "What will be checked",
+      "scopeItem": {
+        "payment-history": "Payment history"
+      },
+      "request": "Ask for their consent",
+      "created": "Hand this link to the applicant (it will not be shown again):",
+      "copy": "Copy the link",
+      "listTitle": "Your requests",
+      "none": "No request yet.",
+      "status": {
+        "requested": "Waiting",
+        "consented": "Consented, not passed on",
+        "shared": "Passed on",
+        "declined": "Declined",
+        "contested": "Contested",
+        "expired": "Expired"
+      },
+      "shownTitle": "Result passed on",
+      "hidden": "The result is visible only once the applicant passes it on.",
+      "demo": "Demonstration provider: fictitious data.",
+      "reviewNote": "« To review » is not a verdict: talk to the applicant before any decision."
+    }
   }
 }

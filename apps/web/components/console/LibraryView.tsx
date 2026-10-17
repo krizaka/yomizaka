@@ -38,7 +38,7 @@ function send(file: File, kind: DocumentKind, signal: AbortSignal, onProgress: (
 }
 
 /** The library: drop files (a queue that pauses, resumes and retries), then every document with its state. */
-export function LibraryView({ initial, perspective = null, audiences }: { initial: DocumentSummary[]; perspective?: Audience | null; audiences: readonly { audience: Audience; status: "available" | "soon" }[] }) {
+export function LibraryView({ initial, perspective = null, audiences, screening = false }: { initial: DocumentSummary[]; perspective?: Audience | null; audiences: readonly { audience: Audience; status: "available" | "soon" }[]; screening?: boolean }) {
   const { say, locale } = useSay();
   const client = useQueryClient();
   const [kind, setKind] = useState<DocumentKind>("lease");
@@ -102,6 +102,13 @@ export function LibraryView({ initial, perspective = null, audiences }: { initia
           <Link className="underline" href={`/${locale}/app/settings`}>{say("profile.open")}</Link>
         </p>
       )}
+      {screening ? (
+        <p className="m-0 text-sm">
+          <Link className="font-semibold text-fg-accent underline" href={`/${locale}/app/screening`}>
+            {say("library.screening")}
+          </Link>
+        </p>
+      ) : null}
       <section className="flex flex-col gap-3" aria-label={say("library.dropTitle")}>
         <RadioGroup.Root variant="segmented" label={say("library.kindLabel")} value={kind} onValueChange={(v: string) => {
             kindRef.current = v as DocumentKind;
