@@ -153,12 +153,12 @@
   "run": {
     "eyebrow": "A real run",
     "title": "Not a mock-up: a Québec lease checked on dev",
-    "lead": "A sample Montréal lease (rent in dollars, four forbidden clauses), sent to Orazaka's compliance Studio on dev.orazaka.com, jurisdiction Québec. What came back, as it came back.",
+    "lead": "Two sample Montréal leases (fictitious), one per side of the lease, sent to Orazaka's compliance Studio on dev.orazaka.com, Québec jurisdiction. What came back, as it came: the run number, the Studio version, every finding.",
     "run": "Orazaka run",
     "studio": "Studio",
     "ruleset": "Rules",
     "when": "Ran on",
-    "none": "The first recorded run appears here once it has run on dev — nothing is shown before it is real.",
+    "none": "No run recorded.",
     "summary": "{total} checks · {fail} non-compliant · {pass} compliant",
     "insufficient": " · {n} insufficient evidence",
     "rule": "Rule",
@@ -181,7 +181,18 @@
       "PASS": "Compliant",
       "FAIL": "Non-compliant",
       "INSUFFICIENT_EVIDENCE": "Insufficient evidence"
-    }
+    },
+    "sides": {
+      "tenant": {
+        "title": "Tenant's side: the lease you are offered",
+        "lead": "Before signing, what the lease says that goes against Québec's rules."
+      },
+      "landlord": {
+        "title": "Landlord's side: your template before sending",
+        "lead": "Before sending, what the template must fix to be compliant."
+      }
+    },
+    "recorded": "Recorded on {date} on {source} · run {run}. The findings below are Orazaka's answer, untouched."
   },
   "privacy": {
     "title": "Privacy",

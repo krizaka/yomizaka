@@ -62,20 +62,23 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
   key kept; the report is HTML, not a PDF file (printing it is the PDF).
 - **Signal we are wrong**: a reader asks whether the report « proves the lease is legal ».
 
-## 6. The landing's proof is a real run read from the platform
+## 6. The proof is a real run — recorded, one per side of the lease
 
-- **Decision**: « A real run » shows the one finished compliance check an administrator promoted on a sample document: a
-  summary line (counted, not typed), the findings as compact cards with the non-compliant first, the sample lease with
-  the quoted passages lit, the Orazaka run id (copy), the signed report (downloaded from the app) and a link to /verify (members with access).
-  It is read from the platform at request time (five minutes of cache), not recorded in the repository.
-- **Problem**: a claim of « a real run » is only credible if it is the platform's current, checkable output — a snapshot
-  in the code goes stale and cannot be told from a mock-up.
+- **Decision** (revised 2026-10-17, Oussama): « A real run » shows two recorded runs, one per side of the lease — a
+  fictitious tenant's lease and a landlord's template, each sent to Orazaka's compliance Studio on dev (Québec) and kept
+  exactly as returned (`content/recorded-runs/`, written by `scripts/record-runs.mjs`): a summary line (counted, not typed),
+  the findings with the non-compliant first, the sample with the quoted passages lit, the Orazaka run id (copy), the date
+  and source of the recording, and the signed report. A page without a recorded run does not build.
+- **Problem**: the first version read the one run an administrator promoted on the platform — and showed « nothing yet »
+  until someone did. An empty proof is worse than none; and one lease spoke for one side only.
 - **Principle**: show the evidence and the way to check it, not an assertion (calibrated trust; Lee & See, 2004); proof
   first, detail on demand (progressive disclosure).
-- **Refused**: a committed copy of a run, a screenshot of the viewer, an unflagged personal document, several showcases.
-- **Cost**: an administrator keeps the showcase (marks a sample, promotes a check); a page cached for up to five minutes;
-  a deploy with no database shows the honest « nothing to show yet » until the cache renews.
-- **Signal we are wrong**: visitors open the signed report but never /verify, or ask whether the sample is a real client.
+- **Refused**: a typed or edited result, a screenshot of the viewer, an unflagged personal document, a hidden failure (a
+  ruleset gap shown by a run is reported to the pack, not removed from the sample).
+- **Cost**: the recording is redone with `scripts/record-runs.mjs` when the ruleset or the Studio changes, and the file
+  committed; the recorded report cannot be verified on /verify (it is not an account's report).
+- **Signal we are wrong**: visitors open the signed report but ask whether the sample is a real client, or the recording
+  is older than the ruleset it shows.
 
 ## 7. The landing tells one story in five sections, and its proof is the real app recorded
 

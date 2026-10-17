@@ -26,3 +26,6 @@ export function sideOfSlug(slug: string): { side: Perspective; slugLocale: Local
 
 /** Every side landing, for the sitemap: both sides in both languages. */
 export const SIDE_LANDINGS = (["en", "fr"] as const).flatMap((locale) => PERSPECTIVES.map((side) => ({ locale, side })));
+
+/** The anchors of the two sides on /run, in the page's language. */
+export const SIDE_ANCHORS = SIDE_SLUGS;

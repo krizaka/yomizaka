@@ -153,12 +153,12 @@
   "run": {
     "eyebrow": "Un vrai run",
     "title": "Pas une maquette : un bail québécois vérifié en dev",
-    "lead": "Un bail d'exemple de Montréal (loyer en dollars, quatre clauses interdites), envoyé au Studio de conformité d'Orazaka sur dev.orazaka.com, juridiction Québec. Ce qui est revenu, tel quel.",
+    "lead": "Deux baux d'exemple de Montréal (fictifs), un par côté du bail, envoyés au Studio de conformité d'Orazaka sur dev.orazaka.com, juridiction Québec. Ce qui est revenu, tel quel : le numéro de l'exécution, la version du Studio, chaque constat.",
     "run": "Run Orazaka",
     "studio": "Studio",
     "ruleset": "Règles",
     "when": "Exécuté le",
-    "none": "Le premier run enregistré apparaît ici dès qu'il a tourné en dev — rien n'est montré avant d'être réel.",
+    "none": "Aucune exécution enregistrée.",
     "summary": "{total} contrôles · {fail} non conformes · {pass} conformes",
     "insufficient": " · {n} preuve insuffisante",
     "rule": "Règle",
@@ -181,7 +181,18 @@
       "PASS": "Conforme",
       "FAIL": "Non conforme",
       "INSUFFICIENT_EVIDENCE": "Éléments insuffisants"
-    }
+    },
+    "sides": {
+      "tenant": {
+        "title": "Côté locataire : le bail qu'on vous offre",
+        "lead": "Avant de signer, ce que le bail dit de contraire aux règles du Québec."
+      },
+      "landlord": {
+        "title": "Côté propriétaire : votre modèle avant l'envoi",
+        "lead": "Avant d'envoyer, ce que le modèle doit corriger pour être conforme."
+      }
+    },
+    "recorded": "Enregistré le {date} sur {source} · exécution {run}. Les constats ci-dessous sont la réponse d'Orazaka, sans retouche."
   },
   "privacy": {
     "title": "Confidentialité",

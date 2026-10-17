@@ -28,7 +28,9 @@ export function summaryLine(findings: readonly { verdict: string }[], t: { summa
 }
 
 /** The platform's own showcase run: the findings, the lit sample, the Orazaka run id, the signed report and the way to check it. */
-export function ShowcaseRun({ run, locale }: { run: View; locale: Locale }) {
+export function ShowcaseRun({ run, locale, reportHref, verifyHref }: { run: View; locale: Locale; reportHref?: string; verifyHref?: string | null }) {
+  const download = reportHref ?? `/api/showcase/report?lang=${locale}`;
+  const verify = verifyHref === undefined ? `/${locale}/verify` : verifyHref;
   const t = getDictionary(locale).run;
   const verdicts = t.verdicts;
   const findings = sortFindings(run.report.findings);
@@ -69,13 +71,15 @@ export function ShowcaseRun({ run, locale }: { run: View; locale: Locale }) {
           />
           <div className="flex flex-wrap gap-3">
             <Button asChild variant="primary" size="md" shape="cut">
-              <a href={`/api/showcase/report?lang=${locale}`} download>
+              <a href={download} download>
                 {t.download}
               </a>
             </Button>
-            <Button asChild variant="secondary" size="md" shape="cut">
-              <Link href={`/${locale}/verify`}>{t.verify}</Link>
-            </Button>
+            {verify ? (
+              <Button asChild variant="secondary" size="md" shape="cut">
+                <Link href={verify}>{t.verify}</Link>
+              </Button>
+            ) : null}
           </div>
         </div>
         <ul className="grid min-w-0 gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2" aria-label={t.findings}>
