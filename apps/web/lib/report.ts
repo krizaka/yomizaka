@@ -12,8 +12,8 @@ import { type SigningKey } from "./report-key";
  *   - the file carries an attestation: a canonical JSON `payload` (the document's SHA-256, the check — jurisdiction,
  *     rules version, Studio and its version, the Orazaka run id, the date — and every finding with its passage and
  *     article), the SHA-256 of the report's own visible text (`bodySha256`) and an Ed25519 signature over both;
- *   - anyone with the public key (shown on /verify) can check that THIS server's key signed exactly this content and
- *     that not one byte of the file changed since; and, given the original document, that it is the one checked;
+ *   - a member the owner gave access to (ADR-0002) checks on /verify that THIS server's key signed exactly this content
+ *     and that not one byte of the file changed since; and, given the original document, that it is the one checked;
  *   - it does NOT prove the law was applied correctly (the Québec ruleset awaits a lawyer's review), that the run id
  *     exists on Orazaka's side (only its operator can say), or WHEN the report was made beyond the date the check
  *     finished: there is no independent time-stamp, no blockchain. The trust is in the key holder, Krizaka.

@@ -21,6 +21,7 @@ import { useSay } from "@/lib/i18n-client";
 
 import { formatBytes, formatDate } from "./format";
 import { STATUS_TONE } from "./LibraryView";
+import { ReportShare } from "./ReportShare";
 
 const VERDICT_TONE: Record<string, "success" | "danger" | "warning" | "neutral"> = { PASS: "success", FAIL: "danger", INSUFFICIENT_EVIDENCE: "warning" };
 const LEVEL_TONE: Record<string, "neutral" | "warning" | "danger"> = { observé: "neutral", inhabituel: "warning", incohérent: "danger" };
@@ -171,6 +172,7 @@ function ReportExport({ documentId, analysisId }: { documentId: string; analysis
           </Link>
         </Button>
       </div>
+      <ReportShare documentId={documentId} analysisId={analysisId} />
     </div>
   );
 }

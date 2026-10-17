@@ -46,12 +46,13 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
   text item are proportional); a scanned PDF has no text layer, so nothing is lit.
 - **Signal we are wrong**: people still open « Its text » or the raw file to confirm a passage.
 
-## 5. A signed audit report, and a page where anyone checks it
+## 5. A signed audit report, and a members-only page where it is checked
 
 - **Decision**: a finished compliance check exports a self-contained HTML report (print it to PDF) carrying the document's
   SHA-256, jurisdiction, rules version, Studio version, Orazaka run id, dates, every finding with passage and article, and
-  an Ed25519 signature over those and over the report's own text. `/verify` (no account) checks a file, with the original
-  document if wanted, and says exactly what a green result guarantees and what it does not.
+  an Ed25519 signature over those and over the report's own text. `/verify` checks a file for a signed-in member the report's owner gave access to (ADR-0002: leases and identity
+  documents are confidential), with the original document if wanted, and says exactly what a green result guarantees and
+  what it does not. Without a grant it says so and offers « Request access ».
 - **Problem**: a firm must hand a client or an auditor something that cannot be quietly edited, and that says which
   document and which rules it is about.
 - **Principle**: say what is guaranteed, no more (calibrated trust; Lee & See, 2004).
@@ -65,7 +66,7 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
 
 - **Decision**: « A real run » shows the one finished compliance check an administrator promoted on a sample document: a
   summary line (counted, not typed), the findings as compact cards with the non-compliant first, the sample lease with
-  the quoted passages lit, the Orazaka run id (copy), the signed report (downloaded from the app) and a link to /verify.
+  the quoted passages lit, the Orazaka run id (copy), the signed report (downloaded from the app) and a link to /verify (members with access).
   It is read from the platform at request time (five minutes of cache), not recorded in the repository.
 - **Problem**: a claim of « a real run » is only credible if it is the platform's current, checkable output — a snapshot
   in the code goes stale and cannot be told from a mock-up.

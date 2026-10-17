@@ -40,7 +40,7 @@
       },
       "verify": {
         "title": "Verify a report",
-        "text": "Check a signed report and its file, no account needed."
+        "text": "Members only: check a signed report you own or were given access to."
       }
     }
   },
@@ -99,7 +99,7 @@
       },
       "proof": {
         "title": "Show what was checked",
-        "text": "Every report is signed. Anyone can verify it, and the file it was made from, without an account.",
+        "text": "Every report is signed, and only the people you give access to can verify it, with a Yomizaka account.",
         "cta": "Verify a report"
       }
     },
@@ -118,7 +118,7 @@
         },
         "prove": {
           "title": "You keep the proof",
-          "text": "Each finding keeps the id of its Orazaka run; the report is signed, and anyone can verify it."
+          "text": "Each finding keeps the id of its Orazaka run; the report is signed, and only the people you give access to can verify it, with a Yomizaka account."
         }
       },
       "owlLabel": "The owl's promise",
@@ -173,7 +173,7 @@
     "copy": "Copy",
     "copied": "Copied",
     "download": "Download the signed report",
-    "verify": "Verify it yourself",
+    "verify": "Verify it (members with access)",
     "review": "The Québec rules await a lawyer's review — the report says so.",
     "noPassage": "No passage quoted",
     "findings": "Findings",
@@ -436,7 +436,10 @@
       "SELF_ROLE": "You cannot change your own role.",
       "LAST_ADMIN": "The last administrator keeps the role.",
       "SELF_DELETE": "You cannot delete your own account.",
-      "CONFIRM_MISMATCH": "The e-mail typed does not match the account."
+      "CONFIRM_MISMATCH": "The e-mail typed does not match the account.",
+      "NO_ACCESS": "You do not have access to this report.",
+      "OWN_ADDRESS": "You already own this report.",
+      "EXPIRY_IN_THE_PAST": "The end date must be in the future."
     },
     "adminConsole": {
       "shell": {
@@ -570,6 +573,23 @@
         "checks": "Checks",
         "lastCheck": "Last check"
       }
+    },
+    "share": {
+      "title": "Who can verify this report",
+      "hint": "Only you and the people you share it with, signed in with a Yomizaka account. If the address has no account yet, the invitation waits and is honoured when the account exists.",
+      "email": "E-mail address",
+      "until": "Until (optional)",
+      "submit": "Share",
+      "none": "Not shared with anyone yet.",
+      "revoke": "Revoke",
+      "requestsTitle": "Access requests",
+      "accept": "Give access",
+      "status": {
+        "member": "Member",
+        "invited": "Invited",
+        "expired": "Expired",
+        "revoked": "Revoked"
+      }
     }
   },
   "report": {
@@ -604,12 +624,12 @@
     "guaranteeHeading": "What this report guarantees",
     "guarantees": "This report is signed with Yomizaka's key (Ed25519, held by Krizaka). The signature covers the document's SHA-256, the jurisdiction and rules version, the Studio and its version, the Orazaka run id, the date of the check, every finding with its passage and article, and the full text of this report. If a single character of this file changes, verification fails.",
     "notGuaranteed": "It does not prove that the findings are legally right: Orazaka applies the rules, the Québec ruleset is still to be reviewed by a lawyer, and this is not legal advice. It does not prove that the run exists on Orazaka's side (only its operator can say), nor when the report was made beyond the check dates above: there is no independent time-stamp and no blockchain. What you trust is Krizaka, the holder of the signing key.",
-    "howToVerify": "To verify it, open {url} on the Yomizaka site and give it this file — and, to confirm which document was checked, the original document.",
+    "howToVerify": "To verify it, sign in to Yomizaka and open {url} — only the people the report's owner gave access to can, with their Yomizaka account. Give it this file and, to confirm which document was checked, the original document.",
     "footer": "Yomizaka, a Krizaka product — analysis by Orazaka."
   },
   "verify": {
     "title": "Verify a report",
-    "lead": "Check that an audit report really comes from Yomizaka and has not been changed — by anyone, without an account.",
+    "lead": "Check that an audit report really comes from Yomizaka and has not been changed. Members only, for a report you own or were given access to.",
     "reportFile": "The report (the .html file)",
     "reportPaste": "Or paste its text",
     "documentFile": "The original document (optional)",
@@ -665,7 +685,11 @@
       "remove": "Remove {name}",
       "hint": "The .html file you downloaded, up to 2 MB."
     },
-    "devLocked": "Development environment — sign in (invitation only)",
-    "devSignIn": "Sign in"
+    "noAccess": {
+      "title": "You do not have access to this report",
+      "text": "Only the people the report's owner gave access to can verify it. You can ask the owner.",
+      "request": "Request access",
+      "requested": "The owner has been notified. You can verify the report once they give you access."
+    }
   }
 }

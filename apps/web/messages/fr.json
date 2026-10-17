@@ -40,7 +40,7 @@
       },
       "verify": {
         "title": "Vérifier un rapport",
-        "text": "Contrôler un rapport signé et son fichier, sans compte."
+        "text": "Réservé aux membres : contrôlez un rapport signé qui est à vous ou dont on vous a donné l'accès."
       }
     }
   },
@@ -99,7 +99,7 @@
       },
       "proof": {
         "title": "Montrer ce qui a été vérifié",
-        "text": "Chaque rapport est signé. N'importe qui peut le vérifier, avec le fichier d'origine, sans compte.",
+        "text": "Chaque rapport est signé, et seules les personnes à qui vous donnez accès peuvent le vérifier, avec un compte Yomizaka.",
         "cta": "Vérifier un rapport"
       }
     },
@@ -118,7 +118,7 @@
         },
         "prove": {
           "title": "Vous gardez la preuve",
-          "text": "Chaque constat garde l'identifiant de son exécution Orazaka ; le rapport est signé, et n'importe qui peut le vérifier."
+          "text": "Chaque constat garde l'identifiant de son exécution Orazaka ; le rapport est signé, et seules les personnes à qui vous donnez accès peuvent le vérifier, avec un compte Yomizaka."
         }
       },
       "owlLabel": "La promesse du hibou",
@@ -173,7 +173,7 @@
     "copy": "Copier",
     "copied": "Copié",
     "download": "Télécharger le rapport signé",
-    "verify": "Vérifiez-le vous-même",
+    "verify": "Le vérifier (membres autorisés)",
     "review": "Les règles québécoises attendent la relecture d'un juriste — le rapport le dit.",
     "noPassage": "Aucun passage cité",
     "findings": "Constats",
@@ -436,7 +436,10 @@
       "SELF_ROLE": "Vous ne pouvez pas changer votre propre rôle.",
       "LAST_ADMIN": "Le dernier administrateur garde son rôle.",
       "SELF_DELETE": "Vous ne pouvez pas supprimer votre propre compte.",
-      "CONFIRM_MISMATCH": "Le courriel saisi ne correspond pas au compte."
+      "CONFIRM_MISMATCH": "Le courriel saisi ne correspond pas au compte.",
+      "NO_ACCESS": "Vous n’avez pas accès à ce rapport.",
+      "OWN_ADDRESS": "Ce rapport est déjà à vous.",
+      "EXPIRY_IN_THE_PAST": "La date de fin doit être dans le futur."
     },
     "adminConsole": {
       "shell": {
@@ -570,6 +573,23 @@
         "checks": "Vérifications",
         "lastCheck": "Dernière vérification"
       }
+    },
+    "share": {
+      "title": "Qui peut vérifier ce rapport",
+      "hint": "Vous seul et les personnes avec qui vous le partagez, connectées avec un compte Yomizaka. Si l’adresse n’a pas encore de compte, l’invitation attend et est honorée dès que le compte existe.",
+      "email": "Adresse courriel",
+      "until": "Jusqu’au (facultatif)",
+      "submit": "Partager",
+      "none": "Pas encore partagé.",
+      "revoke": "Révoquer",
+      "requestsTitle": "Demandes d’accès",
+      "accept": "Donner l’accès",
+      "status": {
+        "member": "Membre",
+        "invited": "Invité",
+        "expired": "Expiré",
+        "revoked": "Révoqué"
+      }
     }
   },
   "report": {
@@ -604,12 +624,12 @@
     "guaranteeHeading": "Ce que ce rapport garantit",
     "guarantees": "Ce rapport est signé avec la clé de Yomizaka (Ed25519, détenue par Krizaka). La signature couvre le SHA-256 du document, la juridiction et la version des règles, le Studio et sa version, l’identifiant d’exécution Orazaka, la date de la vérification, chaque constat avec son passage et son article, et le texte complet de ce rapport. Si un seul caractère de ce fichier change, la vérification échoue.",
     "notGuaranteed": "Elle ne prouve pas que les constats sont justes en droit : Orazaka applique les règles, celles du Québec restent à faire réviser par un avocat, et ce n’est pas un avis juridique. Elle ne prouve pas que l’exécution existe chez Orazaka (seul son exploitant peut le dire), ni quand le rapport a été établi au-delà des dates de vérification ci-dessus : il n’y a ni horodatage indépendant ni chaîne de blocs. Ce à quoi vous faites confiance, c’est Krizaka, détentrice de la clé de signature.",
-    "howToVerify": "Pour le vérifier, ouvrez {url} sur le site de Yomizaka et donnez-lui ce fichier — et, pour confirmer quel document a été vérifié, le document d’origine.",
+    "howToVerify": "Pour le vérifier, connectez-vous à Yomizaka et ouvrez {url} — seules les personnes à qui le propriétaire du rapport a donné accès le peuvent, avec leur compte Yomizaka. Donnez-lui ce fichier et, pour confirmer quel document a été vérifié, le document d’origine.",
     "footer": "Yomizaka, un produit Krizaka — analyse par Orazaka."
   },
   "verify": {
     "title": "Vérifier un rapport",
-    "lead": "Vérifiez qu’un rapport d’audit vient bien de Yomizaka et n’a pas été modifié — n’importe qui, sans compte.",
+    "lead": "Vérifiez qu’un rapport d’audit vient bien de Yomizaka et n’a pas été modifié. Réservé aux membres, pour un rapport qui est à vous ou dont on vous a donné l’accès.",
     "reportFile": "Le rapport (le fichier .html)",
     "reportPaste": "Ou collez son texte",
     "documentFile": "Le document d’origine (facultatif)",
@@ -665,7 +685,11 @@
       "remove": "Retirer {name}",
       "hint": "Le fichier .html téléchargé, jusqu’à 2 Mo."
     },
-    "devLocked": "Environnement de développement — connectez-vous (sur invitation seulement)",
-    "devSignIn": "Se connecter"
+    "noAccess": {
+      "title": "Vous n’avez pas accès à ce rapport",
+      "text": "Seules les personnes à qui le propriétaire du rapport a donné accès peuvent le vérifier. Vous pouvez le lui demander.",
+      "request": "Demander l’accès",
+      "requested": "Le propriétaire a été prévenu. Vous pourrez vérifier le rapport dès qu’il vous aura donné l’accès."
+    }
   }
 }
