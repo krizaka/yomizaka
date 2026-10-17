@@ -75,3 +75,20 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
 - **Cost**: an administrator keeps the showcase (marks a sample, promotes a check); a page cached for up to five minutes;
   a deploy with no database shows the honest « nothing to show yet » until the cache renews.
 - **Signal we are wrong**: visitors open the signed report but never /verify, or ask whether the sample is a real client.
+
+## 7. The landing tells one story in five sections, and its proof is the real app recorded
+
+- **Decision**: the home is five sections: the promise with the real journey recorded on dev.yomizaka.com (StepShowcase:
+  a phone below md, a browser from md; keep → check → find, the check a live Orazaka run whose id is printed under it),
+  three outcomes (each card a way in), how it works in three steps with the owl's promise, trust (Canada, traced, open
+  source, Orazaka named once, the status read from dev-preview.json), the closing call. « A real run » moved to its own
+  address (/run). The bar has one « Product » menu and no version chip; the version is in the footer.
+- **Problem**: the old home had nine blocks (traps, decisions, two checks, search, the run…): a visitor met the details
+  before knowing what the product does for them, and the real run was buried at the bottom.
+- **Principle**: one idea per screen, proof before detail (progressive disclosure; Nielsen, 2006); recognition over
+  recall: the visitor sees the product working instead of reading about it (Nielsen's heuristics, 1994).
+- **Refused**: a generated « ambiance » video in the hero (it shows no product), a hand-made mock-up of the console, a
+  version chip in the bar, more than one primary action per section.
+- **Cost**: the recording must be redone when the console changes (`scripts/landing-journey.mjs`, new hashes in
+  `lib/tour.ts`); the app is recorded in English, which the French caption says.
+- **Signal we are wrong**: visitors leave the hero before the second step plays, or ask whether the recording is a mock-up.

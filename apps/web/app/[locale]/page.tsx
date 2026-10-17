@@ -1,265 +1,146 @@
-import { EyeIcon, KeepIcon, SearchIcon, ShieldIcon } from "@krizaka/icons";
-import { YomizakaLogo } from "@krizaka/ui";
-import { ArgumentCard } from "@krizaka/ui/argument-card";
+import { CheckIcon, EyeIcon, GlobeIcon, KeepIcon, LockIcon, SearchIcon, ShieldIcon } from "@krizaka/icons";
 import { Badge } from "@krizaka/ui/badge";
 import { Button } from "@krizaka/ui/button";
 import { CardGrid } from "@krizaka/ui/card-grid";
+import { CtaPanel } from "@krizaka/ui/cta-panel";
 import { LinkCard } from "@krizaka/ui/link-card";
-import { Mascot } from "@krizaka/ui/mascots";
+import { MascotQuote } from "@krizaka/ui/mascot-quote";
+import { MetaRow } from "@krizaka/ui/meta-row";
 import { Section } from "@krizaka/ui/page";
-import { ProductPage } from "@krizaka/ui/product-page";
-import { VideoPlayer } from "@krizaka/ui/video-player";
+import { PageHero } from "@krizaka/ui/page-hero";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { ShowcaseRun } from "@/components/ShowcaseRun";
+import { JourneyTour } from "@/components/JourneyTour";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
-import { asLocale, getDictionary, type Locale, translator } from "@/lib/i18n";
-import { owlLoop } from "@/lib/owl-loop";
-import { SAMPLE_LEASE } from "@/lib/sample-lease";
+import { asLocale, format, getDictionary } from "@/lib/i18n";
+import { HOW_STEPS, OUTCOMES, productStatus, TRUST } from "@/lib/landing";
 import { pageMetadata, siteJsonLd } from "@/lib/seo";
-import { getShowcaseView } from "@/lib/showcase";
-import { contactHref } from "@/lib/site";
+import { contactHref, pagePath, REPO_URL } from "@/lib/site";
+import { TOUR_RUNS, TOUR_STEPS, tourClip, type TourDevice } from "@/lib/tour";
 
-/** The « real run » comes from the platform itself, read at request time and kept five minutes (ISR) — never a copy in the repository. */
-export const revalidate = 300;
-
-type Run = Awaited<ReturnType<typeof getShowcaseView>>;
-
-/** The promoted check, or null when nothing is promoted or the platform cannot be reached: the section then says so. */
-async function loadRun(locale: Locale): Promise<Run> {
-  try {
-    return await getShowcaseView(locale);
-  } catch (error) {
-    console.error("home: the showcase run could not be read", error instanceof Error ? error.message : error);
-    return null;
-  }
-}
+import preview from "../../../../dev-preview.json";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   return pageMetadata(asLocale((await params).locale), "home");
 }
 
-/** A sample lease, written for the page: four clauses the French law deems void — the input of the demo run. */
-/** The sample lease of the demo run: a Montréal lease (rent in dollars) with four clauses the Civil Code of Québec forbids. */
-const SAMPLE = SAMPLE_LEASE.split("\n");
-/** The Québec rule the sample breaks first (orazaka-packs document-validation, qc-residential-lease): its id, title and article. */
-const SHOWN_RULE = { id: "QC-LEASE-004", title: "Dépôt de garantie interdit — seul le premier mois peut être exigé d'avance", citation: "C.c.Q., art. 1904, al. 1" };
+const OUTCOME_ICONS = { clauses: <ShieldIcon />, edits: <EyeIcon />, proof: <CheckIcon /> } as const;
+const HOW_ICONS = { keep: <KeepIcon />, read: <SearchIcon />, prove: <LockIcon /> } as const;
+const TRUST_ICONS = { canada: <GlobeIcon />, traced: <SearchIcon />, open: <KeepIcon /> } as const;
 
-const tone = { PASS: "success", FAIL: "danger", INSUFFICIENT_EVIDENCE: "warning" } as const;
-
-function Visual({ locale, run }: { locale: Locale; run: Run }) {
-  const t = getDictionary(locale).landing;
-  const failed = run?.report.findings.filter((f) => f.verdict !== "PASS").slice(0, 3);
-  return (
-    <div className="flex flex-col gap-3 p-5 text-sm">
-      <pre className="whitespace-pre-wrap rounded-lg border border-border-default bg-surface-1 p-4 font-mono text-xs leading-relaxed text-fg-secondary">{SAMPLE.join("\n")}</pre>
-      {failed?.length ? (
-        <ul className="flex flex-col gap-2" aria-label={t.sections.demo.title}>
-          {failed.map((f) => (
-            <li key={f.ruleId} className="rounded-lg border border-border-default bg-surface-1 p-3">
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-mono text-xs text-fg-muted">{f.ruleId}</span>
-                <Badge tone={tone[f.verdict as keyof typeof tone] ?? "neutral"}>{t.verdicts[f.verdict as keyof typeof t.verdicts] ?? f.verdict}</Badge>
-              </div>
-              <p className="mt-1 font-semibold text-fg">{f.title}</p>
-              {f.evidenceSpan?.quote ? <p className="mt-1 border-l-2 border-accent pl-2 italic text-fg-secondary">« {f.evidenceSpan.quote} »</p> : null}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-fg-muted">{t.sections.demo.none}</p>
-      )}
-    </div>
-  );
-}
-
-function DemoSection({ locale, run }: { locale: Locale; run: Run }) {
-  const t = getDictionary(locale).landing.sections.demo;
-  return (
-    <Section id="demo" eyebrow={t.eyebrow} title={t.title} lead={t.lead} divider>
-      {run ? <ShowcaseRun run={run} locale={locale} /> : <p className="max-w-2xl text-fg-secondary">{t.none}</p>}
-    </Section>
-  );
-}
-
-/** The two checks, as Orazaka runs them: the Québec rule the sample breaks (its article), the passage once a real run exists. */
-function ChecksSection({ locale, signIn, run }: { locale: Locale; signIn: string; run: Run }) {
-  const t = getDictionary(locale).landing.sections.check;
-  const quoted = run?.report.findings.find((f) => f.ruleId === SHOWN_RULE.id)?.evidenceSpan?.quote;
-  const levels = getDictionary(locale).console.analysis.levels;
-  const owl = owlLoop("dark");
-  return (
-    <Section id="check" eyebrow={t.eyebrow} title={t.title} lead={t.lead} divider>
-      {/* The owl reads the page, then the check — its loop, a dark island in both themes (`.theme-dark`): a bare muted
-          loop (paused off screen), still on its poster under reduced motion — the promise kept. */}
-      <figure className="mb-8 flex items-center gap-4">
-        <div className="theme-dark w-28 shrink-0 overflow-hidden rounded-2xl border border-border-default sm:w-36">
-          <VideoPlayer src={owl.mp4} poster={owl.poster} title={t.owl} controls={false} autoPlay loop muted preload="none" aspectRatio="1 / 1" />
-        </div>
-        <figcaption className="max-w-md text-sm text-fg-secondary">{t.owl}</figcaption>
-      </figure>
-      <CardGrid min={300}>
-        <ArgumentCard
-          id="check-compliance"
-          icon={<ShieldIcon />}
-          title={t.compliance.title}
-          meta={t.compliance.meta}
-          mark={<Mascot bird="owl" size={36} animated={false} />}
-          hook={{ label: t.compliance.hookLabel, text: t.compliance.hook }}
-          details={[
-            { label: t.compliance.rule, text: `${SHOWN_RULE.id} — ${SHOWN_RULE.title}` },
-            { label: t.compliance.source, text: SHOWN_RULE.citation },
-            { label: t.compliance.passage, text: quoted ? `« ${quoted} »` : t.compliance.noRun },
-          ]}
-          panelLabel={t.compliance.panel}
-          more={{ href: signIn, label: t.cta }}
-          linkAs={Link}
-        />
-        <ArgumentCard
-          id="tamper"
-          icon={<EyeIcon />}
-          title={t.authenticity.title}
-          meta={t.authenticity.meta}
-          mark={<Mascot bird="falcon" size={36} animated={false} />}
-          hook={{ label: t.authenticity.hookLabel, text: t.authenticity.hook }}
-          points={{ label: t.authenticity.levels, items: [levels["observé"], levels["inhabituel"], levels["incohérent"]] }}
-          more={{ href: signIn, label: t.cta }}
-          linkAs={Link}
-        />
-      </CardGrid>
-    </Section>
-  );
-}
-
-/** Search, shown on the sample lease: the passages come back with the word in bold (the same markup as the console). */
-function FindSection({ locale, signIn }: { locale: Locale; signIn: string }) {
-  const t = getDictionary(locale).landing.sections.find;
-  const kinds = getDictionary(locale).console.kinds;
-  const line = SAMPLE.find((l) => l.includes("dépôt")) ?? "";
-  const hits = [
-    { source: "text" as const, html: line.replace("dépôt", "<b>dépôt</b>") },
-    { source: "finding" as const, html: t.finding.replace("dépôt", "<b>dépôt</b>") },
-  ];
-  return (
-    <Section
-      id="find"
-      eyebrow={t.eyebrow}
-      title={t.title}
-      lead={t.lead}
-      divider
-      actions={
-        <Button asChild variant="secondary" size="md" shape="cut">
-          <Link href={signIn}>{t.cta}</Link>
-        </Button>
-      }
-    >
-      <div className="max-w-2xl rounded-xl border border-border-default bg-surface-1 p-4" role="group" aria-label={t.label}>
-        <div className="flex items-center gap-2 rounded-lg border border-border-default bg-surface-0 px-3 py-2 text-sm text-fg">
-          <SearchIcon size={16} aria-hidden /> {t.query}
-        </div>
-        <ul className="mt-3 flex flex-col gap-2">
-          {hits.map((h) => (
-            <li key={h.source} className="rounded-lg border border-border-default bg-surface-0 p-3 text-sm">
-              <span className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-semibold text-fg">{SAMPLE[0]}</span>
-                <span className="flex gap-1">
-                  <Badge tone="neutral">{kinds.lease}</Badge>
-                  <Badge tone={h.source === "finding" ? "accent" : "neutral"}>{t.sources[h.source]}</Badge>
-                </span>
-              </span>
-              <span className="mt-1 block text-fg-secondary [&_b]:font-semibold [&_b]:text-fg" dangerouslySetInnerHTML={{ __html: h.html }} />
-            </li>
-          ))}
-        </ul>
-      </div>
-    </Section>
-  );
-}
-
-/** dev.yomizaka.com: what Yomizaka does, how, a real run — the product page template of @krizaka/ui, in ink indigo. */
+/**
+ * dev.yomizaka.com — one story in five sections (lib/landing.ts): the promise and the real journey recorded on the app,
+ * what you can do, how it works, why you can trust it, the closing call. Every block is @krizaka/ui's, in ink indigo.
+ */
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const locale = asLocale((await params).locale);
-  const t = translator(locale);
   const d = getDictionary(locale).landing;
-  const run = await loadRun(locale);
+  const status = productStatus(preview);
   const signIn = `/${locale}/sign-in`;
-  const steps = [
-    { id: "keep", href: signIn, icon: <KeepIcon /> },
-    { id: "check", href: "#check", icon: <ShieldIcon /> },
-    { id: "find", href: "#find", icon: <SearchIcon /> },
-  ] as const;
-  const details = [
-    { id: "check", href: "#check-compliance", bird: "owl" as const },
-    { id: "tamper", href: "#tamper", bird: "falcon" as const },
-    { id: "find", href: "#find", bird: "pigeon" as const },
-  ];
+  const destination = { run: pagePath(locale, "run"), verify: pagePath(locale, "verify"), "sign-in": signIn } as const;
+  const trustHref = { canada: pagePath(locale, "privacy"), traced: pagePath(locale, "run"), open: REPO_URL } as const;
+  const steps = (device: TourDevice) =>
+    TOUR_STEPS.map((id) => {
+      const clip = tourClip(device, id);
+      const w = d.tour.steps[id];
+      return { id, title: w.title, description: w.text, alt: w.alt, poster: clip.poster, video: { webm: clip.webm, mp4: clip.mp4 } };
+    });
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
       <SiteHeader locale={locale} current="home" />
-      <main id="content" className="pt-20">
-        <ProductPage
-          brand="yomizaka"
-          linkAs={Link}
-          mark={
-            <>
-              <YomizakaLogo size={18} animated={false} /> {d.mark}
-            </>
-          }
-          title={d.title}
-          lead={d.lead}
-          facts={[{ label: d.facts.runs, tone: "ok" }, { label: d.facts.license }, { label: d.facts.closed, tone: "wip" }]}
-          actions={
-            <>
-              <Button asChild variant="primary" size="lg" shape="cut" shimmer magnetic>
-                <a href={contactHref("dev-yomizaka-hero")}>{d.talk}</a>
-              </Button>
-              <Button asChild variant="secondary" size="lg" shape="cut">
-                <Link href={signIn}>{d.signIn}</Link>
-              </Button>
-            </>
-          }
-          visualLabel={d.visualLabel}
-          visual={<Visual locale={locale} run={run} />}
-          reasonsHeading={{ eyebrow: d.reasonsEyebrow, title: d.reasonsTitle }}
-          reasonLabels={{ trap: d.trap, more: d.more }}
-          reasons={details.map(({ id, href, bird }) => ({
-            id,
-            title: d.reasons[id as keyof typeof d.reasons].title,
-            trap: d.reasons[id as keyof typeof d.reasons].trap,
-            mark: <Mascot bird={bird} size={40} animated={false} />,
-            href,
-          }))}
-          decisions={{
-            eyebrow: d.decisionsEyebrow,
-            title: d.decisionsTitle,
-            labels: d.decisionLabels,
-            items: (["rules", "signals", "engine"] as const).map((id) => ({ id, ...d.decisions[id] })),
-          }}
-          promise={{ bird: "owl", label: d.promiseLabel, text: d.promise }}
-          closing={{
-            title: d.closingTitle,
-            body: d.closingBody,
-            actions: (
-              <Button asChild variant="primary" size="lg" shape="cut">
-                <a href={contactHref("dev-yomizaka-closing")}>{d.talk}</a>
-              </Button>
-            ),
-          }}
-        >
-          <Section id="how" eyebrow={d.sections.how.eyebrow} title={d.sections.how.title} lead={d.sections.how.lead} divider>
-            <CardGrid min={240}>
-              {steps.map((s) => (
-                <LinkCard key={s.id} layout="stack" href={s.href} icon={s.icon} title={t(`landing.sections.how.steps.${s.id}.title`)} description={t(`landing.sections.how.steps.${s.id}.text`)} cta={d.more} />
-              ))}
-            </CardGrid>
-          </Section>
-          <ChecksSection locale={locale} signIn={signIn} run={run} />
-          <FindSection locale={locale} signIn={signIn} />
-          <DemoSection locale={locale} run={run} />
-        </ProductPage>
+      <main id="content">
+        {/* 1 · The promise, and the real journey as its proof — painted at once (LCP), never revealed. */}
+        <PageHero id="hero" eyebrow={d.eyebrow} title={d.title} lead={d.lead}>
+          <Button asChild variant="primary" size="lg" shape="cut" shimmer magnetic>
+            <a href={contactHref("dev-yomizaka-hero")}>{d.talk}</a>
+          </Button>
+          <Button asChild variant="secondary" size="lg" shape="cut">
+            <Link href={pagePath(locale, "run")}>{d.seeRun}</Link>
+          </Button>
+          <figure className="m-0 mt-8 flex basis-full flex-col gap-3">
+            <JourneyTour
+              label={d.tour.label}
+              phone={steps("phone")}
+              desktop={steps("desktop")}
+              address={d.tour.address}
+              words={{ play: d.tour.play, pause: d.tour.pause, step: d.tour.step }}
+            />
+            <figcaption className="text-center font-mono text-xs text-fg-muted md:text-start">{format(d.tour.recorded, { run: TOUR_RUNS.desktop.slice(0, 8) })}</figcaption>
+          </figure>
+        </PageHero>
+
+        {/* 2 · What you can do — outcomes, each card a way in. */}
+        <Section id="outcomes" eyebrow={d.outcomes.eyebrow} title={d.outcomes.title} reveal divider>
+          <CardGrid min={300}>
+            {OUTCOMES.map((o) => (
+              <LinkCard
+                key={o.id}
+                layout="stack"
+                href={destination[o.to]}
+                icon={OUTCOME_ICONS[o.id]}
+                title={d.outcomes[o.id].title}
+                description={d.outcomes[o.id].text}
+                cta={d.outcomes[o.id].cta}
+                linkAs={Link}
+              />
+            ))}
+          </CardGrid>
+        </Section>
+
+        {/* 3 · How it works — who does what, in three steps; the owl keeps its promise. */}
+        <Section id="how" eyebrow={d.how.eyebrow} title={d.how.title} lead={d.how.lead} reveal divider>
+          <ol className="grid gap-4 md:grid-cols-3">
+            {HOW_STEPS.map((id, i) => (
+              <li key={id} className="flex flex-col gap-2 rounded-xl border border-border-default bg-surface-1 p-5" data-reveal="">
+                <span className="flex items-center gap-3 text-fg-accent">
+                  <span className="font-mono text-xs">{String(i + 1).padStart(2, "0")}</span>
+                  <span aria-hidden className="[&_svg]:h-5 [&_svg]:w-5">
+                    {HOW_ICONS[id]}
+                  </span>
+                </span>
+                <h3 className="text-base font-semibold text-fg">{d.how.steps[id].title}</h3>
+                <p className="text-sm leading-relaxed text-fg-secondary">{d.how.steps[id].text}</p>
+              </li>
+            ))}
+          </ol>
+          <div className="mt-10">
+            <MascotQuote bird="owl" label={d.how.owlLabel} variant="callout">
+              {d.how.owl}
+            </MascotQuote>
+          </div>
+        </Section>
+
+        {/* 4 · Trust — where the documents live, what is traced, the code; the engine named once; the honest status. */}
+        <Section id="trust" eyebrow={d.trust.eyebrow} title={d.trust.title} lead={d.trust.lead} reveal divider>
+          <CardGrid min={300}>
+            {TRUST.map((id) => (
+              <LinkCard key={id} layout="stack" href={trustHref[id]} icon={TRUST_ICONS[id]} title={d.trust[id].title} description={d.trust[id].text} cta={d.trust[id].cta} linkAs={Link} />
+            ))}
+          </CardGrid>
+          <MetaRow
+            className="mt-6"
+            size="md"
+            items={[d.trust.powered, "Apache-2.0"]}
+            chips={[
+              <Badge key="status" tone={status === "preview" ? "accent" : "warning"} title={d.status[status]}>
+                {d.statusChip[status]}
+              </Badge>,
+            ]}
+          />
+          <p className="mt-2 max-w-2xl text-sm text-fg-secondary">{d.status[status]}</p>
+        </Section>
+
+        {/* 5 · The closing call — the one action while sign-up is closed. */}
+        <Section id="closing" spacing="sm">
+          <CtaPanel title={d.closing.title} body={d.closing.body} reveal>
+            <Button asChild variant="primary" size="lg" shape="cut">
+              <a href={contactHref("dev-yomizaka-closing")}>{d.talk}</a>
+            </Button>
+          </CtaPanel>
+        </Section>
       </main>
       <SiteFooter locale={locale} />
     </>

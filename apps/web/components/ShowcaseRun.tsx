@@ -29,9 +29,8 @@ export function summaryLine(findings: readonly { verdict: string }[], t: { summa
 
 /** The platform's own showcase run: the findings, the lit sample, the Orazaka run id, the signed report and the way to check it. */
 export function ShowcaseRun({ run, locale }: { run: View; locale: Locale }) {
-  const d = getDictionary(locale).landing;
-  const t = d.sections.demo;
-  const verdicts = d.verdicts;
+  const t = getDictionary(locale).run;
+  const verdicts = t.verdicts;
   const findings = sortFindings(run.report.findings);
   const quotes = run.report.findings.filter((f) => f.evidenceSpan?.quote).map((f) => ({ id: f.ruleId, quote: f.evidenceSpan!.quote, start: f.evidenceSpan!.start ?? undefined }));
   const parts = passages(run.document.text, quotes);
