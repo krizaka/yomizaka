@@ -15,9 +15,10 @@ describe("the landing's recordings", () => {
       for (const step of TOUR_STEPS) {
         const clip = tourClip(device, step);
         const base = `${MEDIA_CDN}/site/products/yomizaka/tour/${device}-${step}.`;
-        expect(clip.webm).toMatch(new RegExp(`^${base.replace(/\./g, "\\.")}[0-9a-f]{10}\\.webm$`));
-        expect(clip.mp4).toMatch(new RegExp(`^${base.replace(/\./g, "\\.")}[0-9a-f]{10}\\.mp4$`));
-        expect(clip.poster).toMatch(new RegExp(`^${base.replace(/\./g, "\\.")}[0-9a-f]{10}\\.jpg$`));
+        for (const [url, ext] of [[clip.webm, "webm"], [clip.mp4, "mp4"], [clip.poster, "jpg"]] as const) {
+          expect(url.startsWith(base)).toBe(true);
+          expect(url.slice(base.length)).toMatch(ext === "webm" ? /^[0-9a-f]{10}\.webm$/ : ext === "mp4" ? /^[0-9a-f]{10}\.mp4$/ : /^[0-9a-f]{10}\.jpg$/);
+        }
       }
     }
   });
