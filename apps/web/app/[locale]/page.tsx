@@ -8,6 +8,7 @@ import { LinkCard } from "@krizaka/ui/link-card";
 import { Mascot } from "@krizaka/ui/mascots";
 import { Section } from "@krizaka/ui/page";
 import { ProductPage } from "@krizaka/ui/product-page";
+import { VideoPlayer } from "@krizaka/ui/video-player";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -15,6 +16,7 @@ import { ShowcaseRun } from "@/components/ShowcaseRun";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
 import { asLocale, getDictionary, type Locale, translator } from "@/lib/i18n";
+import { owlLoop } from "@/lib/owl-loop";
 import { SAMPLE_LEASE } from "@/lib/sample-lease";
 import { pageMetadata, siteJsonLd } from "@/lib/seo";
 import { getShowcaseView } from "@/lib/showcase";
@@ -87,8 +89,17 @@ function ChecksSection({ locale, signIn, run }: { locale: Locale; signIn: string
   const t = getDictionary(locale).landing.sections.check;
   const quoted = run?.report.findings.find((f) => f.ruleId === SHOWN_RULE.id)?.evidenceSpan?.quote;
   const levels = getDictionary(locale).console.analysis.levels;
+  const owl = owlLoop("dark");
   return (
     <Section id="check" eyebrow={t.eyebrow} title={t.title} lead={t.lead} divider>
+      {/* The owl reads the page, then the check — its loop, a dark island in both themes (`.theme-dark`): a bare muted
+          loop (paused off screen), still on its poster under reduced motion — the promise kept. */}
+      <figure className="mb-8 flex items-center gap-4">
+        <div className="theme-dark w-28 shrink-0 overflow-hidden rounded-2xl border border-border-default sm:w-36">
+          <VideoPlayer src={owl.mp4} poster={owl.poster} title={t.owl} controls={false} autoPlay loop muted preload="none" aspectRatio="1 / 1" />
+        </div>
+        <figcaption className="max-w-md text-sm text-fg-secondary">{t.owl}</figcaption>
+      </figure>
       <CardGrid min={300}>
         <ArgumentCard
           id="check-compliance"
