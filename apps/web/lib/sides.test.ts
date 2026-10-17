@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { AUDIENCE_STATUS } from "@yomizaka/core";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
@@ -9,7 +10,7 @@ import en from "@/messages/en.json";
 import fr from "@/messages/fr.json";
 
 import sitemap from "../app/sitemap";
-import { SideSwitch } from "../components/SideSwitch";
+import { AudiencePicker } from "../components/AudiencePicker";
 import { llmsText } from "./seo";
 import { SIDE_LANDINGS, sideOfSlug, sidePath, sideUrl } from "./sides";
 
@@ -21,7 +22,11 @@ describe("the two sides of the lease have their own address", () => {
     expect(sidePath("fr", "landlord")).toBe("/fr/proprietaire");
     expect(sidePath("en", "tenant")).toBe("/en/tenant");
     expect(sidePath("en", "landlord")).toBe("/en/landlord");
-    expect(SIDE_LANDINGS).toHaveLength(4);
+    expect(sidePath("fr", "freelancer")).toBe("/fr/travailleur-autonome");
+    expect(sidePath("fr", "business")).toBe("/fr/entreprise");
+    expect(sidePath("en", "freelancer")).toBe("/en/freelancer");
+    expect(sidePath("en", "business")).toBe("/en/business");
+    expect(SIDE_LANDINGS).toHaveLength(8);
   });
 
   it("reads a slug in either language (the other language's word redirects), nothing else", () => {
@@ -43,12 +48,12 @@ describe("the two sides of the lease have their own address", () => {
   });
 
   it("has its own SEO title and description per side and language — four different pairs", () => {
-    const pairs = [en, fr].flatMap((d) => [d.sides.tenant, d.sides.landlord].map((s) => `${s.seoTitle}|${s.seoDescription}`));
-    expect(new Set(pairs).size).toBe(4);
-    for (const d of [en, fr]) for (const s of [d.sides.tenant, d.sides.landlord]) expect(s.seoDescription.length).toBeLessThanOrEqual(220);
+    const pairs = [en, fr].flatMap((d) => [d.sides.tenant, d.sides.landlord, d.sides.freelancer, d.sides.business].map((s) => `${s.seoTitle}|${s.seoDescription}`));
+    expect(new Set(pairs).size).toBe(8);
+    for (const d of [en, fr]) for (const s of [d.sides.tenant, d.sides.landlord, d.sides.freelancer, d.sides.business]) expect(s.seoDescription.length).toBeLessThanOrEqual(220);
   });
 
-  it("pre-renders every address (8: each side's slug in both languages, so the other language's word redirects)", () => {
+  it("pre-renders every address (16: each audience's slug in both languages, so the other language's word redirects)", () => {
     const page = readFileSync(join(ROOT, "app/[locale]/[side]/page.tsx"), "utf8");
     expect(page).toContain("export const dynamicParams = false");
     expect(page).toContain("generateStaticParams");
@@ -56,20 +61,45 @@ describe("the two sides of the lease have their own address", () => {
   });
 });
 
-describe("the switch — « Je suis locataire / Je suis propriétaire »", () => {
-  const words = { tenant: fr.sides.tenant.switch, landlord: fr.sides.landlord.switch };
-  it("is two crawlable links to the two addresses, the current one marked", () => {
-    const home = renderToStaticMarkup(createElement(SideSwitch, { locale: "fr", label: fr.sides.switchLabel, hint: fr.landing.switchHint, words }));
-    expect(home).toContain('href="/fr/locataire"');
-    expect(home).toContain('href="/fr/proprietaire"');
+describe("« Pour qui ? » — the picker", () => {
+  const words = { tenant: fr.sides.tenant.switch, landlord: fr.sides.landlord.switch, freelancer: fr.sides.freelancer.switch, business: fr.sides.business.switch };
+  const props = { locale: "fr" as const, label: fr.sides.switchLabel, hint: fr.landing.switchHint, words, soon: fr.sides.soon, other: fr.sides.other };
+
+  it("is a link per audience plus « Autre » (the generic home), the current one marked", () => {
+    const home = renderToStaticMarkup(createElement(AudiencePicker, props));
+    for (const slug of ["locataire", "proprietaire", "travailleur-autonome", "entreprise"]) expect(home).toContain(`href="/fr/${slug}"`);
+    expect(home).toContain('data-testid="audience-other"');
+    expect(home).toContain('href="/fr"');
     expect(home).not.toContain("aria-current");
-    const tenant = renderToStaticMarkup(createElement(SideSwitch, { locale: "fr", current: "tenant", label: fr.sides.switchLabel, hint: fr.landing.switchHint, words }));
-    expect(tenant).toMatch(/aria-current="page"[^>]*>Je suis locataire|Je suis locataire/);
-    expect(tenant.match(/aria-current/g)).toHaveLength(1);
+    expect(renderToStaticMarkup(createElement(AudiencePicker, { ...props, current: "freelancer" })).match(/aria-current/g)).toHaveLength(1);
   });
 
-  it("is on the home", () => {
-    expect(readFileSync(join(ROOT, "app/[locale]/page.tsx"), "utf8")).toContain("<SideSwitch");
+  it("marks « bientôt » exactly the audiences whose rules are not built — and says nothing of the others", () => {
+    const html = renderToStaticMarkup(createElement(AudiencePicker, props));
+    expect(html).toContain('data-testid="soon-freelancer"');
+    expect(html).toContain('data-testid="soon-business"');
+    expect(html).not.toContain('data-testid="soon-tenant"');
+    expect(html).not.toContain('data-testid="soon-landlord"');
+    expect(AUDIENCE_STATUS).toEqual({ tenant: "available", landlord: "available", freelancer: "soon", business: "soon" });
+  });
+
+  it("never claims a check that does not run: the « soon » audiences' pitch says so in both languages", () => {
+    for (const d of [en, fr]) {
+      for (const a of ["freelancer", "business"] as const) {
+        const w = d.sides[a];
+        expect(w.outcomes.a.title.toLowerCase()).toMatch(/bientôt|soon/);
+        expect(w.lead.toLowerCase()).toMatch(/bientôt|soon/);
+        const planned = a === "freelancer" ? (["a", "b", "c"] as const) : (["a", "b"] as const);
+        for (const id of planned) expect(w.examples.items[id]).toMatch(/\((?:bientôt|soon)\)/);
+        expect(d.sides.soonInfo[a].title.toLowerCase()).toMatch(/bientôt|soon/);
+      }
+    }
+  });
+
+  it("is on the home, above the hero", () => {
+    const home = readFileSync(join(ROOT, "app/[locale]/page.tsx"), "utf8");
+    expect(home).toContain("<AudiencePicker");
+    expect(home.indexOf("<AudiencePicker")).toBeLessThan(home.indexOf("<PageHero"));
   });
 });
 

@@ -29,6 +29,15 @@ export const PERSPECTIVES = ["tenant", "landlord"] as const;
 export const perspective = z.enum(PERSPECTIVES);
 export type Perspective = z.infer<typeof perspective>;
 
+/**
+ * Who the person is, for the product: the audiences of « Pour qui ? ». `available` ones have rules that run today; `soon`
+ * ones are offered honestly as « bientôt » — never a claimed check that does not run (docs/product/direction-2026-10.md).
+ */
+export const AUDIENCES = ["tenant", "landlord", "freelancer", "business"] as const;
+export const audience = z.enum(AUDIENCES);
+export type Audience = z.infer<typeof audience>;
+export const AUDIENCE_STATUS = { tenant: "available", landlord: "available", freelancer: "soon", business: "soon" } as const satisfies Record<Audience, "available" | "soon">;
+
 /** The two Orazaka Studios of the document-validation pack Yomizaka runs. */
 export const STUDIOS = ["compliance-check", "document-authenticity"] as const;
 export const studio = z.enum(STUDIOS);

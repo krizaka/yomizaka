@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 
-import type { Perspective } from "@yomizaka/core";
+import type { Audience } from "@yomizaka/core";
 
 import { query } from "./db";
 import { sessionSecret } from "./env";
@@ -23,7 +23,7 @@ export interface SessionAccount {
   email: string;
   role: "USER" | "ADMIN";
   locale: "en" | "fr";
-  perspective: Perspective | null;
+  perspective: Audience | null;
 }
 
 export interface Session {
@@ -40,7 +40,7 @@ export async function createSession(accountId: string, meta: { ip: string | null
 
 export async function resolveSession(token: string | undefined): Promise<Session | null> {
   if (!isToken(token)) return null;
-  const [row] = await query<{ session_id: string; id: string; email: string; role: "USER" | "ADMIN"; locale: "en" | "fr"; perspective: Perspective | null }>(
+  const [row] = await query<{ session_id: string; id: string; email: string; role: "USER" | "ADMIN"; locale: "en" | "fr"; perspective: Audience | null }>(
     `SELECT s.id AS session_id, a.id, a.email, a.role, a.locale, a.perspective
        FROM sessions s JOIN accounts a ON a.id = s.account_id
       WHERE s.token_hash = $1 AND s.expires_at > now() AND a.status = 'ACTIVE'`,

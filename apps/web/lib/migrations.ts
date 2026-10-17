@@ -136,4 +136,12 @@ CREATE UNIQUE INDEX report_access_requests_open ON report_access_requests(analys
 ALTER TABLE accounts ADD COLUMN perspective text CHECK (perspective IN ('tenant', 'landlord'));
 `,
   },
+  {
+    version: "0005_audiences",
+    sql: `
+-- « Pour qui ? » grows past the two sides of a lease: freelancers and small businesses (offered as « soon » until their rules exist).
+ALTER TABLE accounts DROP CONSTRAINT IF EXISTS accounts_perspective_check;
+ALTER TABLE accounts ADD CONSTRAINT accounts_perspective_check CHECK (perspective IN ('tenant', 'landlord', 'freelancer', 'business'));
+`,
+  },
 ];

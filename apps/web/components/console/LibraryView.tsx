@@ -8,7 +8,7 @@ import { EmptyState } from "@krizaka/ui/empty-state";
 import { Dropzone, type FileRejection, UploadList, useUploadQueue } from "@krizaka/ui/file-upload";
 import { Mascot } from "@krizaka/ui/mascots";
 import { RadioGroup } from "@krizaka/ui/radio-group";
-import { DOCUMENT_KINDS, type DocumentKind, type DocumentSummary, documentSummary, MAX_FILE_BYTES, type Perspective, queryKeys } from "@yomizaka/core";
+import { type Audience, DOCUMENT_KINDS, type DocumentKind, type DocumentSummary, documentSummary, MAX_FILE_BYTES, queryKeys } from "@yomizaka/core";
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { z } from "zod";
@@ -38,7 +38,7 @@ function send(file: File, kind: DocumentKind, signal: AbortSignal, onProgress: (
 }
 
 /** The library: drop files (a queue that pauses, resumes and retries), then every document with its state. */
-export function LibraryView({ initial, perspective = null }: { initial: DocumentSummary[]; perspective?: Perspective | null }) {
+export function LibraryView({ initial, perspective = null }: { initial: DocumentSummary[]; perspective?: Audience | null }) {
   const { say, locale } = useSay();
   const client = useQueryClient();
   const [kind, setKind] = useState<DocumentKind>("lease");

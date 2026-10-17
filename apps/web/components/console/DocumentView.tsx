@@ -10,7 +10,7 @@ import { DocumentViewer, type Located } from "@krizaka/ui/document-viewer";
 import { createKrizakaForm } from "@krizaka/ui/form";
 import { Spinner } from "@krizaka/ui/spinner";
 import { Tabs } from "@krizaka/ui/tabs";
-import { type Analysis, analysis as analysisSchema, AUTHENTICITY_MAX_BYTES, type AuthenticityReport, type ComplianceReport, type DocumentDetail, documentDetail, JURISDICTIONS, passages, type Perspective, queryKeys } from "@yomizaka/core";
+import { type Analysis, analysis as analysisSchema, type Audience, AUTHENTICITY_MAX_BYTES, type AuthenticityReport, type ComplianceReport, type DocumentDetail, documentDetail, JURISDICTIONS, passages, queryKeys } from "@yomizaka/core";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ComponentProps, useEffect, useMemo, useRef, useState } from "react";
@@ -313,7 +313,7 @@ function StartAuthenticity({ documentId, disabled }: { documentId: string; disab
 }
 
 /** The document page: the file and its text on one side, Orazaka's checks on the other — each a traced run. */
-export function DocumentView({ initial, perspective = null }: { initial: DocumentDetail; perspective?: Perspective | null }) {
+export function DocumentView({ initial, perspective = null }: { initial: DocumentDetail; perspective?: Audience | null }) {
   const { say, locale } = useSay();
   const router = useRouter();
   const client = useQueryClient();

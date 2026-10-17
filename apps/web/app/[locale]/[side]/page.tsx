@@ -1,4 +1,5 @@
 import { CheckIcon, EyeIcon, KeepIcon, LockIcon, SearchIcon, ShieldIcon } from "@krizaka/icons";
+import { Badge } from "@krizaka/ui/badge";
 import { Button } from "@krizaka/ui/button";
 import { CardGrid } from "@krizaka/ui/card-grid";
 import { CtaPanel } from "@krizaka/ui/cta-panel";
@@ -6,12 +7,12 @@ import { LinkCard } from "@krizaka/ui/link-card";
 import { MascotQuote } from "@krizaka/ui/mascot-quote";
 import { Section } from "@krizaka/ui/page";
 import { PageHero } from "@krizaka/ui/page-hero";
-import { type Perspective } from "@yomizaka/core";
+import { type Audience, AUDIENCE_STATUS } from "@yomizaka/core";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 
-import { SideSwitch } from "@/components/SideSwitch";
+import { AudiencePicker } from "@/components/AudiencePicker";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
 import { asLocale, getDictionary, LOCALES } from "@/lib/i18n";
@@ -54,18 +55,26 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function SideLanding({ params }: { params: Promise<{ locale: string; side: string }> }) {
   const { locale, found } = await resolve(params);
   if (!found) notFound();
-  const side: Perspective = found.side;
+  const t0 = getDictionary(locale);
+  const side: Audience = found.side;
+  const soon = AUDIENCE_STATUS[side] === "soon";
+  const info = side === "freelancer" || side === "business" ? t0.sides.soonInfo[side] : null;
   // The other language's word for the side goes to this language's address.
   if (found.slugLocale !== locale) permanentRedirect(sidePath(locale, side));
-  const t = getDictionary(locale);
+  const t = t0;
   const w = t.sides[side];
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
       <SiteHeader locale={locale} current="home" />
       <main id="content">
-        <SideSwitch locale={locale} current={side} label={t.sides.switchLabel} hint={t.landing.switchHint} words={{ tenant: t.sides.tenant.switch, landlord: t.sides.landlord.switch }} />
+        <AudiencePicker locale={locale} current={side} label={t.sides.switchLabel} hint={t.landing.switchHint} words={{ tenant: t.sides.tenant.switch, landlord: t.sides.landlord.switch, freelancer: t.sides.freelancer.switch, business: t.sides.business.switch }} soon={t.sides.soon} other={t.sides.other} />
         <PageHero id="hero" eyebrow={w.eyebrow} title={w.title} lead={w.lead}>
+          {soon ? (
+            <Badge tone="warning" data-testid="soon-badge">
+              {t.sides.soon}
+            </Badge>
+          ) : null}
           <Button asChild variant="primary" size="lg" shape="cut" shimmer magnetic>
             <a href={contactHref(`dev-yomizaka-${side}`)}>{t.landing.talk}</a>
           </Button>
@@ -73,6 +82,15 @@ export default async function SideLanding({ params }: { params: Promise<{ locale
             <Link href={pagePath(locale, "run")}>{t.landing.seeRun}</Link>
           </Button>
         </PageHero>
+
+        {info ? (
+          <Section id="soon" spacing="sm" title={info.title} divider>
+            <ul className="grid max-w-3xl gap-2 text-sm text-fg-secondary">
+              <li>{info.today}</li>
+              <li>{info.next}</li>
+            </ul>
+          </Section>
+        ) : null}
 
         <Section id="outcomes" eyebrow={t.landing.outcomes.eyebrow} title={w.outcomesTitle} reveal divider>
           <CardGrid min={300}>

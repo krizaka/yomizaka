@@ -46,6 +46,11 @@ describe("PUT /api/me/perspective — the side of the lease, chosen at onboardin
     expect(state.saved).toEqual([]);
   });
 
+  it("accepts every audience of « Pour qui ? »", async () => {
+    state.session = { account: { id: "acc-1", email: "a@x.test", perspective: null } };
+    for (const a of ["tenant", "landlord", "freelancer", "business"]) expect((await call("PUT", { perspective: a })).status).toBe(200);
+  });
+
   it("reads the side back", async () => {
     state.session = { account: { id: "acc-1", email: "a@x.test", perspective: "tenant" } };
     expect(await (await call("GET")).json()).toEqual({ perspective: "tenant" });
@@ -59,6 +64,10 @@ describe("the side drives the defaults, not the rules", () => {
     expect(firstCheck("landlord", "lease")).toBe("compliance-check");
     expect(firstCheck("landlord", "other")).toBe("document-authenticity");
     expect(firstCheck(null, "other")).toBe("compliance-check");
+  });
+
+  it("offers a freelancer or a business the file's examination first: no compliance rules exist for them yet", () => {
+    for (const a of ["freelancer", "business"] as const) for (const kind of ["lease", "contract", "invoice", "other"] as const) expect(firstCheck(a, kind)).toBe("document-authenticity");
   });
 
   it("reads the neutral wording until a side is chosen", () => {
