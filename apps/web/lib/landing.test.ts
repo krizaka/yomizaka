@@ -63,7 +63,7 @@ describe("the bar", () => {
     expect(bar).not.toContain("NavBar.Badge");
     expect(bar).not.toContain("APP_VERSION");
     expect(bar).toContain("NavBar.Menu");
-    expect(read("components/SiteFooter.tsx")).toContain("version={APP_VERSION}");
+    expect(read("components/SiteFooter.tsx")).toContain("#${APP_VERSION}");
   });
 });
 
