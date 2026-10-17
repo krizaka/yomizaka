@@ -204,3 +204,21 @@ export async function seedDatabase(): Promise<string[]> {
   }
   return created;
 }
+
+/**
+ * Pure: may this person use the flow `key` now? It must be enabled and offered to their audience, and every consent it requires
+ * must be granted — for a landlord's screening, their undertaking (lawful purpose, no discrimination).
+ */
+export function decideFlow(flows: readonly AvailableFlow[], audience: Audience | null, key: string, granted: readonly string[]): { ok: true; flow: AvailableFlow } | { ok: false; code: "FLOW_NOT_OFFERED" | "CONSENT_REQUIRED"; missing: string[] } {
+  const flow = flowsFor(flows, audience).find((f) => f.key === key);
+  if (!flow) return { ok: false, code: "FLOW_NOT_OFFERED", missing: [] };
+  const missing = flow.definition.consents.filter((c) => !granted.includes(c));
+  return missing.length ? { ok: false, code: "CONSENT_REQUIRED", missing } : { ok: true, flow };
+}
+
+export async function resolveFlow(account: { id: string; perspective: Audience | null }, key: string, environment: FlowEnvironment): Promise<AvailableFlow> {
+  const flows = await availableFlows(environment, { fallback: false });
+  const decision = decideFlow(flows, account.perspective, key, await grantedConsents(account.id));
+  if (!decision.ok) throw refuse(403, decision.code, decision.code === "CONSENT_REQUIRED" ? "A consent this flow requires has not been given" : "This flow is not offered", { missing: decision.missing });
+  return decision.flow;
+}

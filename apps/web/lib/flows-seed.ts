@@ -82,4 +82,19 @@ export const SEED_FLOWS: readonly SeedFlow[] = [
       pricing: { model: "free" },
     },
   },
+  {
+    // Provider-agnostic until a contract exists: the demo provider returns fictitious data, dev only (docs/product/tenant-screening-research.md).
+    key: "tenant-screening",
+    environments: ["dev"],
+    definition: {
+      title: { en: "Check a tenant's application", fr: "Vérifier le dossier d'un locataire" },
+      lead: { en: "With the tenant's consent: payment history only, the tenant sees the result first and can contest it.", fr: "Avec le consentement du locataire : l'historique de paiement seulement ; le locataire voit le résultat d'abord et peut le contester." },
+      status: "soon",
+      audiences: ["landlord"],
+      steps: [{ id: "provider-demo", kind: "provider", provider: "demo", jurisdictions: [] }],
+      consents: ["screening-landlord-undertaking"],
+      providers: ["demo"],
+      pricing: { model: "free" },
+    },
+  },
 ];
