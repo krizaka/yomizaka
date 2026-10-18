@@ -541,7 +541,8 @@
       "uploaded": "{name} est dans votre bibliothèque.",
       "open": "Ouvrir {title}",
       "noText": "sans couche texte",
-      "pages": "{count} p."
+      "pages": "{count} p.",
+      "screening": "Vérifier le dossier d'un locataire (avec son consentement)"
     },
     "upload": {
       "queued": "En attente",
@@ -1331,5 +1332,83 @@
     "feedDescription": "Ce que Yomizaka a livré, semaine par semaine.",
     "footerVersion": "v{version}",
     "langTag": "fr-CA"
+  },
+  "screening": {
+    "tenant": {
+      "title": "Une demande de vérification de votre dossier",
+      "lead": "{landlord} demande votre accord pour vérifier votre dossier de candidature. Vous décidez : rien n'est vérifié sans votre consentement.",
+      "whatTitle": "Ce qui serait vérifié",
+      "scope": {
+        "payment-history": "Votre historique de paiement"
+      },
+      "provider": "Fournisseur : {provider}",
+      "why": "Pourquoi : le propriétaire évalue votre candidature à un logement.",
+      "notAsked": "Ce qui n'est jamais demandé : numéro d'assurance sociale, coordonnées bancaires, employeur, salaire, casier judiciaire.",
+      "whoSees": "Qui voit le résultat : vous d'abord ; le propriétaire seulement si vous le lui transmettez.",
+      "retention": "Durée : le résultat est supprimé {days} jours après votre consentement.",
+      "rights": "Vous pouvez refuser (ce n'est pas un aveu), contester le résultat, ou ne pas le transmettre.",
+      "consent": "Je consens à cette vérification",
+      "decline": "Je refuse",
+      "share": "Transmettre au propriétaire",
+      "contest": "Contester le résultat",
+      "comment": "Votre commentaire (facultatif)",
+      "send": "Envoyer la contestation",
+      "demo": "Fournisseur de démonstration : les données sont fictives.",
+      "state": {
+        "requested": "En attente de votre réponse",
+        "consented": "Vous avez consenti. Voici le résultat : vous seul le voyez pour l'instant.",
+        "shared": "Vous avez transmis ce résultat au propriétaire.",
+        "declined": "Vous avez refusé : rien n'a été vérifié, et le propriétaire en est informé sans plus de détail.",
+        "contested": "Vous avez contesté ce résultat : le propriétaire ne le voit pas.",
+        "expired": "Cette demande a expiré ou son résultat a été supprimé."
+      },
+      "resultTitle": "Votre résultat",
+      "band": {
+        "no-concern": "Rien à signaler",
+        "review": "À examiner"
+      },
+      "item": {
+        "payment-history": "Historique de paiement",
+        "identity-match": "Identité"
+      },
+      "outcome": {
+        "clear": "rien à signaler",
+        "review": "à examiner"
+      },
+      "deleteOn": "Supprimé le {date}.",
+      "contested": "Votre contestation : « {comment} »"
+    },
+    "landlord": {
+      "title": "Dossier du locataire",
+      "lead": "Demandez le consentement d'un candidat pour vérifier son historique de paiement. Il voit le résultat d'abord et décide de vous le transmettre ou de le contester.",
+      "undertakingTitle": "Votre engagement",
+      "undertaking": "Je m'engage à n'utiliser ces vérifications que pour évaluer une candidature à un logement, à ne demander que ce qui est nécessaire, et à ne jamais refuser un candidat pour un motif discriminatoire (Charte des droits et libertés de la personne ; C.c.Q., art. 1899). Je sais qu'un candidat peut refuser ou contester, et que le refus de fournir un renseignement non nécessaire n'est pas un motif de rejet.",
+      "accept": "J'accepte l'engagement",
+      "lawfulTitle": "Ce que la loi vous permet de demander",
+      "lawful": "Le nom, l'adresse actuelle, une pièce d'identité regardée sans en garder copie, les coordonnées du locateur précédent, et — avec son consentement — un rapport de crédit. Pas de numéro d'assurance sociale, de coordonnées bancaires, d'employeur ni de salaire. Yomizaka ne propose aucune vérification d'antécédents judiciaires.",
+      "name": "Nom du candidat",
+      "email": "Courriel du candidat",
+      "scope": "Ce qui sera vérifié",
+      "scopeItem": {
+        "payment-history": "Historique de paiement"
+      },
+      "request": "Demander son consentement",
+      "created": "Remettez ce lien au candidat (il ne sera plus affiché) :",
+      "copy": "Copier le lien",
+      "listTitle": "Vos demandes",
+      "none": "Aucune demande pour l'instant.",
+      "status": {
+        "requested": "En attente",
+        "consented": "Consenti, non transmis",
+        "shared": "Transmis",
+        "declined": "Refusé",
+        "contested": "Contesté",
+        "expired": "Expiré"
+      },
+      "shownTitle": "Résultat transmis",
+      "hidden": "Le résultat n'est visible qu'une fois transmis par le candidat.",
+      "demo": "Fournisseur de démonstration : données fictives.",
+      "reviewNote": "« À examiner » n'est pas un verdict : parlez-en au candidat avant toute décision."
+    }
   }
 }

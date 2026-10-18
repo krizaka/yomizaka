@@ -18,7 +18,7 @@ describe("the seeded flows", () => {
     expect(compliance.jurisdictions.map((j) => [j.code, j.ruleset])).toEqual([["QC", "qc-residential-lease"], ["FR", "fr-residential-lease"], ["BE-WAL", "be-residential-lease"]]);
   });
   it("keep the freelancer and business flows « soon » and dev only", () => {
-    expect(SEED_FLOWS.filter((s) => s.definition.status === "soon").map((s) => s.key).sort()).toEqual(["file-check-business", "file-check-freelancer"]);
+    expect(SEED_FLOWS.filter((s) => s.definition.status === "soon").map((s) => s.key).sort()).toEqual(["file-check-business", "file-check-freelancer", "tenant-screening"]);
     expect(seedFlows("prod").map((f) => f.key)).toEqual(["lease-check-tenant", "lease-check-landlord"]);
   });
 });
