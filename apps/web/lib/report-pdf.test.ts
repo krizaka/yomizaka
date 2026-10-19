@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { buildPayload, sha256 } from "./report";
 import { generateSigningKeyBase64, parseSigningKey } from "./report-key";
 import { reportLabels } from "./report-labels";
-import { attestationOfPdf, issuePdf, verifyPdf } from "./report-pdf";
+import { attestationOfPdf, foldToWinAnsi, issuePdf, verifyPdf } from "./report-pdf";
 import { signingKey } from "./report-signer";
 
 const doc = { sha256: sha256("lease bytes"), filename: "bail.pdf", title: "Bail — rue Saint-Denis (fictif)", sizeBytes: 11, pages: 1 };
@@ -93,5 +93,14 @@ describe("the signed PDF report", () => {
   it("rejects a specimen even with a valid signature", async () => {
     const issued = await issuePdf({ ...payload, specimen: true }, reportLabels("fr"), signingKey());
     expect(await verifyPdf(issued.bytes, signingKey())).toMatchObject({ ok: false, reason: "SPECIMEN" });
+  });
+});
+
+describe("typography the PDF's fonts cannot draw", () => {
+  it("folds French typography and common symbols to their plain equivalent instead of a question mark", () => {
+    expect(foldToWinAnsi("1\u202f450\u00a0$")).toBe("1 450\u00a0$");
+    expect(foldToWinAnsi("a\u2009b\u2011c")).toBe("a b-c");
+    expect(foldToWinAnsi("loyer \u2265 850 \u2192 refus \u2713")).toBe("loyer >= 850 -> refus ok");
+    expect(foldToWinAnsi("« dépôt » — l’article")).toBe("« dépôt » — l’article");
   });
 });
