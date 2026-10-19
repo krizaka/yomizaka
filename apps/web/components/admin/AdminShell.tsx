@@ -10,7 +10,9 @@ import { languagesFor,LanguageSwitch } from "@krizaka/ui/language-switch";
 import { ThemeToggle } from "@krizaka/ui/theme";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { Fragment } from "react";
 
+import { ADMIN_GROUPS, ADMIN_PAGES } from "@/lib/admin-nav";
 import { useSay } from "@/lib/i18n-client";
 
 const VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? "";
@@ -29,15 +31,8 @@ export function AdminShell({ locale, email, children }: { locale: "en" | "fr"; e
       router.refresh();
     },
   });
-  const pages = [
-    { to: home, key: "overview", icon: <HomeIcon />, exact: true },
-    { to: `${home}/users`, key: "users", icon: <UsersIcon /> },
-    { to: `${home}/documents`, key: "documents", icon: <KeepIcon /> },
-    { to: `${home}/flows`, key: "flows", icon: <ShieldIcon /> },
-    { to: `${home}/runs`, key: "runs", icon: <ServerIcon /> },
-    { to: `${home}/operations`, key: "operations", icon: <ShieldIcon /> },
-    { to: `${home}/audit`, key: "audit", icon: <ClockIcon /> },
-  ];
+  const ICONS = { overview: <HomeIcon />, users: <UsersIcon />, documents: <KeepIcon />, flows: <ShieldIcon />, runs: <ServerIcon />, operations: <ShieldIcon />, audit: <ClockIcon /> };
+  const pages = ADMIN_PAGES.map((p) => ({ ...p, to: `${home}${p.path}`, icon: ICONS[p.key], exact: p.path === "" }));
   const isCurrent = (p: (typeof pages)[number]) => (p.exact ? path === p.to : path === p.to || path.startsWith(`${p.to}/`));
   const current = pages.find(isCurrent) ?? pages[0]!;
   return (
@@ -60,11 +55,18 @@ export function AdminShell({ locale, email, children }: { locale: "en" | "fr"; e
           </div>
         }
       >
-        <AppShell.Group>{say("adminConsole.shell.title")}</AppShell.Group>
-        {pages.map((p) => (
-          <AppShell.Item key={p.key} asChild label={say(`adminConsole.shell.${p.key}`)} icon={p.icon} current={isCurrent(p)}>
-            <Link href={p.to}>{say(`adminConsole.shell.${p.key}`)}</Link>
-          </AppShell.Item>
+        {ADMIN_GROUPS.map((group) => (
+          <Fragment key={group.key}>
+            <AppShell.Group>{say(`adminConsole.shell.groups.${group.key}`)}</AppShell.Group>
+            {group.pages.map((g) => {
+              const p = pages.find((x) => x.key === g.key)!;
+              return (
+                <AppShell.Item key={p.key} asChild label={say(`adminConsole.shell.${p.key}`)} icon={p.icon} current={isCurrent(p)}>
+                  <Link href={p.to}>{say(`adminConsole.shell.${p.key}`)}</Link>
+                </AppShell.Item>
+              );
+            })}
+          </Fragment>
         ))}
       </AppShell.Sidebar>
       <AppShell.Body>
