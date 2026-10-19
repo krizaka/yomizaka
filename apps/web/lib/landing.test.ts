@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import en from "@/messages/en.json";
 import fr from "@/messages/fr.json";
 
-import { HERO_FIGURES, HOME_SECTIONS, productStatus } from "./landing";
+import { type DevPreview, HERO_FIGURES, HOME_SECTIONS, productStatus } from "./landing";
 import { recordedRun } from "./recorded-runs";
 import { PAGES } from "./site";
 
@@ -44,10 +44,16 @@ describe("the landing is the product landing template of @krizaka/ui", () => {
   });
 
   it("says its honest status, read from dev-preview.json: in development while a criterion still has a gap", () => {
-    const preview = JSON.parse(read("../../dev-preview.json")) as { criteria: Record<string, { evidence: string | null; na?: boolean }> };
-    const gaps = Object.values(preview.criteria).some((c) => c.evidence === null && !c.na);
+    const preview = JSON.parse(read("../../dev-preview.json")) as DevPreview;
+    const gaps = Object.values(preview.criteria).some((c) => typeof c.evidence !== "string" && !c.na);
     expect(productStatus(preview)).toBe(gaps ? "development" : "preview");
     expect(en.landing.status[productStatus(preview)]).toBeTruthy();
+  });
+
+  it("counts a criterion that does not apply (na, with its reason) as met, and a bare null as a gap", () => {
+    const met = { a: { evidence: "https://example.com/e" }, b: { na: "No mobile app for the Dev preview." } };
+    expect(productStatus({ criteria: met })).toBe("preview");
+    expect(productStatus({ criteria: { ...met, c: { evidence: null } } })).toBe("development");
   });
 
   it("gives the real run its own address, in the sitemap and both languages", () => {

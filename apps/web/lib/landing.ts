@@ -7,14 +7,15 @@ export const HOME_SECTIONS = ["hero", "features", "audiences", "proof", "app", "
 /** The finding the hero and the proof show: the forbidden deposit (QC-LEASE-004) of the recorded tenant run — a real answer, never typed. */
 export const HERO_RULE = "QC-LEASE-004";
 
-type DevPreview = { criteria: Record<string, { evidence: string | null; na?: boolean }> };
+/** An entry is evidence (an https URL), `evidence: null` with a gap, or `na` — the reason it does not apply (a string, per the standard's schema). */
+export type DevPreview = { criteria: Record<string, { evidence?: string | null; na?: string | boolean }> };
 
 /**
  * The honest status chip, read from the dev-preview record (dev-preview.json at the repository's root): « Dev preview »
  * only once every criterion has its evidence (or is not applicable); « In development » while one still has a gap.
  */
 export function productStatus(preview: DevPreview): "development" | "preview" {
-  return Object.values(preview.criteria).every((c) => c.evidence !== null || c.na === true) ? "preview" : "development";
+  return Object.values(preview.criteria).every((c) => typeof c.evidence === "string" || Boolean(c.na)) ? "preview" : "development";
 }
 
 /**
