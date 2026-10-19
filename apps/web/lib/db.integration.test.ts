@@ -64,6 +64,18 @@ describe.runIf(enabled)("database", () => {
     expect(await search(owner!.id, "<script>")).toEqual([]);
   });
 
+  it("shows a finding once per document, from the latest run of the same check — a re-run does not pile up duplicates (#54)", async () => {
+    const [doc] = await listDocuments(owner!.id);
+    const before = (await search(owner!.id, "excède")).filter((h) => h.documentId === doc!.id && h.source === "finding").length;
+    for (const run of ["a1111111-1d2c-4b8a-9a55-0d1e2f3a4b5c", "b2222222-1d2c-4b8a-9a55-0d1e2f3a4b5c"]) {
+      await query("INSERT INTO analyses (document_id, studio, status, run_id, report, search_text) VALUES ($1, 'compliance-check', 'succeeded', $2, '{}', 'FR-LEASE-005 Le dépôt de garantie excède un mois de loyer')", [doc!.id, run]);
+    }
+    expect(before).toBe(1);
+    const after = (await search(owner!.id, "excède")).filter((h) => h.documentId === doc!.id && h.source === "finding");
+    expect(after).toHaveLength(1);
+    await query("DELETE FROM analyses WHERE run_id = ANY($1)", [["a1111111-1d2c-4b8a-9a55-0d1e2f3a4b5c", "b2222222-1d2c-4b8a-9a55-0d1e2f3a4b5c"]]);
+  });
+
   it("lists the accounts with their documents for the administration", async () => {
     const users = await listUsers();
     expect(users.find((u) => u.email === email)).toMatchObject({ role: "USER", status: "ACTIVE", documents: 1 });
