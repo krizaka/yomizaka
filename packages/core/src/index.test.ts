@@ -72,6 +72,12 @@ describe("the API's requests", () => {
     expect(() => startAnalysis.parse({ studio: "summarise" })).toThrow();
   });
 
+  it("names the Québec invoice rules as a ruleset, for Québec only", () => {
+    expect(startAnalysis.parse({ studio: "compliance-check", jurisdiction: "QC", ruleset: "qc-invoice" })).toEqual({ studio: "compliance-check", jurisdiction: "QC", ruleset: "qc-invoice" });
+    expect(() => startAnalysis.parse({ studio: "compliance-check", jurisdiction: "FR", ruleset: "qc-invoice" })).toThrow();
+    expect(() => startAnalysis.parse({ studio: "compliance-check", jurisdiction: "QC", ruleset: "anything" })).toThrow();
+  });
+
   it("keys the queries so one invalidation reaches every list", () => {
     expect(queryKeys.document("d1").slice(0, 1)).toEqual(queryKeys.documents());
   });

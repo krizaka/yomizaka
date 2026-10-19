@@ -28,7 +28,7 @@ export function POST(req: Request, { params }: Params) {
     const id = (await params).id;
     const request = await readJson(req, startAnalysisBody);
     // The flow decides: enabled, offered to this person, and every consent it requires granted (403 otherwise).
-    const { flowVersionId } = await resolveStart(session.account, request.studio, appEnvironment());
+    const { flowVersionId } = await resolveStart(session.account, request.studio, appEnvironment(), request.studio === "compliance-check" ? request.ruleset : undefined);
     const analysis = await startAnalysis(session.account.id, id, request, flowVersionId);
     await audit({ action: "analysis.started", actorId: session.account.id, actorLabel: session.account.email, targetId: id, detail: { studio: request.studio, runId: analysis.runId }, headers: req.headers });
     return Response.json({ analysis }, { status: 202 });

@@ -607,6 +607,11 @@
       "authenticityTitle": "Traces de modification",
       "authenticityText": "Le fichier PDF lui-même : producteur, dates, enregistrements successifs, polices.",
       "jurisdiction": "Juridiction",
+      "documentType": "Nature du document",
+      "documentTypes": {
+        "lease": "Un bail de logement",
+        "invoice": "Une facture de fournisseur (Québec : numéros de TPS et de TVQ, mentions obligatoires)"
+      },
       "jurisdictions": {
         "QC": "Québec — bail de logement (C.c.Q., art. 1851 et suiv.)",
         "FR": "France — bail d'habitation",
