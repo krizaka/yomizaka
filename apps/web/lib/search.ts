@@ -5,7 +5,8 @@ import { query } from "./db";
 /**
  * Search across one's documents — their titles and text, and the findings Orazaka returned on them. PostgreSQL full text
  * (`simple` configuration: French and English alike, no stemming guesses), passages cut by ts_headline around the words,
- * everything else escaped. The query is the person's words, parsed by websearch_to_tsquery (quotes, OR, -word).
+ * everything else escaped. A finding is searched in the latest successful run of each check on a document: a re-run replaces
+ * the earlier one in the results instead of piling up duplicates. The query is the person's words, parsed by websearch_to_tsquery (quotes, OR, -word).
  */
 const START = "\u0002";
 const STOP = "\u0003";
@@ -36,6 +37,7 @@ export async function search(ownerId: string, q: string): Promise<SearchHit[]> {
        SELECT d.id, d.title, d.kind, 'finding', ts_headline('simple', a.search_text, q.tsq, $3), ts_rank(to_tsvector('simple', a.search_text), q.tsq) * 0.9
          FROM analyses a JOIN documents d ON d.id = a.document_id, q
         WHERE d.owner_id = $1 AND a.status = 'succeeded' AND to_tsvector('simple', a.search_text) @@ q.tsq
+          AND a.id = (SELECT l.id FROM analyses l WHERE l.document_id = a.document_id AND l.studio = a.studio AND l.status = 'succeeded' ORDER BY l.created_at DESC, l.id DESC LIMIT 1)
      ) hits ORDER BY rank DESC LIMIT 30`,
     [ownerId, words, options],
   );
