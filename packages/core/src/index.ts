@@ -36,7 +36,7 @@ export type Perspective = z.infer<typeof perspective>;
 export const AUDIENCES = ["tenant", "landlord", "freelancer", "business"] as const;
 export const audience = z.enum(AUDIENCES);
 export type Audience = z.infer<typeof audience>;
-export const AUDIENCE_STATUS = { tenant: "available", landlord: "available", freelancer: "soon", business: "soon" } as const satisfies Record<Audience, "available" | "soon">;
+export const AUDIENCE_STATUS = { tenant: "available", landlord: "available", freelancer: "available", business: "available" } as const satisfies Record<Audience, "available" | "soon">;
 
 /**
  * A flow is data administered in the database (ADR-0003): who it is offered to, the Orazaka Studio and the rulesets of each

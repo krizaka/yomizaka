@@ -32,7 +32,8 @@ and a real run. It has no mobile app: the Dev preview is **web only** (phone-fir
 - **A signed report** — a finished check exports a report as HTML and as a signed PDF (a visible signature page, an Ed25519
   attestation); only a signed-in member the owner gave access to can verify it (`/verify`, ADR-0002). A specimen is never signed.
 - **Who it is for** — a « Pour qui ? » picker (tenant, landlord, freelancer, business, other). The tenant and the landlord have
-  rules today; the others say « soon » and promise nothing (`docs/product/direction-2026-10.md`). The flows behind them are
+  lease rules, the freelancer and the business have the Québec invoice check (8 rules from the federal regulation on input tax credit
+  information: date, total, GST and QST numbers, taxes, payment terms); contracts say « soon » and promise nothing (`docs/product/direction-2026-10.md`). The flows behind them are
   data, administered in the database (ADR-0003).
 - **Checking a tenant's application** — a consent-first flow with a provider-agnostic seam; only a demo provider answers, on dev,
   with fictitious data. No real provider is contracted yet.

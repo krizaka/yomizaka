@@ -31,6 +31,7 @@ if (!email || !password) throw new Error("YOMIZAKA_USER_EMAIL and YOMIZAKA_USER_
 const VIEWPORT = { width: 390, height: 844 };
 const SCALE = 2;
 const MAX_SECONDS = 25;
+const MIN_FPS = 25;
 const dir = path.join(outRoot, locale);
 mkdirSync(dir, { recursive: true });
 
@@ -77,16 +78,18 @@ const hideEmail = () => {
 const ctx = await browser.newContext({ ...base, storageState });
 await ctx.addInitScript(hideEmail);
 const page = await ctx.newPage();
-// Neither Playwright's recorder nor the protocol's screencast film a phone at its device pixels (a 390 px page would be
-// blurry), so frames are taken as screenshots at the device's real pixels (390×844 at 2× = 780×1688) in a tight loop, each
-// with its wall-clock time, and assembled afterwards (about a dozen frames a second: enough for an interface).
+// Playwright's recorder and the protocol's screencast film a phone in CSS pixels (a 390 px page would be blurry), and
+// page.screenshot() manages about 12 frames a second. A raw Page.captureScreenshot (optimizeForSpeed, JPEG) returns the
+// device's real pixels (390×844 at 2× = 780×1688) at 25+ frames a second: frames are taken in a tight loop, each with its
+// wall-clock time, and assembled afterwards. The take is refused below 25 fps on average.
+const cdp = await ctx.newCDPSession(page);
 const frames = [];
 let filming = true;
 const film = (async () => {
   while (filming) {
     const at = Date.now() / 1000;
-    const data = await page.screenshot({ type: "jpeg", quality: 85, scale: "device" }).catch(() => null);
-    if (data) frames.push({ at, data: data.toString("base64") });
+    const shot = await cdp.send("Page.captureScreenshot", { format: "jpeg", quality: 85, optimizeForSpeed: true }).catch(() => null);
+    if (shot) frames.push({ at, data: shot.data });
   }
 })();
 const t0 = Date.now();
@@ -179,6 +182,8 @@ const at = (name) => {
   if (t <= waitTo) return +(waitFrom + (t - waitFrom) / WAIT_SPEED).toFixed(2);
   return +(waitFrom + (waitTo - waitFrom) / WAIT_SPEED + (t - waitTo)).toFixed(2);
 };
-const evidence = { locale, base: BASE, recordedAt: new Date().toISOString(), runId, seconds: +total.toFixed(1), waitSpeed: +WAIT_SPEED.toFixed(2), chapters: { drop: at("drop"), check: at("check"), finding: at("finding"), search: at("search") } };
+const fps = frames.length / (frames[frames.length - 1].at - frames[0].at);
+if (fps < MIN_FPS) throw new Error(`the take was filmed at ${fps.toFixed(1)} fps (< ${MIN_FPS}): run it again on a quieter machine`);
+const evidence = { locale, fps: +fps.toFixed(1), base: BASE, recordedAt: new Date().toISOString(), runId, seconds: +total.toFixed(1), waitSpeed: +WAIT_SPEED.toFixed(2), chapters: { drop: at("drop"), check: at("check"), finding: at("finding"), search: at("search") } };
 writeFileSync(path.join(dir, "evidence.json"), `${JSON.stringify(evidence, null, 2)}\n`);
 process.stdout.write(`✓ ${locale}: ${evidence.seconds} s (wait x${evidence.waitSpeed}) · run ${runId} · ${dir}\n`);
