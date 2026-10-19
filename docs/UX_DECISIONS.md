@@ -127,7 +127,7 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
 - **Principle**: meet the person's format (recognition over recall); say exactly what the signature covers (calibrated trust).
 - **Refused**: PAdES/CMS certificate signatures (they need a certificate authority the product does not have: the trust is in
   Krizaka's key, as the report says), signing the bytes, a PDF served to anyone.
-- **Cost**: standard fonts only (WinAnsi: other characters print as « ? » — in the signed text too); the file is not signed
+- **Cost**: standard fonts only (WinAnsi): French thin spaces, arrows, ≥ ≤ and check marks are folded to their plain equivalent, any other character prints as « ? » — in the signed text too; the file is not signed
   at the PDF-reader level, so a reader shows no « signed » badge.
 - **Signal we are wrong**: people ask why their PDF reader does not show a signature, or re-save PDFs and expect them to verify.
 

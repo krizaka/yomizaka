@@ -61,10 +61,14 @@ export function reportBlocks(payload: ReportPayload, labels: ReportLabels): Bloc
   return blocks;
 }
 
-/** A PDF's standard fonts print WinAnsi: anything else becomes « ? » — in the signed text too, so both sides agree. */
+/** What French typography and common symbols become where the standard fonts have no glyph: their plain equivalent, not « ? ». */
+const FOLD: Record<string, string> = { "\u202f": " ", "\u2009": " ", "\u2002": " ", "\u2003": " ", "\u2011": "-", "\u2212": "-", "\u2192": "->", "\u2190": "<-", "\u2265": ">=", "\u2264": "<=", "\u2713": "ok", "\u2714": "ok", "\u2717": "x", "\u2715": "x", "\u2022": "\u2022" };
+export const foldToWinAnsi = (text: string) => [...text].map((ch) => FOLD[ch] ?? ch).join("");
+
+/** A PDF's standard fonts print WinAnsi: what has no plain equivalent becomes « ? » — in the signed text too, so both sides agree. */
 const printable = (text: string, font: PDFFont) => {
   const ok = font.getCharacterSet();
-  return [...text.replace(/[\r\n\t]+/g, " ")].map((ch) => (ok.includes(ch.codePointAt(0)!) ? ch : "?")).join("");
+  return [...foldToWinAnsi(text.replace(/[\r\n\t]+/g, " "))].map((ch) => (ok.includes(ch.codePointAt(0)!) ? ch : "?")).join("");
 };
 
 /** The text the signature covers: the blocks, printable, with every whitespace removed (wrapping must not matter). */
