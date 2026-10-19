@@ -17,6 +17,8 @@ const COMPLIANCE = {
     { code: "BE-WAL" as const, ruleset: "be-residential-lease" },
   ],
 };
+/** Québec's supplier invoice: a named ruleset of the same Studio (pack document-validation 1.3.0, rules from SOR/91-45 art. 3). */
+const INVOICE = { id: "compliance", kind: "studio" as const, studio: "compliance-check" as const, pack: "document-validation", jurisdictions: [{ code: "QC" as const, ruleset: "qc-invoice" }] };
 const AUTHENTICITY = { id: "authenticity", kind: "studio" as const, studio: "document-authenticity" as const, pack: "document-validation", jurisdictions: [] };
 
 export interface SeedFlow {
@@ -58,11 +60,11 @@ export const SEED_FLOWS: readonly SeedFlow[] = [
     key: "file-check-freelancer",
     environments: ["dev"],
     definition: {
-      title: { en: "Contracts and invoices for freelancers", fr: "Contrats et factures pour travailleurs autonomes" },
-      lead: { en: "The PDF examined today; the contract and invoice rules are coming.", fr: "Le PDF examiné dès aujourd'hui ; les règles des contrats et des factures arrivent." },
-      status: "soon",
+      title: { en: "Invoices for freelancers", fr: "Factures pour travailleurs autonomes" },
+      lead: { en: "Your invoice against Québec's mandatory mentions and the GST/QST number formats, and the PDF examined. Contract rules are coming.", fr: "Votre facture au regard des mentions obligatoires du Québec et du format des numéros de TPS et de TVQ, et le PDF examiné. Les règles des contrats arrivent." },
+      status: "available",
       audiences: ["freelancer"],
-      steps: [AUTHENTICITY],
+      steps: [INVOICE, AUTHENTICITY],
       consents: [],
       providers: [],
       pricing: { model: "free" },
@@ -72,11 +74,11 @@ export const SEED_FLOWS: readonly SeedFlow[] = [
     key: "file-check-business",
     environments: ["dev"],
     definition: {
-      title: { en: "Supplier contracts and received invoices", fr: "Contrats de fournisseurs et factures reçues" },
-      lead: { en: "The PDF examined today; the contract and invoice rules are coming.", fr: "Le PDF examiné dès aujourd'hui ; les règles des contrats et des factures arrivent." },
-      status: "soon",
+      title: { en: "Supplier invoices received", fr: "Factures de fournisseurs reçues" },
+      lead: { en: "A supplier's invoice against Québec's mandatory mentions and the GST/QST number formats, and the PDF examined for edits. Supplier-contract rules are coming.", fr: "Une facture reçue au regard des mentions obligatoires du Québec et du format des numéros de TPS et de TVQ, et le PDF examiné. Les règles des contrats de fournisseurs arrivent." },
+      status: "available",
       audiences: ["business"],
-      steps: [AUTHENTICITY],
+      steps: [INVOICE, AUTHENTICITY],
       consents: [],
       providers: [],
       pricing: { model: "free" },

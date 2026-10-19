@@ -81,18 +81,22 @@ describe("« Pour qui ? » — the picker", () => {
     expect(html).toContain('data-testid="soon-business"');
     expect(html).not.toContain('data-testid="soon-tenant"');
     expect(html).not.toContain('data-testid="soon-landlord"');
-    expect(AUDIENCE_STATUS).toEqual({ tenant: "available", landlord: "available", freelancer: "soon", business: "soon" });
+    expect(AUDIENCE_STATUS).toEqual({ tenant: "available", landlord: "available", freelancer: "available", business: "available" });
   });
 
-  it("never claims a check that does not run: the « soon » audiences' pitch says so in both languages", () => {
+  it("never claims a check that does not run: the contracts stay « soon » in both languages, the invoice check is said to work", () => {
     for (const d of [en, fr]) {
       for (const a of ["freelancer", "business"] as const) {
         const w = d.sides[a];
         expect(w.outcomes.a.title.toLowerCase()).toMatch(/bientôt|soon/);
         expect(w.lead.toLowerCase()).toMatch(/bientôt|soon/);
-        const planned = a === "freelancer" ? (["a", "b", "c"] as const) : (["a", "b"] as const);
-        for (const id of planned) expect(w.examples.items[id]).toMatch(/\((?:bientôt|soon)\)/);
+        const contract = a === "freelancer" ? (["a", "b"] as const) : (["a"] as const);
+        for (const id of contract) expect(w.examples.items[id]).toMatch(/\((?:bientôt|soon)\)/);
+        const invoice = a === "freelancer" ? "c" : "b";
+        expect(w.examples.items[invoice]).toMatch(/\((?:disponible|available)/);
+        expect(w.examples.items[invoice]).toMatch(/TVQ|QST/);
         expect(d.sides.soonInfo[a].title.toLowerCase()).toMatch(/bientôt|soon/);
+        expect(d.sides.soonInfo[a].today).toMatch(/factures|invoice/);
       }
     }
   });
