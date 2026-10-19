@@ -6,14 +6,27 @@ import { HttpError } from "./http";
  * first). Keys never hold a password; an address is the client's as `client-ip.ts` trusts it.
  */
 const windows = new Map<string, { count: number; resetAt: number }>();
-const MAX_KEYS = 10_000;
+// @fixed: the memory bound of the in-process store, not a business parameter
+export const MAX_KEYS = 10_000;
+const OVERFLOW = "overflow";
+
+/** Drops the windows that have ended — the only entries that may go: a live window is a refusal someone has earned. */
+function prune(now: number) {
+  for (const [k, w] of windows) if (w.resetAt <= now) windows.delete(k);
+}
 
 export function hit(key: string, limit: number, windowSeconds: number, now = Date.now()): { allowed: boolean; retryAfter: number } {
   let entry = windows.get(key);
   if (!entry || entry.resetAt <= now) {
-    if (windows.size >= MAX_KEYS) windows.clear();
-    entry = { count: 0, resetAt: now + windowSeconds * 1000 };
-    windows.set(key, entry);
+    if (windows.size >= MAX_KEYS) prune(now);
+    // Still full of live windows (a flood of distinct keys): never clear them — that would give every blocked caller a fresh
+    // count. A new key shares one overflow window instead, so a flood limits itself and nobody else's state is touched.
+    const slot = windows.size >= MAX_KEYS ? OVERFLOW : key;
+    entry = windows.get(slot);
+    if (!entry || entry.resetAt <= now) {
+      entry = { count: 0, resetAt: now + windowSeconds * 1000 };
+      windows.set(slot, entry);
+    }
   }
   entry.count += 1;
   return { allowed: entry.count <= limit, retryAfter: Math.max(1, Math.ceil((entry.resetAt - now) / 1000)) };
