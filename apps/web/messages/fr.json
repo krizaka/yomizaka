@@ -750,7 +750,12 @@
         "signOut": "Se déconnecter",
         "openSite": "Ouvrir dev.yomizaka.com",
         "operations": "Exploitation",
-        "flows": "Parcours"
+        "flows": "Parcours",
+        "groups": {
+          "people": "Personnes et fichiers",
+          "engine": "Parcours et moteur",
+          "operations": "Exploitation"
+        }
       },
       "overview": {
         "health": "Santé",

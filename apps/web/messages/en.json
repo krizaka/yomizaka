@@ -750,7 +750,12 @@
         "signOut": "Sign out",
         "openSite": "Open dev.yomizaka.com",
         "operations": "Operations",
-        "flows": "Flows"
+        "flows": "Flows",
+        "groups": {
+          "people": "People and files",
+          "engine": "Flows and engine",
+          "operations": "Operations"
+        }
       },
       "overview": {
         "health": "Health",

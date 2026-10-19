@@ -131,3 +131,19 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
   at the PDF-reader level, so a reader shows no « signed » badge.
 - **Signal we are wrong**: people ask why their PDF reader does not show a signature, or re-save PDFs and expect them to verify.
 
+
+## 10. Three small navigations: the bar, the library, the administration
+
+- **Decision**: the public bar has five entries (Product, How it works, A real run, Privacy, Verify a report) and the family's
+  language switch; the members' app has two (Library, Search) because everything else is reached from a document; the
+  administration has seven pages in **three groups** — People and files (Overview, People, Documents), Flows and engine
+  (Flows, Orazaka runs), Operations (Operations, Audit log) — each page its own address, shareable (`lib/admin-nav.ts`, guarded by
+  `lib/admin-nav.test.ts`). Dates in the console are always written in Montréal's time zone, whoever draws them.
+- **Problem**: the console grew a page per need (seven flat entries, two with the same icon) and its dates were drawn in the
+  machine's own time zone on the server and again in the browser: React refused the page (hydration error #418) on five of its
+  pages, found by the live walk (`scripts/check-admin-live.mjs`) on 2026-10-19.
+- **Principle**: group by the operator's job, not by table (information architecture, Rosenfeld & Morville; Hick's law for the
+  number of choices); one rendering for the server and the browser (React hydration contract).
+- **Refused**: tabs for seven pages (the family allows about five in a bar), a page per audit action, the machine's time zone.
+- **Cost**: a page moves under a group label when it is added; the time zone is the product's (Montréal), not the operator's.
+- **Signal we are wrong**: the operator opens « Operations » to look for runs, or asks for dates in their own zone.

@@ -2,13 +2,12 @@ import { Badge } from "@krizaka/ui/badge";
 import { Card } from "@krizaka/ui/card";
 import { DescriptionList } from "@krizaka/ui/description-list";
 
+import { formatDate } from "@/components/console/format";
 import { overview } from "@/lib/admin";
 import { query } from "@/lib/db";
 import { readEnv } from "@/lib/env";
-import { asLocale, getDictionary, type Locale } from "@/lib/i18n";
+import { asLocale, getDictionary } from "@/lib/i18n";
 import { APP_VERSION } from "@/lib/site";
-
-const INTL: Record<Locale, string> = { en: "en-CA", fr: "fr-CA" };
 
 async function reachable(run: () => Promise<unknown>): Promise<boolean> {
   try {
@@ -52,7 +51,7 @@ export default async function AdminOverview({ params }: { params: Promise<{ loca
             { term: t.accounts, details: `${o.accounts} · ${o.admins} ${t.admins} · ${o.suspended} ${t.suspended}` },
             { term: t.documents, details: `${o.documents} · ${(o.bytes / 1e6).toFixed(1)} MB ${t.stored}` },
             { term: t.runs, details: runs.length ? runs.map(([s, n]) => `${s} ${n}`).join(" · ") : t.none },
-            { term: t.lastRun, details: o.lastRunAt ? new Date(o.lastRunAt).toLocaleString(INTL[locale]) : t.none },
+            { term: t.lastRun, details: o.lastRunAt ? formatDate(o.lastRunAt, locale, true) : t.none },
           ]}
         />
       </Card.Root>

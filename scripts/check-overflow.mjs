@@ -4,6 +4,7 @@
 //
 //   node scripts/check-overflow.mjs --base http://localhost:3111 [--shots <dir>]
 //
+// Also fails on a console error or an uncaught exception (a hydration mismatch is one: React error #418).
 // Exits 1 listing every page × width × theme that overflows. With --shots it also writes a screenshot of each.
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
@@ -12,7 +13,7 @@ import { chromium } from "playwright-core";
 
 export const WIDTHS = [360, 390, 430, 768, 1024, 1440];
 export const THEMES = ["dark", "light"];
-export const PAGES = ["/en", "/fr", "/fr/locataire", "/en/freelancer", "/fr/run"];
+export const PAGES = ["/en", "/fr", "/fr/locataire", "/en/freelancer", "/fr/run", "/en/changelog", "/en/privacy", "/en/sign-in", "/fr/verify"];
 
 const arg = (name, fallback) => {
   const i = process.argv.indexOf(`--${name}`);
@@ -30,6 +31,12 @@ export async function check({ base, shots }) {
       } catch {}
     }, theme);
     const page = await context.newPage();
+    let errors = [];
+    page.on("console", (m) => {
+      // A blocked third-party resource is not a page error; a script error and a hydration mismatch are.
+      if (m.type() === "error" && !/Failed to load resource/.test(m.text())) errors.push(m.text().slice(0, 140));
+    });
+    page.on("pageerror", (e) => errors.push(String(e).slice(0, 140)));
     for (const path of PAGES) {
       for (const width of WIDTHS) {
         await page.setViewportSize({ width, height: 900 });
@@ -59,6 +66,8 @@ export async function check({ base, shots }) {
           return { scroll: doc.scrollWidth, client: doc.clientWidth, wide, chips };
         });
         const where = `${path} @${width} ${theme}`;
+        if (errors.length) problems.push(`${where}: console error — ${errors[0]}`);
+        errors = [];
         if (result.scroll > result.client) problems.push(`${where}: scrollWidth ${result.scroll} > ${result.client} (${result.wide.join(", ")})`);
         else if (result.wide.length) problems.push(`${where}: elements past the edge (${result.wide.join(", ")})`);
         if (result.chips.some((h) => h < 44)) problems.push(`${where}: a chip is ${Math.min(...result.chips)} px tall (< 44)`);

@@ -25,29 +25,22 @@
       "checked": "2026-10-17"
     },
     "ui.krizaka-ui": {
-      "evidence": null,
-      "gap": "No CI crawl proves NAV-SYS, one footer, dark/light, phone/desktop.",
-      "issue": "https://github.com/krizaka/yomizaka/issues/33"
+      "evidence": "https://github.com/krizaka/yomizaka/blob/main/apps/web/lib/footer.test.ts",
+      "checked": "2026-10-19"
     },
     "ui.themes-devices": {
-      "evidence": null,
-      "gap": "No CI crawl proves NAV-SYS, one footer, dark/light, phone/desktop.",
-      "issue": "https://github.com/krizaka/yomizaka/issues/33"
+      "evidence": "https://github.com/krizaka/yomizaka/blob/main/.github/workflows/ci.yml",
+      "checked": "2026-10-19"
     },
     "ux.ia-review": {
-      "evidence": null,
-      "gap": "No UX/IA review (the document journey: upload → inspect → findings → report; Trust Cockpit #31).",
-      "issue": "https://github.com/krizaka/yomizaka/issues/34"
+      "evidence": "https://github.com/krizaka/yomizaka/blob/main/docs/UX_DECISIONS.md",
+      "checked": "2026-10-19"
     },
     "mobile.build": {
-      "evidence": null,
-      "gap": "The mobile scope of Yomizaka is not stated: the AGENTS must say « no mobile app for Dev preview » (then mobile.build and mobile.ux-review are na) or p…",
-      "issue": "https://github.com/krizaka/yomizaka/issues/35"
+      "na": "No mobile app for the Dev preview: web only, phone-first; AGENTS.md section 3 says so (decision 2026-10-17)."
     },
     "mobile.ux-review": {
-      "evidence": null,
-      "gap": "The mobile scope of Yomizaka is not stated: the AGENTS must say « no mobile app for Dev preview » (then mobile.build and mobile.ux-review are na) or p…",
-      "issue": "https://github.com/krizaka/yomizaka/issues/35"
+      "na": "mobile.build is not applicable: Yomizaka has no mobile app in the Dev preview (web only, phone-first)."
     },
     "quality.ci-green": {
       "evidence": "https://github.com/krizaka/yomizaka/actions?query=branch%3Amain",
@@ -62,14 +55,12 @@
       "checked": "2026-10-16"
     },
     "docs.current": {
-      "evidence": null,
-      "gap": "One docs file; README/AGENTS not yet checked against what runs.",
-      "issue": "https://github.com/krizaka/yomizaka/issues/36"
+      "evidence": "https://github.com/krizaka/yomizaka/blob/main/apps/web/lib/readme.test.ts",
+      "checked": "2026-10-19"
     },
     "seo.family": {
-      "evidence": null,
-      "gap": "node scripts/check-seo-family.mjs --base https://dev.yomizaka.com --host https://dev.yomizaka.com --index off fails (empty sitemap / no Sitemap: line …",
-      "issue": "https://github.com/krizaka/yomizaka/issues/37"
+      "evidence": "https://github.com/krizaka/yomizaka/blob/main/.github/workflows/ci.yml",
+      "checked": "2026-10-19"
     },
     "ops.cost": {
       "evidence": null,
@@ -77,33 +68,28 @@
       "issue": "https://github.com/krizaka/.github/issues/78"
     },
     "admin.gated": {
-      "evidence": null,
-      "gap": "admin-rules.test.ts covers roles; no test proves the host/IP gate and the 404 on the public host (dev.yomizaka.com/console answers 307).",
-      "issue": "https://github.com/krizaka/yomizaka/issues/38"
+      "evidence": "https://github.com/krizaka/yomizaka/blob/main/apps/web/lib/access.test.ts",
+      "checked": "2026-10-19"
     },
     "admin.noindex": {
       "evidence": "https://admin.yomizaka.com/robots.txt",
       "checked": "2026-10-16"
     },
     "admin.operator-tasks": {
-      "evidence": null,
-      "gap": "Console pages exist (users, documents, audit); not proven end to end: users suspend/restore, documents and Orazaka runs, settings as DB parameters.",
-      "issue": "https://github.com/krizaka/yomizaka/issues/39"
+      "evidence": "https://github.com/krizaka/yomizaka/blob/main/scripts/check-admin-live.mjs",
+      "checked": "2026-10-19"
     },
     "admin.audit-log": {
-      "evidence": null,
-      "gap": "Audit page exists; not proven for every action.",
-      "issue": "https://github.com/krizaka/yomizaka/issues/41"
+      "evidence": "https://github.com/krizaka/yomizaka/blob/main/apps/web/lib/admin-audit.test.ts",
+      "checked": "2026-10-19"
     },
     "admin.shell": {
-      "evidence": null,
-      "gap": "Admin shell/themes unverified.",
-      "issue": "https://github.com/krizaka/yomizaka/issues/42"
+      "evidence": "https://github.com/krizaka/yomizaka/blob/main/scripts/check-admin-live.mjs",
+      "checked": "2026-10-19"
     },
     "admin.ux-review": {
-      "evidence": null,
-      "gap": "No UX/IA review of the console.",
-      "issue": "https://github.com/krizaka/yomizaka/issues/43"
+      "evidence": "https://github.com/krizaka/yomizaka/blob/main/docs/UX_DECISIONS.md",
+      "checked": "2026-10-19"
     },
     "admin.ci": {
       "evidence": "https://github.com/krizaka/yomizaka/actions?query=branch%3Amain",

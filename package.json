@@ -19,7 +19,8 @@
     "lint:sg:test": "ast-grep test --skip-snapshot-tests",
     "sg:ratchet:update": "node scripts/sg-ratchet.mjs --update",
     "sg:fix": "node scripts/sg-fix.mjs",
-    "check:overflow": "node scripts/check-overflow.mjs"
+    "check:overflow": "node scripts/check-overflow.mjs",
+    "check:admin-live": "node scripts/check-admin-live.mjs"
   },
   "devDependencies": {
     "@ast-grep/cli": "0.51.0",
