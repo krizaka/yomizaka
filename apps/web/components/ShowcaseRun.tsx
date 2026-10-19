@@ -1,15 +1,14 @@
 import { Badge } from "@krizaka/ui/badge";
-import { Button } from "@krizaka/ui/button";
 import { Card } from "@krizaka/ui/card";
 import { CodeBlock } from "@krizaka/ui/code-block";
 import { DescriptionList } from "@krizaka/ui/description-list";
 import { passages } from "@yomizaka/core";
-import Link from "next/link";
 
 import { format, getDictionary, type Locale } from "@/lib/i18n";
 import type { Showcase } from "@/lib/showcase";
 
-type View = Showcase & { file: { sha256: string; keyId: string } };
+import { Specimen } from "./Specimen";
+
 
 const TONE = { PASS: "success", FAIL: "danger", INSUFFICIENT_EVIDENCE: "warning" } as const;
 const ORDER: Record<string, number> = { FAIL: 0, INSUFFICIENT_EVIDENCE: 1, PASS: 2 };
@@ -27,11 +26,10 @@ export function summaryLine(findings: readonly { verdict: string }[], t: { summa
   return format(t.summary, { total: findings.length, fail: n("FAIL"), pass: n("PASS") }) + (insufficient ? format(t.insufficient, { n: insufficient }) : "");
 }
 
-/** The platform's own showcase run: the findings, the lit sample, the Orazaka run id, the signed report and the way to check it. */
-export function ShowcaseRun({ run, locale }: { run: View; locale: Locale }) {
-  const d = getDictionary(locale).landing;
-  const t = d.sections.demo;
-  const verdicts = d.verdicts;
+/** A real run: the findings, the lit sample, the Orazaka run id — and an unsigned, watermarked specimen of the report (ADR-0002). */
+export function ShowcaseRun({ run, locale }: { run: Showcase; locale: Locale }) {
+  const t = getDictionary(locale).run;
+  const verdicts = t.verdicts;
   const findings = sortFindings(run.report.findings);
   const quotes = run.report.findings.filter((f) => f.evidenceSpan?.quote).map((f) => ({ id: f.ruleId, quote: f.evidenceSpan!.quote, start: f.evidenceSpan!.start ?? undefined }));
   const parts = passages(run.document.text, quotes);
@@ -64,20 +62,9 @@ export function ShowcaseRun({ run, locale }: { run: View; locale: Locale }) {
               { term: t.ruleset, details: `${run.report.rulesetId} · ${run.report.rulesetVersion}` },
               { term: t.when, details: new Date(run.finishedAt).toLocaleString(DATE_LOCALE[locale], { dateStyle: "medium", timeStyle: "short", timeZone: "America/Toronto" }) },
               { term: t.docHash, details: <code className="break-all font-mono text-xs">{run.document.sha256}</code> },
-              { term: t.reportHash, details: <code className="break-all font-mono text-xs">{run.file.sha256}</code> },
-              { term: t.key, details: <code className="break-all font-mono text-xs">{run.file.keyId}</code> },
             ]}
           />
-          <div className="flex flex-wrap gap-3">
-            <Button asChild variant="primary" size="md" shape="cut">
-              <a href={`/api/showcase/report?lang=${locale}`} download>
-                {t.download}
-              </a>
-            </Button>
-            <Button asChild variant="secondary" size="md" shape="cut">
-              <Link href={`/${locale}/verify`}>{t.verify}</Link>
-            </Button>
-          </div>
+          <Specimen run={run} locale={locale} />
         </div>
         <ul className="grid min-w-0 gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2" aria-label={t.findings}>
           {findings.map((f) => (

@@ -1,5 +1,7 @@
 import crypto from "node:crypto";
 
+import type { Audience } from "@yomizaka/core";
+
 import { query } from "./db";
 import { sessionSecret } from "./env";
 
@@ -21,6 +23,7 @@ export interface SessionAccount {
   email: string;
   role: "USER" | "ADMIN";
   locale: "en" | "fr";
+  perspective: Audience | null;
 }
 
 export interface Session {
@@ -37,14 +40,14 @@ export async function createSession(accountId: string, meta: { ip: string | null
 
 export async function resolveSession(token: string | undefined): Promise<Session | null> {
   if (!isToken(token)) return null;
-  const [row] = await query<{ session_id: string; id: string; email: string; role: "USER" | "ADMIN"; locale: "en" | "fr" }>(
-    `SELECT s.id AS session_id, a.id, a.email, a.role, a.locale
+  const [row] = await query<{ session_id: string; id: string; email: string; role: "USER" | "ADMIN"; locale: "en" | "fr"; perspective: Audience | null }>(
+    `SELECT s.id AS session_id, a.id, a.email, a.role, a.locale, a.perspective
        FROM sessions s JOIN accounts a ON a.id = s.account_id
       WHERE s.token_hash = $1 AND s.expires_at > now() AND a.status = 'ACTIVE'`,
     [tokenHash(token)],
   );
   if (!row) return null;
-  return { id: row.session_id, account: { id: row.id, email: row.email, role: row.role, locale: row.locale } };
+  return { id: row.session_id, account: { id: row.id, email: row.email, role: row.role, locale: row.locale, perspective: row.perspective } };
 }
 
 export async function revokeSession(token: string | undefined): Promise<void> {

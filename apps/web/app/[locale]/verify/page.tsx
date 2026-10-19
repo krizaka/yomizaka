@@ -1,14 +1,13 @@
-import { Button } from "@krizaka/ui/button";
 import { Page, Section, SectionHeading } from "@krizaka/ui/page";
 import { PageHero } from "@krizaka/ui/page-hero";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
 import { VerifyForm, type VerifyLabels } from "@/components/VerifyForm";
 import { pageSession } from "@/lib/access";
-import { readEnv } from "@/lib/env";
 import { asLocale, getDictionary } from "@/lib/i18n";
 import { publicKeyBase64 } from "@/lib/report-key";
 import { signingKey } from "@/lib/report-signer";
@@ -18,18 +17,19 @@ import { pagePath } from "@/lib/site";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
-  return pageMetadata(asLocale((await params).locale), "verify");
+  return { ...pageMetadata(asLocale((await params).locale), "verify"), robots: { index: false, follow: false } };
 }
 
-/** Public: anyone checks an audit report — what a green result guarantees, what it does not, and the public key. */
+/**
+ * Members only (ADR-0002): a signed-out visitor goes to sign-in and comes back here; a member checks a report they own or
+ * were given access to — what a green result guarantees, what it does not, and the public key.
+ */
 export default async function Verify({ params }: { params: Promise<{ locale: string }> }) {
   const locale = asLocale((await params).locale);
   const t = getDictionary(locale);
   const v = t.verify;
   const key = signingKey();
-  const signedIn = (await pageSession()) !== null;
-  // A development deployment (APP_PUBLIC_ACTIONS=off): a signed-out visitor runs nothing; the page is read-only.
-  const locked = !signedIn && readEnv().APP_PUBLIC_ACTIONS !== "on";
+  if ((await pageSession().catch(() => null)) === null) redirect(`/${locale}/sign-in?next=${encodeURIComponent(`/${locale}/verify`)}`);
   const labels: VerifyLabels = {
     reportFile: v.reportFile,
     reportPaste: v.reportPaste,
@@ -43,6 +43,7 @@ export default async function Verify({ params }: { params: Promise<{ locale: str
     reasons: v.reasons,
     facts: v.facts,
     documentMatch: v.documentMatch,
+    noAccess: v.noAccess,
     drop: v.drop,
   };
   return (
@@ -54,16 +55,7 @@ export default async function Verify({ params }: { params: Promise<{ locale: str
         <Page>
           <Section>
             <div className="max-w-3xl">
-              {locked ? (
-                <div className="flex flex-col items-start gap-4 rounded-xl border border-border-default bg-surface-1 p-5">
-                  <p className="text-sm text-fg-secondary">{v.devLocked}</p>
-                  <Button asChild variant="primary" size="md" shape="cut">
-                    <Link href={`/${locale}/sign-in`}>{v.devSignIn}</Link>
-                  </Button>
-                </div>
-              ) : (
-                <VerifyForm labels={labels} locale={locale} canAttachDocument={signedIn} />
-              )}
+              <VerifyForm labels={labels} locale={locale} />
             </div>
           </Section>
           <Section divider>

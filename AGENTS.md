@@ -25,7 +25,7 @@
 - Reading a file's **text layer** (pdf.js through `unpdf`) is parsing, not analysis: it feeds the compliance Studio and
   search. A scanned PDF has no text layer — the UI says so; reading images would be Orazaka's job.
 - A report is shown as Orazaka returned it (`packages/core` `reportOf`): a shape it did not send is `null`, never a guess.
-  The public page's "a real run" is read from this platform at request time (ISR, 5 min): the one finished compliance check an administrator promoted (`analyses.showcase`) on a document declared a sample (`documents.sample`) — both set from the administration, audit-logged (`lib/showcase.ts`). Nothing promoted or unreachable → the section says so; never a copy kept in the repository.
+  The public page's « a real run » (`/run`) shows **one recorded run per side of the lease** (tenant, landlord): a fictitious sample lease sent to Orazaka's compliance Studio on dev (Québec ruleset), the answer kept exactly as Orazaka returned it in `apps/web/content/recorded-runs/<side>.json` — written by `scripts/record-runs.mjs` (key from the environment, never by hand; re-run it when the ruleset or the Studio changes). `lib/recorded-runs.ts` validates both at build: a page without a recorded run does not build (`lib/recorded-runs.test.ts`). The platform's own showcase (an administrator promotes a check on a sample document, `lib/showcase.ts`, `/api/showcase/*`) stays available but the page no longer depends on it.
 
 ## 3. The product is independent
 
@@ -48,6 +48,8 @@
   repository, never printed (read them with `~/.krizaka-worktrees/tools/secret.sh`).
 - Environment variables are named by bounded context (`APP_`, `DATABASE_`, `AUTH_`, `ABUSE_`, `AI_`), never by product or
   vendor; each is declared once in `apps/web/lib/env.ts`.
+
+- **The live DO spec must equal `deploy/digitalocean/dev.app.yaml`** (the repository is the intent; `doctl apps update` is not run by CI). The sitemap was a 404 on dev because the live app still had `APP_SEARCH_INDEXING=off` while the file said `on`: after any spec change, run `node scripts/check-seo-family.mjs --base https://dev.yomizaka.com --host https://dev.yomizaka.com`.
 
 ## 5. Storage and cost
 
@@ -92,6 +94,7 @@ with a message and, where safe, a `fix:`; written for Tsx and `.ts` is parsed as
 | `no-ambient-clock` | `new Date()` / `Date.now()` in domain code: the clock is injected |
 | `no-types-at-package-root` | `types.ts` at a package root (`<feature>/<feature>.types.ts`) |
 | `no-unjustified-numeric-export` | a numeric (or `…ToMilliseconds(n)`) `export const` in feature code without `// @fixed: <reason>` just above |
+| `no-hand-made-nav`, `no-hand-made-language-switch` | a navigation bar that is not `NavBar` of @krizaka/ui (own Radix NavigationMenu, a local `NavBar`/`TopNav`), a hand-made language switch (`hrefLang` in a component, a row of `aria-pressed={locale === …}` buttons): use `NavBar` and `NavBar.Language` (« Navigation in the family », ui.krizaka.com) |
 
 - **Run**: `npm run lint` runs everything (it includes `ast-grep test` and the ratchet). `npx ast-grep scan` lists the
   violations with their message; `npm run lint:sg:test` runs the rule tests.

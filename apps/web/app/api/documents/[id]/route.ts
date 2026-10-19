@@ -4,6 +4,8 @@ import { requireSession } from "@/lib/access";
 import { startAnalysis } from "@/lib/analyses";
 import { audit } from "@/lib/audit";
 import { deleteDocument, getDocument } from "@/lib/documents";
+import { appEnvironment } from "@/lib/env";
+import { resolveStart } from "@/lib/flows";
 import { handle, readJson } from "@/lib/http";
 import { limit } from "@/lib/rate-limit";
 
@@ -25,7 +27,9 @@ export function POST(req: Request, { params }: Params) {
     limit("analysis", req, session.account.id, [60, 3600], [30, 3600]);
     const id = (await params).id;
     const request = await readJson(req, startAnalysisBody);
-    const analysis = await startAnalysis(session.account.id, id, request);
+    // The flow decides: enabled, offered to this person, and every consent it requires granted (403 otherwise).
+    const { flowVersionId } = await resolveStart(session.account, request.studio, appEnvironment());
+    const analysis = await startAnalysis(session.account.id, id, request, flowVersionId);
     await audit({ action: "analysis.started", actorId: session.account.id, actorLabel: session.account.email, targetId: id, detail: { studio: request.studio, runId: analysis.runId }, headers: req.headers });
     return Response.json({ analysis }, { status: 202 });
   });

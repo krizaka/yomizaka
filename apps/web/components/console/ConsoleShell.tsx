@@ -5,6 +5,7 @@ import { krizakaFetch, useMutation } from "@krizaka/query";
 import { YomizakaLogo } from "@krizaka/ui";
 import { AppShell } from "@krizaka/ui/app-shell";
 import { Button } from "@krizaka/ui/button";
+import { languagesFor,LanguageSwitch } from "@krizaka/ui/language-switch";
 import { ThemeToggle } from "@krizaka/ui/theme";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -23,7 +24,6 @@ export function ConsoleShell({ locale, email, children }: { locale: "en" | "fr";
   const router = useRouter();
   const path = usePathname() ?? "";
   const home = `/${locale}/app`;
-  const other = locale === "en" ? "fr" : "en";
   const rest = path.slice(`/${locale}`.length);
   const signOut = useMutation({
     mutationFn: () => krizakaFetch("/api/auth/sign-out", { method: "POST" }),
@@ -69,10 +69,7 @@ export function ConsoleShell({ locale, email, children }: { locale: "en" | "fr";
           menuLabel={say("shell.openMenu")}
           actions={
             <>
-              <Link href={`/${other}${rest}`} hrefLang={other} lang={other} className="rounded-md px-2 py-1 text-sm text-fg-secondary hover:text-fg">
-                <span className="sr-only">{say("shell.language")} · </span>
-                {say("shell.otherLanguage")}
-              </Link>
+              <LanguageSwitch label={say("shell.language")} current={locale} languages={languagesFor(`/${locale}${rest}`)} linkAs={Link} />
               <ThemeToggle label={say("shell.theme")} variant="ghost" />
               <Button size="sm" variant="secondary" shape="cut" loading={signOut.isPending} onClick={() => signOut.mutate()}>
                 <LogoutIcon size={16} /> <span className="hidden sm:inline">{say("shell.signOut")}</span>

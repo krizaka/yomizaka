@@ -12,8 +12,8 @@ import { type SigningKey } from "./report-key";
  *   - the file carries an attestation: a canonical JSON `payload` (the document's SHA-256, the check — jurisdiction,
  *     rules version, Studio and its version, the Orazaka run id, the date — and every finding with its passage and
  *     article), the SHA-256 of the report's own visible text (`bodySha256`) and an Ed25519 signature over both;
- *   - anyone with the public key (shown on /verify) can check that THIS server's key signed exactly this content and
- *     that not one byte of the file changed since; and, given the original document, that it is the one checked;
+ *   - a member the owner gave access to (ADR-0002) checks on /verify that THIS server's key signed exactly this content
+ *     and that not one byte of the file changed since; and, given the original document, that it is the one checked;
  *   - it does NOT prove the law was applied correctly (the Québec ruleset awaits a lawyer's review), that the run id
  *     exists on Orazaka's side (only its operator can say), or WHEN the report was made beyond the date the check
  *     finished: there is no independent time-stamp, no blockchain. The trust is in the key holder, Krizaka.
@@ -54,6 +54,8 @@ export const reportPayload = z.object({
   }),
   summary: z.object({ rulesEvaluated: z.number(), blockingFailures: z.number(), byVerdict: z.record(z.string(), z.number()) }),
   findings: z.array(payloadFinding),
+  /** Set only by a demo key: a specimen is never an attestation, and verification rejects it (ADR-0002). */
+  specimen: z.literal(true).optional(),
 });
 export type ReportPayload = z.infer<typeof reportPayload>;
 
@@ -115,7 +117,7 @@ export function canonicalJson(value: unknown): string {
 export const sha256 = (data: string | Uint8Array) => crypto.createHash("sha256").update(data).digest("hex");
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const fill = (template: string, vars: Record<string, string | number>) => template.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
+export const fill = (template: string, vars: Record<string, string | number>) => template.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
 
 /** Where the attestation goes. The body is hashed with this marker removed, the file has the block in its place. */
 export const ATTESTATION_MARKER = "<!--yomizaka-attestation-->";
@@ -177,7 +179,7 @@ export interface Attestation {
   signature: string;
 }
 
-const signedMessage = (payload: ReportPayload, bodySha256: string) => Buffer.from(canonicalJson({ bodySha256, payload }), "utf8");
+export const signedMessage = (payload: ReportPayload, bodySha256: string) => Buffer.from(canonicalJson({ bodySha256, payload }), "utf8");
 
 export interface IssuedReport {
   html: string;
@@ -198,7 +200,7 @@ export function issueReport(payload: ReportPayload, labels: ReportLabels, key: S
   return { html, fileSha256: sha256(html), attestation };
 }
 
-export type VerifyFailure = "NOT_A_REPORT" | "UNREADABLE" | "BAD_SIGNATURE" | "ALTERED" | "UNKNOWN_KEY";
+export type VerifyFailure = "NOT_A_REPORT" | "UNREADABLE" | "BAD_SIGNATURE" | "ALTERED" | "UNKNOWN_KEY" | "SPECIMEN";
 
 export type Verification =
   | { ok: true; fileSha256: string; keyId: string; payload: ReportPayload; documentMatch: boolean | null }
@@ -231,5 +233,7 @@ export function verifyReport(file: string, key: Pick<SigningKey, "keyId" | "publ
   // The signature is good for this payload and this body hash: the file must still BE that body.
   const body = text.replace(match[0], ATTESTATION_MARKER);
   if (sha256(body) !== attestation.bodySha256) return fail("ALTERED");
+  // A specimen is a demonstration, never an attestation: however valid its signature, it proves nothing.
+  if (attestation.payload.specimen) return fail("SPECIMEN");
   return { ok: true, fileSha256, keyId: attestation.keyId, payload: attestation.payload, documentMatch: document ? sha256(document) === attestation.payload.document.sha256 : null };
 }

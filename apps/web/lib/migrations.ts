@@ -99,4 +99,117 @@ ALTER TABLE analyses ADD COLUMN showcase boolean NOT NULL DEFAULT false;
 CREATE INDEX analyses_showcase ON analyses(finished_at DESC) WHERE showcase;
 `,
   },
+  {
+    version: "0003_report_grants",
+    sql: `
+-- Verifying a signed report is for the people the report's owner gave access to (ADR-0002). A grant names an e-mail:
+-- a member of that address has access at once, and an address with no account yet is an invitation honoured the day the
+-- account exists (sign-up is closed on dev, so the row waits). Revoked or past its expiry, a grant opens nothing.
+CREATE TABLE report_grants (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  analysis_id   uuid NOT NULL REFERENCES analyses(id) ON DELETE CASCADE,
+  granted_by    uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  grantee_email text NOT NULL CHECK (grantee_email = lower(grantee_email)),
+  created_at    timestamptz NOT NULL DEFAULT now(),
+  expires_at    timestamptz,
+  revoked_at    timestamptz
+);
+CREATE UNIQUE INDEX report_grants_live ON report_grants(analysis_id, grantee_email) WHERE revoked_at IS NULL;
+CREATE INDEX report_grants_email ON report_grants(grantee_email);
+
+-- "Request access": a signed-in member asks the owner for a report they cannot verify; the owner sees it beside the grants.
+CREATE TABLE report_access_requests (
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  analysis_id     uuid NOT NULL REFERENCES analyses(id) ON DELETE CASCADE,
+  requester_id    uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  requester_email text NOT NULL,
+  created_at      timestamptz NOT NULL DEFAULT now(),
+  handled_at      timestamptz
+);
+CREATE UNIQUE INDEX report_access_requests_open ON report_access_requests(analysis_id, requester_id) WHERE handled_at IS NULL;
+`,
+  },
+  {
+    version: "0004_perspective",
+    sql: `
+-- Which side of the lease the person is on (chosen at onboarding, changeable in settings): drives the default checks and the wording.
+ALTER TABLE accounts ADD COLUMN perspective text CHECK (perspective IN ('tenant', 'landlord'));
+`,
+  },
+  {
+    version: "0005_audiences",
+    sql: `
+-- « Pour qui ? » grows past the two sides of a lease: freelancers and small businesses (offered as « soon » until their rules exist).
+ALTER TABLE accounts DROP CONSTRAINT IF EXISTS accounts_perspective_check;
+ALTER TABLE accounts ADD CONSTRAINT accounts_perspective_check CHECK (perspective IN ('tenant', 'landlord', 'freelancer', 'business'));
+`,
+  },
+  {
+    version: "0006_flows",
+    sql: `
+-- Flows are data, administered on admin.yomizaka.com (ADR-0003). A published version never changes.
+CREATE TABLE flows (
+  id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  key                text NOT NULL UNIQUE CHECK (key ~ '^[a-z0-9-]{1,60}$'),
+  current_version_id uuid,
+  created_at         timestamptz NOT NULL DEFAULT now()
+);
+CREATE TABLE flow_versions (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  flow_id      uuid NOT NULL REFERENCES flows(id) ON DELETE CASCADE,
+  version      integer NOT NULL CHECK (version >= 1),
+  status       text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'retired')),
+  definition   jsonb NOT NULL,
+  created_by   uuid REFERENCES accounts(id) ON DELETE SET NULL,
+  created_at   timestamptz NOT NULL DEFAULT now(),
+  published_at timestamptz,
+  UNIQUE (flow_id, version)
+);
+ALTER TABLE flows ADD CONSTRAINT flows_current_version FOREIGN KEY (current_version_id) REFERENCES flow_versions(id) ON DELETE SET NULL;
+CREATE TABLE flow_environments (
+  flow_id     uuid NOT NULL REFERENCES flows(id) ON DELETE CASCADE,
+  environment text NOT NULL CHECK (environment IN ('dev', 'prod')),
+  enabled     boolean NOT NULL DEFAULT false,
+  PRIMARY KEY (flow_id, environment)
+);
+-- What a person agreed to (a flow may require it): granted, then maybe withdrawn.
+CREATE TABLE consents (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  account_id  uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  key         text NOT NULL CHECK (key ~ '^[a-z0-9-]{1,40}$'),
+  granted_at  timestamptz NOT NULL DEFAULT now(),
+  revoked_at  timestamptz
+);
+CREATE UNIQUE INDEX consents_live ON consents(account_id, key) WHERE revoked_at IS NULL;
+-- The exact flow version that produced a check: publishing a new version never touches an old analysis.
+ALTER TABLE analyses ADD COLUMN flow_version_id uuid REFERENCES flow_versions(id) ON DELETE SET NULL;
+`,
+  },
+  {
+    version: "0007_screenings",
+    sql: `
+-- A landlord asks, the tenant consents (or declines), sees the result first, shares it or contests it. Minimal data: a short
+-- summary is kept, never a provider's raw report, and it is deleted when result_expires_at passes (docs/product/tenant-screening-research.md).
+CREATE TABLE screenings (
+  id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  landlord_id       uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  tenant_name       text NOT NULL,
+  tenant_email      text NOT NULL CHECK (tenant_email = lower(tenant_email)),
+  scope             text[] NOT NULL DEFAULT '{payment-history}',
+  provider          text NOT NULL,
+  status            text NOT NULL DEFAULT 'requested' CHECK (status IN ('requested', 'consented', 'shared', 'declined', 'contested', 'expired')),
+  token_hash        text NOT NULL UNIQUE,
+  created_at        timestamptz NOT NULL DEFAULT now(),
+  expires_at        timestamptz NOT NULL,
+  consented_at      timestamptz,
+  shared_at         timestamptz,
+  contested_at      timestamptz,
+  contest_comment   text,
+  result            jsonb,
+  result_expires_at timestamptz,
+  purged_at         timestamptz
+);
+CREATE INDEX screenings_landlord ON screenings(landlord_id, created_at DESC);
+`,
+  },
 ];

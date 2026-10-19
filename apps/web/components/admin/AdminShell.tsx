@@ -6,6 +6,7 @@ import { YomizakaLogo } from "@krizaka/ui";
 import { AppShell } from "@krizaka/ui/app-shell";
 import { Badge } from "@krizaka/ui/badge";
 import { Button } from "@krizaka/ui/button";
+import { languagesFor,LanguageSwitch } from "@krizaka/ui/language-switch";
 import { ThemeToggle } from "@krizaka/ui/theme";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -20,7 +21,6 @@ export function AdminShell({ locale, email, children }: { locale: "en" | "fr"; e
   const router = useRouter();
   const path = usePathname() ?? "";
   const home = `/${locale}`;
-  const other = locale === "en" ? "fr" : "en";
   const rest = path.slice(home.length);
   const signOut = useMutation({
     mutationFn: () => krizakaFetch("/api/auth/sign-out", { method: "POST" }),
@@ -33,6 +33,7 @@ export function AdminShell({ locale, email, children }: { locale: "en" | "fr"; e
     { to: home, key: "overview", icon: <HomeIcon />, exact: true },
     { to: `${home}/users`, key: "users", icon: <UsersIcon /> },
     { to: `${home}/documents`, key: "documents", icon: <KeepIcon /> },
+    { to: `${home}/flows`, key: "flows", icon: <ShieldIcon /> },
     { to: `${home}/runs`, key: "runs", icon: <ServerIcon /> },
     { to: `${home}/operations`, key: "operations", icon: <ShieldIcon /> },
     { to: `${home}/audit`, key: "audit", icon: <ClockIcon /> },
@@ -72,10 +73,7 @@ export function AdminShell({ locale, email, children }: { locale: "en" | "fr"; e
           menuLabel={say("shell.openMenu")}
           actions={
             <>
-              <Link href={`/${other}${rest}`} hrefLang={other} lang={other} className="rounded-md px-2 py-1 text-sm text-fg-secondary hover:text-fg">
-                <span className="sr-only">{say("shell.language")} · </span>
-                {say("shell.otherLanguage")}
-              </Link>
+              <LanguageSwitch label={say("shell.language")} current={locale} languages={languagesFor(`/${locale}${rest}`)} linkAs={Link} />
               <ThemeToggle label={say("shell.theme")} variant="ghost" />
               <Button size="sm" variant="secondary" shape="cut" loading={signOut.isPending} onClick={() => signOut.mutate()}>
                 <LogoutIcon size={16} /> <span className="hidden sm:inline">{say("adminConsole.shell.signOut")}</span>

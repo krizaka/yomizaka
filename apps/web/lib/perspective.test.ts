@@ -1,0 +1,77 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { resetRateLimits } from "./rate-limit";
+
+const state = vi.hoisted(() => ({ session: null as null | { account: { id: string; email: string; perspective: string | null } }, saved: [] as unknown[][], audits: [] as Record<string, unknown>[] }));
+
+vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => undefined }) }));
+vi.mock("./session", async (orig) => ({ ...(await orig<typeof import("./session")>()), resolveSession: async () => state.session }));
+vi.mock("./audit", () => ({ audit: async (entry: Record<string, unknown>) => void state.audits.push(entry) }));
+vi.mock("./db", () => ({ query: async (_sql: string, values: unknown[]) => void state.saved.push(values) }));
+
+import { firstCheck, wordingOf } from "./perspective-defaults";
+
+const call = async (method: "GET" | "PUT", body?: unknown) => {
+  const { GET, PUT } = await import("../app/api/me/perspective/route");
+  const req = new Request("https://dev.yomizaka.com/api/me/perspective", { method, body: body === undefined ? undefined : JSON.stringify(body), headers: { "x-forwarded-for": "203.0.113.7" } });
+  return method === "GET" ? GET(req) : PUT(req);
+};
+
+beforeEach(() => {
+  resetRateLimits();
+  state.session = null;
+  state.saved = [];
+  state.audits = [];
+});
+
+describe("PUT /api/me/perspective — the side of the lease, chosen at onboarding and changeable in settings", () => {
+  it("answers 401 to a signed-out caller", async () => {
+    expect((await call("GET")).status).toBe(401);
+    expect((await call("PUT", { perspective: "tenant" })).status).toBe(401);
+  });
+
+  it("keeps the side of a signed-in person and writes it to the audit log", async () => {
+    state.session = { account: { id: "acc-1", email: "a@x.test", perspective: null } };
+    const res = await call("PUT", { perspective: "landlord" });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ perspective: "landlord" });
+    expect(state.saved).toEqual([["acc-1", "landlord"]]);
+    expect(state.audits[0]).toMatchObject({ action: "profile.perspective_set", actorId: "acc-1", detail: { from: null, to: "landlord" } });
+  });
+
+  it("refuses any other value with 400", async () => {
+    state.session = { account: { id: "acc-1", email: "a@x.test", perspective: null } };
+    expect((await call("PUT", { perspective: "admin" })).status).toBe(400);
+    expect((await call("PUT", {})).status).toBe(400);
+    expect(state.saved).toEqual([]);
+  });
+
+  it("accepts every audience of « Pour qui ? »", async () => {
+    state.session = { account: { id: "acc-1", email: "a@x.test", perspective: null } };
+    for (const a of ["tenant", "landlord", "freelancer", "business"]) expect((await call("PUT", { perspective: a })).status).toBe(200);
+  });
+
+  it("reads the side back", async () => {
+    state.session = { account: { id: "acc-1", email: "a@x.test", perspective: "tenant" } };
+    expect(await (await call("GET")).json()).toEqual({ perspective: "tenant" });
+  });
+});
+
+describe("the side drives the defaults, not the rules", () => {
+  it("starts with the compliance check, except for a landlord's « other » documents (the tenant's papers)", () => {
+    expect(firstCheck("tenant", "lease")).toBe("compliance-check");
+    expect(firstCheck("tenant", "other")).toBe("compliance-check");
+    expect(firstCheck("landlord", "lease")).toBe("compliance-check");
+    expect(firstCheck("landlord", "other")).toBe("document-authenticity");
+    expect(firstCheck(null, "other")).toBe("compliance-check");
+  });
+
+  it("offers a freelancer or a business the file's examination first: no compliance rules exist for them yet", () => {
+    for (const a of ["freelancer", "business"] as const) for (const kind of ["lease", "contract", "invoice", "other"] as const) expect(firstCheck(a, kind)).toBe("document-authenticity");
+  });
+
+  it("reads the neutral wording until a side is chosen", () => {
+    expect(wordingOf(null)).toBe("neutral");
+    expect(wordingOf("tenant")).toBe("tenant");
+  });
+});

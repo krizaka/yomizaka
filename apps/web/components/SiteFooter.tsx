@@ -2,8 +2,9 @@ import { SiteFooter as FamilyFooter, SiteFooterColumn, SiteFooterLink } from "@k
 import { familyLabels } from "@krizaka/ui/sites";
 import Link from "next/link";
 
-import { type Locale, translator } from "@/lib/i18n";
+import { format, getDictionary, type Locale, translator } from "@/lib/i18n";
 import { indexable } from "@/lib/indexing";
+import { uiVersion } from "@/lib/platform";
 import { APP_VERSION, contactHref, pagePath, REPO_URL } from "@/lib/site";
 
 /**
@@ -19,12 +20,24 @@ export function SiteFooter({ locale }: { locale: Locale }) {
       family={false}
       labels={familyLabels[locale]}
       aria-label={t("chrome.footerLabel")}
-      version={APP_VERSION}
       env={indexable() ? undefined : "DEV"}
       data-testid="app-version"
-      legal={indexable() ? undefined : <span data-testid="dev-environment-notice">{t("chrome.devNotice")}</span>}
+      legal={
+        <>
+          <SiteFooterLink asChild>
+            <Link href={`${pagePath(locale, "changelog")}#${APP_VERSION}`}>
+              {format(getDictionary(locale).changelog.footerVersion, { version: APP_VERSION })}
+              {uiVersion() ? ` · Krizaka UI ${uiVersion()}` : ""}
+            </Link>
+          </SiteFooterLink>
+          {indexable() ? null : <span data-testid="dev-environment-notice">{t("chrome.devNotice")}</span>}
+        </>
+      }
     >
       <SiteFooterColumn title="Yomizaka">
+        <SiteFooterLink asChild>
+          <Link href={pagePath(locale, "run")}>{t("chrome.nav.run")}</Link>
+        </SiteFooterLink>
         <SiteFooterLink asChild>
           <Link href={pagePath(locale, "verify")}>{t("chrome.nav.verify")}</Link>
         </SiteFooterLink>

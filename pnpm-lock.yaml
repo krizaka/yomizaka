@@ -36,20 +36,23 @@ importers:
         specifier: ^0.2.1
         version: 0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1)
       '@krizaka/tailwind':
-        specifier: ^3.21.0
-        version: 3.21.0(@krizaka/tokens@3.21.0)(@krizaka/ui@3.21.0)(tailwindcss@4.3.3)
+        specifier: ^3.26.0
+        version: 3.26.0(@krizaka/tokens@3.26.0)(@krizaka/ui@3.26.0)(tailwindcss@4.3.3)
       '@krizaka/tokens':
-        specifier: ^3.21.0
-        version: 3.21.0
+        specifier: ^3.26.0
+        version: 3.26.0
       '@krizaka/ui':
-        specifier: ^3.21.0
-        version: 3.21.0(@krizaka/query@0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.21.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)
+        specifier: ^3.26.0
+        version: 3.26.0(@krizaka/query@0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.26.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)
       '@yomizaka/core':
         specifier: workspace:*
         version: link:../../packages/core
       next:
         specifier: ^16.4.1
         version: 16.4.1(@babel/core@7.29.7)(@types/node@24.19.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      pdf-lib:
+        specifier: 1.17.1
+        version: 1.17.1
       pdfjs-dist:
         specifier: 6.4.299
         version: 6.4.299
@@ -597,24 +600,24 @@ packages:
       pg:
         optional: true
 
-  '@krizaka/tailwind@3.21.0':
-    resolution: {integrity: sha512-dj0ER14Mk4sCBG5c5FY7Ik46DB6csSjLxqHemO4CClBW4fFC/XQtQkQPRkcx2muUZ94rn7GqM+H5XRvDObLJ1A==}
+  '@krizaka/tailwind@3.26.0':
+    resolution: {integrity: sha512-IQ/2/X7okWFzO7iMMTwPOKiBLTHFZDbjhQm128joJKHlld9jEmLP2CBjB+zkrGm/H6JKWyyTu0D9TytLepRE3Q==}
     engines: {node: '>=22'}
     peerDependencies:
-      '@krizaka/tokens': ^3.21.0
-      '@krizaka/ui': ^3.21.0
+      '@krizaka/tokens': ^3.26.0
+      '@krizaka/ui': ^3.26.0
       tailwindcss: ^4.1
 
-  '@krizaka/tokens@3.21.0':
-    resolution: {integrity: sha512-SiU0zjUiYrAhKaWzTKlVbqm/hRd7LhyGL7sHCv5hOCg6Aj5CNQTKGr8WP0yJ6yk56/drQo6BOb6unh/yjWj6Ug==}
+  '@krizaka/tokens@3.26.0':
+    resolution: {integrity: sha512-c//DLfWilv8czxH8Y//XyfgEY1m/aw7i5keNf7H1YC1MyHWfjSletcCZwHIcf2tVXd7F7oz4Xo6iZOP77erwiw==}
     engines: {node: '>=22'}
 
-  '@krizaka/ui@3.21.0':
-    resolution: {integrity: sha512-lBdLPOGbKKEbru1AYZ4jZ2e99EUz3ibf91sd9me1GiNTCP+GBjgBFYFj6Lz3vEvO7FX2ijUZTMNDBNbkK34HKQ==}
+  '@krizaka/ui@3.26.0':
+    resolution: {integrity: sha512-d5+AE1GSJqlAj61trEykGJU6t5892/Zk7+pmaVnpY/MMxedE/E3X7iLkTk7BvsIG6eBVgH7a3Xg9UzgY93z0Cw==}
     engines: {node: '>=22'}
     peerDependencies:
       '@krizaka/query': '>=0.2.1'
-      '@krizaka/tailwind': '>=3.21.0'
+      '@krizaka/tailwind': '>=3.26.0'
       '@maplibre/maplibre-react-native': '>=11'
       '@shopify/flash-list': '>=2'
       expo-camera: '>=16'
@@ -816,6 +819,12 @@ packages:
 
   '@oxc-project/types@0.154.0':
     resolution: {integrity: sha512-KYOUGQFlLWR+s4QMV2Q9ko38TZm7EdO87Qm7rvZLqk/webse/cDjtyxKhg/47l0byCbs/k46LT8qc4PKjAikzA==}
+
+  '@pdf-lib/standard-fonts@1.0.0':
+    resolution: {integrity: sha512-hU30BK9IUN/su0Mn9VdlVKsWBS6GyhVfqjwl1FjZN4TxP6cCw0jP2w7V3Hf5uX7M0AZJ16vey9yE0ny7Sa59ZA==}
+
+  '@pdf-lib/upng@1.0.1':
+    resolution: {integrity: sha512-dQK2FUMQtowVP00mtIksrlZhdFXQZPC+taih1q4CvPZ5vqdxR/LKBaFg0oAfzd1GlHZXXSPdQfzQnt+ViGvEIQ==}
 
   '@protomaps/basemaps@5.7.2':
     resolution: {integrity: sha512-K1Yk6bWdULulYg+R2QRVXx4NzJZan5YQhpejEG0c1/sXruJrfPIPZuakpf3jwAgVmjIRVQwAv+yRafDeN0aaUQ==}
@@ -3214,6 +3223,9 @@ packages:
     resolution: {integrity: sha512-LaNjtRWUBY++zB5nE/NwcaoMylSPk+S+ZHNB1TzdbMJMny6dynpAGt7X/tl/QYq3TIeE6nxHppbo2LGymrG5Pw==}
     engines: {node: '>=10'}
 
+  pako@1.0.11:
+    resolution: {integrity: sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==}
+
   parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
     engines: {node: '>=6'}
@@ -3231,6 +3243,9 @@ packages:
 
   pathe@2.0.3:
     resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
+
+  pdf-lib@1.17.1:
+    resolution: {integrity: sha512-V/mpyJAoTsN4cnP31vc0wfNA1+p20evqqnap0KLoRUN0Yk/p3wN52DOEsL4oBFcLdb76hlpKPtzJIgo67j/XLw==}
 
   pdfjs-dist@6.4.299:
     resolution: {integrity: sha512-AVl138zALtfaAPvADulE0PZThbYzCBS79nL4pOSL/6Sm/4AH5A21BD9VHt97OlCuzJuCpmeZtAtkinisF4Vb1g==}
@@ -3655,6 +3670,9 @@ packages:
 
   tsconfig-paths@3.15.0:
     resolution: {integrity: sha512-2Ac2RgzDe/cn48GvOe3M+o82pEFewD3UPbyoUHHdKasHwJKjds4fLXWf/Ux5kATBKN20oaFGu+jbElp1pos0mg==}
+
+  tslib@1.14.1:
+    resolution: {integrity: sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==}
 
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
@@ -4333,19 +4351,19 @@ snapshots:
     optionalDependencies:
       pg: 8.23.1
 
-  '@krizaka/tailwind@3.21.0(@krizaka/tokens@3.21.0)(@krizaka/ui@3.21.0)(tailwindcss@4.3.3)':
+  '@krizaka/tailwind@3.26.0(@krizaka/tokens@3.26.0)(@krizaka/ui@3.26.0)(tailwindcss@4.3.3)':
     dependencies:
-      '@krizaka/tokens': 3.21.0
-      '@krizaka/ui': 3.21.0(@krizaka/query@0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.21.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)
+      '@krizaka/tokens': 3.26.0
+      '@krizaka/ui': 3.26.0(@krizaka/query@0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.26.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)
       tailwindcss: 4.3.3
 
-  '@krizaka/tokens@3.21.0': {}
+  '@krizaka/tokens@3.26.0': {}
 
-  '@krizaka/ui@3.21.0(@krizaka/query@0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.21.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)':
+  '@krizaka/ui@3.26.0(@krizaka/query@0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.26.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)':
     dependencies:
       '@krizaka/intl': 0.2.1
       '@krizaka/pacer': 0.1.0(react@19.3.1)
-      '@krizaka/tokens': 3.21.0
+      '@krizaka/tokens': 3.26.0
       '@protomaps/basemaps': 5.7.2
       '@tanstack/highlight': 1.1.0
       '@tanstack/markdown': 1.0.0(react@19.3.1)
@@ -4362,7 +4380,7 @@ snapshots:
       tailwind-variants: 3.3.1(tailwindcss@4.3.3)
     optionalDependencies:
       '@krizaka/query': 0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1)
-      '@krizaka/tailwind': 3.21.0(@krizaka/tokens@3.21.0)(@krizaka/ui@3.21.0)(tailwindcss@4.3.3)
+      '@krizaka/tailwind': 3.26.0(@krizaka/tokens@3.26.0)(@krizaka/ui@3.26.0)(tailwindcss@4.3.3)
       pdfjs-dist: 6.4.299
       react-dom: 19.3.1(react@19.3.1)
       tailwindcss: 4.3.3
@@ -4476,6 +4494,14 @@ snapshots:
   '@nolyfill/is-core-module@1.0.39': {}
 
   '@oxc-project/types@0.154.0': {}
+
+  '@pdf-lib/standard-fonts@1.0.0':
+    dependencies:
+      pako: 1.0.11
+
+  '@pdf-lib/upng@1.0.1':
+    dependencies:
+      pako: 1.0.11
 
   '@protomaps/basemaps@5.7.2': {}
 
@@ -6977,6 +7003,8 @@ snapshots:
     dependencies:
       p-limit: 3.1.0
 
+  pako@1.0.11: {}
+
   parent-module@1.0.1:
     dependencies:
       callsites: 3.1.0
@@ -6988,6 +7016,13 @@ snapshots:
   path-parse@1.0.7: {}
 
   pathe@2.0.3: {}
+
+  pdf-lib@1.17.1:
+    dependencies:
+      '@pdf-lib/standard-fonts': 1.0.0
+      '@pdf-lib/upng': 1.0.1
+      pako: 1.0.11
+      tslib: 1.14.1
 
   pdfjs-dist@6.4.299:
     optionalDependencies:
@@ -7509,6 +7544,8 @@ snapshots:
       json5: 1.0.2
       minimist: 1.2.8
       strip-bom: 3.0.0
+
+  tslib@1.14.1: {}
 
   tslib@2.8.1: {}
 

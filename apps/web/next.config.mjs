@@ -7,7 +7,8 @@ const appVersion = process.env.APP_VERSION?.trim() || (process.env.APP_COMMIT_SH
 const production = process.env.NODE_ENV === "production";
 
 /**
- * Content Security Policy: nothing but this origin — no third-party script, frame or font. The document viewer frames
+ * Content Security Policy: nothing but this origin — no third-party script, frame or font. One exception, for images and
+ * media only: the Krizaka media CDN (the landing's recordings, lib/tour.ts). The document viewer frames
  * the document's own file (`/api/documents/<id>/file`, same origin), so frames are 'self' and nothing else. Next renders
  * inline bootstrap scripts without a nonce, so scripts keep 'unsafe-inline'. Development adds what the dev server needs.
  */
@@ -15,7 +16,8 @@ const csp = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${production ? "" : " 'unsafe-eval'"}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  "img-src 'self' data: blob: https://krizaka-assets.b-cdn.net",
+  "media-src 'self' https://krizaka-assets.b-cdn.net",
   "font-src 'self' data:",
   `connect-src 'self'${production ? "" : " ws: http://localhost:* http://127.0.0.1:*"}`,
   "frame-src 'self'",

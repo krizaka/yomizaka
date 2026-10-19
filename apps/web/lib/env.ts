@@ -20,11 +20,8 @@ export const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   /** `off` on every dev / preview deployment: noindex everywhere, robots `Disallow: /`, no sitemap, the dev line in the footer (lib/indexing.ts). */
   APP_SEARCH_INDEXING: z.enum(["on", "off"]).default("on"),
-  /**
-   * `off` on every dev deployment: a signed-out visitor runs nothing (the public verify answers 401 and its page is read-only).
-   * Only the dev team uses the dev site; production stays `on`.
-   */
-  APP_PUBLIC_ACTIONS: z.enum(["on", "off"]).default("on"),
+  /** Which environment this deployment is: a flow is enabled per environment (ADR-0003). */
+  APP_ENVIRONMENT: z.enum(["dev", "prod"]).default("dev"),
   /** The public origin of the site (canonical URLs, sitemap, llms.txt). */
   APP_PUBLIC_URL: z.string().url().default("https://dev.yomizaka.com"),
   /** PostgreSQL (the cluster krizaka-dev-pg in dev: database yomizaka_db, role yomizaka_db). */
@@ -51,6 +48,9 @@ export const envSchema = z.object({
 });
 
 export type Env = z.infer<typeof envSchema>;
+
+/** Which environment this deployment is: read at the edges (pages, routes) and passed to lib/flows.ts. */
+export const appEnvironment = () => readEnv().APP_ENVIRONMENT;
 
 export function readEnv(source: Record<string, string | undefined> = process.env): Env {
   return envSchema.parse(source);
