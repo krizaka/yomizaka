@@ -15,7 +15,7 @@ export function runInputs(request: StartAnalysis, doc: { mimeType: string; text:
   if (request.studio === "compliance-check") {
     if (!doc.text.trim()) throw refuse(422, "NO_TEXT", "This document has no text layer to check");
     if (doc.text.length > COMPLIANCE_MAX_CHARS) throw refuse(422, "TEXT_TOO_LONG", "This document is longer than the compliance check reads");
-    return { document: doc.text, jurisdiction: request.jurisdiction, asOf: request.asOf ?? today.toISOString().slice(0, 10) };
+    return { document: doc.text, jurisdiction: request.jurisdiction, asOf: request.asOf ?? today.toISOString().slice(0, 10), ...(request.ruleset ? { ruleset: request.ruleset } : {}) };
   }
   if (doc.mimeType !== "application/pdf") throw refuse(422, "NOT_A_PDF", "The authenticity check reads PDF files");
   if (doc.content.length > AUTHENTICITY_MAX_BYTES) throw refuse(422, "PDF_TOO_LARGE", "The authenticity check reads PDFs up to 1 MB");

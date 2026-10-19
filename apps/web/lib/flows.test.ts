@@ -35,13 +35,13 @@ describe("what the app derives from the flows — nothing hard-coded", () => {
     const both = [tenant, flow("landlord", { audiences: ["landlord"] })];
     expect(audiencesOf(both).map((a) => a.audience)).toEqual(["tenant", "landlord"]);
     expect(audiencesOf([tenant]).map((a) => a.audience)).toEqual(["tenant"]);
-    expect(offerFor([], "tenant")).toEqual({ studios: [], jurisdictions: [] });
+    expect(offerFor([], "tenant")).toEqual({ studios: [], jurisdictions: [], rulesets: [] });
   });
 
   it("offers on a document the Studios and jurisdictions of the person's flows (all flows until they chose a side)", () => {
     const flows = seedFlows("dev");
-    expect(offerFor(flows, "tenant")).toEqual({ studios: ["compliance-check", "document-authenticity"], jurisdictions: ["QC", "FR", "BE-WAL"] });
-    expect(offerFor(flows, "freelancer")).toEqual({ studios: ["document-authenticity"], jurisdictions: [] });
+    expect(offerFor(flows, "tenant")).toEqual({ studios: ["compliance-check", "document-authenticity"], jurisdictions: ["QC", "FR", "BE-WAL"], rulesets: ["qc-residential-lease", "fr-residential-lease", "be-residential-lease"] });
+    expect(offerFor(flows, "freelancer")).toEqual({ studios: ["document-authenticity"], jurisdictions: [], rulesets: [] });
     expect(flowsFor(flows, null)).toHaveLength(flows.length);
   });
 });
@@ -75,5 +75,23 @@ describe("the administration form and the definition, both ways", () => {
   it("turns the price in dollars into cents", () => {
     const f = formFromDefinition(SEED_FLOWS[0]!.definition);
     expect(definitionFromForm({ ...f, pricingModel: "per-run", amount: "4.5" }).pricing).toEqual({ model: "per-run", amountCents: 450 });
+  });
+});
+
+describe("a named ruleset (the Québec invoice) is run only under a flow that carries it", () => {
+  const COMPLIANCE_INVOICE = { id: "invoice", kind: "studio" as const, studio: "compliance-check" as const, pack: "document-validation", jurisdictions: [{ code: "QC" as const, ruleset: "qc-invoice" }] };
+  const lease = flow("lease", { audiences: ["freelancer"] });
+  const invoice = flow("invoice", { audiences: ["freelancer"], steps: [COMPLIANCE_INVOICE] });
+  it("offers the ruleset only through the flows that name it", () => {
+    expect(offerFor([lease], "freelancer").rulesets).not.toContain("qc-invoice");
+    expect(offerFor([lease, invoice], "freelancer").rulesets).toContain("qc-invoice");
+  });
+  it("refuses a request for a ruleset no flow of the person carries, and runs the one that does under that flow", () => {
+    expect(decideStart([lease], "freelancer", "compliance-check", [], "qc-invoice")).toMatchObject({ ok: false, code: "FLOW_NOT_OFFERED" });
+    expect(decideStart([lease, invoice], "freelancer", "compliance-check", [], "qc-invoice")).toMatchObject({ ok: true, flow: { key: "invoice" } });
+    expect(decideStart([lease, invoice], "tenant", "compliance-check", [], "qc-invoice")).toMatchObject({ ok: false, code: "FLOW_NOT_OFFERED" });
+  });
+  it("leaves the plain lease check as it was", () => {
+    expect(decideStart([lease, invoice], "freelancer", "compliance-check", [])).toMatchObject({ ok: true, flow: { key: "lease" } });
   });
 });

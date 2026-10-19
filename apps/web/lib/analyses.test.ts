@@ -9,6 +9,12 @@ const LEASE = "CONTRAT DE LOCATION\nDépôt de garantie : 2 550 €.";
 const pdf = (n: number) => Buffer.concat([Buffer.from("%PDF-1.7\n"), Buffer.alloc(n)]);
 
 describe("what Yomizaka sends to Orazaka", () => {
+  it("sends the named ruleset only when one was asked for, and never for another jurisdiction", () => {
+    const doc = { mimeType: "application/pdf", text: LEASE, content: pdf(10) };
+    const day = new Date("2026-10-19T12:00:00Z");
+    expect(runInputs({ studio: "compliance-check", jurisdiction: "QC", ruleset: "qc-invoice" }, doc, day)).toMatchObject({ jurisdiction: "QC", ruleset: "qc-invoice", asOf: "2026-10-19" });
+    expect(runInputs({ studio: "compliance-check", jurisdiction: "QC" }, doc, day)).not.toHaveProperty("ruleset");
+  });
   it("sends the text, the jurisdiction and today's date to the compliance Studio", () => {
     const inputs = runInputs({ studio: "compliance-check", jurisdiction: "FR" }, { mimeType: "application/pdf", text: LEASE, content: pdf(10) }, new Date("2026-10-14T12:00:00Z"));
     expect(inputs).toEqual({ document: LEASE, jurisdiction: "FR", asOf: "2026-10-14" });

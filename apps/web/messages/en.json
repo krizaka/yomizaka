@@ -607,6 +607,11 @@
       "authenticityTitle": "Signs of editing",
       "authenticityText": "The PDF file itself: producer, dates, successive saves, fonts.",
       "jurisdiction": "Jurisdiction",
+      "documentType": "What the document is",
+      "documentTypes": {
+        "lease": "A residential lease",
+        "invoice": "A supplier's invoice (Québec: GST and QST numbers, mandatory mentions)"
+      },
       "jurisdictions": {
         "QC": "Québec — residential lease (Civil Code, art. 1851 ff.)",
         "FR": "France — residential lease",

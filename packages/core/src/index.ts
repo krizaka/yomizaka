@@ -78,17 +78,21 @@ export const flowDefinition = z.object({
 export type FlowDefinition = z.infer<typeof flowDefinition>;
 
 /** What flows offer on a document: the Studios and, for the compliance Studio, the jurisdictions (with their rulesets). A « soon » flow offers the steps that run today. */
-export function offerOf(definitions: readonly FlowDefinition[]): { studios: Studio[]; jurisdictions: Jurisdiction[] } {
+export function offerOf(definitions: readonly FlowDefinition[]): { studios: Studio[]; jurisdictions: Jurisdiction[]; rulesets: string[] } {
   const studios = new Set<Studio>();
   const jurisdictions = new Set<Jurisdiction>();
+  const rulesets = new Set<string>();
   for (const d of definitions) {
     for (const s of d.steps) {
       if (s.kind !== STEP_KIND.studio || !s.studio) continue;
       studios.add(s.studio);
-      for (const j of s.jurisdictions) jurisdictions.add(j.code);
+      for (const j of s.jurisdictions) {
+        jurisdictions.add(j.code);
+        rulesets.add(j.ruleset);
+      }
     }
   }
-  return { studios: STUDIOS.filter((s) => studios.has(s)), jurisdictions: JURISDICTIONS.filter((j) => jurisdictions.has(j)) };
+  return { studios: STUDIOS.filter((s) => studios.has(s)), jurisdictions: JURISDICTIONS.filter((j) => jurisdictions.has(j)), rulesets: [...rulesets] };
 }
 
 /** The two Orazaka Studios of the document-validation pack Yomizaka runs. */
@@ -257,12 +261,18 @@ export const documentDetail = documentSummary.extend({
 });
 export type DocumentDetail = z.infer<typeof documentDetail>;
 
+/** The rulesets the Studio takes by name besides each jurisdiction's lease (orazaka-packs `document-validation` 1.3.0): Québec's supplier invoice. */
+export const NAMED_RULESETS = ["qc-invoice"] as const;
+export const namedRuleset = z.enum(NAMED_RULESETS);
+
 export const startAnalysis = z.discriminatedUnion("studio", [
   z.object({
     studio: z.literal("compliance-check"),
     jurisdiction,
     asOf: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  }),
+    /** Not the jurisdiction's lease but this document type's rules; the Québec invoice belongs to QC only. */
+    ruleset: namedRuleset.optional(),
+  }).refine((r) => r.ruleset !== "qc-invoice" || r.jurisdiction === "QC", { message: "The invoice rules are Québec's", path: ["ruleset"] }),
   z.object({
     studio: z.literal("document-authenticity"),
     expectedIssuer: z.string().trim().max(120).optional(),

@@ -95,8 +95,11 @@ export async function revokeConsent(account: { id: string; email: string }, key:
  * Pure: may this person start a Studio now? The flow must be enabled and offered to them, and every consent it requires must
  * be granted. Returns the flow to run under, or the refusal (the route turns it into a 403 with a stable code).
  */
-export function decideStart(flows: readonly AvailableFlow[], audience: Audience | null, studio: Studio, granted: readonly string[]): { ok: true; flow: AvailableFlow } | { ok: false; code: "FLOW_NOT_OFFERED" | "CONSENT_REQUIRED"; missing: string[] } {
-  const candidates = flowsFor(flows, audience).filter((f) => f.definition.steps.some((s) => s.kind === STEP_KIND.studio && s.studio === studio));
+export function decideStart(flows: readonly AvailableFlow[], audience: Audience | null, studio: Studio, granted: readonly string[], ruleset?: string): { ok: true; flow: AvailableFlow } | { ok: false; code: "FLOW_NOT_OFFERED" | "CONSENT_REQUIRED"; missing: string[] } {
+  // A named ruleset (the invoice) is run only under a flow whose step carries it — never because the request asked.
+  const candidates = flowsFor(flows, audience).filter((f) =>
+    f.definition.steps.some((s) => s.kind === STEP_KIND.studio && s.studio === studio && (!ruleset || s.jurisdictions.some((j) => j.ruleset === ruleset))),
+  );
   if (candidates.length === 0) return { ok: false, code: "FLOW_NOT_OFFERED", missing: [] };
   // The first flow whose consents the person has given; else the first flow's missing consents are reported.
   const runnable = candidates.find((f) => f.definition.consents.every((c) => granted.includes(c)));
@@ -105,9 +108,9 @@ export function decideStart(flows: readonly AvailableFlow[], audience: Audience 
 }
 
 /** Enforced server-side before any run starts (never only hidden in the UI): the flow's version id is kept with the analysis. */
-export async function resolveStart(account: { id: string; perspective: Audience | null }, studio: Studio, environment: FlowEnvironment): Promise<{ flowVersionId: string | null }> {
+export async function resolveStart(account: { id: string; perspective: Audience | null }, studio: Studio, environment: FlowEnvironment, ruleset?: string): Promise<{ flowVersionId: string | null }> {
   const flows = await availableFlows(environment, { fallback: false });
-  const decision = decideStart(flows, account.perspective, studio, await grantedConsents(account.id));
+  const decision = decideStart(flows, account.perspective, studio, await grantedConsents(account.id), ruleset);
   if (!decision.ok) throw refuse(403, decision.code, decision.code === "CONSENT_REQUIRED" ? "A consent this flow requires has not been given" : "This check is not offered", { missing: decision.missing });
   return { flowVersionId: decision.flow.versionId };
 }
