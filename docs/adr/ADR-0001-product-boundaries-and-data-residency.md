@@ -1,0 +1,91 @@
+# ADR-0001 — Product Boundaries, Multi-Region Residency (Quebec Law 25), and Trust Integration: Yomizaka vs. Orasaka vs. Orochia
+
+- **Status:** accepted — 2026-10-16 (ratified in krizaka/yomizaka#29 and discussion #30)
+- **Scope:** Yomizaka (`krizaka/yomizaka`), Orasaka (`krizaka/orazaka`, `orazaka-tools`), Orochia (`krizaka/orochia`), Krizaka Platform Kit
+- **Enforced by:** `@yomizaka/core`, `@yomizaka/providers`, HTTP edge `X-Data-Residency-Zone`, 60-second zeroize RAM purge, Ed25519 attestation chain
+
+## Context
+
+Technologies Krizaka Inc. operates a House of Brands architecture with distinct product missions:
+1. **Orasaka (`orazaka-ai-engine`, `orazaka-tools`):** Sovereign enterprise AI platform running locally or on dedicated GPU hardware. `orazaka-tools` acts as an MCP gateway for generic, non-PII agent operations.
+2. **Yomizaka (`krizaka/yomizaka`):** Elevated from an internal document analysis module to Krizaka’s 2nd flagship B2B commercial product. Yomizaka serves the Montreal/Quebec ecosystem (PropTech, FinTech, LegalTech, regulated platforms subject to **Quebec Law 25**) and global markets (PIPEDA, GDPR, CCPA).
+3. **Orochia (`krizaka/orochia`):** High-performance 4K creator platform (ethical 90/10 revenue share) requiring strict 18+ age gating, creator KYC/identity verification (18 U.S.C. § 2257), and partnership contract vaulting.
+
+### The Architectural Dilemma
+
+- **Where do external KYC, Age Verification, and Credit connectors live?**
+  - Should they live in `orasaka-tools` as generic MCP tools, or in Yomizaka?
+- **How does Orochia consume these verification services?**
+  - Should Orochia bypass Yomizaka and call Orasaka or third-party providers directly, or consume Yomizaka as "Customer Zero"?
+- **How is legal sovereignty and data residency guaranteed across the call chain?**
+  - How do we prevent sensitive PII, national ID scans, and biometric liveness photos from leaking into AI model inference layers, LLM logs, or uncertified cloud caches?
+
+## Decision
+
+### 1. Dedicated Trust SPI in Yomizaka (`@yomizaka/providers`)
+- **Third-party connectors live exclusively within Yomizaka.** `orasaka-tools` remains strictly reserved for generic, stateless, non-PII agent tooling (e.g., search, arithmetic, format conversions).
+- Yomizaka defines pluggable Service Provider Interfaces:
+  - `IdvProvider` (Didit, Persona, Stripe Identity, Trulioo)
+  - `AgeGateProvider` (Didit 18+ fast age verification)
+  - `CreditBureauProvider` (Flinks Open Banking, CRS Credit API soft pulls)
+- **Hard Invariant:** **NO raw PII, national ID images, or biometrics ever enter Orasaka or `orasaka-tools`.**
+
+### 2. Orochia is "Customer Zero" of Yomizaka
+- Orochia talks **only** to Yomizaka’s B2B API (`/api/v1/verifications/age`, `/api/v1/verifications/id`, `/api/v1/contracts`).
+- Orochia stores **zero** identity documents, selfies, or biometric templates in its database.
+- Orochia receives and stores only tamper-proof, Ed25519-signed cryptographic tokens (`VerificationAttestation`).
+- Human escalation for unclear cases is surfaced directly via `orochia-admin`, backed by Yomizaka audit receipts.
+
+### 3. Multi-Region Data Residency & Quebec Law 25 Sovereignty
+- Every request carries the mandatory context header `X-Data-Residency-Zone`:
+  - `CA-QC`: Quebec / Canada (Physical residency at OVHcloud Beauharnois BHS or AWS Montreal `ca-central-1`).
+  - `EU-CENTRAL`: European Union (Frankfurt / Paris - GDPR).
+  - `US-EAST`: United States (Northern Virginia - CCPA / SOC2).
+- **Stateless AI In-Memory Processing:** When Yomizaka invokes Orasaka Studios (`document-authenticity`, `compliance-check`), requests carry `Cache-Control: no-store` and operate solely in volatile memory (`tmpfs`). No disk persistence occurs on Orasaka.
+- **Zero-Biometric-Retention by Default:** Raw document scans and liveness frames are purged and cryptographically wiped (DoD zeroize) within 60 seconds of verdict issuance.
+
+## Provider Matrix & Unit Economics
+
+| Provider | Capability | Unit Cost | Key Strengths & Fit |
+| :--- | :--- | :--- | :--- |
+| **Didit** | Age (18+) & Basic IDV | ~$0.30 / check (500 free/mo) | High speed (<15s), ultra-low unit cost; primary for Orochia 18+ age gating |
+| **Persona** | Full KYC & AML | ~$1.50 - $2.00 / check | Premier Quebec document parsing (RAMQ, SAAQ); primary for high-risk B2B |
+| **Stripe Identity** | Instant KYC | $1.50 / check | Native integration with creator payouts and Stripe Connect |
+| **Flinks** | Open Banking & Solvency | ~$0.50 - $2.00 CAD / connection | Montreal-based open banking; real-time bank cash-flow for PropTech leasing |
+| **CRS Credit API** | Soft Credit Bureau Pulls | ~$1.50 - $4.50 USD / pull | Instant tri-bureau soft pulls with zero score impact |
+| **OVHcloud Beauharnois** | S3 & Dedicated Compute | ~$0.01 / GB / month | 100% physical Quebec jurisdiction without CLOUD Act exposure |
+
+## Architecture Flow
+
+```
+┌─────────────────────────────────────────────────────────┐
+│              OROCHIA (18+ Media Platform)               │
+│   Front-end Creator & Consumer · "Customer Zero"       │
+└───────────────────────────┬─────────────────────────────┘
+                            │ B2B API (mTLS / Service Token)
+                            ▼
+┌─────────────────────────────────────────────────────────┐
+│     YOMIZAKA (Sovereign Trust & Compliance Engine)      │
+│  - /api/v1/verifications/{age,id}, /api/v1/contracts    │
+│  - Multi-Region Router (X-Data-Residency-Zone: CA-QC)   │
+│  - SPI: Didit, Persona, Flinks, CRS Credit             │
+│  - 60s Biometric Zeroize Purge                          │
+│  - Ed25519 Signed VerificationAttestation Ledger        │
+└───────────────┬─────────────────────────┬───────────────┘
+                │ Anonymized In-Memory    │ KMS Encrypted S3
+                │ Cache-Control: no-store │ Regional Buckets
+                ▼                         ▼
+┌───────────────────────────────┐ ┌───────────────────────┐
+│       ORASAKA AI ENGINE       │ │ KRIZAKA MULTI-REGION  │
+│ - document-authenticity       │ │ • CA-QC (Beauharnois) │
+│ - compliance-check (Loi 25)   │ │ • EU (Frankfurt)      │
+│ - orasaka-tools (Generic MCP) │ │ • US (Virginia)       │
+└───────────────────────────────┘ └───────────────────────┘
+```
+
+## Consequences & Trade-offs
+
+- **Positive:** Complete isolation of PII guarantees compliance with Quebec Law 25 and GDPR.
+- **Positive:** Orochia sheds direct liability by relying on signed cryptographic audit attestations.
+- **Positive:** Yomizaka establishes commercial viability as a sovereign B2B trust product for Quebec PropTech and FinTech.
+- **Negative / Operational Cost:** Multi-region S3 routing and per-zone KMS key rotation must be configured and monitored.
