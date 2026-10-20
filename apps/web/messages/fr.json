@@ -429,8 +429,8 @@
   },
   "run": {
     "eyebrow": "Un vrai run",
-    "title": "Pas une maquette : un bail québécois vérifié en dev",
-    "lead": "Deux baux d'exemple de Montréal (fictifs), un par côté du bail, envoyés au Studio de conformité d'Orazaka sur dev.orazaka.com, juridiction Québec. Ce qui est revenu, tel quel : le numéro de l'exécution, la version du Studio, chaque constat.",
+    "title": "Pas une maquette : des baux et des factures du Québec vérifiés en dev",
+    "lead": "Quatre exemples fictifs — deux baux, un par côté du bail, et deux factures — envoyés au Studio de conformité d'Orazaka sur dev.orazaka.com, juridiction Québec. Ce qui est revenu, tel quel : le numéro de l'exécution, la version du Studio, chaque constat.",
     "run": "Run Orazaka",
     "studio": "Studio",
     "ruleset": "Règles",
@@ -441,7 +441,7 @@
     "rule": "Règle",
     "article": "Article",
     "passage": "Passage",
-    "viewer": "Le bail, les passages cités éclairés",
+    "viewer": "Le document, les passages cités éclairés",
     "viewerHint": "Le même texte que le visualiseur de la console : chaque passage cité par un constat est marqué.",
     "docHash": "SHA-256 du document",
     "report": "Rapport signé",
@@ -463,11 +463,19 @@
       "landlord": {
         "title": "Côté propriétaire : votre modèle avant l'envoi",
         "lead": "Avant d'envoyer, ce que le modèle doit corriger pour être conforme."
+      },
+      "freelancer": {
+        "title": "Côté travailleur autonome : votre facture avant de l'envoyer",
+        "lead": "Les mentions exigées au Québec et le format des numéros de TPS et de TVQ, vérifiés sur une facture. Le numéro de TVQ volontairement faux est signalé."
+      },
+      "business": {
+        "title": "Côté entreprise : la facture d'un fournisseur avant de payer",
+        "lead": "Les mêmes règles sur une facture reçue : ce qui manque avant de réclamer le crédit de taxe."
       }
     },
     "recorded": "Enregistré le {date} sur {source} · exécution {run}. Les constats ci-dessous sont la réponse d'Orazaka, sans retouche.",
     "specimen": {
-      "mark": "SPÉCIMEN — bail fictif, sans valeur",
+      "mark": "SPÉCIMEN — document fictif, sans valeur",
       "title": "Spécimen du rapport",
       "note": "Un aperçu visuel, non signé : ce n'est pas une attestation. Un rapport signé n'existe que pour vos propres documents, et seules les personnes à qui vous donnez accès peuvent le vérifier."
     }

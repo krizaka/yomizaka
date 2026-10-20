@@ -37,7 +37,7 @@ describe("no public route serves a signed artifact", () => {
       const html = renderToStaticMarkup(createElement(ShowcaseRun, { run: recordedRun(side), locale: "fr" }));
       expect(html).not.toMatch(/report\?lang|download|ed25519|dev:[0-9a-f]{8}/i);
       expect(html).toContain('data-testid="specimen"');
-      expect(html).toContain("SPÉCIMEN — bail fictif, sans valeur");
+      expect(html).toContain("SPÉCIMEN — document fictif, sans valeur");
     }
   });
 

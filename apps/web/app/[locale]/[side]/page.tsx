@@ -13,11 +13,13 @@ import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 
 import { AudiencePicker } from "@/components/home/AudiencePicker";
+import { ShowcaseRun } from "@/components/ShowcaseRun";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
 import { appEnvironment } from "@/lib/env";
 import { audiencesOf, availableFlows } from "@/lib/flows";
-import { asLocale, getDictionary, LOCALES } from "@/lib/i18n";
+import { asLocale, format, getDictionary, LOCALES } from "@/lib/i18n";
+import { invoiceRun } from "@/lib/recorded-runs";
 import { OG_IMAGE, siteJsonLd } from "@/lib/seo";
 import { SIDE_LANDINGS, sideOfSlug, sidePath, sideUrl } from "@/lib/sides";
 import { contactHref, pagePath } from "@/lib/site";
@@ -70,6 +72,7 @@ export default async function SideLanding({ params }: { params: Promise<{ locale
   if (found.slugLocale !== locale) permanentRedirect(sidePath(locale, side));
   const t = t0;
   const w = t.sides[side];
+  const invoice = side === "freelancer" || side === "business" ? invoiceRun(side) : null;
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
@@ -123,6 +126,15 @@ export default async function SideLanding({ params }: { params: Promise<{ locale
             ))}
           </ol>
         </Section>
+
+        {side === "freelancer" || side === "business" ? (
+          <Section id="real-run" eyebrow={t.run.eyebrow} title={t.run.sides[side].title} lead={t.run.sides[side].lead} reveal divider>
+            <p className="mb-4 font-mono text-xs text-fg-muted" data-testid={`recorded-${side}`}>
+              {format(t.run.recorded, { date: new Date(invoice!.recordedAt).toLocaleDateString(locale === "fr" ? "fr-CA" : "en-CA", { dateStyle: "long", timeZone: "America/Toronto" }), source: new URL(invoice!.source).host, run: invoice!.runId })}
+            </p>
+            <ShowcaseRun run={invoice!} locale={locale} />
+          </Section>
+        ) : null}
 
         <Section id="examples" eyebrow={w.examples.eyebrow} title={w.examples.title} lead={w.examples.lead} reveal divider>
           <ul className="grid gap-3 md:grid-cols-2">
