@@ -41,3 +41,9 @@ describe("the landing's recording: one smooth take, phone first, in each languag
     expect(config).toContain(`"media-src 'self' ${MEDIA_CDN}"`);
   });
 });
+
+describe("the take is filmed smoothly", () => {
+  it("was captured at 25 frames a second or more, in each language (scripts/landing-take.mjs refuses less)", () => {
+    for (const locale of ["en", "fr"] as const) expect(takeFor(locale).fps).toBeGreaterThanOrEqual(25);
+  });
+});

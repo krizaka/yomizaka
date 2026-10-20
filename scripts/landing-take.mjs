@@ -88,7 +88,8 @@ let filming = true;
 const film = (async () => {
   while (filming) {
     const at = Date.now() / 1000;
-    const shot = await cdp.send("Page.captureScreenshot", { format: "jpeg", quality: 85, optimizeForSpeed: true }).catch(() => null);
+    // A capture that never answers (the page is navigating) must not stall the take: give up after 3 s and go on.
+    const shot = await Promise.race([cdp.send("Page.captureScreenshot", { format: "jpeg", quality: 85, optimizeForSpeed: true, clip: { x: 0, y: 0, width: VIEWPORT.width, height: VIEWPORT.height, scale: SCALE } }), new Promise((r) => setTimeout(r, 3000, null))]).catch(() => null);
     if (shot) frames.push({ at, data: shot.data });
   }
 })();

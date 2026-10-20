@@ -14,15 +14,15 @@ export type TakeLocale = (typeof TAKE_LOCALES)[number];
 
 const TOUR = `${MEDIA_CDN}/site/products/yomizaka/tour`;
 
-/** Recorded 2026-10-17 on dev.yomizaka.com: the hashes of each file, the Orazaka run the check started, the chapters' times (s). */
-const TAKES: Record<TakeLocale, { files: { webm: string; mp4: string; jpg: string }; runId: string; seconds: number; chapters: Record<TakeChapter, number> }> = {
-  fr: { files: { webm: "03fffa406b", mp4: "112aa3ee60", jpg: "2d7438e38c" }, runId: "6265d3ec-6233-4646-8146-505d74b81cca", seconds: 18.1, chapters: { drop: 1.4, check: 4.29, finding: 8.44, search: 13.98 } },
-  en: { files: { webm: "9375be29e7", mp4: "02713c0f1a", jpg: "933de0c312" }, runId: "b46a8dc3-2226-4444-8fc3-1dd7464ade1a", seconds: 18.4, chapters: { drop: 1.4, check: 4, finding: 8.6, search: 14.24 } },
+/** Recorded 2026-10-19 on dev.yomizaka.com (25+ fps, 780×1688 — a CDP capture, scripts/landing-take.mjs): the hashes of each file, the Orazaka run the check started, the chapters' times (s). */
+const TAKES: Record<TakeLocale, { files: { webm: string; mp4: string; jpg: string }; runId: string; seconds: number; fps: number; chapters: Record<TakeChapter, number> }> = {
+  fr: { files: { webm: "8d9b5e341a", mp4: "95ae22b711", jpg: "297eb0e4db" }, runId: "90cb373b-1de8-4d01-9cd3-5652828313a3", seconds: 18.4, fps: 25.9, chapters: { drop: 1.4, check: 4.19, finding: 8.79, search: 14.26 } },
+  en: { files: { webm: "0f56c7e720", mp4: "b78666614d", jpg: "297eb0e4db" }, runId: "3d76d3a3-dd7f-4557-aed2-bde1c9cb75f4", seconds: 18.2, fps: 25.2, chapters: { drop: 1.4, check: 4.78, finding: 8.71, search: 14.13 } },
 };
 
 /** The take of a language: its video (WebM and MP4), its poster, the run id that proves it is real, and where each chapter starts. */
-export function takeFor(locale: TakeLocale): { webm: string; mp4: string; poster: string; runId: string; seconds: number; chapters: Record<TakeChapter, number> } {
+export function takeFor(locale: TakeLocale): { webm: string; mp4: string; poster: string; runId: string; seconds: number; fps: number; chapters: Record<TakeChapter, number> } {
   const t = TAKES[locale];
   const name = `${TOUR}/take-${locale}`;
-  return { webm: `${name}.${t.files.webm}.webm`, mp4: `${name}.${t.files.mp4}.mp4`, poster: `${name}.${t.files.jpg}.jpg`, runId: t.runId, seconds: t.seconds, chapters: t.chapters };
+  return { webm: `${name}.${t.files.webm}.webm`, mp4: `${name}.${t.files.mp4}.mp4`, poster: `${name}.${t.files.jpg}.jpg`, runId: t.runId, seconds: t.seconds, fps: t.fps, chapters: t.chapters };
 }
