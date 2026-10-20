@@ -1,5 +1,7 @@
 import { type Analysis, type ComplianceReport, orazakaRun, type Perspective, PERSPECTIVES, reportOf } from "@yomizaka/core";
 
+import business from "@/content/recorded-runs/business.json";
+import freelancer from "@/content/recorded-runs/freelancer.json";
 import landlord from "@/content/recorded-runs/landlord.json";
 import tenant from "@/content/recorded-runs/tenant.json";
 
@@ -19,14 +21,19 @@ const RUN_SUCCEEDED = "SUCCEEDED";
 
 const FILES: Record<Perspective, unknown> = { tenant, landlord };
 
+/** The Québec invoice check, recorded for the two audiences that have it: a freelancer's own invoice, a supplier's invoice received. */
+export const INVOICE_SIDES = ["freelancer", "business"] as const;
+export type InvoiceSide = (typeof INVOICE_SIDES)[number];
+const INVOICE_FILES: Record<InvoiceSide, unknown> = { freelancer, business };
+
 /** What a recording says — never a signed file: a sample is a visual specimen (ADR-0002). */
 export interface RecordedRun extends Showcase {
-  side: Perspective;
+  side: Perspective | InvoiceSide;
   recordedAt: string;
   source: string;
 }
 
-export function readRecording(side: Perspective, raw: unknown): { run: RecordedRun; analysis: Analysis; document: Parameters<typeof buildPayload>[0] } {
+export function readRecording(side: Perspective | InvoiceSide, raw: unknown): { run: RecordedRun; analysis: Analysis; document: Parameters<typeof buildPayload>[0] } {
   const fail = (why: string) => new RecordedRunError(`recorded run "${side}": ${why} — record it with scripts/record-runs.mjs`);
   const file = raw as { side?: string; recordedAt?: string; source?: string; studio?: string; document?: { title: string; filename: string; text: string }; inputs?: unknown; run?: unknown } | null;
   if (!file || file.side !== side || file.studio !== "compliance-check" || !file.document?.text || !file.recordedAt) throw fail("the file is not a recording");
@@ -72,3 +79,8 @@ const ALL = Object.fromEntries(PERSPECTIVES.map((side) => [side, readRecording(s
 
 export const recordedRun = (side: Perspective): RecordedRun => ALL[side].run;
 export const recordedRuns = (): RecordedRun[] => PERSPECTIVES.map(recordedRun);
+
+/** The invoice recordings, validated at module load like the lease ones: a page without its run does not build. */
+const INVOICES = Object.fromEntries(INVOICE_SIDES.map((side) => [side, readRecording(side, INVOICE_FILES[side])])) as Record<InvoiceSide, ReturnType<typeof readRecording>>;
+
+export const invoiceRun = (side: InvoiceSide): RecordedRun => INVOICES[side].run;

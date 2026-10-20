@@ -26,4 +26,28 @@ Loyer mensuel : 1 120 $, payable le premier jour du mois.
 Le locataire verse un dépôt de garantie équivalant à un mois de loyer à la signature.
 Le locataire renonce à son droit au maintien dans les lieux à la fin du bail.`,
   },
+  freelancer: {
+    title: "Facture n° 2041 — conception de site (d'une travailleuse autonome)",
+    filename: "facture-2041.txt",
+    ruleset: "qc-invoice",
+    text: `FACTURE n° 2041
+Date de la facture : 12 octobre 2026
+Fournisseur : Atelier Boréal inc. (fictif)
+TPS : 123456789 RT0001
+TVQ : 123456789 TQ0001
+Conception du site, 10 heures : 1 000,00 $
+TPS (5 %) : 50,00 $
+Total : 1 149,75 $`,
+  },
+  business: {
+    title: "Facture reçue n° A-318 — fournitures de bureau (d'un fournisseur)",
+    filename: "facture-recue-a-318.txt",
+    ruleset: "qc-invoice",
+    text: `FACTURE A-318
+Papeterie Lévesque (fictif)
+Livraison : 3 octobre 2026
+Papier, cartouches, classeurs : 612,00 $
+Total : 612,00 $
+Conditions de paiement : net 30 jours`,
+  },
 };

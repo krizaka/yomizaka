@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Records the real runs « A real run » shows: one sample lease per side of the lease, through Orazaka's compliance Studio
+// Records the real runs « A real run » shows: one sample lease per side of the lease, plus one invoice for the freelancer and for the business, through Orazaka's compliance Studio
 // (the Québec ruleset), exactly as Orazaka returns them — run id, Studio version, the outputs verbatim. Nothing is typed
 // by hand: the files under apps/web/content/recorded-runs/ are this script's output, and a test refuses a page without one.
 //
@@ -35,7 +35,8 @@ const wanted = process.argv.slice(2);
 mkdirSync(OUT, { recursive: true });
 for (const [side, sample] of Object.entries(SAMPLES)) {
   if (wanted.length && !wanted.includes(side)) continue;
-  const inputs = { document: sample.text, jurisdiction: "QC", asOf: new Date().toISOString().slice(0, 10) };
+  // A sample may name a ruleset of the Studio besides the jurisdiction's lease (the Québec invoice: pack 1.3.0).
+  const inputs = { document: sample.text, jurisdiction: "QC", asOf: new Date().toISOString().slice(0, 10), ...(sample.ruleset ? { ruleset: sample.ruleset } : {}) };
   let run = await call(`/api/v1/studios/${STUDIO}/runs`, { method: "POST", body: { inputs } });
   for (let i = 0; i < 90 && !["SUCCEEDED", "FAILED", "CANCELLED"].includes(run.status); i++) {
     await new Promise((r) => setTimeout(r, 2000));
@@ -48,7 +49,7 @@ for (const [side, sample] of Object.entries(SAMPLES)) {
     source: base,
     studio: STUDIO,
     document: { title: sample.title, filename: sample.filename, text: sample.text },
-    inputs: { jurisdiction: inputs.jurisdiction, asOf: inputs.asOf },
+    inputs: { jurisdiction: inputs.jurisdiction, asOf: inputs.asOf, ...(inputs.ruleset ? { ruleset: inputs.ruleset } : {}) },
     run, // exactly as Orazaka returned it (id, status, blueprintVersion, outputs, dates)
   };
   writeFileSync(join(OUT, `${side}.json`), `${JSON.stringify(recording, null, 2)}\n`);

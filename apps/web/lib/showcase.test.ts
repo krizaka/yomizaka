@@ -142,7 +142,7 @@ describe("the landing section, rendered from a mocked platform answer", () => {
     expect(html).toContain(RUN);
     expect(html).toContain("a".repeat(64));
     expect(html).not.toContain("/api/showcase/report");
-    expect(html).toContain("SPECIMEN — fictitious lease, no value");
+    expect(html).toContain("SPECIMEN — fictitious document, no value");
     expect(html).toContain("ym-passage");
     // The findings list (the specimen above it is sorted the same way, checked on its own).
     const list = html.slice(html.indexOf('aria-label="Findings"'));
@@ -151,7 +151,7 @@ describe("the landing section, rendered from a mocked platform answer", () => {
     expect(lastFail).toBeLessThan(firstPass);
     const fr = renderToStaticMarkup(createElement(ShowcaseRun, { run: view, locale: "fr" }));
     expect(fr).toContain(`9 contrôles · ${fails} non conformes · ${passes} conformes`);
-    expect(fr).toContain("SPÉCIMEN — bail fictif, sans valeur");
+    expect(fr).toContain("SPÉCIMEN — document fictif, sans valeur");
   });
 
   it("sorts and counts without mutating", () => {

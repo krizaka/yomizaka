@@ -10,7 +10,7 @@ import landlordFile from "@/content/recorded-runs/landlord.json";
 import tenantFile from "@/content/recorded-runs/tenant.json";
 
 import { ShowcaseRun, summaryLine } from "../components/ShowcaseRun";
-import { readRecording, recordedRun, RecordedRunError, recordedRuns } from "./recorded-runs";
+import { INVOICE_SIDES, invoiceRun, readRecording, recordedRun, RecordedRunError, recordedRuns } from "./recorded-runs";
 
 const ROOT = join(__dirname, "..");
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -60,7 +60,7 @@ describe("« A real run » — a recorded run per side of the lease, or the page
       const html = renderToStaticMarkup(createElement(ShowcaseRun, { run: r, locale: "fr" }));
       expect(html).toContain(r.runId);
       expect(html).toContain(summaryLine(r.report.findings, { summary: "{total} contrôles · {fail} non conformes · {pass} conformes", insufficient: "" }));
-      expect(html).toContain("SPÉCIMEN — bail fictif, sans valeur");
+      expect(html).toContain("SPÉCIMEN — document fictif, sans valeur");
       expect(html).not.toMatch(/download|report\?lang|\/verify/);
     }
   });
@@ -81,5 +81,26 @@ describe("« A real run » — a recorded run per side of the lease, or the page
     }
     expect(recordedRun("landlord").document.text).toMatch(/dépôt de garantie équivalant à un mois de loyer/);
     expect(recordedRun("landlord").report.findings.find((f) => f.ruleId === "QC-LEASE-004")?.verdict).toBe("FAIL");
+  });
+});
+
+describe("the Québec invoice, recorded for the freelancer and the business", () => {
+  it("is a real run of the qc-invoice ruleset, Studio 1.3.0 or later, with every rule answered", () => {
+    for (const side of INVOICE_SIDES) {
+      const r = invoiceRun(side);
+      expect(r.runId).toMatch(UUID);
+      expect(r.studioVersion).toMatch(/^1\.(?:[3-9]|\d{2,})\.\d+$/);
+      expect(r.report.rulesetId).toBe("qc-invoice");
+      expect(r.report.findings.map((f) => f.ruleId)).toEqual(expect.arrayContaining(["QC-INV-001", "QC-INV-002", "QC-INV-003", "QC-INV-007", "QC-INV-008"]));
+      expect(r.report.findings.some((f) => f.verdict === "FAIL")).toBe(true);
+      expect(readFileSync(join(ROOT, `content/recorded-runs/${side}.json`), "utf8")).not.toMatch(/oz_[A-Za-z0-9]|Bearer |password/i);
+    }
+    expect(invoiceRun("freelancer").runId).not.toBe(invoiceRun("business").runId);
+  });
+  it("is shown on the audience's own page and on /run, from the recording", () => {
+    const side = readFileSync(join(ROOT, "app/[locale]/[side]/page.tsx"), "utf8");
+    expect(side).toContain("invoiceRun(side)");
+    expect(side).toContain("<ShowcaseRun");
+    expect(readFileSync(join(ROOT, "app/[locale]/run/page.tsx"), "utf8")).toContain("INVOICE_SIDES");
   });
 });

@@ -429,8 +429,8 @@
   },
   "run": {
     "eyebrow": "A real run",
-    "title": "Not a mock-up: a Québec lease checked on dev",
-    "lead": "Two sample Montréal leases (fictitious), one per side of the lease, sent to Orazaka's compliance Studio on dev.orazaka.com, Québec jurisdiction. What came back, as it came: the run number, the Studio version, every finding.",
+    "title": "Not a mock-up: Québec leases and invoices checked on dev",
+    "lead": "Four fictitious samples — two leases, one per side of the lease, and two invoices — sent to Orazaka's compliance Studio on dev.orazaka.com, Québec jurisdiction. What came back, as it came: the run number, the Studio version, every finding.",
     "run": "Orazaka run",
     "studio": "Studio",
     "ruleset": "Rules",
@@ -441,7 +441,7 @@
     "rule": "Rule",
     "article": "Article",
     "passage": "Passage",
-    "viewer": "The lease, the quoted passages lit",
+    "viewer": "The document, the quoted passages lit",
     "viewerHint": "Same text as the console's viewer: every passage a finding quotes is marked.",
     "docHash": "Document SHA-256",
     "report": "Signed report",
@@ -463,11 +463,19 @@
       "landlord": {
         "title": "Landlord's side: your template before sending",
         "lead": "Before sending, what the template must fix to be compliant."
+      },
+      "freelancer": {
+        "title": "Freelancer's side: your invoice before you send it",
+        "lead": "The mentions Québec requires and the GST and QST number formats, checked on an invoice. The deliberately wrong QST number is flagged."
+      },
+      "business": {
+        "title": "Business side: a supplier's invoice before you pay",
+        "lead": "The same rules on an invoice received: what is missing before you claim the tax credit."
       }
     },
     "recorded": "Recorded on {date} on {source} · run {run}. The findings below are Orazaka's answer, untouched.",
     "specimen": {
-      "mark": "SPECIMEN — fictitious lease, no value",
+      "mark": "SPECIMEN — fictitious document, no value",
       "title": "Report specimen",
       "note": "A visual preview, unsigned: it is not an attestation. A signed report exists only for your own documents, and only the people you give access to can verify it."
     }
