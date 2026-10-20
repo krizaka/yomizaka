@@ -27,7 +27,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     description: t.meta.description,
     applicationName: t.meta.siteName,
     authors: [{ name: "Krizaka", url: "https://www.krizaka.com" }],
-    icons: { icon: "/icon.svg" },
     // Not indexed (dev, preview): the page says so too — the header and robots.txt say it already (lib/indexing.ts).
     ...(indexable() ? {} : { robots: { index: false, follow: false, noarchive: true } }),
   };
