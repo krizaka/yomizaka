@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 // A horizontal rail (`overflow-x-auto`) scrolls vertically too for one pixel of overflow (the CSS computes overflow-y to
