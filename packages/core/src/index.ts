@@ -261,8 +261,8 @@ export const documentDetail = documentSummary.extend({
 });
 export type DocumentDetail = z.infer<typeof documentDetail>;
 
-/** The rulesets the Studio takes by name besides each jurisdiction's lease (orazaka-packs `document-validation` 1.3.0): Québec's supplier invoice. */
-export const NAMED_RULESETS = ["qc-invoice"] as const;
+/** The rulesets the Studio takes by name besides each jurisdiction's lease (orazaka-packs `document-validation` 1.3.0+): Québec's supplier invoice and service contract. */
+export const NAMED_RULESETS = ["qc-invoice", "qc-service-contract"] as const;
 export const namedRuleset = z.enum(NAMED_RULESETS);
 
 export const startAnalysis = z.discriminatedUnion("studio", [
@@ -272,7 +272,7 @@ export const startAnalysis = z.discriminatedUnion("studio", [
     asOf: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
     /** Not the jurisdiction's lease but this document type's rules; the Québec invoice belongs to QC only. */
     ruleset: namedRuleset.optional(),
-  }).refine((r) => r.ruleset !== "qc-invoice" || r.jurisdiction === "QC", { message: "The invoice rules are Québec's", path: ["ruleset"] }),
+  }).refine((r) => !r.ruleset || r.jurisdiction === "QC", { message: "The invoice and contract rules are Québec's", path: ["ruleset"] }),
   z.object({
     studio: z.literal("document-authenticity"),
     expectedIssuer: z.string().trim().max(120).optional(),

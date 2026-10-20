@@ -19,10 +19,10 @@ describe("the seeded flows", () => {
   });
   it("run the Québec invoice check for the freelancer and the business flows (dev only); only the screening stays « soon »", () => {
     expect(SEED_FLOWS.filter((s) => s.definition.status === "soon").map((s) => s.key)).toEqual(["tenant-screening"]);
-    for (const key of ["file-check-freelancer", "file-check-business"]) {
+    for (const [key, rulesets] of [["file-check-freelancer", ["qc-invoice", "qc-service-contract"]], ["file-check-business", ["qc-invoice"]]] as const) {
       const f = SEED_FLOWS.find((s) => s.key === key)!;
       expect(f.environments).toEqual(["dev"]);
-      expect(f.definition.steps.flatMap((st) => st.jurisdictions.map((j) => j.ruleset))).toEqual(["qc-invoice"]);
+      expect(f.definition.steps.flatMap((st) => st.jurisdictions.map((j) => j.ruleset))).toEqual(rulesets);
     }
     expect(seedFlows("prod").map((f) => f.key)).toEqual(["lease-check-tenant", "lease-check-landlord"]);
   });
@@ -46,7 +46,7 @@ describe("what the app derives from the flows — nothing hard-coded", () => {
   it("offers on a document the Studios and jurisdictions of the person's flows (all flows until they chose a side)", () => {
     const flows = seedFlows("dev");
     expect(offerFor(flows, "tenant")).toEqual({ studios: ["compliance-check", "document-authenticity"], jurisdictions: ["QC", "FR", "BE-WAL"], rulesets: ["qc-residential-lease", "fr-residential-lease", "be-residential-lease"] });
-    expect(offerFor(flows, "freelancer")).toEqual({ studios: ["compliance-check", "document-authenticity"], jurisdictions: ["QC"], rulesets: ["qc-invoice"] });
+    expect(offerFor(flows, "freelancer")).toEqual({ studios: ["compliance-check", "document-authenticity"], jurisdictions: ["QC"], rulesets: ["qc-invoice", "qc-service-contract"] });
     expect(flowsFor(flows, null)).toHaveLength(flows.length);
   });
 });
@@ -98,5 +98,18 @@ describe("a named ruleset (the Québec invoice) is run only under a flow that ca
   });
   it("leaves the plain lease check as it was", () => {
     expect(decideStart([lease, invoice], "freelancer", "compliance-check", [])).toMatchObject({ ok: true, flow: { key: "lease" } });
+  });
+});
+
+describe("the service contract is a second named ruleset of the same step", () => {
+  const seeded = seedFlows("dev");
+  it("is run for a freelancer under their flow, and refused for a business", () => {
+    expect(decideStart(seeded, "freelancer", "compliance-check", [], "qc-service-contract")).toMatchObject({ ok: true, flow: { key: "file-check-freelancer" } });
+    expect(decideStart(seeded, "business", "compliance-check", [], "qc-service-contract")).toMatchObject({ ok: false, code: "FLOW_NOT_OFFERED" });
+  });
+  it("survives the administration form: two rulesets of one jurisdiction are one comma-separated field", () => {
+    const def = SEED_FLOWS.find((f) => f.key === "file-check-freelancer")!.definition;
+    expect(formFromDefinition(def).rulesets.QC).toBe("qc-invoice, qc-service-contract");
+    expect(definitionFromForm(formFromDefinition(def)).steps[0]!.jurisdictions.map((j) => j.ruleset)).toEqual(["qc-invoice", "qc-service-contract"]);
   });
 });

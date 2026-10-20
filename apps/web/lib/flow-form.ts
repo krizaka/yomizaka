@@ -44,7 +44,7 @@ export const emptyForm = (): FlowFormValues => ({
 
 export function definitionFromForm(v: FlowFormValues): FlowDefinition {
   const steps: FlowDefinition["steps"] = [];
-  if (v.compliance) steps.push({ id: "compliance", kind: "studio", studio: "compliance-check", pack: PACK, jurisdictions: JURISDICTIONS.filter((j) => v.jur[j]).map((code) => ({ code, ruleset: v.rulesets[code].trim() })) });
+  if (v.compliance) steps.push({ id: "compliance", kind: "studio", studio: "compliance-check", pack: PACK, jurisdictions: JURISDICTIONS.filter((j) => v.jur[j]).flatMap((code) => csv(v.rulesets[code]).map((ruleset) => ({ code, ruleset }))) });
   if (v.authenticity) steps.push({ id: "authenticity", kind: "studio", studio: "document-authenticity", pack: PACK, jurisdictions: [] });
   for (const provider of csv(v.providers)) steps.push({ id: `provider-${provider}`.slice(0, 40), kind: "provider", provider, jurisdictions: [] });
   const amount = v.amount.trim() === "" ? undefined : Math.round(Number(v.amount) * 100);
@@ -72,7 +72,8 @@ export function formFromDefinition(d: FlowDefinition): FlowFormValues {
   form.compliance = !!compliance;
   form.authenticity = d.steps.some((s) => s.studio === "document-authenticity");
   for (const j of JURISDICTIONS) form.jur[j] = !!compliance?.jurisdictions.some((x) => x.code === j);
-  for (const j of compliance?.jurisdictions ?? []) form.rulesets[j.code] = j.ruleset;
+  // Several rulesets of one jurisdiction (the lease and the invoice) are one comma-separated field.
+  for (const j of JURISDICTIONS) form.rulesets[j] = (compliance?.jurisdictions ?? []).filter((x) => x.code === j).map((x) => x.ruleset).join(", ") || DEFAULT_RULESETS[j];
   form.consents = d.consents.join(", ");
   form.providers = d.providers.join(", ");
   form.pricingModel = d.pricing.model;

@@ -149,7 +149,7 @@ export function FlowEditor({ flow, initial }: { flow: AdminFlow | null; initial:
             return (
               <div key={j} className="flex flex-col gap-1">
                 <f.Checkbox name={`j${k}` as "jQC"} label={j} />
-                <f.TextField name={`r${k}` as "rQC"} label={`${j} · ruleset`} />
+                <f.TextField name={`r${k}` as "rQC"} label={`${j} · rulesets (comma-separated)`} />
               </div>
             );
           })}

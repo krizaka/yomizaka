@@ -29,8 +29,8 @@ const LEVEL_TONE: Record<string, "neutral" | "warning" | "danger"> = { observé:
 const RUN_TONE = { running: "accent", succeeded: "success", failed: "danger", cancelled: "neutral" } as const;
 
 const compliance = createKrizakaForm({
-  schema: z.object({ documentType: z.enum(["lease", "invoice"]), jurisdiction: z.enum(JURISDICTIONS), asOf: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }),
-  defaultValues: { documentType: "lease" as "lease" | "invoice", jurisdiction: "QC" as (typeof JURISDICTIONS)[number], asOf: new Date().toISOString().slice(0, 10) },
+  schema: z.object({ documentType: z.enum(["lease", "invoice", "contract"]), jurisdiction: z.enum(JURISDICTIONS), asOf: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }),
+  defaultValues: { documentType: "lease" as "lease" | "invoice" | "contract", jurisdiction: "QC" as (typeof JURISDICTIONS)[number], asOf: new Date().toISOString().slice(0, 10) },
 });
 const authenticity = createKrizakaForm({
   schema: z.object({ expectedIssuer: z.string().trim().max(120) }),
@@ -253,16 +253,16 @@ function AnalysisCard({ documentId, initial, selection }: { documentId: string; 
   );
 }
 
-function StartCompliance({ documentId, disabled, jurisdictions, invoice }: { documentId: string; disabled: boolean; jurisdictions: readonly (typeof JURISDICTIONS)[number][]; invoice: boolean }) {
+function StartCompliance({ documentId, disabled, jurisdictions, types }: { documentId: string; disabled: boolean; jurisdictions: readonly (typeof JURISDICTIONS)[number][]; types: readonly ("invoice" | "contract")[] }) {
   const { say, locale } = useSay();
   const client = useQueryClient();
   const [problem, setProblem] = useState<string | null>(null);
   const start = useMutation({
     // The Québec invoice is a named ruleset of the Studio (and Québec's alone); a lease keeps the jurisdiction's own.
-    mutationFn: (body: { documentType: "lease" | "invoice"; jurisdiction: string; asOf: string }) =>
+    mutationFn: (body: { documentType: "lease" | "invoice" | "contract"; jurisdiction: string; asOf: string }) =>
       krizakaFetch(`/api/documents/${documentId}`, {
         method: "POST",
-        json: { studio: "compliance-check", asOf: body.asOf, ...(body.documentType === "invoice" ? { jurisdiction: "QC", ruleset: "qc-invoice" } : { jurisdiction: body.jurisdiction }) },
+        json: { studio: "compliance-check", asOf: body.asOf, ...(body.documentType === "invoice" ? { jurisdiction: "QC", ruleset: "qc-invoice" } : body.documentType === "contract" ? { jurisdiction: "QC", ruleset: "qc-service-contract" } : { jurisdiction: body.jurisdiction }) },
       }),
     onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.document(documentId) }),
   });
@@ -280,8 +280,8 @@ function StartCompliance({ documentId, disabled, jurisdictions, invoice }: { doc
   return (
     <form.Form aria-label={say("analysis.complianceTitle")} className="flex flex-col gap-3">
       <p className="text-sm text-fg-secondary">{say("analysis.complianceText")}</p>
-      {invoice ? (
-        <form.Select name="documentType" label={say("analysis.documentType")} options={(["lease", "invoice"] as const).map((k) => ({ value: k, label: say(`analysis.documentTypes.${k}`) }))} />
+      {types.length ? (
+        <form.Select name="documentType" label={say("analysis.documentType")} options={(["lease", ...types] as const).map((k) => ({ value: k, label: say(`analysis.documentTypes.${k}`) }))} />
       ) : null}
       <form.Select name="jurisdiction" label={say("analysis.jurisdiction")} options={jurisdictions.map((j) => ({ value: j, label: say(`analysis.jurisdictions.${j}`) }))} />
       <form.DateField name="asOf" label={say("analysis.asOf")} />
@@ -354,7 +354,7 @@ export function DocumentView({ initial, perspective = null, offer }: { initial: 
   const complianceCard = (
     <Card.Root key="compliance-check" className="p-4">
       <h3 className="mb-2 font-display text-base font-bold text-fg">{say("analysis.complianceTitle")}</h3>
-      {doc.hasText ? <StartCompliance documentId={doc.id} disabled={running("compliance-check")} jurisdictions={offer.jurisdictions} invoice={offer.rulesets.includes("qc-invoice")} /> : <Alert tone="info">{say("document.noText")}</Alert>}
+      {doc.hasText ? <StartCompliance documentId={doc.id} disabled={running("compliance-check")} jurisdictions={offer.jurisdictions} types={[...(offer.rulesets.includes("qc-invoice") ? (["invoice"] as const) : []), ...(offer.rulesets.includes("qc-service-contract") ? (["contract"] as const) : [])]} /> : <Alert tone="info">{say("document.noText")}</Alert>}
     </Card.Root>
   );
   const authenticityCard = (

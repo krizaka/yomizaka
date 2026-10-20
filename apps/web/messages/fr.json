@@ -610,7 +610,8 @@
       "documentType": "Nature du document",
       "documentTypes": {
         "lease": "Un bail de logement",
-        "invoice": "Une facture de fournisseur (Québec : numéros de TPS et de TVQ, mentions obligatoires)"
+        "invoice": "Une facture de fournisseur (Québec : numéros de TPS et de TVQ, mentions obligatoires)",
+        "contract": "Un contrat de service (Québec : intérêt de retard, droit d'auteur et droits moraux)"
       },
       "jurisdictions": {
         "QC": "Québec — bail de logement (C.c.Q., art. 1851 et suiv.)",
