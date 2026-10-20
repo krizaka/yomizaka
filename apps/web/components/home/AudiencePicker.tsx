@@ -37,7 +37,7 @@ export function AudiencePicker({
   return (
     <div className="flex w-full min-w-0 flex-col gap-2" data-testid="audience-picker">
       <span className="text-sm font-semibold text-fg-secondary">{hint}</span>
-      <nav aria-label={label} className="-mx-(--kz-page-gutter,1rem) overflow-x-auto px-(--kz-page-gutter,1rem) pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:overflow-visible md:px-0 [mask-image:linear-gradient(to_right,#000_90%,transparent)] md:[mask-image:none]">
+      <nav aria-label={label} className="-mx-(--kz-page-gutter,1rem) overflow-x-auto overflow-y-hidden px-(--kz-page-gutter,1rem) pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:overflow-visible md:px-0 [mask-image:linear-gradient(to_right,#000_90%,transparent)] md:[mask-image:none]">
         <ul className="m-0 flex w-max list-none snap-x snap-mandatory gap-2 p-0 md:w-auto md:flex-wrap">
           {audiences.map(({ audience: a, status }) => (
             <li key={a} className="shrink-0">

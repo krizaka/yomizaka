@@ -17,7 +17,7 @@ export function AudienceCards({ locale, audiences }: { locale: Locale; audiences
   const t = d.landing.audiences;
   return (
     <Section id="audiences" eyebrow={t.eyebrow} title={t.title} lead={t.lead} reveal divider>
-      <ul className="-mx-(--kz-page-gutter,1rem) m-0 flex list-none snap-x snap-mandatory gap-3 overflow-x-auto px-(--kz-page-gutter,1rem) pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0 xl:grid-cols-4" data-testid="audience-cards">
+      <ul className="-mx-(--kz-page-gutter,1rem) m-0 flex list-none snap-x snap-mandatory gap-3 overflow-x-auto overflow-y-hidden px-(--kz-page-gutter,1rem) pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0 xl:grid-cols-4" data-testid="audience-cards">
         {audiences.map(({ audience: a, status }) => {
           const soon = status === "soon";
           const checks = t.items[a].checks;
