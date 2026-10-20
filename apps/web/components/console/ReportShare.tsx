@@ -71,7 +71,7 @@ export function ReportShare({ documentId, analysisId }: { documentId: string; an
                 <span>
                   {r.email} · <span className="text-fg-muted">{formatDate(r.createdAt, locale)}</span>
                 </span>
-                <Button size="sm" shape="cut" onClick={() => add.mutate({ email: r.email, expiresAt: null })}>
+                <Button size="sm" onClick={() => add.mutate({ email: r.email, expiresAt: null })}>
                   {say("share.accept")}
                 </Button>
               </li>
@@ -82,7 +82,7 @@ export function ReportShare({ documentId, analysisId }: { documentId: string; an
       <form.Form aria-label={say("share.title")} className="flex flex-col gap-3 sm:flex-row sm:items-end">
         <form.TextField name="email" label={say("share.email")} type="email" autoComplete="off" />
         <form.DateField name="until" label={say("share.until")} />
-        <form.Submit size="md" shape="cut">
+        <form.Submit size="md">
           {say("share.submit")}
         </form.Submit>
       </form.Form>

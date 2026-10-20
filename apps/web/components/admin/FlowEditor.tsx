@@ -163,7 +163,7 @@ export function FlowEditor({ flow, initial }: { flow: AdminFlow | null; initial:
         <p className="m-0 text-xs text-fg-muted">{t("draftHint")}</p>
         {problem ? <Alert tone="danger">{problem}</Alert> : null}
         {notice ? <Alert tone="success">{notice}</Alert> : null}
-        <f.Submit shape="cut">{flow ? t("save") : t("create")}</f.Submit>
+        <f.Submit>{flow ? t("save") : t("create")}</f.Submit>
       </f.Form>
 
       {flow ? (
@@ -188,7 +188,7 @@ export function FlowEditor({ flow, initial }: { flow: AdminFlow | null; initial:
                     {v.publishedAt ? formatDate(v.publishedAt, locale, true) : null}
                   </span>
                   {v.status === "draft" ? (
-                    <Button size="sm" shape="cut" loading={publish.isPending} onClick={() => publish.mutate(v.id, { onSuccess: () => { setNotice(t("published")); router.refresh(); } })}>
+                    <Button size="sm" loading={publish.isPending} onClick={() => publish.mutate(v.id, { onSuccess: () => { setNotice(t("published")); router.refresh(); } })}>
                       {t("publish")}
                     </Button>
                   ) : null}

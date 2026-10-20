@@ -77,7 +77,7 @@ export function AdminShell({ locale, email, children }: { locale: "en" | "fr"; e
             <>
               <LanguageSwitch label={say("shell.language")} current={locale} languages={languagesFor(`/${locale}${rest}`)} linkAs={Link} />
               <ThemeToggle label={say("shell.theme")} variant="ghost" />
-              <Button size="sm" variant="secondary" shape="cut" loading={signOut.isPending} onClick={() => signOut.mutate()}>
+              <Button size="sm" variant="secondary" loading={signOut.isPending} onClick={() => signOut.mutate()}>
                 <LogoutIcon size={16} /> <span className="hidden sm:inline">{say("adminConsole.shell.signOut")}</span>
               </Button>
             </>

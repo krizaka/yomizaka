@@ -96,7 +96,7 @@ export function LandlordScreening({ initial, undertakingGiven, words, locale }: 
               <f.Checkbox name="paymentHistory" label={words.scopeItem["payment-history"] ?? ""} />
             </fieldset>
             {problem ? <Alert tone="danger">{problem}</Alert> : null}
-            <f.Submit shape="cut">{words.request}</f.Submit>
+            <f.Submit>{words.request}</f.Submit>
           </f.Form>
           {link ? (
             <Alert tone="info" title={words.created}>
@@ -132,7 +132,7 @@ export function LandlordScreening({ initial, undertakingGiven, words, locale }: 
         <Card.Root className="flex flex-col gap-3 p-4">
           <h2 className="m-0 font-display text-base font-bold text-fg">{words.undertakingTitle}</h2>
           <p className="m-0 max-w-[70ch] text-sm text-fg-secondary">{words.undertaking}</p>
-          <Button shape="cut" loading={accept.isPending} onClick={() => accept.mutate()} data-testid="accept-undertaking">
+          <Button loading={accept.isPending} onClick={() => accept.mutate()} data-testid="accept-undertaking">
             {words.accept}
           </Button>
         </Card.Root>

@@ -45,7 +45,6 @@ export function PerspectiveChooser({ current, audiences, onboarding = false }: {
       <div className="flex items-center gap-3">
         <Button
           size="md"
-          shape="cut"
           disabled={!value || value === current}
           loading={save.isPending}
           onClick={async () => {

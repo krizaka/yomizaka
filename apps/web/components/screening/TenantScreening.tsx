@@ -91,10 +91,10 @@ export function TenantScreening({ token, initial, words, locale }: { token: stri
       {problem ? <Alert tone="danger">{problem}</Alert> : null}
       {pending ? (
         <div className="flex flex-wrap gap-3">
-          <Button size="lg" shape="cut" loading={act.isPending} onClick={() => run({ action: "consent" })} data-testid="consent">
+          <Button size="lg" loading={act.isPending} onClick={() => run({ action: "consent" })} data-testid="consent">
             {words.consent}
           </Button>
-          <Button size="lg" variant="secondary" shape="cut" onClick={() => run({ action: "decline" })} data-testid="decline">
+          <Button size="lg" variant="secondary" onClick={() => run({ action: "decline" })} data-testid="decline">
             {words.decline}
           </Button>
         </div>
@@ -102,10 +102,10 @@ export function TenantScreening({ token, initial, words, locale }: { token: stri
       {view.status === "consented" ? (
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap gap-3">
-            <Button size="lg" shape="cut" loading={act.isPending} onClick={() => run({ action: "share" })} data-testid="share">
+            <Button size="lg" loading={act.isPending} onClick={() => run({ action: "share" })} data-testid="share">
               {words.share}
             </Button>
-            <Button size="lg" variant="secondary" shape="cut" onClick={() => setContesting(true)} data-testid="contest">
+            <Button size="lg" variant="secondary" onClick={() => setContesting(true)} data-testid="contest">
               {words.contest}
             </Button>
           </div>
@@ -115,7 +115,7 @@ export function TenantScreening({ token, initial, words, locale }: { token: stri
                 {words.comment}
               </label>
               <textarea id="contest-comment" className="min-h-24 rounded-lg border border-border-default bg-surface-1 p-3 text-sm text-fg" maxLength={500} value={comment} onChange={(e) => setComment(e.target.value)} />
-              <Button size="md" shape="cut" onClick={() => run({ action: "contest", comment })}>
+              <Button size="md" onClick={() => run({ action: "contest", comment })}>
                 {words.send}
               </Button>
             </div>

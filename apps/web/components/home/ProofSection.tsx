@@ -62,7 +62,7 @@ export function ProofSection({ locale }: { locale: Locale }) {
               <Specimen run={run} locale={locale} />
             </span>
           </Link>
-          <Button asChild variant="secondary" size="md" shape="cut" className="mt-auto">
+          <Button asChild variant="secondary" size="md" className="mt-auto">
             <Link href={`${pagePath(locale, "run")}#specimen`}>{t.report.cta}</Link>
           </Button>
         </Card.Root>
@@ -86,7 +86,7 @@ export function ProofSection({ locale }: { locale: Locale }) {
               </li>
             ))}
           </ol>
-          <Button asChild variant="secondary" size="md" shape="cut" className="mt-auto">
+          <Button asChild variant="secondary" size="md" className="mt-auto">
             <Link href={pagePath(locale, "verify")}>{t.access.cta}</Link>
           </Button>
         </Card.Root>

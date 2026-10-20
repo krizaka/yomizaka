@@ -28,7 +28,7 @@ export function FlowsTable({ flows }: { flows: AdminFlow[] }) {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <p className="m-0 max-w-[70ch] text-sm text-fg-secondary">{say("adminConsole.flows.lead")}</p>
-        <Button asChild size="md" shape="cut">
+        <Button asChild size="md">
           <Link href={`/${locale}/flows/new`}>{say("adminConsole.flows.new")}</Link>
         </Button>
       </div>
