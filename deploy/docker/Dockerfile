@@ -1,5 +1,5 @@
 # Yomizaka web (Next.js standalone) — built by DigitalOcean App Platform from the repository root.
-FROM node:22-alpine AS build
+FROM node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 AS build
 WORKDIR /repo
 RUN corepack enable
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json turbo.json ./
@@ -13,7 +13,7 @@ ARG APP_SEARCH_INDEXING=""
 ENV APP_COMMIT_SHA=$APP_COMMIT_SHA APP_SEARCH_INDEXING=$APP_SEARCH_INDEXING NEXT_TELEMETRY_DISABLED=1
 RUN pnpm --filter @yomizaka/web build
 
-FROM node:22-alpine AS run
+FROM node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 AS run
 WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=8080 HOSTNAME=0.0.0.0
 RUN addgroup -S yomizaka && adduser -S yomizaka -G yomizaka
