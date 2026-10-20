@@ -84,20 +84,23 @@ describe("« Pour qui ? » — the picker", () => {
     expect(AUDIENCE_STATUS).toEqual({ tenant: "available", landlord: "available", freelancer: "available", business: "available" });
   });
 
-  it("never claims a check that does not run: the contracts stay « soon » in both languages, the invoice check is said to work", () => {
+  it("never claims a check that does not run: what is real is said to be available, what waits on the Civil Code stays « soon »", () => {
     for (const d of [en, fr]) {
       for (const a of ["freelancer", "business"] as const) {
         const w = d.sides[a];
-        expect(w.outcomes.a.title.toLowerCase()).toMatch(/bientôt|soon/);
         expect(w.lead.toLowerCase()).toMatch(/bientôt|soon/);
-        const contract = a === "freelancer" ? (["a", "b"] as const) : (["a"] as const);
-        for (const id of contract) expect(w.examples.items[id]).toMatch(/\((?:bientôt|soon)\)/);
         const invoice = a === "freelancer" ? "c" : "b";
         expect(w.examples.items[invoice]).toMatch(/\((?:disponible|available)/);
         expect(w.examples.items[invoice]).toMatch(/TVQ|QST/);
         expect(d.sides.soonInfo[a].title.toLowerCase()).toMatch(/bientôt|soon/);
         expect(d.sides.soonInfo[a].today).toMatch(/factures|invoice/);
       }
+      // Business contracts are not built at all; the freelancer's Civil Code rules are said to wait.
+      expect(d.sides.business.outcomes.a.title.toLowerCase()).toMatch(/bientôt|soon/);
+      expect(d.sides.business.examples.items.a).toMatch(/\((?:bientôt|soon)\)/);
+      expect(d.sides.freelancer.examples.items.d.toLowerCase()).toMatch(/bientôt|soon/);
+      expect(d.sides.freelancer.examples.items.a).toMatch(/\((?:disponible|available)/);
+      expect(d.sides.freelancer.examples.items.b).toMatch(/\((?:disponible|available)/);
     }
   });
 

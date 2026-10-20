@@ -50,4 +50,15 @@ Papier, cartouches, classeurs : 612,00 $
 Total : 612,00 $
 Conditions de paiement : net 30 jours`,
   },
+  contract: {
+    title: "Contrat de services — conception d'un site (d'une travailleuse autonome)",
+    filename: "contrat-de-services.txt",
+    ruleset: "qc-service-contract",
+    text: `CONTRAT DE SERVICES
+Entre Atelier Boréal inc. (le prestataire, fictif) et Café du Parc inc. (le client, fictif).
+Le prestataire conçoit et livre le site du client pour 4 000 $, payables en deux versements.
+Le prestataire cède au client tous ses droits d'auteur et ses droits moraux sur les livrables.
+Intérêt de retard : 2 % par mois sur toute somme impayée.
+Signé à Montréal le 12 octobre 2026.`,
+  },
 };

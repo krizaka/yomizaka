@@ -19,7 +19,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { appEnvironment } from "@/lib/env";
 import { audiencesOf, availableFlows } from "@/lib/flows";
 import { asLocale, format, getDictionary, LOCALES } from "@/lib/i18n";
-import { invoiceRun } from "@/lib/recorded-runs";
+import { contractRun, invoiceRun } from "@/lib/recorded-runs";
 import { OG_IMAGE, siteJsonLd } from "@/lib/seo";
 import { SIDE_LANDINGS, sideOfSlug, sidePath, sideUrl } from "@/lib/sides";
 import { contactHref, pagePath } from "@/lib/site";
@@ -133,6 +133,15 @@ export default async function SideLanding({ params }: { params: Promise<{ locale
               {format(t.run.recorded, { date: new Date(invoice!.recordedAt).toLocaleDateString(locale === "fr" ? "fr-CA" : "en-CA", { dateStyle: "long", timeZone: "America/Toronto" }), source: new URL(invoice!.source).host, run: invoice!.runId })}
             </p>
             <ShowcaseRun run={invoice!} locale={locale} />
+          </Section>
+        ) : null}
+
+        {side === "freelancer" ? (
+          <Section id="real-contract" eyebrow={t.run.eyebrow} title={t.run.sides.contract.title} lead={t.run.sides.contract.lead} reveal divider>
+            <p className="mb-4 font-mono text-xs text-fg-muted" data-testid="recorded-contract">
+              {format(t.run.recorded, { date: new Date(contractRun().recordedAt).toLocaleDateString(locale === "fr" ? "fr-CA" : "en-CA", { dateStyle: "long", timeZone: "America/Toronto" }), source: new URL(contractRun().source).host, run: contractRun().runId })}
+            </p>
+            <ShowcaseRun run={contractRun()} locale={locale} />
           </Section>
         ) : null}
 

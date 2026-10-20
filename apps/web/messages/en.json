@@ -272,7 +272,7 @@
         },
         "freelancer": {
           "checks": {
-            "a": "Service contract: payment, intellectual property (soon)",
+            "a": "Service contract: interest, copyright, moral rights (federal law)",
             "b": "Invoice: GST and QST numbers and Québec's required mentions",
             "c": "Today: PDF examination and the library"
           }
@@ -429,8 +429,8 @@
   },
   "run": {
     "eyebrow": "A real run",
-    "title": "Not a mock-up: Québec leases and invoices checked on dev",
-    "lead": "Four fictitious samples — two leases, one per side of the lease, and two invoices — sent to Orazaka's compliance Studio on dev.orazaka.com, Québec jurisdiction. What came back, as it came: the run number, the Studio version, every finding.",
+    "title": "Not a mock-up: Québec leases, invoices and a contract checked on dev",
+    "lead": "Five fictitious samples — two leases, one per side of the lease, two invoices and a service contract — sent to Orazaka's compliance Studio on dev.orazaka.com, Québec jurisdiction. What came back, as it came: the run number, the Studio version, every finding.",
     "run": "Orazaka run",
     "studio": "Studio",
     "ruleset": "Rules",
@@ -471,6 +471,10 @@
       "business": {
         "title": "Business side: a supplier's invoice before you pay",
         "lead": "The same rules on an invoice received: what is missing before you claim the tax credit."
+      },
+      "contract": {
+        "title": "Freelancer's side: your service contract before you sign",
+        "lead": "Late-payment interest stated without its yearly rate, moral rights that cannot be assigned: the rules written from federal law, each with its source."
       }
     },
     "recorded": "Recorded on {date} on {source} · run {run}. The findings below are Orazaka's answer, untouched.",
@@ -605,7 +609,7 @@
         "neutral": "Choose what Yomizaka reads: the text against the law, or the PDF file itself.",
         "tenant": "Before signing: your lease's text against Québec's rules, then, if a paper looks doubtful, the file itself.",
         "landlord": "Before sending: your lease template against Québec's rules; for a tenant's PDF paper, the examination of the file itself.",
-        "freelancer": "Choose what Yomizaka reads: your invoice against Québec's mandatory mentions and the GST/QST number formats, or the PDF file itself. Contract rules are coming soon.",
+        "freelancer": "Choose what Yomizaka reads: your invoice against Québec's mandatory mentions and the GST/QST number formats, your service contract against the federal rules on interest and copyright, or the PDF file itself. Civil Code rules are coming soon.",
         "business": "Choose what Yomizaka reads: a supplier's invoice against Québec's mandatory mentions and the GST/QST number formats, or the PDF file itself. Contract rules are coming soon."
       }
     },
@@ -1202,16 +1206,16 @@
     "freelancer": {
       "switch": "Freelancer",
       "seoTitle": "Yomizaka for freelancers — check your invoice, read before you sign",
-      "seoDescription": "Check an invoice against Québec's mandatory mentions and GST/QST number formats, examine a PDF, keep and search your documents, share a signed report. Contract rules are coming soon.",
+      "seoDescription": "Check an invoice and a service contract (late-payment interest, copyright, moral rights) against Québec and federal rules, examine a PDF, keep your documents. Non-compete and termination rules soon.",
       "eyebrow": "Yomizaka · for freelancers",
       "title": "Read your service contract before you sign it.",
-      "lead": "Yomizaka checks your invoice against the mentions Québec requires and the GST and QST number formats, examines the PDF file itself and finds any passage again. The rules to read a service contract are coming soon: nothing is promised until they run.",
+      "lead": "Yomizaka checks your invoice against the mentions Québec requires and the GST and QST number formats, reads your service contract against the federal rules on interest and copyright, examines the PDF file itself and finds any passage again. The Civil Code rules for contracts are coming soon: nothing is promised until they run.",
       "outcomesTitle": "What you can do",
       "outcomes": {
         "a": {
-          "title": "Service contract: soon",
-          "text": "Payment terms, intellectual property, non-compete: the rules are being prepared. They do not run yet.",
-          "cta": "See how it works on a lease"
+          "title": "Service contract: federal rules today",
+          "text": "Late-payment interest, copyright and moral rights are checked against federal law. Non-compete, termination and penal clauses are coming soon.",
+          "cta": "See a real run"
         },
         "b": {
           "title": "Check an invoice today",
@@ -1231,7 +1235,7 @@
         },
         "read": {
           "title": "Yomizaka examines it",
-          "text": "The invoice against the rules written from the federal regulation, and the PDF as a file. The rules for a service contract will be added here once they exist. No model is ever called to judge your documents."
+          "text": "The invoice and the contract against the rules written from federal law, and the PDF as a file. The Civil Code rules for a contract will be added here once they are sourced. No model is ever called to judge your documents."
         },
         "prove": {
           "title": "You keep the proof",
@@ -1241,15 +1245,15 @@
       "examples": {
         "eyebrow": "Today and soon",
         "title": "What Yomizaka reads",
-        "lead": "The first two examples do not exist yet (soon); the last two already work.",
+        "lead": "The first three examples work today; the Civil Code rules (non-compete, termination, penal clause) are soon.",
         "items": {
-          "a": "Service contract: payment deadline and late-payment interest (soon).",
-          "b": "Service contract: assignment of intellectual property, non-compete, exclusivity (soon).",
+          "a": "Service contract: late-payment interest stated per month without the yearly rate (available — capped at 5 % a year otherwise).",
+          "b": "Service contract: copyright assigned, moral rights that cannot be assigned, a signature (available).",
           "c": "Invoice: GST and QST numbers well formed, date, total, taxes and payment terms (available; the QST requirement itself is not encoded yet).",
-          "d": "Invoice received: an edited PDF is flagged, and the same file uploaded twice is recognised (available)."
+          "d": "Non-compete, termination and penal clauses: soon — the Civil Code rules await a lawyer's review."
         }
       },
-      "owl": "The owl checks the invoice and the file today; it will read your contracts once their rules are written and sourced."
+      "owl": "The owl checks the invoice, the contract's federal rules and the file today; the Civil Code rules come once they are sourced and reviewed."
     },
     "business": {
       "switch": "Business",
@@ -1306,8 +1310,8 @@
     "soonInfo": {
       "freelancer": {
         "title": "Soon",
-        "today": "Available today: the Québec invoice check, PDF examination, the library, search, the signed report shared by access.",
-        "next": "In preparation: service-contract rules, written like the Québec lease rules, sourced and reviewed before they are announced."
+        "today": "Available today: the Québec invoice check, the service contract's federal rules, PDF examination, the library, search, the signed report shared by access.",
+        "next": "In preparation: the Civil Code rules for contracts (non-compete, termination, penal clause), sourced and reviewed before they are announced."
       },
       "business": {
         "title": "Soon",
