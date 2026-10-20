@@ -1,6 +1,7 @@
 import { type Analysis, type ComplianceReport, orazakaRun, type Perspective, PERSPECTIVES, reportOf } from "@yomizaka/core";
 
 import business from "@/content/recorded-runs/business.json";
+import contract from "@/content/recorded-runs/contract.json";
 import freelancer from "@/content/recorded-runs/freelancer.json";
 import landlord from "@/content/recorded-runs/landlord.json";
 import tenant from "@/content/recorded-runs/tenant.json";
@@ -28,12 +29,12 @@ const INVOICE_FILES: Record<InvoiceSide, unknown> = { freelancer, business };
 
 /** What a recording says — never a signed file: a sample is a visual specimen (ADR-0002). */
 export interface RecordedRun extends Showcase {
-  side: Perspective | InvoiceSide;
+  side: Perspective | InvoiceSide | "contract";
   recordedAt: string;
   source: string;
 }
 
-export function readRecording(side: Perspective | InvoiceSide, raw: unknown): { run: RecordedRun; analysis: Analysis; document: Parameters<typeof buildPayload>[0] } {
+export function readRecording(side: Perspective | InvoiceSide | "contract", raw: unknown): { run: RecordedRun; analysis: Analysis; document: Parameters<typeof buildPayload>[0] } {
   const fail = (why: string) => new RecordedRunError(`recorded run "${side}": ${why} — record it with scripts/record-runs.mjs`);
   const file = raw as { side?: string; recordedAt?: string; source?: string; studio?: string; document?: { title: string; filename: string; text: string }; inputs?: unknown; run?: unknown } | null;
   if (!file || file.side !== side || file.studio !== "compliance-check" || !file.document?.text || !file.recordedAt) throw fail("the file is not a recording");
@@ -84,3 +85,7 @@ export const recordedRuns = (): RecordedRun[] => PERSPECTIVES.map(recordedRun);
 const INVOICES = Object.fromEntries(INVOICE_SIDES.map((side) => [side, readRecording(side, INVOICE_FILES[side])])) as Record<InvoiceSide, ReturnType<typeof readRecording>>;
 
 export const invoiceRun = (side: InvoiceSide): RecordedRun => INVOICES[side].run;
+
+/** The freelancer's service contract (pack 1.4.0, federal law only): recorded like the invoices. */
+const CONTRACT = readRecording("contract", contract);
+export const contractRun = (): RecordedRun => CONTRACT.run;

@@ -10,7 +10,7 @@ import { ShowcaseRun } from "@/components/ShowcaseRun";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
 import { asLocale, format, getDictionary } from "@/lib/i18n";
-import { INVOICE_SIDES, invoiceRun, recordedRun } from "@/lib/recorded-runs";
+import { contractRun, INVOICE_SIDES, invoiceRun, recordedRun } from "@/lib/recorded-runs";
 import { pageMetadata, siteJsonLd } from "@/lib/seo";
 import { SIDE_ANCHORS } from "@/lib/sides";
 import { contactHref, pagePath } from "@/lib/site";
@@ -34,11 +34,11 @@ export default async function RunPage({ params }: { params: Promise<{ locale: st
       <main id="content" className="pt-20">
         <PageHero back={{ href: pagePath(locale, "home"), label: t.meta.siteName }} linkAs={Link} eyebrow={t.run.eyebrow} title={t.run.title} lead={t.run.lead} />
         <Page>
-          {[...PERSPECTIVES, ...INVOICE_SIDES].map((side) => {
-            const run = side === "freelancer" || side === "business" ? invoiceRun(side) : recordedRun(side);
+          {[...PERSPECTIVES, ...INVOICE_SIDES, "contract" as const].map((side) => {
+            const run = side === "contract" ? contractRun() : side === "freelancer" || side === "business" ? invoiceRun(side) : recordedRun(side);
             const w = t.run.sides[side];
             return (
-              <Section key={side} id={SIDE_ANCHORS[locale][side]} spacing="sm" title={w.title} lead={w.lead} divider>
+              <Section key={side} id={side === "contract" ? "contract" : SIDE_ANCHORS[locale][side]} spacing="sm" title={w.title} lead={w.lead} divider>
                 <p className="mb-4 font-mono text-xs text-fg-muted" data-testid={`recorded-${side}`}>
                   {format(t.run.recorded, { date: new Date(run.recordedAt).toLocaleDateString(locale === "fr" ? "fr-CA" : "en-CA", { dateStyle: "long", timeZone: "America/Toronto" }), source: new URL(run.source).host, run: run.runId })}
                 </p>

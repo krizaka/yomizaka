@@ -10,7 +10,7 @@ import landlordFile from "@/content/recorded-runs/landlord.json";
 import tenantFile from "@/content/recorded-runs/tenant.json";
 
 import { ShowcaseRun, summaryLine } from "../components/ShowcaseRun";
-import { INVOICE_SIDES, invoiceRun, readRecording, recordedRun, RecordedRunError, recordedRuns } from "./recorded-runs";
+import { contractRun, INVOICE_SIDES, invoiceRun, readRecording, recordedRun, RecordedRunError, recordedRuns } from "./recorded-runs";
 
 const ROOT = join(__dirname, "..");
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -102,5 +102,22 @@ describe("the Québec invoice, recorded for the freelancer and the business", ()
     expect(side).toContain("invoiceRun(side)");
     expect(side).toContain("<ShowcaseRun");
     expect(readFileSync(join(ROOT, "app/[locale]/run/page.tsx"), "utf8")).toContain("INVOICE_SIDES");
+  });
+});
+
+describe("the freelancer's service contract, recorded", () => {
+  it("is a real run of qc-service-contract (Studio 1.4.0+) whose findings cite the federal texts it was written from", () => {
+    const r = contractRun();
+    expect(r.runId).toMatch(UUID);
+    expect(r.studioVersion).toMatch(/^1\.(?:[4-9]|\d{2,})\.\d+$/);
+    expect(r.report.rulesetId).toBe("qc-service-contract");
+    expect(r.report.findings.map((f) => f.ruleId)).toEqual(["QC-SVC-001", "QC-SVC-002", "QC-SVC-003", "QC-SVC-004"]);
+    expect(r.report.findings.some((f) => f.verdict === "FAIL")).toBe(true);
+    expect(r.report.findings.every((f) => /Loi sur (?:l'intérêt|le droit d'auteur)/.test(f.citation ?? ""))).toBe(true);
+    expect(readFileSync(join(ROOT, "content/recorded-runs/contract.json"), "utf8")).not.toMatch(/oz_[A-Za-z0-9]|Bearer |password/i);
+  });
+  it("is shown on the freelancer's page and on /run", () => {
+    expect(readFileSync(join(ROOT, "app/[locale]/[side]/page.tsx"), "utf8")).toContain("contractRun()");
+    expect(readFileSync(join(ROOT, "app/[locale]/run/page.tsx"), "utf8")).toContain("contractRun()");
   });
 });

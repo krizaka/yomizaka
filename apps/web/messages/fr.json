@@ -272,7 +272,7 @@
         },
         "freelancer": {
           "checks": {
-            "a": "Contrat de service : paiement, propriété intellectuelle (bientôt)",
+            "a": "Contrat de service : intérêt, droit d'auteur, droits moraux (droit fédéral)",
             "b": "Facture : numéros de TPS et de TVQ et mentions exigées au Québec",
             "c": "Dès aujourd'hui : examen du PDF et bibliothèque"
           }
@@ -429,8 +429,8 @@
   },
   "run": {
     "eyebrow": "Un vrai run",
-    "title": "Pas une maquette : des baux et des factures du Québec vérifiés en dev",
-    "lead": "Quatre exemples fictifs — deux baux, un par côté du bail, et deux factures — envoyés au Studio de conformité d'Orazaka sur dev.orazaka.com, juridiction Québec. Ce qui est revenu, tel quel : le numéro de l'exécution, la version du Studio, chaque constat.",
+    "title": "Pas une maquette : des baux, des factures et un contrat du Québec vérifiés en dev",
+    "lead": "Cinq exemples fictifs — deux baux, un par côté du bail, deux factures et un contrat de services — envoyés au Studio de conformité d'Orazaka sur dev.orazaka.com, juridiction Québec. Ce qui est revenu, tel quel : le numéro de l'exécution, la version du Studio, chaque constat.",
     "run": "Run Orazaka",
     "studio": "Studio",
     "ruleset": "Règles",
@@ -471,6 +471,10 @@
       "business": {
         "title": "Côté entreprise : la facture d'un fournisseur avant de payer",
         "lead": "Les mêmes règles sur une facture reçue : ce qui manque avant de réclamer le crédit de taxe."
+      },
+      "contract": {
+        "title": "Côté travailleur autonome : votre contrat de services avant de signer",
+        "lead": "Un intérêt de retard sans son taux annuel, des droits moraux qui ne peuvent pas être cédés : les règles écrites à partir du droit fédéral, chacune avec sa source."
       }
     },
     "recorded": "Enregistré le {date} sur {source} · exécution {run}. Les constats ci-dessous sont la réponse d'Orazaka, sans retouche.",
@@ -605,7 +609,7 @@
         "neutral": "Choisissez ce que Yomizaka doit lire : le texte au regard de la loi, ou le fichier PDF lui-même.",
         "tenant": "Avant de signer : le texte de votre bail au regard des règles du Québec, puis, si une pièce vous paraît douteuse, le fichier lui-même.",
         "landlord": "Avant d'envoyer : votre modèle de bail au regard des règles du Québec ; pour une pièce du locataire en PDF, l'examen du fichier lui-même.",
-        "freelancer": "Choisissez ce que Yomizaka lit : votre facture au regard des mentions obligatoires du Québec et du format des numéros de TPS et de TVQ, ou le fichier PDF lui-même. Les règles des contrats arrivent bientôt.",
+        "freelancer": "Choisissez ce que Yomizaka lit : votre facture au regard des mentions obligatoires du Québec et du format des numéros de TPS et de TVQ, votre contrat de services au regard des règles fédérales sur l'intérêt et le droit d'auteur, ou le fichier PDF lui-même. Les règles du Code civil arrivent bientôt.",
         "business": "Choisissez ce que Yomizaka lit : une facture de fournisseur au regard des mentions obligatoires du Québec et du format des numéros de TPS et de TVQ, ou le fichier PDF lui-même. Les règles des contrats arrivent bientôt."
       }
     },
@@ -1202,16 +1206,16 @@
     "freelancer": {
       "switch": "Travailleur autonome",
       "seoTitle": "Yomizaka pour les travailleurs autonomes — vérifiez vos factures, lisez avant de signer",
-      "seoDescription": "Vérifiez une facture au regard des mentions obligatoires du Québec et des numéros de TPS et de TVQ, examinez un PDF, gardez vos documents, partagez un rapport signé. Règles des contrats bientôt.",
+      "seoDescription": "Vérifiez une facture et un contrat de services (intérêt de retard, droit d'auteur, droits moraux) au regard des règles du Québec et fédérales, examinez un PDF, gardez vos documents. Non-concurrence bientôt.",
       "eyebrow": "Yomizaka · pour les travailleurs autonomes",
       "title": "Lisez votre contrat de service avant de le signer.",
-      "lead": "Yomizaka vérifie votre facture au regard des mentions exigées au Québec et du format des numéros de TPS et de TVQ, examine le fichier PDF lui-même et retrouve n'importe quel passage. Les règles pour lire un contrat de service arrivent bientôt : rien n'est promis tant qu'elles ne tournent pas.",
+      "lead": "Yomizaka vérifie votre facture au regard des mentions exigées au Québec et du format des numéros de TPS et de TVQ, lit votre contrat de services au regard des règles fédérales sur l'intérêt et le droit d'auteur, examine le fichier PDF lui-même et retrouve n'importe quel passage. Les règles du Code civil pour les contrats arrivent bientôt : rien n'est promis tant qu'elles ne tournent pas.",
       "outcomesTitle": "Ce que vous pouvez faire",
       "outcomes": {
         "a": {
-          "title": "Contrat de service : bientôt",
-          "text": "Conditions de paiement, propriété intellectuelle, non-concurrence : les règles sont en préparation. Elles ne tournent pas encore.",
-          "cta": "Voir comment ça marche sur un bail"
+          "title": "Contrat de service : les règles fédérales dès aujourd'hui",
+          "text": "L'intérêt de retard, le droit d'auteur et les droits moraux sont vérifiés au regard du droit fédéral. Non-concurrence, résiliation et clause pénale : bientôt.",
+          "cta": "Voir une exécution réelle"
         },
         "b": {
           "title": "Vérifier une facture dès aujourd'hui",
@@ -1231,7 +1235,7 @@
         },
         "read": {
           "title": "Yomizaka l'examine",
-          "text": "La facture au regard des règles écrites à partir du règlement fédéral, et le PDF comme fichier. Les règles d'un contrat de service s'ajouteront ici quand elles existeront. Aucun modèle n'est appelé pour juger vos documents."
+          "text": "La facture et le contrat au regard des règles écrites à partir du droit fédéral, et le PDF comme fichier. Les règles du Code civil pour un contrat s'ajouteront ici quand elles seront sourcées. Aucun modèle n'est appelé pour juger vos documents."
         },
         "prove": {
           "title": "Vous gardez la preuve",
@@ -1241,15 +1245,15 @@
       "examples": {
         "eyebrow": "Aujourd'hui et bientôt",
         "title": "Ce que Yomizaka lit",
-        "lead": "Les deux premiers exemples n'existent pas encore (bientôt) ; les deux derniers fonctionnent déjà.",
+        "lead": "Les trois premiers exemples fonctionnent aujourd'hui ; les règles du Code civil (non-concurrence, résiliation, clause pénale) sont pour bientôt.",
         "items": {
-          "a": "Contrat de service : délai de paiement et intérêts de retard (bientôt).",
-          "b": "Contrat de service : cession de propriété intellectuelle, non-concurrence, exclusivité (bientôt).",
+          "a": "Contrat de service : intérêt de retard exprimé par mois sans le taux annuel (disponible — limité à 5 % par année sinon).",
+          "b": "Contrat de service : droit d'auteur cédé, droits moraux qui ne peuvent pas l'être, une signature (disponible).",
           "c": "Facture : numéros de TPS et de TVQ bien formés, date, total, taxes et conditions de paiement (disponible ; l'exigence propre à la TVQ n'est pas encore encodée).",
-          "d": "Facture reçue : un PDF retouché est signalé, et le même fichier déposé deux fois est reconnu (disponible)."
+          "d": "Non-concurrence, résiliation et clause pénale : bientôt — les règles du Code civil attendent la relecture d'un avocat."
         }
       },
-      "owl": "Le hibou vérifie la facture et le fichier dès aujourd'hui ; il lira vos contrats quand leurs règles seront écrites et sourcées."
+      "owl": "Le hibou vérifie la facture, les règles fédérales du contrat et le fichier dès aujourd'hui ; les règles du Code civil viendront quand elles seront sourcées et relues."
     },
     "business": {
       "switch": "Entreprise",
@@ -1306,8 +1310,8 @@
     "soonInfo": {
       "freelancer": {
         "title": "Bientôt",
-        "today": "Disponible aujourd'hui : la vérification des factures du Québec, l'examen d'un PDF, la bibliothèque, la recherche, le rapport signé partagé par accès.",
-        "next": "En préparation : les règles des contrats de service, écrites comme celles du bail québécois, sourcées et relues avant d'être annoncées."
+        "today": "Disponible aujourd'hui : la vérification des factures du Québec, les règles fédérales du contrat de services, l'examen d'un PDF, la bibliothèque, la recherche, le rapport signé partagé par accès.",
+        "next": "En préparation : les règles du Code civil pour les contrats (non-concurrence, résiliation, clause pénale), sourcées et relues avant d'être annoncées."
       },
       "business": {
         "title": "Bientôt",
