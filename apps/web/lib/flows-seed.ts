@@ -19,6 +19,8 @@ const COMPLIANCE = {
 };
 /** Québec's supplier invoice: a named ruleset of the same Studio (pack document-validation 1.3.0, rules from SOR/91-45 art. 3). */
 const INVOICE = { id: "compliance", kind: "studio" as const, studio: "compliance-check" as const, pack: "document-validation", jurisdictions: [{ code: "QC" as const, ruleset: "qc-invoice" }] };
+/** The freelancer also has Québec's service contract (pack 1.4.0: federal law read at its source — the Civil Code rules are not encoded yet). */
+const INVOICE_AND_CONTRACT = { ...INVOICE, jurisdictions: [{ code: "QC" as const, ruleset: "qc-invoice" }, { code: "QC" as const, ruleset: "qc-service-contract" }] };
 const AUTHENTICITY = { id: "authenticity", kind: "studio" as const, studio: "document-authenticity" as const, pack: "document-validation", jurisdictions: [] };
 
 export interface SeedFlow {
@@ -64,7 +66,7 @@ export const SEED_FLOWS: readonly SeedFlow[] = [
       lead: { en: "Your invoice against Québec's mandatory mentions and the GST/QST number formats, and the PDF examined. Contract rules are coming.", fr: "Votre facture au regard des mentions obligatoires du Québec et du format des numéros de TPS et de TVQ, et le PDF examiné. Les règles des contrats arrivent." },
       status: "available",
       audiences: ["freelancer"],
-      steps: [INVOICE, AUTHENTICITY],
+      steps: [INVOICE_AND_CONTRACT, AUTHENTICITY],
       consents: [],
       providers: [],
       pricing: { model: "free" },

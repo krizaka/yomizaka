@@ -618,7 +618,8 @@
       "documentType": "What the document is",
       "documentTypes": {
         "lease": "A residential lease",
-        "invoice": "A supplier's invoice (Québec: GST and QST numbers, mandatory mentions)"
+        "invoice": "A supplier's invoice (Québec: GST and QST numbers, mandatory mentions)",
+        "contract": "A service contract (Québec: late-payment interest, copyright and moral rights)"
       },
       "jurisdictions": {
         "QC": "Québec — residential lease (Civil Code, art. 1851 ff.)",

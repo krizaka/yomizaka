@@ -76,6 +76,8 @@ describe("the API's requests", () => {
     expect(startAnalysis.parse({ studio: "compliance-check", jurisdiction: "QC", ruleset: "qc-invoice" })).toEqual({ studio: "compliance-check", jurisdiction: "QC", ruleset: "qc-invoice" });
     expect(() => startAnalysis.parse({ studio: "compliance-check", jurisdiction: "FR", ruleset: "qc-invoice" })).toThrow();
     expect(() => startAnalysis.parse({ studio: "compliance-check", jurisdiction: "QC", ruleset: "anything" })).toThrow();
+    expect(startAnalysis.parse({ studio: "compliance-check", jurisdiction: "QC", ruleset: "qc-service-contract" })).toMatchObject({ ruleset: "qc-service-contract" });
+    expect(() => startAnalysis.parse({ studio: "compliance-check", jurisdiction: "FR", ruleset: "qc-service-contract" })).toThrow();
   });
 
   it("keys the queries so one invalidation reaches every list", () => {
