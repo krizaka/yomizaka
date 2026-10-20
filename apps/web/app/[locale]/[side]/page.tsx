@@ -84,10 +84,10 @@ export default async function SideLanding({ params }: { params: Promise<{ locale
               {t.sides.soon}
             </Badge>
           ) : null}
-          <Button asChild variant="primary" size="lg" shape="cut" shimmer magnetic>
+          <Button asChild variant="primary" size="lg">
             <a href={contactHref(`dev-yomizaka-${side}`)}>{t.landing.talk}</a>
           </Button>
-          <Button asChild variant="secondary" size="lg" shape="cut">
+          <Button asChild variant="secondary" size="lg">
             <Link href={pagePath(locale, "run")}>{t.landing.seeRun}</Link>
           </Button>
           <AudiencePicker locale={locale} audiences={audiences} current={side} label={t.sides.switchLabel} hint={t.landing.switchHint} words={{ tenant: t.sides.tenant.switch, landlord: t.sides.landlord.switch, freelancer: t.sides.freelancer.switch, business: t.sides.business.switch }} soon={t.sides.soon} other={t.sides.other} />
@@ -162,7 +162,7 @@ export default async function SideLanding({ params }: { params: Promise<{ locale
 
         <Section id="closing" spacing="sm">
           <CtaPanel title={t.landing.closing.title} body={t.landing.closing.body} reveal>
-            <Button asChild variant="primary" size="lg" shape="cut">
+            <Button asChild variant="primary" size="lg">
               <a href={contactHref(`dev-yomizaka-${side}-closing`)}>{t.landing.talk}</a>
             </Button>
           </CtaPanel>

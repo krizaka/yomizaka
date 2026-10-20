@@ -59,7 +59,7 @@ export function SiteHeader({ locale, current }: { locale: Locale; current: PageI
           <Button asChild variant="ghost" size="sm" className="hidden md:inline-flex">
             <Link href={`/${locale}/sign-in`}>{t("chrome.signIn")}</Link>
           </Button>
-          <Button asChild variant="primary" size="sm" shape="cut" className="ml-1 hidden font-bold md:inline-flex">
+          <Button asChild variant="primary" size="sm" className="ml-1 hidden font-bold md:inline-flex">
             <a href={contactHref("dev-yomizaka-bar")}>{t("chrome.talk")}</a>
           </Button>
 
@@ -79,7 +79,7 @@ export function SiteHeader({ locale, current }: { locale: Locale; current: PageI
               <ThemeToggle label={t("chrome.themeToggle")} variant="ghost" />
               <NavBar.Language label={t("chrome.languageLabel")} current={locale} languages={languages} linkAs={Link} />
             </NavBar.MobilePreferences>
-            <Button asChild variant="primary" size="md" shape="cut" className="mt-2 font-bold">
+            <Button asChild variant="primary" size="md" className="mt-2 font-bold">
               <a href={contactHref("dev-yomizaka-bar")}>{t("chrome.talk")}</a>
             </Button>
           </NavBar.Mobile>

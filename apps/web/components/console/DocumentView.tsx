@@ -162,12 +162,12 @@ function ReportExport({ documentId, analysisId }: { documentId: string; analysis
         />
       ) : null}
       <div className="flex flex-wrap gap-2">
-        <Button asChild size="sm" shape="cut">
+        <Button asChild size="sm">
           <a href={base} download={meta.data?.filename} data-testid="report-download">
             {say("analysis.exportDownload")}
           </a>
         </Button>
-        <Button asChild size="sm" shape="cut" variant="secondary">
+        <Button asChild size="sm" variant="secondary">
           <a href={`${base}&format=pdf`} download data-testid="report-download-pdf">
             {say("analysis.exportPdf")}
           </a>
@@ -286,7 +286,7 @@ function StartCompliance({ documentId, disabled, jurisdictions, types }: { docum
       <form.Select name="jurisdiction" label={say("analysis.jurisdiction")} options={jurisdictions.map((j) => ({ value: j, label: say(`analysis.jurisdictions.${j}`) }))} />
       <form.DateField name="asOf" label={say("analysis.asOf")} />
       {problem ? <Alert tone="danger">{problem}</Alert> : null}
-      <form.Submit shape="cut" disabled={disabled}>
+      <form.Submit disabled={disabled}>
         {say("analysis.run")}
       </form.Submit>
     </form.Form>
@@ -318,7 +318,7 @@ function StartAuthenticity({ documentId, disabled }: { documentId: string; disab
       <p className="text-sm text-fg-secondary">{say("analysis.authenticityText")}</p>
       <form.TextField name="expectedIssuer" label={say("analysis.expectedIssuer")} hint={say("analysis.expectedIssuerHint")} />
       {problem ? <Alert tone="danger">{problem}</Alert> : null}
-      <form.Submit shape="cut" variant="secondary" disabled={disabled}>
+      <form.Submit variant="secondary" disabled={disabled}>
         {say("analysis.run")}
       </form.Submit>
     </form.Form>
@@ -395,7 +395,7 @@ export function DocumentView({ initial, perspective = null, offer }: { initial: 
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button asChild variant="secondary" size="sm" shape="cut">
+          <Button asChild variant="secondary" size="sm">
             <a href={fileUrl} target="_blank" rel="noreferrer">
               {say("document.openFile")}
             </a>

@@ -73,7 +73,7 @@ export function VerifyForm({ labels, locale }: { labels: VerifyLabels; locale: L
         <f.TextArea name="reportText" label={labels.reportPaste} rows={4} />
         <f.FileUpload name="documentFiles" label={labels.documentFile} title={labels.drop.documentTitle} browseLabel={labels.drop.browse} hint={labels.documentHint} maxSize={10 * 1024 * 1024} removeLabel={(name) => labels.drop.remove.replace("{name}", name)} refusalLabel={() => labels.tooLarge} />
         {problem ? <Alert tone="danger">{problem}</Alert> : null}
-        <f.Submit shape="cut">
+        <f.Submit>
           {labels.submit}
         </f.Submit>
       </f.Form>
@@ -86,7 +86,6 @@ export function VerifyForm({ labels, locale }: { labels: VerifyLabels; locale: L
             <Button
               className="mt-3"
               size="sm"
-              shape="cut"
               onClick={async () => {
                 await fetch("/api/verify/request-access", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(denied) }).catch(() => undefined);
                 setAsked(true);

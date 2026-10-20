@@ -44,12 +44,12 @@ export function UserCard({ initial }: { initial: UserDetail }) {
               {say("adminConsole.user.suspendConfirm")}
             </Button>
           ) : (
-            <Button variant="secondary" size="sm" shape="cut" onClick={() => setConfirming(true)}>
+            <Button variant="secondary" size="sm" onClick={() => setConfirming(true)}>
               {say("adminConsole.user.suspend")}
             </Button>
           )
         ) : (
-          <Button variant="primary" size="sm" shape="cut" loading={change.isPending} onClick={() => change.mutate("restore")}>
+          <Button variant="primary" size="sm" loading={change.isPending} onClick={() => change.mutate("restore")}>
             {say("adminConsole.user.restore")}
           </Button>
         )}

@@ -48,7 +48,7 @@ export default async function RunPage({ params }: { params: Promise<{ locale: st
           })}
           <Section spacing="sm">
             <CtaPanel title={t.landing.closing.title} body={t.landing.closing.body}>
-              <Button asChild variant="primary" size="lg" shape="cut">
+              <Button asChild variant="primary" size="lg">
                 <a href={contactHref("dev-yomizaka-run")}>{t.landing.talk}</a>
               </Button>
             </CtaPanel>
