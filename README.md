@@ -38,7 +38,7 @@ and a real run. It has no mobile app: the Dev preview is **web only** (phone-fir
   data, administered in the database (ADR-0003).
 - **Checking a tenant's application** — a consent-first flow with a provider-agnostic seam; only a demo provider answers, on dev,
   with fictitious data. No real provider is contracted yet.
-- **A changelog** — `/changelog` (and its RSS) is built from the merged pull requests.
+- **A short public site** — the home (who it is for, one real check recorded, sign-in), sign-in and the privacy notice; nothing else is public (`docs/UX_DECISIONS.md` § 9).
 
 The administration is **admin.yomizaka.com** (the same app, routed by host): people, documents, Orazaka runs, flows, operations
 and an audit log of every operator action. It answers only addresses of `AUTH_ALLOWED_IPS` and an administrator's session, and is never indexed.

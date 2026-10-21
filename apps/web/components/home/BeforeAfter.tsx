@@ -2,15 +2,13 @@ import { Badge } from "@krizaka/ui/badge";
 import { passages } from "@yomizaka/core";
 
 import { getDictionary, type Locale } from "@/lib/i18n";
+import { HERO_RULE } from "@/lib/landing";
 import { recordedRun } from "@/lib/recorded-runs";
-
-/** The finding the hero shows: the forbidden deposit (QC-LEASE-004) of the recorded tenant run — a real answer, never typed. */
-export const HERO_RULE = "QC-LEASE-004";
 
 /**
  * One clear before/after, stacked so it is as sharp on a phone as on a desktop: the lease with the forbidden clause lit,
  * and under it the finding Yomizaka returns for that line, with its article of law. Both halves are read from the recorded
- * run (content/recorded-runs/tenant.json). It sits in the landing's window frame (the hero's stage).
+ * run (content/recorded-runs/tenant.json). It is the home's proof.
  */
 export function BeforeAfter({ locale }: { locale: Locale }) {
   const d = getDictionary(locale);
@@ -39,7 +37,7 @@ export function BeforeAfter({ locale }: { locale: Locale }) {
           )}
         </div>
       </figure>
-      <span aria-hidden className="mx-auto flex size-9 items-center justify-center rounded-full border border-border-strong bg-surface-2 text-lg text-fg-accent">
+      <span aria-hidden className="mx-auto text-lg text-fg-accent">
         ↓
       </span>
       <figure className="m-0 flex min-w-0 flex-col gap-2" aria-label={t.findingCaption}>

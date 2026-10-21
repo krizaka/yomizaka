@@ -147,3 +147,19 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
 - **Refused**: tabs for seven pages (the family allows about five in a bar), a page per audit action, the machine's time zone.
 - **Cost**: a page moves under a group label when it is added; the time zone is the product's (Montréal), not the operator's.
 - **Signal we are wrong**: the operator opens « Operations » to look for runs, or asks for dates in their own zone.
+
+## 9. Three public pages: the home, sign-in, the privacy notice
+
+- **Decision** (2026-10-21, krizaka/yomizaka#120): the signed-out site is the home (what Yomizaka does for you, one real
+  check recorded as it came back, one way in: sign-in), sign-in and the legal page. The menu has three places (what it
+  does, a real run, privacy) and the bar's actions. `/run`, `/changelog`, the four audience pages (§ 8) and the old
+  « Pour qui ? » picker are gone: 308 to the home (`lib/removed-urls.mjs`). Orazaka is one quiet line under the proof.
+- **Problem**: eleven page templates for a product in development, the same promise said on the home, on `/run` and on
+  four audience pages; a bar with a dropdown to reach three of them; effects (animated flow, glow, counters) that read as
+  template rather than as a tool.
+- **Principle**: one idea per page, every page reachable from the menu, words and recorded data over decoration.
+- **Refused**: an audience page per role (the app asks the side at onboarding, § 8), a changelog nobody asked for, a
+  second proof on another address.
+- **Cost**: the invoice, contract and landlord recordings are no longer shown (the landlord's stays in the repository for
+  the recording script); a role's pitch lives in one line of the home.
+- **Signal we are wrong**: invited users ask where the landlord or freelancer pages went.

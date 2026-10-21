@@ -1,8 +1,6 @@
 import { readFileSync } from "node:fs";
 
 import { reportOf } from "@yomizaka/core";
-import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const queries: { text: string; values: unknown[] }[] = [];
@@ -15,7 +13,6 @@ vi.mock("./db", () => ({
 }));
 vi.mock("./audit", () => ({ audit: vi.fn(async () => undefined) }));
 
-import { ShowcaseRun, sortFindings, summaryLine } from "@/components/ShowcaseRun";
 
 import { audit } from "./audit";
 import { SAMPLE_LEASE } from "./sample-lease";
@@ -127,37 +124,5 @@ describe("what an administrator may promote", () => {
     await expect(setShowcase(actor, "x", true)).rejects.toMatchObject({ status: 404 });
     await expect(setSample(actor, "x", true)).rejects.toMatchObject({ status: 404 });
     expect(queries).toHaveLength(0);
-  });
-});
-
-describe("the landing section, rendered from a mocked platform answer", () => {
-  it("says 9 checks · N non-compliant · N compliant, with the non-compliant findings first", async () => {
-    answers = [[row()]];
-    const view = (await getShowcaseView())!;
-    const findings = view.report.findings;
-    const fails = findings.filter((f) => f.verdict === "FAIL").length;
-    const passes = findings.filter((f) => f.verdict === "PASS").length;
-    const html = renderToStaticMarkup(createElement(ShowcaseRun, { run: view, locale: "en" }));
-    expect(html).toContain(`9 checks · ${fails} non-compliant · ${passes} compliant`);
-    expect(html).toContain(RUN);
-    expect(html).toContain("a".repeat(64));
-    expect(html).not.toContain("/api/showcase/report");
-    expect(html).toContain("SPECIMEN — fictitious document, no value");
-    expect(html).toContain("ym-passage");
-    // The findings list (the specimen above it is sorted the same way, checked on its own).
-    const list = html.slice(html.indexOf('aria-label="Findings"'));
-    const firstPass = list.indexOf(">Compliant<");
-    const lastFail = list.lastIndexOf(">Non-compliant<");
-    expect(lastFail).toBeLessThan(firstPass);
-    const fr = renderToStaticMarkup(createElement(ShowcaseRun, { run: view, locale: "fr" }));
-    expect(fr).toContain(`9 contrôles · ${fails} non conformes · ${passes} conformes`);
-    expect(fr).toContain("SPÉCIMEN — document fictif, sans valeur");
-  });
-
-  it("sorts and counts without mutating", () => {
-    const f = [{ verdict: "PASS" }, { verdict: "FAIL" }, { verdict: "INSUFFICIENT_EVIDENCE" }, { verdict: "FAIL" }];
-    expect(sortFindings(f).map((x) => x.verdict)).toEqual(["FAIL", "FAIL", "INSUFFICIENT_EVIDENCE", "PASS"]);
-    expect(f[0]!.verdict).toBe("PASS");
-    expect(summaryLine(f, { summary: "{total}/{fail}/{pass}", insufficient: "+{n}" })).toBe("4/2/1+1");
   });
 });

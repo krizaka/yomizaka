@@ -5,6 +5,7 @@
 
 ## 1. What this repository is
 
+- The public site is **three pages** (Simplify Yomizaka, #120): the home, sign-in and the privacy notice; the menu is `lib/nav.ts`, the removed addresses are `lib/removed-urls.mjs` (308), `lib/menu.test.ts` guards both. Never add a marketing page back: change the home.
 - A **pnpm + Turborepo** monorepo: `apps/web` (Next.js 16: the public page, sign-in, the console and the BFF — route
   handlers are the only HTTP surface) and `packages/core` (zod contracts the API answers with and the web reads, the
   query keys, the pure helpers). One product = one repository (`krizaka/<product>`).
@@ -25,7 +26,7 @@
 - Reading a file's **text layer** (pdf.js through `unpdf`) is parsing, not analysis: it feeds the compliance Studio and
   search. A scanned PDF has no text layer — the UI says so; reading images would be Orazaka's job.
 - A report is shown as Orazaka returned it (`packages/core` `reportOf`): a shape it did not send is `null`, never a guess.
-  The public page's « a real run » (`/run`) shows **one recorded run per side of the lease** (tenant, landlord): a fictitious sample lease sent to Orazaka's compliance Studio on dev (Québec ruleset), the answer kept exactly as Orazaka returned it in `apps/web/content/recorded-runs/<side>.json` — written by `scripts/record-runs.mjs` (key from the environment, never by hand; re-run it when the ruleset or the Studio changes). `lib/recorded-runs.ts` validates both at build: a page without a recorded run does not build (`lib/recorded-runs.test.ts`). The platform's own showcase (an administrator promotes a check on a sample document, `lib/showcase.ts`, `/api/showcase/*`) stays available but the page no longer depends on it.
+  The home's proof shows **the recorded tenant run**; the landlord's is kept beside it: a fictitious sample lease sent to Orazaka's compliance Studio on dev (Québec ruleset), the answer kept exactly as Orazaka returned it in `apps/web/content/recorded-runs/<side>.json` — written by `scripts/record-runs.mjs` (key from the environment, never by hand; re-run it when the ruleset or the Studio changes). `lib/recorded-runs.ts` validates both at build: a page without a recorded run does not build (`lib/recorded-runs.test.ts`). The platform's own showcase (an administrator promotes a check on a sample document, `lib/showcase.ts`, `/api/showcase/*`) stays available but the page no longer depends on it.
 
 ## 3. The product is independent
 

@@ -1,6 +1,8 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
+import { redirectRules } from "./lib/removed-urls.mjs";
+
 const packageVersion = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8")).version;
 // package.json's version + the short commit DigitalOcean passes at build (APP_COMMIT_SHA): the version every page shows.
 const appVersion = process.env.APP_VERSION?.trim() || (process.env.APP_COMMIT_SHA ? `${packageVersion}+${process.env.APP_COMMIT_SHA.slice(0, 7)}` : packageVersion);
@@ -49,6 +51,10 @@ const nextConfig = {
   transpilePackages: ["@yomizaka/core"],
   // The pool and the PDF reader stay Node modules, required at run time.
   serverExternalPackages: ["pg", "unpdf"],
+  // The pages removed by « Simplify Yomizaka » (lib/removed-urls.mjs): 308 to their new home, in both languages.
+  async redirects() {
+    return redirectRules();
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
