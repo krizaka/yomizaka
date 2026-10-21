@@ -45,7 +45,7 @@ export function AudiencePicker({
                 <Link href={sidePath(locale, a)}>
                   {words[a]}
                   {status === "soon" ? (
-                    <span className="ms-2 rounded-full border border-current px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider opacity-80" data-testid={`soon-${a}`}>
+                    <span className="ms-2 rounded-sm border border-current px-2 py-0.5 text-[10px] font-bold opacity-80" data-testid={`soon-${a}`}>
                       {soon}
                     </span>
                   ) : null}

@@ -65,7 +65,7 @@ export function SiteHeader({ locale, current }: { locale: Locale; current: PageI
 
           <NavBar.Mobile openLabel={t("chrome.menu.label")} closeLabel={t("chrome.menu.label")} className="max-h-[calc(100dvh-6rem)] gap-1 overflow-y-auto overscroll-contain p-3">
             <div role="group" aria-label={t("chrome.nav.product")} className="flex flex-col gap-1">
-              <p className="px-3 pt-1 text-xs font-semibold uppercase tracking-wider text-fg-muted">{t("chrome.nav.product")}</p>
+              <p className="px-3 pt-1 text-xs font-semibold text-fg-muted">{t("chrome.nav.product")}</p>
               {items.map((i) => (
                 <NavBar.MobileLink key={i.id} asChild active={i.active}>
                   <Link href={i.href}>{t(`chrome.menu.${i.id}.title`)}</Link>

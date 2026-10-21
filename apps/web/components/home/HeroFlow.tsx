@@ -54,7 +54,7 @@ export function HeroFlow({ locale }: { locale: Locale }) {
         </div>
         {/* 2 · the owl reads it */}
         <div className="hf-scene" data-scene="2" aria-hidden>
-          <p className="m-0 text-xs font-semibold uppercase tracking-wider text-fg-muted">{t.reading}</p>
+          <p className="m-0 text-xs font-semibold text-fg-muted">{t.reading}</p>
           <pre className="hf-lease hf-mono">
             {text}
             <span className="hf-scan" />
@@ -65,7 +65,7 @@ export function HeroFlow({ locale }: { locale: Locale }) {
         </div>
         {/* 3 · the rules run */}
         <div className="hf-scene" data-scene="3">
-          <p className="m-0 text-xs font-semibold uppercase tracking-wider text-fg-muted">
+          <p className="m-0 text-xs font-semibold text-fg-muted">
             {t.rulesTitle} · {run.report.findings.length}
           </p>
           <ul className="hf-rules" data-testid="hero-flow-rules">

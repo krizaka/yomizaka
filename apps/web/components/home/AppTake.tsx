@@ -90,7 +90,7 @@ export function AppTake({ label, address, poster, webm, mp4, chapters, playLabel
             </video>
           </DeviceFrame>
           {still ? null : (
-            <button type="button" onClick={toggle} className="min-h-11 rounded-full border border-border-default bg-surface-1 px-4 text-sm font-semibold text-fg-secondary hover:text-fg focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring">
+            <button type="button" onClick={toggle} className="min-h-11 rounded-sm border border-border-default bg-surface-1 px-4 text-sm font-semibold text-fg-secondary hover:text-fg focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring">
               {playing ? pauseLabel : playLabel}
             </button>
           )}
