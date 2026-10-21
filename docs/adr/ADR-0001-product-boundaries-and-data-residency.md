@@ -34,7 +34,7 @@ Technologies Krizaka Inc. operates a House of Brands architecture with distinct 
 - Orochia talks **only** to Yomizaka’s B2B API (`/api/v1/verifications/age`, `/api/v1/verifications/id`, `/api/v1/contracts`).
 - Orochia stores **zero** identity documents, selfies, or biometric templates in its database.
 - Orochia receives and stores only tamper-proof, Ed25519-signed cryptographic tokens (`VerificationAttestation`).
-- Human escalation for unclear cases is surfaced directly via `orochia-admin`, backed by Yomizaka audit receipts.
+- Human escalation for unclear cases is surfaced directly via Orochia's operator console (in `krizaka/orochia`), backed by Yomizaka audit receipts.
 
 ### 3. Multi-Region Data Residency & Quebec Law 25 Sovereignty
 - Every request carries the mandatory context header `X-Data-Residency-Zone`:
