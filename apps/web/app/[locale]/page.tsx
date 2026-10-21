@@ -39,7 +39,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <main id="content" className="pt-20">
         <PageHero title={d.title} lead={d.lead} backdrop="plain">
           <div className="flex flex-wrap items-center gap-3">
-            <Button asChild variant="primary" size="lg" shape="cut">
+            <Button asChild variant="primary" size="lg">
               <Link href={signInPath(locale)}>{d.signIn}</Link>
             </Button>
           </div>
