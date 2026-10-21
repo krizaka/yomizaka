@@ -10,7 +10,7 @@ const production = process.env.NODE_ENV === "production";
 
 /**
  * Content Security Policy: nothing but this origin — no third-party script, frame or font. One exception, for images and
- * media only: the Krizaka media CDN (the landing's recordings, lib/tour.ts). The document viewer frames
+ * media only: the Krizaka media CDN (recordings and posters). The document viewer frames
  * the document's own file (`/api/documents/<id>/file`, same origin), so frames are 'self' and nothing else. Next renders
  * inline bootstrap scripts without a nonce, so scripts keep 'unsafe-inline'. Development adds what the dev server needs.
  */
