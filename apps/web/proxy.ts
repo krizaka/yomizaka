@@ -1,7 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 
 import { isAdminHost, routeFor } from "./lib/host";
-import { CLOSED_ROBOTS, indexable, NOINDEX_HEADER } from "./lib/indexing";
+import { CLOSED_ROBOTS, devRedirect, indexableOn, isDevHost, NOINDEX_HEADER } from "./lib/indexing";
+import { SITE_URL } from "./lib/site";
 
 /**
  * Every page exists in English and French (`/en/…`, `/fr/…`); an address without a language goes to the visitor's choice
@@ -13,18 +14,26 @@ export function proxy(request: NextRequest) {
   const host = request.headers.get("host");
   const chosen = request.cookies.get("NEXT_LOCALE")?.value === "fr" ? "fr" : "en";
   const admin = isAdminHost(host);
-  // Closed to search engines: the consoles always, every other host when APP_SEARCH_INDEXING=off.
-  const closed = admin || !indexable();
+  const dev = isDevHost(host);
+  // Closed to search engines: the consoles and the dev host always; every other host but the public one (APP_PUBLIC_URL's:
+  // www.yomizaka.com) when APP_SEARCH_INDEXING=off.
+  const closed = admin || dev || !indexableOn(host);
   const seal = <T extends NextResponse>(response: T): T => {
     if (closed) response.headers.set("x-robots-tag", NOINDEX_HEADER);
     return response;
   };
-  // The API is not routed by language or host: it only carries the noindex header.
-  if (request.nextUrl.pathname.startsWith("/api/")) return seal(NextResponse.next());
+  // The API (and /.well-known) is not routed by language or host: it only carries the noindex header.
+  if (request.nextUrl.pathname.startsWith("/api/") || request.nextUrl.pathname.startsWith("/.well-known/")) return seal(NextResponse.next());
+  // dev.yomizaka.com (APP_DEV_HOST): robots.txt closes everything; a page goes to www (308); healthz keeps serving.
+  if (dev) {
+    if (request.nextUrl.pathname === "/robots.txt") return seal(new NextResponse(CLOSED_ROBOTS, { headers: { "content-type": "text/plain" } }));
+    const to = devRedirect(request.method, request.nextUrl.pathname, request.nextUrl.search, process.env.APP_PUBLIC_URL ?? SITE_URL);
+    return seal(to ? NextResponse.redirect(to, 308) : NextResponse.next());
+  }
   const route = routeFor(host, request.nextUrl.pathname, chosen);
   let response: NextResponse;
-  if (!admin && !indexable() && request.nextUrl.pathname === "/robots.txt") return seal(new NextResponse(CLOSED_ROBOTS, { headers: { "content-type": "text/plain" } }));
-  if (!admin && !indexable() && request.nextUrl.pathname === "/sitemap.xml") return seal(new NextResponse("Not found", { status: 404 }));
+  if (!admin && closed && request.nextUrl.pathname === "/robots.txt") return seal(new NextResponse(CLOSED_ROBOTS, { headers: { "content-type": "text/plain" } }));
+  if (!admin && closed && request.nextUrl.pathname === "/sitemap.xml") return seal(new NextResponse("Not found", { status: 404 }));
   switch (route.kind) {
     case "robotsClosed":
       return seal(new NextResponse(CLOSED_ROBOTS, { headers: { "content-type": "text/plain" } }));
@@ -49,5 +58,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/:path*", "/((?!api|_next/static|_next/image|og.png|favicon.ico|icon.svg|.*\\..*).*)", "/robots.txt", "/sitemap.xml", "/llms.txt"],
+  matcher: ["/api/:path*", "/((?!api|_next/static|_next/image|og.png|favicon.ico|icon.svg|.*\\..*).*)", "/robots.txt", "/sitemap.xml", "/llms.txt", "/.well-known/:path*"],
 };
