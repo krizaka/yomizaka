@@ -40,7 +40,12 @@ export async function check({ base, shots }) {
     for (const path of PAGES) {
       for (const width of WIDTHS) {
         await page.setViewportSize({ width, height: 900 });
-        await page.goto(`${base}${path}`, { waitUntil: "networkidle" });
+        // « load » and the faces, not « networkidle »: Next's router prefetches (one RSC stream per link of the bar) can hold
+        // Chromium's six connections to the host open on a re-visit, and the page never goes idle (30 s, CI red) while
+        // nothing on screen changes. What is measured below — layout — is final once the page and its fonts are loaded.
+        await page.goto(`${base}${path}`, { waitUntil: "load" });
+        await page.evaluate(() => document.fonts.ready);
+        await page.waitForTimeout(300);
         const result = await page.evaluate(() => {
           const doc = document.documentElement;
           // An element that pokes out only matters when nothing clips it: decorative layers (aria-hidden) and anything inside a
