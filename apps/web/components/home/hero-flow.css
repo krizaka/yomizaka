@@ -19,7 +19,7 @@
 .hf-card{display:flex;flex-direction:column;gap:.5rem;border:1px solid color-mix(in srgb,var(--kz-danger,#e5484d) 45%,transparent);background:var(--kz-surface-2);border-radius:.75rem;padding:.9rem}
 .hf-art{font-family:var(--kz-font-mono,ui-monospace,monospace);font-weight:700;color:var(--kz-fg-accent);font-size:.875rem}
 .hf-sheet{position:relative;display:flex;flex-direction:column;gap:.4rem;border:1px solid var(--kz-border-strong);background:var(--kz-surface-2);border-radius:.5rem;padding:.9rem;font-size:.75rem;color:var(--kz-fg-secondary)}
-.hf-stamp{align-self:flex-start;display:inline-flex;align-items:center;gap:.35rem;border:2px solid var(--kz-accent);color:var(--kz-fg-accent);border-radius:.5rem;padding:.2rem .6rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:.75rem;transform:rotate(-4deg)}
+.hf-stamp{align-self:flex-start;display:inline-flex;align-items:center;gap:.35rem;border:2px solid var(--kz-accent);color:var(--kz-fg-accent);border-radius:.5rem;padding:.2rem .6rem;font-weight:800;letter-spacing: 0;text-transform: none;font-size:.75rem;transform:rotate(-4deg)}
 .hf-share{display:flex;align-items:center;gap:.75rem;border:1px solid var(--kz-border-default);background:var(--kz-surface-2);border-radius:.75rem;padding:.75rem}
 .hf-avatar{display:inline-flex;align-items:center;justify-content:center;width:2.25rem;height:2.25rem;border-radius:999px;background:var(--kz-accent-soft);border:1px solid var(--kz-accent);color:var(--kz-fg);font-weight:700}
 .hf-note{margin:0;font-size:.6875rem;color:var(--kz-fg-muted)}

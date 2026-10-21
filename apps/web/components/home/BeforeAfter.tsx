@@ -26,7 +26,7 @@ export function BeforeAfter({ locale }: { locale: Locale }) {
   return (
     <div className="flex w-full flex-col gap-3 p-4 sm:p-5" data-testid="before-after">
       <figure className="m-0 flex min-w-0 flex-col gap-2" aria-label={t.leaseCaption}>
-        <figcaption className="text-xs font-semibold uppercase tracking-wider text-fg-muted">{t.before}</figcaption>
+        <figcaption className="text-xs font-semibold text-fg-muted">{t.before}</figcaption>
         <div className="whitespace-pre-wrap break-words rounded-lg border border-border-default bg-surface-1 p-3 font-mono text-[13px] leading-relaxed text-fg-secondary sm:text-sm">
           {parts.map((p, i) =>
             p.mark ? (
@@ -43,7 +43,7 @@ export function BeforeAfter({ locale }: { locale: Locale }) {
         ↓
       </span>
       <figure className="m-0 flex min-w-0 flex-col gap-2" aria-label={t.findingCaption}>
-        <figcaption className="text-xs font-semibold uppercase tracking-wider text-fg-muted">{t.after}</figcaption>
+        <figcaption className="text-xs font-semibold text-fg-muted">{t.after}</figcaption>
         <div className="flex flex-col gap-3 rounded-lg border border-danger/40 bg-surface-1 p-4">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <span className="min-w-0 text-base font-semibold leading-snug text-fg">{finding.title ?? finding.ruleId}</span>

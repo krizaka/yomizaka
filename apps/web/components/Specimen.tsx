@@ -15,7 +15,7 @@ export function Specimen({ run, locale }: { run: Showcase; locale: Locale }) {
   const t = getDictionary(locale).run;
   return (
     <figure id="specimen" data-testid="specimen" className="relative m-0 flex flex-col gap-3 overflow-hidden rounded-xl border border-border-default bg-surface-1 p-4" aria-label={t.specimen.title}>
-      <figcaption className="text-xs font-semibold uppercase tracking-wider text-fg-muted">{t.specimen.title}</figcaption>
+      <figcaption className="text-xs font-semibold text-fg-muted">{t.specimen.title}</figcaption>
       <p className="text-sm font-semibold text-fg">{run.document.title}</p>
       <ul className="flex flex-col gap-1 text-xs text-fg-secondary">
         {[...run.report.findings].sort((a, b) => (ORDER[a.verdict] ?? 1) - (ORDER[b.verdict] ?? 1)).map((f) => (
@@ -28,7 +28,7 @@ export function Specimen({ run, locale }: { run: Showcase; locale: Locale }) {
         ))}
       </ul>
       <p className="text-xs text-fg-muted">{t.specimen.note}</p>
-      <span aria-hidden className="pointer-events-none absolute inset-0 flex select-none items-center justify-center text-center text-2xl font-black uppercase leading-tight tracking-widest text-danger/35 [transform:rotate(-24deg)] sm:text-3xl">
+      <span aria-hidden className="pointer-events-none absolute inset-0 flex select-none items-center justify-center text-center text-2xl font-black leading-tight text-danger/35 [transform:rotate(-24deg)] sm:text-3xl">
         {t.specimen.mark}
       </span>
       <span className="sr-only">{t.specimen.mark}</span>
