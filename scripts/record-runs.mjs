@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Records the real runs « A real run » shows: one sample lease per side of the lease, plus one invoice for the freelancer and for the business, through Orazaka's compliance Studio
+// Records the real runs the home's proof shows (the tenant's lease; the landlord's template is kept beside it), through Orazaka's compliance Studio
 // (the Québec ruleset), exactly as Orazaka returns them — run id, Studio version, the outputs verbatim. Nothing is typed
 // by hand: the files under apps/web/content/recorded-runs/ are this script's output, and a test refuses a page without one.
 //

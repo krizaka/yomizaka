@@ -1,141 +1,81 @@
-import { ForwardIcon, KeepIcon, LockIcon, SearchIcon, ShieldIcon } from "@krizaka/icons";
 import { Button } from "@krizaka/ui/button";
-import { LandingPage } from "@krizaka/ui/landing-page";
-import { MascotQuote } from "@krizaka/ui/mascot-quote";
-import { NumberTicker } from "@krizaka/ui/number-ticker";
-import { Section } from "@krizaka/ui/page";
+import { Page, Section } from "@krizaka/ui/page";
+import { PageHero } from "@krizaka/ui/page-hero";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { AppTake } from "@/components/home/AppTake";
-import { AudienceCards } from "@/components/home/AudienceCards";
-import { AudiencePicker } from "@/components/home/AudiencePicker";
-import { ComparisonSection } from "@/components/home/ComparisonSection";
-import { FaqSection } from "@/components/home/FaqSection";
-import { HeroFlow } from "@/components/home/HeroFlow";
-import { ProofSection } from "@/components/home/ProofSection";
+import { BeforeAfter } from "@/components/home/BeforeAfter";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
-import { appEnvironment } from "@/lib/env";
-import { audiencesOf, availableFlows } from "@/lib/flows";
 import { asLocale, format, getDictionary } from "@/lib/i18n";
 import { HERO_FIGURES, productStatus } from "@/lib/landing";
+import { signInPath } from "@/lib/nav";
 import { recordedRun } from "@/lib/recorded-runs";
 import { pageMetadata, siteJsonLd } from "@/lib/seo";
-import { contactHref, pagePath } from "@/lib/site";
-import { TAKE_CHAPTERS, takeFor } from "@/lib/tour";
+import { pagePath } from "@/lib/site";
 
 import preview from "../../../../dev-preview.json";
-
-/** The audiences come from the flows enabled in this environment (ADR-0003), re-read every minute. */
-export const revalidate = 60;
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   return pageMetadata(asLocale((await params).locale), "home");
 }
 
-const FEATURE_ICONS = { line: <ShieldIcon />, file: <SearchIcon />, find: <KeepIcon />, proof: <LockIcon /> } as const;
+const DATE = { en: "en-CA", fr: "fr-CA" } as const;
 
 /**
- * dev.yomizaka.com — the product landing template of @krizaka/ui (`LandingPage`: split hero with the product in its window,
- * a band of figures, a bento of what it does, then our own sections, the closing call). The hero's visual is the real
- * recorded check, before/after; the figures are counted from it (`NumberTicker`), never typed. Orazaka, the engine, is named
- * only in the proof and in one FAQ answer.
+ * The home is the whole public site (Simplify Yomizaka, krizaka/yomizaka#120): who Yomizaka is for and what it does, one
+ * real check recorded as it came back (the lease line, the finding, the run id), one way in (sign-in). Orazaka, the
+ * engine, is named once, in a quiet line under the proof. Static: built from the recording.
  */
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const locale = asLocale((await params).locale);
-  const dict = getDictionary(locale);
-  const d = dict.landing;
-  const status = productStatus(preview);
-  const audiences = audiencesOf(await availableFlows(appEnvironment()));
+  const d = getDictionary(locale).landing;
   const run = recordedRun("tenant");
   const figures = HERO_FIGURES(run.report);
-  const take = takeFor(locale);
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
       <SiteHeader locale={locale} current="home" />
-      <main id="content">
-        <LandingPage
-          eyebrow={d.eyebrow}
-          title={d.title}
-          lead={d.lead}
-          visualLabel={d.hero.visualLabel}
-          visual={<HeroFlow locale={locale} />}
-          actions={
-            <>
-              <Button asChild variant="primary" size="lg" className="w-full sm:w-auto">
-                <a href={contactHref("dev-yomizaka-hero")}>
-                  {d.talk} <ForwardIcon size={16} strokeWidth={2.25} />
-                </a>
-              </Button>
-              <Button asChild variant="secondary" size="lg" className="w-full sm:w-auto">
-                <Link href={pagePath(locale, "run")}>{d.seeRun}</Link>
-              </Button>
-              <AudiencePicker
-                locale={locale}
-                audiences={audiences}
-                label={dict.sides.switchLabel}
-                hint={d.switchHint}
-                words={{ tenant: dict.sides.tenant.switch, landlord: dict.sides.landlord.switch, freelancer: dict.sides.freelancer.switch, business: dict.sides.business.switch }}
-                soon={dict.sides.soon}
-                other={dict.sides.other}
-              />
-            </>
-          }
-          proofs={[
-            { value: <NumberTicker value={figures.rules} locale={locale} />, label: d.figures.rules },
-            { value: <NumberTicker value={figures.articles} locale={locale} />, label: d.figures.articles },
-            { value: <NumberTicker value={figures.found} locale={locale} />, label: d.figures.found },
-          ]}
-          featuresHeading={{ eyebrow: d.features.eyebrow, title: d.features.title, lead: d.features.lead }}
-          features={[
-            { id: "line", size: "lg", icon: FEATURE_ICONS.line, title: d.features.items.line.title, text: d.features.items.line.text },
-            { id: "file", size: "md", icon: FEATURE_ICONS.file, title: d.features.items.file.title, text: d.features.items.file.text },
-            { id: "find", size: "sm", icon: FEATURE_ICONS.find, title: d.features.items.find.title, text: d.features.items.find.text },
-            { id: "proof", size: "sm", icon: FEATURE_ICONS.proof, title: d.features.items.proof.title, text: d.features.items.proof.text },
-          ]}
-          closing={{
-            title: d.closing.title,
-            body: d.closing.body,
-            actions: (
-              <Button asChild variant="primary" size="lg">
-                <a href={contactHref("dev-yomizaka-closing")}>{d.talk}</a>
-              </Button>
-            ),
-          }}
-        >
-          <AudienceCards locale={locale} audiences={audiences} />
-          <ProofSection locale={locale} />
-
-          {/* The app, recorded as one take on a phone — below the fold, so the hero stays light. */}
-          <Section id="app" eyebrow={d.app.eyebrow} title={d.app.title} lead={d.app.lead} reveal divider>
-            <figure className="m-0 flex flex-col gap-3">
-              <AppTake
-                label={d.tour.label}
-                address={d.tour.address}
-                poster={take.poster}
-                webm={take.webm}
-                mp4={take.mp4}
-                chapters={TAKE_CHAPTERS.map((id) => ({ id, title: d.app.chapters[id].title, text: d.app.chapters[id].text, at: take.chapters[id] }))}
-                playLabel={d.tour.play}
-                pauseLabel={d.tour.pause}
-              />
-              <figcaption className="text-center font-mono text-xs text-fg-muted md:text-start">{format(d.tour.recorded, { run: take.runId.slice(0, 8) })}</figcaption>
-            </figure>
+      <main id="content" className="pt-20">
+        <PageHero title={d.title} lead={d.lead} backdrop="plain">
+          <div className="flex flex-wrap items-center gap-3">
+            <Button asChild variant="primary" size="lg">
+              <Link href={signInPath(locale)}>{d.signIn}</Link>
+            </Button>
+          </div>
+          <p className="mt-4 max-w-[60ch] text-sm text-fg-secondary">{d.status[productStatus(preview)]}</p>
+        </PageHero>
+        <Page>
+          <Section id="what" title={d.what.title} lead={d.what.lead} spacing="sm">
+            <ul className="m-0 grid list-none gap-6 p-0 md:grid-cols-3">
+              {(["line", "file", "find"] as const).map((id) => (
+                <li key={id} className="flex flex-col gap-1">
+                  <h3 className="m-0 text-base font-semibold text-fg">{d.what.items[id].title}</h3>
+                  <p className="m-0 text-sm leading-relaxed text-fg-secondary">{d.what.items[id].text}</p>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-6 max-w-[70ch] text-sm text-fg-secondary">{d.what.who}</p>
           </Section>
-
-          <ComparisonSection locale={locale} />
-
-          <Section id="promise" spacing="sm" reveal>
-            <MascotQuote bird="owl" mood="success" label={d.how.owlLabel} variant="callout">
-              {d.how.owl}
-            </MascotQuote>
-            <p className="mt-4 max-w-[70ch] text-sm text-fg-secondary">{d.status[status]}</p>
+          <Section id="proof" title={d.proof.title} lead={d.proof.lead} spacing="sm" divider>
+            <div className="max-w-3xl rounded-lg border border-border-default" data-testid="proof-run">
+              <BeforeAfter locale={locale} />
+            </div>
+            <p className="mt-4 text-sm text-fg-secondary">{format(d.proof.figures, { rules: figures.rules, found: figures.found })}</p>
+            <p className="mt-1 font-mono text-xs text-fg-muted" data-testid="proof-meta">
+              {d.proof.runLabel} {run.runId} · {d.proof.dateLabel} {new Date(run.recordedAt).toLocaleDateString(DATE[locale], { dateStyle: "long", timeZone: "America/Toronto" })} · {d.proof.rulesetLabel} {run.report.rulesetId} {run.report.rulesetVersion}
+            </p>
+            <p className="mt-6 max-w-[70ch] text-sm text-fg-secondary">{d.what.trust}</p>
+            <p className="mt-1 text-sm">
+              <Link href={pagePath(locale, "privacy")} className="text-fg-accent underline underline-offset-4">
+                {d.what.privacy}
+              </Link>
+            </p>
+            <p className="mt-6 text-xs text-fg-muted" data-testid="powered-by">
+              {d.proof.powered}
+            </p>
           </Section>
-
-          <FaqSection locale={locale} />
-        </LandingPage>
+        </Page>
       </main>
       <SiteFooter locale={locale} />
     </>

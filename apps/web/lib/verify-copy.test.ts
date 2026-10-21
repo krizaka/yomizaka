@@ -21,11 +21,6 @@ describe("verification copy — members with a grant only", () => {
     });
   }
 
-  it("the landing card says only the people given access can verify, with a Yomizaka account", () => {
-    expect(fr.landing.how.steps.prove.text).toMatch(/seules les personnes à qui vous donnez accès peuvent le vérifier, avec un compte Yomizaka/);
-    expect(en.landing.how.steps.prove.text).toMatch(/only the people you give access to can verify it, with a Yomizaka account/);
-  });
-
   it("llms.txt says there is no public verification", () => {
     expect(llmsText()).toMatch(/no public verification/);
   });

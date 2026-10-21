@@ -1,11 +1,8 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
-import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import { ShowcaseRun } from "../components/ShowcaseRun";
 import { recordedRun } from "./recorded-runs";
 import { buildPayload, issueReport, sha256, verifyReport } from "./report";
 import { reportLabels } from "./report-labels";
@@ -32,17 +29,8 @@ describe("no public route serves a signed artifact", () => {
     expect(existsSync(join(API, "showcase/report"))).toBe(false);
   });
 
-  it("a public page's run section carries no download, no report fingerprint and no key id", () => {
-    for (const side of ["tenant", "landlord"] as const) {
-      const html = renderToStaticMarkup(createElement(ShowcaseRun, { run: recordedRun(side), locale: "fr" }));
-      expect(html).not.toMatch(/report\?lang|download|ed25519|dev:[0-9a-f]{8}/i);
-      expect(html).toContain('data-testid="specimen"');
-      expect(html).toContain("SPÉCIMEN — document fictif, sans valeur");
-    }
-  });
-
   it("the public components never import the signing modules", () => {
-    for (const f of ["components/ShowcaseRun.tsx", "components/home/ProofSection.tsx", "components/home/BeforeAfter.tsx", "app/[locale]/run/page.tsx", "app/[locale]/page.tsx"]) {
+    for (const f of ["components/home/BeforeAfter.tsx", "app/[locale]/page.tsx"]) {
       expect(readFileSync(join(ROOT, f), "utf8"), f).not.toMatch(/report-signer|issueReport|recordedReport|recordedRunView|\/report\?lang|api\/recorded-runs/);
     }
   });

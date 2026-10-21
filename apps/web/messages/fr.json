@@ -1,18 +1,16 @@
 {
   "meta": {
     "siteName": "Yomizaka",
-    "titleTemplate": "{title} — Yomizaka",
+    "titleTemplate": "{title} · Yomizaka",
     "description": "Vos baux, contrats et factures, lus et vérifiés par Yomizaka : chaque constat cite sa règle et la ligne sur laquelle il repose, chaque PDF examiné pour des signes de retouche, chaque document retrouvé en une seconde."
   },
   "chrome": {
     "brandHome": "Yomizaka, accueil",
     "navLabel": "Yomizaka",
     "nav": {
-      "product": "Produit",
-      "how": "Comment ça marche",
-      "run": "Une vraie vérification",
-      "privacy": "Confidentialité",
-      "verify": "Vérifier un rapport"
+      "what": "Ce que ça fait",
+      "proof": "Une vraie vérification",
+      "privacy": "Confidentialité"
     },
     "signIn": "Se connecter",
     "talk": "Nous parler",
@@ -22,30 +20,14 @@
     "sourceCode": "Code source",
     "contact": "Contact",
     "legal": "Confidentialité",
-    "devNotice": "Environnement de développement — accès sur invitation",
+    "devNotice": "Environnement de développement : accès sur invitation",
+    "preferences": "Préférences",
     "menu": {
-      "label": "Menu",
-      "home": {
-        "title": "Vue d'ensemble",
-        "text": "Ce que fait Yomizaka, sur une page."
-      },
-      "how": {
-        "title": "Comment ça marche",
-        "text": "Garder, lire, prouver : enregistré sur la vraie application."
-      },
-      "run": {
-        "title": "Une vraie vérification",
-        "text": "Un bail québécois vérifié, tel qu'il est revenu."
-      },
-      "verify": {
-        "title": "Vérifier un rapport",
-        "text": "Réservé aux membres : contrôlez un rapport signé qui est à vous ou dont on vous a donné l'accès."
-      }
+      "label": "Menu"
     },
-    "preferences": "Préférences"
+    "version": "v{version}"
   },
   "landing": {
-    "eyebrow": "Yomizaka · baux, contrats, factures",
     "title": "Lisez avant de signer.",
     "lead": "Déposez un bail, un contrat ou une facture. Yomizaka le lit selon les règles en vigueur et vous montre la ligne exacte derrière chaque constat.",
     "status": {
@@ -53,184 +35,19 @@
       "development": "En développement : les inscriptions sont fermées pendant nos essais sur de vrais baux québécois.",
       "preview": "Aperçu de développement : inscriptions fermées, accès sur invitation."
     },
-    "statusChip": {
-      "development": "En développement",
-      "preview": "Aperçu de développement"
-    },
-    "talk": "Parler de Yomizaka avec nous",
-    "seeRun": "Voir une vraie vérification",
-    "tour": {
-      "label": "Yomizaka, enregistré sur la vraie application",
-      "address": "dev.yomizaka.com",
-      "play": "Lire la prise",
-      "pause": "Mettre en pause",
-      "step": "Étape {n} sur {total}",
-      "recorded": "Enregistré sur dev.yomizaka.com le 17 octobre 2026 · exécution {run}",
-      "steps": {
-        "keep": {
-          "title": "Le garder",
-          "text": "Vos baux, contrats et factures dans une seule bibliothèque.",
-          "alt": "La bibliothèque sur dev.yomizaka.com : trois documents gardés, la zone de dépôt au-dessus."
-        },
-        "check": {
-          "title": "Le vérifier",
-          "text": "Yomizaka applique les règles du bail québécois ; les clauses interdites ressortent marquées.",
-          "alt": "Un bail québécois vérifié par Yomizaka : un constat non conforme, son article et la ligne citée."
-        },
-        "find": {
-          "title": "Le retrouver",
-          "text": "Un mot, tous les documents et tous les constats.",
-          "alt": "La recherche « dépôt » : les passages reviennent, le mot en gras."
-        }
-      }
-    },
-    "outcomes": {
-      "eyebrow": "Ce que vous pouvez faire",
-      "title": "Trois tâches de moins sur votre bureau",
-      "clauses": {
-        "title": "Savoir quelles clauses ne tiennent pas",
-        "text": "Un dépôt de garantie, des chèques postdatés, « pas d'enfants » : chaque constat nomme la règle, l'article du Code civil et la ligne sur laquelle il repose.",
-        "cta": "Voir une vraie vérification"
-      },
-      "edits": {
-        "title": "Questionner un PDF avant de le payer",
-        "text": "Producteur, dates, enregistrements successifs : trois niveaux simples (observé, inhabituel, incohérent), jamais un tampon « faux ».",
-        "cta": "Se connecter (sur invitation)"
-      },
-      "proof": {
-        "title": "Montrer ce qui a été vérifié",
-        "text": "Chaque rapport est signé, et seules les personnes à qui vous donnez accès peuvent le vérifier, avec un compte Yomizaka.",
-        "cta": "Vérifier un rapport"
-      }
-    },
-    "how": {
-      "eyebrow": "Comment ça marche",
-      "title": "Yomizaka garde, lit et prouve",
-      "lead": "Trois étapes, une seule trace du fichier au rapport.",
-      "steps": {
-        "keep": {
-          "title": "Vous déposez le fichier",
-          "text": "Il est gardé tel quel, visible par votre seul compte ; sa couche texte est lue pour la recherche."
-        },
-        "read": {
-          "title": "Yomizaka le lit",
-          "text": "Selon les règles d'une juridiction à la date choisie, ou le PDF lui-même pour des traces de retouche. Yomizaka n'appelle jamais de modèle."
-        },
-        "prove": {
-          "title": "Vous gardez la preuve",
-          "text": "Chaque constat garde l'identifiant de son exécution ; le rapport est signé, et seules les personnes à qui vous donnez accès peuvent le vérifier, avec un compte Yomizaka."
-        }
-      },
-      "owlLabel": "La promesse du hibou",
-      "owl": "Le hibou lit chaque page et reconnaît chaque visage."
-    },
-    "trust": {
-      "eyebrow": "Confiance",
-      "title": "Vos documents, au Canada, sous votre contrôle",
-      "lead": "Pensé pour les cabinets du Québec et la Loi 25 : rien n'est vendu, partagé ni utilisé pour entraîner un modèle.",
-      "canada": {
-        "title": "Gardés au Canada",
-        "text": "Dans la base de données de Yomizaka à Toronto, visibles par votre seul compte. Supprimer un document supprime son fichier, son texte et ses analyses.",
-        "cta": "Confidentialité"
-      },
-      "traced": {
-        "title": "Rien qui sorte de nulle part",
-        "text": "Aucun score, aucun verdict sans sa source : la règle, l'article, la ligne, et l'exécution qui les a produits.",
-        "cta": "Voir une vraie vérification"
-      },
-      "open": {
-        "title": "Open source",
-        "text": "L'application, son API et ses contrats sont sur GitHub, sous licence Apache-2.0.",
-        "cta": "Lire le code"
-      },
-      "powered": "Propulsé par Orazaka, notre moteur d'IA souverain."
-    },
-    "closing": {
-      "title": "Des documents à vérifier ?",
-      "body": "Yomizaka est en développement et les inscriptions sont fermées. Dites-nous ce que vous devez lire : baux, factures de fournisseurs, un inventaire Loi 25."
-    },
-    "proof": {
-      "eyebrow": "Preuves",
-      "title": "Ce que Yomizaka a vraiment trouvé",
-      "lead": "Une vraie vérification, enregistrée : la règle, la ligne, l'article de loi, l'identifiant de l'exécution, la date. Rien n'est tapé à la main.",
-      "finding": "Le constat",
-      "run": "L'exécution",
-      "runLabel": "Identifiant",
-      "dateLabel": "Enregistrée le",
-      "rulesetLabel": "Règles du Québec",
-      "rules": "règles du bail de logement québécois évaluées à chaque vérification",
-      "found": "constats sur ce bail d'exemple : {fail} non conformes, {pass} conformes",
-      "report": {
-        "title": "Le rapport, en spécimen",
-        "text": "Chaque vérification peut devenir un rapport signé pour vos propres documents. Ici, un aperçu non signé d'un bail fictif.",
-        "cta": "Voir le spécimen"
-      },
-      "access": {
-        "title": "Vérifié par les personnes que vous choisissez",
-        "text": "Seules les personnes à qui vous donnez accès peuvent vérifier un rapport, connectées avec un compte Yomizaka. Vous donnez, vous retirez, et chaque vérification est journalisée.",
-        "cta": "Comment fonctionne la vérification",
-        "steps": {
-          "share": {
-            "title": "Le propriétaire partage",
-            "text": "Il donne accès au rapport, par courriel."
-          },
-          "signin": {
-            "title": "Vous vous connectez",
-            "text": "Avec un compte Yomizaka."
-          },
-          "verify": {
-            "title": "Vous vérifiez",
-            "text": "La signature, l'empreinte, l'exécution."
-          }
-        }
-      },
-      "see": "Voir toute l'exécution",
-      "before": "Avant : le bail",
-      "after": "Après : le constat",
-      "beforeLabel": "Le bail, la clause interdite en évidence",
-      "afterLabel": "Ce que Yomizaka renvoie pour cette ligne"
-    },
-    "app": {
-      "eyebrow": "Dans l'application",
-      "title": "Du fichier au constat, enregistré",
-      "lead": "Le vrai parcours sur dev.yomizaka.com, en une prise, sur un téléphone.",
-      "chapters": {
-        "drop": {
-          "title": "Déposez le bail",
-          "text": "Un fichier texte ou PDF : il est gardé tel quel, dans votre bibliothèque."
-        },
-        "check": {
-          "title": "La vérification s'exécute",
-          "text": "Au regard des règles du Québec, à la date de votre choix."
-        },
-        "finding": {
-          "title": "Le constat, avec sa ligne",
-          "text": "La clause est en évidence dans le bail, avec l'article de loi."
-        },
-        "search": {
-          "title": "Retrouvez-le en une seconde",
-          "text": "Un mot, et les passages reviennent, dans les documents comme dans les constats."
-        }
-      }
-    },
-    "switchHint": "Pour qui ?",
     "hero": {
-      "visualLabel": "dev.yomizaka.com — bail-saint-denis",
       "before": "Le bail",
       "after": "Le constat",
       "leaseCaption": "Une clause du bail, en évidence",
       "findingCaption": "Ce que Yomizaka renvoie, avec sa source"
     },
-    "figures": {
-      "rules": "règles du bail québécois évaluées à chaque vérification",
-      "articles": "articles du Code civil cités dans cette vérification",
-      "found": "constats sur ce bail d'exemple",
-      "label": "Chiffres de la vraie vérification enregistrée"
-    },
-    "features": {
-      "eyebrow": "Ce que Yomizaka fait",
-      "title": "Lire, prouver, retrouver",
-      "lead": "Trois gestes, une seule trace du fichier au rapport.",
+    "signIn": "Se connecter",
+    "what": {
+      "title": "Ce que ça fait",
+      "lead": "Trois choses, sans rien de caché derrière.",
+      "who": "Pour les locataires et les propriétaires qui vérifient un bail québécois. Les travailleurs autonomes et les petites entreprises peuvent aussi vérifier un contrat ou une facture.",
+      "trust": "Vos documents sont gardés au Canada et visibles par votre seul compte. Rien n'est vendu, partagé ni utilisé pour entraîner un modèle.",
+      "privacy": "Lire l'avis de confidentialité",
       "items": {
         "line": {
           "title": "La ligne exacte derrière chaque constat",
@@ -243,251 +60,30 @@
         "find": {
           "title": "Tout retrouver en une seconde",
           "text": "Un mot, et tous vos documents et tous leurs constats reviennent, le passage en gras."
-        },
-        "proof": {
-          "title": "Un rapport signé, partagé par accès",
-          "text": "Les personnes que vous choisissez vérifient le rapport avec un compte Yomizaka ; vous retirez l'accès quand vous voulez."
         }
       }
     },
-    "audiences": {
-      "eyebrow": "Pour qui ?",
-      "title": "Votre document, votre situation",
-      "lead": "Choisissez votre cas : chaque page montre ce que Yomizaka vérifie pour vous, et dit franchement ce qui n'existe pas encore.",
-      "open": "Voir cette page",
-      "items": {
-        "tenant": {
-          "checks": {
-            "a": "Dépôt de garantie et chèques postdatés interdits",
-            "b": "Clauses sans effet : enfants, renonciation au maintien dans les lieux",
-            "c": "Loyer et avis du loyer le plus bas des douze derniers mois"
-          }
-        },
-        "landlord": {
-          "checks": {
-            "a": "Votre modèle de bail, article par article",
-            "b": "Les pièces du locataire en PDF : retouches, dates, producteur",
-            "c": "Un rapport signé à garder et à partager par accès"
-          }
-        },
-        "freelancer": {
-          "checks": {
-            "a": "Contrat de service : intérêt, droit d'auteur, droits moraux (droit fédéral)",
-            "b": "Facture : numéros de TPS et de TVQ et mentions exigées au Québec",
-            "c": "Dès aujourd'hui : examen du PDF et bibliothèque"
-          }
-        },
-        "business": {
-          "checks": {
-            "a": "Contrats de fournisseurs : renouvellement, pénalités (bientôt)",
-            "b": "Factures reçues : mentions et numéros de TPS et de TVQ",
-            "c": "Dès aujourd'hui : un PDF retouché est signalé"
-          }
-        }
-      }
-    },
-    "comparison": {
-      "eyebrow": "Honnêtement",
-      "title": "Yomizaka, lire seul, ou un avocat",
-      "lead": "Yomizaka ne remplace pas un avocat : il vous dit où regarder, avec la source.",
-      "topic": "La question",
-      "columns": {
-        "yomizaka": "Yomizaka",
-        "alone": "Lire seul",
-        "lawyer": "Un avocat"
-      },
-      "rows": {
-        "what": {
-          "topic": "Ce que vous obtenez",
-          "yomizaka": {
-            "key": "Un constat par règle.",
-            "detail": "La clause citée, l'article, la ligne."
-          },
-          "alone": {
-            "key": "Votre lecture.",
-            "detail": "Sans source, sans liste de règles."
-          },
-          "lawyer": {
-            "key": "Un avis.",
-            "detail": "Adapté à votre situation précise."
-          }
-        },
-        "time": {
-          "topic": "Le temps",
-          "yomizaka": {
-            "key": "Quelques secondes.",
-            "detail": "Le fichier déposé, les constats reviennent."
-          },
-          "alone": {
-            "key": "Variable.",
-            "detail": "Une clause oubliée passe inaperçue."
-          },
-          "lawyer": {
-            "key": "Un rendez-vous.",
-            "detail": "Selon sa disponibilité."
-          }
-        },
-        "advice": {
-          "topic": "Peut-il vous conseiller ?",
-          "yomizaka": {
-            "key": "Non.",
-            "detail": "Il montre ce qu'il trouve, pas quoi faire."
-          },
-          "alone": {
-            "key": "Non.",
-            "detail": "—"
-          },
-          "lawyer": {
-            "key": "Oui.",
-            "detail": "Et il en porte la responsabilité."
-          }
-        },
-        "proof": {
-          "topic": "La preuve",
-          "yomizaka": {
-            "key": "Un rapport signé.",
-            "detail": "L'identifiant de l'exécution, vérifiable par accès."
-          },
-          "alone": {
-            "key": "Vos notes.",
-            "detail": "—"
-          },
-          "lawyer": {
-            "key": "Une opinion écrite.",
-            "detail": "Si vous la demandez."
-          }
-        },
-        "review": {
-          "topic": "Relecture juridique",
-          "yomizaka": {
-            "key": "Pas encore.",
-            "detail": "Le corpus québécois est à faire relire, et le rapport le dit."
-          },
-          "alone": {
-            "key": "—",
-            "detail": "—"
-          },
-          "lawyer": {
-            "key": "C'est son métier.",
-            "detail": "—"
-          }
-        }
-      }
-    },
-    "faq": {
-      "eyebrow": "Questions",
-      "title": "Ce qu'on nous demande",
-      "items": {
-        "lawyer": {
-          "q": "Yomizaka remplace-t-il un avocat ?",
-          "a": "Non. Il applique des règles écrites et sourcées et montre la ligne derrière chaque constat. Il ne donne pas de conseil juridique, et le corpus québécois reste à faire relire par une avocate ou un avocat : chaque rapport le dit."
-        },
-        "private": {
-          "q": "Mes documents sont-ils partagés ?",
-          "a": "Non. Un document est visible par votre seul compte. Un rapport signé ne se vérifie que par les personnes à qui vous donnez accès, avec un compte Yomizaka, et chaque vérification est journalisée."
-        },
-        "ai": {
-          "q": "Une IA juge-t-elle mon bail ?",
-          "a": "Les règles écrites décident. Un modèle n'est consulté que pour la seule question de jugement (la clause abusive), et le rapport l'indique ; si le modèle est indisponible, le constat dit « preuve insuffisante » plutôt que de deviner."
-        },
-        "rules": {
-          "q": "Quelles règles existent aujourd'hui ?",
-          "a": "Le bail de logement québécois (dix règles), plus le bail de logement français et wallon, et la facture de fournisseur du Québec (huit règles : date, total, numéros de TPS et de TVQ, taxes, conditions de paiement — tirées du règlement fédéral sur les renseignements pour les crédits de taxe sur les intrants, pas encore relues par un comptable ou un avocat). Pour les contrats de service et les contrats de travail, les règles ne sont pas encore écrites : ces cas sont marqués « bientôt »."
-        },
-        "engine": {
-          "q": "D'où vient le moteur ?",
-          "a": "Yomizaka s'appuie sur Orazaka, le moteur d'IA souverain de Krizaka : chaque vérification est une exécution dont l'identifiant est gardé. Le code de Yomizaka est ouvert (Apache-2.0)."
-        },
-        "access": {
-          "q": "Puis-je m'inscrire ?",
-          "a": "Pas encore : Yomizaka est en développement et l'inscription est fermée. Écrivez-nous pour en parler."
-        }
-      }
-    },
-    "flow": {
-      "label": "Du bail au rapport partagé, en un seul parcours",
-      "rail": {
-        "drop": "Déposer",
-        "read": "Lire",
-        "rules": "Règles",
-        "finding": "Constat",
-        "report": "Rapport",
-        "share": "Partager"
-      },
-      "dropTitle": "Déposez votre bail",
-      "reading": "Le hibou lit chaque ligne",
-      "rulesTitle": "Règles du bail québécois",
-      "reportTitle": "Rapport d'audit",
-      "runLabel": "Exécution",
-      "summary": "{fail} non conformes · {pass} conformes",
-      "signed": "Signé",
-      "member": "Gestionnaire (fictif)",
-      "memberInitial": "G",
-      "shared": "Accès donné : il vérifie le rapport avec un compte Yomizaka.",
-      "caption": "Parcours d'une vraie vérification enregistrée (exécution {run}). Le rapport montré est une illustration de spécimen : non signée, sans valeur."
+    "proof": {
+      "title": "Une vraie vérification",
+      "lead": "Un bail d'exemple, vérifié en développement et enregistré tel qu'il est revenu. La règle, la ligne, l'article de loi, le numéro d'exécution et la date sont la réponse du moteur, pas du texte tapé à la main.",
+      "figures": "{rules} règles vérifiées, {found} constats sur ce bail d'exemple.",
+      "runLabel": "Numéro d'exécution",
+      "dateLabel": "Enregistrée le",
+      "rulesetLabel": "Règles du Québec",
+      "powered": "Propulsé par Orazaka."
     }
   },
   "run": {
-    "eyebrow": "Un vrai run",
-    "title": "Pas une maquette : des baux, des factures et un contrat du Québec vérifiés en dev",
-    "lead": "Cinq exemples fictifs — deux baux, un par côté du bail, deux factures et un contrat de services — envoyés au Studio de conformité d'Orazaka sur dev.orazaka.com, juridiction Québec. Ce qui est revenu, tel quel : le numéro de l'exécution, la version du Studio, chaque constat.",
-    "run": "Run Orazaka",
-    "studio": "Studio",
-    "ruleset": "Règles",
-    "when": "Exécuté le",
-    "none": "Aucune exécution enregistrée.",
-    "summary": "{total} contrôles · {fail} non conformes · {pass} conformes",
-    "insufficient": " · {n} preuve insuffisante",
-    "rule": "Règle",
-    "article": "Article",
-    "passage": "Passage",
-    "viewer": "Le document, les passages cités éclairés",
-    "viewerHint": "Le même texte que le visualiseur de la console : chaque passage cité par un constat est marqué.",
-    "docHash": "SHA-256 du document",
-    "report": "Rapport signé",
-    "copy": "Copier",
-    "copied": "Copié",
-    "review": "Les règles québécoises attendent la relecture d'un juriste — le rapport le dit.",
-    "noPassage": "Aucun passage cité",
-    "findings": "Constats",
     "verdicts": {
       "PASS": "Conforme",
       "FAIL": "Non conforme",
       "INSUFFICIENT_EVIDENCE": "Éléments insuffisants"
-    },
-    "sides": {
-      "tenant": {
-        "title": "Côté locataire : le bail qu'on vous offre",
-        "lead": "Avant de signer, ce que le bail dit de contraire aux règles du Québec."
-      },
-      "landlord": {
-        "title": "Côté propriétaire : votre modèle avant l'envoi",
-        "lead": "Avant d'envoyer, ce que le modèle doit corriger pour être conforme."
-      },
-      "freelancer": {
-        "title": "Côté travailleur autonome : votre facture avant de l'envoyer",
-        "lead": "Les mentions exigées au Québec et le format des numéros de TPS et de TVQ, vérifiés sur une facture. Le numéro de TVQ volontairement faux est signalé."
-      },
-      "business": {
-        "title": "Côté entreprise : la facture d'un fournisseur avant de payer",
-        "lead": "Les mêmes règles sur une facture reçue : ce qui manque avant de réclamer le crédit de taxe."
-      },
-      "contract": {
-        "title": "Côté travailleur autonome : votre contrat de services avant de signer",
-        "lead": "Un intérêt de retard sans son taux annuel, des droits moraux qui ne peuvent pas être cédés : les règles écrites à partir du droit fédéral, chacune avec sa source."
-      }
-    },
-    "recorded": "Enregistré le {date} sur {source} · exécution {run}. Les constats ci-dessous sont la réponse d'Orazaka, sans retouche.",
-    "specimen": {
-      "mark": "SPÉCIMEN — document fictif, sans valeur",
-      "title": "Spécimen du rapport",
-      "note": "Un aperçu visuel, non signé : ce n'est pas une attestation. Un rapport signé n'existe que pour vos propres documents, et seules les personnes à qui vous donnez accès peuvent le vérifier."
     }
   },
   "privacy": {
     "title": "Confidentialité",
     "updated": "Mis à jour le {date}",
-    "body": "Yomizaka est en développement : seuls les comptes créés par notre équipe peuvent se connecter. Un document que vous déposez est gardé dans la base de données de Yomizaka (Toronto, Canada), visible de votre seul compte. Quand vous demandez une vérification, le document — son texte, ou le fichier PDF — est envoyé à Orazaka, le moteur d'analyse de Krizaka, en HTTPS, et le résultat est gardé avec l'identifiant du run. Rien n'est vendu, partagé ni utilisé pour entraîner un modèle. Supprimer un document supprime son fichier, son texte et ses analyses. Pour une question ou pour faire effacer vos données, utilisez le formulaire de contact."
+    "body": "Yomizaka est en développement : seuls les comptes créés par notre équipe peuvent se connecter. Un document que vous déposez est gardé dans la base de données de Yomizaka (Toronto, Canada), visible de votre seul compte. Quand vous demandez une vérification, le document, son texte, ou le fichier PDF, est envoyé à Orazaka, le moteur d'analyse de Krizaka, en HTTPS, et le résultat est gardé avec l'identifiant du run. Rien n'est vendu, partagé ni utilisé pour entraîner un modèle. Supprimer un document supprime son fichier, son texte et ses analyses. Pour une question ou pour faire effacer vos données, utilisez le formulaire de contact."
   },
   "console": {
     "meta": {
@@ -1096,265 +692,6 @@
       "request": "Demander l’accès",
       "requested": "Le propriétaire a été prévenu. Vous pourrez vérifier le rapport dès qu’il vous aura donné l’accès."
     }
-  },
-  "sides": {
-    "switchLabel": "Pour qui ?",
-    "tenant": {
-      "switch": "Je suis locataire",
-      "seoTitle": "Yomizaka pour les locataires — vérifiez votre bail avant de signer",
-      "seoDescription": "Déposez le bail que l'on vous propose : Yomizaka le lit selon les règles du Québec et cite la clause, l'article du Code civil et la ligne exacte. Dépôt de garantie, chèques postdatés, clauses sans effet.",
-      "eyebrow": "Yomizaka · pour les locataires",
-      "title": "Vérifiez votre bail avant de le signer.",
-      "lead": "Déposez le bail que l'on vous propose. Yomizaka le lit selon les règles du Québec et vous montre, ligne par ligne, ce qui ne tient pas — et ce qu'il faut demander au locateur.",
-      "outcomesTitle": "Ce que vous saurez avant de signer",
-      "outcomes": {
-        "a": {
-          "title": "Repérer les clauses interdites",
-          "text": "Un dépôt de garantie, des chèques postdatés, « pas d'enfants » : chaque constat nomme la règle, l'article du Code civil du Québec et la ligne citée.",
-          "cta": "Voir une vraie vérification"
-        },
-        "b": {
-          "title": "Garder votre bail et ses constats",
-          "text": "Le bail reste dans votre bibliothèque, visible par votre seul compte ; vous le retrouvez par un mot, avec les passages cités.",
-          "cta": "Se connecter (sur invitation)"
-        },
-        "c": {
-          "title": "Savoir quoi demander",
-          "text": "Chaque constat non conforme est une question prête pour le locateur, avec l'article qui la fonde. Ce n'est pas un avis juridique.",
-          "cta": "Vérifier un rapport"
-        }
-      },
-      "how": {
-        "keep": {
-          "title": "Vous déposez votre bail",
-          "text": "Il est gardé tel quel, visible par votre seul compte ; sa couche texte est lue pour la recherche."
-        },
-        "read": {
-          "title": "Yomizaka le lit",
-          "text": "Selon les règles du Québec en vigueur à la date de votre choix. Les règles écrites décident ; seule la question de la clause abusive est posée à un modèle, et le rapport l'indique."
-        },
-        "prove": {
-          "title": "Vous gardez la preuve",
-          "text": "Chaque constat garde l'identifiant de son exécution ; le rapport est signé, et seules les personnes à qui vous donnez accès peuvent le vérifier, avec un compte Yomizaka."
-        }
-      },
-      "examples": {
-        "eyebrow": "Des exemples",
-        "title": "Ce que Yomizaka relève dans un bail",
-        "lead": "Tirés d'une vraie vérification d'un bail québécois d'exemple, tels qu'ils sont revenus (l'exécution est sur la page des preuves).",
-        "items": {
-          "a": "« Un dépôt de sécurité de 1 450 $ à la signature » : interdit, seul le premier mois peut être exigé d'avance (C.c.Q., art. 1904).",
-          "b": "« Douze chèques postdatés » : interdit (C.c.Q., art. 1904, al. 2).",
-          "c": "« Il est interdit d'avoir des enfants dans le logement » : clause sans effet (C.c.Q., art. 1899 et 1901).",
-          "d": "Le montant du loyer et l'avis du loyer le plus bas des douze derniers mois (section G du bail obligatoire) : présents, ou à demander au locateur."
-        }
-      },
-      "owl": "Le hibou lit votre bail ligne par ligne et vous dit ce qu'il a trouvé, pas ce que vous devriez faire."
-    },
-    "landlord": {
-      "switch": "Je suis propriétaire",
-      "seoTitle": "Yomizaka pour les propriétaires — un bail conforme avant de l'envoyer",
-      "seoDescription": "Déposez votre modèle de bail : Yomizaka le lit selon les règles du Québec et cite l'article derrière chaque constat. Pièces du locataire examinées, rapport signé à garder, accès partagé avec votre gestionnaire.",
-      "eyebrow": "Yomizaka · pour les propriétaires",
-      "title": "Un bail conforme avant de l'envoyer.",
-      "lead": "Déposez votre modèle de bail. Yomizaka le lit selon les règles du Québec, cite l'article derrière chaque constat, et vous gardez un rapport signé à conserver ou à partager.",
-      "outcomesTitle": "Ce que vous saurez avant d'envoyer",
-      "outcomes": {
-        "a": {
-          "title": "Valider votre modèle de bail",
-          "text": "Identification du locateur et du locataire, loyer, avis du loyer le plus bas, clauses interdites : vous corrigez avant d'envoyer, pas après le litige.",
-          "cta": "Voir une vraie vérification"
-        },
-        "b": {
-          "title": "Lire les pièces du locataire",
-          "text": "Pièce d'identité, preuve de revenu en PDF : le hibou examine le fichier lui-même (producteur, dates, enregistrements successifs) et signale ce qui est inhabituel, jamais un tampon « faux ».",
-          "cta": "Se connecter (sur invitation)"
-        },
-        "c": {
-          "title": "Garder et partager la preuve",
-          "text": "Un rapport signé, avec l'identifiant de l'exécution. Vous le partagez avec un copropriétaire ou un gestionnaire en lui donnant accès, et vous pouvez le retirer.",
-          "cta": "Vérifier un rapport"
-        }
-      },
-      "how": {
-        "keep": {
-          "title": "Vous déposez votre modèle ou une pièce",
-          "text": "Il est gardé tel quel, visible par votre seul compte ; sa couche texte est lue pour la recherche."
-        },
-        "read": {
-          "title": "Yomizaka le lit",
-          "text": "Le bail, selon les règles du Québec à la date de votre choix ; une pièce en PDF, examinée comme fichier. Les règles écrites décident ; seule la question de la clause abusive est posée à un modèle, et le rapport l'indique."
-        },
-        "prove": {
-          "title": "Vous gardez la preuve",
-          "text": "Chaque constat garde l'identifiant de son exécution ; le rapport est signé, et seules les personnes à qui vous donnez accès peuvent le vérifier, avec un compte Yomizaka."
-        }
-      },
-      "examples": {
-        "eyebrow": "Des exemples",
-        "title": "Ce que Yomizaka relève avant que vous envoyiez",
-        "lead": "Les constats viennent d'une vraie vérification d'un bail québécois d'exemple ; l'examen d'un PDF suit trois niveaux (observé, inhabituel, incohérent).",
-        "items": {
-          "a": "Un modèle qui exige un dépôt de sécurité à la signature : non conforme, avec l'article (C.c.Q., art. 1904).",
-          "b": "Un bail sans l'identification du locateur ou du locataire : un constat à corriger avant l'envoi (art. 1895).",
-          "c": "Une preuve de revenu en PDF enregistrée plusieurs fois par un logiciel de retouche : « inhabituel », avec ce qui a été observé.",
-          "d": "Un rapport partagé avec votre gestionnaire jusqu'à la fin du mois, puis retiré d'un clic."
-        }
-      },
-      "owl": "Le hibou lit chaque page et reconnaît chaque visage : il montre ce qu'il observe, la décision reste la vôtre."
-    },
-    "freelancer": {
-      "switch": "Travailleur autonome",
-      "seoTitle": "Yomizaka pour les travailleurs autonomes — vérifiez vos factures, lisez avant de signer",
-      "seoDescription": "Vérifiez une facture et un contrat de services (intérêt de retard, droit d'auteur, droits moraux) au regard des règles du Québec et fédérales, examinez un PDF, gardez vos documents. Non-concurrence bientôt.",
-      "eyebrow": "Yomizaka · pour les travailleurs autonomes",
-      "title": "Lisez votre contrat de service avant de le signer.",
-      "lead": "Yomizaka vérifie votre facture au regard des mentions exigées au Québec et du format des numéros de TPS et de TVQ, lit votre contrat de services au regard des règles fédérales sur l'intérêt et le droit d'auteur, examine le fichier PDF lui-même et retrouve n'importe quel passage. Les règles du Code civil pour les contrats arrivent bientôt : rien n'est promis tant qu'elles ne tournent pas.",
-      "outcomesTitle": "Ce que vous pouvez faire",
-      "outcomes": {
-        "a": {
-          "title": "Contrat de service : les règles fédérales dès aujourd'hui",
-          "text": "L'intérêt de retard, le droit d'auteur et les droits moraux sont vérifiés au regard du droit fédéral. Non-concurrence, résiliation et clause pénale : bientôt.",
-          "cta": "Voir une exécution réelle"
-        },
-        "b": {
-          "title": "Vérifier une facture dès aujourd'hui",
-          "text": "Date, total, numéros de TPS et de TVQ, taxes, conditions de paiement : chaque constat montre le passage et sa source ; le PDF lui-même est aussi examiné.",
-          "cta": "Se connecter (sur invitation)"
-        },
-        "c": {
-          "title": "Garder la trace",
-          "text": "Chaque vérification garde l'identifiant de son exécution ; un rapport signé se partage avec les personnes de votre choix.",
-          "cta": "Vérifier un rapport"
-        }
-      },
-      "how": {
-        "keep": {
-          "title": "Vous déposez le fichier",
-          "text": "Il est gardé tel quel, visible par votre seul compte ; sa couche texte est lue pour la recherche."
-        },
-        "read": {
-          "title": "Yomizaka l'examine",
-          "text": "La facture et le contrat au regard des règles écrites à partir du droit fédéral, et le PDF comme fichier. Les règles du Code civil pour un contrat s'ajouteront ici quand elles seront sourcées. Aucun modèle n'est appelé pour juger vos documents."
-        },
-        "prove": {
-          "title": "Vous gardez la preuve",
-          "text": "Chaque constat garde l'identifiant de son exécution ; le rapport est signé, et seules les personnes à qui vous donnez accès peuvent le vérifier, avec un compte Yomizaka."
-        }
-      },
-      "examples": {
-        "eyebrow": "Aujourd'hui et bientôt",
-        "title": "Ce que Yomizaka lit",
-        "lead": "Les trois premiers exemples fonctionnent aujourd'hui ; les règles du Code civil (non-concurrence, résiliation, clause pénale) sont pour bientôt.",
-        "items": {
-          "a": "Contrat de service : intérêt de retard exprimé par mois sans le taux annuel (disponible — limité à 5 % par année sinon).",
-          "b": "Contrat de service : droit d'auteur cédé, droits moraux qui ne peuvent pas l'être, une signature (disponible).",
-          "c": "Facture : numéros de TPS et de TVQ bien formés, date, total, taxes et conditions de paiement (disponible ; l'exigence propre à la TVQ n'est pas encore encodée).",
-          "d": "Non-concurrence, résiliation et clause pénale : bientôt — les règles du Code civil attendent la relecture d'un avocat."
-        }
-      },
-      "owl": "Le hibou vérifie la facture, les règles fédérales du contrat et le fichier dès aujourd'hui ; les règles du Code civil viendront quand elles seront sourcées et relues."
-    },
-    "business": {
-      "switch": "Entreprise",
-      "seoTitle": "Yomizaka pour les entreprises — vérifiez les factures de fournisseurs avant de payer",
-      "seoDescription": "Vérifiez une facture reçue au regard des mentions obligatoires du Québec et des numéros de TPS et de TVQ, signalez les PDF retouchés, gardez vos documents. Règles des contrats de fournisseurs bientôt.",
-      "eyebrow": "Yomizaka · pour les entreprises",
-      "title": "Lisez avant de signer, lisez avant de payer.",
-      "lead": "Factures reçues : Yomizaka les vérifie au regard des mentions exigées au Québec et du format des numéros de TPS et de TVQ, examine le fichier PDF lui-même et retrouve n'importe quel passage. Les règles de lecture des contrats de fournisseurs arrivent bientôt ; rien n'est promis tant qu'elles ne tournent pas.",
-      "outcomesTitle": "Ce que vous pouvez faire",
-      "outcomes": {
-        "a": {
-          "title": "Contrats de fournisseurs : bientôt",
-          "text": "Renouvellement automatique, pénalités, exclusivité : les règles sont en préparation. Elles ne tournent pas encore.",
-          "cta": "Voir comment ça marche sur un bail"
-        },
-        "b": {
-          "title": "Vérifier une facture reçue",
-          "text": "Mentions, numéros de TPS et de TVQ, taxes, conditions de paiement — et le PDF examiné pour les retouches avant de payer.",
-          "cta": "Se connecter (sur invitation)"
-        },
-        "c": {
-          "title": "Garder et partager la trace",
-          "text": "Un rapport signé, avec l'identifiant de l'exécution, partagé avec votre comptable ou votre gestionnaire en lui donnant accès.",
-          "cta": "Vérifier un rapport"
-        }
-      },
-      "how": {
-        "keep": {
-          "title": "Vous déposez le fichier",
-          "text": "Il est gardé tel quel, visible par votre seul compte ; sa couche texte est lue pour la recherche."
-        },
-        "read": {
-          "title": "Yomizaka l'examine",
-          "text": "La facture au regard des règles écrites à partir du règlement fédéral, et le PDF comme fichier. Les règles des contrats de fournisseurs s'ajouteront ici quand elles existeront. Aucun modèle n'est appelé pour juger vos documents."
-        },
-        "prove": {
-          "title": "Vous gardez la preuve",
-          "text": "Chaque constat garde l'identifiant de son exécution ; le rapport est signé, et seules les personnes à qui vous donnez accès peuvent le vérifier, avec un compte Yomizaka."
-        }
-      },
-      "examples": {
-        "eyebrow": "Aujourd'hui et bientôt",
-        "title": "Ce que Yomizaka lit",
-        "lead": "Le premier exemple n'existe pas encore (bientôt) ; les trois derniers fonctionnent déjà.",
-        "items": {
-          "a": "Contrat de fournisseur : renouvellement automatique, pénalités, exclusivité (bientôt).",
-          "b": "Facture : numéros de TPS et de TVQ du fournisseur bien formés, mentions exigées (disponible ; l'exigence propre à la TVQ n'est pas encore encodée).",
-          "c": "Facture retouchée : signes de modification dans le PDF (disponible).",
-          "d": "La même facture déposée deux fois : reconnue (disponible)."
-        }
-      },
-      "owl": "Le hibou vérifie la facture et le fichier dès aujourd'hui ; il lira vos contrats quand leurs règles seront écrites et sourcées."
-    },
-    "soonInfo": {
-      "freelancer": {
-        "title": "Bientôt",
-        "today": "Disponible aujourd'hui : la vérification des factures du Québec, les règles fédérales du contrat de services, l'examen d'un PDF, la bibliothèque, la recherche, le rapport signé partagé par accès.",
-        "next": "En préparation : les règles du Code civil pour les contrats (non-concurrence, résiliation, clause pénale), sourcées et relues avant d'être annoncées."
-      },
-      "business": {
-        "title": "Bientôt",
-        "today": "Disponible aujourd'hui : la vérification des factures du Québec, l'examen d'un PDF, la bibliothèque, la recherche, le rapport signé partagé par accès.",
-        "next": "En préparation : les règles des contrats de fournisseurs, écrites comme celles du bail québécois, sourcées et relues avant d'être annoncées."
-      }
-    },
-    "soon": "Bientôt",
-    "other": "Autre"
-  },
-  "changelog": {
-    "metaTitle": "Journal des changements",
-    "metaDescription": "Ce qui a changé dans Yomizaka, semaine par semaine : nouveautés, corrections, sécurité et ruptures, avec la pull request derrière chaque ligne.",
-    "eyebrow": "Journal des changements",
-    "title": "Ce qui a été livré",
-    "lead": "Ce qui a changé dans Yomizaka, la semaine la plus récente d'abord — lu dans les pull requests fusionnées, pas écrit pour la page.",
-    "runs": "Ce site tourne en v{version} sur Krizaka UI {ui}.",
-    "runsNoUi": "Ce site tourne en v{version}.",
-    "feed": "S'abonner (RSS)",
-    "logLabel": "Semaines",
-    "empty": "Les changements n'ont pas pu être lus pour l'instant.",
-    "emptyLink": "Voir les pull requests sur GitHub",
-    "kinds": {
-      "added": "Nouveau",
-      "changed": "Modifié",
-      "fixed": "Corrigé",
-      "removed": "Retiré",
-      "security": "Sécurité",
-      "breaking": "Rupture"
-    },
-    "tags": {
-      "feature": "Nouveau",
-      "fix": "Corrigé",
-      "security": "Sécurité",
-      "breaking": "Rupture",
-      "change": "Modifié"
-    },
-    "pull": "Pull request n° {number}",
-    "week": "Semaine du {date}",
-    "feedTitle": "Yomizaka — journal des changements",
-    "feedDescription": "Ce que Yomizaka a livré, semaine par semaine.",
-    "footerVersion": "v{version}",
-    "langTag": "fr-CA"
   },
   "screening": {
     "tenant": {

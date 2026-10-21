@@ -13,7 +13,7 @@ import { chromium } from "playwright-core";
 
 export const WIDTHS = [360, 390, 430, 768, 1024, 1440];
 export const THEMES = ["dark", "light"];
-export const PAGES = ["/en", "/fr", "/fr/locataire", "/en/freelancer", "/fr/run", "/en/changelog", "/en/privacy", "/en/sign-in", "/fr/verify"];
+export const PAGES = ["/en", "/fr", "/en/privacy", "/fr/privacy", "/en/sign-in", "/fr/verify"];
 
 const arg = (name, fallback) => {
   const i = process.argv.indexOf(`--${name}`);

@@ -14,9 +14,13 @@ describe("sitemap.xml", () => {
     urls = entries.map((e) => e.url);
   });
 
-  it("lists the home, the run, privacy and both sides, in en and fr", () => {
-    for (const path of ["", "/run", "/privacy", "/tenant", "/landlord"]) expect(urls).toContain(`${SITE_URL}/en${path}`);
-    for (const path of ["", "/run", "/privacy", "/locataire", "/proprietaire"]) expect(urls).toContain(`${SITE_URL}/fr${path}`);
+  it("lists the home and privacy, in en and fr, and nothing else", () => {
+    for (const locale of ["en", "fr"]) for (const path of ["", "/privacy"]) expect(urls).toContain(`${SITE_URL}/${locale}${path}`);
+    expect(urls).toHaveLength(4);
+  });
+
+  it("lists none of the removed addresses", () => {
+    expect(urls.filter((u) => /\/(run|changelog|tenant|landlord|freelancer|business|locataire|proprietaire|travailleur-autonome|entreprise)$/.test(u))).toEqual([]);
   });
 
   it("gives every entry en, fr and x-default alternates", () => {
