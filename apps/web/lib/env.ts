@@ -23,7 +23,9 @@ export const envSchema = z.object({
   /** Which environment this deployment is: a flow is enabled per environment (ADR-0003). */
   APP_ENVIRONMENT: z.enum(["dev", "prod"]).default("dev"),
   /** The public origin of the site (canonical URLs, sitemap, llms.txt). */
-  APP_PUBLIC_URL: z.string().url().default("https://dev.yomizaka.com"),
+  APP_PUBLIC_URL: z.string().url().default("https://www.yomizaka.com"),
+  /** The development address (`dev.yomizaka.com`): every page goes to www (308); only the API, auth callbacks, webhooks, /.well-known and /healthz keep serving there, all noindex (lib/indexing.ts). Unset: no dev host. */
+  APP_DEV_HOST: z.string().optional(),
   /** PostgreSQL (the cluster krizaka-dev-pg in dev: database yomizaka_db, role yomizaka_db). */
   DATABASE_URL: z.string().optional(),
   /** The cluster's CA (PEM), to verify its certificate; without it a TLS URL is refused in production. */

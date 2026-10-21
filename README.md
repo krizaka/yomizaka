@@ -77,7 +77,8 @@ Every variable is declared once in `apps/web/lib/env.ts` (see `.env.example`); a
 | Variable | Meaning |
 | :-- | :-- |
 | `APP_ENVIRONMENT` | `dev` or `prod`: which flows are enabled |
-| `APP_PUBLIC_URL` | the public address (canonical links) |
+| `APP_PUBLIC_URL` | the public address (www.yomizaka.com: canonical links, indexed) |
+| `APP_DEV_HOST` | the development address (dev.yomizaka.com): pages go to www with a 308, the API and /.well-known keep serving, noindex |
 | `APP_SEARCH_INDEXING` | `on` or `off`: `off` answers noindex everywhere |
 | `APP_REPORT_SIGNING_KEY` | the Ed25519 key that signs reports |
 | `DATABASE_URL`, `DATABASE_CA_CERT` | PostgreSQL and its CA |

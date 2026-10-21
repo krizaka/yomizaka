@@ -5,7 +5,7 @@
   "index": "on",
   "criteria": {
     "site.healthy": {
-      "evidence": "https://dev.yomizaka.com/api/healthz",
+      "evidence": "https://www.yomizaka.com/api/healthz",
       "checked": "2026-10-16"
     },
     "site.signup-closed": {
@@ -13,7 +13,7 @@
       "checked": "2026-10-16"
     },
     "site.qa-signin": {
-      "evidence": "https://dev.yomizaka.com/en/sign-in",
+      "evidence": "https://www.yomizaka.com/en/sign-in",
       "checked": "2026-10-16"
     },
     "journey.core": {
