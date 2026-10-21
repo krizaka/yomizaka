@@ -23,7 +23,7 @@ const out = path.resolve(args[0] ?? "record-out");
 const device = flag("device", "desktop");
 const locale = flag("locale", "en") === "fr" ? "fr" : "en";
 const voice = args.includes("--voice");
-const BASE = (process.env.APP_BASE_URL ?? "https://dev.yomizaka.com").replace(/\/$/, "");
+const BASE = (process.env.APP_BASE_URL ?? "https://www.yomizaka.com").replace(/\/$/, "");
 const need = (n) => {
   if (!process.env[n]) throw new Error(`${n} is required`);
   return process.env[n];
@@ -31,7 +31,7 @@ const need = (n) => {
 const email = need("E2E_EMAIL");
 const password = need("E2E_PASSWORD");
 const docs = path.resolve(need("E2E_DOCS"));
-const FILES = { invoice: "facture-modele-krizaka.txt", contract: "contrat-de-prestation-modele-krizaka.txt" };
+const FILES = { invoice: "facture-modele-krizaka.txt", contract: "contrat-de-prestation-modele-krizaka.txt", akinaza: "facture-akinaza-krizaka.txt" };
 
 /** What is said at each beat (also the captions). Honest about what Yomizaka found and what it did not. */
 export const WORDS = {
@@ -54,6 +54,14 @@ export const WORDS = {
   invoiceFindings: {
     en: "Eight rules, eight passed, each with the passage it relied on and the article behind it: the date, the GST and QST numbers, the total, the taxes, the payment terms.",
     fr: "Huit règles, huit réussies, chacune avec le passage retenu et l'article qui la fonde : la date, les numéros de TPS et de TVQ, le total, les taxes, les conditions de paiement.",
+  },
+  akinaza: {
+    en: "Then the invoice Akinaza issues for Krizaka, as the text a PDF would give: a label on one line, its value on the next. It carries its payment terms and due date, and Yomizaka reads that layout too.",
+    fr: "Puis la facture qu'Akinaza émet pour Krizaka, en texte comme le donnerait un PDF : un libellé sur une ligne, sa valeur sur la suivante. Elle porte ses conditions de paiement et son échéance, et Yomizaka lit aussi cette mise en page.",
+  },
+  akinazaFindings: {
+    en: "Eight rules, eight passed: the date, the total and the taxes are found over their labels, and the payment terms are there.",
+    fr: "Huit règles, huit réussies : la date, le total et les taxes sont retrouvés sous leurs libellés, et les conditions de paiement y sont.",
   },
   contract: {
     en: "Next, the service contract: interest, copyright and moral rights, and a signature.",
@@ -134,6 +142,7 @@ await take.speak("intro");
 take.beat("drop");
 await upload(T.invoiceKind, FILES.invoice);
 await upload(T.contractKind, FILES.contract);
+await upload(T.invoiceKind, FILES.akinaza);
 await take.speak("drop");
 take.beat("invoice");
 await openDoc(FILES.invoice);
@@ -143,6 +152,16 @@ await check("invoice", "qc-invoice", true);
 take.beat("invoiceFindings");
 await readFindings();
 await take.speak("invoiceFindings");
+await page.goBack();
+await page.waitForLoadState("networkidle");
+take.beat("akinaza");
+await openDoc(FILES.akinaza);
+await page.waitForFunction(() => document.body.innerText.includes("Facture / Invoice"), null, { timeout: 30_000 });
+await take.speak("akinaza");
+await check("invoice", "qc-invoice");
+take.beat("akinazaFindings");
+await readFindings();
+await take.speak("akinazaFindings");
 await page.goBack();
 await page.waitForLoadState("networkidle");
 take.beat("contract");
