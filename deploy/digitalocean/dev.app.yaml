@@ -59,3 +59,7 @@ services:
       - { key: AI_PROVIDER, scope: RUN_TIME, value: "orazaka" }
       - { key: AI_API_URL, scope: RUN_TIME, value: "https://dev.orazaka.com/edge" }
       - { key: AI_API_KEY, scope: RUN_TIME, type: SECRET, value: "__AI_API_KEY__" }
+      # The live app has these (krizaka-deploy refused an apply that would delete them): the report signing key is a SECRET, kept.
+      - { key: APP_REPORT_SIGNING_KEY, scope: RUN_TIME, type: SECRET, value: "__APP_REPORT_SIGNING_KEY__" }
+      - { key: APP_PUBLIC_ACTIONS, scope: RUN_TIME, value: "off" }
+      - { key: DATABASE_MAX_CONNECTIONS, scope: RUN_TIME, value: "2" }
