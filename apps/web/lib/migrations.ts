@@ -233,4 +233,24 @@ CREATE TABLE email_verifications (
 CREATE INDEX email_verifications_account ON email_verifications(account_id);
 `,
   },
+  {
+    version: "0009_billing",
+    sql: `
+-- Entitlements (2026-10-22, ADR-0004): one free audit per self-serve account, then a paid credit or the Pro plan. The
+-- processor is the source of truth; these columns mirror its notifications (vendor-free names). payment_events makes a
+-- notification idempotent: an event id is applied once.
+ALTER TABLE accounts ADD COLUMN free_audit_used_at timestamptz;
+ALTER TABLE accounts ADD COLUMN audit_credits integer NOT NULL DEFAULT 0 CHECK (audit_credits >= 0);
+ALTER TABLE accounts ADD COLUMN plan text NOT NULL DEFAULT 'FREE' CHECK (plan IN ('FREE', 'PRO'));
+ALTER TABLE accounts ADD COLUMN payment_customer_id text UNIQUE;
+ALTER TABLE accounts ADD COLUMN payment_subscription_id text;
+ALTER TABLE accounts ADD COLUMN subscription_status text;
+ALTER TABLE accounts ADD COLUMN current_period_end timestamptz;
+CREATE TABLE payment_events (
+  id          text PRIMARY KEY,
+  type        text NOT NULL,
+  received_at timestamptz NOT NULL DEFAULT now()
+);
+`,
+  },
 ];

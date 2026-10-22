@@ -56,6 +56,10 @@ services:
       - { key: AUTH_SIGNUP_ENABLED, scope: RUN_TIME, value: "false" }
       - { key: AUTH_ALLOWED_IPS, scope: RUN_TIME, type: SECRET, value: "__AUTH_ALLOWED_IPS__" }
       - { key: ABUSE_CLIENT_IP_HEADER, scope: RUN_TIME, value: "do-connecting-ip" }
+      # Payments (ADR-0004): the vendor is a value, its keys SECRETS filled at apply time. Test keys until the owner switches to live.
+      - { key: PAYMENTS_PROVIDER, scope: RUN_TIME, value: "stripe" }
+      - { key: PAYMENTS_STRIPE_SECRET_KEY, scope: RUN_TIME, type: SECRET, value: __PAYMENTS_STRIPE_SECRET_KEY__ }
+      - { key: PAYMENTS_STRIPE_WEBHOOK_SECRET, scope: RUN_TIME, type: SECRET, value: __PAYMENTS_STRIPE_WEBHOOK_SECRET__ }
       - { key: AI_PROVIDER, scope: RUN_TIME, value: "orazaka" }
       - { key: AI_API_URL, scope: RUN_TIME, value: "https://dev.orazaka.com/edge" }
       - { key: AI_API_KEY, scope: RUN_TIME, type: SECRET, value: "__AI_API_KEY__" }

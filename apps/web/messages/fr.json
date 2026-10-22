@@ -377,7 +377,11 @@
       "NO_ACCESS": "Vous n’avez pas accès à ce rapport.",
       "OWN_ADDRESS": "Ce rapport est déjà à vous.",
       "EXPIRY_IN_THE_PAST": "La date de fin doit être dans le futur.",
-      "EMAIL_NOT_VERIFIED": "Confirmez d’abord votre adresse courriel : le lien a été envoyé à l’inscription."
+      "EMAIL_NOT_VERIFIED": "Confirmez d’abord votre adresse courriel : le lien a été envoyé à l’inscription.",
+      "PAYWALL": "Votre audit gratuit est utilisé : payez cet audit ou passez à Pro.",
+      "FAIR_USE": "Limite d’utilisation mensuelle atteinte.",
+      "PAYMENTS_OFF": "Le paiement n’est pas encore disponible.",
+      "NO_CUSTOMER": "Rien n’a encore été acheté."
     },
     "adminConsole": {
       "shell": {
@@ -637,6 +641,16 @@
       "invalid": "Ce lien est invalide ou a expiré. Inscrivez-vous de nouveau pour en recevoir un autre.",
       "verified": "Votre adresse est confirmée. Vous pouvez vous connecter.",
       "invalidBanner": "Ce lien de confirmation est invalide ou a expiré."
+    },
+    "paywall": {
+      "title": "Votre audit gratuit est utilisé",
+      "text": "Le premier audit est gratuit. Pour vérifier un autre document, payez cet audit ou abonnez-vous à Pro.",
+      "payOne": "Payer cet audit",
+      "pro": "Passer à Pro",
+      "soon": "Paiement bientôt disponible.",
+      "notice": "9,99 $ CAD par audit, ou 29 $ CAD par mois pour Pro, avant TPS et TVQ. Vérification informative, ce n’est pas un avis juridique.",
+      "fairUseTitle": "Limite mensuelle atteinte",
+      "fairUse": "Pro comprend jusqu’à {limit} audits par mois. La limite revient au début du mois prochain."
     }
   },
   "report": {
