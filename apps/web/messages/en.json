@@ -207,7 +207,21 @@
       "groupPhotosOn": "Dropped together, they make one document, in the order you choose them.",
       "groupPhotosOff": "Each photo becomes its own document.",
       "groupedUploaded": "{count} photos make one document in your library.",
-      "photoNotice": "Photos are straightened and cropped, then read on the spot. The photo's own data (position, device) is removed."
+      "photoNotice": "Photos are straightened and cropped, then read on the spot. The photo's own data (position, device) is removed.",
+      "table": {
+        "empty": "No document matches.",
+        "results": "{count} documents",
+        "filters": "Filter the documents",
+        "clear": "Clear filters",
+        "remove": "Remove the {label} filter",
+        "search": "Search in “{header}”",
+        "pagination": "Document pages",
+        "previous": "Previous page",
+        "next": "Next page",
+        "page": "Page {page}",
+        "compact": "Page {page} of {count}",
+        "pageSize": "Documents per page"
+      }
     },
     "upload": {
       "queued": "Waiting",
@@ -877,8 +891,6 @@
       "filesMany": "{count} files",
       "foldersOne": "{count} folder",
       "foldersMany": "{count} folders",
-      "filterKind": "Type",
-      "filterStatus": "State",
       "default": "Default",
       "defaultCollection": "Default collection",
       "moveToDefault": "To the default collection",

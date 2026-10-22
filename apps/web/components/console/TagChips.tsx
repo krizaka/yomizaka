@@ -35,20 +35,6 @@ export function TagChips({ tags }: { tags: { id: string; name: string; color: Ta
   );
 }
 
-/** A one-of filter of a view (the type, the state): each chip is a link; the chosen one is the URL's value, and choosing it again clears it. */
-export function ValueFilter({ label, options, selected, hrefFor }: { label: string; options: { value: string; label: string }[]; selected: string | null; hrefFor: (value: string | null) => string }) {
-  return (
-    <nav aria-label={label} className="flex flex-wrap items-center gap-2" data-testid={`filter-${label.toLowerCase()}`}>
-      <span className="text-sm text-fg-secondary">{label}</span>
-      {options.map((o) => (
-        <ChipLink key={o.value} asChild size="sm" selected={selected === o.value}>
-          <Link href={hrefFor(selected === o.value ? null : o.value)}>{o.label}</Link>
-        </ChipLink>
-      ))}
-    </nav>
-  );
-}
-
 /** The tag filter of a view: each chip is a link, the selected ones are the URL's `?tags=` (the URL is the state). */
 export function TagFilter({ tags, selected, hrefFor, label, clearLabel, clearHref }: { tags: { id: string; name: string; color: TagColor }[]; selected: string[]; hrefFor: (id: string) => string; label: string; clearLabel: string; clearHref: string }) {
   if (!tags.length) return null;
