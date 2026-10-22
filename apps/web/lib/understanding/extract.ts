@@ -1,0 +1,148 @@
+import type { AmountFact, Confidence, DateFact, DocumentTypeDef, DocumentUnderstanding, IdentifierDef, Lang, PartyFact, ReferenceFact, Understanding } from "./port";
+
+/**
+ * The cheap pass: regular expressions and weighted signals read from DATA (types.ts). Deterministic — the same text gives the
+ * same answer — and free. It never invents: a field it cannot read is absent, a nature it cannot tell is `null`.
+ */
+export interface UnderstandingConfig {
+  types: readonly DocumentTypeDef[];
+  identifiers: readonly IdentifierDef[];
+  partyRoles: readonly { role: string; pattern: string }[];
+  /** Score from which the nature is « high » / « medium » / « low »; under `low` it is unknown. */
+  thresholds: { high: number; medium: number; low: number };
+  /** Another nature within this share of the best score is reported as an alternative (and the pass counts as unsure). */
+  alternativeShare: number;
+}
+
+const FR_WORDS = /\b(le|la|les|des|du|de|et|est|pour|une|un|dans|sur|avec|par|au|aux|ce|cette|entre|loyer|facture)\b/giu;
+const EN_WORDS = /\b(the|of|and|is|for|with|this|that|between|to|in|on|by|an|agreement|invoice|rent|tenant|number|payment|terms|due|subtotal|total)\b/giu;
+
+function language(text: string): Lang {
+  const fr = (text.match(FR_WORDS) ?? []).length;
+  const en = (text.match(EN_WORDS) ?? []).length;
+  if (fr + en < 3) return "unknown";
+  return fr >= en ? "fr" : "en";
+}
+
+const MONTHS: Record<string, number> = {
+  janvier: 1, january: 1, février: 2, fevrier: 2, february: 2, mars: 3, march: 3, avril: 4, april: 4, mai: 5, may: 5, juin: 6, june: 6,
+  juillet: 7, july: 7, août: 8, aout: 8, august: 8, septembre: 9, september: 9, octobre: 10, october: 10, novembre: 11, november: 11, décembre: 12, decembre: 12, december: 12,
+};
+const pad = (n: number) => String(n).padStart(2, "0");
+const validDate = (y: number, m: number, d: number) => y >= 1950 && y <= 2100 && m >= 1 && m <= 12 && d >= 1 && d <= 31;
+
+type Raw = { y: number; m: number; d: number; text: string; index: number };
+function rawDates(text: string): Raw[] {
+  const out: Raw[] = [];
+  for (const m of text.matchAll(/\b(\d{4})-(\d{2})-(\d{2})\b/g)) if (validDate(+m[1]!, +m[2]!, +m[3]!)) out.push({ y: +m[1]!, m: +m[2]!, d: +m[3]!, text: m[0], index: m.index! });
+  for (const m of text.matchAll(/\b(\d{1,2})(?:er)?\s+([A-Za-zéûôèÉ]{3,9})\s+(\d{4})\b/giu)) {
+    const month = MONTHS[m[2]!.toLowerCase()];
+    if (month && validDate(+m[3]!, month, +m[1]!)) out.push({ y: +m[3]!, m: month, d: +m[1]!, text: m[0], index: m.index! });
+  }
+  for (const m of text.matchAll(/\b([A-Za-z]{3,9})\s+(\d{1,2}),?\s+(\d{4})\b/g)) {
+    const month = MONTHS[m[1]!.toLowerCase()];
+    if (month && validDate(+m[3]!, month, +m[2]!)) out.push({ y: +m[3]!, m: month, d: +m[2]!, text: m[0], index: m.index! });
+  }
+  for (const m of text.matchAll(/\b(\d{1,2})[/.](\d{1,2})[/.](\d{4})\b/g)) if (validDate(+m[3]!, +m[2]!, +m[1]!)) out.push({ y: +m[3]!, m: +m[2]!, d: +m[1]!, text: m[0], index: m.index! });
+  return out;
+}
+
+const KIND_BEFORE: readonly { kind: DateFact["kind"]; pattern: RegExp }[] = [
+  { kind: "due", pattern: /[ée]ch[ée]ance|due\s+date|payable\s+avant|payer\s+avant|due\b/iu },
+  { kind: "effective", pattern: /en\s+vigueur|d[ée]but|effectif|date\s+d['’]effet|[àa]\s+compter\s+du|effective|starting|du\s*$/iu },
+  { kind: "issued", pattern: /[ée]mis|d['’][ée]mission|date\s+(?:de\s+la\s+facture|du\s+re[çc]u|de\s+l['’]inscription)|issued|invoice\s+date|inscri\w+\s+le|signé|sign[ée]\s+[àa]|date\s*:/iu },
+];
+
+function dates(text: string): DateFact[] {
+  const seen = new Set<string>();
+  const facts: DateFact[] = [];
+  for (const r of rawDates(text).sort((a, b) => a.index - b.index)) {
+    const value = `${r.y}-${pad(r.m)}-${pad(r.d)}`;
+    if (seen.has(value)) continue;
+    seen.add(value);
+    const before = text.slice(Math.max(0, r.index - 60), r.index);
+    const kind = KIND_BEFORE.find((k) => k.pattern.test(before))?.kind ?? "other";
+    facts.push({ kind, value, text: r.text });
+    if (facts.length >= 12) break;
+  }
+  return facts;
+}
+
+const toCents = (raw: string): number | null => {
+  const s = raw.replace(/[\s\u00a0]/g, "");
+  const m = /^(\d+)(?:[.,](\d{2}))?$/.exec(s) ?? /^(\d{1,3}(?:[.,]\d{3})+)(?:[.,](\d{2}))?$/.exec(s);
+  if (!m) return null;
+  const whole = m[1]!.replace(/[.,]/g, "");
+  return Number(whole) * 100 + (m[2] ? Number(m[2]) : 0);
+};
+
+const AMOUNT_KINDS: readonly { kind: AmountFact["kind"]; pattern: RegExp }[] = [
+  { kind: "subtotal", pattern: /sous-?total|sub-?total/iu },
+  { kind: "gst", pattern: /\bTPS\b|\bGST\b/u },
+  { kind: "qst", pattern: /\bTVQ\b|\bQST\b/u },
+  { kind: "total", pattern: /total|montant\s+d[ûu]|amount\s+due/iu },
+  { kind: "deposit", pattern: /d[ée]p[ôo]t|deposit/iu },
+  { kind: "rent", pattern: /loyer|\brent\b/iu },
+];
+
+function amounts(text: string): AmountFact[] {
+  const out: AmountFact[] = [];
+  for (const line of text.split("\n")) {
+    for (const m of line.matchAll(/(\d{1,3}(?:[\s\u00a0.,]\d{3})*(?:[.,]\d{2})?|\d+(?:[.,]\d{2})?)\s*(?:\$|CAD|\$\s*CAD)/giu)) {
+      const cents = toCents(m[1]!);
+      if (cents === null || cents === 0) continue;
+      const before = line.slice(0, m.index);
+      const kind = AMOUNT_KINDS.find((k) => k.pattern.test(before))?.kind ?? "other";
+      out.push({ kind, cents, text: m[0].trim() });
+      if (out.length >= 15) return out;
+    }
+  }
+  return out;
+}
+
+export function createUnderstanding(config: UnderstandingConfig): DocumentUnderstanding {
+  const compiled = config.types.map((t) => ({ t, signals: t.signals.map((s) => ({ re: new RegExp(s.pattern, "iu"), weight: s.weight })) }));
+  const ids = config.identifiers.map((i) => ({ i, re: new RegExp(i.pattern, "iu") }));
+  const roles = config.partyRoles.map((r) => ({ role: r.role, re: new RegExp(`^[\\s•*-]*(?:${r.pattern})\\s*(?:\\([^)]*\\))?\\s*:\\s*([^\\n]{2,120})$`, "imu") }));
+
+  return {
+    understand(text, context): Understanding {
+      const scored = compiled.map(({ t, signals }) => ({ t, score: signals.reduce((sum, s) => sum + (s.re.test(text) ? s.weight : 0), 0) })).sort((a, b) => b.score - a.score);
+      const best = scored[0];
+      const second = scored[1];
+      const { high, medium, low } = config.thresholds;
+      const confidence: Confidence = !best || best.score < low ? "unknown" : best.score >= high ? "high" : best.score >= medium ? "medium" : "low";
+      const nature = best && confidence !== "unknown" ? { id: best.t.id, label: best.t.label, confidence, score: best.score } : null;
+      const close = !!best && !!second && second.score > 0 && second.score >= best.score * config.alternativeShare;
+      const alternative = nature && close && second ? { id: second.t.id, label: second.t.label } : null;
+
+      const references: ReferenceFact[] = [];
+      for (const { i, re } of ids) {
+        const found = re.exec(text)?.[1];
+        if (found) references.push({ kind: i.kind, value: found.replace(/\s+/g, " ").trim() });
+      }
+      const parties: PartyFact[] = [];
+      for (const { role, re } of roles) {
+        const value = re.exec(text)?.[1]?.split(/[,;(]/)[0]?.trim();
+        if (value && value.length >= 2 && !parties.some((p) => p.name === value)) parties.push({ role, name: value });
+      }
+      let issuer: string | null = best?.t.issuer && nature ? best.t.issuer : null;
+      if (!issuer && best && nature) for (const p of best.t.issuerPatterns ?? []) issuer = new RegExp(p, "iu").exec(text)?.[1]?.trim() ?? issuer;
+
+      return {
+        nature,
+        alternative,
+        language: language(text),
+        pages: context.pages,
+        issuer,
+        dates: dates(text),
+        parties,
+        references,
+        amounts: amounts(text),
+        check: nature && best ? best.t.check : null,
+        authenticity: nature && best ? best.t.authenticity !== false : true,
+        needsModel: confidence === "unknown" || confidence === "low" || (close && confidence !== "high"),
+      };
+    },
+  };
+}

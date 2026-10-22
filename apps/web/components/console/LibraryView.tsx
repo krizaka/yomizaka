@@ -21,7 +21,7 @@ import { PerspectiveChooser } from "./PerspectiveChooser";
 export const STATUS_TONE = { stored: "neutral", analysing: "accent", checked: "success", attention: "warning", failed: "danger" } as const;
 
 /** Sends one file to the BFF with its progress (XMLHttpRequest: fetch reports no upload progress), aborted on pause. */
-function send(file: File, kind: DocumentKind, signal: AbortSignal, onProgress: (sent: number) => void): Promise<{ document: DocumentSummary; duplicate: boolean }> {
+function send(file: File, kind: DocumentKind | "auto", signal: AbortSignal, onProgress: (sent: number) => void): Promise<{ document: DocumentSummary; duplicate: boolean }> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("POST", "/api/documents");
@@ -41,7 +41,7 @@ function send(file: File, kind: DocumentKind, signal: AbortSignal, onProgress: (
 export function LibraryView({ initial, perspective = null, audiences, screening = false }: { initial: DocumentSummary[]; perspective?: Audience | null; audiences: readonly { audience: Audience; status: "available" | "soon" }[]; screening?: boolean }) {
   const { say, locale } = useSay();
   const client = useQueryClient();
-  const [kind, setKind] = useState<DocumentKind>("lease");
+  const [kind, setKind] = useState<DocumentKind | "auto">("auto");
   const kindRef = useRef(kind);
   const [notices, setNotices] = useState<string[]>([]);
   const documents = useQuery({
@@ -111,10 +111,10 @@ export function LibraryView({ initial, perspective = null, audiences, screening 
       ) : null}
       <section className="flex flex-col gap-3" aria-label={say("library.dropTitle")}>
         <RadioGroup.Root variant="segmented" label={say("library.kindLabel")} value={kind} onValueChange={(v: string) => {
-            kindRef.current = v as DocumentKind;
-            setKind(v as DocumentKind);
+            kindRef.current = v as DocumentKind | "auto";
+            setKind(v as DocumentKind | "auto");
           }}>
-          {DOCUMENT_KINDS.map((k) => (
+          {(["auto", ...DOCUMENT_KINDS] as const).map((k) => (
             <RadioGroup.Segment key={k} value={k}>
               {say(`kinds.${k}`)}
             </RadioGroup.Segment>

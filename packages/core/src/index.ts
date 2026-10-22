@@ -254,7 +254,29 @@ export const documentSummary = z.object({
 });
 export type DocumentSummary = z.infer<typeof documentSummary>;
 
+/** What the document is and what it holds, read in-process from its text (apps/web/lib/understanding, lib/pii). Values of personal information are never here — only counts. */
+const labelled = z.object({ fr: z.string(), en: z.string() });
+export const documentInsight = z.object({
+  understanding: z.object({
+    nature: z.object({ id: z.string(), label: labelled, confidence: z.enum(["high", "medium", "low", "unknown"]), score: z.number() }).nullable(),
+    alternative: z.object({ id: z.string(), label: labelled }).nullable(),
+    language: z.enum(["fr", "en", "unknown"]),
+    pages: z.number().nullable(),
+    issuer: z.string().nullable(),
+    dates: z.array(z.object({ kind: z.enum(["issued", "effective", "due", "period", "other"]), value: z.string(), text: z.string() })),
+    parties: z.array(z.object({ role: z.string(), name: z.string() })),
+    references: z.array(z.object({ kind: z.string(), value: z.string() })),
+    amounts: z.array(z.object({ kind: z.string(), cents: z.number(), text: z.string() })),
+    check: z.object({ studio: z.literal("compliance-check"), documentType: z.enum(["lease", "invoice", "contract"]), ruleset: z.string().nullable() }).nullable(),
+    authenticity: z.boolean(),
+    needsModel: z.boolean(),
+  }),
+  pii: z.object({ total: z.number(), counts: z.record(z.string(), z.number()) }),
+});
+export type DocumentInsight = z.infer<typeof documentInsight>;
+
 export const documentDetail = documentSummary.extend({
+  insight: documentInsight.optional(),
   sha256: z.string(),
   text: z.string(),
   analyses: z.array(analysis),

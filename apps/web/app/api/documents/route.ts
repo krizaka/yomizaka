@@ -1,4 +1,5 @@
 import { documentKind } from "@yomizaka/core";
+import { z } from "zod";
 
 import { requireSession } from "@/lib/access";
 import { audit } from "@/lib/audit";
@@ -25,7 +26,7 @@ export function POST(req: Request) {
     const form = await req.formData().catch(() => null);
     const file = form?.get("file");
     if (!(file instanceof File)) throw refuse(400, "BAD_REQUEST", "A file is expected in the field `file`");
-    const kind = documentKind.catch("other").parse(form?.get("kind") ?? "other");
+    const kind = documentKind.or(z.literal("auto")).catch("auto").parse(form?.get("kind") ?? "auto");
     const bytes = new Uint8Array(await file.arrayBuffer());
     let stored;
     try {
