@@ -1197,6 +1197,23 @@
         "notExposed": "Orazaka's own plan and usage figures are not exposed by its API yet: they are not shown rather than guessed.",
         "rotate": "Rotating the key is done in Orazaka, then in the app's secret: it is not done from here."
       }
+    },
+    "steps": {
+      "label": "Check progress",
+      "working": "Working…",
+      "read": "Reading",
+      "preflight": "Pre-check",
+      "report": "Report",
+      "rules": {
+        "compliance-check": "Checking the rules",
+        "document-authenticity": "Examining the file"
+      },
+      "state": {
+        "done": "Done",
+        "current": "In progress",
+        "upcoming": "Upcoming",
+        "error": "Failed"
+      }
     }
   },
   "report": {

@@ -1197,6 +1197,23 @@
         "notExposed": "Le forfait et l'usage vus par Orazaka ne sont pas encore exposés par son API : ils ne sont pas affichés plutôt que devinés.",
         "rotate": "La rotation de la clé se fait dans Orazaka, puis dans le secret de l'application : elle n'est pas faite d'ici."
       }
+    },
+    "steps": {
+      "label": "Progression de la vérification",
+      "working": "En cours…",
+      "read": "Lecture",
+      "preflight": "Contrôle préalable",
+      "report": "Rapport",
+      "rules": {
+        "compliance-check": "Vérification des règles",
+        "document-authenticity": "Examen du fichier"
+      },
+      "state": {
+        "done": "Terminé",
+        "current": "En cours",
+        "upcoming": "À venir",
+        "error": "Échec"
+      }
     }
   },
   "report": {

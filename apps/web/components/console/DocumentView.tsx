@@ -10,13 +10,14 @@ import { DocumentViewer, type Located } from "@krizaka/ui/document-viewer";
 import { createKrizakaForm } from "@krizaka/ui/form";
 import { Spinner } from "@krizaka/ui/spinner";
 import { Tabs } from "@krizaka/ui/tabs";
-import { type Analysis, analysis as analysisSchema, type Audience, AUTHENTICITY_MAX_BYTES, type AuthenticityReport, type ComplianceReport, type DocumentView as DocumentViewData, documentView, type Jurisdiction, JURISDICTIONS, passages, queryKeys, type Studio, type TextSource } from "@yomizaka/core";
+import { type Analysis, analysis as analysisSchema, type Audience, AUTHENTICITY_MAX_BYTES, type AuthenticityReport, checkSteps,type ComplianceReport, type DocumentView as DocumentViewData, documentView, type Jurisdiction, JURISDICTIONS, passages, queryKeys, type Studio, type TextSource } from "@yomizaka/core";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ComponentProps, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
 import { ClosingNoteView } from "@/components/ClosingNoteView";
+import { CheckSteps } from "@/components/console/CheckSteps";
 import { DocumentInsight } from "@/components/console/DocumentInsight";
 import { Paywall } from "@/components/console/Paywall";
 import { errorKey } from "@/lib/client";
@@ -217,7 +218,7 @@ function AuthenticitySignals({ report }: { report: AuthenticityReport }) {
 }
 
 /** One analysis: its Orazaka run (id, version, status), polled while it runs, then its report. */
-function AnalysisCard({ documentId, initial, selection, source }: { documentId: string; initial: Analysis; selection?: Selection; source?: TextSource }) {
+function AnalysisCard({ documentId, initial, selection, source, hasText }: { documentId: string; initial: Analysis; selection?: Selection; source?: TextSource; hasText: boolean }) {
   const { say, locale } = useSay();
   const client = useQueryClient();
   const live = useQuery({
@@ -238,6 +239,7 @@ function AnalysisCard({ documentId, initial, selection, source }: { documentId: 
         <h3 className="font-display text-base font-bold text-fg">{say(a.studio === "compliance-check" ? "analysis.complianceTitle" : "analysis.authenticityTitle")}</h3>
         <Badge tone={RUN_TONE[a.status]}>{a.status === "running" ? <Spinner size="sm" label={say("analysis.running")} /> : null} {say(`analysis.statuses.${a.status}`)}</Badge>
       </div>
+      <CheckSteps steps={checkSteps({ hasText, analysis: { studio: a.studio, status: a.status } })} />
       <DescriptionList
         items={[
           { term: say("analysis.runId"), details: <code className="break-all font-mono text-xs" data-testid="orazaka-run-id">{a.runId ?? "—"}</code> },
@@ -476,7 +478,7 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
               {(firstCheck(perspective, doc.kind) === "compliance-check" ? [complianceCard, authenticityCard] : [authenticityCard, complianceCard]).filter((c) => offer.studios.includes(c.key as Studio))}
             </div>
             {doc.analyses.map((a) => (
-              <AnalysisCard key={a.id} documentId={doc.id} source={doc.textSource} initial={a} selection={a.id === latestCompliance?.id ? selection : undefined} />
+              <AnalysisCard key={a.id} documentId={doc.id} hasText={doc.hasText} source={doc.textSource} initial={a} selection={a.id === latestCompliance?.id ? selection : undefined} />
             ))}
           </section>
         </Tabs.Content>
