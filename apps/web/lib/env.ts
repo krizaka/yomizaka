@@ -71,6 +71,9 @@ export const envSchema = z.object({
   MEDIA_STORAGE_ENDPOINT: z.string().default("storage.bunnycdn.com"),
   MEDIA_STORAGE_ZONE: z.string().optional(),
   MEDIA_STORAGE_API_KEY: z.string().optional(),
+  /** The zone's pull zone (token authentication) and its key: with both, the store hands out signed, expiring links. */
+  MEDIA_DOCUMENTS_PULL_HOSTNAME: z.string().optional(),
+  MEDIA_DOCUMENTS_TOKEN_KEY: z.string().optional(),
   MEDIA_S3_ENDPOINT: z.string().url().optional(),
   MEDIA_S3_REGION: z.string().optional(),
   MEDIA_S3_BUCKET: z.string().optional(),
