@@ -9,10 +9,6 @@
     "ios": {
       "bundleIdentifier": "com.krizaka.yomizaka",
       "supportsTablet": false,
-      "associatedDomains": [
-        "applinks:www.yomizaka.com",
-        "applinks:dev.yomizaka.com"
-      ],
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
