@@ -1,10 +1,10 @@
-import { isId, NAME_MAX, TAG_COLORS, type TagColor } from "@yomizaka/core";
+import { isId, NAME_MAX } from "@yomizaka/core";
 import { z } from "zod";
 
 import { refuse } from "../http";
 
 /** The rules that need the HTTP layer; the pure ones (ids, tag colours, the filters) are `@yomizaka/core`'s, read by the apps too. */
-export { applyFilters, isId, parseTagsParam, parseView, TAG_COLORS, type TagColor, tagsHref, toggleTag, type ViewState, viewHref } from "@yomizaka/core";
+export { applyFilters, isId, parseTagsParam, parseView, TAG_COLORS, type TagColor, tagsHref, toggleTag, viewHref,type ViewState } from "@yomizaka/core";
 
 export function cleanName(raw: string): string {
   const name = raw.replace(/\s+/g, " ").trim();
