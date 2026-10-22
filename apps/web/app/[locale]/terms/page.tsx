@@ -7,7 +7,7 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
 import { asLocale, getDictionary } from "@/lib/i18n";
-import { pageMetadata } from "@/lib/seo";
+import { pageMetadata, siteJsonLd } from "@/lib/seo";
 import { TERMS_VERSION } from "@/lib/signup";
 import { pagePath } from "@/lib/site";
 
@@ -21,6 +21,7 @@ export default async function Terms({ params }: { params: Promise<{ locale: stri
   const t = getDictionary(locale);
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
       <SiteHeader locale={locale} current="terms" />
       <main id="content" className="pt-20">
         <PageHero back={{ href: pagePath(locale, "home"), label: t.meta.siteName }} linkAs={Link} title={t.terms.title} backdrop="plain" lead={TERMS_VERSION} />
