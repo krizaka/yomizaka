@@ -487,7 +487,19 @@
       "UNREADABLE_IMAGE": "This photo cannot be read. Take it again or choose another file.",
       "OCR_FAILED": "The text of this photo could not be read. Take it again, well lit and flat.",
       "PHOTO_AUTHENTICITY": "This document comes from photos: its authenticity cannot be judged from a file.",
-      "DEFAULT_COLLECTION": "The default collection cannot be deleted. Make another collection the default first."
+      "DEFAULT_COLLECTION": "The default collection cannot be deleted. Make another collection the default first.",
+      "API_PLAN": "Your plan does not include API keys.",
+      "API_KEY_LIMIT": "You have reached your plan's number of keys. Revoke one.",
+      "API_KEY_NAME": "Give the key a name (80 characters at most).",
+      "API_KEY_SCOPE_UNKNOWN": "Choose at least one valid permission.",
+      "API_KEY_EXPIRY": "A key must end: choose a length of 1 to 365 days.",
+      "API_KEY_NOT_FOUND": "This key does not exist.",
+      "API_KEY_REVOKED": "This key is revoked.",
+      "API_KEY_SUPERSEDED": "This key has already been replaced.",
+      "API_KEY_MISSING": "No API key was sent.",
+      "API_KEY_INVALID": "This API key is not valid.",
+      "API_KEY_EXPIRED": "This API key has expired.",
+      "API_KEY_SCOPE": "This key does not have the permission for this action."
     },
     "adminConsole": {
       "shell": {
@@ -1105,6 +1117,10 @@
           "assistant": {
             "label": "Assistant (later)",
             "hint": "Ask a question to a document. Not built yet."
+          },
+          "apiKeys": {
+            "label": "API keys",
+            "hint": "Global switch: off, no key works and none can be created."
           }
         },
         "limits": {
@@ -1131,6 +1147,10 @@
           "bonusAuditsPerMonth": {
             "label": "Bonus audits per month",
             "hint": "Added to this person's monthly cap."
+          },
+          "apiRequestsPerMinute": {
+            "label": "API requests per minute per key",
+            "hint": "Beyond it the answer is 429 with the time to wait."
           }
         },
         "plans": {
@@ -1138,6 +1158,10 @@
             "auditsPerDay": {
               "label": "Free: audits per day",
               "hint": "0: no cap."
+            },
+            "apiKeys": {
+              "label": "Free: API keys",
+              "hint": "Number of active keys. 0: the plan has no API."
             }
           },
           "pro": {
@@ -1148,6 +1172,10 @@
             "auditsPerDay": {
               "label": "Pro: audits per day",
               "hint": "0: no cap."
+            },
+            "apiKeys": {
+              "label": "Pro: API keys",
+              "hint": "Number of active keys. 0: the plan has no API."
             }
           }
         }

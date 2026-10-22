@@ -10,6 +10,7 @@ export const FEATURE = {
   keepDocuments: "features.keepDocuments",
   ownStorage: "features.ownStorage",
   assistant: "features.assistant",
+  apiKeys: "features.apiKeys",
 } as const satisfies Record<string, SettingKey>;
 export type Feature = keyof typeof FEATURE;
 
