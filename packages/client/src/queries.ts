@@ -1,4 +1,5 @@
 import { defineKeys, queryOptions } from "@krizaka/query";
+import { ANALYSIS_STATUS } from "@yomizaka/core";
 
 import type { Locale, YomizakaApi } from "./api";
 
@@ -29,7 +30,7 @@ export function createQueries(api: YomizakaApi) {
       queryOptions({
         queryKey: keys.analysis(documentId, analysisId, locale),
         queryFn: () => api.fetchAnalysis(documentId, analysisId, locale),
-        refetchInterval: (query) => (!query.state.data || query.state.data.analysis.status === "running" ? ANALYSIS_POLL_MS : false),
+        refetchInterval: (query) => (!query.state.data || query.state.data.analysis.status === ANALYSIS_STATUS.running ? ANALYSIS_POLL_MS : false),
       }),
   };
 }

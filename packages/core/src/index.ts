@@ -110,6 +110,8 @@ export const jurisdiction = z.enum(JURISDICTIONS);
 export type Jurisdiction = z.infer<typeof jurisdiction>;
 
 export const ANALYSIS_STATUSES = ["running", "succeeded", "failed", "cancelled"] as const;
+/** The same four words as a vocabulary, for comparisons (`status === ANALYSIS_STATUS.running`). */
+export const ANALYSIS_STATUS = { running: "running", succeeded: "succeeded", failed: "failed", cancelled: "cancelled" } as const satisfies Record<(typeof ANALYSIS_STATUSES)[number], (typeof ANALYSIS_STATUSES)[number]>;
 export const analysisStatus = z.enum(ANALYSIS_STATUSES);
 export type AnalysisStatus = z.infer<typeof analysisStatus>;
 
