@@ -6,6 +6,7 @@ import { Button } from "@krizaka/ui/button";
 import { Checkbox } from "@krizaka/ui/checkbox";
 import { createKrizakaForm } from "@krizaka/ui/form";
 import { RadioGroup } from "@krizaka/ui/radio-group";
+import { SettingsSection } from "@krizaka/ui/settings-layout";
 import { STORAGE_MODE, STORAGE_MODES, type StorageMode } from "@yomizaka/core";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -78,11 +79,8 @@ function StorageForm({ initial, canStoreCredentials, say, locale, onSaved }: { i
   const needsTest = mode === STORAGE_MODE.s3 && !verified?.ok;
   const step = (n: "write" | "read" | "delete") => ({ write: "stepWrite", read: "stepRead", delete: "stepDelete" })[n];
   return (
-    <div className="flex max-w-2xl flex-col gap-6" data-testid="settings-stockage">
-      <div>
-        <h2 className="m-0 font-display text-lg font-bold text-fg">{say("settings.storage.title")}</h2>
-        <p className="m-0 mt-1 text-sm text-fg-secondary">{say("settings.storage.lead")}</p>
-      </div>
+    <div data-testid="settings-stockage">
+      <SettingsSection title={say("settings.storage.title")} description={say("settings.storage.lead")}>
       <RadioGroup.Root label={say("settings.storage.modeLabel")} value={mode} onValueChange={(v: string) => { setMode(v as StorageMode); setSaved(false); setVerified(null); }}>
         {STORAGE_MODES.map((m) => (
           <RadioGroup.Item key={m} value={m} disabled={m === STORAGE_MODE.s3 && !canStoreCredentials}>
@@ -137,6 +135,7 @@ function StorageForm({ initial, canStoreCredentials, say, locale, onSaved }: { i
           {saved ? <span role="status" className="text-sm text-fg-secondary">{say("settings.storage.saved")}</span> : null}
         </div>
       </form.Form>
+      </SettingsSection>
     </div>
   );
 }

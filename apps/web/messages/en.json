@@ -945,7 +945,18 @@
         "languages": {
           "fr": "Français",
           "en": "English"
-        }
+        },
+        "sectionTitle": "Your profile",
+        "sectionLead": "What Yomizaka knows about you. One button saves the whole section.",
+        "saving": "Saving…",
+        "saveError": "Could not save. Try again.",
+        "undo": "Undo",
+        "discard": "Discard",
+        "verified": "Verified address",
+        "unverified": "Unverified address",
+        "avatarOption": "Avatar {n}",
+        "languageHint": "The language of the app and of its e-mails.",
+        "navLabel": "Settings sections"
       },
       "security": {
         "emailTitle": "E-mail address",

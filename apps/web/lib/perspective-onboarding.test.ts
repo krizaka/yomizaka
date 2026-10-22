@@ -15,7 +15,7 @@ describe("the side is chosen at onboarding and changeable in settings", () => {
     expect(welcome).toContain("welcomeTarget(");
   });
   it("settings change it, the document page follows it", () => {
-    expect(read("app/[locale]/(app)/app/settings/[section]/page.tsx")).toContain("<PerspectiveChooser current=");
+    expect(read("app/[locale]/(app)/app/settings/[section]/page.tsx")).toContain("perspective={session.account.perspective}");
     expect(read("components/console/DocumentView.tsx")).toContain("firstCheck(perspective, doc.kind)");
     expect(read("app/[locale]/(app)/app/documents/[id]/[tab]/page.tsx")).toContain("perspective={session.account.perspective}");
   });

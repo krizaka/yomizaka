@@ -945,7 +945,18 @@
         "languages": {
           "fr": "Français",
           "en": "English"
-        }
+        },
+        "sectionTitle": "Votre profil",
+        "sectionLead": "Ce que Yomizaka sait de vous. Un seul bouton enregistre toute la section.",
+        "saving": "Enregistrement…",
+        "saveError": "Impossible d'enregistrer. Réessayez.",
+        "undo": "Annuler",
+        "discard": "Rétablir",
+        "verified": "Adresse vérifiée",
+        "unverified": "Adresse non vérifiée",
+        "avatarOption": "Avatar {n}",
+        "languageHint": "La langue de l'application et des courriels.",
+        "navLabel": "Sections des réglages"
       },
       "security": {
         "emailTitle": "Adresse e-mail",
