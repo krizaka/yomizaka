@@ -23,8 +23,8 @@ import { type DocumentTab } from "@/lib/console-nav";
 import { useSay } from "@/lib/i18n-client";
 import { firstCheck, wordingOf } from "@/lib/perspective-defaults";
 
+import { STATUS_TONE } from "./DocumentTable";
 import { formatBytes, formatDate } from "./format";
-import { STATUS_TONE } from "./LibraryView";
 import { ReportShare } from "./ReportShare";
 
 const VERDICT_TONE: Record<string, "success" | "danger" | "warning" | "neutral"> = { PASS: "success", FAIL: "danger", INSUFFICIENT_EVIDENCE: "warning" };

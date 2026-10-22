@@ -93,6 +93,14 @@ export async function listDocuments(ownerId: string): Promise<DocumentSummary[]>
   return rows.map(summary);
 }
 
+/** The summaries of these documents (the organisation hands out ids), in the order given. */
+export async function documentsByIds(ownerId: string, ids: string[]): Promise<DocumentSummary[]> {
+  if (!ids.length) return [];
+  const rows = await query<DocumentRow>(`SELECT ${SUMMARY_COLUMNS} FROM documents d WHERE d.owner_id = $1 AND d.id = ANY($2::uuid[])`, [ownerId, ids]);
+  const byId = new Map(rows.map((r) => [r.id, summary(r)]));
+  return ids.flatMap((id) => byId.get(id) ?? []);
+}
+
 export async function getDocument(ownerId: string, id: string): Promise<DocumentDetail> {
   if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such document");
   const [row] = await query<DocumentRow & { sha256: string; text: string }>(`SELECT ${SUMMARY_COLUMNS}, d.sha256, d.text FROM documents d WHERE d.owner_id = $1 AND d.id = $2`, [ownerId, id]);

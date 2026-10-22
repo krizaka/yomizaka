@@ -276,4 +276,46 @@ CREATE INDEX preflight_events_account ON preflight_events(account_id, created_at
 ALTER TABLE analyses ADD COLUMN billed_via text;
 `,
   },
+  {
+    version: "0012_organisation",
+    sql: `
+-- ADR-0007: libraries > collections > folders (one level) > files, and tags (per owner). Containers cascade with their
+-- owner; a document's placement is NO ACTION, so a container that still holds files cannot disappear by accident.
+CREATE TABLE libraries (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id   uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  name       text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (owner_id, name)
+);
+CREATE TABLE collections (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  library_id uuid NOT NULL REFERENCES libraries(id) ON DELETE CASCADE,
+  name       text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (library_id, name)
+);
+CREATE TABLE folders (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  collection_id uuid NOT NULL REFERENCES collections(id) ON DELETE CASCADE,
+  name          text NOT NULL,
+  created_at    timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (collection_id, name)
+);
+CREATE TABLE tags (
+  id       uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  name     text NOT NULL,
+  color    text NOT NULL CHECK (color IN ('blue', 'green', 'amber', 'red', 'violet', 'gray'))
+);
+CREATE UNIQUE INDEX tags_owner_name ON tags(owner_id, lower(name));
+CREATE TABLE collection_tags (collection_id uuid NOT NULL REFERENCES collections(id) ON DELETE CASCADE, tag_id uuid NOT NULL REFERENCES tags(id) ON DELETE CASCADE, PRIMARY KEY (collection_id, tag_id));
+CREATE TABLE folder_tags (folder_id uuid NOT NULL REFERENCES folders(id) ON DELETE CASCADE, tag_id uuid NOT NULL REFERENCES tags(id) ON DELETE CASCADE, PRIMARY KEY (folder_id, tag_id));
+CREATE TABLE document_tags (document_id uuid NOT NULL REFERENCES documents(id) ON DELETE CASCADE, tag_id uuid NOT NULL REFERENCES tags(id) ON DELETE CASCADE, PRIMARY KEY (document_id, tag_id));
+ALTER TABLE documents ADD COLUMN collection_id uuid REFERENCES collections(id);
+ALTER TABLE documents ADD COLUMN folder_id uuid REFERENCES folders(id);
+ALTER TABLE documents ADD CONSTRAINT documents_folder_in_collection CHECK (folder_id IS NULL OR collection_id IS NOT NULL);
+CREATE INDEX documents_collection ON documents(collection_id, folder_id);
+`,
+  },
 ];

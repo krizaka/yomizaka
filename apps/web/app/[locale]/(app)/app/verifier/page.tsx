@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { LibraryView } from "@/components/console/LibraryView";
+import { CheckView } from "@/components/console/CheckView";
 import { asLocale, getDictionary } from "@/lib/i18n";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -9,5 +9,5 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 /** Check a document: the drop zone and nothing else; the new document then opens on its information tab. */
 export default function CheckPage() {
-  return <LibraryView initial={[]} mode="check" />;
+  return <CheckView />;
 }
