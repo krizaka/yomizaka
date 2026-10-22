@@ -86,27 +86,47 @@ function NameDialog({ open, onOpenChange, title, initial = "", color, submit }: 
   );
 }
 
+/** Where each kind of item is served. */
+const ENDPOINT = { collection: "/api/collections", folder: "/api/folders", document: "/api/documents", tag: "/api/tags" } as const;
+
+/** What each « New … » button creates: where it posts, the field naming its parent, and its message. */
+const CREATE = {
+  collection: { url: ENDPOINT.collection, parentField: "libraryId", label: "organisation.newCollection" },
+  folder: { url: ENDPOINT.folder, parentField: "collectionId", label: "organisation.newFolder" },
+  tag: { url: ENDPOINT.tag, parentField: null, label: "organisation.newTag" },
+} as const;
+type CreateKind = keyof typeof CREATE;
+
 /** « New collection », « New folder », « New tag »: a button and its dialog. */
-export function CreateButton({ kind, parentId, variant = "secondary" }: { kind: "collection" | "folder" | "tag" | "library"; parentId?: string; variant?: "secondary" | "ghost" }) {
+export function CreateButton({ kind, parentId, variant = "secondary" }: { kind: CreateKind; parentId?: string; variant?: "secondary" | "ghost" }) {
   const { say } = useSay();
   const [open, setOpen] = useState(false);
-  const label = say(`organisation.new${kind === "collection" ? "Collection" : kind === "folder" ? "Folder" : "Tag"}`);
-  const submit = (name: string, color: TagColor | null) =>
-    kind === "collection" ? krizakaFetch("/api/collections", { method: "POST", json: { libraryId: parentId, name } })
-    : kind === "folder" ? krizakaFetch("/api/folders", { method: "POST", json: { collectionId: parentId, name } })
-    : krizakaFetch("/api/tags", { method: "POST", json: { name, color: color ?? "blue" } });
+  const { url, parentField, label: key } = CREATE[kind];
+  const label = say(key);
+  const submit = (name: string, color: TagColor | null) => krizakaFetch(url, { method: "POST", json: { name, ...(parentField ? { [parentField]: parentId } : { color: color ?? "blue" }) } });
   return (
     <>
       <Button variant={variant} size="md" onClick={() => setOpen(true)}>
         {label}
       </Button>
-      {open ? <NameDialog open={open} onOpenChange={setOpen} title={label} color={kind === "tag" ? null : undefined} submit={submit} /> : null}
+      {open ? <NameDialog open={open} onOpenChange={setOpen} title={label} color={parentField ? undefined : null} submit={submit} /> : null}
     </>
   );
 }
 
 /** What the menu of an item can do. */
-export type ItemKind = "collection" | "folder" | "document";
+export const ITEM_KIND = { collection: "collection", folder: "folder", document: "document" } as const;
+export type ItemKind = (typeof ITEM_KIND)[keyof typeof ITEM_KIND];
+
+/** The menu's entries, in order, with the kinds each applies to and its message: one list, one loop. */
+const MENU = [
+  { action: "rename", label: "organisation.rename", kinds: [ITEM_KIND.collection, ITEM_KIND.folder] },
+  { action: "move", label: "organisation.move", kinds: [ITEM_KIND.collection, ITEM_KIND.folder, ITEM_KIND.document] },
+  { action: "tags", label: "organisation.editTags", kinds: [ITEM_KIND.collection, ITEM_KIND.folder, ITEM_KIND.document] },
+  { action: "delete", label: "organisation.delete", kinds: [ITEM_KIND.collection, ITEM_KIND.folder] },
+] as const;
+type Action = (typeof MENU)[number]["action"];
+
 
 /**
  * The menu of a collection, a folder or a document: rename, move, edit tags, delete. A deletion always asks what becomes of
@@ -114,9 +134,9 @@ export type ItemKind = "collection" | "folder" | "document";
  */
 export function ItemMenu({ kind, id, name, collections = [], folders = [], tags = [], current = [], collectionId = null }: { kind: ItemKind; id: string; name: string; collections?: Option[]; folders?: Option[]; tags?: TagOption[]; current?: string[]; collectionId?: string | null }) {
   const { say } = useSay();
-  const [dialog, setDialog] = useState<"rename" | "move" | "tags" | "delete" | null>(null);
+  const [dialog, setDialog] = useState<Action | null>(null);
   const close = () => setDialog(null);
-  const api = kind === "collection" ? `/api/collections/${id}` : kind === "folder" ? `/api/folders/${id}` : `/api/documents/${id}`;
+  const api = `${ENDPOINT[kind]}/${id}`;
   return (
     <>
       <DropdownMenu.Root>
@@ -126,10 +146,11 @@ export function ItemMenu({ kind, id, name, collections = [], folders = [], tags 
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content align="end">
-          {kind === "document" ? null : <DropdownMenu.Item onSelect={() => setDialog("rename")}>{say("organisation.rename")}</DropdownMenu.Item>}
-          <DropdownMenu.Item onSelect={() => setDialog("move")}>{say("organisation.move")}</DropdownMenu.Item>
-          <DropdownMenu.Item onSelect={() => setDialog("tags")}>{say("organisation.editTags")}</DropdownMenu.Item>
-          {kind === "document" ? null : <DropdownMenu.Item onSelect={() => setDialog("delete")}>{say("organisation.delete")}</DropdownMenu.Item>}
+          {MENU.filter((m) => (m.kinds as readonly ItemKind[]).includes(kind)).map((m) => (
+            <DropdownMenu.Item key={m.action} onSelect={() => setDialog(m.action)}>
+              {say(m.label)}
+            </DropdownMenu.Item>
+          ))}
         </DropdownMenu.Content>
       </DropdownMenu.Root>
       {dialog === "rename" ? <NameDialog open onOpenChange={close} title={say("organisation.rename")} initial={name} submit={(n) => krizakaFetch(api, { method: "PATCH", json: { name: n } })} /> : null}

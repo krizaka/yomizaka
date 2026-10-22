@@ -1,8 +1,8 @@
+import { STORAGE_KIND, type StorageKind } from "@yomizaka/core";
 import { addHours } from "date-fns";
 import type { QueryResultRow } from "pg";
 
 import type { StoreDescriptor } from "./storage/port";
-import type { StoredKind } from "./storage/where";
 
 /**
  * Keep or purge (ADR-0007). By default a document is NOT kept: once its check has run, its file and its text are purged and
@@ -12,12 +12,12 @@ import type { StoredKind } from "./storage/where";
 type Query = <T extends QueryResultRow>(text: string, values?: unknown[]) => Promise<T[]>;
 
 /** The stores that hold a document's file outside the database. */
-export const EXTERNAL = new Set<StoredKind>(["bunny", "s3"]);
+export const EXTERNAL = new Set<StorageKind>([STORAGE_KIND.bunny, STORAGE_KIND.s3]);
 
 /** Where a new document goes, from the person's choice and the store configured now. */
-export function storageFor(keep: boolean, active: StoreDescriptor): StoredKind {
-  if (!keep) return "none";
-  return EXTERNAL.has(active.kind) ? active.kind : "database";
+export function storageFor(keep: boolean, active: StoreDescriptor): StorageKind {
+  if (!keep) return STORAGE_KIND.none;
+  return EXTERNAL.has(active.kind) ? active.kind : STORAGE_KIND.database;
 }
 
 const EXTENSION: Record<string, string> = { "application/pdf": "pdf", "text/plain": "txt" };

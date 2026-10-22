@@ -10,6 +10,7 @@ import { useSay } from "@/lib/i18n-client";
 import { libraryScreen } from "@/lib/library-screen";
 import { libraryPath } from "@/lib/organisation/rules";
 import type { LibraryOverview } from "@/lib/organisation/store";
+import { pluralKey } from "@/lib/plural";
 
 import { DocumentTable } from "./DocumentTable";
 import { DocumentUploader } from "./DocumentUploader";
@@ -60,8 +61,8 @@ export function LibraryView({ libraries, unfiled, recents, tags, perspective = n
                         <ItemMenu kind="collection" id={c.id} name={c.name} collections={destinations} tags={tags} current={c.tags.map((t) => t.id)} />
                       </div>
                       <p className="m-0 text-sm text-fg-secondary">
-                        {say(c.files === 1 ? "organisation.filesOne" : "organisation.filesMany", { count: c.files })}
-                        {c.folders > 0 ? ` · ${say(c.folders === 1 ? "organisation.foldersOne" : "organisation.foldersMany", { count: c.folders })}` : ""}
+                        {say(pluralKey("organisation.files", c.files), { count: c.files })}
+                        {c.folders > 0 ? ` · ${say(pluralKey("organisation.folders", c.folders), { count: c.folders })}` : ""}
                       </p>
                       <TagChips tags={c.tags} />
                     </Card.Root>
@@ -73,7 +74,7 @@ export function LibraryView({ libraries, unfiled, recents, tags, perspective = n
                       <Link href={`/${locale}/app/bibliotheque/sans-collection`} className="font-semibold text-fg hover:text-fg-accent hover:underline">
                         {say("organisation.unfiled")}
                       </Link>
-                      <p className="m-0 text-sm text-fg-secondary">{say(unfiled === 1 ? "organisation.filesOne" : "organisation.filesMany", { count: unfiled })}</p>
+                      <p className="m-0 text-sm text-fg-secondary">{say(pluralKey("organisation.files", unfiled), { count: unfiled })}</p>
                     </Card.Root>
                   </li>
                 ) : null}

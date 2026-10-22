@@ -3,6 +3,8 @@
  * chosen in configuration (lib/storage/config.ts) — nothing kept (the default), Bunny (development and fictional data only),
  * any S3-compatible provider (DigitalOcean Spaces tor1, a customer's own bucket, a local MinIO), the Mac or the phone later.
  */
+import type { StorageKind, StorageOwner, StorageResidency } from "@yomizaka/core";
+
 export interface StoredObject {
   bytes: Uint8Array;
   contentType: string;
@@ -10,14 +12,14 @@ export interface StoredObject {
 
 /** Where a document lives, as the info panel says it (#164). */
 export interface StoreDescriptor {
-  kind: "none" | "database" | "bunny" | "s3" | "device";
+  kind: StorageKind;
   /** The host the files go to (`tor1.digitaloceanspaces.com`, `s3.example.com`), when there is one. */
   endpoint: string | null;
   region: string | null;
-  residency: "canada" | "elsewhere" | "unknown" | "device";
+  residency: StorageResidency;
   encrypted: boolean;
   /** Whose storage it is: Krizaka's, the workspace's own cloud (bring your own), or the person's device. */
-  owner: "krizaka" | "workspace" | "device";
+  owner: StorageOwner;
   /** True when the adapter must never hold real personal data (no Canadian region). */
   devOnly: boolean;
 }

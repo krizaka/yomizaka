@@ -1,30 +1,21 @@
 import { describe, expect, it } from "vitest";
 
+import type { StoreDescriptor } from "./port";
 import { storageNotice, storedAs } from "./where";
 
 const D = { endpoint: null, region: null, residency: "unknown", encrypted: false, owner: "krizaka", devOnly: false } as const;
 
 describe("where a document lives, as the info panel says it", () => {
-  it("not kept", () => {
-    expect(storageNotice({ ...D, kind: "none" })).toEqual({ key: "none", vars: {} });
-  });
-  it("kept by Krizaka in Canada, encrypted — the database of the Toronto region and Spaces tor1 alike", () => {
-    expect(storageNotice({ ...D, kind: "database", region: "tor1", residency: "canada", encrypted: true })).toEqual({ key: "krizakaCanadaEncrypted", vars: {} });
-    expect(storageNotice({ ...D, kind: "s3", endpoint: "tor1.digitaloceanspaces.com", region: "tor1", residency: "canada", encrypted: true })).toEqual({ key: "krizakaCanadaEncrypted", vars: {} });
-    expect(storageNotice({ ...D, kind: "s3", residency: "canada", encrypted: false })).toEqual({ key: "krizakaCanada", vars: {} });
-  });
-  it("kept by Krizaka outside Canada says the region", () => {
-    expect(storageNotice({ ...D, kind: "s3", region: "eu-west-3", residency: "elsewhere" })).toEqual({ key: "krizakaElsewhere", vars: { region: "eu-west-3" } });
-  });
-  it("kept on the workspace's own storage says the host and the region", () => {
-    expect(storageNotice({ ...D, kind: "s3", owner: "workspace", endpoint: "s3.example.com", region: "ca-central-1", residency: "canada" })).toEqual({ key: "workspace", vars: { endpoint: "s3.example.com", region: "ca-central-1" } });
-  });
-  it("the development store says it is for fictional data", () => {
-    expect(storageNotice({ ...D, kind: "bunny", residency: "elsewhere", devOnly: true })).toEqual({ key: "devOnly", vars: {} });
-  });
-  it("on the device", () => {
-    expect(storageNotice({ ...D, kind: "device", owner: "device", residency: "device" })).toEqual({ key: "device", vars: {} });
-  });
+  it.each([
+    ["not kept", { kind: "none" }, { key: "none", vars: {} }],
+    ["the database of the Toronto region, encrypted", { kind: "database", region: "tor1", residency: "canada", encrypted: true }, { key: "krizakaCanadaEncrypted", vars: {} }],
+    ["Spaces tor1, encrypted", { kind: "s3", endpoint: "tor1.digitaloceanspaces.com", region: "tor1", residency: "canada", encrypted: true }, { key: "krizakaCanadaEncrypted", vars: {} }],
+    ["Krizaka in Canada, not encrypted", { kind: "s3", residency: "canada", encrypted: false }, { key: "krizakaCanada", vars: {} }],
+    ["Krizaka outside Canada says the region", { kind: "s3", region: "eu-west-3", residency: "elsewhere" }, { key: "krizakaElsewhere", vars: { region: "eu-west-3" } }],
+    ["the workspace's own storage says the host and region", { kind: "s3", owner: "workspace", endpoint: "s3.example.com", region: "ca-central-1", residency: "canada" }, { key: "workspace", vars: { endpoint: "s3.example.com", region: "ca-central-1" } }],
+    ["the development store is for fictional data", { kind: "bunny", residency: "elsewhere", devOnly: true }, { key: "devOnly", vars: {} }],
+    ["on the device", { kind: "device", owner: "device", residency: "device" }, { key: "device", vars: {} }],
+  ] as const)("%s", (_name, override, expected) => expect(storageNotice({ ...D, ...override } as StoreDescriptor)).toEqual(expected));
 });
 
 describe("a stored document's descriptor", () => {

@@ -1,4 +1,4 @@
-import { type Analysis, AUTHENTICITY_MAX_BYTES, COMPLIANCE_MAX_CHARS, fromRunStatus, isTerminal, type OrazakaRun, reportOf, type StartAnalysis } from "@yomizaka/core";
+import { type Analysis, AUTHENTICITY_MAX_BYTES, COMPLIANCE_MAX_CHARS, fromRunStatus, isTerminal, type OrazakaRun, reportOf, type StartAnalysis,type StorageKind } from "@yomizaka/core";
 
 import { refundFailedAudit } from "./billing";
 import { query } from "./db";
@@ -7,7 +7,6 @@ import { refuse } from "./http";
 import { orazaka } from "./orazaka";
 import { purgeIfDone } from "./retention";
 import type { DocumentStore } from "./storage/port";
-import type { StoredKind } from "./storage/where";
 
 /**
  * An analysis is an Orazaka run. Starting one sends the document to the Studio that does the job — the compliance
@@ -35,7 +34,7 @@ export function searchText(report: ReturnType<typeof reportOf>): string {
 
 export async function startAnalysis(ownerId: string, documentId: string, request: StartAnalysis, flowVersionId: string | null = null, billedVia: string | null = null, store?: DocumentStore): Promise<Analysis> {
   if (!isUuid(documentId)) throw refuse(404, "NOT_FOUND", "No such document");
-  const [doc] = await query<{ mime_type: string; text: string; content: Buffer; storage: StoredKind }>("SELECT mime_type, text, content, storage FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, documentId]);
+  const [doc] = await query<{ mime_type: string; text: string; content: Buffer; storage: StorageKind }>("SELECT mime_type, text, content, storage FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, documentId]);
   if (!doc) throw refuse(404, "NOT_FOUND", "No such document");
   // The file comes from where the document lives (a purged one has none: 409 NOT_KEPT); the compliance check reads the text, which a purge also removes.
   const content = request.studio === "compliance-check" ? doc.content : await readBytes(doc, { ownerId, id: documentId }, store);

@@ -1,4 +1,4 @@
-import { type Analysis, type AnalysisStatus, type AuthenticityReport, type ComplianceReport, type DocumentDetail, type DocumentInsight, type DocumentKind, type DocumentStatus, type DocumentSummary, type Studio } from "@yomizaka/core";
+import { type Analysis, type AnalysisStatus, type AuthenticityReport, type CloudOwner, type ComplianceReport, type DocumentDetail, type DocumentInsight, type DocumentKind, type DocumentStatus, type DocumentSummary, type StorageKind, type Studio } from "@yomizaka/core";
 
 import { query } from "./db";
 import { refuse } from "./http";
@@ -9,7 +9,7 @@ import { OUTCOME, type RejectReason } from "./preflight/port";
 import { YOMIZAKA_RULES } from "./preflight/rules";
 import { EXTERNAL, objectKey, purgeDeadline, storageFor } from "./retention";
 import type { DocumentStore, StoreDescriptor } from "./storage/port";
-import { storedAs,type StoredKind } from "./storage/where";
+import { storedAs } from "./storage/where";
 import { understanding } from "./understanding";
 
 interface DocumentRow {
@@ -114,15 +114,15 @@ export async function getDocument(ownerId: string, id: string): Promise<Document
 }
 
 /** Where a document lives and until when (the info panel, ADR-0007), from its row and the store configured now. */
-export async function documentStorage(ownerId: string, id: string, describe: (owner: "krizaka" | "workspace") => StoreDescriptor): Promise<{ storage: StoreDescriptor; retainUntil: string | null; purged: boolean }> {
+export async function documentStorage(ownerId: string, id: string, describe: (owner: CloudOwner) => StoreDescriptor): Promise<{ storage: StoreDescriptor; retainUntil: string | null; purged: boolean }> {
   if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such document");
-  const [row] = await query<{ storage: StoredKind; storage_owner: "krizaka" | "workspace"; retain_until: Date | null; purged: boolean }>("SELECT storage, storage_owner, retain_until, (storage = 'none' AND octet_length(content) = 0 AND text = '') AS purged FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, id]);
+  const [row] = await query<{ storage: StorageKind; storage_owner: CloudOwner; retain_until: Date | null; purged: boolean }>("SELECT storage, storage_owner, retain_until, (storage = 'none' AND octet_length(content) = 0 AND text = '') AS purged FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, id]);
   if (!row) throw refuse(404, "NOT_FOUND", "No such document");
   return { storage: storedAs(row.storage, describe(row.storage_owner)), retainUntil: row.retain_until?.toISOString() ?? null, purged: row.purged };
 }
 
 /** The bytes of a document, from where it lives: the database, or the external store that holds it. A purged document has none (409 NOT_KEPT). */
-export async function readBytes(row: { mime_type: string; content: Buffer; storage: StoredKind }, ids: { ownerId: string; id: string }, store?: DocumentStore): Promise<Buffer> {
+export async function readBytes(row: { mime_type: string; content: Buffer; storage: StorageKind }, ids: { ownerId: string; id: string }, store?: DocumentStore): Promise<Buffer> {
   if (EXTERNAL.has(row.storage)) {
     if (!store || store.describe().kind !== row.storage) throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds this document is not available");
     const found = await store.get(objectKey(ids.ownerId, ids.id, row.mime_type));
@@ -135,7 +135,7 @@ export async function readBytes(row: { mime_type: string; content: Buffer; stora
 
 export async function getFile(ownerId: string, id: string, store?: DocumentStore): Promise<{ filename: string; mimeType: string; content: Buffer }> {
   if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such document");
-  const [row] = await query<{ filename: string; mime_type: string; content: Buffer; storage: StoredKind }>("SELECT filename, mime_type, content, storage FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, id]);
+  const [row] = await query<{ filename: string; mime_type: string; content: Buffer; storage: StorageKind }>("SELECT filename, mime_type, content, storage FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, id]);
   if (!row) throw refuse(404, "NOT_FOUND", "No such document");
   return { filename: row.filename, mimeType: row.mime_type, content: await readBytes(row, { ownerId, id }, store) };
 }
@@ -143,7 +143,7 @@ export async function getFile(ownerId: string, id: string, store?: DocumentStore
 /** Deletes a document at once: its file on the external store first, then the row (its reports go with it). */
 export async function deleteDocument(ownerId: string, id: string, store?: DocumentStore): Promise<void> {
   if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such document");
-  const [row] = await query<{ mime_type: string; storage: StoredKind }>("SELECT mime_type, storage FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, id]);
+  const [row] = await query<{ mime_type: string; storage: StorageKind }>("SELECT mime_type, storage FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, id]);
   if (!row) throw refuse(404, "NOT_FOUND", "No such document");
   if (EXTERNAL.has(row.storage)) {
     if (!store || store.describe().kind !== row.storage) throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds this document is not available");

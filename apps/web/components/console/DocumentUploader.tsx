@@ -4,7 +4,7 @@ import { krizakaFetch, useQuery } from "@krizaka/query";
 import { Alert } from "@krizaka/ui/alert";
 import { Checkbox } from "@krizaka/ui/checkbox";
 import { Dropzone, type FileRejection, UploadList, useUploadQueue } from "@krizaka/ui/file-upload";
-import { type DocumentKind, type DocumentSummary, MAX_FILE_BYTES } from "@yomizaka/core";
+import { type DocumentKind, type DocumentSummary, MAX_FILE_BYTES, STORAGE_MODE, STORAGE_MODES } from "@yomizaka/core";
 import { useRouter } from "next/navigation";
 import { type MutableRefObject, type ReactNode, useEffect, useRef, useState } from "react";
 import { z } from "zod";
@@ -47,8 +47,8 @@ export function DocumentUploader({ kindRef, placement, onUploaded, extra }: { ki
   // Not kept by default (the document is purged after its check, only the report stays): « conserver » is the person's choice.
   const [chosen, setChosen] = useState<boolean | null>(null);
   // The owner's setting (ADR-0007): keeping may be switched off, or ticked by default; the person's own tick wins.
-  const prefs = useQuery({ queryKey: ["storage-prefs"], queryFn: () => krizakaFetch("/api/me/storage", { schema: z.object({ settings: z.object({ mode: z.enum(["none", "krizaka", "s3"]), keepDefault: z.boolean() }) }) }) });
-  const keepOff = prefs.data?.settings.mode === "none";
+  const prefs = useQuery({ queryKey: ["storage-prefs"], queryFn: () => krizakaFetch("/api/me/storage", { schema: z.object({ settings: z.object({ mode: z.enum(STORAGE_MODES), keepDefault: z.boolean() }) }) }) });
+  const keepOff = prefs.data?.settings.mode === STORAGE_MODE.none;
   const keep = !keepOff && (chosen ?? prefs.data?.settings.keepDefault ?? false);
   const keepRef = useRef(keep);
   useEffect(() => {

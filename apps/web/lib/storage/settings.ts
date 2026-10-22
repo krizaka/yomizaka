@@ -1,3 +1,4 @@
+import { STORAGE_MODE, type StorageMode } from "@yomizaka/core";
 import type { QueryResultRow } from "pg";
 
 import { refuse } from "../http";
@@ -14,8 +15,6 @@ import { open, seal } from "./vault";
  */
 type Query = <T extends QueryResultRow>(text: string, values?: unknown[]) => Promise<T[]>;
 
-export const STORAGE_MODES = ["none", "krizaka", "s3"] as const;
-export type StorageMode = (typeof STORAGE_MODES)[number];
 
 export interface OwnS3 {
   endpoint: string;
@@ -63,8 +62,8 @@ export interface SettingsInput {
 
 /** Saves the settings. A new secret is sealed; none given keeps the one already stored. `s3` mode needs all its fields. */
 export async function saveSettings(q: Query, owner: string, input: SettingsInput, key: Buffer | null, now: Date): Promise<StorageSettings> {
-  if (input.keepDefault && input.mode === "none") throw refuse(400, "BAD_REQUEST", "Nothing can be kept by default when keeping is off");
-  if (input.mode !== "s3") {
+  if (input.keepDefault && input.mode === STORAGE_MODE.none) throw refuse(400, "BAD_REQUEST", "Nothing can be kept by default when keeping is off");
+  if (input.mode !== STORAGE_MODE.s3) {
     await q(
       `INSERT INTO storage_settings (owner_id, mode, keep_default, updated_at) VALUES ($1, $2, $3, $4)
        ON CONFLICT (owner_id) DO UPDATE SET mode = excluded.mode, keep_default = excluded.keep_default, updated_at = excluded.updated_at`,
@@ -91,15 +90,15 @@ export async function saveSettings(q: Query, owner: string, input: SettingsInput
 /** The owner's own S3 as a store (the secret opened here and nowhere else), or null when the owner has none. */
 export async function ownS3Store(q: Query, owner: string, key: Buffer | null, now: () => Date): Promise<DocumentStore | null> {
   const [row] = await q<Row>(`SELECT ${COLUMNS} FROM storage_settings WHERE owner_id = $1`, [owner]);
-  if (!row || row.mode !== "s3" || !row.s3_endpoint || !row.s3_secret_sealed || !key) return null;
+  if (!row || row.mode !== STORAGE_MODE.s3 || !row.s3_endpoint || !row.s3_secret_sealed || !key) return null;
   return s3Store({ endpoint: row.s3_endpoint, region: row.s3_region ?? "", bucket: row.s3_bucket ?? "", accessKeyId: row.s3_access_key_id ?? "", secretAccessKey: open(row.s3_secret_sealed, key), prefix: "yomizaka", residency: residencyOf(row.s3_region ?? ""), owner: "workspace", now });
 }
 
 /** The store an owner's documents use: nothing (kept off), the deployment's own (Krizaka), or the owner's S3. */
 export async function storeForOwner(q: Query, owner: string, key: Buffer | null, krizaka: DocumentStore, now: () => Date): Promise<{ store: DocumentStore; settings: StorageSettings }> {
   const settings = await loadSettings(q, owner);
-  if (settings.mode === "none") return { store: noneStore(), settings };
-  if (settings.mode === "s3") {
+  if (settings.mode === STORAGE_MODE.none) return { store: noneStore(), settings };
+  if (settings.mode === STORAGE_MODE.s3) {
     const own = await ownS3Store(q, owner, key, now);
     if (!own) throw refuse(503, "STORAGE_UNAVAILABLE", "The workspace's storage is not available");
     return { store: own, settings };

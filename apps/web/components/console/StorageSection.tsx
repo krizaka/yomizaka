@@ -6,18 +6,19 @@ import { Button } from "@krizaka/ui/button";
 import { Checkbox } from "@krizaka/ui/checkbox";
 import { createKrizakaForm } from "@krizaka/ui/form";
 import { RadioGroup } from "@krizaka/ui/radio-group";
+import { STORAGE_MODE, STORAGE_MODES, type StorageMode } from "@yomizaka/core";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { z } from "zod";
 
 import { errorKey } from "@/lib/client";
 import { useSay } from "@/lib/i18n-client";
-import type { StorageMode } from "@/lib/storage/settings";
+
 
 const step = z.object({ name: z.enum(["write", "read", "delete"]), ok: z.boolean(), ms: z.number(), error: z.string().optional() });
 const verification = z.object({ verification: z.object({ ok: z.boolean(), steps: z.array(step), host: z.string().nullable(), region: z.string(), residency: z.enum(["canada", "elsewhere"]), error: z.string().nullable() }) });
 const current = z.object({
-  settings: z.object({ mode: z.enum(["none", "krizaka", "s3"]), keepDefault: z.boolean(), s3: z.object({ endpoint: z.string(), region: z.string(), bucket: z.string(), accessKeyId: z.string(), hasSecret: z.boolean() }).nullable(), testedAt: z.string().nullable() }),
+  settings: z.object({ mode: z.enum(STORAGE_MODES), keepDefault: z.boolean(), s3: z.object({ endpoint: z.string(), region: z.string(), bucket: z.string(), accessKeyId: z.string(), hasSecret: z.boolean() }).nullable(), testedAt: z.string().nullable() }),
   canStoreCredentials: z.boolean(),
 });
 
@@ -46,7 +47,7 @@ function StorageForm({ initial, canStoreCredentials, say, locale, onSaved }: { i
   const values = () => form.getValues() as { endpoint: string; region: string; bucket: string; accessKeyId: string; secretAccessKey: string };
   const body = () => ({ ...values(), secretAccessKey: values().secretAccessKey || undefined });
   const test = useMutation({ mutationFn: () => krizakaFetch("/api/me/storage/test", { method: "POST", json: body(), schema: verification }) });
-  const save = useMutation({ mutationFn: () => krizakaFetch("/api/me/storage", { method: "PUT", json: { mode, keepDefault: mode === "none" ? false : keepDefault, ...(mode === "s3" ? { s3: body() } : {}) } }) });
+  const save = useMutation({ mutationFn: () => krizakaFetch("/api/me/storage", { method: "PUT", json: { mode, keepDefault: mode === STORAGE_MODE.none ? false : keepDefault, ...(mode === STORAGE_MODE.s3 ? { s3: body() } : {}) } }) });
   const form = s3Form.useForm({
     t: (key: string, vars?: unknown) => say(key, vars as Record<string, string | number> | undefined),
     locale,
@@ -74,7 +75,7 @@ function StorageForm({ initial, canStoreCredentials, say, locale, onSaved }: { i
       setProblem(say(`errors.${errorKey(error)}`));
     }
   };
-  const needsTest = mode === "s3" && !verified?.ok;
+  const needsTest = mode === STORAGE_MODE.s3 && !verified?.ok;
   const step = (n: "write" | "read" | "delete") => ({ write: "stepWrite", read: "stepRead", delete: "stepDelete" })[n];
   return (
     <div className="flex max-w-2xl flex-col gap-6" data-testid="settings-stockage">
@@ -83,8 +84,8 @@ function StorageForm({ initial, canStoreCredentials, say, locale, onSaved }: { i
         <p className="m-0 mt-1 text-sm text-fg-secondary">{say("settings.storage.lead")}</p>
       </div>
       <RadioGroup.Root label={say("settings.storage.modeLabel")} value={mode} onValueChange={(v: string) => { setMode(v as StorageMode); setSaved(false); setVerified(null); }}>
-        {(["none", "krizaka", "s3"] as const).map((m) => (
-          <RadioGroup.Item key={m} value={m} disabled={m === "s3" && !canStoreCredentials}>
+        {STORAGE_MODES.map((m) => (
+          <RadioGroup.Item key={m} value={m} disabled={m === STORAGE_MODE.s3 && !canStoreCredentials}>
             <span className="flex flex-col">
               <span className="font-semibold">{say(`settings.storage.${m}`)}</span>
               <span className="text-sm font-normal text-fg-secondary">{say(`settings.storage.${m}Hint`)}</span>
@@ -94,7 +95,7 @@ function StorageForm({ initial, canStoreCredentials, say, locale, onSaved }: { i
       </RadioGroup.Root>
       {!canStoreCredentials ? <Alert tone="info">{say("settings.storage.noKey")}</Alert> : null}
       <form.Form aria-label={say("settings.storage.title")} className="flex flex-col gap-4">
-        {mode === "s3" ? (
+        {mode === STORAGE_MODE.s3 ? (
           <>
             <form.TextField name="endpoint" label={say("settings.storage.endpoint")} type="url" autoComplete="off" placeholder="https://s3.example.com" />
             <div className="grid gap-4 sm:grid-cols-2">
@@ -123,7 +124,7 @@ function StorageForm({ initial, canStoreCredentials, say, locale, onSaved }: { i
             ) : null}
           </>
         ) : null}
-        {mode === "none" ? null : (
+        {mode === STORAGE_MODE.none ? null : (
           <div className="flex items-center gap-3">
             <Checkbox id="keep-default" checked={keepDefault} onCheckedChange={(v) => { setKeepDefault(v === true); setSaved(false); }} />
             <label htmlFor="keep-default" className="cursor-pointer text-sm">{say("settings.storage.keepDefault")}</label>
