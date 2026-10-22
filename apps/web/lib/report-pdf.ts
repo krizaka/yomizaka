@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { type Attestation, fill, REPORT_SCHEMA, type ReportLabels, type ReportPayload, reportPayload, sha256, signedMessage, type Verification, type VerifyFailure } from "./report";
 import { type SigningKey } from "./report-key";
+import { SITE_URL } from "./site";
 
 /*
  * The signed PDF report of a compliance check — for the owner and the members the owner gave access to (ADR-0002).
@@ -30,6 +31,7 @@ export function reportBlocks(payload: ReportPayload, labels: ReportLabels): Bloc
   const add = (text: string, size = 10, extra: Partial<Block> = {}) => blocks.push({ text, size, ...extra });
   add(labels.eyebrow!, 8, { gap: 2 });
   add(d.title, 18, { bold: true, gap: 6 });
+  add(labels.disclaimer!, 10, { bold: true, gap: 8 });
   add(fill(labels.summary!, { failures: payload.summary.blockingFailures, rules: payload.summary.rulesEvaluated }), 10, { gap: 8 });
   if (c.reviewStatus) add(labels.toReview!, 9, { gap: 8 });
   add(labels.documentHeading!, 12, { bold: true, gap: 2 });
@@ -56,7 +58,7 @@ export function reportBlocks(payload: ReportPayload, labels: ReportLabels): Bloc
   add(labels.guaranteeHeading!, 12, { bold: true, gap: 2 });
   add(labels.guarantees!, 9);
   add(labels.notGuaranteed!, 9);
-  add(fill(labels.howToVerify!, { url: "/verify" }), 9);
+  add(fill(labels.howToVerify!, { url: `${SITE_URL}/verify` }), 9);
   add(labels.footer!, 8);
   return blocks;
 }

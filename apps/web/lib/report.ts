@@ -4,6 +4,7 @@ import { type Analysis, type ComplianceReport, type DocumentDetail } from "@yomi
 import { z } from "zod";
 
 import { type SigningKey } from "./report-key";
+import { SITE_URL } from "./site";
 
 /*
  * The audit report of a compliance check: a self-contained HTML file (print it to PDF from any browser) and what it
@@ -148,6 +149,7 @@ export function renderBody(payload: ReportPayload, labels: ReportLabels): string
 </head>
 <body>
 <p class="eyebrow">${esc(labels.eyebrow)}</p>
+<p class="note"><strong>${esc(labels.disclaimer)}</strong></p>
 <h1>${esc(d.title)}</h1>
 <p>${esc(fill(labels.summary, { failures: payload.summary.blockingFailures, rules: payload.summary.rulesEvaluated }))}</p>
 ${c.reviewStatus ? `<p class="note">${esc(labels.toReview)}</p>` : ""}
@@ -160,7 +162,7 @@ ${findings}
 <h2>${esc(labels.guaranteeHeading)}</h2>
 <p>${esc(labels.guarantees)}</p>
 <p>${esc(labels.notGuaranteed)}</p>
-<p>${esc(fill(labels.howToVerify, { url: "/verify" }))}</p>
+<p>${esc(fill(labels.howToVerify, { url: `${SITE_URL}/verify` }))}</p>
 <footer>${esc(labels.footer)}</footer>
 ${ATTESTATION_MARKER}
 </body>

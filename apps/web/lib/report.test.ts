@@ -112,7 +112,7 @@ describe("verification", () => {
 
   it("fails a report whose visible text was edited (a verdict, a word, a space)", () => {
     const { html } = issue();
-    for (const [from, to] of [["Non conforme", "Conforme"], ["art. 1899", "art. 1900"], ["8f6b1c2e", "8f6b1c2f"], ["</body>", " </body>"]] as const) {
+    for (const [from, to] of [["Point non respecté", "Point respecté"], ["art. 1899", "art. 1900"], ["8f6b1c2e", "8f6b1c2f"], ["</body>", " </body>"]] as const) {
       expect(html).toContain(from);
       expect(verifyReport(html.replace(from, to), key)).toMatchObject({ ok: false, reason: "ALTERED" });
     }
@@ -139,7 +139,7 @@ describe("verification", () => {
     expect(verifyReport(relabeled, key)).toMatchObject({ ok: false, reason: "BAD_SIGNATURE" });
     expect(verifyReport(html.replace("</body>", `${html.match(/<script type="application\/json" id="yomizaka-attestation">[^<]*<\/script>/)![0]}</body>`), key)).toMatchObject({ ok: false });
     // A forger edits the text AND recomputes bodySha256, but cannot recompute the signature.
-    const edited = html.replace("Non conforme", "Conforme");
+    const edited = html.replace("Point non respecté", "Point respecté");
     const rehashed = edited.replace(/(<script type="application\/json" id="yomizaka-attestation">)([^<]*)(<\/script>)/, (_m, a: string, json: string, c: string) => {
       const att = JSON.parse(json);
       att.bodySha256 = sha256(edited.replace(/<script type="application\/json" id="yomizaka-attestation">[^<]*<\/script>/, "<!--yomizaka-attestation-->"));

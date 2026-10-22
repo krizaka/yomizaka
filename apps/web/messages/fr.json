@@ -75,8 +75,8 @@
   },
   "run": {
     "verdicts": {
-      "PASS": "Conforme",
-      "FAIL": "Non conforme",
+      "PASS": "Point respecté",
+      "FAIL": "Point non respecté",
       "INSUFFICIENT_EVIDENCE": "Éléments insuffisants"
     }
   },
@@ -244,8 +244,8 @@
       },
       "summary": "{failures} manquement(s) bloquant(s) sur {rules} règles",
       "verdicts": {
-        "PASS": "Conforme",
-        "FAIL": "Non conforme",
+        "PASS": "Point respecté",
+        "FAIL": "Point non respecté",
         "INSUFFICIENT_EVIDENCE": "Éléments insuffisants"
       },
       "severity": "Gravité",
@@ -589,6 +589,7 @@
   "report": {
     "title": "Rapport d’audit — {name}",
     "eyebrow": "Yomizaka · rapport d’audit de conformité",
+    "disclaimer": "Vérification informative, ce n’est pas un avis juridique. Yomizaka compare votre document à des règles publiées; ce n’est pas une opinion juridique, et seuls les membres du Barreau du Québec peuvent donner un avis juridique. Un résultat n’est jamais une garantie de conformité.",
     "summary": "{failures} manquement(s) bloquant(s) sur {rules} règles vérifiées.",
     "toReview": "Règles du Québec encore à faire réviser par un avocat : un rapport de démonstration, pas un avis juridique.",
     "documentHeading": "Le document",
@@ -611,8 +612,8 @@
     "passage": "Passage",
     "noPassage": "Aucun passage : le document ne dit rien sur ce point.",
     "verdicts": {
-      "PASS": "Conforme",
-      "FAIL": "Non conforme",
+      "PASS": "Point respecté",
+      "FAIL": "Point non respecté",
       "INSUFFICIENT_EVIDENCE": "Preuve insuffisante"
     },
     "guaranteeHeading": "Ce que ce rapport garantit",
