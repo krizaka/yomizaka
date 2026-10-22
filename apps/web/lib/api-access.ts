@@ -1,5 +1,6 @@
-import { API_KEY_CODE, type ApiKeyCode, ApiKeyError, type ApiKeys, type Clock, createApiKeys, YOMIZAKA_API_KEY_RULES } from "./api-keys";
-import { pgApiKeyStore } from "./api-keys/pg-store";
+import { API_KEY_CODE, type ApiKeyCode, ApiKeyError, type ApiKeys, type Clock, createApiKeys, pgApiKeyStore } from "@krizaka/api-keys";
+
+import { YOMIZAKA_API_KEY_RULES } from "./api-keys";
 import { entitlementOf } from "./billing";
 import { query } from "./db";
 import { refuse } from "./http";
