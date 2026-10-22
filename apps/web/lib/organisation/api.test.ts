@@ -30,6 +30,18 @@ describe("the organisation routes", () => {
     expect((await POST(json("POST", { libraryId: "x", name: "Baux" }))).status).toBe(401);
   });
 
+  it("the apps read the libraries and a collection, signed in only", async () => {
+    const libraries = await import("../../app/api/libraries/route");
+    const collection = await import("../../app/api/collections/[id]/route");
+    const ok = await libraries.GET(json("GET"));
+    expect(ok.status).toBe(200);
+    expect(await ok.json()).toEqual({ libraries: [], tags: [] });
+    expect((await collection.GET(json("GET"), ctx())).status).toBe(404);
+    state.session = null;
+    expect((await libraries.GET(json("GET"))).status).toBe(401);
+    expect((await collection.GET(json("GET"), ctx())).status).toBe(401);
+  });
+
   it("a deletion must say what happens to the files", async () => {
     const { DELETE } = await import("../../app/api/collections/[id]/route");
     const res = await DELETE(json("DELETE", {}), ctx());
