@@ -472,7 +472,8 @@
       "TOO_MANY_PHOTOS": "Un document peut compter 12 photos au plus.",
       "UNREADABLE_IMAGE": "Cette photo ne peut pas être lue. Reprenez-la ou choisissez un autre fichier.",
       "OCR_FAILED": "Le texte de cette photo n'a pas pu être lu. Reprenez la photo, bien éclairée et à plat.",
-      "PHOTO_AUTHENTICITY": "Ce document vient de photos : son authenticité ne peut pas se juger sur un fichier."
+      "PHOTO_AUTHENTICITY": "Ce document vient de photos : son authenticité ne peut pas se juger sur un fichier.",
+      "DEFAULT_COLLECTION": "La collection par défaut ne peut pas être supprimée. Choisissez-en une autre comme collection par défaut d'abord."
     },
     "adminConsole": {
       "shell": {
@@ -831,7 +832,6 @@
     "organisation": {
       "title": "Organisation",
       "recents": "Récents",
-      "unfiled": "Sans collection",
       "collections": "Collections",
       "noCollections": "Aucune collection pour l'instant. Créez-en une pour regrouper vos documents.",
       "newCollection": "Nouvelle collection",
@@ -856,7 +856,6 @@
       "deleteDocs": "Les supprimer aussi (définitif)",
       "moveToCollection": "Déplacer vers la collection",
       "moveUpFolder": "Vers le haut, dans la collection",
-      "moveToUnfiled": "Vers « Sans collection »",
       "moveTo": "Déplacer vers",
       "rootOfCollection": "La collection elle-même (sans dossier)",
       "emptyCollection": "Rien ici pour l'instant. Déposez un document ou créez un dossier.",
@@ -879,7 +878,13 @@
       "foldersOne": "{count} dossier",
       "foldersMany": "{count} dossiers",
       "filterKind": "Type",
-      "filterStatus": "État"
+      "filterStatus": "État",
+      "default": "Par défaut",
+      "defaultCollection": "Collection par défaut",
+      "moveToDefault": "Vers la collection par défaut",
+      "makeDefault": "Définir comme collection par défaut",
+      "makeDefaultTitle": "Faire de « {name} » la collection par défaut",
+      "makeDefaultAsk": "Les documents sans destination iront ici. L'ancienne collection par défaut devient une collection comme les autres."
     },
     "settings": {
       "tabs": {

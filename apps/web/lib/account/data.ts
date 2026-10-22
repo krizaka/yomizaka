@@ -19,7 +19,7 @@ export interface DataExport {
   exportedAt: string;
   profile: { id: string; email: string; name: string | null; locale: string; perspective: string | null; createdAt: string; termsAcceptedAt: string | null; privacyAcceptedAt: string | null };
   billing: { plan: string; auditCredits: number; freeAuditUsed: boolean; subscriptionStatus: string | null; currentPeriodEnd: string | null };
-  libraries: { id: string; name: string; collections: { id: string; name: string; tags: string[]; folders: { id: string; name: string; tags: string[] }[] }[] }[];
+  libraries: { id: string; name: string; collections: { id: string; name: string; isDefault: boolean; tags: string[]; folders: { id: string; name: string; tags: string[] }[] }[] }[];
   tags: { id: string; name: string; color: string }[];
   documents: {
     id: string;
@@ -52,7 +52,7 @@ export async function exportData(q: Query, accountId: string, stores: StoresOf, 
   );
   if (!a) throw refuse(404, "NOT_FOUND", "No such account");
   const libs = await q<{ id: string; name: string }>("SELECT id, name FROM libraries WHERE owner_id = $1 ORDER BY created_at", [accountId]);
-  const cols = await q<{ id: string; library_id: string; name: string }>("SELECT c.id, c.library_id, c.name FROM collections c JOIN libraries l ON l.id = c.library_id WHERE l.owner_id = $1 ORDER BY c.name", [accountId]);
+  const cols = await q<{ id: string; library_id: string; name: string; is_default: boolean }>("SELECT c.id, c.library_id, c.name, c.is_default FROM collections c WHERE c.owner_id = $1 ORDER BY c.name", [accountId]);
   const folders = await q<{ id: string; collection_id: string; name: string }>("SELECT f.id, f.collection_id, f.name FROM folders f JOIN collections c ON c.id = f.collection_id JOIN libraries l ON l.id = c.library_id WHERE l.owner_id = $1 ORDER BY f.name", [accountId]);
   const tags = await q<{ id: string; name: string; color: string }>("SELECT id, name, color FROM tags WHERE owner_id = $1 ORDER BY lower(name)", [accountId]);
   const tagged = async (table: string, column: string) => {
@@ -80,7 +80,7 @@ export async function exportData(q: Query, accountId: string, stores: StoresOf, 
     exportedAt: now.toISOString(),
     profile: { id: a.id, email: a.email, name: a.name, locale: a.locale, perspective: a.perspective, createdAt: a.created_at.toISOString(), termsAcceptedAt: a.terms_accepted_at?.toISOString() ?? null, privacyAcceptedAt: a.privacy_accepted_at?.toISOString() ?? null },
     billing: { plan: a.plan, auditCredits: a.audit_credits, freeAuditUsed: !!a.free_audit_used_at, subscriptionStatus: a.subscription_status, currentPeriodEnd: a.current_period_end?.toISOString() ?? null },
-    libraries: libs.map((l) => ({ id: l.id, name: l.name, collections: cols.filter((c) => c.library_id === l.id).map((c) => ({ id: c.id, name: c.name, tags: colTags.get(c.id) ?? [], folders: folders.filter((f) => f.collection_id === c.id).map((f) => ({ id: f.id, name: f.name, tags: folderTags.get(f.id) ?? [] })) })) })),
+    libraries: libs.map((l) => ({ id: l.id, name: l.name, collections: cols.filter((c) => c.library_id === l.id).map((c) => ({ id: c.id, name: c.name, isDefault: c.is_default, tags: colTags.get(c.id) ?? [], folders: folders.filter((f) => f.collection_id === c.id).map((f) => ({ id: f.id, name: f.name, tags: folderTags.get(f.id) ?? [] })) })) })),
     tags,
     documents: await Promise.all(
       docs.map(async (d) => ({

@@ -20,7 +20,7 @@ export function libraryPath(locale: string, library: string, collection?: string
 const choice = z.object({ files: z.enum(["move", "delete"]), to: z.string().nullish() });
 export type DeleteChoice = { files: "delete" } | { files: "move"; to: string | null };
 
-/** A deletion always states what becomes of the files: moved (to a collection, or up / to « Sans collection » when `to` is null) or deleted. */
+/** A deletion always states what becomes of the files: moved (to a collection; to the default collection, or up out of a folder, when `to` is null) or deleted. */
 export function deleteChoice(input: unknown): DeleteChoice {
   const parsed = choice.safeParse(input);
   if (!parsed.success) throw refuse(400, "BAD_REQUEST", "Say what happens to the files: move or delete");
