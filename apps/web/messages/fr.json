@@ -500,7 +500,11 @@
       "API_KEY_MISSING": "Aucune clé d'API n'a été envoyée.",
       "API_KEY_INVALID": "Cette clé d'API n'est pas valide.",
       "API_KEY_EXPIRED": "Cette clé d'API est expirée.",
-      "API_KEY_SCOPE": "Cette clé n'a pas la permission pour cette action."
+      "API_KEY_SCOPE": "Cette clé n'a pas la permission pour cette action.",
+      "AVATAR_NOT_ALLOWED": "Cet avatar n'est pas dans la série proposée.",
+      "AVATAR_TOO_LARGE": "Cette image est trop lourde pour un avatar.",
+      "AVATAR_STORAGE_UNAVAILABLE": "Le stockage des avatars ne répond pas.",
+      "AVATAR_STORAGE_OFF": "Les images d'avatar ne sont pas disponibles ici : choisissez un avatar de la série."
     },
     "adminConsole": {
       "shell": {
@@ -909,7 +913,17 @@
       "moveToDefault": "Vers la collection par défaut",
       "makeDefault": "Définir comme collection par défaut",
       "makeDefaultTitle": "Faire de « {name} » la collection par défaut",
-      "makeDefaultAsk": "Les documents sans destination iront ici. L'ancienne collection par défaut devient une collection comme les autres."
+      "makeDefaultAsk": "Les documents sans destination iront ici. L'ancienne collection par défaut devient une collection comme les autres.",
+      "avatar": {
+        "menu": "Avatar",
+        "title": "Avatar de « {name} »",
+        "ask": "Choisissez un avatar de la série, ou une image à vous.",
+        "none": "Aucun avatar",
+        "set": "Avatars de la série",
+        "upload": "Une image à vous",
+        "uploadHint": "PNG, JPEG ou HEIC, {size} Ko au plus. L'image est recadrée en carré et ses données (position, appareil) sont retirées.",
+        "off": "Les avatars sont désactivés."
+      }
     },
     "settings": {
       "tabs": {
@@ -1122,6 +1136,14 @@
           "apiKeys": {
             "label": "Clés d'API",
             "hint": "Interrupteur global : éteint, aucune clé ne fonctionne et aucune ne peut être créée."
+          },
+          "collectionAvatars": {
+            "label": "Avatars de collection",
+            "hint": "Permet de donner un avatar à une collection : un de la série, ou une image téléversée."
+          },
+          "avatarSet": {
+            "label": "Série d'avatars proposée",
+            "hint": "Les avatars de la série que les personnes peuvent choisir."
           }
         },
         "limits": {
@@ -1152,6 +1174,10 @@
           "apiRequestsPerMinute": {
             "label": "Requêtes d'API par minute et par clé",
             "hint": "Au-delà, la réponse est 429 avec le délai d'attente."
+          },
+          "avatarMaxKb": {
+            "label": "Taille maximale d'un avatar téléversé",
+            "hint": "En Ko, avant que l'image soit recadrée et allégée."
           }
         },
         "plans": {

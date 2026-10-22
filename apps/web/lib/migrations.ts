@@ -406,6 +406,13 @@ ALTER TABLE documents ADD COLUMN text_source jsonb;
   },
   { version: "0019_default_collection", sql: DEFAULT_COLLECTION_MIGRATION },
   {
+    version: "0020_collection_avatar",
+    sql: `
+-- krizaka/yomizaka#206: a collection has an avatar — {"kind":"set","seed":"plain-2"} or {"kind":"image","version":3}; null for none.
+ALTER TABLE collections ADD COLUMN avatar jsonb CHECK (avatar IS NULL OR (jsonb_typeof(avatar) = 'object' AND avatar->>'kind' IN ('set', 'image')));
+`,
+  },
+  {
     version: "0021_api_keys",
     sql: `
 -- ADR-0011: API keys. Only a SHA-256 of the secret is kept; the public id finds the record. A rotated-out key keeps working until

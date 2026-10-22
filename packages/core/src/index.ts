@@ -321,6 +321,12 @@ export type PhotoOrigin = z.infer<typeof photoOrigin>;
 /** How a document's text was read when it was not a text layer: by local character recognition, or — when that was not reliable — by Orazaka's vision model (with its run). */
 /** How a document's text was read, as constants. */
 export const TEXT_SOURCE = { ocr: "ocr", vision: "vision" } as const;
+/** A collection's avatar: one of the set (a seed the UI draws) or an uploaded image (served at `/api/collections/{id}/avatar?v=<version>`). The same shape on the web, the Mac, iOS and Android. */
+/** The avatar set: seeds the UI turns into a picture (Krizaka UI's default avatars in the product's colours); the administrator chooses which are offered. */
+export const AVATAR_SEEDS = ["v1", "v2", "v3", "v4", "v5", "v6"] as const;
+export const AVATAR_KIND = { set: "set", image: "image" } as const;
+export const collectionAvatar = z.discriminatedUnion("kind", [z.object({ kind: z.literal(AVATAR_KIND.set), seed: z.string().regex(/^[a-z0-9-]{1,24}$/) }), z.object({ kind: z.literal(AVATAR_KIND.image), version: z.number().int().min(1) })]);
+export type CollectionAvatar = z.infer<typeof collectionAvatar>;
 export const textSource = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal(TEXT_SOURCE.ocr), engine: z.string(), confidence: z.number(), photos: z.number().int(), lowConfidence: z.boolean(), origin: photoOrigin.nullable() }),
   z.object({ kind: z.literal(TEXT_SOURCE.vision), by: z.literal("orazaka"), runId: z.string(), model: z.string().nullable(), localConfidence: z.number(), photos: z.number().int(), origin: photoOrigin.nullable() }),

@@ -500,7 +500,11 @@
       "API_KEY_MISSING": "No API key was sent.",
       "API_KEY_INVALID": "This API key is not valid.",
       "API_KEY_EXPIRED": "This API key has expired.",
-      "API_KEY_SCOPE": "This key does not have the permission for this action."
+      "API_KEY_SCOPE": "This key does not have the permission for this action.",
+      "AVATAR_NOT_ALLOWED": "That avatar is not in the offered set.",
+      "AVATAR_TOO_LARGE": "This image is too heavy for an avatar.",
+      "AVATAR_STORAGE_UNAVAILABLE": "The avatar storage did not answer.",
+      "AVATAR_STORAGE_OFF": "Avatar images are not available here: pick one from the set."
     },
     "adminConsole": {
       "shell": {
@@ -909,7 +913,17 @@
       "moveToDefault": "To the default collection",
       "makeDefault": "Make the default collection",
       "makeDefaultTitle": "Make “{name}” the default collection",
-      "makeDefaultAsk": "Documents with no destination will go here. The previous default becomes a collection like any other."
+      "makeDefaultAsk": "Documents with no destination will go here. The previous default becomes a collection like any other.",
+      "avatar": {
+        "menu": "Avatar",
+        "title": "Avatar of “{name}”",
+        "ask": "Choose an avatar from the set, or an image of your own.",
+        "none": "No avatar",
+        "set": "Avatars of the set",
+        "upload": "An image of your own",
+        "uploadHint": "PNG, JPEG or HEIC, up to {size} KB. The image is cropped square and its data (position, device) is removed.",
+        "off": "Avatars are switched off."
+      }
     },
     "settings": {
       "tabs": {
@@ -1122,6 +1136,14 @@
           "apiKeys": {
             "label": "API keys",
             "hint": "Global switch: off, no key works and none can be created."
+          },
+          "collectionAvatars": {
+            "label": "Collection avatars",
+            "hint": "Lets a collection have an avatar: one from the set, or an uploaded image."
+          },
+          "avatarSet": {
+            "label": "Avatar set offered",
+            "hint": "The avatars of the set that people may choose."
           }
         },
         "limits": {
@@ -1152,6 +1174,10 @@
           "apiRequestsPerMinute": {
             "label": "API requests per minute per key",
             "hint": "Beyond it the answer is 429 with the time to wait."
+          },
+          "avatarMaxKb": {
+            "label": "Largest uploaded avatar",
+            "hint": "In KB, before the image is cropped and made lighter."
           }
         },
         "plans": {

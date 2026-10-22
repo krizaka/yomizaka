@@ -1,3 +1,4 @@
+import type { CollectionAvatar } from "@yomizaka/core";
 import type { QueryResultRow } from "pg";
 
 import { refuse } from "../http";
@@ -11,7 +12,7 @@ import { cleanName, type DeleteChoice, isId, type TagColor } from "./rules";
 export type Query = <T extends QueryResultRow>(text: string, values?: unknown[]) => Promise<T[]>;
 
 export interface Library { id: string; name: string }
-export interface Collection { id: string; library_id: string; name: string; is_default: boolean }
+export interface Collection { id: string; library_id: string; name: string; is_default: boolean; avatar: CollectionAvatar | null }
 export interface Folder { id: string; collection_id: string; name: string }
 export interface Tag { id: string; name: string; color: TagColor }
 export type TagTarget = "collection" | "folder" | "document";
@@ -61,14 +62,14 @@ export async function deleteLibrary(q: Query, owner: string, id: string): Promis
 }
 
 export interface LibraryOverview extends Library {
-  collections: { id: string; name: string; files: number; folders: number; tags: Tag[]; isDefault: boolean }[];
+  collections: { id: string; name: string; files: number; folders: number; tags: Tag[]; isDefault: boolean; avatar: CollectionAvatar | null }[];
 }
 
 /** Every library of the owner with its collections, file counts and tags. */
 export async function overview(q: Query, owner: string): Promise<LibraryOverview[]> {
   const libs = await q<Library>("SELECT id, name FROM libraries WHERE owner_id = $1 ORDER BY created_at", [owner]);
-  const cols = await q<{ id: string; library_id: string; name: string; is_default: boolean; files: string; folders: string }>(
-    `SELECT c.id, c.library_id, c.name, c.is_default,
+  const cols = await q<{ id: string; library_id: string; name: string; is_default: boolean; avatar: CollectionAvatar | null; files: string; folders: string }>(
+    `SELECT c.id, c.library_id, c.name, c.is_default, c.avatar,
             (SELECT count(*) FROM documents d WHERE d.collection_id = c.id) AS files,
             (SELECT count(*) FROM folders f WHERE f.collection_id = c.id) AS folders
        FROM collections c JOIN libraries l ON l.id = c.library_id WHERE l.owner_id = $1 ORDER BY lower(c.name)`,
@@ -77,7 +78,7 @@ export async function overview(q: Query, owner: string): Promise<LibraryOverview
   const tags = await tagsOf(q, owner, "collection", cols.map((c) => c.id));
   return libs.map((l) => ({
     ...l,
-    collections: cols.filter((c) => c.library_id === l.id).map((c) => ({ id: c.id, name: c.name, files: Number(c.files), folders: Number(c.folders), tags: tags.get(c.id) ?? [], isDefault: c.is_default })),
+    collections: cols.filter((c) => c.library_id === l.id).map((c) => ({ id: c.id, name: c.name, files: Number(c.files), folders: Number(c.folders), tags: tags.get(c.id) ?? [], isDefault: c.is_default, avatar: c.avatar })),
   }));
 }
 
@@ -86,7 +87,7 @@ export async function overview(q: Query, owner: string): Promise<LibraryOverview
 /** What can be owned, how to find it for its owner, and what it is called in an error. */
 const OWNED = {
   library: { sql: "SELECT id, name FROM libraries WHERE owner_id = $1 AND id = $2" },
-  collection: { sql: "SELECT c.id, c.library_id, c.name, c.is_default FROM collections c WHERE c.owner_id = $1 AND c.id = $2" },
+  collection: { sql: "SELECT c.id, c.library_id, c.name, c.is_default, c.avatar FROM collections c WHERE c.owner_id = $1 AND c.id = $2" },
   folder: { sql: "SELECT f.id, f.collection_id, f.name FROM folders f JOIN collections c ON c.id = f.collection_id JOIN libraries l ON l.id = c.library_id WHERE l.owner_id = $1 AND f.id = $2" },
   document: { sql: "SELECT id FROM documents WHERE owner_id = $1 AND id = $2" },
 } as const;
@@ -108,7 +109,7 @@ export const ownedFolder = (q: Query, owner: string, id: string) => owned(q, "fo
 
 /** A collection lives in a library, a folder in a collection: the same create, rename and move, by table. */
 const CHILD = {
-  collection: { table: "collections", parentColumn: "library_id", parent: "library", columns: "id, library_id, name, is_default" },
+  collection: { table: "collections", parentColumn: "library_id", parent: "library", columns: "id, library_id, name, is_default, avatar" },
   folder: { table: "folders", parentColumn: "collection_id", parent: "collection", columns: "id, collection_id, name" },
 } as const;
 type ChildKind = keyof typeof CHILD;

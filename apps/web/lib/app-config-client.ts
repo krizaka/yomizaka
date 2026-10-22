@@ -9,6 +9,7 @@ const config = z.object({
     allowedTypes: z.array(z.string()),
     features: z.object({ keepDocuments: z.boolean(), ownStorage: z.boolean(), documentInsight: z.boolean(), assistant: z.boolean() }),
     payments: z.object({ enabled: z.boolean(), display: z.string() }),
+    avatars: z.object({ enabled: z.boolean(), maxBytes: z.number(), seeds: z.array(z.string()), canUpload: z.boolean() }),
   }),
 });
 export type AppConfig = z.infer<typeof config>["config"];

@@ -7,6 +7,7 @@ import { Button } from "@krizaka/ui/button";
 import { Dialog } from "@krizaka/ui/dialog";
 import { createKrizakaForm } from "@krizaka/ui/form";
 import { RadioGroup } from "@krizaka/ui/radio-group";
+import { AVATAR_SEEDS } from "@yomizaka/core";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useState } from "react";
 import { z } from "zod";
@@ -59,7 +60,6 @@ function useCall<T>(run: (input: T) => Promise<unknown>) {
 // ── profile ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 const nameForm = createKrizakaForm({ schema: z.object({ name: z.string().trim().max(80) }), defaultValues: { name: "" } });
-export const AVATAR_SEEDS = ["v1", "v2", "v3", "v4", "v5", "v6"] as const;
 
 /** Name, avatar and language: each saved on its own, the language also moves to the other language's URL. */
 export function ProfileSection({ email, name, avatarSeed, locale: current, children }: { email: string; name: string | null; avatarSeed: string | null; locale: "en" | "fr"; children?: ReactNode }) {

@@ -5,7 +5,7 @@ import { readFacts } from "./exif";
 import { type ImageCleaner, ImageError, type ImageRules, PHOTO_KIND, type PhotoInput } from "./port";
 
 /** HEIC is decoded in WebAssembly (the prebuilt image library has no HEIC codec: its patents). The decoder applies the camera's rotation itself. */
-async function decodeHeic(bytes: Uint8Array): Promise<Sharp> {
+export async function decodeHeic(bytes: Uint8Array): Promise<Sharp> {
   const { default: decode } = await import("heic-decode");
   const image = await decode({ buffer: Buffer.from(bytes) });
   return sharp(Buffer.from(image.data.buffer, image.data.byteOffset, image.data.byteLength), { raw: { width: image.width, height: image.height, channels: 4 } });
