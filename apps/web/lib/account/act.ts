@@ -4,11 +4,13 @@ import { limit } from "../rate-limit";
 import type { Session } from "../session";
 import { AccountError } from "./port";
 
-/** One account action: signed in, rate-limited, run, answered as JSON (never cached). An `AccountError` becomes the stable `{ code }` answer the page translates. */
+/** One account action: signed in, rate-limited (reads far less tightly than writes), run, answered as JSON (never cached). An `AccountError` becomes the stable `{ code }` answer the page translates. */
 export function accountAct(req: Request, scope: string, run: (session: Session) => Promise<Response | Record<string, unknown> | undefined>) {
   return handle(async () => {
     const session = await requireSession(req);
-    limit(scope, req, session.account.id, [30, 3600], [15, 3600]);
+    // A read (the page's own configuration, loaded on every page) is far looser than a change of something.
+    const reading = req.method === "GET";
+    limit(scope, req, session.account.id, reading ? [1200, 3600] : [30, 3600], reading ? [600, 3600] : [15, 3600]);
     try {
       const out = await run(session);
       if (out instanceof Response) return out;

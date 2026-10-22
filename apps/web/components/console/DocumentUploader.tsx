@@ -52,7 +52,7 @@ export function DocumentUploader({ kindRef, placement, onUploaded, extra }: { ki
   const router = useRouter();
   const [notices, setNotices] = useState<string[]>([]);
   // The owner's setting (ADR-0007): keeping may be switched off, or ticked by default; the person's own tick wins.
-  const prefs = useQuery({ queryKey: ["storage-prefs"], queryFn: () => krizakaFetch("/api/me/storage", { schema: z.object({ settings: z.object({ mode: z.enum(STORAGE_MODES), keepDefault: z.boolean() }) }) }) });
+  const prefs = useQuery({ queryKey: ["storage-prefs"], queryFn: () => krizakaFetch("/api/me/storage", { schema: z.object({ settings: z.object({ mode: z.enum(STORAGE_MODES), keepDefault: z.boolean() }) }) }), throwOnError: false, retry: false });
   const app = useAppConfig();
   const keepOff = prefs.data?.settings.mode === STORAGE_MODE.none || app?.features.keepDocuments === false;
   // Not kept unless the owner's setting says so (the document is purged after its check, only the report stays); the choice is `?conserver=`.

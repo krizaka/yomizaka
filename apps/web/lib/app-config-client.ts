@@ -15,5 +15,5 @@ export type AppConfig = z.infer<typeof config>["config"];
 
 /** The configuration that applies to this person, as the server resolved it (the browser never decides; it only reflects). */
 export function useAppConfig(): AppConfig | undefined {
-  return useQuery({ queryKey: ["app-config"], queryFn: () => krizakaFetch("/api/me/app", { schema: config }).then((r) => r.config), staleTime: 30_000 }).data;
+  return useQuery({ queryKey: ["app-config"], queryFn: () => krizakaFetch("/api/me/app", { schema: config }).then((r) => r.config), staleTime: 30_000, throwOnError: false, retry: false }).data;
 }
