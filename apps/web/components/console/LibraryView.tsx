@@ -13,6 +13,7 @@ import { libraryPath } from "@/lib/organisation/rules";
 import type { LibraryOverview } from "@/lib/organisation/store";
 import { pluralKey } from "@/lib/plural";
 
+import { CollectionAvatar } from "./CollectionAvatar";
 import { DocumentTable } from "./DocumentTable";
 import { DocumentUploader } from "./DocumentUploader";
 import { CreateButton, ItemMenu, type TagOption } from "./OrganisationActions";
@@ -30,7 +31,7 @@ export function LibraryView({ libraries, recents, tags, perspective = null, scre
   const screen = libraryScreen({ documents: recents.length + collections.length, screening });
   const order = (perspective === "landlord" ? ["landlord", "tenant"] : ["tenant", "landlord"]) as ("tenant" | "landlord")[];
   const first = libraries[0];
-  const destinations = collections.map((c) => ({ id: c.id, name: c.name }));
+  const destinations = collections.map((c) => ({ id: c.id, name: c.name, avatar: c.avatar }));
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-wrap items-center justify-end gap-3" data-testid="library-actions">
@@ -56,11 +57,12 @@ export function LibraryView({ libraries, recents, tags, perspective = null, scre
                   <li key={c.id}>
                     <Card.Root className="flex h-full flex-col gap-2 p-4" data-testid="collection-card">
                       <div className="flex items-start justify-between gap-2">
-                        <Link href={libraryPath(locale, lib.id, c.id)} className="font-semibold text-fg hover:text-fg-accent hover:underline">
+                        <CollectionAvatar id={c.id} name={c.name} avatar={c.avatar} />
+                        <Link href={libraryPath(locale, lib.id, c.id)} className="min-w-0 flex-1 font-semibold text-fg hover:text-fg-accent hover:underline">
                           {c.name}
                         </Link>
                         {c.isDefault ? <Badge tone="neutral" size="sm">{say("organisation.default")}</Badge> : null}
-                        <ItemMenu kind="collection" id={c.id} name={c.name} isDefault={c.isDefault} collections={destinations} tags={tags} current={c.tags.map((t) => t.id)} />
+                        <ItemMenu kind="collection" id={c.id} name={c.name} avatar={c.avatar} isDefault={c.isDefault} collections={destinations} tags={tags} current={c.tags.map((t) => t.id)} />
                       </div>
                       <p className="m-0 text-sm text-fg-secondary">
                         {say(pluralKey("organisation.files", c.files), { count: c.files })}

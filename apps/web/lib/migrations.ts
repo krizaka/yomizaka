@@ -425,6 +425,10 @@ CREATE TABLE api_keys (
   superseded_at   timestamptz
 );
 CREATE INDEX api_keys_owner ON api_keys(owner_id, created_at);
+    version: "0020_collection_avatar",
+    sql: `
+-- krizaka/yomizaka#206: a collection has an avatar — {"kind":"set","seed":"plain-2"} or {"kind":"image","version":3}; null for none.
+ALTER TABLE collections ADD COLUMN avatar jsonb CHECK (avatar IS NULL OR (jsonb_typeof(avatar) = 'object' AND avatar->>'kind' IN ('set', 'image')));
 `,
   },
 ];

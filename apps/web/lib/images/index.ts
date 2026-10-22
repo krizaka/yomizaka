@@ -1,3 +1,4 @@
+export { squareAvatar } from "./avatar";
 export { createImageCleaner } from "./clean";
 export { pagesToPdf } from "./pdf";
 export * from "./port";

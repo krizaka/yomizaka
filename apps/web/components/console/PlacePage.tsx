@@ -23,7 +23,7 @@ export async function PlacePage({ params, searchParams }: Props) {
   const t = dict.organisation;
   const tags = await org.listTags(query, owner);
   const overview = await org.overview(query, owner);
-  const collections = overview.flatMap((l) => l.collections).map((c) => ({ id: c.id, name: c.name }));
+  const collections = overview.flatMap((l) => l.collections).map((c) => ({ id: c.id, name: c.name, avatar: c.avatar }));
 
   if (!isId(p.library) || !isId(p.collection)) notFound();
   const collection = await org.ownedCollection(query, owner, p.collection).catch(() => null);
@@ -42,7 +42,7 @@ export async function PlacePage({ params, searchParams }: Props) {
       locale={locale}
       t={t}
       library={{ id: lib.id, name: lib.name }}
-      collection={{ id: collection.id, name: collection.name, isDefault: collection.is_default }}
+      collection={{ id: collection.id, name: collection.name, isDefault: collection.is_default, avatar: collection.avatar }}
       folder={folder ? { id: folder.id, name: folder.name } : undefined}
       folders={folders}
       documents={documents}
