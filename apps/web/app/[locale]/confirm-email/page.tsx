@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { EmailTokenPage, emailTokenMetadata } from "@/components/EmailTokenPage";
+import { emailTokenMetadata,EmailTokenPage } from "@/components/EmailTokenPage";
 import { isEmailChangeToken } from "@/lib/account/postgres";
 
 export const dynamic = "force-dynamic";

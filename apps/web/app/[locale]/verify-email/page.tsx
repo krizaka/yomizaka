@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { EmailTokenPage, emailTokenMetadata } from "@/components/EmailTokenPage";
+import { emailTokenMetadata,EmailTokenPage } from "@/components/EmailTokenPage";
 import { isVerifyToken } from "@/lib/signup";
 
 export const dynamic = "force-dynamic";
