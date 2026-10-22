@@ -42,7 +42,7 @@ export function POST(req: Request, { params }: Params) {
     const via = await reserveAudit(query, session.account.id, new Date(), env().APP_FAIR_USE_AUDITS_PER_MONTH);
     let analysis;
     try {
-      analysis = await startAnalysis(session.account.id, id, request, flowVersionId);
+      analysis = await startAnalysis(session.account.id, id, request, flowVersionId, via);
     } catch (error) {
       await releaseAudit(query, session.account.id, via);
       throw error;
