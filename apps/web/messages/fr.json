@@ -260,6 +260,22 @@
       "tabs": {
         "infos": "Informations",
         "verifications": "Vérifications"
+      },
+      "where": {
+        "title": "Où vit ce document",
+        "none": "Non conservé",
+        "krizakaCanadaEncrypted": "Conservé : Krizaka (Canada, chiffré)",
+        "krizakaCanada": "Conservé : Krizaka (Canada)",
+        "krizakaElsewhere": "Conservé : Krizaka ({region})",
+        "workspace": "Conservé : votre stockage ({endpoint}, région {region})",
+        "devOnly": "Conservé : stockage de développement, données fictives seulement",
+        "device": "Sur cet appareil",
+        "retentionUntil": "Conservé jusqu'au {date}.",
+        "retentionNone": "Conservé jusqu'à ce que vous le supprimiez.",
+        "retentionNotKept": "Seul le rapport reste.",
+        "deleteNow": "Supprimer maintenant",
+        "deleteNowConfirm": "Supprimer définitivement",
+        "deleteNowHint": "Le document et ses vérifications sont supprimés tout de suite. C'est irréversible."
       }
     },
     "analysis": {

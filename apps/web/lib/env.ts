@@ -58,6 +58,19 @@ export const envSchema = z.object({
   ABUSE_TRUSTED_PROXY_HOPS: z.coerce.number().int().min(1).max(10).default(1),
   /** Signs the audit reports (Ed25519, base64 of the PKCS#8 DER — `node scripts/generate-report-key.mjs`), a DO SECRET. */
   APP_REPORT_SIGNING_KEY: z.string().optional(),
+  /** Where a kept document lives (ADR-0007): nothing kept by default; `bunny` is for development and fictional data only (no Canadian region); `s3` is Spaces tor1, a workspace's own bucket or a local test server. */
+  MEDIA_DOCUMENTS_PROVIDER: z.enum(["none", "bunny", "s3"]).default("none"),
+  MEDIA_DOCUMENTS_PREFIX: z.string().default("yomizaka"),
+  /** AES-256-GCM key (32 bytes, base64) that encrypts every kept document before it leaves; the provider only holds ciphertext. */
+  MEDIA_DOCUMENTS_ENCRYPTION_KEY: z.string().optional(),
+  MEDIA_STORAGE_ENDPOINT: z.string().default("storage.bunnycdn.com"),
+  MEDIA_STORAGE_ZONE: z.string().optional(),
+  MEDIA_STORAGE_API_KEY: z.string().optional(),
+  MEDIA_S3_ENDPOINT: z.string().url().optional(),
+  MEDIA_S3_REGION: z.string().optional(),
+  MEDIA_S3_BUCKET: z.string().optional(),
+  MEDIA_S3_ACCESS_KEY_ID: z.string().optional(),
+  MEDIA_S3_SECRET_ACCESS_KEY: z.string().optional(),
   /** Where the analyses run: Orazaka, and only Orazaka. */
   AI_PROVIDER: z.literal("orazaka").default("orazaka"),
   /** Orazaka's edge (`https://dev.orazaka.com/edge`). */
@@ -89,6 +102,7 @@ export function productionProblems(env: Env): string[] {
     } catch (error) {
       problems.push((error as Error).message);
     }
+  if (env.APP_ENVIRONMENT === "prod" && env.MEDIA_DOCUMENTS_PROVIDER === "bunny") problems.push("MEDIA_DOCUMENTS_PROVIDER=bunny has no Canadian region: development and fictional data only");
   if (env.DATABASE_URL && /sslmode=(require|verify)/.test(env.DATABASE_URL) && !env.DATABASE_CA_CERT) problems.push("DATABASE_CA_CERT is required for a TLS database");
   return problems;
 }

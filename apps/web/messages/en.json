@@ -260,6 +260,22 @@
       "tabs": {
         "infos": "Information",
         "verifications": "Checks"
+      },
+      "where": {
+        "title": "Where this document lives",
+        "none": "Not kept",
+        "krizakaCanadaEncrypted": "Kept: Krizaka (Canada, encrypted)",
+        "krizakaCanada": "Kept: Krizaka (Canada)",
+        "krizakaElsewhere": "Kept: Krizaka ({region})",
+        "workspace": "Kept: your storage ({endpoint}, region {region})",
+        "devOnly": "Kept: development storage, fictional data only",
+        "device": "On this device",
+        "retentionUntil": "Kept until {date}.",
+        "retentionNone": "Kept until you delete it.",
+        "retentionNotKept": "Only the report stays.",
+        "deleteNow": "Delete now",
+        "deleteNowConfirm": "Delete for good",
+        "deleteNowHint": "The document and its checks are deleted at once. This cannot be undone."
       }
     },
     "analysis": {

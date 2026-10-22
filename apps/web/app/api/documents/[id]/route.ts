@@ -1,11 +1,12 @@
 import { startAnalysis as startAnalysisBody } from "@yomizaka/core";
 
+import { activeStore } from "@/app/active-store";
 import { requireSession } from "@/lib/access";
 import { getAnalysis, startAnalysis } from "@/lib/analyses";
 import { audit } from "@/lib/audit";
 import { releaseAudit, reserveAudit } from "@/lib/billing";
 import { query } from "@/lib/db";
-import { deleteDocument, getDocument } from "@/lib/documents";
+import { deleteDocument, documentStorage, getDocument } from "@/lib/documents";
 import { appEnvironment, env } from "@/lib/env";
 import { resolveStart } from "@/lib/flows";
 import { handle, readJson } from "@/lib/http";
@@ -19,7 +20,8 @@ type Params = { params: Promise<{ id: string }> };
 export function GET(req: Request, { params }: Params) {
   return handle(async () => {
     const session = await requireSession(req);
-    return Response.json({ document: await getDocument(session.account.id, (await params).id) });
+    const id = (await params).id;
+    return Response.json({ document: { ...(await getDocument(session.account.id, id)), ...(await documentStorage(session.account.id, id, activeStore().describe())) } });
   });
 }
 

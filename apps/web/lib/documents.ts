@@ -7,6 +7,8 @@ import { personalInfo } from "./pii";
 import { createInspector } from "./preflight/inspector";
 import { OUTCOME, type RejectReason } from "./preflight/port";
 import { YOMIZAKA_RULES } from "./preflight/rules";
+import type { StoreDescriptor } from "./storage/port";
+import { storedAs,type StoredKind } from "./storage/where";
 import { understanding } from "./understanding";
 
 interface DocumentRow {
@@ -107,6 +109,14 @@ export async function getDocument(ownerId: string, id: string): Promise<Document
   if (!row) throw refuse(404, "NOT_FOUND", "No such document");
   const analyses = await query<AnalysisRow>("SELECT * FROM analyses WHERE document_id = $1 ORDER BY created_at DESC LIMIT 50", [id]);
   return { ...summary(row), sha256: row.sha256, text: row.text, insight: insightOf(row.text, row.pages), analyses: analyses.map(toAnalysis) };
+}
+
+/** Where a document lives and until when (the info panel, ADR-0007), from its row and the store configured now. */
+export async function documentStorage(ownerId: string, id: string, activeStore: StoreDescriptor): Promise<{ storage: StoreDescriptor; retainUntil: string | null }> {
+  if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such document");
+  const [row] = await query<{ storage: StoredKind; retain_until: Date | null }>("SELECT storage, retain_until FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, id]);
+  if (!row) throw refuse(404, "NOT_FOUND", "No such document");
+  return { storage: storedAs(row.storage, activeStore), retainUntil: row.retain_until?.toISOString() ?? null };
 }
 
 export async function getFile(ownerId: string, id: string): Promise<{ filename: string; mimeType: string; content: Buffer }> {
