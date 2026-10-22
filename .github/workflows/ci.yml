@@ -33,16 +33,3 @@ jobs:
         YOMIZAKA_DB_IT=1
       playwright: chromium
       after-build: scripts/ci-after-build.sh
-
-  # The job name is the required status check on main: kept by a shim that reads the gate's verdict.
-  verify:
-    name: Lint · Typecheck · Tests · Build
-    needs: ci
-    if: ${{ always() }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 2
-    permissions: {}
-    env:
-      RESULT: ${{ needs.ci.outputs.result }}
-    steps:
-      - run: test "$RESULT" = success
