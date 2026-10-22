@@ -26,7 +26,8 @@
       "label": "Menu"
     },
     "version": "v{version}",
-    "terms": "Terms"
+    "terms": "Terms",
+    "download": "Download"
   },
   "landing": {
     "title": "Read before you sign.",
@@ -1415,5 +1416,25 @@
         "p": "[TO BE REVIEWED BY THE LAWYER] Limitation of liability, governing law and venue (Québec): placeholder."
       }
     ]
+  },
+  "download": {
+    "title": "Download",
+    "lead": "Yomizaka on your phone and your Mac. Your documents stay on your device; only what a check needs is sent, then erased.",
+    "soon": "Coming soon",
+    "get": "Download",
+    "platforms": {
+      "ios": {
+        "name": "iPhone and iPad",
+        "body": "Scan or pick a document, check it, share the signed report. Testing on TestFlight first."
+      },
+      "android": {
+        "name": "Android",
+        "body": "The same checks on your Android phone, installed from a release file while the store listing is prepared."
+      },
+      "mac": {
+        "name": "Mac",
+        "body": "Keep a library in a folder on your Mac, drag documents in from Finder. Your documents never leave the folder."
+      }
+    }
   }
 }

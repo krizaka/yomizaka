@@ -26,7 +26,8 @@
       "label": "Menu"
     },
     "version": "v{version}",
-    "terms": "Conditions"
+    "terms": "Conditions",
+    "download": "Télécharger"
   },
   "landing": {
     "title": "Lisez avant de signer.",
@@ -1415,5 +1416,25 @@
         "p": "[À FAIRE RELIRE PAR L’AVOCAT] Limitation de responsabilité, droit applicable et for (Québec) : espace réservé."
       }
     ]
+  },
+  "download": {
+    "title": "Télécharger",
+    "lead": "Yomizaka sur votre téléphone et votre Mac. Vos documents restent sur votre appareil ; seul ce qu'une vérification demande est envoyé, puis effacé.",
+    "soon": "Bientôt",
+    "get": "Télécharger",
+    "platforms": {
+      "ios": {
+        "name": "iPhone et iPad",
+        "body": "Scannez ou choisissez un document, vérifiez-le, partagez le rapport signé. D'abord en test sur TestFlight."
+      },
+      "android": {
+        "name": "Android",
+        "body": "Les mêmes vérifications sur votre téléphone Android, installées depuis un fichier de version pendant que la fiche du magasin se prépare."
+      },
+      "mac": {
+        "name": "Mac",
+        "body": "Gardez une bibliothèque dans un dossier de votre Mac, glissez-y des documents depuis le Finder. Vos documents ne quittent jamais le dossier."
+      }
+    }
   }
 }

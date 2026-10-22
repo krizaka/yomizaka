@@ -34,6 +34,9 @@ export function SiteFooter({ locale }: { locale: Locale }) {
     >
       <SiteFooterColumn title="Yomizaka">
         <SiteFooterLink asChild>
+          <Link href={pagePath(locale, "download")}>{t("chrome.download")}</Link>
+        </SiteFooterLink>
+        <SiteFooterLink asChild>
           <Link href={pagePath(locale, "privacy")}>{t("chrome.legal")}</Link>
         </SiteFooterLink>
         <SiteFooterLink asChild>
