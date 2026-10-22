@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+import { DOCUMENT_KINDS, DOCUMENT_STATUSES } from "./vocabulary";
+
+export { DOCUMENT_KINDS, DOCUMENT_STATUSES };
+
 /*
  * Yomizaka's contracts — what the API answers and the web reads, validated on both sides. Structure only: the words are
  * messages (apps/web/messages). Every analysis is an Orazaka run: these schemas describe what Yomizaka keeps of it (the
@@ -16,7 +20,6 @@ export const COMPLIANCE_MAX_CHARS = 60_000;
 export const ACCEPTED_TYPES = ["application/pdf", "text/plain"] as const;
 export const acceptedType = z.enum(ACCEPTED_TYPES);
 
-export const DOCUMENT_KINDS = ["lease", "contract", "invoice", "other"] as const;
 export const documentKind = z.enum(DOCUMENT_KINDS);
 export type DocumentKind = z.infer<typeof documentKind>;
 
@@ -126,7 +129,6 @@ export function fromRunStatus(status: string): AnalysisStatus {
 export const isTerminal = (status: AnalysisStatus) => status !== "running";
 
 /** A document's state in the library, derived from its analyses. */
-export const DOCUMENT_STATUSES = ["stored", "analysing", "checked", "attention", "failed"] as const;
 export const documentStatus = z.enum(DOCUMENT_STATUSES);
 export type DocumentStatus = z.infer<typeof documentStatus>;
 
@@ -406,3 +408,4 @@ export function passages(text: string, quotes: readonly { id: string; quote: str
   if (at < text.length || out.length === 0) out.push({ text: text.slice(at) });
   return out;
 }
+export * from "./organisation";
