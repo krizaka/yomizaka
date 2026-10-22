@@ -17,7 +17,7 @@ know exactly which run produced each finding.
 [![dev.yomizaka.com](https://img.shields.io/badge/dev.yomizaka.com-Yomizaka-3c38b2)](https://dev.yomizaka.com)
 
 Yomizaka (読み *yomi*, reading) is a Krizaka product in development: **sign-up is closed**, the dev site shows what it does
-and a real run. It has no mobile app: the Dev preview is **web only** (phone-first), mobile comes later.
+and a real run. The Dev preview is **web only** (phone-first); the phone app (`apps/mobile`, iOS and Android) and the Mac app (`apps/desktop`) are built beside it and are not part of it.
 
 ## What it does
 
