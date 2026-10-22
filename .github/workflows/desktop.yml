@@ -24,7 +24,7 @@ jobs:
   desktop:
     permissions:
       contents: write
-    uses: krizaka/.github/.github/workflows/tauri-macos.yml@5a6ae3ac28625b1dd1d1468ca31b44dddd133094 # main
+    uses: krizaka/.github/.github/workflows/tauri-macos.yml@eebba5e6e80145b0892af1742b5c09aa3d1560eb # main
     with:
       working-directory: apps/desktop
       product-name: Yomizaka
