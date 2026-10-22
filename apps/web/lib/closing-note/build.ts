@@ -1,4 +1,4 @@
-import type { AuthenticityReport, ComplianceReport } from "@yomizaka/core";
+import { type AuthenticityReport, type ComplianceReport, TEXT_SOURCE, type TextSource } from "@yomizaka/core";
 import { z } from "zod";
 
 import { pluralKey } from "../plural";
@@ -40,8 +40,10 @@ export interface SignalInput {
   observation: string;
   mayIndicate?: string | null;
 }
+/** How the document's text was read, when it was not a text layer: a photo read by character recognition (with its reliability) or by a model. */
+export type TextSourceInput = { kind: "ocr"; confidence: number; lowConfidence: boolean } | { kind: "vision" };
 export type NoteInput =
-  | { kind: typeof NOTE_KIND.compliance; rulesetId: string; asOf: string; reviewStatus?: string | null; findings: readonly FindingInput[] }
+  | { kind: typeof NOTE_KIND.compliance; rulesetId: string; asOf: string; reviewStatus?: string | null; findings: readonly FindingInput[]; textSource?: TextSourceInput | null }
   | { kind: typeof NOTE_KIND.authenticity; notExamined?: string | readonly string[] | null; signals: readonly SignalInput[] };
 
 const REVIEW_PENDING = "TO_REVIEW_BY_LAWYER";
@@ -88,8 +90,10 @@ function complianceNote(input: Extract<NoteInput, { kind: "compliance" }>, lang:
       : line("whatCompliance", lang, { what, count: findings.length, scope: say(pack.scope, lang), date })
     : line("unknownPack", lang, { what, pack: input.rulesetId });
 
-  const howSentences = [...sentences("how", lang), ...(findings.some((f) => f.method && f.method !== DETERMINISTIC) ? [line("howModel", lang)] : [])];
-  const notChecked = [...(pack?.notChecked.map((t) => say(t, lang)) ?? []), ...(undecided.length ? [counted("undecidedList", undecided.length, lang, { titles: undecided.map((f) => f.title ?? f.ruleId).join(", ") })] : [])];
+  const src = input.textSource;
+  const photo = src ? [src.kind === TEXT_SOURCE.vision ? line("howPhotoModel", lang) : line(src.lowConfidence ? "howPhotoLow" : "howPhoto", lang, { confidence: Math.round(src.confidence) })] : [];
+  const howSentences = [...sentences("how", lang), ...photo, ...(findings.some((f) => f.method && f.method !== DETERMINISTIC) ? [line("howModel", lang)] : [])];
+  const notChecked = [...(pack?.notChecked.map((t) => say(t, lang)) ?? []), ...(src ? [line("notCheckedPhoto", lang)] : []), ...(undecided.length ? [counted("undecidedList", undecided.length, lang, { titles: undecided.map((f) => f.title ?? f.ruleId).join(", ") })] : [])];
 
   const resultText =
     failed.length === 0 && undecided.length === 0
@@ -146,11 +150,17 @@ function authenticityNote(input: Extract<NoteInput, { kind: "authenticity" }>, l
 }
 
 /** The note's input from a report as Orazaka returned it (a compliance report has findings, an authenticity report has signals). */
-export function noteInputOf(report: ComplianceReport | AuthenticityReport): NoteInput {
+export function noteInputOf(report: ComplianceReport | AuthenticityReport, textSource?: TextSourceInput | null): NoteInput {
   if ("findings" in report) {
-    return { kind: NOTE_KIND.compliance, rulesetId: report.rulesetId, asOf: report.asOf, reviewStatus: report.reviewStatus, findings: report.findings.map((f) => ({ ruleId: f.ruleId, title: f.title, severity: f.severity, verdict: f.verdict, method: f.method, explanation: f.explanation })) };
+    return { kind: NOTE_KIND.compliance, rulesetId: report.rulesetId, asOf: report.asOf, reviewStatus: report.reviewStatus, findings: report.findings.map((f) => ({ ruleId: f.ruleId, title: f.title, severity: f.severity, verdict: f.verdict, method: f.method, explanation: f.explanation })), textSource: textSource ?? null };
   }
   return { kind: NOTE_KIND.authenticity, notExamined: report.notExamined, signals: report.signals };
+}
+
+/** What the note needs of a document's text source (a PDF or a text file has none). */
+export function noteSourceOf(source: TextSource | null | undefined): TextSourceInput | null {
+  if (!source) return null;
+  return source.kind === TEXT_SOURCE.vision ? { kind: TEXT_SOURCE.vision } : { kind: TEXT_SOURCE.ocr, confidence: source.confidence, lowConfidence: source.lowConfidence };
 }
 
 export function buildNote(input: NoteInput, lang: Lang): ClosingNote {

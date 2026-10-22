@@ -4,7 +4,7 @@
  * real type by magic bytes, integrity, safety, cheap metadata. Deduplication (a run already exists) is the application's
  * `ReuseStore`, because it needs its data. Nothing here executes or renders a file.
  */
-export type FileKind = "pdf" | "text" | "png" | "jpeg" | "docx" | "zip" | "executable" | "unknown";
+export type FileKind = "pdf" | "text" | "png" | "jpeg" | "heic" | "docx" | "zip" | "executable" | "unknown";
 
 /** The rules, as DATA (lib/preflight/rules.ts): what is allowed and how big, never typed into the code that applies them. */
 export interface PreflightRules {
@@ -12,6 +12,8 @@ export interface PreflightRules {
   /** Kinds that may reach the engine. A detected kind that is not listed is refused as UNSUPPORTED_TYPE. */
   allowedKinds: readonly FileKind[];
   maxPages: number;
+  /** Pixels an image may declare (width × height, read from its header): a decompression bomb is refused before any decoder runs. */
+  maxImagePixels: number;
   /** Archive guards (DOCX is a zip): entries, total uncompressed bytes, and the compression ratio of any entry. */
   maxArchiveEntries: number;
   maxArchiveBytes: number;
@@ -31,7 +33,8 @@ export type RejectReason =
   | "ENCRYPTED"
   | "TOO_MANY_PAGES"
   | "ACTIVE_CONTENT"
-  | "ARCHIVE_BOMB";
+  | "ARCHIVE_BOMB"
+  | "IMAGE_TOO_LARGE";
 
 /** Facts a PDF carries that need no model (authenticity triage can start from them). */
 export interface PdfFacts {

@@ -41,6 +41,6 @@ describe("the audit caps of a plan", () => {
 describe("what the browser may know", () => {
   it("is the limits, the features it shows and the payment display — nothing else", () => {
     const c = clientConfigOf(snapshot({ "features.keepDocuments": false, "payments.display": "live" }));
-    expect(c).toEqual({ maxFileBytes: 10 * 1024 * 1024, allowedTypes: ["pdf", "text"], features: { keepDocuments: false, ownStorage: true, documentInsight: true, assistant: false }, payments: { enabled: true, display: "live" } });
+    expect(c).toEqual({ maxFileBytes: 10 * 1024 * 1024, allowedTypes: ["pdf", "text", "image"], features: { keepDocuments: false, ownStorage: true, documentInsight: true, assistant: false }, payments: { enabled: true, display: "live" } });
   });
 });

@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 
 import { EncryptedPDFError, PDFArray, PDFDict, PDFDocument, PDFName } from "pdf-lib";
 
+import { imageSize, isHeif } from "./image-size";
 import type { DocumentPreflight, FileKind, Inspection, PdfFacts, PreflightRules, RejectReason } from "./port";
 
 /**
@@ -17,6 +18,7 @@ export function sniff(bytes: Uint8Array): FileKind {
   if (startsWith(bytes, [0x4d, 0x5a]) || startsWith(bytes, [0x7f, 0x45, 0x4c, 0x46]) || startsWith(bytes, [0x23, 0x21]) || startsWith(bytes, [0xcf, 0xfa, 0xed, 0xfe]) || startsWith(bytes, [0xca, 0xfe, 0xba, 0xbe])) return "executable";
   if (startsWith(bytes, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) return "png";
   if (startsWith(bytes, [0xff, 0xd8, 0xff])) return "jpeg";
+  if (isHeif(bytes)) return "heic";
   if (startsWith(bytes, [0x50, 0x4b, 0x03, 0x04])) return isDocx(bytes) ? "docx" : "zip";
   if (bytes.includes(0)) return "unknown";
   try {
@@ -27,8 +29,8 @@ export function sniff(bytes: Uint8Array): FileKind {
   }
 }
 
-const EXTENSIONS: Record<FileKind, readonly string[]> = { pdf: ["pdf"], text: ["txt", "text", "md"], png: ["png"], jpeg: ["jpg", "jpeg"], docx: ["docx"], zip: ["zip"], executable: [], unknown: [] };
-const MIME: Record<string, FileKind> = { "application/pdf": "pdf", "text/plain": "text", "image/png": "png", "image/jpeg": "jpeg", "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx", "application/zip": "zip" };
+const EXTENSIONS: Record<FileKind, readonly string[]> = { pdf: ["pdf"], text: ["txt", "text", "md"], png: ["png"], jpeg: ["jpg", "jpeg"], heic: ["heic", "heif"], docx: ["docx"], zip: ["zip"], executable: [], unknown: [] };
+const MIME: Record<string, FileKind> = { "application/pdf": "pdf", "text/plain": "text", "image/png": "png", "image/jpeg": "jpeg", "image/heic": "heic", "image/heif": "heic", "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx", "application/zip": "zip" };
 
 /** The kind the client claims (extension first, then MIME type), or null when it claims nothing we know. */
 function claimed(declared: { name: string; type: string }): FileKind | null {
@@ -128,7 +130,11 @@ export function createInspector(rules: PreflightRules): DocumentPreflight {
       const sha256 = crypto.createHash("sha256").update(bytes).digest("hex");
 
       if (detected === "text") return { kind: "accepted", fileKind: "text", sha256, pages: null, facts: null };
-      if (detected === "png" || detected === "jpeg") return { kind: "accepted", fileKind: detected, sha256, pages: null, facts: null };
+      if (detected === "png" || detected === "jpeg" || detected === "heic") {
+        const size = imageSize(bytes);
+        if (size && size.width * size.height > rules.maxImagePixels) return reject("IMAGE_TOO_LARGE", `${size.width}x${size.height}`);
+        return { kind: "accepted", fileKind: detected, sha256, pages: null, facts: null };
+      }
       if (detected !== "pdf") return reject("UNSUPPORTED_TYPE", detected);
 
       const raw = ascii(bytes, 0, bytes.length);

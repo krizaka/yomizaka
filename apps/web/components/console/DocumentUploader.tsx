@@ -14,13 +14,17 @@ import { useSay } from "@/lib/i18n-client";
 import { ROUTE_STATES } from "@/lib/route-state";
 import { useRouteState } from "@/lib/use-route-state";
 
+/** What the drop zone offers: PDF, text and photos. A HEIC is named by extension too (a browser often gives it no type). */
+const ACCEPT = "application/pdf,text/plain,image/png,image/jpeg,image/heic,image/heif,.pdf,.txt,.png,.jpg,.jpeg,.heic,.heif";
+const isPhotoFile = (file: File) => /^image\/(png|jpeg|heic|heif)$/.test(file.type) || /\.(png|jpe?g|heic|heif)$/i.test(file.name);
+
 export interface Placement {
   collectionId: string | null;
   folderId: string | null;
 }
 
 /** Sends one file to the BFF with its progress (XMLHttpRequest: fetch reports no upload progress), aborted on pause. */
-function send(file: File, kind: DocumentKind | "auto", placement: Placement | undefined, keep: boolean, signal: AbortSignal, onProgress: (sent: number) => void): Promise<{ document: DocumentSummary; duplicate: boolean }> {
+function send(files: File[], kind: DocumentKind | "auto", placement: Placement | undefined, keep: boolean, signal: AbortSignal, onProgress: (sent: number) => void): Promise<{ document: DocumentSummary; duplicate: boolean }> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("POST", "/api/documents");
@@ -30,7 +34,7 @@ function send(file: File, kind: DocumentKind | "auto", placement: Placement | un
     xhr.onerror = () => reject(Object.assign(new Error("NETWORK"), { body: { code: "NETWORK" } }));
     signal.addEventListener("abort", () => xhr.abort());
     const body = new FormData();
-    body.append("file", file);
+    for (const file of files) body.append("file", file);
     body.append("kind", kind);
     body.append("keep", String(keep));
     if (placement?.collectionId) body.append("collectionId", placement.collectionId);
@@ -64,7 +68,7 @@ export function DocumentUploader({ kindRef, placement, onUploaded, extra }: { ki
     shouldRetry: (error) => (error as { body?: { code?: string } }).body?.code === "NETWORK",
     upload: async (file, { signal, onProgress }) => {
       try {
-        const result = await send(file, kindRef?.current ?? "auto", placement, keepRef.current, signal, onProgress);
+        const result = await send([file], kindRef?.current ?? "auto", placement, keepRef.current, signal, onProgress);
         setNotices((n) => [say(result.duplicate ? "library.duplicate" : "library.uploaded", { name: file.name }), ...n].slice(0, 3));
         if (onUploaded) onUploaded(result.document);
         else router.refresh();
@@ -74,6 +78,25 @@ export function DocumentUploader({ kindRef, placement, onUploaded, extra }: { ki
       }
     },
   });
+  // Several photos dropped together are the pages of ONE document (the default; `?pages=0` keeps them apart).
+  const [grouping, setGrouping] = useRouteState({ ...ROUTE_STATES.groupPhotos.state });
+  const [groupNotice, setGroupNotice] = useState<{ tone: "success" | "danger"; text: string } | null>(null);
+  const [grouped, setGrouped] = useState(false);
+  const onFiles = (files: File[]) => {
+    const photos = files.filter(isPhotoFile);
+    if (grouping !== "1" || photos.length < 2) return queue.add(files);
+    queue.add(files.filter((f) => !isPhotoFile(f)));
+    setGrouped(true);
+    setGroupNotice(null);
+    send(photos, kindRef?.current ?? "auto", placement, keepRef.current, new AbortController().signal, () => undefined)
+      .then((result) => {
+        setGroupNotice({ tone: "success", text: say("library.groupedUploaded", { count: photos.length }) });
+        if (onUploaded) onUploaded(result.document);
+        else router.refresh();
+      })
+      .catch((error: { body?: { code?: string } }) => setGroupNotice({ tone: "danger", text: say(`errors.${error.body?.code ?? "UNKNOWN"}`) }))
+      .finally(() => setGrouped(false));
+  };
   const refusal = (r: FileRejection) => say(r.reason === "size" ? "library.refusedSize" : r.reason === "type" ? "library.refusedType" : "library.refusedCount", { name: r.file.name });
   return (
     <>
@@ -92,7 +115,16 @@ export function DocumentUploader({ kindRef, placement, onUploaded, extra }: { ki
         </label>
       </div>
       )}
-      <Dropzone title={say("library.dropTitle")} browseLabel={say("library.browse")} hint={say("library.hint")} accept="application/pdf,text/plain,.pdf,.txt" maxSize={app?.maxFileBytes ?? MAX_FILE_BYTES} maxFiles={20} multiple onFiles={queue.add} refusalLabel={refusal} />
+      <div className="flex items-start gap-3" data-testid="group-photos">
+        <Checkbox id="group-photos" checked={grouping === "1"} onCheckedChange={(v) => setGrouping(v === true ? "1" : "0")} />
+        <label htmlFor="group-photos" className="flex cursor-pointer flex-col text-sm">
+          <span className="font-semibold text-fg">{say("library.groupPhotos")}</span>
+          <span className="text-fg-secondary">{say(grouping === "1" ? "library.groupPhotosOn" : "library.groupPhotosOff")}</span>
+        </label>
+      </div>
+      <Dropzone title={say("library.dropTitle")} browseLabel={say("library.browse")} hint={say("library.hint")} accept={ACCEPT} maxSize={app?.maxFileBytes ?? MAX_FILE_BYTES} maxFiles={20} multiple onFiles={onFiles} refusalLabel={refusal} disabled={grouped} />
+      <p className="m-0 text-xs text-fg-secondary">{say("library.photoNotice")}</p>
+      {groupNotice ? <Alert tone={groupNotice.tone}>{groupNotice.text}</Alert> : null}
       {queue.items.length > 0 ? (
         <UploadList
           items={queue.items}

@@ -41,7 +41,7 @@ const subset = <const C extends readonly [string, ...string[]]>(group: Group, ch
 const bilingual = (group: Group, value: { fr: string; en: string }, scopes: readonly Scope[] = GLOBAL): Def<{ fr: string; en: string }> => ({ group, kind: KIND.bilingual, schema: z.object({ fr: z.string().trim().min(1).max(500), en: z.string().trim().min(1).max(500) }), default: value, scopes });
 
 export const PAYMENT_DISPLAY = { test: "test", live: "live" } as const;
-export const FILE_TYPES = ["pdf", "text"] as const;
+export const FILE_TYPES = ["pdf", "text", "image"] as const;
 
 /** The platform's cap on a file: a limit here can only go down from it. */
 // @fixed: what the pre-flight and the uploads can carry

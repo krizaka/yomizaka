@@ -394,4 +394,12 @@ CREATE TABLE settings_audit (
 CREATE INDEX settings_audit_key ON settings_audit(key, id DESC);
 `,
   },
+  {
+    version: "0017_text_source",
+    sql: `
+-- ADR-0010: a document made from photos keeps how its text was read (local character recognition, or a model's reading with its
+-- run), and where the photo came from (device, editor, dates, GPS yes/no). Null for a PDF or a text file.
+ALTER TABLE documents ADD COLUMN text_source jsonb;
+`,
+  },
 ];

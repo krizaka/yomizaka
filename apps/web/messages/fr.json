@@ -168,9 +168,9 @@
       "title": "Bibliothèque",
       "dropTitle": "Déposez vos documents ici",
       "browse": "Choisir des fichiers",
-      "hint": "PDF ou texte, jusqu'à 10 Mo chacun. Un bail, un contrat, une facture.",
+      "hint": "PDF, texte ou photo (PNG, JPEG, HEIC), jusqu'à 10 Mo chacun. Un bail, un contrat, une facture.",
       "refusedSize": "{name} : plus de 10 Mo",
-      "refusedType": "{name} : seulement des PDF et des fichiers texte",
+      "refusedType": "{name} : seulement des PDF, des fichiers texte et des photos",
       "refusedCount": "{name} : trop de fichiers à la fois",
       "kindLabel": "Type des prochains documents",
       "caption": "Vos documents",
@@ -202,7 +202,12 @@
       "keep": "Conserver mes documents",
       "keepOn": "Le document reste dans votre bibliothèque, là où le panneau d'information l'indique.",
       "keepOff": "Par défaut, le document est supprimé après sa vérification : seul le rapport reste.",
-      "keepDisabled": "La conservation est désactivée dans vos réglages : le document sera supprimé après sa vérification."
+      "keepDisabled": "La conservation est désactivée dans vos réglages : le document sera supprimé après sa vérification.",
+      "groupPhotos": "Ces photos sont les pages d'un seul document",
+      "groupPhotosOn": "Déposées ensemble, elles forment un document, dans l'ordre où vous les choisissez.",
+      "groupPhotosOff": "Chaque photo devient son propre document.",
+      "groupedUploaded": "{count} photos forment un seul document dans votre bibliothèque.",
+      "photoNotice": "Les photos sont redressées et recadrées, puis leur texte est lu sur place. Les données de la photo (position, appareil) sont retirées."
     },
     "upload": {
       "queued": "En attente",
@@ -351,7 +356,8 @@
       "exportSha": "SHA-256 du rapport",
       "exportKey": "Clé de signature",
       "exportPdf": "Télécharger le PDF",
-      "reused": "Résultat réutilisé : ce document exact a déjà été vérifié avec les mêmes règles, aucune nouvelle vérification n’a été lancée."
+      "reused": "Résultat réutilisé : ce document exact a déjà été vérifié avec les mêmes règles, aucune nouvelle vérification n’a été lancée.",
+      "noPhoto": "L'authenticité d'un fichier ne se mesure pas sur une photo : le fichier a été assemblé par Yomizaka à partir de vos photos."
     },
     "search": {
       "title": "Recherche",
@@ -397,7 +403,7 @@
       "IP_NOT_ALLOWED": "Pas depuis cette adresse.",
       "NOT_FOUND": "Introuvable.",
       "FILE_TOO_LARGE": "Le fichier dépasse 10 Mo.",
-      "UNSUPPORTED_TYPE": "Seuls les PDF et les fichiers texte sont acceptés.",
+      "UNSUPPORTED_TYPE": "Seuls les PDF, les fichiers texte et les photos (PNG, JPEG, HEIC) sont acceptés.",
       "EMPTY_FILE": "Le fichier est vide.",
       "UNREADABLE_FILE": "Ce fichier ne peut pas être ouvert : il est endommagé ou n’est pas un document valide.",
       "NO_TEXT": "Ce document n'a pas de couche texte à vérifier.",
@@ -461,7 +467,12 @@
       "DAILY_LIMIT": "Limite quotidienne atteinte. Revenez demain.",
       "UNKNOWN_SETTING": "Ce réglage n'existe pas.",
       "BAD_VALUE": "Cette valeur n'est pas valable.",
-      "BAD_SCOPE": "Ce réglage ne se règle pas à cette portée."
+      "BAD_SCOPE": "Ce réglage ne se règle pas à cette portée.",
+      "IMAGE_TOO_LARGE": "Cette photo est trop grande. Réduisez sa résolution et réessayez.",
+      "TOO_MANY_PHOTOS": "Un document peut compter 12 photos au plus.",
+      "UNREADABLE_IMAGE": "Cette photo ne peut pas être lue. Reprenez-la ou choisissez un autre fichier.",
+      "OCR_FAILED": "Le texte de cette photo n'a pas pu être lu. Reprenez la photo, bien éclairée et à plat.",
+      "PHOTO_AUTHENTICITY": "Ce document vient de photos : son authenticité ne peut pas se juger sur un fichier."
     },
     "adminConsole": {
       "shell": {
@@ -805,7 +816,17 @@
       },
       "piiRetention": "Ce document est conservé dans votre coffre jusqu’à ce que vous le supprimiez; vous pouvez le supprimer en tout temps. Ces renseignements ne sont pas envoyés ailleurs que dans la vérification que vous lancez.",
       "piiRedacted": "Télécharger la version caviardée (texte)",
-      "informative": "Lecture automatique du texte : informative, à vérifier. Ce n’est pas un avis juridique."
+      "informative": "Lecture automatique du texte : informative, à vérifier. Ce n’est pas un avis juridique.",
+      "source": "Source du texte",
+      "sourcePhotoOcr": "photo, texte lu par reconnaissance de caractères, fiabilité {confidence} %",
+      "sourcePhotoOcrPages": "{count} photos, texte lu par reconnaissance de caractères, fiabilité {confidence} %",
+      "sourcePhotoVision": "photo, texte lu par le modèle d'Orazaka (lecture d'image), exécution {runId}",
+      "sourceLow": "La lecture de cette photo est peu fiable. Vérifiez les montants, les dates et les noms avec votre document.",
+      "originSoftware": "Dernier logiciel (indice, pas un verdict)",
+      "originDevice": "Appareil",
+      "originTaken": "Photo prise le",
+      "originModified": "Modifiée le",
+      "originGps": "La position GPS de la photo a été retirée à l'importation."
     },
     "organisation": {
       "title": "Organisation",

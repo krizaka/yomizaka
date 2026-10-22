@@ -204,5 +204,21 @@
   "importantTag": {
     "fr": "Important : ",
     "en": "Important: "
+  },
+  "howPhoto": {
+    "fr": "Votre document est une photo. Nous avons lu son texte par reconnaissance de caractères, avec une fiabilité de {confidence} %.",
+    "en": "Your document is a photo. We read its text by character recognition, with a reliability of {confidence} %."
+  },
+  "howPhotoLow": {
+    "fr": "Votre document est une photo. Nous avons lu son texte par reconnaissance de caractères, mais la fiabilité est seulement de {confidence} %. Relisez les montants et les dates.",
+    "en": "Your document is a photo. We read its text by character recognition, but the reliability is only {confidence} %. Re-read the amounts and the dates."
+  },
+  "howPhotoModel": {
+    "fr": "Votre document est une photo. La lecture automatique n'était pas assez sûre : un modèle de lecture d'images a lu le texte à sa place.",
+    "en": "Your document is a photo. The automatic reading was not reliable enough: an image-reading model read the text instead."
+  },
+  "notCheckedPhoto": {
+    "fr": "Une lettre ou un chiffre mal lu sur la photo peut changer le résultat. Comparez les montants et les dates avec votre document.",
+    "en": "A letter or a digit misread on the photo can change the result. Compare the amounts and the dates with your document."
   }
 }

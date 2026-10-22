@@ -314,7 +314,22 @@ export const storageDescriptor = z.object({
 });
 export type StorageDescriptor = z.infer<typeof storageDescriptor>;
 
+/** Where a photo came from, read before its metadata was dropped (never a verdict): the device, the last editor, the dates, and whether a GPS position was there (never the position). */
+export const photoOrigin = z.object({ software: z.string().nullable(), device: z.string().nullable(), takenAt: z.string().nullable(), modifiedAt: z.string().nullable(), hadGps: z.boolean() });
+export type PhotoOrigin = z.infer<typeof photoOrigin>;
+
+/** How a document's text was read when it was not a text layer: by local character recognition, or — when that was not reliable — by Orazaka's vision model (with its run). */
+/** How a document's text was read, as constants. */
+export const TEXT_SOURCE = { ocr: "ocr", vision: "vision" } as const;
+export const textSource = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal(TEXT_SOURCE.ocr), engine: z.string(), confidence: z.number(), photos: z.number().int(), lowConfidence: z.boolean(), origin: photoOrigin.nullable() }),
+  z.object({ kind: z.literal(TEXT_SOURCE.vision), by: z.literal("orazaka"), runId: z.string(), model: z.string().nullable(), localConfidence: z.number(), photos: z.number().int(), origin: photoOrigin.nullable() }),
+]);
+export type TextSource = z.infer<typeof textSource>;
+
 export const documentDetail = documentSummary.extend({
+  /** Set for a document made from photos; absent for a PDF or a text file (their text is read, not recognised). */
+  textSource: textSource.optional(),
   insight: documentInsight.optional(),
   sha256: z.string(),
   text: z.string(),

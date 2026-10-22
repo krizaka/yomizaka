@@ -32,8 +32,19 @@ describe("pre-flight: what the bytes are", () => {
     expect(await why(await fx.cleanPdf(), { name: "photo.png", type: "image/png" })).toBe("TYPE_MISMATCH");
     expect(await why(fx.pngBytes(), pdf("bail.pdf"))).toBe("TYPE_MISMATCH");
   });
-  it("recognises images and Word files but does not accept them yet", async () => {
-    expect(await why(fx.pngBytes(), { name: "scan.png", type: "image/png" })).toBe("UNSUPPORTED_TYPE");
+  it("accepts photos by their bytes: PNG, JPEG and HEIC", async () => {
+    expect(await why(await fx.imageOf("png"), { name: "scan.png", type: "image/png" })).toBe("accepted");
+    expect(await why(await fx.imageOf("jpeg"), { name: "IMG_2041.JPG", type: "image/jpeg" })).toBe("accepted");
+    expect(await why(fx.heicBytes(), { name: "IMG_2041.HEIC", type: "image/heic" })).toBe("accepted");
+    expect(sniff(fx.heicBytes())).toBe("heic");
+    // an iPhone sometimes names it .heif or declares nothing: the bytes decide
+    expect(await why(fx.heicBytes(), { name: "photo.heif", type: "" })).toBe("accepted");
+  });
+  it("refuses a photo whose declared type is not what the bytes are, and one with too many pixels", async () => {
+    expect(await why(await fx.imageOf("jpeg"), { name: "scan.png", type: "image/png" })).toBe("TYPE_MISMATCH");
+    expect(await why(fx.pngWithSize(9000, 9000), { name: "huge.png", type: "image/png" })).toBe("IMAGE_TOO_LARGE");
+  });
+  it("recognises Word files but does not accept them", async () => {
     expect(sniff(fx.docx())).toBe("docx");
     expect(await why(fx.docx(), { name: "bail.docx", type: "" })).toBe("UNSUPPORTED_TYPE");
   });
