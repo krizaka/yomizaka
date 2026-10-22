@@ -268,4 +268,12 @@ CREATE TABLE preflight_events (
 CREATE INDEX preflight_events_account ON preflight_events(account_id, created_at DESC);
 `,
   },
+  {
+    version: "0011_analysis_billing",
+    sql: `
+-- What paid for an analysis (free audit, credit, Pro, exempt), so a run that FAILS gives its audit back exactly once
+-- ('free' → 'free-refunded').
+ALTER TABLE analyses ADD COLUMN billed_via text;
+`,
+  },
 ];

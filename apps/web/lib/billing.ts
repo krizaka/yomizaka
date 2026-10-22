@@ -55,6 +55,16 @@ export async function releaseAudit(query: Query, accountId: string, via: AuditVi
   if (via === "credit") await query("UPDATE accounts SET audit_credits = audit_credits + 1 WHERE id = $1", [accountId]);
 }
 
+/** A run that failed gives its audit back, once: the free audit or the credit it spent (Pro and exempt accounts spent nothing). */
+export async function refundFailedAudit(query: Query, analysisId: string): Promise<boolean> {
+  const [done] = await query<{ billed_via: string; document_id: string }>("UPDATE analyses SET billed_via = billed_via || '-refunded' WHERE id = $1 AND billed_via IN ('free', 'credit') RETURNING billed_via, document_id", [analysisId]);
+  if (!done) return false;
+  const [owner] = await query<{ owner_id: string }>("SELECT owner_id FROM documents WHERE id = $1", [done.document_id]);
+  if (!owner) return false;
+  await releaseAudit(query, owner.owner_id, done.billed_via.startsWith("free") ? "free" : "credit");
+  return true;
+}
+
 /** Applies a verified payment event once: its id is recorded first (`ON CONFLICT DO NOTHING`), a replay changes nothing. */
 export async function applyPaymentEvent(query: Query, event: PaymentEvent): Promise<"applied" | "duplicate" | "ignored"> {
   if (event.type === "ignored") return "ignored";

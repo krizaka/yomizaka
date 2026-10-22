@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { applyPaymentEvent, entitlementOf, releaseAudit, reserveAudit } from "./billing";
+import { applyPaymentEvent, entitlementOf, refundFailedAudit, releaseAudit, reserveAudit } from "./billing";
 import { migrate, query } from "./db";
 
 /** The entitlements against a real PostgreSQL (skipped without YOMIZAKA_DB_IT=1 and DATABASE_URL, like db.integration.test.ts). */
@@ -58,5 +58,15 @@ describe.runIf(enabled)("billing", () => {
     await applyPaymentEvent(query, { id: `evt-s3-${id}`, type: "subscription_changed", accountId: id, customerId: `cus-${id}`, subscriptionId: `sub-${id}`, status: "canceled", active: false, periodEnd: null });
     expect((await entitlementOf(query, id, NOW)).pro).toBe(false);
     await expect(reserveAudit(query, id, NOW, 100)).rejects.toMatchObject({ status: 402 });
+  });
+  it("a run that failed gives the free audit back, once", async () => {
+    const id = await account();
+    const via = await reserveAudit(query, id, NOW, 100);
+    const [doc] = await query<{ id: string }>("INSERT INTO documents (owner_id, title, filename, mime_type, size_bytes, sha256, content, text) VALUES ($1, 't', 'a.txt', 'text/plain', 1, $2, 'x', 'x') RETURNING id", [id, `r-${id}`]);
+    const [a] = await query<{ id: string }>("INSERT INTO analyses (document_id, studio, status, billed_via) VALUES ($1, 'document-authenticity', 'failed', $2) RETURNING id", [doc!.id, via]);
+    await expect(reserveAudit(query, id, NOW, 100)).rejects.toMatchObject({ status: 402 });
+    expect(await refundFailedAudit(query, a!.id)).toBe(true);
+    expect(await refundFailedAudit(query, a!.id)).toBe(false); // once
+    expect(await reserveAudit(query, id, NOW, 100)).toBe("free");
   });
 });

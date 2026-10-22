@@ -1,5 +1,6 @@
 import { type Analysis, AUTHENTICITY_MAX_BYTES, COMPLIANCE_MAX_CHARS, fromRunStatus, isTerminal, type OrazakaRun, reportOf, type StartAnalysis } from "@yomizaka/core";
 
+import { refundFailedAudit } from "./billing";
 import { query } from "./db";
 import { type AnalysisRow, isUuid, needsAttention, toAnalysis } from "./documents";
 import { refuse } from "./http";
@@ -29,7 +30,7 @@ export function searchText(report: ReturnType<typeof reportOf>): string {
   return report.signals.flatMap((s) => [s.signalId, s.observation, s.mayIndicate ?? "", s.where ?? ""]).join("\n");
 }
 
-export async function startAnalysis(ownerId: string, documentId: string, request: StartAnalysis, flowVersionId: string | null = null): Promise<Analysis> {
+export async function startAnalysis(ownerId: string, documentId: string, request: StartAnalysis, flowVersionId: string | null = null, billedVia: string | null = null): Promise<Analysis> {
   if (!isUuid(documentId)) throw refuse(404, "NOT_FOUND", "No such document");
   const [doc] = await query<{ mime_type: string; text: string; content: Buffer }>("SELECT mime_type, text, content FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, documentId]);
   if (!doc) throw refuse(404, "NOT_FOUND", "No such document");
@@ -39,8 +40,8 @@ export async function startAnalysis(ownerId: string, documentId: string, request
   const run = await orazaka().startRun(request.studio, inputs);
   const kept = Object.fromEntries(Object.entries(inputs).filter(([k]) => k !== "document" && k !== "documentBase64"));
   const [row] = await query<AnalysisRow>(
-    "INSERT INTO analyses (document_id, studio, status, run_id, blueprint_version, inputs, flow_version_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
-    [documentId, request.studio, fromRunStatus(run.status), run.id, run.blueprintVersion ?? null, JSON.stringify(kept), flowVersionId],
+    "INSERT INTO analyses (document_id, studio, status, run_id, blueprint_version, inputs, flow_version_id, billed_via) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *",
+    [documentId, request.studio, fromRunStatus(run.status), run.id, run.blueprintVersion ?? null, JSON.stringify(kept), flowVersionId, billedVia],
   );
   return isTerminal(row!.status) ? refresh(row!, run) : toAnalysis(row!);
 }
@@ -59,6 +60,8 @@ export async function refresh(row: AnalysisRow, known?: OrazakaRun): Promise<Ana
       WHERE id = $1 RETURNING *`,
     [row.id, report ? status : "failed", report ? JSON.stringify({ ...report, attention: needsAttention(report) }) : null, error, searchText(report), run.blueprintVersion ?? null, run.finishedAt ?? null],
   );
+  // A run that failed gives its audit back (once): the person is not charged for a check that produced nothing.
+  if (!report) await refundFailedAudit(query, row.id);
   return toAnalysis(updated!);
 }
 
