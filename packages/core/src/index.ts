@@ -317,7 +317,28 @@ export const storageDescriptor = z.object({
 });
 export type StorageDescriptor = z.infer<typeof storageDescriptor>;
 
+/** Where a photo came from, read before its metadata was dropped (never a verdict): the device, the last editor, the dates, and whether a GPS position was there (never the position). */
+export const photoOrigin = z.object({ software: z.string().nullable(), device: z.string().nullable(), takenAt: z.string().nullable(), modifiedAt: z.string().nullable(), hadGps: z.boolean() });
+export type PhotoOrigin = z.infer<typeof photoOrigin>;
+
+/** How a document's text was read when it was not a text layer: by local character recognition, or — when that was not reliable — by Orazaka's vision model (with its run). */
+/** How a document's text was read, as constants. */
+export const TEXT_SOURCE = { ocr: "ocr", vision: "vision" } as const;
+/** A collection's avatar: one of the set (a seed the UI draws) or an uploaded image (served at `/api/collections/{id}/avatar?v=<version>`). The same shape on the web, the Mac, iOS and Android. */
+/** The avatar set: seeds the UI turns into a picture (Krizaka UI's default avatars in the product's colours); the administrator chooses which are offered. */
+export const AVATAR_SEEDS = ["v1", "v2", "v3", "v4", "v5", "v6"] as const;
+export const AVATAR_KIND = { set: "set", image: "image" } as const;
+export const collectionAvatar = z.discriminatedUnion("kind", [z.object({ kind: z.literal(AVATAR_KIND.set), seed: z.string().regex(/^[a-z0-9-]{1,24}$/) }), z.object({ kind: z.literal(AVATAR_KIND.image), version: z.number().int().min(1) })]);
+export type CollectionAvatar = z.infer<typeof collectionAvatar>;
+export const textSource = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal(TEXT_SOURCE.ocr), engine: z.string(), confidence: z.number(), photos: z.number().int(), lowConfidence: z.boolean(), origin: photoOrigin.nullable() }),
+  z.object({ kind: z.literal(TEXT_SOURCE.vision), by: z.literal("orazaka"), runId: z.string(), model: z.string().nullable(), localConfidence: z.number(), photos: z.number().int(), origin: photoOrigin.nullable() }),
+]);
+export type TextSource = z.infer<typeof textSource>;
+
 export const documentDetail = documentSummary.extend({
+  /** Set for a document made from photos; absent for a PDF or a text file (their text is read, not recognised). */
+  textSource: textSource.optional(),
   insight: documentInsight.optional(),
   sha256: z.string(),
   text: z.string(),
@@ -413,3 +434,4 @@ export function passages(text: string, quotes: readonly { id: string; quote: str
 }
 export * from "./organisation";
 export * from "./closing-note";
+export * from "./steps";

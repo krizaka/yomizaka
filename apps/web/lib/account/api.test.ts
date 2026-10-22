@@ -61,3 +61,15 @@ describe("the account routes", () => {
     expect(touched).toBe(false);
   });
 });
+
+describe("reading routes are not limited like writes (krizaka/yomizaka#215)", () => {
+  it("allows many reads of the app configuration and the storage settings in an hour, while a write is still limited", async () => {
+    state.service = { updateProfile: async () => ({ name: null, locale: "fr", avatarSeed: null }) };
+    const { GET } = await import("../../app/api/me/app/route");
+    for (let i = 0; i < 60; i++) expect((await GET(json("GET"))).status, `read ${i}`).not.toBe(429);
+    const { PATCH } = await import("../../app/api/me/profile/route");
+    const statuses: number[] = [];
+    for (let i = 0; i < 20; i++) statuses.push((await PATCH(json("PATCH", { name: "Éric" }))).status);
+    expect(statuses).toContain(429);
+  });
+});

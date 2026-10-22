@@ -36,9 +36,9 @@ describe("every menu item resolves", () => {
     expect(MENU.length).toBeLessThanOrEqual(4);
   });
 
-  it("every public page is reachable from the bar (the terms from the footer, with the privacy notice): the home by the mark, the others by the menu or the action", () => {
+  it("every public page is reachable from the bar (the terms and the downloads from the footer): the home by the mark, the others by the menu or the action", () => {
     const reachable = new Set<string>(["home", ...MENU.map((m) => m.page)]);
-    for (const page of PAGES.filter((p) => p !== "verify" && p !== "terms")) expect(reachable.has(page), page).toBe(true);
+    for (const page of PAGES.filter((p) => p !== "verify" && p !== "terms" && p !== "download")) expect(reachable.has(page), page).toBe(true);
     expect(pagePath("en", "home")).toBe("/en");
   });
 

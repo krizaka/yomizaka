@@ -26,7 +26,8 @@
       "label": "Menu"
     },
     "version": "v{version}",
-    "terms": "Conditions"
+    "terms": "Conditions",
+    "download": "Télécharger"
   },
   "landing": {
     "title": "Lisez avant de signer.",
@@ -168,9 +169,9 @@
       "title": "Bibliothèque",
       "dropTitle": "Déposez vos documents ici",
       "browse": "Choisir des fichiers",
-      "hint": "PDF ou texte, jusqu'à 10 Mo chacun. Un bail, un contrat, une facture.",
+      "hint": "PDF, texte ou photo (PNG, JPEG, HEIC), jusqu'à 10 Mo chacun. Un bail, un contrat, une facture.",
       "refusedSize": "{name} : plus de 10 Mo",
-      "refusedType": "{name} : seulement des PDF et des fichiers texte",
+      "refusedType": "{name} : seulement des PDF, des fichiers texte et des photos",
       "refusedCount": "{name} : trop de fichiers à la fois",
       "kindLabel": "Type des prochains documents",
       "caption": "Vos documents",
@@ -202,7 +203,26 @@
       "keep": "Conserver mes documents",
       "keepOn": "Le document reste dans votre bibliothèque, là où le panneau d'information l'indique.",
       "keepOff": "Par défaut, le document est supprimé après sa vérification : seul le rapport reste.",
-      "keepDisabled": "La conservation est désactivée dans vos réglages : le document sera supprimé après sa vérification."
+      "keepDisabled": "La conservation est désactivée dans vos réglages : le document sera supprimé après sa vérification.",
+      "groupPhotos": "Ces photos sont les pages d'un seul document",
+      "groupPhotosOn": "Déposées ensemble, elles forment un document, dans l'ordre où vous les choisissez.",
+      "groupPhotosOff": "Chaque photo devient son propre document.",
+      "groupedUploaded": "{count} photos forment un seul document dans votre bibliothèque.",
+      "photoNotice": "Les photos sont redressées et recadrées, puis leur texte est lu sur place. Les données de la photo (position, appareil) sont retirées.",
+      "table": {
+        "empty": "Aucun document ne correspond.",
+        "results": "{count} documents",
+        "filters": "Filtrer les documents",
+        "clear": "Effacer les filtres",
+        "remove": "Retirer le filtre {label}",
+        "search": "Rechercher dans « {header} »",
+        "pagination": "Pages des documents",
+        "previous": "Page précédente",
+        "next": "Page suivante",
+        "page": "Page {page}",
+        "compact": "Page {page} sur {count}",
+        "pageSize": "Documents par page"
+      }
     },
     "upload": {
       "queued": "En attente",
@@ -351,7 +371,8 @@
       "exportSha": "SHA-256 du rapport",
       "exportKey": "Clé de signature",
       "exportPdf": "Télécharger le PDF",
-      "reused": "Résultat réutilisé : ce document exact a déjà été vérifié avec les mêmes règles, aucune nouvelle vérification n’a été lancée."
+      "reused": "Résultat réutilisé : ce document exact a déjà été vérifié avec les mêmes règles, aucune nouvelle vérification n’a été lancée.",
+      "noPhoto": "L'authenticité d'un fichier ne se mesure pas sur une photo : le fichier a été assemblé par Yomizaka à partir de vos photos."
     },
     "search": {
       "title": "Recherche",
@@ -397,7 +418,7 @@
       "IP_NOT_ALLOWED": "Pas depuis cette adresse.",
       "NOT_FOUND": "Introuvable.",
       "FILE_TOO_LARGE": "Le fichier dépasse 10 Mo.",
-      "UNSUPPORTED_TYPE": "Seuls les PDF et les fichiers texte sont acceptés.",
+      "UNSUPPORTED_TYPE": "Seuls les PDF, les fichiers texte et les photos (PNG, JPEG, HEIC) sont acceptés.",
       "EMPTY_FILE": "Le fichier est vide.",
       "UNREADABLE_FILE": "Ce fichier ne peut pas être ouvert : il est endommagé ou n’est pas un document valide.",
       "NO_TEXT": "Ce document n'a pas de couche texte à vérifier.",
@@ -461,7 +482,29 @@
       "DAILY_LIMIT": "Limite quotidienne atteinte. Revenez demain.",
       "UNKNOWN_SETTING": "Ce réglage n'existe pas.",
       "BAD_VALUE": "Cette valeur n'est pas valable.",
-      "BAD_SCOPE": "Ce réglage ne se règle pas à cette portée."
+      "BAD_SCOPE": "Ce réglage ne se règle pas à cette portée.",
+      "IMAGE_TOO_LARGE": "Cette photo est trop grande. Réduisez sa résolution et réessayez.",
+      "TOO_MANY_PHOTOS": "Un document peut compter 12 photos au plus.",
+      "UNREADABLE_IMAGE": "Cette photo ne peut pas être lue. Reprenez-la ou choisissez un autre fichier.",
+      "OCR_FAILED": "Le texte de cette photo n'a pas pu être lu. Reprenez la photo, bien éclairée et à plat.",
+      "PHOTO_AUTHENTICITY": "Ce document vient de photos : son authenticité ne peut pas se juger sur un fichier.",
+      "DEFAULT_COLLECTION": "La collection par défaut ne peut pas être supprimée. Choisissez-en une autre comme collection par défaut d'abord.",
+      "API_PLAN": "Votre forfait n'inclut pas les clés d'API.",
+      "API_KEY_LIMIT": "Vous avez atteint le nombre de clés de votre forfait. Révoquez-en une.",
+      "API_KEY_NAME": "Donnez un nom à la clé (80 caractères au plus).",
+      "API_KEY_SCOPE_UNKNOWN": "Choisissez au moins une permission valide.",
+      "API_KEY_EXPIRY": "Une clé doit se terminer : choisissez une durée de 1 à 365 jours.",
+      "API_KEY_NOT_FOUND": "Cette clé n'existe pas.",
+      "API_KEY_REVOKED": "Cette clé est révoquée.",
+      "API_KEY_SUPERSEDED": "Cette clé a déjà été remplacée.",
+      "API_KEY_MISSING": "Aucune clé d'API n'a été envoyée.",
+      "API_KEY_INVALID": "Cette clé d'API n'est pas valide.",
+      "API_KEY_EXPIRED": "Cette clé d'API est expirée.",
+      "API_KEY_SCOPE": "Cette clé n'a pas la permission pour cette action.",
+      "AVATAR_NOT_ALLOWED": "Cet avatar n'est pas dans la série proposée.",
+      "AVATAR_TOO_LARGE": "Cette image est trop lourde pour un avatar.",
+      "AVATAR_STORAGE_UNAVAILABLE": "Le stockage des avatars ne répond pas.",
+      "AVATAR_STORAGE_OFF": "Les images d'avatar ne sont pas disponibles ici : choisissez un avatar de la série."
     },
     "adminConsole": {
       "shell": {
@@ -805,12 +848,21 @@
       },
       "piiRetention": "Ce document est conservé dans votre coffre jusqu’à ce que vous le supprimiez; vous pouvez le supprimer en tout temps. Ces renseignements ne sont pas envoyés ailleurs que dans la vérification que vous lancez.",
       "piiRedacted": "Télécharger la version caviardée (texte)",
-      "informative": "Lecture automatique du texte : informative, à vérifier. Ce n’est pas un avis juridique."
+      "informative": "Lecture automatique du texte : informative, à vérifier. Ce n’est pas un avis juridique.",
+      "source": "Source du texte",
+      "sourcePhotoOcr": "photo, texte lu par reconnaissance de caractères, fiabilité {confidence} %",
+      "sourcePhotoOcrPages": "{count} photos, texte lu par reconnaissance de caractères, fiabilité {confidence} %",
+      "sourcePhotoVision": "photo, texte lu par le modèle d'Orazaka (lecture d'image), exécution {runId}",
+      "sourceLow": "La lecture de cette photo est peu fiable. Vérifiez les montants, les dates et les noms avec votre document.",
+      "originSoftware": "Dernier logiciel (indice, pas un verdict)",
+      "originDevice": "Appareil",
+      "originTaken": "Photo prise le",
+      "originModified": "Modifiée le",
+      "originGps": "La position GPS de la photo a été retirée à l'importation."
     },
     "organisation": {
       "title": "Organisation",
       "recents": "Récents",
-      "unfiled": "Sans collection",
       "collections": "Collections",
       "noCollections": "Aucune collection pour l'instant. Créez-en une pour regrouper vos documents.",
       "newCollection": "Nouvelle collection",
@@ -835,7 +887,6 @@
       "deleteDocs": "Les supprimer aussi (définitif)",
       "moveToCollection": "Déplacer vers la collection",
       "moveUpFolder": "Vers le haut, dans la collection",
-      "moveToUnfiled": "Vers « Sans collection »",
       "moveTo": "Déplacer vers",
       "rootOfCollection": "La collection elle-même (sans dossier)",
       "emptyCollection": "Rien ici pour l'instant. Déposez un document ou créez un dossier.",
@@ -857,8 +908,22 @@
       "filesMany": "{count} fichiers",
       "foldersOne": "{count} dossier",
       "foldersMany": "{count} dossiers",
-      "filterKind": "Type",
-      "filterStatus": "État"
+      "default": "Par défaut",
+      "defaultCollection": "Collection par défaut",
+      "moveToDefault": "Vers la collection par défaut",
+      "makeDefault": "Définir comme collection par défaut",
+      "makeDefaultTitle": "Faire de « {name} » la collection par défaut",
+      "makeDefaultAsk": "Les documents sans destination iront ici. L'ancienne collection par défaut devient une collection comme les autres.",
+      "avatar": {
+        "menu": "Avatar",
+        "title": "Avatar de « {name} »",
+        "ask": "Choisissez un avatar de la série, ou une image à vous.",
+        "none": "Aucun avatar",
+        "set": "Avatars de la série",
+        "upload": "Une image à vous",
+        "uploadHint": "PNG, JPEG ou HEIC, {size} Ko au plus. L'image est recadrée en carré et ses données (position, appareil) sont retirées.",
+        "off": "Les avatars sont désactivés."
+      }
     },
     "settings": {
       "tabs": {
@@ -1067,6 +1132,18 @@
           "assistant": {
             "label": "Assistant (bientôt)",
             "hint": "Poser une question à son document. Pas encore construit."
+          },
+          "apiKeys": {
+            "label": "Clés d'API",
+            "hint": "Interrupteur global : éteint, aucune clé ne fonctionne et aucune ne peut être créée."
+          },
+          "collectionAvatars": {
+            "label": "Avatars de collection",
+            "hint": "Permet de donner un avatar à une collection : un de la série, ou une image téléversée."
+          },
+          "avatarSet": {
+            "label": "Série d'avatars proposée",
+            "hint": "Les avatars de la série que les personnes peuvent choisir."
           }
         },
         "limits": {
@@ -1093,6 +1170,14 @@
           "bonusAuditsPerMonth": {
             "label": "Audits bonus par mois",
             "hint": "S'ajoute au plafond mensuel de cette personne."
+          },
+          "apiRequestsPerMinute": {
+            "label": "Requêtes d'API par minute et par clé",
+            "hint": "Au-delà, la réponse est 429 avec le délai d'attente."
+          },
+          "avatarMaxKb": {
+            "label": "Taille maximale d'un avatar téléversé",
+            "hint": "En Ko, avant que l'image soit recadrée et allégée."
           }
         },
         "plans": {
@@ -1100,6 +1185,10 @@
             "auditsPerDay": {
               "label": "Gratuit : audits par jour",
               "hint": "0 : sans plafond."
+            },
+            "apiKeys": {
+              "label": "Gratuit : clés d'API",
+              "hint": "Nombre de clés actives. 0 : le forfait n'a pas d'API."
             }
           },
           "pro": {
@@ -1110,6 +1199,10 @@
             "auditsPerDay": {
               "label": "Pro : audits par jour",
               "hint": "0 : sans plafond."
+            },
+            "apiKeys": {
+              "label": "Pro : clés d'API",
+              "hint": "Nombre de clés actives. 0 : le forfait n'a pas d'API."
             }
           }
         }
@@ -1158,6 +1251,23 @@
         "cost": "Coût estimé : {amount}",
         "notExposed": "Le forfait et l'usage vus par Orazaka ne sont pas encore exposés par son API : ils ne sont pas affichés plutôt que devinés.",
         "rotate": "La rotation de la clé se fait dans Orazaka, puis dans le secret de l'application : elle n'est pas faite d'ici."
+      }
+    },
+    "steps": {
+      "label": "Progression de la vérification",
+      "working": "En cours…",
+      "read": "Lecture",
+      "preflight": "Contrôle préalable",
+      "report": "Rapport",
+      "rules": {
+        "compliance-check": "Vérification des règles",
+        "document-authenticity": "Examen du fichier"
+      },
+      "state": {
+        "done": "Terminé",
+        "current": "En cours",
+        "upcoming": "À venir",
+        "error": "Échec"
       }
     }
   },
@@ -1377,5 +1487,25 @@
         "p": "[À FAIRE RELIRE PAR L’AVOCAT] Limitation de responsabilité, droit applicable et for (Québec) : espace réservé."
       }
     ]
+  },
+  "download": {
+    "title": "Télécharger",
+    "lead": "Yomizaka sur votre téléphone et votre Mac. Vos documents restent sur votre appareil ; seul ce qu'une vérification demande est envoyé, puis effacé.",
+    "soon": "Bientôt",
+    "get": "Télécharger",
+    "platforms": {
+      "ios": {
+        "name": "iPhone et iPad",
+        "body": "Scannez ou choisissez un document, vérifiez-le, partagez le rapport signé. D'abord en test sur TestFlight."
+      },
+      "android": {
+        "name": "Android",
+        "body": "Les mêmes vérifications sur votre téléphone Android, installées depuis un fichier de version pendant que la fiche du magasin se prépare."
+      },
+      "mac": {
+        "name": "Mac",
+        "body": "Gardez une bibliothèque dans un dossier de votre Mac, glissez-y des documents depuis le Finder. Vos documents ne quittent jamais le dossier."
+      }
+    }
   }
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@krizaka/ui/badge";
 import { Button } from "@krizaka/ui/button";
 import { Card } from "@krizaka/ui/card";
 import { Mascot } from "@krizaka/ui/mascots";
@@ -12,6 +13,7 @@ import { libraryPath } from "@/lib/organisation/rules";
 import type { LibraryOverview } from "@/lib/organisation/store";
 import { pluralKey } from "@/lib/plural";
 
+import { CollectionAvatar } from "./CollectionAvatar";
 import { DocumentTable } from "./DocumentTable";
 import { DocumentUploader } from "./DocumentUploader";
 import { CreateButton, ItemMenu, type TagOption } from "./OrganisationActions";
@@ -23,13 +25,13 @@ export type ExampleDocuments = Record<"tenant" | "landlord", { title: string; fi
  * The library's first screen (ADR-0007): the person's libraries and their collections, then « Récents » — and, when there is
  * nothing yet, a drop zone with examples. One primary action (check a document), the tenant file only where the role is offered it.
  */
-export function LibraryView({ libraries, unfiled, recents, tags, perspective = null, screening = false, examples }: { libraries: LibraryOverview[]; unfiled: number; recents: DocumentSummary[]; tags: TagOption[]; perspective?: Audience | null; screening?: boolean; examples?: ExampleDocuments }) {
+export function LibraryView({ libraries, recents, tags, perspective = null, screening = false, examples }: { libraries: LibraryOverview[]; recents: DocumentSummary[]; tags: TagOption[]; perspective?: Audience | null; screening?: boolean; examples?: ExampleDocuments }) {
   const { say, locale } = useSay();
   const collections = libraries.flatMap((l) => l.collections);
   const screen = libraryScreen({ documents: recents.length + collections.length, screening });
   const order = (perspective === "landlord" ? ["landlord", "tenant"] : ["tenant", "landlord"]) as ("tenant" | "landlord")[];
   const first = libraries[0];
-  const destinations = collections.map((c) => ({ id: c.id, name: c.name }));
+  const destinations = collections.map((c) => ({ id: c.id, name: c.name, avatar: c.avatar }));
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-wrap items-center justify-end gap-3" data-testid="library-actions">
@@ -55,10 +57,12 @@ export function LibraryView({ libraries, unfiled, recents, tags, perspective = n
                   <li key={c.id}>
                     <Card.Root className="flex h-full flex-col gap-2 p-4" data-testid="collection-card">
                       <div className="flex items-start justify-between gap-2">
-                        <Link href={libraryPath(locale, lib.id, c.id)} className="font-semibold text-fg hover:text-fg-accent hover:underline">
+                        <CollectionAvatar id={c.id} name={c.name} avatar={c.avatar} />
+                        <Link href={libraryPath(locale, lib.id, c.id)} className="min-w-0 flex-1 font-semibold text-fg hover:text-fg-accent hover:underline">
                           {c.name}
                         </Link>
-                        <ItemMenu kind="collection" id={c.id} name={c.name} collections={destinations} tags={tags} current={c.tags.map((t) => t.id)} />
+                        {c.isDefault ? <Badge tone="neutral" size="sm">{say("organisation.default")}</Badge> : null}
+                        <ItemMenu kind="collection" id={c.id} name={c.name} avatar={c.avatar} isDefault={c.isDefault} collections={destinations} tags={tags} current={c.tags.map((t) => t.id)} />
                       </div>
                       <p className="m-0 text-sm text-fg-secondary">
                         {say(pluralKey("organisation.files", c.files), { count: c.files })}
@@ -68,16 +72,6 @@ export function LibraryView({ libraries, unfiled, recents, tags, perspective = n
                     </Card.Root>
                   </li>
                 ))}
-                {unfiled > 0 && lib.id === first?.id ? (
-                  <li>
-                    <Card.Root className="flex h-full flex-col gap-2 p-4" data-testid="unfiled-card">
-                      <Link href={`/${locale}/app/bibliotheque/sans-collection`} className="font-semibold text-fg hover:text-fg-accent hover:underline">
-                        {say("organisation.unfiled")}
-                      </Link>
-                      <p className="m-0 text-sm text-fg-secondary">{say(pluralKey("organisation.files", unfiled), { count: unfiled })}</p>
-                    </Card.Root>
-                  </li>
-                ) : null}
               </ul>
             </section>
           ))}

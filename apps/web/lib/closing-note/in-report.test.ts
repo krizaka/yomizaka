@@ -57,6 +57,17 @@ describe.each(LANGS)("the closing note travels with the signed report (%s)", (la
     expect(await verifyPdf(issued.bytes, signingKey())).toMatchObject({ ok: true });
   });
 
+  it("a document made from photos says so in the signed note and in the payload, and the signature still verifies", () => {
+    const origin = { software: "Adobe Photoshop 25.0", device: "Apple iPhone 15", takenAt: null, modifiedAt: null, hadGps: true };
+    const photo = buildPayload({ ...doc, textSource: { kind: "ocr", engine: "tesseract", confidence: 74, photos: 2, lowConfidence: false, origin } }, analysis, lang);
+    expect(photo.document.textSource).toMatchObject({ kind: "ocr", confidence: 74, photos: 2 });
+    expect(photo.note?.how.sentences.join(" ")).toContain("74");
+    expect(buildPayload(doc, analysis, lang).document.textSource).toBeUndefined();
+    const issued = issueReport(photo, reportLabels(lang), signingKey());
+    expect(issued.html).toContain("74");
+    expect(verifyReport(issued.html, signingKey())).toMatchObject({ ok: true });
+  });
+
   it("a report issued before the note existed (no note in its payload) still verifies", () => {
     const old = { ...payload, note: undefined };
     expect(verifyReport(issueReport(old, reportLabels(lang), signingKey()).html, signingKey())).toMatchObject({ ok: true });

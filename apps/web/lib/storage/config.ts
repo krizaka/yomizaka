@@ -16,6 +16,8 @@ export interface StorageSettings {
   MEDIA_STORAGE_ENDPOINT: string;
   MEDIA_STORAGE_ZONE?: string;
   MEDIA_STORAGE_API_KEY?: string;
+  MEDIA_DOCUMENTS_PULL_HOSTNAME?: string;
+  MEDIA_DOCUMENTS_TOKEN_KEY?: string;
   MEDIA_S3_ENDPOINT?: string;
   MEDIA_S3_REGION?: string;
   MEDIA_S3_BUCKET?: string;
@@ -34,7 +36,7 @@ export function storageFrom(e: StorageSettings, now: () => Date): DocumentStore 
   if (e.MEDIA_DOCUMENTS_PROVIDER === STORAGE_KIND.bunny) {
     if (e.APP_ENVIRONMENT === "prod") throw new Error("Bunny has no Canadian region: it is for development and fictional data only");
     need("bunny", { MEDIA_STORAGE_ZONE: e.MEDIA_STORAGE_ZONE, MEDIA_STORAGE_API_KEY: e.MEDIA_STORAGE_API_KEY });
-    store = bunnyStore({ endpoint: e.MEDIA_STORAGE_ENDPOINT, zone: e.MEDIA_STORAGE_ZONE!, accessKey: e.MEDIA_STORAGE_API_KEY!, prefix: e.MEDIA_DOCUMENTS_PREFIX, now });
+    store = bunnyStore({ endpoint: e.MEDIA_STORAGE_ENDPOINT, zone: e.MEDIA_STORAGE_ZONE!, accessKey: e.MEDIA_STORAGE_API_KEY!, prefix: e.MEDIA_DOCUMENTS_PREFIX, pullHostname: e.MEDIA_DOCUMENTS_PULL_HOSTNAME, tokenKey: e.MEDIA_DOCUMENTS_TOKEN_KEY, now });
   } else if (e.MEDIA_DOCUMENTS_PROVIDER === STORAGE_KIND.s3) {
     need("s3", { MEDIA_S3_ENDPOINT: e.MEDIA_S3_ENDPOINT, MEDIA_S3_REGION: e.MEDIA_S3_REGION, MEDIA_S3_BUCKET: e.MEDIA_S3_BUCKET, MEDIA_S3_ACCESS_KEY_ID: e.MEDIA_S3_ACCESS_KEY_ID, MEDIA_S3_SECRET_ACCESS_KEY: e.MEDIA_S3_SECRET_ACCESS_KEY });
     store = s3Store({

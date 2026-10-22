@@ -1,0 +1,23 @@
+/**
+ * Where the apps can be downloaded: structure only (the words are `download.platforms.<id>`). A platform shows « soon »
+ * until its link exists: TestFlight or the App Store for iOS, a release asset for Android and the Mac. Never a dead button.
+ */
+export const DOWNLOAD_PLATFORM = { ios: "ios", android: "android", mac: "mac" } as const;
+export type DownloadPlatform = (typeof DOWNLOAD_PLATFORM)[keyof typeof DOWNLOAD_PLATFORM];
+
+export interface Download {
+  id: DownloadPlatform;
+  /** The store, TestFlight or release address; null while there is none. */
+  href: string | null;
+}
+
+export const DOWNLOADS: readonly Download[] = [
+  { id: DOWNLOAD_PLATFORM.ios, href: null },
+  { id: DOWNLOAD_PLATFORM.android, href: null },
+  { id: DOWNLOAD_PLATFORM.mac, href: null },
+];
+
+export const DOWNLOAD_STATE = { available: "available", soon: "soon" } as const;
+export type DownloadState = (typeof DOWNLOAD_STATE)[keyof typeof DOWNLOAD_STATE];
+
+export const downloadState = (download: Download): DownloadState => (download.href ? DOWNLOAD_STATE.available : DOWNLOAD_STATE.soon);

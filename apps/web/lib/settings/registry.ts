@@ -41,7 +41,8 @@ const subset = <const C extends readonly [string, ...string[]]>(group: Group, ch
 const bilingual = (group: Group, value: { fr: string; en: string }, scopes: readonly Scope[] = GLOBAL): Def<{ fr: string; en: string }> => ({ group, kind: KIND.bilingual, schema: z.object({ fr: z.string().trim().min(1).max(500), en: z.string().trim().min(1).max(500) }), default: value, scopes });
 
 export const PAYMENT_DISPLAY = { test: "test", live: "live" } as const;
-export const FILE_TYPES = ["pdf", "text"] as const;
+export const AVATAR_SEED_CHOICES = ["v1", "v2", "v3", "v4", "v5", "v6"] as const;
+export const FILE_TYPES = ["pdf", "text", "image"] as const;
 
 /** The platform's cap on a file: a limit here can only go down from it. */
 // @fixed: what the pre-flight and the uploads can carry
@@ -61,16 +62,25 @@ export const SETTINGS = {
   "features.keepDocuments": flag(GROUP.features, true, ALL),
   "features.ownStorage": flag(GROUP.features, true, WORKSPACE),
   "features.assistant": flag(GROUP.features, false, ALL),
+  // API keys (ADR-0011): the global switch; what a plan holds is below.
+  "features.apiKeys": flag(GROUP.features, true, WORKSPACE),
+  // Collection avatars (krizaka/yomizaka#206): on or off, which of the set are offered, how heavy an uploaded image may be.
+  "features.collectionAvatars": flag(GROUP.features, true, WORKSPACE),
+  "features.avatarSet": subset(GROUP.features, AVATAR_SEED_CHOICES, [...AVATAR_SEED_CHOICES]),
   // Limits: what one document and one account may do.
   "limits.maxFileMb": integer(GROUP.limits, PLATFORM_MAX_FILE_MB, { min: 1, max: PLATFORM_MAX_FILE_MB, unit: "MB" }, WORKSPACE),
   "limits.maxPages": integer(GROUP.limits, 200, { min: 1, max: 500, unit: "pages" }, WORKSPACE),
   "limits.allowedTypes": subset(GROUP.limits, FILE_TYPES, [...FILE_TYPES], WORKSPACE),
   "limits.reuseDays": integer(GROUP.limits, 365, { min: 0, max: 3650, unit: "days" }),
   "limits.purgeAfterHours": integer(GROUP.limits, 24, { min: 1, max: 720, unit: "hours" }),
+  "limits.apiRequestsPerMinute": integer(GROUP.limits, 60, { min: 1, max: 6000, unit: "requests" }, WORKSPACE),
+  "limits.avatarMaxKb": integer(GROUP.limits, 512, { min: 16, max: 2048, unit: "KB" }),
   "limits.bonusAuditsPerMonth": integer(GROUP.limits, 0, { min: 0, max: 10000, unit: "audits" }, [SCOPE.user]),
   // Plans: what each plan includes (prices stay in Stripe).
   "plans.free.auditsPerDay": integer(GROUP.plans, 0, { min: 0, max: 1000, unit: "audits" }, WORKSPACE),
   "plans.pro.auditsPerMonth": integer(GROUP.plans, 100, { min: 1, max: 100000, unit: "audits" }, WORKSPACE),
+  "plans.free.apiKeys": integer(GROUP.plans, 0, { min: 0, max: 100, unit: "keys" }, WORKSPACE),
+  "plans.pro.apiKeys": integer(GROUP.plans, 10, { min: 0, max: 100, unit: "keys" }, WORKSPACE),
   "plans.pro.auditsPerDay": integer(GROUP.plans, 0, { min: 0, max: 5000, unit: "audits" }, WORKSPACE),
 } as const satisfies Record<string, Def<never> | Def<boolean> | Def<number> | Def<string> | Def<string[]> | Def<{ fr: string; en: string }>>;
 

@@ -55,6 +55,25 @@ export async function incrementallySavedPdf(): Promise<Uint8Array> {
 }
 
 export const windowsExecutable = (): Uint8Array => Buffer.concat([Buffer.from("MZ", "latin1"), Buffer.alloc(200, 0x90)]);
+import sharp from "sharp";
+
+/** A real, tiny PNG or JPEG (white page): the cleaner decodes these. */
+export async function imageOf(kind: "png" | "jpeg"): Promise<Uint8Array> {
+  const base = sharp({ create: { width: 64, height: 48, channels: 3, background: "#ffffff" } });
+  return new Uint8Array(await (kind === "png" ? base.png() : base.jpeg()).toBuffer());
+}
+
+/** The signature of an HEIC file (an ISO base media « ftyp » box, brand heic): enough for the pre-flight, which never decodes. */
+export const heicBytes = (): Uint8Array => Buffer.concat([Buffer.from([0, 0, 0, 24]), Buffer.from("ftypheic"), Buffer.alloc(80)]);
+
+/** A PNG header that claims these dimensions (IHDR only): the pixel guard reads the header, it never decodes. */
+export function pngWithSize(width: number, height: number): Uint8Array {
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(width, 0);
+  ihdr.writeUInt32BE(height, 4);
+  return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13]), Buffer.from("IHDR"), ihdr, Buffer.alloc(8)]);
+}
+
 export const pngBytes = (): Uint8Array => Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(64)]);
 
 /** A minimal zip (stored directory entries of deflated content) — enough for the directory-only reads. */

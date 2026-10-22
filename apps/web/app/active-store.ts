@@ -43,3 +43,14 @@ export async function storeForDocument(ownerId: string, documentId: string): Pro
   const stores = await storesOf(ownerId);
   return stores.of(row?.storage_owner ?? "krizaka") ?? undefined;
 }
+
+/** Where uploaded avatars live: the same provider as the documents, under a prefix of their own (`<prefix>-avatars`); null when no store is configured (avatars are then picked from the set only). */
+export function avatarStore(): DocumentStore | null {
+  const e = env();
+  if (e.MEDIA_DOCUMENTS_PROVIDER === "none") return null;
+  try {
+    return storageFrom({ ...e, MEDIA_DOCUMENTS_PREFIX: `${e.MEDIA_DOCUMENTS_PREFIX}-avatars` }, () => new Date());
+  } catch {
+    return null;
+  }
+}

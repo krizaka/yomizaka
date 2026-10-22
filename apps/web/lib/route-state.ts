@@ -13,10 +13,14 @@ export type CheckKind = (typeof CHECK_KINDS)[number];
 
 export const KEEP_CHOICES = ["0", "1"] as const;
 export type KeepChoice = (typeof KEEP_CHOICES)[number];
+export const GROUP_CHOICES = ["0", "1"] as const;
+export type GroupChoice = (typeof GROUP_CHOICES)[number];
 
 /** Every route-state of the app, so one test table covers them all. */
 export const ROUTE_STATES = {
   checkKind: { path: "/app/verifier", state: { key: "type", values: CHECK_KINDS, fallback: "auto" } satisfies RouteState<CheckKind> },
+  /** Several photos dropped together are the pages of one document (the default), or separate documents. */
+  groupPhotos: { path: "/app/verifier", state: { key: "pages", values: GROUP_CHOICES, fallback: "1" } satisfies RouteState<GroupChoice> },
   keepDocuments: { path: "/app/verifier", state: { key: "conserver", values: KEEP_CHOICES, fallback: "0" } satisfies RouteState<KeepChoice> },
 } as const;
 

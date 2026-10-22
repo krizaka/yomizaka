@@ -10,17 +10,18 @@ import { DocumentViewer, type Located } from "@krizaka/ui/document-viewer";
 import { createKrizakaForm } from "@krizaka/ui/form";
 import { Spinner } from "@krizaka/ui/spinner";
 import { Tabs } from "@krizaka/ui/tabs";
-import { type Analysis, analysis as analysisSchema, type Audience, AUTHENTICITY_MAX_BYTES, type AuthenticityReport, type ComplianceReport, type DocumentView as DocumentViewData, documentView, type Jurisdiction, JURISDICTIONS, passages, queryKeys,type Studio } from "@yomizaka/core";
+import { type Analysis, analysis as analysisSchema, type Audience, AUTHENTICITY_MAX_BYTES, type AuthenticityReport, checkSteps,type ComplianceReport, type DocumentView as DocumentViewData, documentView, type Jurisdiction, JURISDICTIONS, passages, queryKeys, type Studio, type TextSource } from "@yomizaka/core";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ComponentProps, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
 import { ClosingNoteView } from "@/components/ClosingNoteView";
+import { CheckSteps } from "@/components/console/CheckSteps";
 import { DocumentInsight } from "@/components/console/DocumentInsight";
 import { Paywall } from "@/components/console/Paywall";
 import { errorKey } from "@/lib/client";
-import { buildNote, noteInputOf } from "@/lib/closing-note/build";
+import { buildNote, noteInputOf, noteSourceOf } from "@/lib/closing-note/build";
 import { type DocumentTab } from "@/lib/console-nav";
 import { useSay } from "@/lib/i18n-client";
 import { firstCheck, wordingOf } from "@/lib/perspective-defaults";
@@ -217,7 +218,7 @@ function AuthenticitySignals({ report }: { report: AuthenticityReport }) {
 }
 
 /** One analysis: its Orazaka run (id, version, status), polled while it runs, then its report. */
-function AnalysisCard({ documentId, initial, selection }: { documentId: string; initial: Analysis; selection?: Selection }) {
+function AnalysisCard({ documentId, initial, selection, source, hasText }: { documentId: string; initial: Analysis; selection?: Selection; source?: TextSource; hasText: boolean }) {
   const { say, locale } = useSay();
   const client = useQueryClient();
   const live = useQuery({
@@ -238,6 +239,7 @@ function AnalysisCard({ documentId, initial, selection }: { documentId: string; 
         <h3 className="font-display text-base font-bold text-fg">{say(a.studio === "compliance-check" ? "analysis.complianceTitle" : "analysis.authenticityTitle")}</h3>
         <Badge tone={RUN_TONE[a.status]}>{a.status === "running" ? <Spinner size="sm" label={say("analysis.running")} /> : null} {say(`analysis.statuses.${a.status}`)}</Badge>
       </div>
+      <CheckSteps steps={checkSteps({ hasText, analysis: { studio: a.studio, status: a.status } })} />
       <DescriptionList
         items={[
           { term: say("analysis.runId"), details: <code className="break-all font-mono text-xs" data-testid="orazaka-run-id">{a.runId ?? "—"}</code> },
@@ -254,7 +256,7 @@ function AnalysisCard({ documentId, initial, selection }: { documentId: string; 
       {a.report && "findings" in a.report ? <ComplianceFindings report={a.report} runId={a.runId} selection={selection} /> : null}
       {a.status === "succeeded" && a.studio === "compliance-check" && a.report && "findings" in a.report ? <ReportExport documentId={documentId} analysisId={a.id} /> : null}
       {a.report && "signals" in a.report ? <AuthenticitySignals report={a.report} /> : null}
-      {a.status === "succeeded" && a.report ? <ClosingNoteView note={buildNote(noteInputOf(a.report), locale)} /> : null}
+      {a.status === "succeeded" && a.report ? <ClosingNoteView note={buildNote(noteInputOf(a.report, noteSourceOf(source)), locale)} /> : null}
       {a.report ? <p className="text-xs text-fg-muted">{say("analysis.language")}</p> : null}
     </Card.Root>
   );
@@ -387,7 +389,7 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
   const authenticityCard = (
     <Card.Root key="document-authenticity" className="p-4">
       <h3 className="mb-2 font-display text-base font-bold text-fg">{say("analysis.authenticityTitle")}</h3>
-      {!isPdf ? <Alert tone="info">{say("analysis.noPdf")}</Alert> : doc.sizeBytes > AUTHENTICITY_MAX_BYTES ? <Alert tone="info">{say("analysis.tooLarge")}</Alert> : <StartAuthenticity documentId={doc.id} disabled={running("document-authenticity")} />}
+      {doc.textSource ? <Alert tone="info">{say("analysis.noPhoto")}</Alert> : !isPdf ? <Alert tone="info">{say("analysis.noPdf")}</Alert> : doc.sizeBytes > AUTHENTICITY_MAX_BYTES ? <Alert tone="info">{say("analysis.tooLarge")}</Alert> : <StartAuthenticity documentId={doc.id} disabled={running("document-authenticity")} />}
     </Card.Root>
   );
   const latestReport = latestCompliance?.report && "findings" in latestCompliance.report ? latestCompliance.report : null;
@@ -450,7 +452,7 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
 
         <Tabs.Content value="infos">
           <section aria-label={say("document.tabs.infos")} className="flex min-w-0 flex-col gap-4 pt-4">
-            {doc.insight ? <DocumentInsight insight={doc.insight} documentId={doc.id} /> : null}
+            {doc.insight ? <DocumentInsight insight={doc.insight} documentId={doc.id} source={doc.textSource} /> : null}
             <StorageNotice storage={doc.storage} retainUntil={doc.retainUntil} purged={doc.purged} onDelete={() => remove.mutate()} deleting={remove.isPending} />
             <DescriptionList
               items={[
@@ -476,7 +478,7 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
               {(firstCheck(perspective, doc.kind) === "compliance-check" ? [complianceCard, authenticityCard] : [authenticityCard, complianceCard]).filter((c) => offer.studios.includes(c.key as Studio))}
             </div>
             {doc.analyses.map((a) => (
-              <AnalysisCard key={a.id} documentId={doc.id} initial={a} selection={a.id === latestCompliance?.id ? selection : undefined} />
+              <AnalysisCard key={a.id} documentId={doc.id} hasText={doc.hasText} source={doc.textSource} initial={a} selection={a.id === latestCompliance?.id ? selection : undefined} />
             ))}
           </section>
         </Tabs.Content>

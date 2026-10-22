@@ -10,7 +10,7 @@ const value = <T>(s: Snapshot, key: SettingKey) => s[key].value as T;
 
 const MB = 1024 * 1024;
 /** The file kinds the pre-flight knows by the names the settings use. */
-const KIND_OF: Record<string, FileKind> = { pdf: "pdf", text: "text" };
+const KINDS_OF: Record<string, FileKind[]> = { pdf: ["pdf"], text: ["text"], image: ["png", "jpeg", "heic"] };
 
 /** The pre-flight rules as set in the configuration: the product's rules with the limits an administrator changed. */
 export function preflightRulesFrom(base: PreflightRules, s: Snapshot): PreflightRules {
@@ -18,7 +18,7 @@ export function preflightRulesFrom(base: PreflightRules, s: Snapshot): Preflight
     ...base,
     maxBytes: Math.min(MAX_FILE_BYTES, value<number>(s, "limits.maxFileMb") * MB),
     maxPages: value<number>(s, "limits.maxPages"),
-    allowedKinds: value<string[]>(s, "limits.allowedTypes").map((t) => KIND_OF[t]!).filter(Boolean),
+    allowedKinds: value<string[]>(s, "limits.allowedTypes").flatMap((t) => KINDS_OF[t] ?? []),
   };
 }
 
@@ -41,12 +41,15 @@ export interface ClientConfig {
   allowedTypes: string[];
   features: { keepDocuments: boolean; ownStorage: boolean; documentInsight: boolean; assistant: boolean };
   payments: { enabled: boolean; display: string };
+  /** Collection avatars: on or off, the heaviest uploaded image, the set offered. */
+  avatars: { enabled: boolean; maxBytes: number; seeds: string[] };
 }
 export const clientConfigOf = (s: Snapshot): ClientConfig => ({
   maxFileBytes: Math.min(MAX_FILE_BYTES, value<number>(s, "limits.maxFileMb") * MB),
   allowedTypes: value<string[]>(s, "limits.allowedTypes"),
   features: { keepDocuments: value(s, "features.keepDocuments"), ownStorage: value(s, "features.ownStorage"), documentInsight: value(s, "features.documentInsight"), assistant: value(s, "features.assistant") },
   payments: { enabled: value(s, "payments.enabled"), display: value(s, "payments.display") },
+  avatars: { enabled: value(s, "features.collectionAvatars"), maxBytes: value<number>(s, "limits.avatarMaxKb") * 1024, seeds: value<string[]>(s, "features.avatarSet") },
 });
 
 /** The caps an audit is held to: monthly (a person's bonus added) and daily (0 = no cap), for the plan the account is on. */

@@ -9,16 +9,19 @@ import { DropdownMenu } from "@krizaka/ui/dropdown-menu";
 import { createKrizakaForm } from "@krizaka/ui/form";
 import { RadioGroup } from "@krizaka/ui/radio-group";
 import { TagSelector } from "@krizaka/ui/tag-selector";
+import { AVATAR_KIND, type CollectionAvatar as CollectionAvatarData } from "@yomizaka/core";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useState } from "react";
 import { z } from "zod";
 
+import { CollectionAvatar } from "@/components/console/CollectionAvatar";
+import { useAppConfig } from "@/lib/app-config-client";
 import { errorKey } from "@/lib/client";
 import { useSay } from "@/lib/i18n-client";
 import { TAG_COLORS, type TagColor } from "@/lib/organisation/rules";
 
 /** The creating, renaming, moving, tagging and deleting of the organisation (ADR-0007): each a call to its route, then the page refreshes. */
-export type Option = { id: string; name: string };
+export type Option = { id: string; name: string; avatar?: CollectionAvatarData | null };
 export type TagOption = Option & { color: TagColor };
 
 const nameForm = createKrizakaForm({ schema: z.object({ name: z.string().trim().min(1).max(80) }), defaultValues: { name: "" } });
@@ -115,6 +118,80 @@ export function CreateButton({ kind, parentId, variant = "secondary" }: { kind: 
   );
 }
 
+/**
+ * Chooses a collection's avatar: one of the set the administrator offers, or an image of one's own (when a storage is configured),
+ * or none. (Krizaka UI's `AvatarPicker` replaces the grid when the account-settings blocks are published.)
+ */
+function AvatarDialog({ id, name, avatar, onClose }: { id: string; name: string; avatar: CollectionAvatarData | null; onClose: () => void }) {
+  const { say } = useSay();
+  const config = useAppConfig();
+  const api = `/api/collections/${id}`;
+  const pick = useAction<string | null>((seed) => krizakaFetch(api, { method: "PATCH", json: { avatar: seed === null ? null : { kind: "set", seed } } }), onClose);
+  const upload = useAction<File>((file) => {
+    const body = new FormData();
+    body.set("file", file);
+    return krizakaFetch(`${api}/avatar`, { method: "POST", body });
+  }, onClose);
+  const current = avatar?.kind === AVATAR_KIND.set ? avatar.seed : "";
+  const seeds = config?.avatars.seeds ?? [];
+  const problem = pick.problem ?? upload.problem;
+  return (
+    <Frame open onOpenChange={onClose} title={say("organisation.avatar.title", { name })} description={say("organisation.avatar.ask")}>
+      <div className="flex items-center gap-3">
+        <CollectionAvatar id={id} name={name} avatar={avatar} size="lg" />
+        <Button size="md" variant="ghost" disabled={!avatar} loading={pick.pending} onClick={() => pick.go(null)}>
+          {say("organisation.avatar.none")}
+        </Button>
+      </div>
+      {config?.avatars.enabled === false ? <Alert tone="info">{say("organisation.avatar.off")}</Alert> : null}
+      {seeds.length > 0 && config?.avatars.enabled !== false ? (
+        <RadioGroup.Root label={say("organisation.avatar.set")} value={current} onValueChange={(seed: string) => void pick.go(seed)}>
+          <div className="flex flex-wrap gap-3">
+            {seeds.map((seed) => (
+              <RadioGroup.Item key={seed} value={seed} aria-label={`${say("organisation.avatar.set")} ${seed}`}>
+                <CollectionAvatar id={id} name={name} avatar={{ kind: "set", seed }} size="lg" />
+              </RadioGroup.Item>
+            ))}
+          </div>
+        </RadioGroup.Root>
+      ) : null}
+      {config?.avatars.canUpload && config.avatars.enabled ? (
+        <div className="flex flex-col gap-2">
+          <label htmlFor={`avatar-file-${id}`} className="text-sm font-semibold text-fg">
+            {say("organisation.avatar.upload")}
+          </label>
+          <input
+            id={`avatar-file-${id}`}
+            type="file"
+            accept="image/png,image/jpeg,image/heic,image/heif,.png,.jpg,.jpeg,.heic,.heif"
+            className="text-sm"
+            data-testid="avatar-file"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) void upload.go(file);
+            }}
+          />
+          <p className="m-0 text-xs text-fg-secondary">{say("organisation.avatar.uploadHint", { size: Math.floor(config.avatars.maxBytes / 1024) })}</p>
+        </div>
+      ) : null}
+      {problem ? <Alert tone="danger">{problem}</Alert> : null}
+    </Frame>
+  );
+}
+
+function DefaultDialog({ api, name, onClose }: { api: string; name: string; onClose: () => void }) {
+  const { say } = useSay();
+  const save = useAction<null>(() => krizakaFetch(api, { method: "PATCH", json: { default: true } }), onClose);
+  return (
+    <Frame open onOpenChange={onClose} title={say("organisation.makeDefaultTitle", { name })} description={say("organisation.makeDefaultAsk")}>
+      {save.problem ? <Alert tone="danger">{save.problem}</Alert> : null}
+      <Button size="md" loading={save.pending} onClick={() => save.go(null)}>
+        {say("organisation.makeDefault")}
+      </Button>
+    </Frame>
+  );
+}
+
 /** What the menu of an item can do. */
 export const ITEM_KIND = { collection: "collection", folder: "folder", document: "document" } as const;
 export type ItemKind = (typeof ITEM_KIND)[keyof typeof ITEM_KIND];
@@ -124,6 +201,8 @@ const MENU = [
   { action: "rename", label: "organisation.rename", kinds: [ITEM_KIND.collection, ITEM_KIND.folder] },
   { action: "move", label: "organisation.move", kinds: [ITEM_KIND.collection, ITEM_KIND.folder, ITEM_KIND.document] },
   { action: "tags", label: "organisation.editTags", kinds: [ITEM_KIND.collection, ITEM_KIND.folder, ITEM_KIND.document] },
+  { action: "avatar", label: "organisation.avatar.menu", kinds: [ITEM_KIND.collection] },
+  { action: "default", label: "organisation.makeDefault", kinds: [ITEM_KIND.collection] },
   { action: "delete", label: "organisation.delete", kinds: [ITEM_KIND.collection, ITEM_KIND.folder] },
 ] as const;
 type Action = (typeof MENU)[number]["action"];
@@ -133,7 +212,7 @@ type Action = (typeof MENU)[number]["action"];
  * The menu of a collection, a folder or a document: rename, move, edit tags, delete. A deletion always asks what becomes of
  * the files. `collections` and `folders` are the destinations (the folders of the item's collection); `tags` the owner's tags.
  */
-export function ItemMenu({ kind, id, name, collections = [], folders = [], tags = [], current = [], collectionId = null }: { kind: ItemKind; id: string; name: string; collections?: Option[]; folders?: Option[]; tags?: TagOption[]; current?: string[]; collectionId?: string | null }) {
+export function ItemMenu({ kind, id, name, avatar = null, isDefault = false, collections = [], folders = [], tags = [], current = [], collectionId = null }: { kind: ItemKind; id: string; name: string; avatar?: CollectionAvatarData | null; isDefault?: boolean; collections?: Option[]; folders?: Option[]; tags?: TagOption[]; current?: string[]; collectionId?: string | null }) {
   const { say } = useSay();
   const [dialog, setDialog] = useState<Action | null>(null);
   const close = () => setDialog(null);
@@ -147,7 +226,7 @@ export function ItemMenu({ kind, id, name, collections = [], folders = [], tags 
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content align="end">
-          {MENU.filter((m) => (m.kinds as readonly ItemKind[]).includes(kind)).map((m) => (
+          {MENU.filter((m) => (m.kinds as readonly ItemKind[]).includes(kind) && !(isDefault && (m.action === "delete" || m.action === "default"))).map((m) => (
             <DropdownMenu.Item key={m.action} onSelect={() => setDialog(m.action)}>
               {say(m.label)}
             </DropdownMenu.Item>
@@ -156,13 +235,15 @@ export function ItemMenu({ kind, id, name, collections = [], folders = [], tags 
       </DropdownMenu.Root>
       {dialog === "rename" ? <NameDialog open onOpenChange={close} title={say("organisation.rename")} initial={name} submit={(n) => krizakaFetch(api, { method: "PATCH", json: { name: n } })} /> : null}
       {dialog === "move" ? <MoveDialog kind={kind} id={id} api={api} collections={collections} folders={folders} collectionId={collectionId} onClose={close} /> : null}
+      {dialog === "avatar" ? <AvatarDialog id={id} name={name} avatar={avatar} onClose={close} /> : null}
+      {dialog === "default" ? <DefaultDialog api={api} name={name} onClose={close} /> : null}
       {dialog === "tags" ? <TagsDialog kind={kind} id={id} tags={tags} current={current} onClose={close} /> : null}
       {dialog === "delete" ? <DeleteDialog kind={kind} id={id} name={name} api={api} collections={collections} folders={folders} onClose={close} /> : null}
     </>
   );
 }
 
-const UNFILED = "__unfiled__";
+const DEFAULT = "__default__";
 const ROOT = "__root__";
 
 function MoveDialog({ kind, id, api, collections, folders, collectionId, onClose }: { kind: ItemKind; id: string; api: string; collections: Option[]; folders: Option[]; collectionId: string | null; onClose: () => void }) {
@@ -172,19 +253,22 @@ function MoveDialog({ kind, id, api, collections, folders, collectionId, onClose
     if (kind === "collection") return krizakaFetch(api, { method: "PATCH", json: { libraryId: to } });
     if (kind === "folder") return krizakaFetch(api, { method: "PATCH", json: { collectionId: to } });
     const [c, f] = to.split("|");
-    return krizakaFetch(`${api}/placement`, { method: "PUT", json: { collectionId: c === UNFILED ? null : c, folderId: f && f !== ROOT ? f : null } });
+    return krizakaFetch(`${api}/placement`, { method: "PUT", json: { collectionId: c === DEFAULT ? null : c, folderId: f && f !== ROOT ? f : null } });
   }, onClose);
   // A document goes to a collection (its root) or to a folder of its own collection; a folder to another collection.
   const options: Option[] =
     kind === "document"
-      ? [{ id: `${UNFILED}|`, name: say("organisation.unfiled") }, ...collections.map((c) => ({ id: `${c.id}|${ROOT}`, name: c.name })), ...(collectionId ? folders.map((f) => ({ id: `${collectionId}|${f.id}`, name: `${say("organisation.foldersIn")}: ${f.name}` })) : [])]
+      ? [{ id: `${DEFAULT}|`, name: say("organisation.defaultCollection") }, ...collections.map((c) => ({ id: `${c.id}|${ROOT}`, name: c.name })), ...(collectionId ? folders.map((f) => ({ id: `${collectionId}|${f.id}`, name: `${say("organisation.foldersIn")}: ${f.name}` })) : [])]
       : collections.filter((c) => c.id !== id);
   return (
     <Frame open onOpenChange={onClose} title={say("organisation.move")}>
       <RadioGroup.Root label={say("organisation.moveTo")} value={target} onValueChange={setTarget}>
         {options.map((o) => (
           <RadioGroup.Item key={o.id} value={o.id}>
-            {o.name}
+            <span className="flex items-center gap-2">
+              {o.avatar !== undefined ? <CollectionAvatar id={o.id.split("|")[0]!} name={o.name} avatar={o.avatar} size="sm" /> : null}
+              {o.name}
+            </span>
           </RadioGroup.Item>
         ))}
       </RadioGroup.Root>
@@ -217,12 +301,12 @@ function TagsDialog({ kind, id, tags, current, onClose }: { kind: ItemKind; id: 
 function DeleteDialog({ kind, id, name, api, collections, folders, onClose }: { kind: ItemKind; id: string; name: string; api: string; collections: Option[]; folders: Option[]; onClose: () => void }) {
   const { say } = useSay();
   const [files, setFiles] = useState<"move" | "delete">("move");
-  const [to, setTo] = useState<string>(kind === "folder" ? ROOT : UNFILED);
-  const remove = useAction<null>(() => krizakaFetch(api, { method: "DELETE", json: { files, to: files === "move" && to !== ROOT && to !== UNFILED ? to : null } }), onClose);
+  const [to, setTo] = useState<string>(kind === "folder" ? ROOT : DEFAULT);
+  const remove = useAction<null>(() => krizakaFetch(api, { method: "DELETE", json: { files, to: files === "move" && to !== ROOT && to !== DEFAULT ? to : null } }), onClose);
   const destinations: Option[] =
     kind === "folder"
       ? [{ id: ROOT, name: say("organisation.moveUpFolder") }, ...folders.filter((f) => f.id !== id)]
-      : [{ id: UNFILED, name: say("organisation.moveToUnfiled") }, ...collections.filter((c) => c.id !== id)];
+      : [{ id: DEFAULT, name: say("organisation.moveToDefault") }, ...collections.filter((c) => c.id !== id)];
   return (
     <Frame open onOpenChange={onClose} title={say("organisation.deleteTitle", { name })} description={say("organisation.deleteAsk")}>
       <RadioGroup.Root label={say("organisation.deleteAsk")} value={files} onValueChange={(v: string) => setFiles(v as "move" | "delete")}>
@@ -233,7 +317,10 @@ function DeleteDialog({ kind, id, name, api, collections, folders, onClose }: { 
         <RadioGroup.Root label={say("organisation.moveTo")} value={to} onValueChange={setTo}>
           {destinations.map((d) => (
             <RadioGroup.Item key={d.id} value={d.id}>
-              {d.name}
+              <span className="flex items-center gap-2">
+                {d.avatar !== undefined ? <CollectionAvatar id={d.id} name={d.name} avatar={d.avatar} size="sm" /> : null}
+                {d.name}
+              </span>
             </RadioGroup.Item>
           ))}
         </RadioGroup.Root>

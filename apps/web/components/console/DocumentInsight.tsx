@@ -1,7 +1,7 @@
 "use client";
 
 import { Alert } from "@krizaka/ui/alert";
-import type { DocumentInsight as Insight } from "@yomizaka/core";
+import { type DocumentInsight as Insight, TEXT_SOURCE, type TextSource } from "@yomizaka/core";
 
 import { useSay } from "@/lib/i18n-client";
 
@@ -12,7 +12,7 @@ const money = (cents: number, locale: string) => new Intl.NumberFormat(locale, {
  * « Ce document »: what it is and what it holds, read in-process from its text (no model, nothing sent). The nature carries its
  * confidence; when no legal check fits it says so plainly. Personal information is counted, never listed.
  */
-export function DocumentInsight({ insight, documentId }: { insight: Insight; documentId: string }) {
+export function DocumentInsight({ insight, documentId, source }: { insight: Insight; documentId: string; source?: TextSource }) {
   const { say, locale } = useSay();
   const u = insight.understanding;
   const lang = locale === "fr" ? "fr" : "en";
@@ -24,6 +24,17 @@ export function DocumentInsight({ insight, documentId }: { insight: Insight; doc
   for (const a of u.amounts.slice(0, 8)) rows.push([say(`insight.amountKinds.${a.kind}`), money(a.cents, locale)]);
   if (u.language !== "unknown") rows.push([say("insight.language"), say(`insight.languages.${u.language}`)]);
   if (u.pages) rows.push([say("insight.pages"), String(u.pages)]);
+  // A photo: how its text was read and where the photo comes from — reported, never a verdict.
+  if (source) {
+    const how = source.kind === TEXT_SOURCE.vision ? say("insight.sourcePhotoVision", { runId: source.runId }) : say(source.photos > 1 ? "insight.sourcePhotoOcrPages" : "insight.sourcePhotoOcr", { confidence: Math.round(source.confidence), count: source.photos });
+    rows.push([say("insight.source"), <span key="source" data-testid="text-source">{how}</span>]);
+    const o = source.origin;
+    if (o?.device) rows.push([say("insight.originDevice"), o.device]);
+    if (o?.software) rows.push([say("insight.originSoftware"), o.software]);
+    if (o?.takenAt) rows.push([say("insight.originTaken"), date(o.takenAt.slice(0, 10), locale)]);
+    if (o?.modifiedAt) rows.push([say("insight.originModified"), date(o.modifiedAt.slice(0, 10), locale)]);
+  }
+  const weak = source?.kind === TEXT_SOURCE.ocr && source.lowConfidence;
   const pii = Object.entries(insight.pii.counts);
   return (
     <section aria-labelledby="insight-title" className="flex flex-col gap-3" data-testid="document-insight">
@@ -38,6 +49,8 @@ export function DocumentInsight({ insight, documentId }: { insight: Insight; doc
       ) : (
         <p className="text-fg-secondary">{say("insight.unknown")}</p>
       )}
+      {weak ? <Alert tone="warning">{say("insight.sourceLow")}</Alert> : null}
+      {source?.origin?.hadGps ? <p className="m-0 text-sm text-fg-secondary">{say("insight.originGps")}</p> : null}
       {!u.check ? <Alert tone="info">{say("insight.noCheck")}</Alert> : null}
       {rows.length ? (
         <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">

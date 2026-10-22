@@ -36,7 +36,9 @@ describe.runIf(enabled)("export and erasure (Loi 25)", () => {
     expect(out.exportedAt).toBe(NOW.toISOString());
     expect(JSON.stringify(out)).not.toContain("password");
     expect(out.profile).toMatchObject({ name: "Éric" });
-    expect(out.libraries[0]).toMatchObject({ name: "Ma bibliothèque", collections: [{ name: "Baux" }] });
+    // every account has a default collection (krizaka/yomizaka#205): the export says which one it is
+    expect(out.libraries.flatMap((l) => l.collections).filter((c) => c.isDefault)).toHaveLength(1);
+    expect(out.libraries.find((l) => l.name === "Ma bibliothèque")).toMatchObject({ collections: [{ name: "Baux", isDefault: false }] });
     const k = out.documents.find((d) => d.id === kept.summary.id)!;
     expect(Buffer.from(k.file!.base64, "base64").toString()).toContain("1 450");
     expect(k.storage).toBe("bunny");

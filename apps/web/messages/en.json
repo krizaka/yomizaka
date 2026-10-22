@@ -26,7 +26,8 @@
       "label": "Menu"
     },
     "version": "v{version}",
-    "terms": "Terms"
+    "terms": "Terms",
+    "download": "Download"
   },
   "landing": {
     "title": "Read before you sign.",
@@ -168,9 +169,9 @@
       "title": "Library",
       "dropTitle": "Drop your documents here",
       "browse": "Choose files",
-      "hint": "PDF or text, up to 10 MB each. A lease, a contract, an invoice.",
+      "hint": "PDF, text or photo (PNG, JPEG, HEIC), up to 10 MB each. A lease, a contract, an invoice.",
       "refusedSize": "{name}: larger than 10 MB",
-      "refusedType": "{name}: only PDF and text files",
+      "refusedType": "{name}: only PDF, text files and photos",
       "refusedCount": "{name}: too many files at once",
       "kindLabel": "Kind of the next documents",
       "caption": "Your documents",
@@ -202,7 +203,26 @@
       "keep": "Keep my documents",
       "keepOn": "The document stays in your library, where the info panel says.",
       "keepOff": "By default the document is deleted after its check: only the report stays.",
-      "keepDisabled": "Keeping is switched off in your settings: the document is deleted after its check."
+      "keepDisabled": "Keeping is switched off in your settings: the document is deleted after its check.",
+      "groupPhotos": "These photos are the pages of one document",
+      "groupPhotosOn": "Dropped together, they make one document, in the order you choose them.",
+      "groupPhotosOff": "Each photo becomes its own document.",
+      "groupedUploaded": "{count} photos make one document in your library.",
+      "photoNotice": "Photos are straightened and cropped, then read on the spot. The photo's own data (position, device) is removed.",
+      "table": {
+        "empty": "No document matches.",
+        "results": "{count} documents",
+        "filters": "Filter the documents",
+        "clear": "Clear filters",
+        "remove": "Remove the {label} filter",
+        "search": "Search in “{header}”",
+        "pagination": "Document pages",
+        "previous": "Previous page",
+        "next": "Next page",
+        "page": "Page {page}",
+        "compact": "Page {page} of {count}",
+        "pageSize": "Documents per page"
+      }
     },
     "upload": {
       "queued": "Waiting",
@@ -351,7 +371,8 @@
       "exportSha": "Report SHA-256",
       "exportKey": "Signing key",
       "exportPdf": "Download the PDF",
-      "reused": "Result reused: this exact document was already checked against the same rules, so no new check was run."
+      "reused": "Result reused: this exact document was already checked against the same rules, so no new check was run.",
+      "noPhoto": "File-level authenticity cannot be measured on a photo: Yomizaka assembled the file from your photos."
     },
     "search": {
       "title": "Search",
@@ -397,7 +418,7 @@
       "IP_NOT_ALLOWED": "Not from this address.",
       "NOT_FOUND": "Not found.",
       "FILE_TOO_LARGE": "The file is larger than 10 MB.",
-      "UNSUPPORTED_TYPE": "Only PDF and text files are accepted.",
+      "UNSUPPORTED_TYPE": "Only PDF, text files and photos (PNG, JPEG, HEIC) are accepted.",
       "EMPTY_FILE": "The file is empty.",
       "UNREADABLE_FILE": "This file cannot be opened: it is damaged or not a valid document.",
       "NO_TEXT": "This document has no text layer to check.",
@@ -461,7 +482,29 @@
       "DAILY_LIMIT": "Daily limit reached. Come back tomorrow.",
       "UNKNOWN_SETTING": "No such setting.",
       "BAD_VALUE": "That value is not valid.",
-      "BAD_SCOPE": "That setting cannot be set at this scope."
+      "BAD_SCOPE": "That setting cannot be set at this scope.",
+      "IMAGE_TOO_LARGE": "This photo is too large. Lower its resolution and try again.",
+      "TOO_MANY_PHOTOS": "A document can have 12 photos at most.",
+      "UNREADABLE_IMAGE": "This photo cannot be read. Take it again or choose another file.",
+      "OCR_FAILED": "The text of this photo could not be read. Take it again, well lit and flat.",
+      "PHOTO_AUTHENTICITY": "This document comes from photos: its authenticity cannot be judged from a file.",
+      "DEFAULT_COLLECTION": "The default collection cannot be deleted. Make another collection the default first.",
+      "API_PLAN": "Your plan does not include API keys.",
+      "API_KEY_LIMIT": "You have reached your plan's number of keys. Revoke one.",
+      "API_KEY_NAME": "Give the key a name (80 characters at most).",
+      "API_KEY_SCOPE_UNKNOWN": "Choose at least one valid permission.",
+      "API_KEY_EXPIRY": "A key must end: choose a length of 1 to 365 days.",
+      "API_KEY_NOT_FOUND": "This key does not exist.",
+      "API_KEY_REVOKED": "This key is revoked.",
+      "API_KEY_SUPERSEDED": "This key has already been replaced.",
+      "API_KEY_MISSING": "No API key was sent.",
+      "API_KEY_INVALID": "This API key is not valid.",
+      "API_KEY_EXPIRED": "This API key has expired.",
+      "API_KEY_SCOPE": "This key does not have the permission for this action.",
+      "AVATAR_NOT_ALLOWED": "That avatar is not in the offered set.",
+      "AVATAR_TOO_LARGE": "This image is too heavy for an avatar.",
+      "AVATAR_STORAGE_UNAVAILABLE": "The avatar storage did not answer.",
+      "AVATAR_STORAGE_OFF": "Avatar images are not available here: pick one from the set."
     },
     "adminConsole": {
       "shell": {
@@ -805,12 +848,21 @@
       },
       "piiRetention": "This document is kept in your vault until you delete it; you can delete it at any time. This information is sent nowhere except to the check you start.",
       "piiRedacted": "Download the redacted version (text)",
-      "informative": "Automatic reading of the text: informative, to be checked. Not legal advice."
+      "informative": "Automatic reading of the text: informative, to be checked. Not legal advice.",
+      "source": "Where the text comes from",
+      "sourcePhotoOcr": "photo, text read by character recognition, reliability {confidence} %",
+      "sourcePhotoOcrPages": "{count} photos, text read by character recognition, reliability {confidence} %",
+      "sourcePhotoVision": "photo, text read by Orazaka's model (image reading), run {runId}",
+      "sourceLow": "The reading of this photo is not very reliable. Check the amounts, the dates and the names against your document.",
+      "originSoftware": "Last software (a hint, not a verdict)",
+      "originDevice": "Device",
+      "originTaken": "Photo taken on",
+      "originModified": "Modified on",
+      "originGps": "The photo's GPS position was removed on import."
     },
     "organisation": {
       "title": "Organisation",
       "recents": "Recent",
-      "unfiled": "No collection",
       "collections": "Collections",
       "noCollections": "No collection yet. Create one to group your documents.",
       "newCollection": "New collection",
@@ -835,7 +887,6 @@
       "deleteDocs": "Delete them too (this cannot be undone)",
       "moveToCollection": "Move to collection",
       "moveUpFolder": "Up, into the collection",
-      "moveToUnfiled": "To “No collection”",
       "moveTo": "Move to",
       "rootOfCollection": "The collection itself (no folder)",
       "emptyCollection": "Nothing here yet. Upload a document or create a folder.",
@@ -857,8 +908,22 @@
       "filesMany": "{count} files",
       "foldersOne": "{count} folder",
       "foldersMany": "{count} folders",
-      "filterKind": "Type",
-      "filterStatus": "State"
+      "default": "Default",
+      "defaultCollection": "Default collection",
+      "moveToDefault": "To the default collection",
+      "makeDefault": "Make the default collection",
+      "makeDefaultTitle": "Make “{name}” the default collection",
+      "makeDefaultAsk": "Documents with no destination will go here. The previous default becomes a collection like any other.",
+      "avatar": {
+        "menu": "Avatar",
+        "title": "Avatar of “{name}”",
+        "ask": "Choose an avatar from the set, or an image of your own.",
+        "none": "No avatar",
+        "set": "Avatars of the set",
+        "upload": "An image of your own",
+        "uploadHint": "PNG, JPEG or HEIC, up to {size} KB. The image is cropped square and its data (position, device) is removed.",
+        "off": "Avatars are switched off."
+      }
     },
     "settings": {
       "tabs": {
@@ -1067,6 +1132,18 @@
           "assistant": {
             "label": "Assistant (later)",
             "hint": "Ask a question to a document. Not built yet."
+          },
+          "apiKeys": {
+            "label": "API keys",
+            "hint": "Global switch: off, no key works and none can be created."
+          },
+          "collectionAvatars": {
+            "label": "Collection avatars",
+            "hint": "Lets a collection have an avatar: one from the set, or an uploaded image."
+          },
+          "avatarSet": {
+            "label": "Avatar set offered",
+            "hint": "The avatars of the set that people may choose."
           }
         },
         "limits": {
@@ -1093,6 +1170,14 @@
           "bonusAuditsPerMonth": {
             "label": "Bonus audits per month",
             "hint": "Added to this person's monthly cap."
+          },
+          "apiRequestsPerMinute": {
+            "label": "API requests per minute per key",
+            "hint": "Beyond it the answer is 429 with the time to wait."
+          },
+          "avatarMaxKb": {
+            "label": "Largest uploaded avatar",
+            "hint": "In KB, before the image is cropped and made lighter."
           }
         },
         "plans": {
@@ -1100,6 +1185,10 @@
             "auditsPerDay": {
               "label": "Free: audits per day",
               "hint": "0: no cap."
+            },
+            "apiKeys": {
+              "label": "Free: API keys",
+              "hint": "Number of active keys. 0: the plan has no API."
             }
           },
           "pro": {
@@ -1110,6 +1199,10 @@
             "auditsPerDay": {
               "label": "Pro: audits per day",
               "hint": "0: no cap."
+            },
+            "apiKeys": {
+              "label": "Pro: API keys",
+              "hint": "Number of active keys. 0: the plan has no API."
             }
           }
         }
@@ -1158,6 +1251,23 @@
         "cost": "Estimated cost: {amount}",
         "notExposed": "Orazaka's own plan and usage figures are not exposed by its API yet: they are not shown rather than guessed.",
         "rotate": "Rotating the key is done in Orazaka, then in the app's secret: it is not done from here."
+      }
+    },
+    "steps": {
+      "label": "Check progress",
+      "working": "Working…",
+      "read": "Reading",
+      "preflight": "Pre-check",
+      "report": "Report",
+      "rules": {
+        "compliance-check": "Checking the rules",
+        "document-authenticity": "Examining the file"
+      },
+      "state": {
+        "done": "Done",
+        "current": "In progress",
+        "upcoming": "Upcoming",
+        "error": "Failed"
       }
     }
   },
@@ -1377,5 +1487,25 @@
         "p": "[TO BE REVIEWED BY THE LAWYER] Limitation of liability, governing law and venue (Québec): placeholder."
       }
     ]
+  },
+  "download": {
+    "title": "Download",
+    "lead": "Yomizaka on your phone and your Mac. Your documents stay on your device; only what a check needs is sent, then erased.",
+    "soon": "Coming soon",
+    "get": "Download",
+    "platforms": {
+      "ios": {
+        "name": "iPhone and iPad",
+        "body": "Scan or pick a document, check it, share the signed report. Testing on TestFlight first."
+      },
+      "android": {
+        "name": "Android",
+        "body": "The same checks on your Android phone, installed from a release file while the store listing is prepared."
+      },
+      "mac": {
+        "name": "Mac",
+        "body": "Keep a library in a folder on your Mac, drag documents in from Finder. Your documents never leave the folder."
+      }
+    }
   }
 }

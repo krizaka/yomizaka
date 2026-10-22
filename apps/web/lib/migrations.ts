@@ -3,6 +3,8 @@
  * Kept in code rather than in .sql files so the standalone server carries them. A migration is never edited once
  * deployed: a change is a new entry.
  */
+import { DEFAULT_COLLECTION_MIGRATION } from "./organisation/default-collection";
+
 export interface Migration {
   version: string;
   sql: string;
@@ -392,6 +394,52 @@ CREATE TABLE settings_audit (
   after       jsonb
 );
 CREATE INDEX settings_audit_key ON settings_audit(key, id DESC);
+`,
+  },
+  {
+    version: "0017_text_source",
+    sql: `
+-- ADR-0010: a document made from photos keeps how its text was read (local character recognition, or a model's reading with its
+-- run), and where the photo came from (device, editor, dates, GPS yes/no). Null for a PDF or a text file.
+ALTER TABLE documents ADD COLUMN text_source jsonb;
+`,
+  },
+  { version: "0019_default_collection", sql: DEFAULT_COLLECTION_MIGRATION },
+  {
+    version: "0020_collection_avatar",
+    sql: `
+-- krizaka/yomizaka#206: a collection has an avatar — {"kind":"set","seed":"plain-2"} or {"kind":"image","version":3}; null for none.
+ALTER TABLE collections ADD COLUMN avatar jsonb CHECK (avatar IS NULL OR (jsonb_typeof(avatar) = 'object' AND avatar->>'kind' IN ('set', 'image')));
+`,
+  },
+  {
+    version: "0021_api_keys",
+    sql: `
+-- ADR-0011: API keys. Only a SHA-256 of the secret is kept; the public id finds the record. A rotated-out key keeps working until
+-- superseded_at (its grace period); a revoked one stops at once.
+CREATE TABLE api_keys (
+  id              uuid PRIMARY KEY,
+  owner_id        uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  name            text NOT NULL CHECK (length(name) BETWEEN 1 AND 80),
+  public_id       text NOT NULL UNIQUE CHECK (public_id ~ '^[0-9a-f]{12}$'),
+  secret_hash     text NOT NULL CHECK (secret_hash ~ '^[0-9a-f]{64}$'),
+  scopes          text[] NOT NULL CHECK (cardinality(scopes) > 0),
+  expires_at      timestamptz,
+  created_at      timestamptz NOT NULL,
+  last_used_at    timestamptz,
+  revoked_at      timestamptz,
+  rotated_from_id uuid REFERENCES api_keys(id) ON DELETE SET NULL,
+  superseded_at   timestamptz
+);
+CREATE INDEX api_keys_owner ON api_keys(owner_id, created_at);
+`,
+  },
+  {
+    version: "0022_organize_package",
+    sql: `
+-- krizaka/yomizaka (ADR-006): the collections' tag join table takes the package's name, and a collection may have a description.
+ALTER TABLE collection_tags RENAME TO collections_tags;
+ALTER TABLE collections ADD COLUMN description text CHECK (description IS NULL OR length(description) <= 500);
 `,
   },
 ];

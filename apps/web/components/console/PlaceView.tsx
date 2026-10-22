@@ -1,11 +1,12 @@
 import { Card } from "@krizaka/ui/card";
-import { DOCUMENT_KINDS, DOCUMENT_STATUSES, type DocumentSummary } from "@yomizaka/core";
+import { type CollectionAvatar as CollectionAvatarData, type DocumentSummary } from "@yomizaka/core";
 import Link from "next/link";
 
+import { CollectionAvatar } from "@/components/console/CollectionAvatar";
 import { DocumentTable } from "@/components/console/DocumentTable";
 import { DocumentUploader } from "@/components/console/DocumentUploader";
 import { CreateButton, ItemMenu } from "@/components/console/OrganisationActions";
-import { TagChips, TagFilter, ValueFilter } from "@/components/console/TagChips";
+import { TagChips, TagFilter } from "@/components/console/TagChips";
 import type { Messages } from "@/lib/i18n";
 import { libraryPath, toggleTag, viewHref,type ViewState } from "@/lib/organisation/rules";
 import type { Folder, Tag } from "@/lib/organisation/store";
@@ -14,31 +15,29 @@ import { countLabel } from "@/lib/plural";
 type Say = Messages["console"]["organisation"];
 
 /**
- * A collection, one of its folders, or « Sans collection »: the breadcrumb, the tag filter (the URL's `?tags=`), the folders,
+ * A collection or one of its folders: the breadcrumb, the tag filter (the URL's `?tags=`), the folders,
  * the files, and a drop zone that files into this place. Rendered on the server; the actions are client islands.
  */
-export function PlaceView({ locale, t, library, collection, folder, folders, documents, tags, view, labels, tagsByDocument, folderTags, collections, collectionTags, path }: {
+export function PlaceView({ locale, t, library, collection, folder, folders, documents, tags, view, tagsByDocument, folderTags, collections, collectionTags, path }: {
   locale: "en" | "fr";
   t: Say;
   library: { id: string; name: string };
-  collection?: { id: string; name: string };
+  collection: { id: string; name: string; isDefault: boolean; avatar: CollectionAvatarData | null };
   folder?: { id: string; name: string };
   folders: (Folder & { files: number; tags: Tag[] })[];
   documents: DocumentSummary[];
   tags: Tag[];
   view: ViewState;
-  /** The words of the kinds and the states (messages `kinds.*`, `statuses.*`). */
-  labels: { kinds: Record<string, string>; statuses: Record<string, string> };
   tagsByDocument: Record<string, Tag[]>;
   folderTags?: Record<string, string[]>;
-  collections: { id: string; name: string }[];
+  collections: { id: string; name: string; avatar: CollectionAvatarData | null }[];
   collectionTags: string[];
   path: string;
 }) {
   const crumbs = [
     { href: `/${locale}/app`, label: t.library },
-    ...(collection ? [{ href: libraryPath(locale, library.id, collection.id), label: collection.name }] : [{ href: path, label: t.unfiled }]),
-    ...(folder && collection ? [{ href: libraryPath(locale, library.id, collection.id, folder.id), label: folder.name }] : []),
+    { href: libraryPath(locale, library.id, collection.id), label: collection.name, avatar: <CollectionAvatar key="crumb-avatar" id={collection.id} name={collection.name} avatar={collection.avatar} size="sm" /> },
+    ...(folder ? [{ href: libraryPath(locale, library.id, collection.id, folder.id), label: folder.name }] : []),
   ];
   return (
     <div className="flex flex-col gap-6">
@@ -46,20 +45,22 @@ export function PlaceView({ locale, t, library, collection, folder, folders, doc
         {crumbs.map((c, i) => (
           <span key={c.href} className="flex items-center gap-2">
             {i > 0 ? <span aria-hidden>/</span> : null}
+            {"avatar" in c ? c.avatar : null}
             {i === crumbs.length - 1 ? <span aria-current="page" className="font-semibold text-fg">{c.label}</span> : <Link href={c.href} className="hover:text-fg-accent hover:underline">{c.label}</Link>}
           </span>
         ))}
       </nav>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="m-0 font-display text-xl font-bold text-fg">{folder?.name ?? collection?.name ?? t.unfiled}</h2>
+        <h2 className="m-0 flex items-center gap-3 font-display text-xl font-bold text-fg">
+          <CollectionAvatar id={collection.id} name={collection.name} avatar={collection.avatar} />
+          {folder?.name ?? collection.name}
+        </h2>
         <div className="flex flex-wrap items-center gap-3">
-          {collection && !folder ? <CreateButton kind="folder" parentId={collection.id} /> : null}
-          {collection && !folder ? <ItemMenu kind="collection" id={collection.id} name={collection.name} collections={collections} tags={tags} current={collectionTags} /> : null}
+          {!folder ? <CreateButton kind="folder" parentId={collection.id} /> : null}
+          {!folder ? <ItemMenu kind="collection" id={collection.id} name={collection.name} avatar={collection.avatar} isDefault={collection.isDefault} collections={collections} tags={tags} current={collectionTags} /> : null}
         </div>
       </div>
       <TagFilter tags={tags} selected={view.tags} label={t.filterTags} clearLabel={t.clearTags} clearHref={viewHref(path, { ...view, tags: [] })} hrefFor={(id) => viewHref(path, { ...view, tags: toggleTag(view.tags, id) })} />
-      <ValueFilter label={t.filterKind} options={DOCUMENT_KINDS.map((k) => ({ value: k, label: labels.kinds[k] ?? k }))} selected={view.kind} hrefFor={(v) => viewHref(path, { ...view, kind: v as ViewState["kind"] })} />
-      <ValueFilter label={t.filterStatus} options={DOCUMENT_STATUSES.map((s) => ({ value: s, label: labels.statuses[s] ?? s }))} selected={view.status} hrefFor={(v) => viewHref(path, { ...view, status: v as ViewState["status"] })} />
       {collection && !folder && folders.length > 0 ? (
         <section aria-label={t.foldersIn} className="flex flex-col gap-3">
           <h3 className="m-0 text-sm font-semibold text-fg">{t.foldersIn}</h3>
