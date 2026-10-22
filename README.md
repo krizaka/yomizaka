@@ -91,6 +91,7 @@ Every variable is declared once in `apps/web/lib/env.ts` (see `.env.example`); a
 | `PAYMENTS_PRICE_KEY_PRO` | the lookup key of the Pro price (default `yomizaka_pro_monthly_cad`) |
 | `APP_FAIR_USE_AUDITS_PER_MONTH` | the Pro fair-use cap per month (default 100) |
 | `APP_ESTIMATED_RUN_COST_CENTS` | the estimated cost of one engine run, in cents (default 3), for the pre-flight's savings metric |
+| `APP_PURGE_AFTER_HOURS` | a document that is not kept is purged after its check; one never checked, after this many hours (default 24) |
 | `MEDIA_DOCUMENTS_PROVIDER` | where a kept document lives (ADR-0007): `none` (default, nothing kept), `bunny` (development and fictional data only, refused in production) or `s3` (DigitalOcean Spaces `tor1`, a workspace's own bucket, a local test server) |
 | `MEDIA_DOCUMENTS_PREFIX`, `MEDIA_DOCUMENTS_ENCRYPTION_KEY` | the prefix of every object (default `yomizaka`) and the AES-256-GCM key (32 bytes, base64; a secret) that encrypts it before it leaves |
 | `MEDIA_STORAGE_ENDPOINT`, `MEDIA_STORAGE_ZONE`, `MEDIA_STORAGE_API_KEY` | the Bunny Storage zone of the `bunny` adapter (the key is a secret) |

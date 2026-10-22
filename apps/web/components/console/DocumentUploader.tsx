@@ -1,10 +1,11 @@
 "use client";
 
 import { Alert } from "@krizaka/ui/alert";
+import { Checkbox } from "@krizaka/ui/checkbox";
 import { Dropzone, type FileRejection, UploadList, useUploadQueue } from "@krizaka/ui/file-upload";
 import { type DocumentKind, type DocumentSummary, MAX_FILE_BYTES } from "@yomizaka/core";
 import { useRouter } from "next/navigation";
-import { type MutableRefObject, type ReactNode, useState } from "react";
+import { type MutableRefObject, type ReactNode, useRef, useState } from "react";
 
 import { useSay } from "@/lib/i18n-client";
 
@@ -14,7 +15,7 @@ export interface Placement {
 }
 
 /** Sends one file to the BFF with its progress (XMLHttpRequest: fetch reports no upload progress), aborted on pause. */
-function send(file: File, kind: DocumentKind | "auto", placement: Placement | undefined, signal: AbortSignal, onProgress: (sent: number) => void): Promise<{ document: DocumentSummary; duplicate: boolean }> {
+function send(file: File, kind: DocumentKind | "auto", placement: Placement | undefined, keep: boolean, signal: AbortSignal, onProgress: (sent: number) => void): Promise<{ document: DocumentSummary; duplicate: boolean }> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("POST", "/api/documents");
@@ -26,6 +27,7 @@ function send(file: File, kind: DocumentKind | "auto", placement: Placement | un
     const body = new FormData();
     body.append("file", file);
     body.append("kind", kind);
+    body.append("keep", String(keep));
     if (placement?.collectionId) body.append("collectionId", placement.collectionId);
     if (placement?.folderId) body.append("folderId", placement.folderId);
     xhr.send(body);
@@ -40,13 +42,16 @@ export function DocumentUploader({ kindRef, placement, onUploaded, extra }: { ki
   const { say, locale } = useSay();
   const router = useRouter();
   const [notices, setNotices] = useState<string[]>([]);
+  // Not kept by default (the document is purged after its check, only the report stays): « conserver » is the person's choice.
+  const [keep, setKeep] = useState(false);
+  const keepRef = useRef(keep);
   const queue = useUploadQueue({
     previews: false,
     retries: 1,
     shouldRetry: (error) => (error as { body?: { code?: string } }).body?.code === "NETWORK",
     upload: async (file, { signal, onProgress }) => {
       try {
-        const result = await send(file, kindRef?.current ?? "auto", placement, signal, onProgress);
+        const result = await send(file, kindRef?.current ?? "auto", placement, keepRef.current, signal, onProgress);
         setNotices((n) => [say(result.duplicate ? "library.duplicate" : "library.uploaded", { name: file.name }), ...n].slice(0, 3));
         if (onUploaded) onUploaded(result.document);
         else router.refresh();
@@ -59,6 +64,20 @@ export function DocumentUploader({ kindRef, placement, onUploaded, extra }: { ki
   const refusal = (r: FileRejection) => say(r.reason === "size" ? "library.refusedSize" : r.reason === "type" ? "library.refusedType" : "library.refusedCount", { name: r.file.name });
   return (
     <>
+      <div className="flex items-start gap-3" data-testid="keep-choice">
+        <Checkbox
+          id="keep-documents"
+          checked={keep}
+          onCheckedChange={(v) => {
+            keepRef.current = v === true;
+            setKeep(v === true);
+          }}
+        />
+        <label htmlFor="keep-documents" className="flex cursor-pointer flex-col text-sm">
+          <span className="font-semibold text-fg">{say("library.keep")}</span>
+          <span className="text-fg-secondary">{say(keep ? "library.keepOn" : "library.keepOff")}</span>
+        </label>
+      </div>
       <Dropzone title={say("library.dropTitle")} browseLabel={say("library.browse")} hint={say("library.hint")} accept="application/pdf,text/plain,.pdf,.txt" maxSize={MAX_FILE_BYTES} maxFiles={20} multiple onFiles={queue.add} refusalLabel={refusal} />
       {queue.items.length > 0 ? (
         <UploadList

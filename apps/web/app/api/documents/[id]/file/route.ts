@@ -1,3 +1,4 @@
+import { activeStore } from "@/app/active-store";
 import { requireSession } from "@/lib/access";
 import { getFile } from "@/lib/documents";
 import { handle } from "@/lib/http";
@@ -8,7 +9,7 @@ export const dynamic = "force-dynamic";
 export function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   return handle(async () => {
     const session = await requireSession(req);
-    const file = await getFile(session.account.id, (await params).id);
+    const file = await getFile(session.account.id, (await params).id, activeStore());
     return new Response(new Uint8Array(file.content), {
       headers: {
         "Content-Type": file.mimeType === "text/plain" ? "text/plain; charset=utf-8" : file.mimeType,

@@ -60,6 +60,8 @@ export const envSchema = z.object({
   APP_REPORT_SIGNING_KEY: z.string().optional(),
   /** Where a kept document lives (ADR-0007): nothing kept by default; `bunny` is for development and fictional data only (no Canadian region); `s3` is Spaces tor1, a workspace's own bucket or a local test server. */
   MEDIA_DOCUMENTS_PROVIDER: z.enum(["none", "bunny", "s3"]).default("none"),
+  /** A document that is not kept is purged after its check; one that is never checked, after this many hours. */
+  APP_PURGE_AFTER_HOURS: z.coerce.number().int().min(1).max(720).default(24),
   MEDIA_DOCUMENTS_PREFIX: z.string().default("yomizaka"),
   /** AES-256-GCM key (32 bytes, base64) that encrypts every kept document before it leaves; the provider only holds ciphertext. */
   MEDIA_DOCUMENTS_ENCRYPTION_KEY: z.string().optional(),

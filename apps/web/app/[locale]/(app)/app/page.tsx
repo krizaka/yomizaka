@@ -11,6 +11,7 @@ import { availableFlows, flowsFor } from "@/lib/flows";
 import { asLocale, getDictionary } from "@/lib/i18n";
 import { onboardingTarget } from "@/lib/library-screen";
 import * as org from "@/lib/organisation/store";
+import { purgeExpired } from "@/lib/retention";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   return { title: getDictionary(asLocale((await params).locale)).console.meta.library };
@@ -27,6 +28,8 @@ export default async function LibraryPage({ params }: { params: Promise<{ locale
   const screeningOffered = !!session && flows.some((f) => f.key === "tenant-screening" && flowsFor([f], perspective).length > 0);
   const owner = session?.account.id;
   if (!owner) return null;
+  // The sweep: documents that were not kept and never checked are purged once their window has passed.
+  await purgeExpired(query, new Date());
   await org.ensureLibrary(query, owner, getDictionary(locale).console.organisation.library);
   const [libraries, unfiled, recents, tags] = await Promise.all([org.overview(query, owner), org.unfiledIds(query, owner), org.recentIds(query, owner, 20).then((ids) => documentsByIds(owner, ids)), org.listTags(query, owner)]);
   return <LibraryView libraries={libraries} unfiled={unfiled.length} recents={recents} tags={tags} perspective={perspective} screening={screeningOffered} examples={SAMPLES} />;

@@ -44,7 +44,7 @@ export function POST(req: Request, { params }: Params) {
     const via = await reserveAudit(query, session.account.id, new Date(), env().APP_FAIR_USE_AUDITS_PER_MONTH);
     let analysis;
     try {
-      analysis = await startAnalysis(session.account.id, id, request, flowVersionId, via);
+      analysis = await startAnalysis(session.account.id, id, request, flowVersionId, via, activeStore());
     } catch (error) {
       await releaseAudit(query, session.account.id, via);
       throw error;
@@ -58,7 +58,7 @@ export function DELETE(req: Request, { params }: Params) {
   return handle(async () => {
     const session = await requireSession(req);
     const id = (await params).id;
-    await deleteDocument(session.account.id, id);
+    await deleteDocument(session.account.id, id, activeStore());
     await audit({ action: "document.deleted", actorId: session.account.id, actorLabel: session.account.email, targetId: id, headers: req.headers });
     return new Response(null, { status: 204 });
   });

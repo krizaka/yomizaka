@@ -1,10 +1,12 @@
 import { documentKind } from "@yomizaka/core";
 import { z } from "zod";
 
+import { activeStore } from "@/app/active-store";
 import { requireSession } from "@/lib/access";
 import { audit } from "@/lib/audit";
 import { query } from "@/lib/db";
 import { listDocuments, storeDocument } from "@/lib/documents";
+import { env } from "@/lib/env";
 import { handle, HttpError, refuse } from "@/lib/http";
 import { isId } from "@/lib/organisation/rules";
 import { placeDocument } from "@/lib/organisation/store";
@@ -32,7 +34,7 @@ export function POST(req: Request) {
     const bytes = new Uint8Array(await file.arrayBuffer());
     let stored;
     try {
-      stored = await storeDocument(session.account.id, { name: file.name, type: file.type, size: file.size }, bytes, kind);
+      stored = await storeDocument(session.account.id, { name: file.name, type: file.type, size: file.size }, bytes, kind, { keep: form?.get("keep") === "true", store: activeStore(), now: new Date(), purgeAfterHours: env().APP_PURGE_AFTER_HOURS });
     } catch (error) {
       // A file the pre-flight refused: an engine run that did not happen (counted per tenant).
       const reason = error instanceof HttpError ? error.body.reason : undefined;

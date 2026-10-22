@@ -198,7 +198,10 @@
       "exampleLandlord": "Un modèle de bail de locateur",
       "exampleTenantHint": "Rue Saint-Denis, 4½",
       "exampleLandlordHint": "Avenue du Parc, 3½",
-      "dropAgain": "Ajouter des documents"
+      "dropAgain": "Ajouter des documents",
+      "keep": "Conserver mes documents",
+      "keepOn": "Le document reste dans votre bibliothèque, là où le panneau d'information l'indique.",
+      "keepOff": "Par défaut, le document est supprimé après sa vérification : seul le rapport reste."
     },
     "upload": {
       "queued": "En attente",
@@ -275,7 +278,9 @@
         "retentionNotKept": "Seul le rapport reste.",
         "deleteNow": "Supprimer maintenant",
         "deleteNowConfirm": "Supprimer définitivement",
-        "deleteNowHint": "Le document et ses vérifications sont supprimés tout de suite. C'est irréversible."
+        "deleteNowHint": "Le document et ses vérifications sont supprimés tout de suite. C'est irréversible.",
+        "pendingPurge": "Non conservé : supprimé dès la fin de sa vérification (au plus tard le {date}). Seul le rapport reste.",
+        "notKeptText": "Ce document n'est pas conservé : son texte et son fichier ont été supprimés après la vérification. Seul le rapport reste."
       }
     },
     "analysis": {
@@ -435,7 +440,9 @@
       "FILE_ARCHIVE_BOMB": "Cette archive est refusée : elle se décompresse bien au-delà d’une taille raisonnable.",
       "NAME_TAKEN": "Ce nom est déjà utilisé ici.",
       "NOT_EMPTY": "Déplacez ou supprimez d'abord ses collections.",
-      "LAST_LIBRARY": "La dernière bibliothèque ne peut pas être supprimée."
+      "LAST_LIBRARY": "La dernière bibliothèque ne peut pas être supprimée.",
+      "NOT_KEPT": "Ce document n'est pas conservé : seul son rapport reste. Déposez-le de nouveau avec « Conserver mes documents » pour le revérifier.",
+      "STORAGE_UNAVAILABLE": "Le stockage des documents n'a pas répondu."
     },
     "adminConsole": {
       "shell": {
