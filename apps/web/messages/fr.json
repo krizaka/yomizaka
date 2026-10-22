@@ -25,7 +25,8 @@
     "menu": {
       "label": "Menu"
     },
-    "version": "v{version}"
+    "version": "v{version}",
+    "terms": "Conditions"
   },
   "landing": {
     "title": "Lisez avant de signer.",
@@ -83,7 +84,29 @@
   "privacy": {
     "title": "Confidentialité",
     "updated": "Mis à jour le {date}",
-    "body": "Yomizaka est en développement : seuls les comptes créés par notre équipe peuvent se connecter. Un document que vous déposez est gardé dans la base de données de Yomizaka (Toronto, Canada), visible de votre seul compte. Quand vous demandez une vérification, le document, son texte, ou le fichier PDF, est envoyé à Orazaka, le moteur d'analyse de Krizaka, en HTTPS, et le résultat est gardé avec l'identifiant du run. Rien n'est vendu, partagé ni utilisé pour entraîner un modèle. Supprimer un document supprime son fichier, son texte et ses analyses. Pour une question ou pour faire effacer vos données, utilisez le formulaire de contact."
+    "body": "Un document que vous déposez est gardé dans la base de données de Yomizaka (Toronto, Canada), visible de votre seul compte. Quand vous demandez une vérification, le document, son texte, ou le fichier PDF, est envoyé à Orazaka, le moteur d'analyse de Krizaka, en HTTPS, et le résultat est gardé avec l'identifiant du run. Rien n'est vendu, partagé ni utilisé pour entraîner un modèle. Supprimer un document supprime son fichier, son texte et ses analyses. Pour une question ou pour faire effacer vos données, utilisez le formulaire de contact.",
+    "sections": [
+      {
+        "h": "Qui est responsable",
+        "p": "Krizaka, une entreprise établie à Montréal, publie Yomizaka. La personne responsable de la protection des renseignements personnels (Loi 25) peut être jointe par le formulaire de contact de krizaka.com. [À COMPLÉTER : titre et adresse directe du responsable.]"
+      },
+      {
+        "h": "Ce que nous recueillons et pourquoi",
+        "p": "Votre adresse courriel et l’empreinte de votre mot de passe (pour faire fonctionner votre compte), la date à laquelle vous avez accepté les conditions et cet avis, les documents que vous téléversez et les résultats des vérifications (pour vous rendre le service), et les renseignements de facturation traités par Stripe. Nous ne vendons pas vos renseignements et n’utilisons pas vos documents pour entraîner un modèle."
+      },
+      {
+        "h": "Où ils sont conservés",
+        "p": "Dans une base de données au Canada. Les documents sont envoyés à Orazaka, le moteur d’analyse de Krizaka, par HTTPS pour être vérifiés. [À FAIRE RELIRE PAR L’AVOCAT : mention de tout transfert hors Québec et évaluation des facteurs relatifs à la vie privée.]"
+      },
+      {
+        "h": "Vos droits",
+        "p": "Vous pouvez accéder à vos renseignements, les corriger ou les supprimer, retirer votre consentement et récupérer vos données en écrivant au responsable. Supprimer un document supprime son fichier, son texte et ses résultats. Fermer votre compte supprime vos documents. Nous conservons les factures comme la loi l’exige."
+      },
+      {
+        "h": "Incidents",
+        "p": "Si un incident de confidentialité présente un risque de préjudice sérieux, nous avisons la Commission d’accès à l’information et les personnes concernées, comme la loi l’exige."
+      }
+    ]
   },
   "console": {
     "meta": {
@@ -105,7 +128,10 @@
       "closed": "Yomizaka est en développement ; les comptes sont créés par notre équipe.",
       "contact": "Nous parler",
       "legalPrefix": "En vous connectant, vous acceptez l'",
-      "privacy": "avis de confidentialité"
+      "privacy": "avis de confidentialité",
+      "signUpLink": "Créer un compte",
+      "verifiedNotice": "Votre adresse est confirmée. Vous pouvez vous connecter.",
+      "invalidNotice": "Ce lien de confirmation est invalide ou a expiré."
     },
     "shell": {
       "skip": "Aller au contenu",
@@ -350,7 +376,8 @@
       "CONFIRM_MISMATCH": "Le courriel saisi ne correspond pas au compte.",
       "NO_ACCESS": "Vous n’avez pas accès à ce rapport.",
       "OWN_ADDRESS": "Ce rapport est déjà à vous.",
-      "EXPIRY_IN_THE_PAST": "La date de fin doit être dans le futur."
+      "EXPIRY_IN_THE_PAST": "La date de fin doit être dans le futur.",
+      "EMAIL_NOT_VERIFIED": "Confirmez d’abord votre adresse courriel : le lien a été envoyé à l’inscription."
     },
     "adminConsole": {
       "shell": {
@@ -584,6 +611,32 @@
       "freelancer": "Travailleur autonome — contrats de service et factures",
       "business": "Entreprise — contrats de fournisseurs et factures reçues",
       "soon": "bientôt"
+    },
+    "signUp": {
+      "title": "Créer votre compte",
+      "description": "Votre premier audit est gratuit.",
+      "email": "Courriel",
+      "password": "Mot de passe (12 caractères ou plus)",
+      "acceptTerms": "J’accepte les conditions d’utilisation ({terms}).",
+      "acceptPrivacy": "J’ai lu l’avis de confidentialité ({privacy}) et je consens à l’utilisation de mes renseignements telle qu’il la décrit.",
+      "termsLink": "conditions",
+      "privacyLink": "avis de confidentialité",
+      "submit": "Créer mon compte",
+      "sentTitle": "Vérifiez vos courriels",
+      "sent": "Si cette adresse peut recevoir un message, un lien de confirmation est en route (valide 24 heures). Ouvrez-le pour activer votre compte.",
+      "closedTitle": "L’inscription n’est pas encore ouverte.",
+      "closed": "Yomizaka n’accepte pas de nouveaux comptes pour le moment.",
+      "haveAccount": "Vous avez déjà un compte? Connectez-vous",
+      "notice": "Vérification informative, ce n’est pas un avis juridique. Seuls les membres du Barreau du Québec peuvent donner un avis juridique.",
+      "promise": "Un audit gratuit, puis payez à l’audit ou abonnez-vous."
+    },
+    "verifyEmail": {
+      "title": "Confirmer votre adresse",
+      "lead": "Un clic pour activer votre compte.",
+      "button": "Confirmer mon adresse",
+      "invalid": "Ce lien est invalide ou a expiré. Inscrivez-vous de nouveau pour en recevoir un autre.",
+      "verified": "Votre adresse est confirmée. Vous pouvez vous connecter.",
+      "invalidBanner": "Ce lien de confirmation est invalide ou a expiré."
     }
   },
   "report": {
@@ -626,7 +679,8 @@
     "signatureAlgorithm": "Algorithme",
     "signatureBody": "SHA-256 du texte du rapport (pages précédentes)",
     "signatureValue": "Signature (base64)",
-    "signatureNote": "L'attestation — le contenu signé, l'empreinte du texte et cette signature — est aussi intégrée au fichier PDF. Un membre à qui le propriétaire a donné accès la vérifie en donnant ce fichier à la page de vérification ; tout changement au texte des pages précédentes la fait échouer."
+    "signatureNote": "L'attestation — le contenu signé, l'empreinte du texte et cette signature — est aussi intégrée au fichier PDF. Un membre à qui le propriétaire a donné accès la vérifie en donnant ce fichier à la page de vérification ; tout changement au texte des pages précédentes la fait échouer.",
+    "notCheckedServiceContract": "Non vérifié : droit de résiliation, art. 2125 C.c.Q., et le reste du Code civil du Québec sur le contrat de service (art. 2098 et suiv.). À faire relire par un avocat."
   },
   "verify": {
     "title": "Vérifier un rapport",
@@ -771,5 +825,35 @@
       "demo": "Fournisseur de démonstration : données fictives.",
       "reviewNote": "« À examiner » n'est pas un verdict : parlez-en au candidat avant toute décision."
     }
+  },
+  "terms": {
+    "title": "Conditions d’utilisation",
+    "status": "Ébauche : la politique de remboursement et les clauses marquées [À FAIRE RELIRE PAR L’AVOCAT] sont des espaces réservés jusqu’à la relecture de ce texte par un membre du Barreau du Québec.",
+    "sections": [
+      {
+        "h": "Ce qu’est Yomizaka",
+        "p": "Yomizaka compare un document que vous lui remettez (un bail, une facture, un contrat de services) à des règles publiées et vous dit, point par point, ce qu’il a trouvé, en citant votre document. C’est une vérification informative. Ce n’est pas une opinion juridique et cela ne remplace pas un avocat : seuls les membres du Barreau du Québec peuvent donner un avis juridique au Québec. Un résultat n’est jamais une garantie qu’un document est légal ou valide."
+      },
+      {
+        "h": "Votre compte",
+        "p": "Vous devez fournir une vraie adresse courriel et la confirmer. Vous êtes responsable de votre mot de passe. Un audit gratuit est inclus par compte; créer plusieurs comptes pour en obtenir davantage n’est pas permis et les comptes en trop peuvent être fermés."
+      },
+      {
+        "h": "Prix et taxes",
+        "p": "Après l’audit gratuit, un audit coûte le prix affiché au paiement, en dollars canadiens, ou vous vous abonnez au forfait Pro. La taxe sur les produits et services (TPS) et la taxe de vente du Québec (TVQ) sont ajoutées au paiement et figurent sur votre facture avec les numéros d’inscription de Krizaka. Le paiement est traité par Stripe; Yomizaka ne voit jamais votre numéro de carte."
+      },
+      {
+        "h": "Remboursements et annulation",
+        "p": "[À FAIRE RELIRE PAR L’AVOCAT] Politique de remboursement : espace réservé. Vous pouvez annuler le forfait Pro en tout temps depuis le portail client; il se termine alors à la fin de la période déjà payée. Modalités de remboursement d’un audit à l’unité : à rédiger."
+      },
+      {
+        "h": "Vos documents",
+        "p": "Vos documents sont conservés dans votre compte seulement et sont envoyés à Orazaka, le moteur d’analyse de Krizaka, pour être vérifiés. Voyez l’avis de confidentialité pour la conservation, vos droits et la façon de joindre notre responsable."
+      },
+      {
+        "h": "Limites de responsabilité et droit applicable",
+        "p": "[À FAIRE RELIRE PAR L’AVOCAT] Limitation de responsabilité, droit applicable et for (Québec) : espace réservé."
+      }
+    ]
   }
 }

@@ -12,8 +12,8 @@ import { decoyHash, verifyPassword } from "./password";
  */
 export async function checkPassword(email: string, password: string, headers: Headers): Promise<{ id: string; email: string; locale: "en" | "fr" }> {
   const address = email.trim().toLowerCase();
-  const [row] = await query<{ id: string; email: string; status: string; locale: "en" | "fr"; password_hash: string | null }>(
-    "SELECT id, email, status, locale, password_hash FROM accounts WHERE email = $1",
+  const [row] = await query<{ id: string; email: string; status: string; email_verified_at: Date | null; locale: "en" | "fr"; password_hash: string | null }>(
+    "SELECT id, email, status, email_verified_at, locale, password_hash FROM accounts WHERE email = $1",
     [address],
   );
   const right = await verifyPassword(password, row?.password_hash ?? (await decoyHash()));
@@ -25,6 +25,7 @@ export async function checkPassword(email: string, password: string, headers: He
     await audit({ action: "auth.sign_in_refused", actorId: row.id, actorLabel: row.email, targetId: row.id, detail: { reason: "suspended" }, headers });
     throw refuse(403, "SUSPENDED", "Account suspended");
   }
+  if (!row.email_verified_at) throw refuse(403, "EMAIL_NOT_VERIFIED", "Confirm your e-mail address first");
   await query("UPDATE accounts SET last_seen_at = now() WHERE id = $1", [row.id]);
   await audit({ action: "auth.sign_in", actorId: row.id, actorLabel: row.email, targetId: row.id, headers });
   return { id: row.id, email: row.email, locale: row.locale };

@@ -41,8 +41,16 @@
 
 ## 4. Security of the dev environment
 
-- **Sign-up is closed server-side** (`AUTH_SIGNUP_ENABLED` is not `true` → `/api/auth/sign-up` answers 403). Only the
-  QA accounts of `company/QA.md` exist (`apps/web/scripts/qa-accounts.mjs`, passwords from the environment, never printed).
+- **Sign-up is open for Yomizaka only (decision of Oussama, 2026-10-21; every other Krizaka product stays closed).** It is
+  still closed server-side unless `AUTH_SIGNUP_ENABLED=true` **and** the verification e-mail can be sent (the `MAIL_`
+  variables, `signupOpen()` in `lib/env.ts`): otherwise `/api/auth/sign-up` answers 403 `SIGNUP_CLOSED`. An account is
+  created unverified; a mailed single-use link (24 h, keyed hash) confirms the address (a button, a POST, so a mail scanner
+  cannot spend it); sign-in is refused (`EMAIL_NOT_VERIFIED`) until then. The terms and the privacy notice (Loi 25) must be
+  accepted; their version and date are kept (`terms_version`). Abuse limits: per client address and per e-mail, one free
+  audit per account. `/terms` and the privacy notice carry placeholders marked « [TO BE REVIEWED BY THE LAWYER] » (refunds,
+  liability, transfers) until a member of the Barreau du Québec has read them. Every report and page says
+  « Vérification informative, ce n'est pas un avis juridique » and never uses « conforme » as a guarantee. The QA accounts of
+  `company/QA.md` still exist (`apps/web/scripts/qa-accounts.mjs`, passwords from the environment, never printed).
 - The administration lives on **admin.yomizaka.com** (same app, host-routed by `proxy.ts`/`lib/host.ts` to `app/[locale]/(admin)/console`, never indexed; 404 on dev.yomizaka.com) and `/api/admin/*`; it needs a session, the ADMIN role **and** an address of
   `AUTH_ALLOWED_IPS` (empty in production = nobody); a failed lock is a 404 on pages, a 403 on the API.
 - Passwords: scrypt; sessions: random tokens kept as keyed hashes (`AUTH_SESSION_SECRET`), HttpOnly cookies; rate limits

@@ -34,6 +34,12 @@ export const envSchema = z.object({
   AUTH_SESSION_SECRET: z.string().optional(),
   /** Sign-up is closed unless this is `true` (closed on every dev deployment: QA accounts only). */
   AUTH_SIGNUP_ENABLED: flag,
+  /** Outgoing e-mail (the verification link). The vendor is a value: `MAIL_PROVIDER=mailgun`. Without all three, sign-up stays closed. */
+  MAIL_PROVIDER: z.enum(["mailgun"]).optional(),
+  MAIL_API_KEY: z.string().optional(),
+  MAIL_DOMAIN: z.string().optional(),
+  MAIL_API_URL: z.string().url().default("https://api.mailgun.net"),
+  MAIL_FROM: z.string().optional(),
   /** The addresses that may open the administration (comma-separated). Empty in production = nobody. */
   AUTH_ALLOWED_IPS: list,
   /** A header the edge sets with the client's address (`do-connecting-ip` on App Platform). */
@@ -83,6 +89,11 @@ export function assertProductionEnv(source: Record<string, string | undefined> =
 
 export const env = () => readEnv();
 export const signupEnabled = () => env().AUTH_SIGNUP_ENABLED;
+/** Sign-up opens only when it is switched on AND the verification e-mail can be sent: no mail, no accounts nobody can confirm. */
+export const signupOpen = (source: Record<string, string | undefined> = process.env) => {
+  const e = readEnv(source);
+  return e.AUTH_SIGNUP_ENABLED && !!e.MAIL_PROVIDER && !!e.MAIL_API_KEY && !!e.MAIL_DOMAIN;
+};
 /** The administration's allow-list; `null` = no restriction (development only). */
 export function consoleAllowedIps(source: Record<string, string | undefined> = process.env): string[] | null {
   const e = readEnv(source);
