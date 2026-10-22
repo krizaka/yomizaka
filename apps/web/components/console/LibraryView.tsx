@@ -10,6 +10,7 @@ import { Mascot } from "@krizaka/ui/mascots";
 import { RadioGroup } from "@krizaka/ui/radio-group";
 import { type Audience, DOCUMENT_KINDS, type DocumentKind, type DocumentSummary, documentSummary, MAX_FILE_BYTES, queryKeys } from "@yomizaka/core";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
@@ -38,9 +39,10 @@ function send(file: File, kind: DocumentKind | "auto", signal: AbortSignal, onPr
 }
 
 /** The library: drop files (a queue that pauses, resumes and retries), then every document with its state. */
-export function LibraryView({ initial, perspective = null, audiences, screening = false }: { initial: DocumentSummary[]; perspective?: Audience | null; audiences: readonly { audience: Audience; status: "available" | "soon" }[]; screening?: boolean }) {
+export function LibraryView({ initial, mode = "library", perspective = null, audiences, screening = false }: { mode?: "library" | "check"; initial: DocumentSummary[]; perspective?: Audience | null; audiences: readonly { audience: Audience; status: "available" | "soon" }[]; screening?: boolean }) {
   const { say, locale } = useSay();
   const client = useQueryClient();
+  const router = useRouter();
   const [kind, setKind] = useState<DocumentKind | "auto">("auto");
   const kindRef = useRef(kind);
   const [notices, setNotices] = useState<string[]>([]);
@@ -59,6 +61,8 @@ export function LibraryView({ initial, perspective = null, audiences, screening 
         const result = await send(file, kindRef.current, signal, onProgress);
         setNotices((n) => [say(result.duplicate ? "library.duplicate" : "library.uploaded", { name: file.name }), ...n].slice(0, 3));
         await client.invalidateQueries({ queryKey: queryKeys.documents() });
+        // « Check a document »: the new document opens on what it is (its information tab).
+        if (mode === "check") router.push(`/${locale}/app/documents/${result.document.id}/infos`);
       } catch (error) {
         const code = (error as { body?: { code?: string } }).body?.code ?? "UNKNOWN";
         throw new Error(say(`errors.${code}`));
@@ -97,19 +101,20 @@ export function LibraryView({ initial, perspective = null, audiences, screening 
   const rows = documents.data ?? [];
   return (
     <div className="flex flex-col gap-6">
-      {perspective === null ? <PerspectiveChooser current={null} audiences={audiences} onboarding /> : (
+      {mode === "check" ? null : perspective === null ? <PerspectiveChooser current={null} audiences={audiences} onboarding /> : (
         <p className="text-right text-xs text-fg-muted">
           <Link className="underline" href={`/${locale}/app/settings`}>{say("profile.open")}</Link>
         </p>
       )}
-      {screening ? (
+      {screening && mode === "library" ? (
         <p className="m-0 text-sm">
           <Link className="font-semibold text-fg-accent underline" href={`/${locale}/app/screening`}>
             {say("library.screening")}
           </Link>
         </p>
       ) : null}
-      <section className="flex flex-col gap-3" aria-label={say("library.dropTitle")}>
+      {mode === "check" ? (
+      <section className="flex max-w-3xl flex-col gap-3" aria-label={say("library.dropTitle")}>
         <RadioGroup.Root variant="segmented" label={say("library.kindLabel")} value={kind} onValueChange={(v: string) => {
             kindRef.current = v as DocumentKind | "auto";
             setKind(v as DocumentKind | "auto");
@@ -147,6 +152,14 @@ export function LibraryView({ initial, perspective = null, audiences, screening 
           </Alert>
         ))}
       </section>
+      ) : (
+        <p className="m-0">
+          <Link className="font-semibold text-fg-accent underline" href={`/${locale}/app/verifier`}>
+            {say("library.checkCta")}
+          </Link>
+        </p>
+      )}
+      {mode === "library" ? (
       <DataTable
         caption={say("library.caption")}
         rows={rows}
@@ -159,6 +172,7 @@ export function LibraryView({ initial, perspective = null, audiences, screening 
           <EmptyState icon={<Mascot bird="owl" mood="empty" size={88} />} title={say("library.emptyTitle")} description={say("library.emptyText")} />
         }
       />
+      ) : null}
     </div>
   );
 }
