@@ -1,13 +1,15 @@
 "use client";
 
 import { Badge } from "@krizaka/ui/badge";
-import { DataTable, type DataTableColumn } from "@krizaka/ui/data-table";
-import { type DocumentSummary } from "@yomizaka/core";
+import { DataTable, type DataTableColumn, DataTableFilters, type DataTableFilterState, type DataTableLabels, type DataTableSort } from "@krizaka/ui/data-table";
+import { useRouteState as useUrlState } from "@krizaka/ui/router";
+import { DOCUMENT_KINDS, DOCUMENT_STATUSES, type DocumentSummary } from "@yomizaka/core";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 
 import { useSay } from "@/lib/i18n-client";
+import { PAGE_SIZES, pageOf, pageSizeOf, parseList, sortOf, sortParam, TABLE_DEFAULTS } from "@/lib/table-state";
 
 import { formatBytes, formatDate } from "./format";
 import { ItemMenu, type Option, type TagOption } from "./OrganisationActions";
@@ -21,6 +23,9 @@ export interface Organise {
   tags: TagOption[];
   tagsByDocument: Record<string, TagOption[]>;
 }
+
+/** The columns the table sorts by (and the address may name). */
+const SORTABLE = ["title", "kind", "size", "added"] as const;
 
 export const STATUS_TONE = { stored: "neutral", analysing: "accent", checked: "success", attention: "warning", failed: "danger" } as const;
 
@@ -40,6 +45,7 @@ export function DocumentTable({ rows, caption, organise }: { rows: DocumentSumma
         id: "title",
         header: say("library.columns.title"),
         sortable: true,
+        filter: "text",
         card: "title",
         value: (d) => d.title,
         cell: (d) => (
@@ -55,8 +61,8 @@ export function DocumentTable({ rows, caption, organise }: { rows: DocumentSumma
           </span>
         ),
       },
-      { id: "kind", header: say("library.columns.kind"), sortable: true, value: (d) => d.kind, cell: (d) => say(`kinds.${d.kind}`) },
-      { id: "status", header: say("library.columns.status"), value: (d) => d.status, cell: (d) => <Badge tone={STATUS_TONE[d.status]}>{say(`statuses.${d.status}`)}</Badge> },
+      { id: "kind", header: say("library.columns.kind"), sortable: true, filter: "facet", options: DOCUMENT_KINDS.map((k) => ({ value: k, label: say(`kinds.${k}`) })), value: (d) => d.kind, cell: (d) => say(`kinds.${d.kind}`) },
+      { id: "status", header: say("library.columns.status"), filter: "facet", options: DOCUMENT_STATUSES.map((k) => ({ value: k, label: say(`statuses.${k}`) })), value: (d) => d.status, cell: (d) => <Badge tone={STATUS_TONE[d.status]}>{say(`statuses.${d.status}`)}</Badge> },
       { id: "size", header: say("library.columns.size"), sortable: true, align: "end", value: (d) => d.sizeBytes, cell: (d) => formatBytes(d.sizeBytes, locale) },
       { id: "added", header: say("library.columns.added"), sortable: true, align: "end", value: (d) => d.createdAt, cell: (d) => formatDate(d.createdAt, locale) },
       ...(organise
@@ -78,5 +84,55 @@ export function DocumentTable({ rows, caption, organise }: { rows: DocumentSumma
     ],
     [say, locale, organise],
   );
-  return <DataTable caption={caption ?? say("library.caption")} rows={rows} columns={columns} getRowId={(d) => d.id} rowLabel={(d) => d.title} defaultSort={{ column: "added", direction: "descending" }} />;
+  // The state is the address: ?q= (search in the title) &kind= &status= (filters) &page= &size= &sort= — a refresh, a shared link and the back button restore it.
+  const [q, setQ] = useUrlState<string>("q", { default: TABLE_DEFAULTS.q, history: "replace" });
+  const [kind, setKind] = useUrlState<string>("kind", { default: "" });
+  const [status, setStatus] = useUrlState<string>("status", { default: "" });
+  const [page, setPage] = useUrlState<string>("page", { default: TABLE_DEFAULTS.page });
+  const [size, setSize] = useUrlState<string>("size", { values: PAGE_SIZES.map(String), default: TABLE_DEFAULTS.size });
+  const [sortRaw, setSort] = useUrlState<string>("sort", { default: TABLE_DEFAULTS.sort });
+  const filters: DataTableFilterState = Object.fromEntries([q ? (['title', q] as const) : null, kind ? (['kind', parseList(kind, DOCUMENT_KINDS)] as const) : null, status ? (['status', parseList(status, DOCUMENT_STATUSES)] as const) : null].filter((e) => e !== null));
+  const onFiltersChange = (next: DataTableFilterState) => {
+    setQ(typeof next.title === "string" ? next.title : "");
+    setKind(Array.isArray(next.kind) ? next.kind.join(",") : "");
+    setStatus(Array.isArray(next.status) ? next.status.join(",") : "");
+    setPage(TABLE_DEFAULTS.page);
+  };
+  const labels = useMemo<Partial<DataTableLabels>>(
+    () => ({
+      empty: say("library.table.empty"),
+      results: (count) => say("library.table.results", { count }),
+      filters: say("library.table.filters"),
+      clearFilters: say("library.table.clear"),
+      removeFilter: (label) => say("library.table.remove", { label }),
+      activeFilter: (header, value) => `${header} : ${value}`,
+      search: (header) => say("library.table.search", { header }),
+      pagination: { nav: say("library.table.pagination"), previous: say("library.table.previous"), next: say("library.table.next"), page: (n) => say("library.table.page", { page: n }), compact: (n, count) => say("library.table.compact", { page: n, count }), pageSize: say("library.table.pageSize") },
+    }),
+    [say],
+  );
+  const sort = sortOf(sortRaw, SORTABLE);
+  return (
+    <DataTable
+      caption={caption ?? say("library.caption")}
+      rows={rows}
+      columns={columns}
+      getRowId={(d) => d.id}
+      rowLabel={(d) => d.title}
+      sort={sort}
+      onSortChange={(next: DataTableSort) => setSort(sortParam(next))}
+      filters={filters}
+      onFiltersChange={onFiltersChange}
+      page={pageOf(page)}
+      onPageChange={(n) => setPage(String(n))}
+      pageSize={pageSizeOf(size)}
+      pageSizeOptions={PAGE_SIZES}
+      onPageSizeChange={(n) => {
+        setSize(String(n));
+        setPage(TABLE_DEFAULTS.page);
+      }}
+      toolbar={<DataTableFilters />}
+      labels={labels}
+    />
+  );
 }

@@ -207,7 +207,21 @@
       "groupPhotosOn": "Déposées ensemble, elles forment un document, dans l'ordre où vous les choisissez.",
       "groupPhotosOff": "Chaque photo devient son propre document.",
       "groupedUploaded": "{count} photos forment un seul document dans votre bibliothèque.",
-      "photoNotice": "Les photos sont redressées et recadrées, puis leur texte est lu sur place. Les données de la photo (position, appareil) sont retirées."
+      "photoNotice": "Les photos sont redressées et recadrées, puis leur texte est lu sur place. Les données de la photo (position, appareil) sont retirées.",
+      "table": {
+        "empty": "Aucun document ne correspond.",
+        "results": "{count} documents",
+        "filters": "Filtrer les documents",
+        "clear": "Effacer les filtres",
+        "remove": "Retirer le filtre {label}",
+        "search": "Rechercher dans « {header} »",
+        "pagination": "Pages des documents",
+        "previous": "Page précédente",
+        "next": "Page suivante",
+        "page": "Page {page}",
+        "compact": "Page {page} sur {count}",
+        "pageSize": "Documents par page"
+      }
     },
     "upload": {
       "queued": "En attente",
@@ -877,8 +891,6 @@
       "filesMany": "{count} fichiers",
       "foldersOne": "{count} dossier",
       "foldersMany": "{count} dossiers",
-      "filterKind": "Type",
-      "filterStatus": "État",
       "default": "Par défaut",
       "defaultCollection": "Collection par défaut",
       "moveToDefault": "Vers la collection par défaut",

@@ -5,7 +5,7 @@ import { pageSession } from "@/lib/access";
 import { query } from "@/lib/db";
 import { documentsByIds } from "@/lib/documents";
 import { asLocale, getDictionary } from "@/lib/i18n";
-import { applyFilters, isId, libraryPath, parseView } from "@/lib/organisation/rules";
+import { isId, libraryPath, parseView } from "@/lib/organisation/rules";
 import * as org from "@/lib/organisation/store";
 
 type Props = { params: Promise<{ locale: string; library?: string; collection?: string; folder?: string }>; searchParams: Promise<{ tags?: string | string[]; kind?: string; status?: string }> };
@@ -21,7 +21,6 @@ export async function PlacePage({ params, searchParams }: Props) {
   const selected = view.tags;
   const dict = getDictionary(locale).console;
   const t = dict.organisation;
-  const labels = { kinds: dict.kinds as Record<string, string>, statuses: dict.statuses as Record<string, string> };
   const tags = await org.listTags(query, owner);
   const overview = await org.overview(query, owner);
   const collections = overview.flatMap((l) => l.collections).map((c) => ({ id: c.id, name: c.name }));
@@ -33,7 +32,7 @@ export async function PlacePage({ params, searchParams }: Props) {
   if (p.folder && (!folder || folder.collection_id !== collection.id)) notFound();
   const folders = await org.foldersOf(query, owner, collection.id);
   const ids = (await org.browse(query, owner, { collectionId: collection.id, folderId: folder?.id, tagIds: selected })).documentIds;
-  const documents = applyFilters(await documentsByIds(owner, ids), view);
+  const documents = await documentsByIds(owner, ids);
   const byDoc = await org.tagsOf(query, owner, "document", ids);
   const collTags = await org.tagsOf(query, owner, "collection", [collection.id]);
   const lib = overview.find((l) => l.id === collection.library_id);
@@ -49,7 +48,7 @@ export async function PlacePage({ params, searchParams }: Props) {
       documents={documents}
       tags={tags}
       view={view}
-      labels={labels}
+     
       tagsByDocument={Object.fromEntries(byDoc)}
       folderTags={Object.fromEntries(folders.map((f) => [f.id, f.tags.map((x) => x.id)]))}
       collections={collections}
