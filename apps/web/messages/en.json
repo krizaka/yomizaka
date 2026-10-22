@@ -840,7 +840,9 @@
       "filesOne": "{count} file",
       "filesMany": "{count} files",
       "foldersOne": "{count} folder",
-      "foldersMany": "{count} folders"
+      "foldersMany": "{count} folders",
+      "filterKind": "Type",
+      "filterStatus": "State"
     },
     "settings": {
       "tabs": {

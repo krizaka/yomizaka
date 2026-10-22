@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { cleanName, deleteChoice, libraryPath, parseTagsParam, TAG_COLORS, tagsHref, toggleTag } from "./rules";
+import { applyFilters, cleanName, deleteChoice, libraryPath, parseTagsParam, parseView, TAG_COLORS, tagsHref, toggleTag, viewHref } from "./rules";
 
 const A = "11111111-1111-4111-8111-111111111111";
 const B = "22222222-2222-4222-8222-222222222222";
@@ -46,5 +46,30 @@ describe("what happens to the files of a deleted folder or collection", () => {
     expect(deleteChoice({ files: "move", to: A })).toEqual({ files: "move", to: A });
     expect(() => deleteChoice({})).toThrow();
     expect(() => deleteChoice({ files: "move", to: "nope" })).toThrow();
+  });
+});
+
+describe("the library's filters are the URL's state: ?tags=…&kind=…&status=…", () => {
+  it("reads the three, ignoring what is not one of their values", () => {
+    expect(parseView({ tags: `${A}`, kind: "lease", status: "attention" })).toEqual({ tags: [A], kind: "lease", status: "attention" });
+    expect(parseView({ kind: "spreadsheet", status: "nope" })).toEqual({ tags: [], kind: null, status: null });
+    expect(parseView({})).toEqual({ tags: [], kind: null, status: null });
+  });
+  it("writes them back in a stable order, keeping the others when one changes", () => {
+    const path = "/fr/app/bibliotheque/l/c";
+    expect(viewHref(path, { tags: [], kind: null, status: null })).toBe(path);
+    expect(viewHref(path, { tags: [A], kind: "invoice", status: "checked" })).toBe(`${path}?tags=${A}&kind=invoice&status=checked`);
+    expect(viewHref(path, { tags: [], kind: null, status: "failed" })).toBe(`${path}?status=failed`);
+  });
+  it("filters documents by kind and by status (all given filters must match)", () => {
+    const docs = [
+      { id: "1", kind: "lease", status: "attention" },
+      { id: "2", kind: "lease", status: "checked" },
+      { id: "3", kind: "invoice", status: "attention" },
+    ] as const;
+    expect(applyFilters(docs, { tags: [], kind: "lease", status: null }).map((d) => d.id)).toEqual(["1", "2"]);
+    expect(applyFilters(docs, { tags: [], kind: null, status: "attention" }).map((d) => d.id)).toEqual(["1", "3"]);
+    expect(applyFilters(docs, { tags: [], kind: "lease", status: "attention" }).map((d) => d.id)).toEqual(["1"]);
+    expect(applyFilters(docs, { tags: [], kind: null, status: null })).toHaveLength(3);
   });
 });
