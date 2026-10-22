@@ -53,7 +53,8 @@
           "cameraPermission": "Yomizaka scanne vos documents avec l'appareil photo.",
           "photosPermission": "Yomizaka lit la photo d'un document que vous choisissez."
         }
-      ]
+      ],
+      "./plugins/with-release-signing"
     ],
     "experiments": {
       "typedRoutes": true
