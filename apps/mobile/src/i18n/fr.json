@@ -9,14 +9,8 @@
     "label": "Navigation principale"
   },
   "common": {
-    "retry": "Réessayer",
-    "back": "Retour",
-    "loading": "Chargement…",
-    "error": "Une erreur est survenue. Réessayez dans un instant.",
-    "offline": "Yomizaka ne répond pas. Vérifiez votre connexion.",
-    "close": "Fermer"
+    "back": "Retour"
   },
-  "disclaimer": "Vérification informative, pas un avis juridique.",
   "signIn": {
     "title": "Se connecter",
     "lead": "Vos documents, lus et vérifiés.",
@@ -41,52 +35,12 @@
     "paywall": "Cette vérification n'est pas disponible avec votre compte pour l'instant.",
     "failed": "La vérification n'a pas pu démarrer."
   },
-  "preflight": {
-    "empty": "Le fichier est vide.",
-    "tooLarge": "Le fichier est trop volumineux ({megabytes} Mo au maximum).",
-    "unsupportedType": "Yomizaka lit les PDF et les fichiers texte."
-  },
-  "check": {
-    "compliance": "Conformité au droit québécois",
-    "authenticity": "Authenticité du fichier",
-    "start": "Lancer la vérification",
-    "run": "Vérification Orazaka {runId}"
-  },
-  "stage": {
-    "step": "Étape {step} sur {total}",
-    "sending": "Envoi du document",
-    "checking": "Lecture et vérification en cours",
-    "done": "Vérification terminée",
-    "failed": "La vérification a échoué"
-  },
-  "result": {
-    "title": "Résultat",
-    "share": "Partager le rapport signé (PDF)",
-    "sharing": "Préparation du rapport…",
-    "shareFailed": "Le rapport n'a pas pu être préparé.",
-    "signed": "Rapport signé, empreinte SHA-256 vérifiable sur yomizaka.com/verify.",
-    "runningHint": "Orazaka lit le document. Cela prend généralement moins d'une minute.",
-    "failedHint": "La vérification n'a pas abouti. Vous pouvez la relancer."
-  },
   "document": {
     "title": "Document",
     "tabs": {
       "label": "Sections du document",
       "infos": "Infos",
       "verifications": "Vérifications"
-    },
-    "kind": {
-      "lease": "Bail",
-      "contract": "Contrat",
-      "invoice": "Facture",
-      "other": "Autre"
-    },
-    "status": {
-      "stored": "Enregistré",
-      "analysing": "En cours",
-      "checked": "Vérifié",
-      "attention": "À examiner",
-      "failed": "Échec"
     },
     "pages": "{count} p.",
     "noChecks": "Aucune vérification pour ce document.",

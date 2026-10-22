@@ -5,7 +5,9 @@
   "description": "What the Yomizaka apps (iPhone, Android, Mac) share: the pre-flight, which checks a document can have, the stages of a check, and the typed API calls.",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./messages/fr.json": "./src/messages/fr.json",
+    "./messages/en.json": "./src/messages/en.json"
   },
   "scripts": {
     "lint": "tsc --noEmit -p tsconfig.json",

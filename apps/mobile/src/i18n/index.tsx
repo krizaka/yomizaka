@@ -4,8 +4,15 @@ import { getLocales } from "expo-localization";
 
 import { asLocale, type Locale } from "@/domain/links";
 
-import en from "./en.json";
-import fr from "./fr.json";
+import sharedEn from "@yomizaka/client/messages/en.json";
+import sharedFr from "@yomizaka/client/messages/fr.json";
+
+import ownEn from "./en.json";
+import ownFr from "./fr.json";
+
+/** What the iPhone, Android and Mac apps say the same way (the checks, the stages, the result) comes from `@yomizaka/client`. */
+const fr = { ...ownFr, ...sharedFr, document: { ...ownFr.document, ...sharedFr.document }, common: { ...ownFr.common, ...sharedFr.common } };
+const en = { ...ownEn, ...sharedEn, document: { ...ownEn.document, ...sharedEn.document }, common: { ...ownEn.common, ...sharedEn.common } };
 
 export type Messages = typeof fr;
 /** French is the reference of the product (Yomizaka is made in Montréal): en.json type-checks against fr.json. */
