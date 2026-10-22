@@ -1,3 +1,4 @@
+import { postgresAccounts } from "@krizaka/auth";
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { migrate, query } from "../db";
@@ -6,7 +7,6 @@ import { hashPassword, verifyPassword } from "../password";
 import { memoryStore } from "../storage/memory";
 import { noneStore } from "../storage/none";
 import { eraseAccount, exportData } from "./data";
-import { postgresAccounts } from "./postgres";
 
 /** Export and erasure against a real PostgreSQL (skipped without YOMIZAKA_DB_IT=1 and DATABASE_URL). */
 const enabled = process.env.YOMIZAKA_DB_IT === "1" && !!process.env.DATABASE_URL;
@@ -16,7 +16,7 @@ describe.runIf(enabled)("export and erasure (Loi 25)", () => {
   beforeAll(async () => {
     await migrate();
   });
-  const accounts = postgresAccounts({ query, mail: async () => undefined, baseUrl: "https://x", passwords: { hash: hashPassword, verify: verifyPassword } });
+  const accounts = postgresAccounts({ query: async (sql, params) => query(sql, params) as never, mail: async () => undefined, baseUrl: "https://x", product: "Yomizaka", tokenPrefix: "ye", tokenHash: (t) => t, passwords: { hash: hashPassword, verify: verifyPassword } });
   const account = async (extra = "") => (await query<{ id: string }>(`INSERT INTO accounts (email, password_hash, email_verified_at, name ${extra ? ", " + extra.split("=")[0] : ""}) VALUES ($1, 'x', now(), 'Éric' ${extra ? ", " + extra.split("=")[1] : ""}) RETURNING id`, [`d-${Math.random().toString(36).slice(2)}@yomizaka.test`]))[0]!.id;
   const dev = () => memoryStore({ kind: "bunny", devOnly: true, owner: "krizaka", residency: "elsewhere" });
   const policy = (keep: boolean, store: ReturnType<typeof dev> | ReturnType<typeof noneStore>): StoragePolicy => ({ keep, store, now: NOW, purgeAfterHours: 24 });
