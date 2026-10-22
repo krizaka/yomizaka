@@ -1,0 +1,123 @@
+{
+  "app": {
+    "name": "Yomizaka"
+  },
+  "tabs": {
+    "verify": "Vérifier",
+    "library": "Bibliothèque",
+    "settings": "Réglages",
+    "label": "Navigation principale"
+  },
+  "common": {
+    "retry": "Réessayer",
+    "back": "Retour",
+    "loading": "Chargement…",
+    "error": "Une erreur est survenue. Réessayez dans un instant.",
+    "offline": "Yomizaka ne répond pas. Vérifiez votre connexion.",
+    "close": "Fermer"
+  },
+  "disclaimer": "Vérification informative, pas un avis juridique.",
+  "signIn": {
+    "title": "Se connecter",
+    "lead": "Vos documents, lus et vérifiés.",
+    "email": "Adresse courriel",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "wrong": "Adresse ou mot de passe incorrect.",
+    "createAccount": "Créer un compte sur yomizaka.com"
+  },
+  "verify": {
+    "title": "Vérifier un document",
+    "lead": "Un bail, un contrat, une facture : choisissez le document, Yomizaka le lit et vous dit ce qui mérite votre attention.",
+    "camera": "Scanner avec l'appareil photo",
+    "photo": "Choisir une photo",
+    "pdf": "Choisir un PDF",
+    "onDevice": "Stocké sur cet appareil",
+    "onDeviceHint": "Le document reste sur votre téléphone. Seul le contenu nécessaire à la vérification est envoyé, puis effacé du serveur.",
+    "refused": "Ce fichier ne peut pas être vérifié",
+    "preparing": "Préparation du document…",
+    "noTextLayer": "Ce document est une image sans texte : seule la vérification d'authenticité du fichier est possible.",
+    "nothingToCheck": "Ce document ne peut pas être vérifié pour l'instant.",
+    "paywall": "Cette vérification n'est pas disponible avec votre compte pour l'instant.",
+    "failed": "La vérification n'a pas pu démarrer."
+  },
+  "preflight": {
+    "empty": "Le fichier est vide.",
+    "tooLarge": "Le fichier est trop volumineux ({megabytes} Mo au maximum).",
+    "unsupportedType": "Yomizaka lit les PDF et les fichiers texte."
+  },
+  "check": {
+    "compliance": "Conformité au droit québécois",
+    "authenticity": "Authenticité du fichier",
+    "start": "Lancer la vérification",
+    "run": "Vérification Orazaka {runId}"
+  },
+  "stage": {
+    "step": "Étape {step} sur {total}",
+    "sending": "Envoi du document",
+    "checking": "Lecture et vérification en cours",
+    "done": "Vérification terminée",
+    "failed": "La vérification a échoué"
+  },
+  "result": {
+    "title": "Résultat",
+    "share": "Partager le rapport signé (PDF)",
+    "sharing": "Préparation du rapport…",
+    "shareFailed": "Le rapport n'a pas pu être préparé.",
+    "signed": "Rapport signé, empreinte SHA-256 vérifiable sur yomizaka.com/verify.",
+    "runningHint": "Orazaka lit le document. Cela prend généralement moins d'une minute.",
+    "failedHint": "La vérification n'a pas abouti. Vous pouvez la relancer."
+  },
+  "document": {
+    "title": "Document",
+    "tabs": {
+      "label": "Sections du document",
+      "infos": "Infos",
+      "verifications": "Vérifications"
+    },
+    "kind": {
+      "lease": "Bail",
+      "contract": "Contrat",
+      "invoice": "Facture",
+      "other": "Autre"
+    },
+    "status": {
+      "stored": "Enregistré",
+      "analysing": "En cours",
+      "checked": "Vérifié",
+      "attention": "À examiner",
+      "failed": "Échec"
+    },
+    "pages": "{count} p.",
+    "noChecks": "Aucune vérification pour ce document.",
+    "kept": "Conservé sur cet appareil",
+    "notKept": "Pas de copie sur cet appareil",
+    "notFound": "Document introuvable.",
+    "kindLabel": "Type",
+    "pagesLabel": "Pages"
+  },
+  "library": {
+    "title": "Bibliothèque",
+    "empty": "Aucun document. Vérifiez-en un pour commencer.",
+    "emptyCollection": "Cette collection est vide.",
+    "recent": "Récents",
+    "files": "{count} documents",
+    "filterTags": "Filtrer par étiquette",
+    "clearTags": "Toutes les étiquettes",
+    "tagsLabel": "Étiquettes"
+  },
+  "settings": {
+    "title": "Réglages",
+    "language": "Langue",
+    "languages": {
+      "fr": "Français",
+      "en": "English"
+    },
+    "storage": "Stockage",
+    "storageBody": "Vos documents sont stockés sur cet appareil. Pour une copie dans le nuage, choisissez-la sur yomizaka.com.",
+    "account": "Compte",
+    "signOut": "Se déconnecter",
+    "version": "Version {version}",
+    "privacy": "Confidentialité"
+  }
+}

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { DOCUMENT_KINDS, DOCUMENT_STATUSES } from "./vocabulary";
 
-export { DOCUMENT_KINDS, DOCUMENT_STATUSES };
+export { DOCUMENT_KINDS, DOCUMENT_STATUSES, DOCUMENT_TABS, type DocumentTab } from "./vocabulary";
 
 /*
  * Yomizaka's contracts — what the API answers and the web reads, validated on both sides. Structure only: the words are
@@ -19,6 +19,7 @@ export const COMPLIANCE_MAX_CHARS = 60_000;
 /** What can be uploaded: a PDF (its text layer is read) or plain text. */
 export const ACCEPTED_TYPES = ["application/pdf", "text/plain"] as const;
 export const acceptedType = z.enum(ACCEPTED_TYPES);
+export type AcceptedType = z.infer<typeof acceptedType>;
 
 export const documentKind = z.enum(DOCUMENT_KINDS);
 export type DocumentKind = z.infer<typeof documentKind>;
@@ -409,3 +410,4 @@ export function passages(text: string, quotes: readonly { id: string; quote: str
   return out;
 }
 export * from "./organisation";
+export * from "./closing-note";

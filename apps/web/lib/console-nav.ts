@@ -1,3 +1,5 @@
+import { DOCUMENT_TABS, type DocumentTab } from "@yomizaka/core";
+
 /**
  * The signed-in space's navigation, as data and pure functions (the active state comes from the route, never from local
  * state). Rail: Library · Check · Search, then Account (and Administration for an administrator, on its own host).
@@ -32,8 +34,7 @@ export function titleOf(path: string): TitleId {
 }
 
 /** The tabs of a document, each a route: /documents/[id]/<tab> (the URL is the state). */
-export const DOCUMENT_TABS = ["infos", "verifications", "fichier", "texte"] as const;
-export type DocumentTab = (typeof DOCUMENT_TABS)[number];
+export { DOCUMENT_TABS, type DocumentTab };
 export const isDocumentTab = (v: string): v is DocumentTab => (DOCUMENT_TABS as readonly string[]).includes(v);
 
 /** The settings' sections, each a route: /app/settings/<section> (the URL is the state). */

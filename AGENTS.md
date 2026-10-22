@@ -36,7 +36,7 @@
 - The colour is the Yomizaka brand of `@krizaka/tokens` (ink indigo), the mark `YomizakaLogo`, the bird the owl ("reads
   and knows every face"). Components use `--kz-*` roles only; dark and light are first-class (dark by default).
 
-- **No mobile app.** The Dev preview of Yomizaka is **web only**, phone-first (decision 2026-10-17: mobile later, and then with the
+- **The mobile app lives in `apps/mobile`** (2026-10-22: the three products go on iOS, Android and the Mac). The Dev preview of Yomizaka stays **web only**, phone-first (decision 2026-10-17: mobile later, and then with the
   family's mobile standards). `mobile.build` and `mobile.ux-review` of the Dev preview checklist are `na` for that reason.
 
 ## 4. Security of the dev environment

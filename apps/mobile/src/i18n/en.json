@@ -1,0 +1,123 @@
+{
+  "app": {
+    "name": "Yomizaka"
+  },
+  "tabs": {
+    "verify": "Check",
+    "library": "Library",
+    "settings": "Settings",
+    "label": "Main navigation"
+  },
+  "common": {
+    "retry": "Try again",
+    "back": "Back",
+    "loading": "Loading…",
+    "error": "Something went wrong. Try again in a moment.",
+    "offline": "Yomizaka is not answering. Check your connection.",
+    "close": "Close"
+  },
+  "disclaimer": "Informational check, not legal advice.",
+  "signIn": {
+    "title": "Sign in",
+    "lead": "Your documents, read and checked.",
+    "email": "Email address",
+    "password": "Password",
+    "submit": "Sign in",
+    "wrong": "Wrong address or password.",
+    "createAccount": "Create an account on yomizaka.com"
+  },
+  "verify": {
+    "title": "Check a document",
+    "lead": "A lease, a contract, an invoice: pick the document, Yomizaka reads it and tells you what deserves your attention.",
+    "camera": "Scan with the camera",
+    "photo": "Choose a photo",
+    "pdf": "Choose a PDF",
+    "onDevice": "Stored on this device",
+    "onDeviceHint": "The document stays on your phone. Only the content a check needs is sent, then erased from the server.",
+    "refused": "This file cannot be checked",
+    "preparing": "Preparing the document…",
+    "noTextLayer": "This document is an image with no text: only the file's authenticity check is possible.",
+    "nothingToCheck": "This document cannot be checked for now.",
+    "paywall": "This check is not available with your account right now.",
+    "failed": "The check could not start."
+  },
+  "preflight": {
+    "empty": "The file is empty.",
+    "tooLarge": "The file is too large ({megabytes} MB at most).",
+    "unsupportedType": "Yomizaka reads PDFs and text files."
+  },
+  "check": {
+    "compliance": "Compliance with Québec law",
+    "authenticity": "File authenticity",
+    "start": "Start the check",
+    "run": "Orazaka check {runId}"
+  },
+  "stage": {
+    "step": "Step {step} of {total}",
+    "sending": "Sending the document",
+    "checking": "Reading and checking",
+    "done": "Check finished",
+    "failed": "The check failed"
+  },
+  "result": {
+    "title": "Result",
+    "share": "Share the signed report (PDF)",
+    "sharing": "Preparing the report…",
+    "shareFailed": "The report could not be prepared.",
+    "signed": "Signed report, SHA-256 fingerprint verifiable on yomizaka.com/verify.",
+    "runningHint": "Orazaka is reading the document. It usually takes less than a minute.",
+    "failedHint": "The check did not complete. You can run it again."
+  },
+  "document": {
+    "title": "Document",
+    "tabs": {
+      "label": "Document sections",
+      "infos": "Info",
+      "verifications": "Checks"
+    },
+    "kind": {
+      "lease": "Lease",
+      "contract": "Contract",
+      "invoice": "Invoice",
+      "other": "Other"
+    },
+    "status": {
+      "stored": "Saved",
+      "analysing": "Running",
+      "checked": "Checked",
+      "attention": "To review",
+      "failed": "Failed"
+    },
+    "pages": "{count} p.",
+    "noChecks": "No check for this document yet.",
+    "kept": "Kept on this device",
+    "notKept": "No copy on this device",
+    "notFound": "Document not found.",
+    "kindLabel": "Type",
+    "pagesLabel": "Pages"
+  },
+  "library": {
+    "title": "Library",
+    "empty": "No documents. Check one to begin.",
+    "emptyCollection": "This collection is empty.",
+    "recent": "Recent",
+    "files": "{count} documents",
+    "filterTags": "Filter by tag",
+    "clearTags": "All tags",
+    "tagsLabel": "Tags"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "languages": {
+      "fr": "Français",
+      "en": "English"
+    },
+    "storage": "Storage",
+    "storageBody": "Your documents are stored on this device. For a copy in the cloud, choose it on yomizaka.com.",
+    "account": "Account",
+    "signOut": "Sign out",
+    "version": "Version {version}",
+    "privacy": "Privacy"
+  }
+}

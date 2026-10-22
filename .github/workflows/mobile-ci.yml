@@ -1,0 +1,32 @@
+# The Yomizaka app (apps/mobile): the org's reusable Expo pipeline (krizaka/.github expo-ci.yml, ADR-004). Only when the app,
+# the contracts it reads or this workflow change; lint, types, tests and the iOS + Android bundle export run side by side.
+name: Mobile CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - "apps/mobile/**"
+      - "packages/core/**"
+      - ".github/workflows/mobile-ci.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  ci:
+    permissions:
+      contents: read
+    uses: krizaka/.github/.github/workflows/expo-ci.yml@5a6ae3ac28625b1dd1d1468ca31b44dddd133094 # main, with lockfile-directory (krizaka/.github#182)
+    with:
+      package-manager: pnpm
+      working-directory: apps/mobile
+      lockfile-directory: .
+      install-command: pnpm install --frozen-lockfile
+      extra-scripts: |
+        export
