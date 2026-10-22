@@ -14,55 +14,35 @@ permissions:
   contents: read
 
 jobs:
-  verify:
-    # The job name is the required status check on main: keep it.
-    name: Lint · Typecheck · Tests · Build
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: yomizaka_db
-          POSTGRES_PASSWORD: ci-only-password
-          POSTGRES_DB: yomizaka_db
-        ports:
-          - 5432:5432
-        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
-    env:
+  # The pipeline is the org's (krizaka/.github docs/standards/ci-and-deploy.md): the changes gate, the pnpm and Playwright
+  # caches, parallel legs, the timeouts and the gate that always reports live there. This file says only what is Yomizaka's.
+  ci:
+    uses: krizaka/.github/.github/workflows/node-ci.yml@f268fbefb48194cf680854f1f2aae69a10f5d1a7 # v1.3.4
+    permissions:
+      contents: read
+    with:
+      package-manager: pnpm
+      parallel: true
+      typecheck-script: typecheck
+      next-cache-paths: apps/web/.next/cache
+      postgres-image: postgres:16
+      postgres-name: yomizaka_db
       # Test values only — no real secret anywhere.
-      DATABASE_URL: postgresql://yomizaka_db:ci-only-password@localhost:5432/yomizaka_db
-      YOMIZAKA_DB_IT: "1"
+      env: |
+        DATABASE_URL=postgresql://yomizaka_db:ci-only-password@localhost:5432/yomizaka_db
+        YOMIZAKA_DB_IT=1
+      playwright: chromium
+      after-build: scripts/ci-after-build.sh
+
+  # The job name is the required status check on main: kept by a shim that reads the gate's verdict.
+  verify:
+    name: Lint · Typecheck · Tests · Build
+    needs: ci
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions: {}
+    env:
+      RESULT: ${{ needs.ci.outputs.result }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: Lint (ESLint, i18n catalogues)
-        run: pnpm run lint
-      - name: Typecheck
-        run: pnpm run typecheck
-      - name: Unit and database tests (PostgreSQL 16)
-        run: pnpm run test
-      - name: Production build
-        run: pnpm run build
-      - name: SEO family contract on the built site (robots, AI crawlers, sitemap, llms.txt, canonical, JSON-LD → Krizaka)
-        env:
-          NODE_ENV: production
-          AUTH_SESSION_SECRET: ci-only-session-secret-0123456789abcdef
-          AI_API_KEY: oz_ci_only_not_a_key
-          PORT: "3000"
-        run: |
-          # A throwaway signing key for this run only (a production server refuses to start without one).
-          export APP_REPORT_SIGNING_KEY="$(node -e 'process.stdout.write(require("crypto").generateKeyPairSync("ed25519").privateKey.export({type:"pkcs8",format:"der"}).toString("base64"))')"
-          (cd apps/web && npx next start -p 3000 > ../../web.log 2>&1 &)
-          for i in $(seq 1 60); do curl -sf http://localhost:3000/api/healthz && break; sleep 1; done
-          pnpm run seo:check
-          # Responsive guard: no horizontal overflow at 360–1440 px in both themes, chips of at least 44 px.
-          npx playwright-core install --with-deps chromium
-          pnpm run check:overflow -- --base http://localhost:3000
-          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:3000/api/auth/sign-up)" = "403"
-      - if: failure()
-        run: tail -100 web.log || true
+      - run: test "$RESULT" = success
