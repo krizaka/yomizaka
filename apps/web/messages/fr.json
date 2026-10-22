@@ -488,7 +488,19 @@
       "UNREADABLE_IMAGE": "Cette photo ne peut pas être lue. Reprenez-la ou choisissez un autre fichier.",
       "OCR_FAILED": "Le texte de cette photo n'a pas pu être lu. Reprenez la photo, bien éclairée et à plat.",
       "PHOTO_AUTHENTICITY": "Ce document vient de photos : son authenticité ne peut pas se juger sur un fichier.",
-      "DEFAULT_COLLECTION": "La collection par défaut ne peut pas être supprimée. Choisissez-en une autre comme collection par défaut d'abord."
+      "DEFAULT_COLLECTION": "La collection par défaut ne peut pas être supprimée. Choisissez-en une autre comme collection par défaut d'abord.",
+      "API_PLAN": "Votre forfait n'inclut pas les clés d'API.",
+      "API_KEY_LIMIT": "Vous avez atteint le nombre de clés de votre forfait. Révoquez-en une.",
+      "API_KEY_NAME": "Donnez un nom à la clé (80 caractères au plus).",
+      "API_KEY_SCOPE_UNKNOWN": "Choisissez au moins une permission valide.",
+      "API_KEY_EXPIRY": "Une clé doit se terminer : choisissez une durée de 1 à 365 jours.",
+      "API_KEY_NOT_FOUND": "Cette clé n'existe pas.",
+      "API_KEY_REVOKED": "Cette clé est révoquée.",
+      "API_KEY_SUPERSEDED": "Cette clé a déjà été remplacée.",
+      "API_KEY_MISSING": "Aucune clé d'API n'a été envoyée.",
+      "API_KEY_INVALID": "Cette clé d'API n'est pas valide.",
+      "API_KEY_EXPIRED": "Cette clé d'API est expirée.",
+      "API_KEY_SCOPE": "Cette clé n'a pas la permission pour cette action."
     },
     "adminConsole": {
       "shell": {
@@ -1106,6 +1118,10 @@
           "assistant": {
             "label": "Assistant (bientôt)",
             "hint": "Poser une question à son document. Pas encore construit."
+          },
+          "apiKeys": {
+            "label": "Clés d'API",
+            "hint": "Interrupteur global : éteint, aucune clé ne fonctionne et aucune ne peut être créée."
           }
         },
         "limits": {
@@ -1132,6 +1148,10 @@
           "bonusAuditsPerMonth": {
             "label": "Audits bonus par mois",
             "hint": "S'ajoute au plafond mensuel de cette personne."
+          },
+          "apiRequestsPerMinute": {
+            "label": "Requêtes d'API par minute et par clé",
+            "hint": "Au-delà, la réponse est 429 avec le délai d'attente."
           }
         },
         "plans": {
@@ -1139,6 +1159,10 @@
             "auditsPerDay": {
               "label": "Gratuit : audits par jour",
               "hint": "0 : sans plafond."
+            },
+            "apiKeys": {
+              "label": "Gratuit : clés d'API",
+              "hint": "Nombre de clés actives. 0 : le forfait n'a pas d'API."
             }
           },
           "pro": {
@@ -1149,6 +1173,10 @@
             "auditsPerDay": {
               "label": "Pro : audits par jour",
               "hint": "0 : sans plafond."
+            },
+            "apiKeys": {
+              "label": "Pro : clés d'API",
+              "hint": "Nombre de clés actives. 0 : le forfait n'a pas d'API."
             }
           }
         }

@@ -1,0 +1,11 @@
+import type { ApiKeyRules } from "./port";
+
+/** Yomizaka's API-key rules — data. */
+export const YOMIZAKA_API_KEY_RULES: ApiKeyRules = {
+  prefix: "yzk",
+  scopes: ["checks:write", "reports:read"],
+  secretBytes: 24,
+  maxExpiryDays: 365,
+  rotationGraceHours: 24,
+  lastUsedEveryMinutes: 5,
+};
