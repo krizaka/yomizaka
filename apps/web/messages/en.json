@@ -377,7 +377,11 @@
       "NO_ACCESS": "You do not have access to this report.",
       "OWN_ADDRESS": "You already own this report.",
       "EXPIRY_IN_THE_PAST": "The end date must be in the future.",
-      "EMAIL_NOT_VERIFIED": "Confirm your e-mail address first: the link was sent when you signed up."
+      "EMAIL_NOT_VERIFIED": "Confirm your e-mail address first: the link was sent when you signed up.",
+      "PAYWALL": "Your free audit is used: pay for this audit or go Pro.",
+      "FAIR_USE": "Monthly fair-use limit reached.",
+      "PAYMENTS_OFF": "Payment is not available yet.",
+      "NO_CUSTOMER": "Nothing has been bought yet."
     },
     "adminConsole": {
       "shell": {
@@ -637,6 +641,16 @@
       "invalid": "This link is invalid or has expired. Sign up again to get a new one.",
       "verified": "Your address is confirmed. You can sign in.",
       "invalidBanner": "This confirmation link is invalid or has expired."
+    },
+    "paywall": {
+      "title": "Your free audit is used",
+      "text": "The first audit is free. To check another document, pay for this audit or subscribe to Pro.",
+      "payOne": "Pay for this audit",
+      "pro": "Go Pro",
+      "soon": "Payment coming soon.",
+      "notice": "9.99 $ CAD per audit, or 29 $ CAD per month for Pro, before GST and QST. An informative check, not legal advice.",
+      "fairUseTitle": "Monthly limit reached",
+      "fairUse": "Pro includes up to {limit} audits a month. The limit resets at the start of next month."
     }
   },
   "report": {

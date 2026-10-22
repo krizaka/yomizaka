@@ -40,6 +40,15 @@ export const envSchema = z.object({
   MAIL_DOMAIN: z.string().optional(),
   MAIL_API_URL: z.string().url().default("https://api.mailgun.net"),
   MAIL_FROM: z.string().optional(),
+  /** Payments: the vendor is a value (`stripe`); the key's prefix decides test or live. Without provider, key and webhook secret, payments are off. */
+  PAYMENTS_PROVIDER: z.enum(["stripe"]).optional(),
+  PAYMENTS_STRIPE_SECRET_KEY: z.string().optional(),
+  PAYMENTS_STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  /** The processor's price lookup keys: prices are data at the processor, never typed here. */
+  PAYMENTS_PRICE_KEY_AUDIT: z.string().default("yomizaka_audit_cad"),
+  PAYMENTS_PRICE_KEY_PRO: z.string().default("yomizaka_pro_monthly_cad"),
+  /** The Pro plan's fair-use cap, audits per calendar month. */
+  APP_FAIR_USE_AUDITS_PER_MONTH: z.coerce.number().int().min(1).default(100),
   /** The addresses that may open the administration (comma-separated). Empty in production = nobody. */
   AUTH_ALLOWED_IPS: list,
   /** A header the edge sets with the client's address (`do-connecting-ip` on App Platform). */

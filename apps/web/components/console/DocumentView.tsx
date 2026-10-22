@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { type ComponentProps, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
+import { Paywall } from "@/components/console/Paywall";
 import { errorKey } from "@/lib/client";
 import { useSay } from "@/lib/i18n-client";
 import { firstCheck, wordingOf } from "@/lib/perspective-defaults";
@@ -257,6 +258,7 @@ function StartCompliance({ documentId, disabled, jurisdictions, types }: { docum
   const { say, locale } = useSay();
   const client = useQueryClient();
   const [problem, setProblem] = useState<string | null>(null);
+  const [paywall, setPaywall] = useState<"PAYWALL" | "FAIR_USE" | null>(null);
   const start = useMutation({
     // The Québec invoice is a named ruleset of the Studio (and Québec's alone); a lease keeps the jurisdiction's own.
     mutationFn: (body: { documentType: "lease" | "invoice" | "contract"; jurisdiction: string; asOf: string }) =>
@@ -273,7 +275,9 @@ function StartCompliance({ documentId, disabled, jurisdictions, types }: { docum
       try {
         await start.mutateAsync(values);
       } catch (error) {
-        setProblem(say(`errors.${errorKey(error)}`));
+        const code = errorKey(error);
+        if (code === "PAYWALL" || code === "FAIR_USE") setPaywall(code);
+        else setProblem(say(`errors.${code}`));
       }
     },
   });
@@ -285,6 +289,7 @@ function StartCompliance({ documentId, disabled, jurisdictions, types }: { docum
       ) : null}
       <form.Select name="jurisdiction" label={say("analysis.jurisdiction")} options={jurisdictions.map((j) => ({ value: j, label: say(`analysis.jurisdictions.${j}`) }))} />
       <form.DateField name="asOf" label={say("analysis.asOf")} />
+      {paywall ? <Paywall reason={paywall} /> : null}
       {problem ? <Alert tone="danger">{problem}</Alert> : null}
       <form.Submit disabled={disabled}>
         {say("analysis.run")}
@@ -297,6 +302,7 @@ function StartAuthenticity({ documentId, disabled }: { documentId: string; disab
   const { say, locale } = useSay();
   const client = useQueryClient();
   const [problem, setProblem] = useState<string | null>(null);
+  const [paywall, setPaywall] = useState<"PAYWALL" | "FAIR_USE" | null>(null);
   const start = useMutation({
     mutationFn: (body: { expectedIssuer: string }) =>
       krizakaFetch(`/api/documents/${documentId}`, { method: "POST", json: { studio: "document-authenticity", ...(body.expectedIssuer ? { expectedIssuer: body.expectedIssuer } : {}) } }),
@@ -309,7 +315,9 @@ function StartAuthenticity({ documentId, disabled }: { documentId: string; disab
       try {
         await start.mutateAsync(values);
       } catch (error) {
-        setProblem(say(`errors.${errorKey(error)}`));
+        const code = errorKey(error);
+        if (code === "PAYWALL" || code === "FAIR_USE") setPaywall(code);
+        else setProblem(say(`errors.${code}`));
       }
     },
   });
@@ -317,6 +325,7 @@ function StartAuthenticity({ documentId, disabled }: { documentId: string; disab
     <form.Form aria-label={say("analysis.authenticityTitle")} className="flex flex-col gap-3">
       <p className="text-sm text-fg-secondary">{say("analysis.authenticityText")}</p>
       <form.TextField name="expectedIssuer" label={say("analysis.expectedIssuer")} hint={say("analysis.expectedIssuerHint")} />
+      {paywall ? <Paywall reason={paywall} /> : null}
       {problem ? <Alert tone="danger">{problem}</Alert> : null}
       <form.Submit variant="secondary" disabled={disabled}>
         {say("analysis.run")}
