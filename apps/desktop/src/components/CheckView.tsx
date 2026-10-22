@@ -1,11 +1,12 @@
 import { Alert } from "@krizaka/ui/alert";
 import { Button } from "@krizaka/ui/button";
-import { Progress } from "@krizaka/ui/progress";
 import { useMutation, useQuery } from "@krizaka/query";
 import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
-import { STAGE, stageOf, stepOf, STAGES_IN_ORDER } from "@yomizaka/client";
+import { stepperSteps } from "@yomizaka/client";
+import { ANALYSIS_STATUS, checkSteps } from "@yomizaka/core";
+import { Stepper } from "@krizaka/ui/stepper";
 
-import { useI18n } from "../i18n";
+import { type MessageKey, useI18n } from "../i18n";
 import { queries, yomizaka } from "../lib/config";
 import { localDocuments } from "../lib/local-documents";
 import { base64Of, native } from "../lib/native";
@@ -17,7 +18,9 @@ export function CheckView({ documentId, analysisId, go }: { documentId: string; 
   const { t, locale } = useI18n();
   const run = useQuery(queries.analysis(documentId, analysisId, locale));
   const found = run.data?.analysis ?? null;
-  const stage = stageOf({ uploading: false, analysis: found });
+  // A run exists only for a document whose text was read (or a file the authenticity check reads as is).
+  const steps = checkSteps({ hasText: true, analysis: found ? { studio: found.studio, status: found.status } : null, studio: found?.studio });
+  const working = steps.some((step) => step.state === "current");
   const save = useMutation({
     mutationFn: async () => {
       const { url, headers } = await yomizaka.reportRequest(documentId, analysisId, locale);
@@ -33,14 +36,15 @@ export function CheckView({ documentId, analysisId, go }: { documentId: string; 
       <Button variant="ghost" size="sm" className="self-start" onClick={() => go({ screen: "library", folder: null })}>
         {t("check.back")}
       </Button>
-      <div className="flex flex-col gap-2">
-        <p className="text-sm text-fg-muted">{t("stage.step", { step: stepOf(stage), total: STAGES_IN_ORDER.length })}</p>
-        <h1 className="text-xl font-semibold">{t(`stage.${stage}`)}</h1>
-        {stage === STAGE.checking || stage === STAGE.sending ? <Progress value={null} label={t(`stage.${stage}`)} /> : null}
-        {stage === STAGE.checking ? <p className="text-fg-secondary">{t("result.runningHint")}</p> : null}
-        {found?.runId ? <p className="font-mono text-xs text-fg-muted">{t("check.run", { runId: found.runId })}</p> : null}
-      </div>
-      {stage === STAGE.failed ? <Alert tone="danger">{found?.error ?? t("result.failedHint")}</Alert> : null}
+      <Stepper
+        aria-label={t("steps.label")}
+        orientation="horizontal"
+        steps={stepperSteps(steps, (key) => t(key as MessageKey))}
+        labels={{ done: t("steps.state.done"), current: t("steps.state.current"), upcoming: t("steps.state.upcoming"), error: t("steps.state.error") }}
+      />
+      {working ? <p className="text-fg-secondary">{t("result.runningHint")}</p> : null}
+      {found?.runId ? <p className="font-mono text-xs text-fg-muted">{t("check.run", { runId: found.runId })}</p> : null}
+      {found && found.status !== ANALYSIS_STATUS.running && found.status !== ANALYSIS_STATUS.succeeded ? <Alert tone="danger">{found.error ?? t("result.failedHint")}</Alert> : null}
       {run.data?.closingNote ? (
         <>
           <ClosingNote note={run.data.closingNote} />

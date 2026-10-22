@@ -2,11 +2,10 @@
 //! folder scope of krizaka-tauri-kit: the page can read a folder the person granted, or a file they dropped on the window,
 //! and nothing else. The session token lives in the Keychain.
 
-mod access;
 mod documents;
 mod vault;
 
-use access::Access;
+use krizaka_tauri_kit::access::Access;
 use krizaka_tauri_kit::files::{self, Listing};
 use krizaka_tauri_kit::scope::ScopeStore;
 use std::path::{Path, PathBuf};

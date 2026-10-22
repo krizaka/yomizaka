@@ -25,7 +25,12 @@ describe("the files of the Mac the documents came from", () => {
   });
 
   it("keeps working when the storage refuses to write", () => {
-    const documents = createLocalDocuments({ getItem: () => null, setItem: () => { throw new Error("full"); } });
+    const documents = createLocalDocuments({
+      getItem: () => null,
+      setItem: () => {
+        throw new Error("full");
+      },
+    });
     expect(() => documents.remember("d1", "/a.pdf")).not.toThrow();
   });
 });
