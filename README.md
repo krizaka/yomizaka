@@ -96,6 +96,7 @@ Every variable is declared once in `apps/web/lib/env.ts` (see `.env.example`); a
 | `MEDIA_DOCUMENTS_PROVIDER` | where a kept document lives (ADR-0007): `none` (default, nothing kept), `bunny` (development and fictional data only, refused in production) or `s3` (DigitalOcean Spaces `tor1`, a workspace's own bucket, a local test server) |
 | `MEDIA_DOCUMENTS_PREFIX`, `MEDIA_DOCUMENTS_ENCRYPTION_KEY` | the prefix of every object (default `yomizaka`) and the AES-256-GCM key (32 bytes, base64; a secret) that encrypts it before it leaves |
 | `MEDIA_STORAGE_ENDPOINT`, `MEDIA_STORAGE_ZONE`, `MEDIA_STORAGE_API_KEY` | the Bunny Storage zone of the `bunny` adapter (the key is a secret) |
+| `MEDIA_DOCUMENTS_PULL_HOSTNAME`, `MEDIA_DOCUMENTS_TOKEN_KEY` | the zone's private pull zone and its token-authentication key (a secret): with both the store hands out signed, expiring links (dev: `yomizaka-docs-dev`) |
 | `MEDIA_S3_ENDPOINT`, `MEDIA_S3_REGION`, `MEDIA_S3_BUCKET`, `MEDIA_S3_ACCESS_KEY_ID`, `MEDIA_S3_SECRET_ACCESS_KEY` | the S3-compatible provider of the `s3` adapter (the last is a secret) |
 | `MAIL_PROVIDER` | the e-mail vendor, as a value (`mailgun`) |
 | `MAIL_API_KEY` | the vendor's key (a secret) |
