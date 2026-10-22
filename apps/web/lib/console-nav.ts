@@ -22,11 +22,12 @@ export function activeNav(path: string): NavId | null {
 }
 
 /** The title the top bar shows: the page, never the navigation. */
-export type TitleId = "library" | "check" | "search" | "document" | "account" | "screening";
+export type TitleId = "welcome" | "library" | "check" | "search" | "document" | "account" | "screening";
 export function titleOf(path: string): TitleId {
   const p = withoutLocale(path);
   if (under(p, "/app/documents")) return "document";
   if (under(p, "/app/screening")) return "screening";
+  if (under(p, "/app/bienvenue")) return "welcome";
   return activeNav(path) ?? "library";
 }
 

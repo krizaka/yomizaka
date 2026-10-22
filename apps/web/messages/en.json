@@ -160,7 +160,8 @@
         "search": "Search",
         "document": "Document",
         "account": "Account",
-        "screening": "Screening"
+        "screening": "Screening",
+        "welcome": "Welcome"
       }
     },
     "library": {
@@ -180,15 +181,24 @@
         "size": "Size",
         "added": "Added"
       },
-      "emptyTitle": "Nothing here yet",
-      "emptyText": "Drop a first document above: a lease to check against the law, a supplier's PDF to examine.",
+      "emptyTitle": "Drop your first document",
+      "emptyText": "Drag a file here or choose one. A lease to check against the law, a supplier PDF to review.",
       "duplicate": "{name} is already in your library.",
       "uploaded": "{name} is in your library.",
       "open": "Open {title}",
       "noText": "no text layer",
       "pages": "{count} p.",
       "screening": "Check a tenant's application (with their consent)",
-      "checkCta": "Check a document"
+      "checkCta": "Check a document",
+      "screeningCta": "Check a tenant's file",
+      "examplesTitle": "Or try an example",
+      "examplesNote": "Fictitious documents, checked like yours.",
+      "tryExample": "Try this example",
+      "exampleTenant": "A lease offered to a tenant",
+      "exampleLandlord": "A landlord's lease template",
+      "exampleTenantHint": "Rue Saint-Denis, 4½",
+      "exampleLandlordHint": "Avenue du Parc, 3½",
+      "dropAgain": "Add documents"
     },
     "upload": {
       "queued": "Waiting",
@@ -630,16 +640,21 @@
       "title": "Which side of the lease are you on?",
       "lead": "Yomizaka adapts the checks it offers first and its words. The rules are the same for everyone. You can change this at any time in settings.",
       "legend": "Your role",
-      "tenant": "Tenant — I check my lease before signing",
-      "landlord": "Landlord (lessor) — I check my lease template and the tenant's papers",
+      "tenant": "Tenant",
+      "landlord": "Landlord",
       "save": "Save",
       "saved": "Saved.",
       "settingsTitle": "Settings",
       "settingsLead": "Your role changes the checks offered first and the app's wording.",
       "open": "Settings",
-      "freelancer": "Freelancer — service contracts and invoices",
-      "business": "Business — supplier contracts and received invoices",
-      "soon": "soon"
+      "freelancer": "Freelancer",
+      "business": "Business",
+      "soon": "soon",
+      "tenantHint": "I check my lease before signing",
+      "landlordHint": "I check my lease template and the tenant's papers",
+      "freelancerHint": "Service contracts and invoices",
+      "businessHint": "Supplier contracts and received invoices",
+      "continue": "Continue"
     },
     "signUp": {
       "title": "Create your account",

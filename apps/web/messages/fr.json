@@ -160,7 +160,8 @@
         "search": "Recherche",
         "document": "Document",
         "account": "Compte",
-        "screening": "Vérification de locataire"
+        "screening": "Vérification de locataire",
+        "welcome": "Bienvenue"
       }
     },
     "library": {
@@ -180,15 +181,24 @@
         "size": "Taille",
         "added": "Ajouté"
       },
-      "emptyTitle": "Rien ici pour l'instant",
-      "emptyText": "Déposez un premier document ci-dessus : un bail à vérifier au regard de la loi, le PDF d'un fournisseur à examiner.",
+      "emptyTitle": "Déposez votre premier document",
+      "emptyText": "Glissez un fichier ici ou choisissez-en un : un bail à vérifier au regard de la loi, le PDF d'un fournisseur à examiner.",
       "duplicate": "{name} est déjà dans votre bibliothèque.",
       "uploaded": "{name} est dans votre bibliothèque.",
       "open": "Ouvrir {title}",
       "noText": "sans couche texte",
       "pages": "{count} p.",
       "screening": "Vérifier le dossier d'un locataire (avec son consentement)",
-      "checkCta": "Vérifier un document"
+      "checkCta": "Vérifier un document",
+      "screeningCta": "Vérifier le dossier d'un locataire",
+      "examplesTitle": "Ou essayez un exemple",
+      "examplesNote": "Documents fictifs, vérifiés comme les vôtres.",
+      "tryExample": "Essayer cet exemple",
+      "exampleTenant": "Un bail offert à un locataire",
+      "exampleLandlord": "Un modèle de bail de locateur",
+      "exampleTenantHint": "Rue Saint-Denis, 4½",
+      "exampleLandlordHint": "Avenue du Parc, 3½",
+      "dropAgain": "Ajouter des documents"
     },
     "upload": {
       "queued": "En attente",
@@ -630,16 +640,21 @@
       "title": "De quel côté du bail êtes-vous ?",
       "lead": "Yomizaka adapte les vérifications proposées en premier et ses mots. Les règles, elles, sont les mêmes pour tous. Vous pouvez changer à tout moment dans les réglages.",
       "legend": "Votre rôle",
-      "tenant": "Locataire — je vérifie mon bail avant de signer",
-      "landlord": "Propriétaire (locateur) — je vérifie mon modèle de bail et les pièces du locataire",
+      "tenant": "Locataire",
+      "landlord": "Propriétaire (locateur)",
       "save": "Enregistrer",
       "saved": "Enregistré.",
       "settingsTitle": "Réglages",
       "settingsLead": "Votre rôle change les vérifications proposées en premier et les mots de l'application.",
       "open": "Réglages",
-      "freelancer": "Travailleur autonome — contrats de service et factures",
-      "business": "Entreprise — contrats de fournisseurs et factures reçues",
-      "soon": "bientôt"
+      "freelancer": "Travailleur autonome",
+      "business": "Entreprise",
+      "soon": "bientôt",
+      "tenantHint": "Je vérifie mon bail avant de signer",
+      "landlordHint": "Je vérifie mon modèle de bail et les pièces du locataire",
+      "freelancerHint": "Contrats de service et factures",
+      "businessHint": "Contrats de fournisseurs et factures reçues",
+      "continue": "Continuer"
     },
     "signUp": {
       "title": "Créer votre compte",

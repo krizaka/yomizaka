@@ -7,11 +7,12 @@ const ROOT = join(__dirname, "..");
 const read = (p: string) => readFileSync(join(ROOT, p), "utf8");
 
 describe("the side is chosen at onboarding and changeable in settings", () => {
-  it("the library asks until a side is chosen, and links to settings after", () => {
-    const library = read("components/console/LibraryView.tsx");
-    expect(library).toContain("perspective === null");
-    expect(library).toContain("<PerspectiveChooser");
-    expect(library).toContain("/app/settings");
+  it("the library never asks: it sends to /bienvenue until a side is chosen", () => {
+    expect(read("components/console/LibraryView.tsx")).not.toContain("<PerspectiveChooser");
+    expect(read("app/[locale]/(app)/app/page.tsx")).toContain("onboardingTarget(");
+    const welcome = read("app/[locale]/(app)/app/bienvenue/page.tsx");
+    expect(welcome).toContain("<PerspectiveChooser");
+    expect(welcome).toContain("welcomeTarget(");
   });
   it("settings change it, the document page follows it", () => {
     expect(read("app/[locale]/(app)/app/settings/page.tsx")).toContain("<PerspectiveChooser current=");

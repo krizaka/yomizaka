@@ -9,5 +9,5 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 /** Check a document: the drop zone and nothing else; the new document then opens on its information tab. */
 export default function CheckPage() {
-  return <LibraryView initial={[]} mode="check" audiences={[]} />;
+  return <LibraryView initial={[]} mode="check" />;
 }

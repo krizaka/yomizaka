@@ -26,6 +26,7 @@ describe("the rail's active entry comes from the route", () => {
     expect(titleOf("/fr/app/documents/abc/texte")).toBe("document");
     expect(titleOf("/fr/app/recherche")).toBe("search");
     expect(titleOf("/en/app/verifier")).toBe("check");
+    expect(titleOf("/fr/app/bienvenue")).toBe("welcome");
   });
   it("strips the language segment only", () => {
     expect(withoutLocale("/fr/app/x")).toBe("/app/x");
