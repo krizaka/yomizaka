@@ -1,9 +1,10 @@
+import { PaymentsError } from "@krizaka/payments";
+
 import { applyPaymentEvent } from "@/lib/billing";
 import { query } from "@/lib/db";
 import { env } from "@/lib/env";
 import { handle, refuse } from "@/lib/http";
 import { paymentsFrom } from "@/lib/payments/config";
-import { PaymentsError } from "@/lib/payments/port";
 
 export const dynamic = "force-dynamic";
 

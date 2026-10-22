@@ -22,14 +22,14 @@ describe.runIf(enabled)("billing", () => {
     const id = await account();
     expect(await reserveAudit(query, id, NOW, 100)).toBe("free");
     await expect(reserveAudit(query, id, NOW, 100)).rejects.toMatchObject({ status: 402, body: { code: "PAYWALL" } });
-    expect(await applyPaymentEvent(query, { id: `evt-${id}`, type: "audit_paid", accountId: id, customerId: `cus-${id}` })).toBe("applied");
+    expect(await applyPaymentEvent(query, { id: `evt-${id}`, type: "payment_paid", kind: "audit", accountId: id, customerId: `cus-${id}` })).toBe("applied");
     expect(await reserveAudit(query, id, NOW, 100)).toBe("credit");
     await expect(reserveAudit(query, id, NOW, 100)).rejects.toMatchObject({ status: 402 });
   });
   it("a payment notification is idempotent: the same event credits once", async () => {
     const id = await account();
     await reserveAudit(query, id, NOW, 100);
-    const event = { id: `evt-dup-${id}`, type: "audit_paid", accountId: id, customerId: null } as const;
+    const event = { id: `evt-dup-${id}`, type: "payment_paid", kind: "audit", accountId: id, customerId: null } as const;
     expect(await applyPaymentEvent(query, event)).toBe("applied");
     expect(await applyPaymentEvent(query, event)).toBe("duplicate");
     expect((await entitlementOf(query, id, NOW)).credits).toBe(1);

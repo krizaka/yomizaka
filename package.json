@@ -2,7 +2,7 @@
   "name": "yomizaka-monorepo",
   "version": "0.1.0",
   "private": true,
-  "description": "Yomizaka \u2014 your documents, read and checked by Orazaka: upload, keep, search, and every analysis traced to an Orazaka run.",
+  "description": "Yomizaka — your documents, read and checked by Orazaka: upload, keep, search, and every analysis traced to an Orazaka run.",
   "packageManager": "pnpm@10.34.6",
   "scripts": {
     "dev": "turbo run dev --filter=@yomizaka/web",
@@ -20,7 +20,8 @@
     "sg:ratchet:update": "node scripts/sg-ratchet.mjs --update",
     "sg:fix": "node scripts/sg-fix.mjs",
     "check:overflow": "node scripts/check-overflow.mjs",
-    "check:admin-live": "node scripts/check-admin-live.mjs"
+    "check:admin-live": "node scripts/check-admin-live.mjs",
+    "payments:setup": "pnpm --filter @yomizaka/web exec krizaka-payments-setup --catalogue ../../deploy/payments-catalogue.json"
   },
   "devDependencies": {
     "@ast-grep/cli": "0.51.0",
