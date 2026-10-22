@@ -63,3 +63,21 @@ describe("tabs are routes: the URL is the state", () => {
     expect(shell).not.toMatch(/useState/);
   });
 });
+
+import { isSettingsSection, SETTINGS_SECTIONS } from "./console-nav";
+
+describe("the settings' sections are routes", () => {
+  it("lists them in order and knows only them", () => {
+    expect(SETTINGS_SECTIONS).toEqual(["profil", "securite", "facturation", "donnees"]);
+    expect(isSettingsSection("securite")).toBe(true);
+    expect(isSettingsSection("admin")).toBe(false);
+  });
+  it("each section has its page route, and the settings index redirects to the first", () => {
+    const page = (p: string) => existsSync(join(ROOT, "app/[locale]/(app)/app/settings", p, "page.tsx"));
+    expect(page("[section]")).toBe(true);
+    expect(readFileSync(join(ROOT, "app/[locale]/(app)/app/settings/page.tsx"), "utf8")).toContain("/app/settings/profil");
+  });
+  it("every section is under the account entry of the rail", () => {
+    for (const s of SETTINGS_SECTIONS) expect(activeNav(`/fr/app/settings/${s}`)).toBe("account");
+  });
+});

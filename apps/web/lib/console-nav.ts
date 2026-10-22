@@ -35,3 +35,8 @@ export function titleOf(path: string): TitleId {
 export const DOCUMENT_TABS = ["infos", "verifications", "fichier", "texte"] as const;
 export type DocumentTab = (typeof DOCUMENT_TABS)[number];
 export const isDocumentTab = (v: string): v is DocumentTab => (DOCUMENT_TABS as readonly string[]).includes(v);
+
+/** The settings' sections, each a route: /app/settings/<section> (the URL is the state). */
+export const SETTINGS_SECTIONS = ["profil", "securite", "facturation", "donnees"] as const;
+export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
+export const isSettingsSection = (v: string): v is SettingsSection => (SETTINGS_SECTIONS as readonly string[]).includes(v);

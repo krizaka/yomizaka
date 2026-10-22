@@ -327,4 +327,21 @@ ALTER TABLE documents ADD COLUMN storage text NOT NULL DEFAULT 'database' CHECK 
 ALTER TABLE documents ADD COLUMN retain_until timestamptz;
 `,
   },
+  {
+    version: "0014_account_profile",
+    sql: `
+-- ADR-0008: what the account port needs and no more — a display name, an avatar seed, and the e-mail change (a link mailed to the NEW address).
+ALTER TABLE accounts ADD COLUMN name text CHECK (name IS NULL OR char_length(name) <= 80);
+ALTER TABLE accounts ADD COLUMN avatar_seed text CHECK (avatar_seed IS NULL OR avatar_seed ~ '^[a-z0-9-]{1,40}$');
+CREATE TABLE email_changes (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  account_id uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  new_email  text NOT NULL CHECK (new_email = lower(new_email)),
+  token_hash text NOT NULL UNIQUE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  expires_at timestamptz NOT NULL,
+  used_at    timestamptz
+);
+`,
+  },
 ];
