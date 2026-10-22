@@ -1,6 +1,6 @@
 # ADR-0011 — API keys, behind a port that moves into `@krizaka/api-keys`
 
-Status: accepted (2026-10-22). Issue: krizaka/yomizaka#202. Shared contract: krizaka/.github#183 (Krizaka TS), krizaka/akinaza#178.
+Status: accepted (2026-10-22). **Moved**: the generic module is now the package `@krizaka/api-keys` (krizaka/krizaka-ts); Yomizaka keeps its rules (`lib/api-keys/rules.ts`) and the wiring (`lib/api-access.ts`). Issue: krizaka/yomizaka#202. Shared contract: krizaka/.github#183 (Krizaka TS), krizaka/akinaza#178.
 
 ## Context
 Yomizaka offers access by API key, and Akinaza will too (same contract, independent data). The org's rule is to share before

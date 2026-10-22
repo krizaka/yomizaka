@@ -1,4 +1,4 @@
-import type { ApiKeyRules } from "./port";
+import type { ApiKeyRules } from "@krizaka/api-keys";
 
 /** Yomizaka's API-key rules — data. */
 export const YOMIZAKA_API_KEY_RULES: ApiKeyRules = {
