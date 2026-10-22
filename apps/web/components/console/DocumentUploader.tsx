@@ -11,6 +11,8 @@ import { z } from "zod";
 
 import { useAppConfig } from "@/lib/app-config-client";
 import { useSay } from "@/lib/i18n-client";
+import { ROUTE_STATES } from "@/lib/route-state";
+import { useRouteState } from "@/lib/use-route-state";
 
 export interface Placement {
   collectionId: string | null;
@@ -45,13 +47,13 @@ export function DocumentUploader({ kindRef, placement, onUploaded, extra }: { ki
   const { say, locale } = useSay();
   const router = useRouter();
   const [notices, setNotices] = useState<string[]>([]);
-  // Not kept by default (the document is purged after its check, only the report stays): « conserver » is the person's choice.
-  const [chosen, setChosen] = useState<boolean | null>(null);
   // The owner's setting (ADR-0007): keeping may be switched off, or ticked by default; the person's own tick wins.
   const prefs = useQuery({ queryKey: ["storage-prefs"], queryFn: () => krizakaFetch("/api/me/storage", { schema: z.object({ settings: z.object({ mode: z.enum(STORAGE_MODES), keepDefault: z.boolean() }) }) }) });
   const app = useAppConfig();
   const keepOff = prefs.data?.settings.mode === STORAGE_MODE.none || app?.features.keepDocuments === false;
-  const keep = !keepOff && (chosen ?? prefs.data?.settings.keepDefault ?? false);
+  // Not kept unless the owner's setting says so (the document is purged after its check, only the report stays); the choice is `?conserver=`.
+  const [choice, setChoice] = useRouteState({ ...ROUTE_STATES.keepDocuments.state, fallback: prefs.data?.settings.keepDefault ? "1" : "0" });
+  const keep = !keepOff && choice === "1";
   const keepRef = useRef(keep);
   useEffect(() => {
     keepRef.current = keep;
@@ -82,7 +84,7 @@ export function DocumentUploader({ kindRef, placement, onUploaded, extra }: { ki
         <Checkbox
           id="keep-documents"
           checked={keep}
-          onCheckedChange={(v) => setChosen(v === true)}
+          onCheckedChange={(v) => setChoice(v === true ? "1" : "0")}
         />
         <label htmlFor="keep-documents" className="flex cursor-pointer flex-col text-sm">
           <span className="font-semibold text-fg">{say("library.keep")}</span>

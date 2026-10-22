@@ -1,11 +1,13 @@
 "use client";
 
 import { RadioGroup } from "@krizaka/ui/radio-group";
-import { DOCUMENT_KINDS, type DocumentKind } from "@yomizaka/core";
+import type { DocumentKind } from "@yomizaka/core";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 import { useSay } from "@/lib/i18n-client";
+import { CHECK_KINDS, type CheckKind, ROUTE_STATES } from "@/lib/route-state";
+import { useRouteState } from "@/lib/use-route-state";
 
 import { DocumentUploader } from "./DocumentUploader";
 
@@ -13,15 +15,15 @@ import { DocumentUploader } from "./DocumentUploader";
 export function CheckView() {
   const { say, locale } = useSay();
   const router = useRouter();
-  const [kind, setKind] = useState<DocumentKind | "auto">("auto");
-  const kindRef = useRef(kind);
+  const [kind, setKind] = useRouteState(ROUTE_STATES.checkKind.state);
+  const kindRef = useRef<DocumentKind | "auto">(kind);
+  useEffect(() => {
+    kindRef.current = kind;
+  }, [kind]);
   return (
     <section className="flex max-w-3xl flex-col gap-3" aria-label={say("library.dropTitle")}>
-      <RadioGroup.Root variant="segmented" label={say("library.kindLabel")} value={kind} onValueChange={(v: string) => {
-          kindRef.current = v as DocumentKind | "auto";
-          setKind(v as DocumentKind | "auto");
-        }}>
-        {(["auto", ...DOCUMENT_KINDS] as const).map((k) => (
+      <RadioGroup.Root variant="segmented" label={say("library.kindLabel")} value={kind} onValueChange={(v: string) => setKind(v as CheckKind)}>
+        {CHECK_KINDS.map((k) => (
           <RadioGroup.Segment key={k} value={k}>
             {say(`kinds.${k}`)}
           </RadioGroup.Segment>
