@@ -1,10 +1,14 @@
+import { storedAvatarKey } from "@krizaka/organize";
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { migrate, query } from "../db";
 import { photoOfPage } from "../images/fixtures";
 import { memoryStore } from "../storage/memory";
 import type { DocumentStore } from "../storage/port";
-import { avatarKey, readAvatar, removeAvatar, setSetAvatar, uploadAvatar } from "./avatar";
+import { readAvatar, removeAvatar, setSetAvatar, uploadAvatar } from "./avatar";
+import { legacyAvatarKey } from "./organize";
+
+const avatarKey = (owner: string, id: string, version: number) => storedAvatarKey("collection", owner, id, version);
 import * as org from "./store";
 
 /** A collection's avatar (krizaka/yomizaka#206) against a real PostgreSQL: one from the set, or an uploaded image kept behind the storage port. */
@@ -50,6 +54,22 @@ describe.runIf(enabled)("a collection's avatar", () => {
     expect(await uploadAvatar(query, owner, id, await photo({ degrees: 5 }), { ...RULES, store })).toEqual({ kind: "image", version: 2 });
     expect(await store.get(avatarKey(owner, id, 1))).toBeNull();
     expect(await store.get(avatarKey(owner, id, 2))).not.toBeNull();
+  });
+
+  it("an image kept before the package (the older key) is still read; a new one is written under the package's key only; removing deletes both", async () => {
+    const owner = await account();
+    const id = await collection(owner);
+    const store = memory();
+    await store.put(legacyAvatarKey("collection", owner, id, 3), new Uint8Array([1, 2]), { contentType: "image/jpeg" });
+    await query("UPDATE collections SET avatar = $2 WHERE id = $1", [id, JSON.stringify({ kind: "image", version: 3 })]);
+    expect([...(await readAvatar(query, owner, id, store))!.bytes]).toEqual([1, 2]);
+    expect(await uploadAvatar(query, owner, id, await photo(), { ...RULES, store })).toEqual({ kind: "image", version: 4 });
+    expect(await store.get(legacyAvatarKey("collection", owner, id, 4))).toBeNull();
+    expect(await store.get(avatarKey(owner, id, 4))).not.toBeNull();
+    await store.put(legacyAvatarKey("collection", owner, id, 4), new Uint8Array([9]), { contentType: "image/jpeg" });
+    await removeAvatar(query, owner, id, store);
+    expect(await store.get(legacyAvatarKey("collection", owner, id, 4))).toBeNull();
+    expect(await store.get(avatarKey(owner, id, 4))).toBeNull();
   });
 
   it("refuses what is not a small image: another type, too heavy, a lie about the type, a corrupt image — and keeps what was there", async () => {

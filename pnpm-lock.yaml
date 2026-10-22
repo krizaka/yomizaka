@@ -39,8 +39,8 @@ importers:
         specifier: ^0.7.0
         version: 0.7.0(react@19.3.1)
       '@krizaka/organize':
-        specifier: 0.2.0
-        version: 0.2.0
+        specifier: 0.3.0
+        version: 0.3.0
       '@krizaka/payments':
         specifier: 0.1.0
         version: 0.1.0
@@ -626,8 +626,8 @@ packages:
     resolution: {integrity: sha512-wvCyY1d2RKWcvuv5A0CBOBifyZoPkI9nZWD/jSA1rq7+8Tg/ltCqIcXBQnWr1gZXtDLt+YNyOkD+L4s1qVEJbg==}
     engines: {node: '>=22'}
 
-  '@krizaka/organize@0.2.0':
-    resolution: {integrity: sha512-N+Rg4ZT9bXbm5jsgnR68/TgS8M+PH62psZDnIxtI36Yytf/yeGdqBT2TWfWb9jAzcQ6BIsWq8DyznPlNwR/Asg==}
+  '@krizaka/organize@0.3.0':
+    resolution: {integrity: sha512-Gd2CUGtAVMR8WuPqcjoA+wgblPxNvvNMA0hv3GPbv0+dna8D59gQPrxM9UV8+olw9lVh1sxhStW9Yn2qDZCDUg==}
     engines: {node: '>=22'}
 
   '@krizaka/pacer@0.1.0':
@@ -4468,7 +4468,7 @@ snapshots:
 
   '@krizaka/organize@0.1.0': {}
 
-  '@krizaka/organize@0.2.0': {}
+  '@krizaka/organize@0.3.0': {}
 
   '@krizaka/pacer@0.1.0(react@19.3.1)':
     dependencies:

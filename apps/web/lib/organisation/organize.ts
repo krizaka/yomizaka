@@ -36,8 +36,12 @@ export function avatarProcessor(maxBytes: number, size: number): AvatarProcessor
   };
 }
 
-export function organizeOver(q: Query, images?: { processor: AvatarProcessor; store: ObjectStore }) {
-  return createOrganize({ query: (sql, params) => q(sql, params) as Promise<never>, schema: ORGANIZE_SCHEMA, images });
+/** Where Yomizaka kept an avatar image before the package: read as a fallback, never written. */
+export const legacyAvatarKey = (_kind: string, owner: string, id: string, version: number) => `${owner}/${id}/${version}.jpg`;
+
+/** The store is the product's (`DocumentStore`); the image maker is built for the limits of the call. */
+export function organizeOver(q: Query, images?: { store: ObjectStore }, maxBytes = 0, size = 256) {
+  return createOrganize({ query: (sql, params) => q(sql, params) as Promise<never>, schema: ORGANIZE_SCHEMA, images: images && { store: images.store, processor: avatarProcessor(maxBytes, size) }, legacyAvatarKey });
 }
 
 /** The package's refusals become Yomizaka's HTTP answers (the same codes the pages translate). */
