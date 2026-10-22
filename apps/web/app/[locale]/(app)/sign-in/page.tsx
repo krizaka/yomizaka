@@ -8,8 +8,9 @@ import { redirect } from "next/navigation";
 
 import { SignInForm } from "@/components/console/SignInForm";
 import { pageSession } from "@/lib/access";
-import { signupOpen } from "@/lib/env";
+import { env } from "@/lib/env";
 import { asLocale, getDictionary } from "@/lib/i18n";
+import { signupOpenNow } from "@/lib/settings/signup";
 import { safeNext } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -39,7 +40,7 @@ export default async function SignInPage({ params, searchParams }: { params: Pro
       title={t.title}
       description={t.description}
       footer={
-        signupOpen() ? (
+        (await signupOpenNow(env())) ? (
           <Link className="font-semibold text-fg-accent" href={`/${locale}/sign-up`}>
             {t.signUpLink}
           </Link>

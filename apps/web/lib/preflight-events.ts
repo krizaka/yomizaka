@@ -41,15 +41,16 @@ export async function preflightMetrics(query: Query, estimatedRunCostCents: numb
  * ruleset, expected issuer) under the Studio version now in force. Returns the analysis id of the newest such run.
  * A deleted document takes its analyses with it (ON DELETE CASCADE): a purged document is never reused.
  */
-export async function findReusableAnalysis(query: Query, p: { ownerId: string; documentId: string; studio: string; jurisdiction: string | null; ruleset: string | null; expectedIssuer: string | null }): Promise<string | null> {
+export async function findReusableAnalysis(query: Query, p: { reuseDays: number; now: Date; ownerId: string; documentId: string; studio: string; jurisdiction: string | null; ruleset: string | null; expectedIssuer: string | null }): Promise<string | null> {
+  if (p.reuseDays <= 0) return null; // reuse switched off
   const [current] = await query<{ blueprint_version: string }>("SELECT blueprint_version FROM analyses WHERE studio = $1 AND blueprint_version IS NOT NULL ORDER BY created_at DESC LIMIT 1", [p.studio]);
   if (!current) return null;
   const [row] = await query<{ id: string }>(
     `SELECT a.id FROM analyses a JOIN documents d ON d.id = a.document_id
-      WHERE d.owner_id = $1 AND d.id = $2 AND a.studio = $3 AND a.status = 'succeeded' AND a.run_id IS NOT NULL AND a.blueprint_version = $4
+      WHERE d.owner_id = $1 AND d.id = $2 AND a.studio = $3 AND a.status = 'succeeded' AND a.run_id IS NOT NULL AND a.blueprint_version = $4 AND a.created_at >= $8::timestamptz - make_interval(days => $9)
         AND COALESCE(a.inputs->>'jurisdiction', '') = $5 AND COALESCE(a.inputs->>'ruleset', '') = $6 AND COALESCE(a.inputs->>'expectedIssuer', '') = $7
       ORDER BY a.created_at DESC LIMIT 1`,
-    [p.ownerId, p.documentId, p.studio, current.blueprint_version, p.jurisdiction ?? "", p.ruleset ?? "", p.expectedIssuer ?? ""],
+    [p.ownerId, p.documentId, p.studio, current.blueprint_version, p.jurisdiction ?? "", p.ruleset ?? "", p.expectedIssuer ?? "", p.now, p.reuseDays],
   );
   return row?.id ?? null;
 }

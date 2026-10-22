@@ -19,6 +19,8 @@ type Fetch = typeof fetch;
 export interface OrazakaClient {
   startRun(studio: Studio, inputs: Record<string, string>): Promise<OrazakaRun>;
   getRun(runId: string): Promise<OrazakaRun>;
+  /** The Studios this product's key has installed — also the cheapest call that proves the key and the connection. */
+  studios(): Promise<string[]>;
 }
 
 const installation = z.object({ studioKey: z.string() });
@@ -74,6 +76,9 @@ export function createOrazakaClient(options: { baseUrl: string; apiKey: string |
     async startRun(studio, inputs) {
       await ensureInstalled(studio);
       return call(`/api/v1/studios/${studio}/runs`, orazakaRun, { method: "POST", body: { inputs } });
+    },
+    async studios() {
+      return (await call("/api/v1/studios/installations", z.array(installation))).map((i) => i.studioKey);
     },
     getRun(runId) {
       if (!/^[0-9a-f-]{36}$/i.test(runId)) throw refuse(400, "BAD_RUN", "Not a run id");

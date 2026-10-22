@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { type MutableRefObject, type ReactNode, useEffect, useRef, useState } from "react";
 import { z } from "zod";
 
+import { useAppConfig } from "@/lib/app-config-client";
 import { useSay } from "@/lib/i18n-client";
 
 export interface Placement {
@@ -48,7 +49,8 @@ export function DocumentUploader({ kindRef, placement, onUploaded, extra }: { ki
   const [chosen, setChosen] = useState<boolean | null>(null);
   // The owner's setting (ADR-0007): keeping may be switched off, or ticked by default; the person's own tick wins.
   const prefs = useQuery({ queryKey: ["storage-prefs"], queryFn: () => krizakaFetch("/api/me/storage", { schema: z.object({ settings: z.object({ mode: z.enum(STORAGE_MODES), keepDefault: z.boolean() }) }) }) });
-  const keepOff = prefs.data?.settings.mode === STORAGE_MODE.none;
+  const app = useAppConfig();
+  const keepOff = prefs.data?.settings.mode === STORAGE_MODE.none || app?.features.keepDocuments === false;
   const keep = !keepOff && (chosen ?? prefs.data?.settings.keepDefault ?? false);
   const keepRef = useRef(keep);
   useEffect(() => {
@@ -88,7 +90,7 @@ export function DocumentUploader({ kindRef, placement, onUploaded, extra }: { ki
         </label>
       </div>
       )}
-      <Dropzone title={say("library.dropTitle")} browseLabel={say("library.browse")} hint={say("library.hint")} accept="application/pdf,text/plain,.pdf,.txt" maxSize={MAX_FILE_BYTES} maxFiles={20} multiple onFiles={queue.add} refusalLabel={refusal} />
+      <Dropzone title={say("library.dropTitle")} browseLabel={say("library.browse")} hint={say("library.hint")} accept="application/pdf,text/plain,.pdf,.txt" maxSize={app?.maxFileBytes ?? MAX_FILE_BYTES} maxFiles={20} multiple onFiles={queue.add} refusalLabel={refusal} />
       {queue.items.length > 0 ? (
         <UploadList
           items={queue.items}

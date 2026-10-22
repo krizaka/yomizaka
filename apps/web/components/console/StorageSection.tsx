@@ -12,6 +12,7 @@ import { useState } from "react";
 import { z } from "zod";
 
 import { errorKey } from "@/lib/client";
+import { formI18n } from "@/lib/form-i18n";
 import { useSay } from "@/lib/i18n-client";
 
 
@@ -49,8 +50,7 @@ function StorageForm({ initial, canStoreCredentials, say, locale, onSaved }: { i
   const test = useMutation({ mutationFn: () => krizakaFetch("/api/me/storage/test", { method: "POST", json: body(), schema: verification }) });
   const save = useMutation({ mutationFn: () => krizakaFetch("/api/me/storage", { method: "PUT", json: { mode, keepDefault: mode === STORAGE_MODE.none ? false : keepDefault, ...(mode === STORAGE_MODE.s3 ? { s3: body() } : {}) } }) });
   const form = s3Form.useForm({
-    t: (key: string, vars?: unknown) => say(key, vars as Record<string, string | number> | undefined),
-    locale,
+    ...formI18n(say, locale),
     defaultValues: { endpoint: initial.s3?.endpoint ?? "", region: initial.s3?.region ?? "", bucket: initial.s3?.bucket ?? "", accessKeyId: initial.s3?.accessKeyId ?? "", secretAccessKey: "" },
     onSubmit: async () => {
       setProblem(null);
@@ -63,7 +63,7 @@ function StorageForm({ initial, canStoreCredentials, say, locale, onSaved }: { i
         setProblem(say(`errors.${errorKey(error)}`));
       }
     },
-  } as never);
+  });
   const runTest = async () => {
     setProblem(null);
     setVerified(null);

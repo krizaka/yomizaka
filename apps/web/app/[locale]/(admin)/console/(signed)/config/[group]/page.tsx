@@ -1,0 +1,42 @@
+import { notFound } from "next/navigation";
+
+import { OrazakaPanel, PacksPanel, PricesPanel, ScopeBar } from "@/components/admin/ConfigPanels";
+import { ConfigView } from "@/components/admin/ConfigView";
+import { RouteTabs } from "@/components/RouteTabs";
+import { appEnvironment } from "@/lib/env";
+import { listAdminFlows } from "@/lib/flows";
+import { asLocale, getDictionary } from "@/lib/i18n";
+import { CONFIG_PAGE, CONFIG_PAGES, isConfigPage, isSettingsGroup } from "@/lib/settings/admin-config";
+import { SCOPE, type Scope } from "@/lib/settings/registry";
+
+export const dynamic = "force-dynamic";
+
+const SCOPES = Object.values(SCOPE) as string[];
+
+/** One page of the app configuration, one route: /config/general | features | limits | plans | packs | orazaka, at a scope given in the URL. */
+export default async function ConfigPage({ params, searchParams }: { params: Promise<{ locale: string; group: string }>; searchParams: Promise<{ scope?: string; id?: string }> }) {
+  const { locale: raw, group } = await params;
+  if (!isConfigPage(group)) notFound();
+  const locale = asLocale(raw);
+  const t = getDictionary(locale).console.adminConfig;
+  const q = await searchParams;
+  const scope = { scope: (q.scope && SCOPES.includes(q.scope) ? q.scope : SCOPE.global) as Scope, id: q.id ?? "" };
+  const items = CONFIG_PAGES.map((p) => ({ value: p, label: t.groups[p] }));
+  return (
+    <div className="flex flex-col gap-4">
+      <div>
+        <h1 className="m-0 font-display text-xl font-bold text-fg">{t.title}</h1>
+        <p className="m-0 mt-1 max-w-[70ch] text-sm text-fg-secondary">{t.lead}</p>
+      </div>
+      <RouteTabs value={group} base={`/${locale}/config`} label={t.title} items={items}>
+        <div className="flex flex-col gap-6">
+          {isSettingsGroup(group) ? <ScopeBar scope={scope} /> : null}
+          {group === CONFIG_PAGE.plans ? <PricesPanel /> : null}
+          {isSettingsGroup(group) ? <ConfigView group={group} scope={scope} /> : null}
+          {group === CONFIG_PAGE.packs ? <PacksPanel flows={await listAdminFlows()} environment={appEnvironment()} /> : null}
+          {group === CONFIG_PAGE.orazaka ? <OrazakaPanel /> : null}
+        </div>
+      </RouteTabs>
+    </div>
+  );
+}

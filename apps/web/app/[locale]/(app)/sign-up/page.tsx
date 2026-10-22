@@ -7,8 +7,9 @@ import { redirect } from "next/navigation";
 
 import { SignUpForm } from "@/components/console/SignUpForm";
 import { pageSession } from "@/lib/access";
-import { signupOpen } from "@/lib/env";
+import { env } from "@/lib/env";
 import { asLocale, getDictionary } from "@/lib/i18n";
+import { signupOpenNow } from "@/lib/settings/signup";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,7 @@ export default async function SignUpPage({ params }: { params: Promise<{ locale:
   const locale = asLocale((await params).locale);
   if (await pageSession().catch(() => null)) redirect(`/${locale}/app`);
   const t = getDictionary(locale).console.signUp;
-  const open = signupOpen();
+  const open = await signupOpenNow(env());
   return (
     <AuthLayout
       brand={

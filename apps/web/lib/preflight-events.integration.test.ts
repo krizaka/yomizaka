@@ -17,7 +17,7 @@ describe.runIf(enabled)("pre-flight: reuse and metrics", () => {
   const document = async (owner: string, sha: string) => (await query<{ id: string }>("INSERT INTO documents (owner_id, title, filename, mime_type, size_bytes, sha256, content, text) VALUES ($1, 't', 'a.txt', 'text/plain', 1, $2, 'x', 'x') RETURNING id", [owner, sha]))[0]!.id;
   const run = async (doc: string, version: string, inputs: object, status = "succeeded") =>
     (await query<{ id: string }>("INSERT INTO analyses (document_id, studio, status, run_id, blueprint_version, inputs) VALUES ($1, 'compliance-check', $2, $3, $4, $5) RETURNING id", [doc, status, `run-${Math.random()}`, version, JSON.stringify(inputs)]))[0]!.id;
-  const ask = (owner: string, documentId: string, over: Partial<{ jurisdiction: string; ruleset: string | null }> = {}) => findReusableAnalysis(query, { ownerId: owner, documentId, studio: "compliance-check", jurisdiction: "QC", ruleset: null, expectedIssuer: null, ...over });
+  const ask = (owner: string, documentId: string, over: Partial<{ jurisdiction: string; ruleset: string | null }> = {}) => findReusableAnalysis(query, { reuseDays: 365, now: new Date(), ownerId: owner, documentId, studio: "compliance-check", jurisdiction: "QC", ruleset: null, expectedIssuer: null, ...over });
 
   it("reuses a succeeded run of the same document, rules and Studio version — no new run", async () => {
     const o = await tenant();
@@ -56,5 +56,19 @@ describe.runIf(enabled)("pre-flight: reuse and metrics", () => {
     await recordPreflight(query, o, "reused");
     const mine = (await preflightMetrics(query, 3)).find((m) => m.tenantId === o);
     expect(mine).toMatchObject({ accepted: 1, rejected: 2, reused: 1, runsAvoided: 3, estimatedSavedCents: 9 });
+  });
+
+  it("reuse is a setting: switched off (0 days) nothing is reused, and a run older than the window is not", async () => {
+    const o = await tenant();
+    const d = await document(o, `w-${o}`);
+    const id = await run(d, "1.2.0", { jurisdiction: "QC" });
+    const base = { ownerId: o, documentId: d, studio: "compliance-check", jurisdiction: "QC", ruleset: null, expectedIssuer: null, now: new Date() };
+    expect(await findReusableAnalysis(query, { ...base, reuseDays: 365 })).toBe(id);
+    expect(await findReusableAnalysis(query, { ...base, reuseDays: 0 })).toBeNull();
+    // The Studio version in force is the newest run's: keep it this one while the run under test ages.
+    await run(await document(o, `w2-${o}`), "1.2.0", { jurisdiction: "FR" });
+    await query("UPDATE analyses SET created_at = now() - interval '40 days' WHERE id = $1", [id]);
+    expect(await findReusableAnalysis(query, { ...base, reuseDays: 30 })).toBeNull();
+    expect(await findReusableAnalysis(query, { ...base, reuseDays: 60 })).toBe(id);
   });
 });

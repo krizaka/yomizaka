@@ -5,6 +5,7 @@ import { handle } from "@/lib/http";
 import { asLocale } from "@/lib/i18n";
 import { personalInfo } from "@/lib/pii";
 import { limit } from "@/lib/rate-limit";
+import { assertFeature } from "@/lib/settings/guards";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ export function GET(req: Request, { params }: { params: Promise<{ id: string }> 
   return handle(async () => {
     const session = await requireSession(req);
     limit("redacted", req, session.account.id, [60, 3600]);
+    await assertFeature("personalInfo", session.account.id);
     const { id } = await params;
     const doc = await getDocument(session.account.id, id);
     const lang = asLocale(new URL(req.url).searchParams.get("lang") ?? undefined);

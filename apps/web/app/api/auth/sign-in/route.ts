@@ -4,9 +4,11 @@ import { z } from "zod";
 import { hostAllowed } from "@/lib/access";
 import { checkPassword } from "@/lib/accounts";
 import { clientIp } from "@/lib/client-ip";
+import { query } from "@/lib/db";
 import { handle, readJson, refuse } from "@/lib/http";
 import { limit } from "@/lib/rate-limit";
 import { createSession, sessionCookie } from "@/lib/session";
+import { assertOpen } from "@/lib/settings/guards";
 
 const body = z.object({ email: z.string().trim().email().max(320), password: z.string().min(1).max(256) });
 
@@ -17,6 +19,9 @@ export function POST(req: Request) {
     const { email, password } = await readJson(req, body);
     limit("sign-in", req, email, [30, 900], [10, 900]);
     const account = await checkPassword(email, password, req.headers);
+    // During maintenance only an administrator signs in.
+    const [who] = await query<{ role: "USER" | "ADMIN" }>("SELECT role FROM accounts WHERE id = $1", [account.id]);
+    await assertOpen({ role: who?.role ?? "USER" });
     const { token, expires } = await createSession(account.id, { ip: clientIp(req.headers), userAgent: req.headers.get("user-agent") });
     (await cookies()).set(sessionCookie(token, expires));
     return Response.json({ account: { email: account.email, locale: account.locale } });

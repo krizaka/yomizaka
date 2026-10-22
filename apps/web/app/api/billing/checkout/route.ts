@@ -7,6 +7,7 @@ import { env } from "@/lib/env";
 import { handle, readJson, refuse } from "@/lib/http";
 import { paymentsFrom } from "@/lib/payments/config";
 import { limit } from "@/lib/rate-limit";
+import { appSettings } from "@/lib/settings/instance";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ export function POST(req: Request) {
     const session = await requireSession(req);
     limit("checkout", req, session.account.id, [30, 3600], [10, 3600]);
     const port = paymentsFrom(env());
-    if (!port) throw refuse(503, "PAYMENTS_OFF", "Payment is not available yet");
+    if (!port || !(await appSettings().get("payments.enabled", { userId: session.account.id }))) throw refuse(503, "PAYMENTS_OFF", "Payment is not available yet");
     const { kind } = await readJson(req, body);
     const [row] = await query<{ payment_customer_id: string | null }>("SELECT payment_customer_id FROM accounts WHERE id = $1", [session.account.id]);
     let customerId = row?.payment_customer_id ?? null;

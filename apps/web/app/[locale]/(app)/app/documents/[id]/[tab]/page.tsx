@@ -10,6 +10,8 @@ import { appEnvironment } from "@/lib/env";
 import { availableFlows, offerFor } from "@/lib/flows";
 import { HttpError } from "@/lib/http";
 import { asLocale, getDictionary } from "@/lib/i18n";
+import { withFeatures } from "@/lib/settings/boundary";
+import { insightFeatures } from "@/lib/settings/guards";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   return { title: getDictionary(asLocale((await params).locale)).console.shell.document };
@@ -21,7 +23,7 @@ export default async function DocumentTabPage({ params }: { params: Promise<{ lo
   if (!isDocumentTab(tab)) notFound();
   const session = await pageSession();
   if (!session) notFound();
-  const document = await getDocument(session.account.id, id).then(async (d) => ({ ...d, ...(await documentStorage(session.account.id, id, (await storesOf(session.account.id)).describe)) })).catch((error: unknown) => {
+  const document = await getDocument(session.account.id, id).then(async (d) => ({ ...withFeatures(d, await insightFeatures(session.account.id)), ...(await documentStorage(session.account.id, id, (await storesOf(session.account.id)).describe)) })).catch((error: unknown) => {
     if (error instanceof HttpError && error.status === 404) return null;
     throw error;
   });

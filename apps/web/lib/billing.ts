@@ -2,6 +2,7 @@ import { applyOnce, type PaymentEvent, pgEventStore } from "@krizaka/payments";
 import type { QueryResultRow } from "pg";
 
 import { refuse } from "./http";
+import type { AuditCaps } from "./settings/boundary";
 
 /**
  * Entitlements — the domain, vendor-free (it speaks the payments port's events, never a processor's). A self-serve account
@@ -33,19 +34,26 @@ export async function entitlementOf(query: Query, accountId: string, now: Date):
   return { selfServe: r.self_serve, freeAuditUsed: r.free_used, credits: r.audit_credits, pro, proUntil: r.current_period_end?.toISOString() ?? null, subscriptionStatus: r.subscription_status, hasCustomer: r.has_customer };
 }
 
+export type Plan = "free" | "pro";
+
+const COUNT_SINCE = "SELECT count(*) AS n FROM analyses a JOIN documents d ON d.id = a.document_id WHERE d.owner_id = $1 AND a.created_at >= date_trunc($3, $2::timestamptz)";
+
 /**
  * Takes the right to one audit, atomically (two requests cannot spend the same free audit or credit). Throws 402 PAYWALL when
- * there is none, 429 FAIR_USE past the Pro cap. The caller gives it back with `releaseAudit` if the run could not start.
+ * there is none, 429 FAIR_USE past the plan's monthly cap and 429 DAILY_LIMIT past its daily one. The caps are the
+ * configuration's (`capsOf`); the caller gives the audit back with `releaseAudit` if the run could not start.
  */
-export async function reserveAudit(query: Query, accountId: string, now: Date, fairUsePerMonth: number): Promise<AuditVia> {
+export async function reserveAudit(query: Query, accountId: string, now: Date, capsOf: (plan: Plan) => AuditCaps): Promise<AuditVia> {
   const e = await entitlementOf(query, accountId, now);
   if (!e.selfServe) return "exempt";
+  const caps = capsOf(e.pro ? "pro" : "free");
+  const used = async (period: "day" | "month") => Number((await query<{ n: string }>(COUNT_SINCE, [accountId, now, period]))[0]?.n ?? 0);
+  if (caps.perDay > 0 && (await used("day")) >= caps.perDay) throw refuse(429, "DAILY_LIMIT", "Daily limit reached", { limit: caps.perDay });
   if (e.pro) {
-    const [row] = await query<{ n: string }>("SELECT count(*) AS n FROM analyses a JOIN documents d ON d.id = a.document_id WHERE d.owner_id = $1 AND a.created_at >= date_trunc('month', $2::timestamptz)", [accountId, now]);
-    if (Number(row?.n ?? 0) >= fairUsePerMonth) throw refuse(429, "FAIR_USE", "Monthly fair-use limit reached", { limit: fairUsePerMonth });
+    if ((await used("month")) >= caps.perMonth) throw refuse(429, "FAIR_USE", "Monthly fair-use limit reached", { limit: caps.perMonth });
     return "pro";
   }
-  if ((await query("UPDATE accounts SET free_audit_used_at = $2 WHERE id = $1 AND free_audit_used_at IS NULL RETURNING id", [accountId, now])).length) return "free";
+  if (caps.freeFirst && (await query("UPDATE accounts SET free_audit_used_at = $2 WHERE id = $1 AND free_audit_used_at IS NULL RETURNING id", [accountId, now])).length) return "free";
   if ((await query("UPDATE accounts SET audit_credits = audit_credits - 1 WHERE id = $1 AND audit_credits > 0 RETURNING id", [accountId])).length) return "credit";
   throw refuse(402, "PAYWALL", "Payment required");
 }

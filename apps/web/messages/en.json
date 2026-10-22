@@ -455,7 +455,13 @@
       "CONNECTION_FAILED": "The connection test failed.",
       "STORAGE_IN_USE": "Documents are kept on this storage: export or delete them first.",
       "SETTINGS_KEY_MISSING": "This installation cannot store credentials.",
-      "KEEP_DISABLED": "Keeping is switched off for this account."
+      "KEEP_DISABLED": "Keeping is switched off for this account.",
+      "MAINTENANCE": "The app is in maintenance. Please come back in a few minutes.",
+      "FEATURE_OFF": "This feature is switched off.",
+      "DAILY_LIMIT": "Daily limit reached. Come back tomorrow.",
+      "UNKNOWN_SETTING": "No such setting.",
+      "BAD_VALUE": "That value is not valid.",
+      "BAD_SCOPE": "That setting cannot be set at this scope."
     },
     "adminConsole": {
       "shell": {
@@ -473,8 +479,10 @@
         "groups": {
           "people": "People and files",
           "engine": "Flows and engine",
-          "operations": "Operations"
-        }
+          "operations": "Operations",
+          "app": "App"
+        },
+        "config": "Configuration"
       },
       "overview": {
         "health": "Health",
@@ -729,7 +737,8 @@
       "soon": "Payment coming soon.",
       "notice": "9.99 $ CAD per audit, or 29 $ CAD per month for Pro, before GST and QST. An informative check, not legal advice.",
       "fairUseTitle": "Monthly limit reached",
-      "fairUse": "Pro includes up to {limit} audits a month. The limit resets at the start of next month."
+      "fairUse": "Pro includes up to {limit} audits a month. The limit resets at the start of next month.",
+      "testMode": "Test mode: no real card is charged."
     },
     "insight": {
       "title": "This document",
@@ -901,7 +910,8 @@
         "portal": "Manage the subscription and invoices",
         "portalHint": "Payment method, invoices (with GST and QST) and cancellation: in Stripe's secure portal.",
         "off": "Payment is not available yet.",
-        "buy": "Buy or subscribe"
+        "buy": "Buy or subscribe",
+        "testMode": "Test mode: no real card is charged."
       },
       "data": {
         "exportTitle": "Export my data",
@@ -953,6 +963,202 @@
       "lead": "One click to use this address with your account.",
       "button": "Confirm the new address",
       "invalid": "This link is invalid or has expired."
+    },
+    "maintenance": {
+      "title": "Under maintenance"
+    },
+    "adminConfig": {
+      "title": "App configuration",
+      "lead": "Every setting is data: it applies at once, with no redeploy, and every change is logged.",
+      "groups": {
+        "general": "General",
+        "features": "Features",
+        "limits": "Limits",
+        "plans": "Plans",
+        "packs": "Rules packs",
+        "orazaka": "Orazaka"
+      },
+      "scope": {
+        "label": "Scope",
+        "global": "Global",
+        "workspace": "Workspace",
+        "user": "Person",
+        "id": "Identifier",
+        "idHint": "Workspace or person identifier.",
+        "apply": "Show",
+        "workspaceNote": "Workspaces arrive with B2B: the resolution is ready.",
+        "resolution": "Effective value: person, then workspace, then global, then default."
+      },
+      "row": {
+        "modified": "modified",
+        "inherited": "inherited: {source}",
+        "reset": "Reset to default",
+        "save": "Save",
+        "saved": "Saved.",
+        "default": "Default: {value}",
+        "on": "on",
+        "off": "off",
+        "fr": "FR",
+        "en": "EN",
+        "notHere": "Cannot be set at this scope."
+      },
+      "sources": {
+        "default": "default",
+        "global": "global",
+        "workspace": "workspace",
+        "user": "person"
+      },
+      "choices": {
+        "test": "Test",
+        "live": "Live",
+        "pdf": "PDF",
+        "text": "Text"
+      },
+      "settings": {
+        "app": {
+          "maintenance": {
+            "label": "Maintenance mode",
+            "hint": "Closes the app to users and shows the message below. Administrators still get in."
+          },
+          "maintenanceMessage": {
+            "label": "Maintenance message",
+            "hint": "What users see, in each language."
+          }
+        },
+        "signup": {
+          "open": {
+            "label": "Sign-up open",
+            "hint": "Lets people create an account. E-mail sending must also be configured."
+          }
+        },
+        "payments": {
+          "enabled": {
+            "label": "Payments on",
+            "hint": "Turns off buying an audit and the Pro plan. The billing portal stays open."
+          },
+          "display": {
+            "label": "Payments display",
+            "hint": "Test mode: a notice says no real card is charged."
+          }
+        },
+        "audit": {
+          "freeFirst": {
+            "label": "Free first audit",
+            "hint": "A self-serve account's first audit is free."
+          }
+        },
+        "features": {
+          "documentInsight": {
+            "label": "“This document” panel",
+            "hint": "The document's nature and facts, read from its text."
+          },
+          "personalInfo": {
+            "label": "Personal-information detection",
+            "hint": "Counts and redacts personal information."
+          },
+          "keepDocuments": {
+            "label": "“Keep my documents” option",
+            "hint": "Without it, every document is deleted after its check."
+          },
+          "ownStorage": {
+            "label": "Own S3 storage",
+            "hint": "Lets people connect their own S3-compatible storage."
+          },
+          "assistant": {
+            "label": "Assistant (later)",
+            "hint": "Ask a question to a document. Not built yet."
+          }
+        },
+        "limits": {
+          "maxFileMb": {
+            "label": "Largest file",
+            "hint": "Cannot go above what the platform carries (10 MB)."
+          },
+          "maxPages": {
+            "label": "Most pages in a PDF",
+            "hint": "Pre-flight threshold."
+          },
+          "allowedTypes": {
+            "label": "Accepted file types",
+            "hint": "At least one."
+          },
+          "reuseDays": {
+            "label": "Reuse window",
+            "hint": "An identical result newer than this is reused with no new run. 0: never."
+          },
+          "purgeAfterHours": {
+            "label": "Purge of a never-checked document",
+            "hint": "Hours before a not-kept document that was never checked is deleted."
+          },
+          "bonusAuditsPerMonth": {
+            "label": "Bonus audits per month",
+            "hint": "Added to this person's monthly cap."
+          }
+        },
+        "plans": {
+          "free": {
+            "auditsPerDay": {
+              "label": "Free: audits per day",
+              "hint": "0: no cap."
+            }
+          },
+          "pro": {
+            "auditsPerMonth": {
+              "label": "Pro: audits per month",
+              "hint": "Fair-use cap."
+            },
+            "auditsPerDay": {
+              "label": "Pro: audits per day",
+              "hint": "0: no cap."
+            }
+          }
+        }
+      },
+      "history": {
+        "title": "Change log",
+        "empty": "No change yet.",
+        "who": "Who",
+        "when": "When",
+        "what": "What",
+        "before": "Before",
+        "after": "After",
+        "scope": "Scope"
+      },
+      "packs": {
+        "lead": "Each rules pack is a flow: turning it off removes it for consumers of this environment, at once.",
+        "environment": "Environment",
+        "flow": "Flow",
+        "enabled": "Enabled",
+        "manage": "Edit the flows",
+        "empty": "No flow."
+      },
+      "plans": {
+        "pricesTitle": "Prices (read from Stripe)",
+        "pricesLead": "Prices stay in Stripe: nothing here edits them.",
+        "audit": "One audit",
+        "pro": "Pro",
+        "off": "Payments are not configured on this installation.",
+        "notFound": "Price not found in Stripe.",
+        "lookup": "Price key",
+        "mode": "Stripe",
+        "entitlementsTitle": "What each plan includes"
+      },
+      "orazaka": {
+        "keyTitle": "This product's API key",
+        "masked": "Key: {key}",
+        "none": "No key configured.",
+        "address": "Address: {url}",
+        "test": "Test the connection",
+        "testing": "Testing…",
+        "ok": "Connected in {ms} ms: {count} Studio(s) installed.",
+        "fail": "Connection refused ({code}).",
+        "usageTitle": "This month's usage (recorded here)",
+        "runs": "Runs started: {count}",
+        "failed": "Failed: {count}",
+        "cost": "Estimated cost: {amount}",
+        "notExposed": "Orazaka's own plan and usage figures are not exposed by its API yet: they are not shown rather than guessed.",
+        "rotate": "Rotating the key is done in Orazaka, then in the app's secret: it is not done from here."
+      }
     }
   },
   "report": {

@@ -10,6 +10,7 @@ import { audit } from "@/lib/audit";
 import { query } from "@/lib/db";
 import { env } from "@/lib/env";
 import { readJson, refuse } from "@/lib/http";
+import { assertFeature } from "@/lib/settings/guards";
 import { loadSettings, saveSettings } from "@/lib/storage/settings";
 import { verifyS3 } from "@/lib/storage/verify";
 
@@ -33,6 +34,7 @@ export const PUT = (req: Request) => accountAct(req, "storage", async (s) => {
   }
   let s3;
   if (input.mode === STORAGE_MODE.s3) {
+    await assertFeature("ownStorage", owner);
     if (!input.s3) throw refuse(400, "BAD_REQUEST", "The S3 settings are required");
     const secretAccessKey = await secretFor(owner, input.s3.secretAccessKey);
     const v = await verifyS3({ ...input.s3, secretAccessKey }, { allowLocal: env().APP_ENVIRONMENT === "dev", now: () => new Date(), probeId: crypto.randomUUID() });
