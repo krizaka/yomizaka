@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { migrate, query } from "../db";
-import { storeDocument, type StoragePolicy } from "../documents";
+import { type StoragePolicy,storeDocument } from "../documents";
 import { hashPassword, verifyPassword } from "../password";
 import { memoryStore } from "../storage/memory";
 import { noneStore } from "../storage/none";
@@ -61,7 +61,7 @@ describe.runIf(enabled)("export and erasure (Loi 25)", () => {
   });
 
   it("refuses while a subscription is active: cancel it in the portal first", async () => {
-    const owner = await account("plan=\'PRO\'");
+    const owner = await account("plan='PRO'");
     await query("UPDATE accounts SET subscription_status = 'active' WHERE id = $1", [owner]);
     await expect(eraseAccount({ query, store: noneStore(), accounts }, owner)).rejects.toMatchObject({ status: 409, body: { code: "CANCEL_SUBSCRIPTION_FIRST" } });
     expect(await query("SELECT 1 FROM accounts WHERE id = $1", [owner])).toHaveLength(1);

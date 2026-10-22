@@ -15,7 +15,7 @@ export default async function ConsoleLayout({ children, params }: { children: Re
   const session = await pageSession();
   if (!session) redirect(`/${locale}/sign-in`);
   return (
-    <ConsoleShell locale={locale} email={session.account.email} role={session.account.role}>
+    <ConsoleShell locale={locale} email={session.account.email} name={session.account.name ?? undefined} avatarSeed={session.account.avatarSeed ?? undefined} role={session.account.role}>
       {children}
     </ConsoleShell>
   );

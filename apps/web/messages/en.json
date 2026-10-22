@@ -442,7 +442,13 @@
       "NOT_EMPTY": "Move or delete its collections first.",
       "LAST_LIBRARY": "The last library cannot be deleted.",
       "NOT_KEPT": "This document is not kept: only its report stays. Upload it again with “Keep my documents” to check it again.",
-      "STORAGE_UNAVAILABLE": "The storage that keeps documents did not answer."
+      "STORAGE_UNAVAILABLE": "The storage that keeps documents did not answer.",
+      "WRONG_PASSWORD": "The password is not right.",
+      "PASSWORD_TOO_SHORT": "The password must be at least 12 characters.",
+      "PASSWORD_TOO_LONG": "The password is too long.",
+      "MAIL_OFF": "E-mail sending is not available yet.",
+      "CANCEL_SUBSCRIPTION_FIRST": "Cancel your subscription in the billing portal first.",
+      "EMAIL_MISMATCH": "The address you typed is not the account's."
     },
     "adminConsole": {
       "shell": {
@@ -835,6 +841,75 @@
       "filesMany": "{count} files",
       "foldersOne": "{count} folder",
       "foldersMany": "{count} folders"
+    },
+    "settings": {
+      "tabs": {
+        "profil": "Profile",
+        "securite": "Security",
+        "facturation": "Plan and billing",
+        "donnees": "My data"
+      },
+      "label": "Account settings",
+      "profile": {
+        "nameLabel": "Name",
+        "nameHint": "Shown in the account menu.",
+        "save": "Save",
+        "saved": "Saved.",
+        "avatarLabel": "Avatar",
+        "avatarHint": "One of Krizaka's default pictures.",
+        "languageLabel": "Language",
+        "languages": {
+          "fr": "Français",
+          "en": "English"
+        }
+      },
+      "security": {
+        "emailTitle": "E-mail address",
+        "emailCurrent": "Current address: {email}",
+        "emailPending": "Waiting for confirmation: {email}. Open the link sent to that address.",
+        "newEmail": "New address",
+        "password": "Current password",
+        "emailSend": "Send the confirmation link",
+        "emailSent": "A link was sent to the new address. Nothing changes until you open it.",
+        "emailChanged": "Your address was changed.",
+        "emailInvalid": "This link is invalid or has expired.",
+        "passwordTitle": "Password",
+        "current": "Current password",
+        "next": "New password (12 characters or more)",
+        "passwordSave": "Change the password",
+        "passwordChanged": "Password changed. Your other devices are signed out."
+      },
+      "billing": {
+        "title": "Plan and billing",
+        "plan": "Plan",
+        "planFree": "Free",
+        "planPro": "Pro",
+        "credits": "Paid audits left: {count}",
+        "freeAvailable": "Your free audit is available.",
+        "freeUsed": "Your free audit is used.",
+        "until": "Renews on {date}.",
+        "portal": "Manage the subscription and invoices",
+        "portalHint": "Payment method, invoices (with GST and QST) and cancellation: in Stripe's secure portal.",
+        "off": "Payment is not available yet.",
+        "buy": "Buy or subscribe"
+      },
+      "data": {
+        "exportTitle": "Export my data",
+        "exportText": "A JSON file with your profile, your organisation, your kept documents and their reports.",
+        "exportButton": "Download my data",
+        "deleteTitle": "Delete my account",
+        "deleteText": "Your account, your kept documents (including on their storage), your libraries and your reports are deleted at once and for good (Law 25). Invoices stay with our payment provider, as the law requires.",
+        "deleteOpen": "Delete my account…",
+        "deleteEmail": "Type your e-mail address to confirm",
+        "deletePassword": "Password",
+        "deleteButton": "Delete for good"
+      }
+    },
+    "confirmEmail": {
+      "title": "Confirm the new address",
+      "lead": "One click to use this address with your account.",
+      "button": "Confirm the new address",
+      "invalid": "This link is invalid or has expired."
     }
   },
   "report": {

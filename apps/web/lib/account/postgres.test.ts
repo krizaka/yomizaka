@@ -1,3 +1,5 @@
+import crypto from "node:crypto";
+
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { migrate, query } from "../db";
@@ -35,7 +37,7 @@ describe.runIf(enabled)("account service (Postgres adapter)", () => {
     baseUrl: "https://www.yomizaka.com",
     passwords: { hash: hashPassword, verify: verifyPassword },
     token: () => {
-      const t = `ye1.${String(issued.length + 1).padStart(43, "A")}`;
+      const t = `ye1.${crypto.randomBytes(32).toString("base64url")}`;
       issued.push(t);
       return t;
     },

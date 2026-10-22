@@ -22,7 +22,7 @@ const ADMIN_URL = "https://admin.yomizaka.com";
  * widens to words, the bottom tab bar on a phone — with `AppHeader` (the page's title and its actions) and the `AccountMenu`.
  * The active entry comes from the route (lib/console-nav.ts), never from local state; each destination exists once.
  */
-export function ConsoleShell({ locale, email, name, role, children }: { locale: "en" | "fr"; email: string; name?: string; role: "USER" | "ADMIN"; children: React.ReactNode }) {
+export function ConsoleShell({ locale, email, name, avatarSeed, role, children }: { locale: "en" | "fr"; email: string; name?: string; avatarSeed?: string; role: "USER" | "ADMIN"; children: React.ReactNode }) {
   const { say } = useSay();
   const router = useRouter();
   const path = usePathname() ?? "";
@@ -88,7 +88,7 @@ export function ConsoleShell({ locale, email, name, role, children }: { locale: 
                 name={name ?? email}
                 email={email}
                 showName
-                avatar={{ defaultAvatar: { brand: "yomizaka", seed: email }, fallback: (name ?? email).charAt(0).toUpperCase() }}
+                avatar={{ defaultAvatar: { brand: "yomizaka", seed: avatarSeed ?? email }, fallback: (name ?? email).charAt(0).toUpperCase() }}
                 linkAs={Link}
                 links={[{ id: "account", label: say("shell.account"), href: href(CONSOLE_ROUTES.account), icon: <SettingsIcon size={16} /> }]}
                 signOut={{ label: say("shell.signOut"), onSelect: () => signOut.mutate(), icon: <LogoutIcon size={16} /> }}

@@ -442,7 +442,13 @@
       "NOT_EMPTY": "Déplacez ou supprimez d'abord ses collections.",
       "LAST_LIBRARY": "La dernière bibliothèque ne peut pas être supprimée.",
       "NOT_KEPT": "Ce document n'est pas conservé : seul son rapport reste. Déposez-le de nouveau avec « Conserver mes documents » pour le revérifier.",
-      "STORAGE_UNAVAILABLE": "Le stockage des documents n'a pas répondu."
+      "STORAGE_UNAVAILABLE": "Le stockage des documents n'a pas répondu.",
+      "WRONG_PASSWORD": "Le mot de passe n'est pas le bon.",
+      "PASSWORD_TOO_SHORT": "Le mot de passe doit faire au moins 12 caractères.",
+      "PASSWORD_TOO_LONG": "Le mot de passe est trop long.",
+      "MAIL_OFF": "L'envoi de courriels n'est pas encore disponible.",
+      "CANCEL_SUBSCRIPTION_FIRST": "Annulez d'abord votre abonnement dans le portail de facturation.",
+      "EMAIL_MISMATCH": "L'adresse tapée n'est pas celle du compte."
     },
     "adminConsole": {
       "shell": {
@@ -835,6 +841,75 @@
       "filesMany": "{count} fichiers",
       "foldersOne": "{count} dossier",
       "foldersMany": "{count} dossiers"
+    },
+    "settings": {
+      "tabs": {
+        "profil": "Profil",
+        "securite": "Sécurité",
+        "facturation": "Abonnement et facturation",
+        "donnees": "Mes données"
+      },
+      "label": "Réglages du compte",
+      "profile": {
+        "nameLabel": "Nom",
+        "nameHint": "Affiché dans le menu du compte.",
+        "save": "Enregistrer",
+        "saved": "Enregistré.",
+        "avatarLabel": "Avatar",
+        "avatarHint": "Une des images par défaut de Krizaka.",
+        "languageLabel": "Langue",
+        "languages": {
+          "fr": "Français",
+          "en": "English"
+        }
+      },
+      "security": {
+        "emailTitle": "Adresse e-mail",
+        "emailCurrent": "Adresse actuelle : {email}",
+        "emailPending": "En attente de confirmation : {email}. Ouvrez le lien envoyé à cette adresse.",
+        "newEmail": "Nouvelle adresse",
+        "password": "Mot de passe actuel",
+        "emailSend": "Envoyer le lien de confirmation",
+        "emailSent": "Un lien a été envoyé à la nouvelle adresse. Rien ne change tant que vous ne l'avez pas ouvert.",
+        "emailChanged": "Votre adresse est changée.",
+        "emailInvalid": "Ce lien est invalide ou a expiré.",
+        "passwordTitle": "Mot de passe",
+        "current": "Mot de passe actuel",
+        "next": "Nouveau mot de passe (12 caractères ou plus)",
+        "passwordSave": "Changer le mot de passe",
+        "passwordChanged": "Mot de passe changé. Vos autres appareils sont déconnectés."
+      },
+      "billing": {
+        "title": "Abonnement et facturation",
+        "plan": "Forfait",
+        "planFree": "Gratuit",
+        "planPro": "Pro",
+        "credits": "Audits payés restants : {count}",
+        "freeAvailable": "Votre audit gratuit est disponible.",
+        "freeUsed": "Votre audit gratuit est utilisé.",
+        "until": "Renouvelé le {date}.",
+        "portal": "Gérer l'abonnement et les factures",
+        "portalHint": "Mode de paiement, factures (avec TPS et TVQ) et annulation : dans le portail sécurisé de Stripe.",
+        "off": "Le paiement n'est pas encore disponible.",
+        "buy": "Acheter ou s'abonner"
+      },
+      "data": {
+        "exportTitle": "Exporter mes données",
+        "exportText": "Un fichier JSON avec votre profil, votre organisation, vos documents conservés et leurs rapports.",
+        "exportButton": "Télécharger mes données",
+        "deleteTitle": "Supprimer mon compte",
+        "deleteText": "Votre compte, vos documents conservés (y compris sur leur stockage), vos bibliothèques et vos rapports sont supprimés tout de suite et pour de bon (Loi 25). Les factures restent chez notre prestataire de paiement, comme la loi l'exige.",
+        "deleteOpen": "Supprimer mon compte…",
+        "deleteEmail": "Tapez votre adresse e-mail pour confirmer",
+        "deletePassword": "Mot de passe",
+        "deleteButton": "Supprimer définitivement"
+      }
+    },
+    "confirmEmail": {
+      "title": "Confirmer la nouvelle adresse",
+      "lead": "Un clic pour utiliser cette adresse avec votre compte.",
+      "button": "Confirmer la nouvelle adresse",
+      "invalid": "Ce lien est invalide ou a expiré."
     }
   },
   "report": {
