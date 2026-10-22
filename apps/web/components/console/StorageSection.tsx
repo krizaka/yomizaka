@@ -80,7 +80,7 @@ function StorageForm({ initial, canStoreCredentials, say, locale, onSaved }: { i
   const step = (n: "write" | "read" | "delete") => ({ write: "stepWrite", read: "stepRead", delete: "stepDelete" })[n];
   return (
     <div data-testid="settings-stockage">
-      <SettingsSection title={say("settings.storage.title")} description={say("settings.storage.lead")}>
+      <SettingsSection variant="flat" title={say("settings.storage.title")} description={say("settings.storage.lead")}>
       <RadioGroup.Root label={say("settings.storage.modeLabel")} value={mode} onValueChange={(v: string) => { setMode(v as StorageMode); setSaved(false); setVerified(null); }}>
         {STORAGE_MODES.map((m) => (
           <RadioGroup.Item key={m} value={m} disabled={m === STORAGE_MODE.s3 && !canStoreCredentials}>

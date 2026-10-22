@@ -7,7 +7,7 @@ import { Button } from "@krizaka/ui/button";
 import { Dialog } from "@krizaka/ui/dialog";
 import { Field, Input } from "@krizaka/ui/field";
 import { createKrizakaForm } from "@krizaka/ui/form";
-import { SettingsLayout, SettingsSection, useSaveStatus } from "@krizaka/ui/settings-layout";
+import { SettingsLayout, SettingsRow, SettingsSection, useSaveStatus } from "@krizaka/ui/settings-layout";
 import type { Audience } from "@yomizaka/core";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -30,7 +30,7 @@ export function SettingsShell({ children }: { children: ReactNode }) {
   const base = `/${locale}/app/settings`;
   const nav = SETTINGS_SECTIONS.filter((s) => s !== "stockage" || app?.features.ownStorage !== false).map((s) => ({ id: s, label: say(`settings.tabs.${s}`), href: `${base}/${s}`, current: path === `${base}/${s}` }));
   return (
-    <SettingsLayout title={say("profile.settingsTitle")} description={say("profile.settingsLead")} nav={nav} navLabel={say("settings.profile.navLabel")} linkAs={Link}>
+    <SettingsLayout variant="flat" title={say("profile.settingsTitle")} nav={nav} navLabel={say("settings.profile.navLabel")} linkAs={Link}>
       {children}
     </SettingsLayout>
   );
@@ -72,97 +72,114 @@ export interface ProfileDraft {
   name: string;
   avatarSeed: string;
   locale: "en" | "fr";
-  perspective: Audience | "";
 }
 
-/** The requests one save needs: the profile fields that changed, the side if it changed. */
-export function profileRequests(from: ProfileDraft, to: ProfileDraft) {
+/** The request one profile save needs: only the fields that changed (null when nothing did). */
+export function profilePatch(from: ProfileDraft, to: ProfileDraft) {
   const patch: Record<string, unknown> = {};
   if (to.name !== from.name) patch.name = to.name.trim() === "" ? null : to.name.trim();
   if (to.avatarSeed !== from.avatarSeed) patch.avatarSeed = to.avatarSeed || null;
   if (to.locale !== from.locale) patch.locale = to.locale;
-  return { patch: Object.keys(patch).length > 0 ? patch : null, perspective: to.perspective !== from.perspective && to.perspective !== "" ? to.perspective : null };
+  return Object.keys(patch).length > 0 ? patch : null;
 }
 
-/** Identity, name, picture, language and side of the lease: one section, one save (dirty → enabled, then « Saved » with Undo). */
-export function ProfileSection({ email, emailVerified, name, avatarSeed, locale: current, perspective, audiences }: { email: string; emailVerified: boolean; name: string | null; avatarSeed: string | null; locale: "en" | "fr"; perspective: Audience | null; audiences: readonly { audience: Audience; status: "available" | "soon" }[] }) {
+/**
+ * One section's draft against what is saved. The section is clean at once when it saves (optimistic); a failure puts the last
+ * saved values back and says so; Undo saves the previous ones again.
+ */
+function useSectionDraft<T>(initial: T, persist: (from: T, to: T) => Promise<void>) {
   const { say } = useSay();
-  const router = useRouter();
-  const initial: ProfileDraft = { name: name ?? "", avatarSeed: avatarSeed ?? "", locale: current, perspective: perspective ?? "" };
   const [draft, setDraft] = useState(initial);
   const [saved, setSaved] = useState(initial);
+  const previous = React.useRef(initial);
   const status = useSaveStatus();
-  const persist = async (from: ProfileDraft, to: ProfileDraft) => {
-    const { patch, perspective: side } = profileRequests(from, to);
-    if (patch) await krizakaFetch("/api/me/profile", { method: "PATCH", json: patch });
-    if (side) await krizakaFetch("/api/me/perspective", { method: "PUT", json: { perspective: side } });
-    if (to.locale !== from.locale) router.replace(`/${to.locale}/app/settings/profil`);
-    else router.refresh();
-  };
-  // Optimistic: the section is clean at once; a failure puts the last saved values back and says so.
-  const commit = async (to: ProfileDraft) => {
+  const commit = async (to: T) => {
     const from = saved;
     setSaved(to);
     setDraft(to);
-    const ok = await status.track(() => persist(from, to));
-    if (!ok) setSaved(from);
-    return ok;
+    if (!(await status.track(() => persist(from, to)))) setSaved(from);
   };
-  const dirty = JSON.stringify(draft) !== JSON.stringify(saved);
-  const previous = React.useRef(saved);
+  return {
+    draft,
+    set: (patch: Partial<T>) => setDraft({ ...draft, ...patch }),
+    save: {
+      dirty: JSON.stringify(draft) !== JSON.stringify(saved),
+      status: status.status,
+      labels: { save: say("settings.profile.save"), saving: say("settings.profile.saving"), saved: say("settings.profile.saved"), error: say("settings.profile.saveError"), undo: say("settings.profile.undo"), discard: say("settings.profile.discard") },
+      onDiscard: () => setDraft(saved),
+      onSave: () => {
+        previous.current = saved;
+        void commit(draft);
+      },
+      onUndo: () => void commit(previous.current),
+    },
+  };
+}
+
+/** Profile (name, picture, language) and the side of the lease: the Orazaka way — calm rows, one section per subject, one save each. */
+export function ProfileSection({ email, emailVerified, name, avatarSeed, locale: current, perspective, audiences }: { email: string; emailVerified: boolean; name: string | null; avatarSeed: string | null; locale: "en" | "fr"; perspective: Audience | null; audiences: readonly { audience: Audience; status: "available" | "soon" }[] }) {
+  const { say } = useSay();
+  const router = useRouter();
+  const profile = useSectionDraft<ProfileDraft>({ name: name ?? "", avatarSeed: avatarSeed ?? "", locale: current }, async (from, to) => {
+    const patch = profilePatch(from, to);
+    if (patch) await krizakaFetch("/api/me/profile", { method: "PATCH", json: patch });
+    if (to.locale !== from.locale) router.replace(`/${to.locale}/app/settings/profil`);
+    else router.refresh();
+  });
+  const side = useSectionDraft<{ perspective: Audience | "" }>({ perspective: perspective ?? "" }, async (_from, to) => {
+    if (to.perspective) await krizakaFetch("/api/me/perspective", { method: "PUT", json: { perspective: to.perspective } });
+    router.refresh();
+  });
   return (
-    <div data-testid="settings-profil" className="flex flex-col gap-6">
-      <SettingsSection
-        title={say("settings.profile.sectionTitle")}
-        description={say("settings.profile.sectionLead")}
-        save={{
-          dirty,
-          status: status.status,
-          labels: { save: say("settings.profile.save"), saving: say("settings.profile.saving"), saved: say("settings.profile.saved"), error: say("settings.profile.saveError"), undo: say("settings.profile.undo"), discard: say("settings.profile.discard") },
-          onDiscard: () => setDraft(saved),
-          onSave: () => {
-            previous.current = saved;
-            void commit(draft);
-          },
-          onUndo: () => void commit(previous.current),
-        }}
-      >
-        <AccountProfileCard
-          name={draft.name || email}
-          email={email}
-          verified={emailVerified}
-          verifiedLabel={say("settings.profile.verified")}
-          unverifiedLabel={say("settings.profile.unverified")}
-          avatar={{ defaultAvatar: { brand: "yomizaka", seed: draft.avatarSeed || email } }}
+    <div data-testid="settings-profil" className="flex flex-col gap-10">
+      <SettingsSection variant="flat" title={say("settings.profile.sectionTitle")} description={say("settings.profile.sectionLead")} save={profile.save}>
+        <SettingsRow
+          label={
+            <AccountProfileCard
+              compact
+              name={profile.draft.name || email}
+              email={email}
+              verified={emailVerified}
+              verifiedLabel={say("settings.profile.verified")}
+              unverifiedLabel={say("settings.profile.unverified")}
+              avatar={{ defaultAvatar: { brand: "yomizaka", seed: profile.draft.avatarSeed || email } }}
+            />
+          }
         />
-        <Field.Root>
-          <Field.Label htmlFor="profile-name">{say("settings.profile.nameLabel")}</Field.Label>
-          <Input id="profile-name" value={draft.name} maxLength={80} autoComplete="name" onChange={(event) => setDraft({ ...draft, name: event.target.value })} />
-          <Field.Hint>{say("settings.profile.nameHint")}</Field.Hint>
-        </Field.Root>
-        <AvatarPicker
-          showLabel
-          label={say("settings.profile.avatarLabel")}
-          description={say("settings.profile.avatarHint")}
-          value={draft.avatarSeed}
-          onValueChange={(avatarSeed) => setDraft({ ...draft, avatarSeed })}
-          options={AVATAR_SEEDS.map((seed, i) => ({ id: seed, label: say("settings.profile.avatarOption", { n: i + 1 }), defaultAvatar: { brand: "yomizaka", seed } }))}
-        />
-        <LanguagePicker
-          label={say("settings.profile.languageLabel")}
-          description={say("settings.profile.languageHint")}
-          value={draft.locale}
-          onValueChange={(locale) => setDraft({ ...draft, locale: locale as "en" | "fr" })}
-          languages={LANGUAGES.map((code) => ({ code, name: say(`settings.profile.languages.${code}`) }))}
-        />
-        <ChoiceCards
-          showLabel
-          label={say("profile.title")}
-          value={draft.perspective}
-          onValueChange={(side) => setDraft({ ...draft, perspective: side as Audience })}
-          options={audiences.map(({ audience, status: soon }) => ({ id: audience, title: `${say(`profile.${audience}`)}${soon === "soon" ? ` (${say("profile.soon")})` : ""}`, description: say(`profile.${audience}Hint`) }))}
-        />
-       </SettingsSection>
+        <SettingsRow label={say("settings.profile.nameLabel")} description={say("settings.profile.nameHint")} htmlFor="profile-name">
+          <Field.Root>
+            <Input id="profile-name" className="w-full sm:w-72" value={profile.draft.name} maxLength={80} autoComplete="name" onChange={(event) => profile.set({ name: event.target.value })} />
+          </Field.Root>
+        </SettingsRow>
+        <SettingsRow label={say("settings.profile.avatarLabel")} description={say("settings.profile.avatarHint")}>
+          <AvatarPicker
+            dense
+            label={say("settings.profile.avatarLabel")}
+            value={profile.draft.avatarSeed}
+            onValueChange={(avatarSeed) => profile.set({ avatarSeed })}
+            options={AVATAR_SEEDS.map((seed, i) => ({ id: seed, label: say("settings.profile.avatarOption", { n: i + 1 }), defaultAvatar: { brand: "yomizaka", seed } }))}
+          />
+        </SettingsRow>
+        <SettingsRow label={say("settings.profile.languageLabel")} description={say("settings.profile.languageHint")}>
+          <LanguagePicker
+            showLabel={false}
+            label={say("settings.profile.languageLabel")}
+            value={profile.draft.locale}
+            onValueChange={(locale) => profile.set({ locale: locale as "en" | "fr" })}
+            languages={LANGUAGES.map((code) => ({ code, name: say(`settings.profile.languages.${code}`) }))}
+          />
+        </SettingsRow>
+      </SettingsSection>
+      <SettingsSection variant="flat" title={say("profile.title")} description={say("profile.settingsLead")} save={side.save}>
+        <div className="py-4">
+          <ChoiceCards
+            label={say("profile.title")}
+            value={side.draft.perspective}
+            onValueChange={(next) => side.set({ perspective: next as Audience })}
+            options={audiences.map(({ audience, status: soon }) => ({ id: audience, title: `${say(`profile.${audience}`)}${soon === "soon" ? ` (${say("profile.soon")})` : ""}`, description: say(`profile.${audience}Hint`) }))}
+          />
+        </div>
+      </SettingsSection>
     </div>
   );
 }
@@ -181,7 +198,7 @@ export function SecuritySection({ email, pendingEmail, notice }: { email: string
   return (
     <div className="flex flex-col gap-6" data-testid="settings-securite">
       {notice ? <Alert tone={notice === "changed" ? "success" : "danger"}>{say(notice === "changed" ? "settings.security.emailChanged" : "settings.security.emailInvalid")}</Alert> : null}
-      <SettingsSection title={say("settings.security.emailTitle")} description={say("settings.security.emailCurrent", { email })}>
+      <SettingsSection variant="flat" title={say("settings.security.emailTitle")} description={say("settings.security.emailCurrent", { email })}>
         {pendingEmail ? <Alert tone="info">{say("settings.security.emailPending", { email: pendingEmail })}</Alert> : null}
         <emailF.Form aria-label={say("settings.security.emailTitle")} className="flex flex-col gap-3">
           <emailF.TextField name="newEmail" label={say("settings.security.newEmail")} type="email" autoComplete="email" />
@@ -193,7 +210,7 @@ export function SecuritySection({ email, pendingEmail, notice }: { email: string
           </div>
         </emailF.Form>
       </SettingsSection>
-      <SettingsSection title={say("settings.security.passwordTitle")}>
+      <SettingsSection variant="flat" title={say("settings.security.passwordTitle")}>
         <passF.Form aria-label={say("settings.security.passwordTitle")} className="flex flex-col gap-3">
           <passF.TextField name="current" label={say("settings.security.current")} type="password" autoComplete="current-password" />
           <passF.TextField name="next" label={say("settings.security.next")} type="password" autoComplete="new-password" />
@@ -246,7 +263,7 @@ export function BillingSection() {
   ) : undefined;
   return (
     <div data-testid="settings-facturation">
-      <SettingsSection title={say("settings.billing.title")} description={say("settings.billing.portalHint")} footer={actions}>
+      <SettingsSection variant="flat" title={say("settings.billing.title")} description={say("settings.billing.portalHint")} footer={actions}>
       {e ? (
         <dl className="m-0 grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
           <dt className="text-fg-secondary">{say("settings.billing.plan")}</dt>
@@ -281,7 +298,7 @@ export function DataSection() {
   const form = deleteForm.useForm({ ...formI18n(say, locale), onSubmit: (v) => erase.go(v, () => router.replace(`/${locale}`)) });
   return (
     <div className="flex flex-col gap-6" data-testid="settings-donnees">
-      <SettingsSection
+      <SettingsSection variant="flat"
         title={say("settings.data.exportTitle")}
         description={say("settings.data.exportText")}
         footer={
@@ -292,7 +309,7 @@ export function DataSection() {
           </Button>
         }
       />
-      <SettingsSection
+      <SettingsSection variant="flat"
         title={say("settings.data.deleteTitle")}
         description={say("settings.data.deleteText")}
         footer={

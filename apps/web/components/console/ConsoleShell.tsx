@@ -85,10 +85,10 @@ export function ConsoleShell({ locale, email, name, avatarSeed, role, children }
               <ThemeToggle label={say("shell.theme")} variant="ghost" />
               <AccountMenu
                 label={say("shell.account")}
-                name={name ?? email}
+                name={name || undefined}
                 email={email}
                 showName
-                avatar={{ defaultAvatar: { brand: "yomizaka", seed: avatarSeed ?? email }, fallback: (name ?? email).charAt(0).toUpperCase() }}
+                avatar={{ defaultAvatar: { brand: "yomizaka", seed: avatarSeed ?? email }, fallback: (name || email).charAt(0).toUpperCase() }}
                 linkAs={Link}
                 links={[{ id: "account", label: say("shell.account"), href: href(CONSOLE_ROUTES.account), icon: <SettingsIcon size={16} /> }]}
                 signOut={{ label: say("shell.signOut"), onSelect: () => signOut.mutate(), icon: <LogoutIcon size={16} /> }}
