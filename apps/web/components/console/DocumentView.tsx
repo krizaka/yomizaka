@@ -10,7 +10,7 @@ import { DocumentViewer, type Located } from "@krizaka/ui/document-viewer";
 import { createKrizakaForm } from "@krizaka/ui/form";
 import { Spinner } from "@krizaka/ui/spinner";
 import { Tabs } from "@krizaka/ui/tabs";
-import { type Analysis, analysis as analysisSchema, type Audience, AUTHENTICITY_MAX_BYTES, type AuthenticityReport, type ComplianceReport, type DocumentDetail, documentDetail, type Jurisdiction, JURISDICTIONS, passages, queryKeys,type Studio } from "@yomizaka/core";
+import { type Analysis, analysis as analysisSchema, type Audience, AUTHENTICITY_MAX_BYTES, type AuthenticityReport, type ComplianceReport, type DocumentView as DocumentViewData, documentView, type Jurisdiction, JURISDICTIONS, passages, queryKeys,type Studio } from "@yomizaka/core";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ComponentProps, useEffect, useMemo, useRef, useState } from "react";
@@ -26,6 +26,7 @@ import { firstCheck, wordingOf } from "@/lib/perspective-defaults";
 import { STATUS_TONE } from "./DocumentTable";
 import { formatBytes, formatDate } from "./format";
 import { ReportShare } from "./ReportShare";
+import { StorageNotice } from "./StorageNotice";
 
 const VERDICT_TONE: Record<string, "success" | "danger" | "warning" | "neutral"> = { PASS: "success", FAIL: "danger", INSUFFICIENT_EVIDENCE: "warning" };
 const LEVEL_TONE: Record<string, "neutral" | "warning" | "danger"> = { observé: "neutral", inhabituel: "warning", incohérent: "danger" };
@@ -348,13 +349,13 @@ function StartAuthenticity({ documentId, disabled }: { documentId: string; disab
 }
 
 /** The document page: the file and its text on one side, Orazaka's checks on the other — each a traced run. */
-export function DocumentView({ initial, tab, perspective = null, offer }: { initial: DocumentDetail; tab: DocumentTab; perspective?: Audience | null; offer: { studios: readonly Studio[]; jurisdictions: readonly Jurisdiction[]; rulesets: readonly string[] } }) {
+export function DocumentView({ initial, tab, perspective = null, offer }: { initial: DocumentViewData; tab: DocumentTab; perspective?: Audience | null; offer: { studios: readonly Studio[]; jurisdictions: readonly Jurisdiction[]; rulesets: readonly string[] } }) {
   const { say, locale } = useSay();
   const router = useRouter();
   const client = useQueryClient();
   const doc = useQuery({
     queryKey: queryKeys.document(initial.id),
-    queryFn: () => krizakaFetch(`/api/documents/${initial.id}`, { schema: z.object({ document: documentDetail }) }).then((r) => r.document),
+    queryFn: () => krizakaFetch(`/api/documents/${initial.id}`, { schema: z.object({ document: documentView }) }).then((r) => r.document),
     initialData: initial,
   }).data;
   const remove = useMutation({
@@ -446,6 +447,7 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
         <Tabs.Content value="infos">
           <section aria-label={say("document.tabs.infos")} className="flex min-w-0 flex-col gap-4 pt-4">
             {doc.insight ? <DocumentInsight insight={doc.insight} documentId={doc.id} /> : null}
+            <StorageNotice storage={doc.storage} retainUntil={doc.retainUntil} onDelete={() => remove.mutate()} deleting={remove.isPending} />
             <DescriptionList
               items={[
                 { term: say("document.file"), details: doc.filename },

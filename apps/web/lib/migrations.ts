@@ -318,4 +318,13 @@ ALTER TABLE documents ADD CONSTRAINT documents_folder_in_collection CHECK (folde
 CREATE INDEX documents_collection ON documents(collection_id, folder_id);
 `,
   },
+  {
+    version: "0013_document_storage",
+    sql: `
+-- ADR-0007: where a document lives (the DocumentStore adapter that holds it) and, when the person or the workspace set one,
+-- when it is purged. Every existing document is in the database.
+ALTER TABLE documents ADD COLUMN storage text NOT NULL DEFAULT 'database' CHECK (storage IN ('none', 'database', 'bunny', 's3', 'device'));
+ALTER TABLE documents ADD COLUMN retain_until timestamptz;
+`,
+  },
 ];

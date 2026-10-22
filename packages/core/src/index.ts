@@ -275,6 +275,18 @@ export const documentInsight = z.object({
 });
 export type DocumentInsight = z.infer<typeof documentInsight>;
 
+/** Where a document lives (the DocumentStore adapter that holds it), as the info panel says it (apps/web/lib/storage). */
+export const storageDescriptor = z.object({
+  kind: z.enum(["none", "database", "bunny", "s3", "device"]),
+  endpoint: z.string().nullable(),
+  region: z.string().nullable(),
+  residency: z.enum(["canada", "elsewhere", "unknown", "device"]),
+  encrypted: z.boolean(),
+  owner: z.enum(["krizaka", "workspace", "device"]),
+  devOnly: z.boolean(),
+});
+export type StorageDescriptor = z.infer<typeof storageDescriptor>;
+
 export const documentDetail = documentSummary.extend({
   insight: documentInsight.optional(),
   sha256: z.string(),
@@ -282,6 +294,14 @@ export const documentDetail = documentSummary.extend({
   analyses: z.array(analysis),
 });
 export type DocumentDetail = z.infer<typeof documentDetail>;
+
+/** What the document page shows: the detail plus where it lives and until when (ADR-0007). */
+export const documentView = documentDetail.extend({
+  storage: storageDescriptor,
+  /** When it is purged (ISO), or null: kept until the person deletes it. */
+  retainUntil: z.string().nullable(),
+});
+export type DocumentView = z.infer<typeof documentView>;
 
 /** The rulesets the Studio takes by name besides each jurisdiction's lease (orazaka-packs `document-validation` 1.3.0+): Québec's supplier invoice and service contract. */
 export const NAMED_RULESETS = ["qc-invoice", "qc-service-contract"] as const;
