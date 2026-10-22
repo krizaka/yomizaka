@@ -1,0 +1,5 @@
+target
+.cargo/
+gen
+# The lockfile is committed once krizaka/krizaka-tauri-kit has its v0.1.0 tag (until then the kit is a local path).
+Cargo.lock
