@@ -29,7 +29,7 @@ separate responsibilities, and both are separate from the checks (analyses).
 - **Adapters are configuration** (the vendor is a value, `STORAGE_PROVIDER`, per workspace as data later): 
   `none` (**the default**: the document is purged after the check, only the report stays; history is optional and chosen by
   the user), `bunny` (dev phase: the existing zone, a private `yomizaka/…` prefix, signed URLs), `s3` (any S3-compatible
-  provider: DigitalOcean Spaces `tor1` in production, or a customer's own bucket, or a local MinIO in CI).
+  provider: DigitalOcean Spaces `tor1` in production, or a customer's own bucket, or a local S3 server in CI: SeaweedFS, MinIO no longer publishes images).
 - **Residency**: Bunny Storage has **no Canadian region**: it is for **development and fictional data only**; a production
   deployment refuses it. Production is DigitalOcean Spaces `tor1` (Canada), server-side encrypted, 5 USD/month — **the
   owner's go is required**; the adapter is ready, the bucket is not created without it.

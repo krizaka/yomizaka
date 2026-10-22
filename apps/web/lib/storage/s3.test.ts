@@ -7,14 +7,19 @@ import { encrypted } from "./encrypted";
 import { s3Store } from "./s3";
 
 /**
- * The S3 adapter against a real S3-compatible server — a local MinIO, never a paid service. Set STORAGE_IT_S3_ENDPOINT
+ * The S3 adapter against a real S3-compatible server — a local S3 server (scripts/ci-s3.sh), never a paid service. Set STORAGE_IT_S3_ENDPOINT
  * (`http://localhost:9000`), STORAGE_IT_S3_USER, STORAGE_IT_S3_PASS and STORAGE_IT_S3_BUCKET to run it.
  */
 const e = process.env;
 const enabled = !!e.STORAGE_IT_S3_ENDPOINT && !!e.STORAGE_IT_S3_USER && !!e.STORAGE_IT_S3_PASS && !!e.STORAGE_IT_S3_BUCKET;
 const make = (pass = e.STORAGE_IT_S3_PASS!) => s3Store({ endpoint: e.STORAGE_IT_S3_ENDPOINT!, region: "us-east-1", bucket: e.STORAGE_IT_S3_BUCKET!, accessKeyId: e.STORAGE_IT_S3_USER!, secretAccessKey: pass, prefix: "yomizaka-it", residency: "unknown", now: () => new Date() });
 
-describe.runIf(enabled)("s3 adapter (MinIO)", () => {
+/** In CI the job sets STORAGE_IT_S3_REQUIRED: a missing variable is a failure, not a silent skip (krizaka/yomizaka#198). */
+describe.runIf(!!e.STORAGE_IT_S3_REQUIRED)("s3 adapter (S3 server) is required here", () => {
+  it("has its S3 variables", () => expect(enabled).toBe(true));
+});
+
+describe.runIf(enabled)("s3 adapter (S3 server)", () => {
   documentStoreContract("s3", () => make());
   documentStoreContract("s3 + encryption", () => encrypted(make(), crypto.randomBytes(32)));
 
