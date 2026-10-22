@@ -1,0 +1,78 @@
+{
+  "ruleset": "qc-invoice",
+  "recordedAt": "2026-10-22T03:28:54.887Z",
+  "source": "https://dev.orazaka.com/edge",
+  "studio": "compliance-check",
+  "document": {
+    "title": "Facture bilingue — modèle Krizaka (démonstration)",
+    "language": "fr-en",
+    "filename": "krizaka-bilingual-aligned.txt",
+    "text": "====================================================================================================\n                                      FACTURE / INVOICE\n====================================================================================================\n\nÉMETTEUR / ISSUED BY :\nTechnologies Krizaka Inc. / Krizaka Technologies Inc.\n[Adresse du siège]\n\nIDENTIFIANTS LÉGAUX ET FISCAUX / LEGAL & TAX IDENTIFIERS :\nNuméro d'inscription TPS / GST (5 %) :      123456789 RT 0001\nNuméro d'inscription TVQ / QST (9,975 %) :  1234567890 TQ 0001\n\n----------------------------------------------------------------------------------------------------\nDÉTAILS DE LA FACTURE / INVOICE DETAILS :\nNuméro de facture / Invoice Number :      KZ-2026-001\nDate d'émission / Issue Date :            14 octobre 2026\nDate d'échéance / Due Date :              13 novembre 2026 (Net 30 jours / Net 30 days)\nDevise / Currency :                       Dollar Canadien ($CAD)\nMode de règlement / Payment Terms :       Virement bancaire\n----------------------------------------------------------------------------------------------------\n\nDÉSIGNATION DES PRESTATIONS / DESCRIPTION OF SERVICES :\n\nItem | Description du produit ou service                          | Qté / H. | Prix Unitaire | Total HT ($CAD)\n:--- | :--------------------------------------------------------- | :------- | :------------ | :--------------\n01   | Intégration d'architecture & configuration (démo)          | 10 heures | 150,00 $CAD   | 1 500,00 $CAD\n02   | Support et maintenance technique (forfait, démo)           | 1 forfait | 2 000,00 $CAD | 2 000,00 $CAD\n\n----------------------------------------------------------------------------------------------------\nDÉCOMPTE FISCAL ET TOTAL / TAX BREAKDOWN & TOTAL :\n\nSOUS-TOTAL HORS TAXES / SUB-TOTAL (EXCLUDING TAXES) :                         3 500,00 $CAD\n\nTPS / GST (5,000 %) [Calcul : 3 500,00 $ * 0,05] :                              175,00 $CAD\nTVQ / QST (9,975 %) [Calcul : 3 500,00 $ * 0,09975] :                           349,13 $CAD\n\n----------------------------------------------------------------------------------------------------\nTOTAL À PAYER / TOTAL AMOUNT DUE ($CAD) :                                     4 024,13 $CAD\n====================================================================================================\n"
+  },
+  "inputs": {
+    "jurisdiction": "QC",
+    "asOf": "2026-10-22",
+    "ruleset": "qc-invoice"
+  },
+  "run": {
+    "id": "d474a871-e6d7-45f7-9abd-825b9e6b0ad0",
+    "installationId": "3c21b3e5-5f30-4b82-9c63-13af790557ac",
+    "studioKey": "compliance-check",
+    "blueprintVersion": "1.4.0",
+    "status": "SUCCEEDED",
+    "outputs": [
+      {
+        "key": "report",
+        "label": "Rapport de conformité",
+        "type": "JSON",
+        "value": "{\n  \"rulesetId\": \"qc-invoice\",\n  \"rulesetVersion\": \"2024-06-20\",\n  \"rulesetRevision\": 2,\n  \"jurisdiction\": \"QC\",\n  \"asOf\": \"2026-10-22\",\n  \"source\": \"Règlement sur les renseignements nécessaires pour demander un crédit de taxe sur les intrants (TPS/TVH), DORS/91-45, art. 3 (version en vigueur depuis le 2024-06-20, à jour au 2026-09-30 : seuils de 100 $ et de 500 $) ; numéro de compte de la TPS/TVH (ARC) ; numéro d'inscription au fichier de la TVQ (Revenu Québec)\",\n  \"summary\": {\n    \"byVerdict\": {\n      \"PASS\": 8\n    },\n    \"blockingFailures\": 0,\n    \"rulesEvaluated\": 8\n  },\n  \"findings\": [\n    {\n      \"ruleId\": \"QC-INV-001\",\n      \"title\": \"Date de la facture\",\n      \"severity\": \"BLOCKING\",\n      \"verdict\": \"PASS\",\n      \"evidenceSpan\": {\n        \"start\": 738,\n        \"end\": 795,\n        \"quote\": \"Date d'émission / Issue Date :            14 octobre 2026\"\n      },\n      \"explanation\": \"La facture porte une date.\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"Règlement sur les renseignements nécessaires pour demander un crédit de taxe sur les intrants (TPS/TVH), DORS/91-45, art. 3 (la date de la facture, quel que soit le montant)\"\n    },\n    {\n      \"ruleId\": \"QC-INV-002\",\n      \"title\": \"Montant total de la facture\",\n      \"severity\": \"BLOCKING\",\n      \"verdict\": \"PASS\",\n      \"evidenceSpan\": {\n        \"start\": 2143,\n        \"end\": 2231,\n        \"quote\": \"TOTAL À PAYER / TOTAL AMOUNT DUE ($CAD) :                                     4 024,13 $\"\n      },\n      \"explanation\": \"Le total à payer est chiffré.\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"Règlement sur les renseignements nécessaires pour demander un crédit de taxe sur les intrants (TPS/TVH), DORS/91-45, art. 3 (le total payé ou à payer, quel que soit le montant)\"\n    },\n    {\n      \"ruleId\": \"QC-INV-003\",\n      \"title\": \"Numéro de TPS du fournisseur\",\n      \"severity\": \"MAJOR\",\n      \"verdict\": \"PASS\",\n      \"evidenceSpan\": {\n        \"start\": 459,\n        \"end\": 476,\n        \"quote\": \"123456789 RT 0001\"\n      },\n      \"explanation\": \"Un numéro de TPS bien formé figure sur la facture.\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"Règlement sur les renseignements nécessaires pour demander un crédit de taxe sur les intrants (TPS/TVH), DORS/91-45, art. 3 (le numéro d'inscription du fournisseur, dès 100 $) ; format : ARC, numéro de compte de la TPS/TVH (numéro d'entreprise à 9 chiffres, RT, 4 chiffres)\"\n    },\n    {\n      \"ruleId\": \"QC-INV-004\",\n      \"title\": \"Numéro de TPS mal formé\",\n      \"severity\": \"MAJOR\",\n      \"verdict\": \"PASS\",\n      \"evidenceSpan\": null,\n      \"explanation\": \"Aucun numéro de TPS mal formé.\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"Format : ARC, numéro de compte de la TPS/TVH (numéro d'entreprise à 9 chiffres, RT, 4 chiffres)\"\n    },\n    {\n      \"ruleId\": \"QC-INV-005\",\n      \"title\": \"Numéro de TVQ mal formé\",\n      \"severity\": \"MAJOR\",\n      \"verdict\": \"PASS\",\n      \"evidenceSpan\": null,\n      \"explanation\": \"Aucun numéro de TVQ mal formé.\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"Format : Revenu Québec, format du numéro d'inscription au fichier de la TVQ (10 chiffres, TQ, 4 chiffres) (l'exigence de le porter sur la facture n'est pas encodée : texte non lu à la source)\"\n    },\n    {\n      \"ruleId\": \"QC-INV-006\",\n      \"title\": \"Numéro de TVQ du fournisseur\",\n      \"severity\": \"ADVISORY\",\n      \"verdict\": \"PASS\",\n      \"evidenceSpan\": {\n        \"start\": 521,\n        \"end\": 539,\n        \"quote\": \"1234567890 TQ 0001\"\n      },\n      \"explanation\": \"Un numéro de TVQ bien formé figure sur la facture.\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"Format : Revenu Québec, format du numéro d'inscription au fichier de la TVQ (10 chiffres, TQ, 4 chiffres) (l'exigence de le porter sur la facture n'est pas encodée : texte non lu à la source)\"\n    },\n    {\n      \"ruleId\": \"QC-INV-007\",\n      \"title\": \"Taxes indiquées, ou mention qu'elles sont incluses\",\n      \"severity\": \"MAJOR\",\n      \"verdict\": \"PASS\",\n      \"evidenceSpan\": {\n        \"start\": 1863,\n        \"end\": 1945,\n        \"quote\": \"GST (5,000 %) [Calcul : 3 500,00 $ * 0,05] :                              175,00 $\"\n      },\n      \"explanation\": \"Les taxes sont indiquées, ou dites incluses.\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"Règlement sur les renseignements nécessaires pour demander un crédit de taxe sur les intrants (TPS/TVH), DORS/91-45, art. 3 (le montant de la taxe, ou la mention qu'elle est incluse, dès 100 $)\"\n    },\n    {\n      \"ruleId\": \"QC-INV-008\",\n      \"title\": \"Conditions de paiement\",\n      \"severity\": \"ADVISORY\",\n      \"verdict\": \"PASS\",\n      \"evidenceSpan\": {\n        \"start\": 803,\n        \"end\": 811,\n        \"quote\": \"échéance\"\n      },\n      \"explanation\": \"Les conditions de paiement sont indiquées.\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"Règlement sur les renseignements nécessaires pour demander un crédit de taxe sur les intrants (TPS/TVH), DORS/91-45, art. 3 (les conditions de paiement, dès 500 $)\"\n    }\n  ],\n  \"reviewStatus\": \"TO_REVIEW_BY_LAWYER\",\n  \"reviewNote\": \"Corpus rédigé à partir du texte du règlement fédéral lu sur le site de la législation du Canada (le 2026-10-19). Non encodé, faute d'avoir pu lire la source : l'exigence propre à la TVQ (règlement québécois, page de Revenu Québec inaccessible à la lecture automatisée), le nom du fournisseur, le nom de l'acheteur et la description des biens ou services (aucune règle lexicale honnête), le taux et le calcul des taxes. Les règles de seuil (100 $, 500 $) ne lisent pas le montant : le constat le dit. Le numéro n'est pas vérifié auprès de l'ARC ni de Revenu Québec : seule sa forme l'est. À faire relire par un comptable ou un avocat avant tout usage autre que la démonstration.\"\n}",
+        "labels": {}
+      },
+      {
+        "key": "ruleset",
+        "label": "Corpus de règles appliqué",
+        "type": "TEXT",
+        "value": "2024-06-20",
+        "labels": {}
+      }
+    ],
+    "errorMessage": null,
+    "startedAt": "2026-10-22T03:28:50.136474Z",
+    "finishedAt": "2026-10-22T03:28:52.969572Z",
+    "steps": [
+      {
+        "stepId": "screen",
+        "ordinal": 0,
+        "jobId": "4a5bfb89-9dc4-4fa8-8652-48f775e9fce2",
+        "status": "SUCCEEDED",
+        "attempts": 1,
+        "error": null,
+        "startedAt": "2026-10-22T03:28:50.136474Z",
+        "estimateMs": null,
+        "estimateSamples": 0
+      },
+      {
+        "stepId": "judge",
+        "ordinal": 0,
+        "jobId": "e2ce09fc-0897-4e7e-83d9-fcdcd70739ee",
+        "status": "SUCCEEDED",
+        "attempts": 1,
+        "error": null,
+        "startedAt": "2026-10-22T03:28:50.412501Z",
+        "estimateMs": null,
+        "estimateSamples": 0
+      },
+      {
+        "stepId": "report",
+        "ordinal": 0,
+        "jobId": "c010ec69-b9d9-4cd2-aa9e-87d19a06fb28",
+        "status": "SUCCEEDED",
+        "attempts": 1,
+        "error": null,
+        "startedAt": "2026-10-22T03:28:52.506109Z",
+        "estimateMs": null,
+        "estimateSamples": 0
+      }
+    ]
+  }
+}

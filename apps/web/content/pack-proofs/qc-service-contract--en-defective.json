@@ -1,0 +1,78 @@
+{
+  "ruleset": "qc-service-contract",
+  "recordedAt": "2026-10-22T03:28:59.970Z",
+  "source": "https://dev.orazaka.com/edge",
+  "studio": "compliance-check",
+  "document": {
+    "title": "Services agreement — website build (demonstration)",
+    "language": "en",
+    "filename": "en-defective.txt",
+    "text": "SERVICES AGREEMENT (demonstration template, fictional parties)\nThe contractor builds the client's website for $4,000.\nThe contractor assigns all copyright and all moral rights in the deliverables to the client.\nLate payments bear interest at 1.5% per month.\n"
+  },
+  "inputs": {
+    "jurisdiction": "QC",
+    "asOf": "2026-10-22",
+    "ruleset": "qc-service-contract"
+  },
+  "run": {
+    "id": "e792c98a-ffb3-420d-9fb8-8a390762d95e",
+    "installationId": "3c21b3e5-5f30-4b82-9c63-13af790557ac",
+    "studioKey": "compliance-check",
+    "blueprintVersion": "1.4.0",
+    "status": "SUCCEEDED",
+    "outputs": [
+      {
+        "key": "report",
+        "label": "Rapport de conformité",
+        "type": "JSON",
+        "value": "{\n  \"rulesetId\": \"qc-service-contract\",\n  \"rulesetVersion\": \"2026-10-19\",\n  \"rulesetRevision\": 1,\n  \"jurisdiction\": \"QC\",\n  \"asOf\": \"2026-10-22\",\n  \"source\": \"Loi sur l'intérêt (L.R.C. 1985, ch. I-15), art. 4 ; Loi sur le droit d'auteur (L.R.C. 1985, ch. C-42), art. 13(4), 14.1(2) et (3) — textes lus sur le site de la législation du Canada le 2026-10-19\",\n  \"summary\": {\n    \"byVerdict\": {\n      \"FAIL\": 3,\n      \"PASS\": 1\n    },\n    \"blockingFailures\": 0,\n    \"rulesEvaluated\": 4\n  },\n  \"findings\": [\n    {\n      \"ruleId\": \"QC-SVC-001\",\n      \"title\": \"Intérêt de retard exprimé par mois, par semaine ou par jour sans taux annuel\",\n      \"severity\": \"MAJOR\",\n      \"verdict\": \"FAIL\",\n      \"evidenceSpan\": {\n        \"start\": 230,\n        \"end\": 256,\n        \"quote\": \"interest at 1.5% per month\"\n      },\n      \"explanation\": \"L'intérêt de retard est exprimé par mois, par semaine ou par jour sans énoncer le taux annuel équivalent. Selon l'article 4 de la Loi sur l'intérêt, il ne peut alors dépasser 5 % par année : l'énoncé exprès du taux annuel est nécessaire pour que le taux prévu s'applique.\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"Loi sur l'intérêt (L.R.C. 1985, ch. I-15), art. 4 (un taux pour une période de moins d'un an, sans énoncé exprès du taux annuel équivalent : intérêt limité à 5 % par année)\"\n    },\n    {\n      \"ruleId\": \"QC-SVC-002\",\n      \"title\": \"Cession des droits moraux\",\n      \"severity\": \"MAJOR\",\n      \"verdict\": \"FAIL\",\n      \"evidenceSpan\": {\n        \"start\": 133,\n        \"end\": 175,\n        \"quote\": \"assigns all copyright and all moral rights\"\n      },\n      \"explanation\": \"Le contrat prétend céder les droits moraux de l'auteur. Ils ne peuvent pas être cédés : seule une renonciation, totale ou partielle, est possible (art. 14.1(2)).\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"Loi sur le droit d'auteur (L.R.C. 1985, ch. C-42), art. 14.1(2) et (3)\"\n    },\n    {\n      \"ruleId\": \"QC-SVC-003\",\n      \"title\": \"Cession du droit d'auteur sans mention des droits moraux\",\n      \"severity\": \"ADVISORY\",\n      \"verdict\": \"PASS\",\n      \"evidenceSpan\": null,\n      \"explanation\": \"Aucune cession du droit d'auteur sans mention des droits moraux.\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"Loi sur le droit d'auteur (L.R.C. 1985, ch. C-42), art. 14.1(2) et (3) (céder le droit d'auteur n'emporte pas renonciation aux droits moraux)\"\n    },\n    {\n      \"ruleId\": \"QC-SVC-004\",\n      \"title\": \"Contrat signé\",\n      \"severity\": \"ADVISORY\",\n      \"verdict\": \"FAIL\",\n      \"evidenceSpan\": null,\n      \"explanation\": \"Le texte ne mentionne aucune signature. Si le contrat cède ou concède un droit d'auteur, la cession n'est valide que par écrit signé du titulaire du droit (art. 13(4)). Une version sans bloc de signature peut n'être qu'un projet.\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"Loi sur le droit d'auteur (L.R.C. 1985, ch. C-42), art. 13(4) (une cession ou une licence de droit d'auteur n'est valide que par écrit signé du titulaire)\"\n    }\n  ],\n  \"reviewStatus\": \"TO_REVIEW_BY_LAWYER\",\n  \"reviewNote\": \"Première étape, volontairement étroite : seules les règles du droit FÉDÉRAL lu à la source sont codées (intérêt exprimé par période, droits moraux, cession par écrit signé). Non encodé, faute d'avoir pu lire le texte à la source (legisquebec.gouv.qc.ca et CanLII inaccessibles à la lecture automatisée) : tout le Code civil du Québec — clause de non-concurrence (art. 2089 vise le contrat de travail ; pour un contrat de service, la limite relève de la jurisprudence, non codée), résiliation (art. 2125, 2129), clause pénale, définitions du contrat de service (art. 2098 et suiv.). Aucun délai de paiement n'est exigé par une loi : la règle ne l'invente pas. À faire relire par un avocat ou une avocate membre du Barreau du Québec avant tout usage autre que la démonstration.\"\n}",
+        "labels": {}
+      },
+      {
+        "key": "ruleset",
+        "label": "Corpus de règles appliqué",
+        "type": "TEXT",
+        "value": "2026-10-19",
+        "labels": {}
+      }
+    ],
+    "errorMessage": null,
+    "startedAt": "2026-10-22T03:28:57.524512Z",
+    "finishedAt": "2026-10-22T03:28:59.289121Z",
+    "steps": [
+      {
+        "stepId": "screen",
+        "ordinal": 0,
+        "jobId": "3c96ac98-1668-41ba-a30e-b8f819717e7e",
+        "status": "SUCCEEDED",
+        "attempts": 1,
+        "error": null,
+        "startedAt": "2026-10-22T03:28:57.524512Z",
+        "estimateMs": null,
+        "estimateSamples": 0
+      },
+      {
+        "stepId": "judge",
+        "ordinal": 0,
+        "jobId": "1684fb8c-3836-4d61-a93c-3763da14ac7e",
+        "status": "SUCCEEDED",
+        "attempts": 1,
+        "error": null,
+        "startedAt": "2026-10-22T03:28:57.754123Z",
+        "estimateMs": null,
+        "estimateSamples": 0
+      },
+      {
+        "stepId": "report",
+        "ordinal": 0,
+        "jobId": "5e8da1bb-bc4b-4444-b4ba-cc7f2bc0dbf4",
+        "status": "SUCCEEDED",
+        "attempts": 1,
+        "error": null,
+        "startedAt": "2026-10-22T03:28:59.195442Z",
+        "estimateMs": null,
+        "estimateSamples": 0
+      }
+    ]
+  }
+}

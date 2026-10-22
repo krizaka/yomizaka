@@ -1,0 +1,77 @@
+{
+  "ruleset": "qc-residential-lease",
+  "recordedAt": "2026-10-22T03:28:42.732Z",
+  "source": "https://dev.orazaka.com/edge",
+  "studio": "compliance-check",
+  "document": {
+    "title": "Bail de logement — 3½, avenue du Parc (démonstration)",
+    "language": "fr",
+    "filename": "fr-compliant.txt",
+    "text": "BAIL DE LOGEMENT (modèle de démonstration, personnes et adresse fictives)\nSection A — Parties\nLocateur : Madame Hélène Roy, 120, avenue du Parc, Montréal (Québec).\nLocataire : Monsieur Karim Haddad, 45, rue Beaubien, Laval (Québec).\nSection B — Logement\n3½ situé au 120, avenue du Parc, Montréal.\nSection C — Durée\nBail de 12 mois, du 1er septembre 2026 au 31 août 2027.\nSection D — Loyer\nLoyer mensuel : 1 120 $, payable le premier jour de chaque mois.\nAucun dépôt de garantie n'est exigé.\nPaiement par virement ou par chèque remis chaque mois.\nSection G — Avis du loyer le plus bas\nLe loyer le plus bas payé au cours des douze derniers mois précédant le début du bail était de 1 090 $ par mois.\nSigné à Montréal le 12 juin 2026.\n"
+  },
+  "inputs": {
+    "jurisdiction": "QC",
+    "asOf": "2026-10-22"
+  },
+  "run": {
+    "id": "7d1726f3-8d95-4532-98a4-9aa55ef3cab8",
+    "installationId": "3c21b3e5-5f30-4b82-9c63-13af790557ac",
+    "studioKey": "compliance-check",
+    "blueprintVersion": "1.4.0",
+    "status": "SUCCEEDED",
+    "outputs": [
+      {
+        "key": "report",
+        "label": "Rapport de conformité",
+        "type": "JSON",
+        "value": "{\n  \"rulesetId\": \"qc-residential-lease\",\n  \"rulesetVersion\": \"2024-02-21\",\n  \"rulesetRevision\": 2,\n  \"jurisdiction\": \"QC\",\n  \"asOf\": \"2026-10-22\",\n  \"source\": \"Code civil du Québec, art. 1851 et suiv. (bail de logement : art. 1892 à 1978), Règlement sur les formulaires de bail obligatoires et sur les mentions de l'avis au nouveau locataire (RLRQ c. T-15.01, r. 3), Tribunal administratif du logement\",\n  \"summary\": {\n    \"byVerdict\": {\n      \"PASS\": 9,\n      \"INSUFFICIENT_EVIDENCE\": 1\n    },\n    \"blockingFailures\": 0,\n    \"rulesEvaluated\": 10\n  },\n  \"findings\": [\n    {\n      \"ruleId\": \"QC-LEASE-001\",\n      \"title\": \"Identification du locateur\",\n      \"severity\": \"BLOCKING\",\n      \"verdict\": \"PASS\",\n      \"evidenceSpan\": {\n        \"start\": 94,\n        \"end\": 111,\n        \"quote\": \"Locateur : Madame\"\n      },\n      \"explanation\": \"Le locateur est identifié au bail.\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"C.c.Q., art. 1895 ; Règlement sur les formulaires de bail obligatoires, section A\"\n    },\n    {\n      \"ruleId\": \"QC-LEASE-002\",\n      \"title\": \"Identification du locataire\",\n      \"severity\": \"BLOCKING\",\n      \"verdict\": \"PASS\",\n      \"evidenceSpan\": {\n        \"start\": 164,\n        \"end\": 184,\n        \"quote\": \"Locataire : Monsieur\"\n      },\n      \"explanation\": \"Le locataire est identifié au bail.\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"C.c.Q., art. 1895 ; Règlement sur les formulaires de bail obligatoires, section A\"\n    },\n    {\n      \"ruleId\": \"QC-LEASE-003\",\n      \"title\": \"Montant du loyer\",\n      \"severity\": \"BLOCKING\",\n      \"verdict\": \"PASS\",\n      \"evidenceSpan\": {\n        \"start\": 389,\n        \"end\": 412,\n        \"quote\": \"Loyer mensuel : 1 120 $\"\n      },\n      \"explanation\": \"Le loyer est chiffré au bail.\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"C.c.Q., art. 1855 et 1903 ; Règlement sur les formulaires de bail obligatoires, section D\"\n    },\n    {\n      \"ruleId\": \"QC-LEASE-004\",\n      \"title\": \"Dépôt de garantie interdit — seul le premier mois peut être exigé d'avance\",\n      \"severity\": \"BLOCKING\",\n      \"verdict\": \"PASS\",\n      \"evidenceSpan\": null,\n      \"explanation\": \"Aucun dépôt de garantie n'est exigé.\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"C.c.Q., art. 1904, al. 1\"\n    },\n    {\n      \"ruleId\": \"QC-LEASE-005\",\n      \"title\": \"Chèques postdatés interdits\",\n      \"severity\": \"BLOCKING\",\n      \"verdict\": \"PASS\",\n      \"evidenceSpan\": null,\n      \"explanation\": \"Aucune remise de chèques postdatés n'est exigée.\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"C.c.Q., art. 1904, al. 2\"\n    },\n    {\n      \"ruleId\": \"QC-LEASE-006\",\n      \"title\": \"Refus des enfants — sans effet\",\n      \"severity\": \"BLOCKING\",\n      \"verdict\": \"PASS\",\n      \"evidenceSpan\": null,\n      \"explanation\": \"Aucune clause n'écarte les enfants.\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"C.c.Q., art. 1899\"\n    },\n    {\n      \"ruleId\": \"QC-LEASE-007\",\n      \"title\": \"Renonciation au droit au maintien dans les lieux — sans effet\",\n      \"severity\": \"BLOCKING\",\n      \"verdict\": \"PASS\",\n      \"evidenceSpan\": null,\n      \"explanation\": \"Aucune renonciation au maintien dans les lieux.\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"C.c.Q., art. 1936 et 1893\"\n    },\n    {\n      \"ruleId\": \"QC-LEASE-008\",\n      \"title\": \"Avis du loyer le plus bas des douze derniers mois\",\n      \"severity\": \"MAJOR\",\n      \"verdict\": \"PASS\",\n      \"evidenceSpan\": {\n        \"start\": 566,\n        \"end\": 583,\n        \"quote\": \"loyer le plus bas\"\n      },\n      \"explanation\": \"L'avis du loyer le plus bas payé au cours des douze derniers mois est donné.\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"C.c.Q., art. 1896 ; Règlement sur les formulaires de bail obligatoires, section G\"\n    },\n    {\n      \"ruleId\": \"QC-LEASE-009\",\n      \"title\": \"Renonciation anticipée aux règles de l'augmentation de loyer — sans effet\",\n      \"severity\": \"MAJOR\",\n      \"verdict\": \"PASS\",\n      \"evidenceSpan\": null,\n      \"explanation\": \"Aucune clause n'écarte d'avance l'avis, ni le droit du locataire de refuser une modification du loyer.\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"C.c.Q., art. 1942, 1943 et 1945 ; art. 1893\"\n    },\n    {\n      \"ruleId\": \"QC-LEASE-020\",\n      \"title\": \"Clause abusive\",\n      \"severity\": \"ADVISORY\",\n      \"verdict\": \"INSUFFICIENT_EVIDENCE\",\n      \"evidenceSpan\": null,\n      \"explanation\": \"Le modèle n'a pas trouvé dans le document de quoi trancher cette règle.\",\n      \"method\": \"JUDGMENT\",\n      \"citation\": \"C.c.Q., art. 1901\"\n    }\n  ],\n  \"reviewStatus\": \"TO_REVIEW_BY_LAWYER\",\n  \"reviewNote\": \"Corpus rédigé à partir du texte public du Code civil du Québec ; chaque règle cite son article. À faire relire par un avocat ou une avocate membre du Barreau du Québec avant tout usage autre que la démonstration.\"\n}",
+        "labels": {}
+      },
+      {
+        "key": "ruleset",
+        "label": "Corpus de règles appliqué",
+        "type": "TEXT",
+        "value": "2024-02-21",
+        "labels": {}
+      }
+    ],
+    "errorMessage": null,
+    "startedAt": "2026-10-22T03:28:33.238405Z",
+    "finishedAt": "2026-10-22T03:28:41.075647Z",
+    "steps": [
+      {
+        "stepId": "screen",
+        "ordinal": 0,
+        "jobId": "a2abfb1f-43dc-40b5-9b8e-4db5c9b6b0fd",
+        "status": "SUCCEEDED",
+        "attempts": 1,
+        "error": null,
+        "startedAt": "2026-10-22T03:28:33.238405Z",
+        "estimateMs": null,
+        "estimateSamples": 0
+      },
+      {
+        "stepId": "judge",
+        "ordinal": 0,
+        "jobId": "b3cf7967-44ba-4b87-b3c1-0f0b5d619676",
+        "status": "SUCCEEDED",
+        "attempts": 1,
+        "error": null,
+        "startedAt": "2026-10-22T03:28:34.059302Z",
+        "estimateMs": null,
+        "estimateSamples": 0
+      },
+      {
+        "stepId": "report",
+        "ordinal": 0,
+        "jobId": "c6c56198-e5b2-40ee-b5f2-44c4ea710131",
+        "status": "SUCCEEDED",
+        "attempts": 1,
+        "error": null,
+        "startedAt": "2026-10-22T03:28:40.786388Z",
+        "estimateMs": null,
+        "estimateSamples": 0
+      }
+    ]
+  }
+}

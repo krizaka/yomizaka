@@ -1,0 +1,78 @@
+{
+  "ruleset": "qc-service-contract",
+  "recordedAt": "2026-10-22T03:28:57.441Z",
+  "source": "https://dev.orazaka.com/edge",
+  "studio": "compliance-check",
+  "document": {
+    "title": "Contrat de services — Studio Nordik (démonstration)",
+    "language": "fr",
+    "filename": "fr-compliant.txt",
+    "text": "CONTRAT DE SERVICES (modèle de démonstration, parties fictives)\nEntre Studio Nordik inc. (le prestataire) et Boulangerie du Plateau inc. (le client).\nLe prestataire conçoit le site Web du client pour un prix de 4 000 $, payable en deux versements.\nLes sommes impayées portent intérêt au taux annuel de 12 %.\nLe prestataire cède au client ses droits d'auteur sur les livrables et renonce à ses droits moraux.\nSigné à Montréal le 12 octobre 2026.\nSignature du prestataire : ________  Signature du client : ________\n"
+  },
+  "inputs": {
+    "jurisdiction": "QC",
+    "asOf": "2026-10-22",
+    "ruleset": "qc-service-contract"
+  },
+  "run": {
+    "id": "74d3334b-bd7c-4a13-8e67-308a76003824",
+    "installationId": "3c21b3e5-5f30-4b82-9c63-13af790557ac",
+    "studioKey": "compliance-check",
+    "blueprintVersion": "1.4.0",
+    "status": "SUCCEEDED",
+    "outputs": [
+      {
+        "key": "report",
+        "label": "Rapport de conformité",
+        "type": "JSON",
+        "value": "{\n  \"rulesetId\": \"qc-service-contract\",\n  \"rulesetVersion\": \"2026-10-19\",\n  \"rulesetRevision\": 1,\n  \"jurisdiction\": \"QC\",\n  \"asOf\": \"2026-10-22\",\n  \"source\": \"Loi sur l'intérêt (L.R.C. 1985, ch. I-15), art. 4 ; Loi sur le droit d'auteur (L.R.C. 1985, ch. C-42), art. 13(4), 14.1(2) et (3) — textes lus sur le site de la législation du Canada le 2026-10-19\",\n  \"summary\": {\n    \"byVerdict\": {\n      \"PASS\": 4\n    },\n    \"blockingFailures\": 0,\n    \"rulesEvaluated\": 4\n  },\n  \"findings\": [\n    {\n      \"ruleId\": \"QC-SVC-001\",\n      \"title\": \"Intérêt de retard exprimé par mois, par semaine ou par jour sans taux annuel\",\n      \"severity\": \"MAJOR\",\n      \"verdict\": \"PASS\",\n      \"evidenceSpan\": null,\n      \"explanation\": \"Aucun intérêt exprimé par période de moins d'un an sans taux annuel.\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"Loi sur l'intérêt (L.R.C. 1985, ch. I-15), art. 4 (un taux pour une période de moins d'un an, sans énoncé exprès du taux annuel équivalent : intérêt limité à 5 % par année)\"\n    },\n    {\n      \"ruleId\": \"QC-SVC-002\",\n      \"title\": \"Cession des droits moraux\",\n      \"severity\": \"MAJOR\",\n      \"verdict\": \"PASS\",\n      \"evidenceSpan\": null,\n      \"explanation\": \"Aucune clause ne prétend céder les droits moraux.\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"Loi sur le droit d'auteur (L.R.C. 1985, ch. C-42), art. 14.1(2) et (3)\"\n    },\n    {\n      \"ruleId\": \"QC-SVC-003\",\n      \"title\": \"Cession du droit d'auteur sans mention des droits moraux\",\n      \"severity\": \"ADVISORY\",\n      \"verdict\": \"PASS\",\n      \"evidenceSpan\": null,\n      \"explanation\": \"Aucune cession du droit d'auteur sans mention des droits moraux.\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"Loi sur le droit d'auteur (L.R.C. 1985, ch. C-42), art. 14.1(2) et (3) (céder le droit d'auteur n'emporte pas renonciation aux droits moraux)\"\n    },\n    {\n      \"ruleId\": \"QC-SVC-004\",\n      \"title\": \"Contrat signé\",\n      \"severity\": \"ADVISORY\",\n      \"verdict\": \"PASS\",\n      \"evidenceSpan\": {\n        \"start\": 408,\n        \"end\": 413,\n        \"quote\": \"Signé\"\n      },\n      \"explanation\": \"Le contrat mentionne une signature.\",\n      \"method\": \"DETERMINISTIC\",\n      \"citation\": \"Loi sur le droit d'auteur (L.R.C. 1985, ch. C-42), art. 13(4) (une cession ou une licence de droit d'auteur n'est valide que par écrit signé du titulaire)\"\n    }\n  ],\n  \"reviewStatus\": \"TO_REVIEW_BY_LAWYER\",\n  \"reviewNote\": \"Première étape, volontairement étroite : seules les règles du droit FÉDÉRAL lu à la source sont codées (intérêt exprimé par période, droits moraux, cession par écrit signé). Non encodé, faute d'avoir pu lire le texte à la source (legisquebec.gouv.qc.ca et CanLII inaccessibles à la lecture automatisée) : tout le Code civil du Québec — clause de non-concurrence (art. 2089 vise le contrat de travail ; pour un contrat de service, la limite relève de la jurisprudence, non codée), résiliation (art. 2125, 2129), clause pénale, définitions du contrat de service (art. 2098 et suiv.). Aucun délai de paiement n'est exigé par une loi : la règle ne l'invente pas. À faire relire par un avocat ou une avocate membre du Barreau du Québec avant tout usage autre que la démonstration.\"\n}",
+        "labels": {}
+      },
+      {
+        "key": "ruleset",
+        "label": "Corpus de règles appliqué",
+        "type": "TEXT",
+        "value": "2026-10-19",
+        "labels": {}
+      }
+    ],
+    "errorMessage": null,
+    "startedAt": "2026-10-22T03:28:55.040356Z",
+    "finishedAt": "2026-10-22T03:28:57.055225Z",
+    "steps": [
+      {
+        "stepId": "screen",
+        "ordinal": 0,
+        "jobId": "b227aacc-f754-45aa-bad1-3e009234a676",
+        "status": "SUCCEEDED",
+        "attempts": 1,
+        "error": null,
+        "startedAt": "2026-10-22T03:28:55.040356Z",
+        "estimateMs": null,
+        "estimateSamples": 0
+      },
+      {
+        "stepId": "judge",
+        "ordinal": 0,
+        "jobId": "9bd00257-4f91-4500-ac71-94cd5e282b1d",
+        "status": "SUCCEEDED",
+        "attempts": 1,
+        "error": null,
+        "startedAt": "2026-10-22T03:28:55.525625Z",
+        "estimateMs": null,
+        "estimateSamples": 0
+      },
+      {
+        "stepId": "report",
+        "ordinal": 0,
+        "jobId": "5fde9765-ea6e-43b2-8d3b-a027ba4607ff",
+        "status": "SUCCEEDED",
+        "attempts": 1,
+        "error": null,
+        "startedAt": "2026-10-22T03:28:56.863865Z",
+        "estimateMs": null,
+        "estimateSamples": 0
+      }
+    ]
+  }
+}
