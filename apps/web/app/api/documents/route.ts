@@ -2,8 +2,10 @@ import { documentKind } from "@yomizaka/core";
 
 import { requireSession } from "@/lib/access";
 import { audit } from "@/lib/audit";
+import { query } from "@/lib/db";
 import { listDocuments, storeDocument } from "@/lib/documents";
-import { handle, refuse } from "@/lib/http";
+import { handle, HttpError, refuse } from "@/lib/http";
+import { recordPreflight } from "@/lib/preflight-events";
 import { limit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +27,17 @@ export function POST(req: Request) {
     if (!(file instanceof File)) throw refuse(400, "BAD_REQUEST", "A file is expected in the field `file`");
     const kind = documentKind.catch("other").parse(form?.get("kind") ?? "other");
     const bytes = new Uint8Array(await file.arrayBuffer());
-    const { summary, duplicate } = await storeDocument(session.account.id, { name: file.name, type: file.type, size: file.size }, bytes, kind);
+    let stored;
+    try {
+      stored = await storeDocument(session.account.id, { name: file.name, type: file.type, size: file.size }, bytes, kind);
+    } catch (error) {
+      // A file the pre-flight refused: an engine run that did not happen (counted per tenant).
+      const reason = error instanceof HttpError ? error.body.reason : undefined;
+      if (typeof reason === "string") await recordPreflight(query, session.account.id, "rejected", reason);
+      throw error;
+    }
+    const { summary, duplicate } = stored;
+    if (!duplicate) await recordPreflight(query, session.account.id, "accepted");
     if (!duplicate) await audit({ action: "document.uploaded", actorId: session.account.id, actorLabel: session.account.email, targetId: summary.id, detail: { size: summary.sizeBytes, mime: summary.mimeType }, headers: req.headers });
     return Response.json({ document: summary, duplicate }, { status: duplicate ? 200 : 201 });
   });

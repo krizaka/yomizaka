@@ -253,4 +253,19 @@ CREATE TABLE payment_events (
 );
 `,
   },
+  {
+    version: "0010_preflight_events",
+    sql: `
+-- The pre-flight's outcomes (ADR-0005): what reached the engine, what was refused for nothing, what was reused. A refused or
+-- reused file is an engine run avoided; the metrics count them per tenant.
+CREATE TABLE preflight_events (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  account_id uuid REFERENCES accounts(id) ON DELETE SET NULL,
+  outcome    text NOT NULL CHECK (outcome IN ('accepted', 'rejected', 'reused')),
+  reason     text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX preflight_events_account ON preflight_events(account_id, created_at DESC);
+`,
+  },
 ];

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { runInputs, searchText } from "./analyses";
 import { checkUpload, documentStatus, needsAttention, safeFilename, titleOf } from "./documents";
 import { normaliseText } from "./pdf-text";
+import { cleanPdf } from "./preflight/fixtures";
 import { normaliseQuery, passageHtml } from "./search";
 
 const LEASE = "CONTRAT DE LOCATION\nDépôt de garantie : 2 550 €.";
@@ -57,13 +58,14 @@ describe("reports", () => {
 });
 
 describe("uploads", () => {
-  it("takes a PDF by its first bytes, a text file by its name, and nothing else", () => {
-    expect(checkUpload({ name: "bail.pdf", type: "application/octet-stream", size: 20 }, pdf(10))).toBe("application/pdf");
-    expect(checkUpload({ name: "notes.txt", type: "", size: 3 }, Buffer.from("abc"))).toBe("text/plain");
-    expect(() => checkUpload({ name: "x.pdf", type: "application/pdf", size: 3 }, Buffer.from("MZ\u0090"))).toThrow(/Only PDF/);
-    expect(() => checkUpload({ name: "x.txt", type: "text/plain", size: 2 }, Buffer.from([0x41, 0x00]))).toThrow(/Not a text/);
-    expect(() => checkUpload({ name: "x.pdf", type: "application/pdf", size: 0 }, Buffer.alloc(0))).toThrow(/empty/);
-    expect(() => checkUpload({ name: "x.pdf", type: "application/pdf", size: 1 }, pdf(10 * 1024 * 1024))).toThrow(/10 MB/);
+  it("takes a PDF by its first bytes, a text file by its name, and nothing else", async () => {
+    const pdfBytes = await cleanPdf();
+    expect(await checkUpload({ name: "bail.pdf", type: "application/octet-stream", size: 20 }, pdfBytes)).toMatchObject({ mimeType: "application/pdf", pages: 1 });
+    expect(await checkUpload({ name: "notes.txt", type: "", size: 3 }, Buffer.from("abc"))).toMatchObject({ mimeType: "text/plain" });
+    await expect(checkUpload({ name: "x.pdf", type: "application/pdf", size: 3 }, Buffer.from("MZ\u0090"))).rejects.toMatchObject({ body: { code: "FILE_EXECUTABLE", reason: "EXECUTABLE" } });
+    await expect(checkUpload({ name: "x.txt", type: "text/plain", size: 2 }, Buffer.from([0x41, 0x00]))).rejects.toMatchObject({ status: 415 });
+    await expect(checkUpload({ name: "x.pdf", type: "application/pdf", size: 0 }, Buffer.alloc(0))).rejects.toMatchObject({ body: { code: "EMPTY_FILE" } });
+    await expect(checkUpload({ name: "x.pdf", type: "application/pdf", size: 1 }, new Uint8Array(10 * 1024 * 1024 + 1))).rejects.toMatchObject({ status: 413 });
   });
   it("names a document after its file, safely", () => {
     expect(titleOf("bail_2026-appartement.pdf")).toBe("bail 2026 appartement");
