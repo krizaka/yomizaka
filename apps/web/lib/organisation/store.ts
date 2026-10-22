@@ -2,6 +2,7 @@ import type { CollectionAvatar } from "@yomizaka/core";
 import type { QueryResultRow } from "pg";
 
 import { refuse } from "../http";
+import { guard, organizeOver } from "./organize";
 import { cleanName, type DeleteChoice, isId, type TagColor } from "./rules";
 
 /**
@@ -146,17 +147,10 @@ export async function moveFolder(q: Query, owner: string, id: string, collection
 }
 
 /** The owner's default collection: where a file goes when nothing else is said. */
-export async function defaultCollectionId(q: Query, owner: string): Promise<string> {
-  const [row] = await q<{ id: string }>("SELECT id FROM collections WHERE owner_id = $1 AND is_default", [owner]);
-  if (!row) throw refuse(500, "NO_DEFAULT_COLLECTION", "This account has no default collection");
-  return row.id;
-}
+export const defaultCollectionId = (q: Query, owner: string): Promise<string> => guard(() => organizeOver(q).collections.defaultId(owner));
 
 /** Makes another collection the owner's default: one statement, so there is always exactly one. */
-export async function setDefaultCollection(q: Query, owner: string, id: string): Promise<void> {
-  await ownedCollection(q, owner, id);
-  await q("UPDATE collections SET is_default = (id = $2) WHERE owner_id = $1 AND (is_default OR id = $2)", [owner, id]);
-}
+export const setDefaultCollection = (q: Query, owner: string, id: string): Promise<void> => guard(() => organizeOver(q).collections.setDefault(owner, id));
 
 /** Deletes a collection after saying what becomes of its files (and its folders go with it): moved to another collection (the default one when none is named), or deleted. The default collection is never deleted. */
 export async function deleteCollection(q: Query, owner: string, id: string, choice: DeleteChoice): Promise<void> {
@@ -201,50 +195,16 @@ export async function placeDocument(q: Query, owner: string, documentId: string,
   await q("UPDATE documents SET collection_id = $2, folder_id = $3 WHERE id = $1", [documentId, to.collectionId ?? (await defaultCollectionId(q, owner)), to.folderId]);
 }
 
-// ── tags ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ── tags (the package's) ──────────────────────────────────────────────────────────────────────────────────────────────
 
-export const listTags = (q: Query, owner: string) => q<Tag>("SELECT id, name, color FROM tags WHERE owner_id = $1 ORDER BY lower(name)", [owner]);
-export const createTag = (q: Query, owner: string, name: string, color: TagColor) => unique(async () => (await q<Tag>("INSERT INTO tags (owner_id, name, color) VALUES ($1, $2, $3) RETURNING id, name, color", [owner, cleanName(name), color]))[0]!);
-
-export async function updateTag(q: Query, owner: string, id: string, patch: { name?: string; color?: TagColor }): Promise<Tag> {
-  if (!isId(id)) throw notFound("tag");
-  return unique(() => one(q<Tag>("UPDATE tags SET name = coalesce($3, name), color = coalesce($4, color) WHERE owner_id = $1 AND id = $2 RETURNING id, name, color", [owner, id, patch.name === undefined ? null : cleanName(patch.name), patch.color ?? null]), "tag"));
-}
-
-export async function deleteTag(q: Query, owner: string, id: string): Promise<void> {
-  if (!isId(id)) throw notFound("tag");
-  await one(q("DELETE FROM tags WHERE owner_id = $1 AND id = $2 RETURNING id", [owner, id]), "tag");
-}
-
-const TARGETS = {
-  collection: { table: "collection_tags", column: "collection_id" },
-  folder: { table: "folder_tags", column: "folder_id" },
-  document: { table: "document_tags", column: "document_id" },
-} as const;
-
+export const listTags = (q: Query, owner: string) => guard(() => organizeOver(q).tags.list(owner));
+export const createTag = (q: Query, owner: string, name: string, color: TagColor) => guard(() => organizeOver(q).tags.create(owner, { name, color }));
+export const updateTag = (q: Query, owner: string, id: string, patch: { name?: string; color?: TagColor }): Promise<Tag> => guard(() => organizeOver(q).tags.update(owner, id, patch));
+export const deleteTag = (q: Query, owner: string, id: string): Promise<void> => guard(() => organizeOver(q).tags.remove(owner, id));
 /** Replaces the tags of a collection, a folder or a document (all of them must be the owner's). */
-export async function setTags(q: Query, owner: string, target: { kind: TagTarget; id: string }, tagIds: string[]): Promise<void> {
-  await owned(q, target.kind, owner, target.id);
-  const ids = [...new Set(tagIds)];
-  if (ids.some((t) => !isId(t))) throw notFound("tag");
-  if (ids.length) {
-    const owned = await q("SELECT id FROM tags WHERE owner_id = $1 AND id = ANY($2::uuid[])", [owner, ids]);
-    if (owned.length !== ids.length) throw notFound("tag");
-  }
-  const { table, column } = TARGETS[target.kind];
-  await q(`DELETE FROM ${table} WHERE ${column} = $1`, [target.id]);
-  if (ids.length) await q(`INSERT INTO ${table} (${column}, tag_id) SELECT $1, unnest($2::uuid[])`, [target.id, ids]);
-}
-
+export const setTags = (q: Query, owner: string, target: { kind: TagTarget; id: string }, tagIds: string[]): Promise<void> => guard(() => organizeOver(q).tags.assign(owner, target.kind, target.id, tagIds));
 /** The tags of many targets at once, by target id. */
-export async function tagsOf(q: Query, owner: string, kind: TagTarget, ids: string[]): Promise<Map<string, Tag[]>> {
-  const out = new Map<string, Tag[]>();
-  if (!ids.length) return out;
-  const { table, column } = TARGETS[kind];
-  const rows = await q<Tag & { target: string }>(`SELECT x.${column} AS target, t.id, t.name, t.color FROM ${table} x JOIN tags t ON t.id = x.tag_id WHERE t.owner_id = $1 AND x.${column} = ANY($2::uuid[]) ORDER BY lower(t.name)`, [owner, ids]);
-  for (const { target, ...tag } of rows) out.set(target, [...(out.get(target) ?? []), tag]);
-  return out;
-}
+export const tagsOf = (q: Query, owner: string, kind: TagTarget, ids: string[]): Promise<Map<string, Tag[]>> => guard(() => organizeOver(q).tags.of(owner, kind, ids));
 
 // ── reading a place ───────────────────────────────────────────────────────────────────────────────────────────────────
 

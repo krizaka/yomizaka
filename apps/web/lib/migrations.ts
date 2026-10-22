@@ -434,4 +434,12 @@ CREATE TABLE api_keys (
 CREATE INDEX api_keys_owner ON api_keys(owner_id, created_at);
 `,
   },
+  {
+    version: "0022_organize_package",
+    sql: `
+-- krizaka/yomizaka (ADR-006): the collections' tag join table takes the package's name, and a collection may have a description.
+ALTER TABLE collection_tags RENAME TO collections_tags;
+ALTER TABLE collections ADD COLUMN description text CHECK (description IS NULL OR length(description) <= 500);
+`,
+  },
 ];
