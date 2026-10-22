@@ -37,6 +37,16 @@ describe.runIf(enabled)("collection avatars over HTTP", () => {
   });
   const avatar = async () => (await query<{ avatar: unknown }>("SELECT avatar FROM collections WHERE id = $1", [collection]))[0]!.avatar;
 
+  it("describes a collection through the same PATCH: trimmed, cleared by an empty text, refused when too long", async () => {
+    const res = await patchRoute(as(token, "PATCH", `/api/collections/${collection}`, { description: "  Les baux de la rue Laurier  " }), params(collection));
+    expect(res.status).toBe(200);
+    expect((await res.json()).collection.description).toBe("Les baux de la rue Laurier");
+    expect((await query<{ description: string }>("SELECT description FROM collections WHERE id = $1", [collection]))[0]!.description).toBe("Les baux de la rue Laurier");
+    expect((await patchRoute(as(token, "PATCH", `/api/collections/${collection}`, { description: "x".repeat(501) }), params(collection))).status).toBe(400);
+    expect((await patchRoute(as(token, "PATCH", `/api/collections/${collection}`, { description: "" }), params(collection))).status).toBe(200);
+    expect((await query<{ description: string | null }>("SELECT description FROM collections WHERE id = $1", [collection]))[0]!.description).toBeNull();
+  });
+
   it("picks an avatar from the set and clears it, through the collection's PATCH", async () => {
     resetRateLimits();
     const set = await patchRoute(as(token, "PATCH", `/api/collections/${collection}`, { avatar: { kind: "set", seed: "v3" } }), params(collection));
