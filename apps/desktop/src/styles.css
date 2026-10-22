@@ -1,0 +1,32 @@
+/* The Krizaka platform, as the web app of Yomizaka draws it: Tailwind v4, the --kz-* tokens, @krizaka/ui's sources and
+   Yomizaka's indigo, in both themes. The window is an app, not a page: the chrome is not selectable. */
+@import "tailwindcss";
+@import "@krizaka/tailwind";
+@import "@krizaka/ui/tailwind.css";
+@import "@krizaka/tokens/brands/yomizaka.css";
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--kz-surface-0);
+  color: var(--kz-fg);
+  overscroll-behavior: none;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+pre,
+input,
+textarea {
+  user-select: text;
+}
+
+/* A file is being dragged over the window. */
+.ym-dropping {
+  outline: 2px dashed var(--kz-accent);
+  outline-offset: -10px;
+}

@@ -1,0 +1,46 @@
+{
+  "app": { "name": "Yomizaka", "tagline": "Vos documents, lus et vérifiés" },
+  "nav": { "label": "Navigation principale", "library": "Bibliothèque", "settings": "Réglages", "signOut": "Se déconnecter" },
+  "signIn": {
+    "title": "Se connecter",
+    "lead": "Le même compte que sur yomizaka.com.",
+    "email": "Adresse courriel",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "wrong": "Adresse ou mot de passe incorrect.",
+    "createAccount": "Créer un compte sur yomizaka.com"
+  },
+  "library": {
+    "title": "Bibliothèque",
+    "lead": "Vos documents restent dans les dossiers de votre Mac. Seul ce qu'une vérification demande est envoyé, puis effacé.",
+    "addFolder": "Ajouter un dossier",
+    "emptyFolders": "Aucun dossier pour l'instant. Choisissez celui où vous gardez vos baux et vos contrats.",
+    "emptyFolder": "Aucun PDF ni fichier texte dans ce dossier.",
+    "revoke": "Retirer ce dossier",
+    "check": "Vérifier",
+    "drop": "Déposez un document ici pour le vérifier",
+    "dropHint": "Depuis le Finder, sans l'ajouter à un dossier.",
+    "onMac": "Stocké sur ce Mac",
+    "folderDenied": "Ce dossier ne peut pas être ajouté : il est trop large ou protégé."
+  },
+  "check": {
+    "preparing": "Préparation du document…",
+    "readFailed": "Le fichier n'a pas pu être lu.",
+    "startFailed": "La vérification n'a pas pu démarrer.",
+    "paywall": "Cette vérification n'est pas disponible avec votre compte pour l'instant.",
+    "back": "Retour à la bibliothèque"
+  },
+  "report": {
+    "save": "Enregistrer le rapport signé (PDF)",
+    "saving": "Préparation du rapport…",
+    "saved": "Rapport enregistré à côté du document : {name}",
+    "failed": "Le rapport n'a pas pu être enregistré."
+  },
+  "settings": {
+    "title": "Réglages",
+    "language": "Langue",
+    "storage": "Stockage",
+    "storageBody": "Vos documents sont lus dans vos dossiers et n'en sortent pas. Pour une copie dans le nuage, choisissez-la sur yomizaka.com.",
+    "version": "Version {version}"
+  }
+}
