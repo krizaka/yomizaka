@@ -31,9 +31,14 @@ const cookieToken = (header: string | null) =>
     .find((c) => c.startsWith(`${SESSION_COOKIE}=`))
     ?.slice(SESSION_COOKIE.length + 1);
 
-/** The API's caller, from the session cookie — or 401. */
+const bearerToken = (header: string | null) => /^bearer (\S+)$/i.exec(header ?? "")?.[1];
+
+/** The session token of a request: the native apps' `Authorization: Bearer` (which wins), else the web's cookie. */
+export const sessionTokenOf = (requestHeaders: Headers): string | undefined => bearerToken(requestHeaders.get("authorization")) ?? cookieToken(requestHeaders.get("cookie"));
+
+/** The API's caller, from the bearer or the session cookie — or 401. */
 export async function requireSession(req: Request): Promise<Session> {
-  const session = await resolveSession(cookieToken(req.headers.get("cookie")));
+  const session = await resolveSession(sessionTokenOf(req.headers));
   if (!session) throw refuse(401, "UNAUTHENTICATED", "Sign in first");
   await assertOpen(session.account);
   return session;
