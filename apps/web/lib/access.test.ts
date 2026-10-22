@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { hostAllowed, ipAllowed } from "./access";
+import { hostAllowed, ipAllowed, sessionTokenOf } from "./access";
 import { isToken, newToken, tokenHash } from "./session";
 
 describe("the administration's address lock", () => {
@@ -49,5 +49,23 @@ describe("run durations", async () => {
   it("are finished − created, null while running", () => {
     expect(durationSeconds(new Date("2026-10-15T00:00:00Z"), new Date("2026-10-15T00:00:42Z"))).toBe(42);
     expect(durationSeconds(new Date("2026-10-15T00:00:00Z"), null)).toBeNull();
+  });
+});
+
+describe("the session token of a request", () => {
+  const token = newToken();
+  it("reads the cookie of the web", () => {
+    expect(sessionTokenOf(new Headers({ cookie: `a=b; yomizaka_session=${token}` }))).toBe(token);
+  });
+  it("reads the bearer of a native app", () => {
+    expect(sessionTokenOf(new Headers({ authorization: `Bearer ${token}` }))).toBe(token);
+    expect(sessionTokenOf(new Headers({ authorization: `bearer ${token}` }))).toBe(token);
+  });
+  it("prefers the bearer: an app never replays a stale cookie", () => {
+    const other = newToken();
+    expect(sessionTokenOf(new Headers({ authorization: `Bearer ${token}`, cookie: `yomizaka_session=${other}` }))).toBe(token);
+  });
+  it.each([[new Headers()], [new Headers({ authorization: "Basic abc" })], [new Headers({ cookie: "other=1" })]])("answers nothing without a session", (headers) => {
+    expect(sessionTokenOf(headers)).toBeUndefined();
   });
 });
