@@ -14,7 +14,7 @@ import { z } from "zod";
 import { RouteTabs } from "@/components/RouteTabs";
 import { useAppConfig } from "@/lib/app-config-client";
 import { errorKey } from "@/lib/client";
-import { SETTINGS_SECTIONS, type SettingsSection } from "@/lib/console-nav";
+import { SETTINGS_SECTIONS } from "@/lib/console-nav";
 import { formI18n } from "@/lib/form-i18n";
 import { useSay } from "@/lib/i18n-client";
 
