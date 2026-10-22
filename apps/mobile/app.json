@@ -41,7 +41,11 @@
       ],
       "permissions": [
         "android.permission.RECORD_AUDIO"
-      ]
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#3b36b3"
+      }
     },
     "plugins": [
       "expo-router",
@@ -68,6 +72,7 @@
         "projectId": "42d4e9ba-c487-49d6-ab0e-1b821ee9d3cf"
       }
     },
-    "owner": "oussamaabid"
+    "owner": "oussamaabid",
+    "icon": "./assets/icon.png"
   }
 }
