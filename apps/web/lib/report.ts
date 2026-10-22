@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 
-import { type Analysis, type ComplianceReport, type DocumentDetail } from "@yomizaka/core";
+import { type Analysis, type ComplianceReport, type DocumentDetail, textSource } from "@yomizaka/core";
 import { z } from "zod";
 
 import { type SigningKey } from "./report-key";
@@ -24,7 +24,7 @@ import { SITE_URL } from "./site";
 
 export const REPORT_SCHEMA = "yomizaka.report/1";
 
-import { buildNote, closingNote, noteInputOf } from "./closing-note/build";
+import { buildNote, closingNote, noteInputOf, noteSourceOf } from "./closing-note/build";
 import { LINE, noteLines } from "./closing-note/render";
 
 const payloadFinding = z.object({
@@ -41,7 +41,7 @@ const payloadFinding = z.object({
 export const reportPayload = z.object({
   schema: z.literal(REPORT_SCHEMA),
   lang: z.enum(["en", "fr"]),
-  document: z.object({ sha256: z.string().regex(/^[0-9a-f]{64}$/), filename: z.string(), title: z.string(), sizeBytes: z.number(), pages: z.number().nullable() }),
+  document: z.object({ sha256: z.string().regex(/^[0-9a-f]{64}$/), filename: z.string(), title: z.string(), sizeBytes: z.number(), pages: z.number().nullable(), textSource: textSource.optional() }),
   check: z.object({
     engine: z.literal("Orazaka"),
     studio: z.literal("compliance-check"),
@@ -71,7 +71,7 @@ export type ReportLabels = Record<string, string>;
 export class ReportError extends Error {}
 
 /** A report's payload from a stored check. Only a finished compliance check with a run id and a report can be certified. */
-export function buildPayload(doc: Pick<DocumentDetail, "sha256" | "filename" | "title" | "sizeBytes" | "pages">, analysis: Analysis, lang: "en" | "fr"): ReportPayload {
+export function buildPayload(doc: Pick<DocumentDetail, "sha256" | "filename" | "title" | "sizeBytes" | "pages" | "textSource">, analysis: Analysis, lang: "en" | "fr"): ReportPayload {
   if (analysis.studio !== "compliance-check" || analysis.status !== "succeeded" || !analysis.report || !("findings" in analysis.report) || !analysis.runId || !analysis.finishedAt) {
     throw new ReportError("Only a finished compliance check can be certified");
   }
@@ -81,7 +81,7 @@ export function buildPayload(doc: Pick<DocumentDetail, "sha256" | "filename" | "
   return {
     schema: REPORT_SCHEMA,
     lang,
-    document: { sha256: doc.sha256, filename: doc.filename, title: doc.title, sizeBytes: doc.sizeBytes, pages: doc.pages },
+    document: { sha256: doc.sha256, filename: doc.filename, title: doc.title, sizeBytes: doc.sizeBytes, pages: doc.pages, ...(doc.textSource ? { textSource: doc.textSource } : {}) },
     check: {
       engine: "Orazaka",
       studio: "compliance-check",
@@ -97,7 +97,7 @@ export function buildPayload(doc: Pick<DocumentDetail, "sha256" | "filename" | "
       finishedAt: analysis.finishedAt,
     },
     summary: { rulesEvaluated: report.summary?.rulesEvaluated ?? report.findings.length, blockingFailures: report.summary?.blockingFailures ?? report.findings.filter((f) => f.verdict === "FAIL" && f.severity === "BLOCKING").length, byVerdict },
-    note: buildNote(noteInputOf(report), lang),
+    note: buildNote(noteInputOf(report, noteSourceOf(doc.textSource)), lang),
     findings: report.findings.map((f) => ({
       ruleId: f.ruleId,
       title: f.title ?? null,

@@ -6,10 +6,10 @@ import { getAnalysis, startAnalysis } from "@/lib/analyses";
 import { audit } from "@/lib/audit";
 import { releaseAudit, reserveAudit } from "@/lib/billing";
 import { query } from "@/lib/db";
-import { deleteDocument, documentStorage, getDocument } from "@/lib/documents";
+import { deleteDocument, documentStorage, getDocument, isPhotoDocument } from "@/lib/documents";
 import { appEnvironment } from "@/lib/env";
 import { resolveStart } from "@/lib/flows";
-import { handle, readJson } from "@/lib/http";
+import { handle, readJson, refuse } from "@/lib/http";
 import { findReusableAnalysis, recordPreflight } from "@/lib/preflight-events";
 import { limit } from "@/lib/rate-limit";
 import { auditCapsOf, withFeatures } from "@/lib/settings/boundary";
@@ -35,6 +35,7 @@ export function POST(req: Request, { params }: Params) {
     limit("analysis", req, session.account.id, [60, 3600], [30, 3600]);
     const id = (await params).id;
     const request = await readJson(req, startAnalysisBody);
+    if (request.studio === "document-authenticity" && (await isPhotoDocument(session.account.id, id))) throw refuse(422, "PHOTO_AUTHENTICITY", "A document made from photos has no file of its own to examine");
     // The flow decides: enabled, offered to this person, and every consent it requires granted (403 otherwise).
     const { flowVersionId } = await resolveStart(session.account, request.studio, appEnvironment(), request.studio === "compliance-check" ? request.ruleset : undefined);
     const settings = await settingsFor(session.account.id);

@@ -1,11 +1,11 @@
-import { type Analysis, type AnalysisStatus, type AuthenticityReport, type CloudOwner, type ComplianceReport, type DocumentDetail, type DocumentInsight, type DocumentKind, type DocumentStatus, type DocumentSummary, type StorageKind, type Studio } from "@yomizaka/core";
+import { type Analysis, type AnalysisStatus, type AuthenticityReport, type CloudOwner, type ComplianceReport, type DocumentDetail, type DocumentInsight, type DocumentKind, type DocumentStatus, type DocumentSummary, type StorageKind, type Studio, type TextSource } from "@yomizaka/core";
 
 import { query } from "./db";
-import { refuse } from "./http";
+import { HttpError, refuse } from "./http";
 import { readText } from "./pdf-text";
 import { personalInfo } from "./pii";
 import { createInspector } from "./preflight/inspector";
-import { OUTCOME, type PreflightRules, type RejectReason } from "./preflight/port";
+import { type FileKind, OUTCOME, type PreflightRules, type RejectReason } from "./preflight/port";
 import { YOMIZAKA_RULES } from "./preflight/rules";
 import { EXTERNAL, objectKey, purgeDeadline, storageFor } from "./retention";
 import type { DocumentStore, StoreDescriptor } from "./storage/port";
@@ -107,10 +107,16 @@ export async function documentsByIds(ownerId: string, ids: string[]): Promise<Do
 
 export async function getDocument(ownerId: string, id: string): Promise<DocumentDetail> {
   if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such document");
-  const [row] = await query<DocumentRow & { sha256: string; text: string }>(`SELECT ${SUMMARY_COLUMNS}, d.sha256, d.text FROM documents d WHERE d.owner_id = $1 AND d.id = $2`, [ownerId, id]);
+  const [row] = await query<DocumentRow & { sha256: string; text: string; text_source: TextSource | null }>(`SELECT ${SUMMARY_COLUMNS}, d.sha256, d.text, d.text_source FROM documents d WHERE d.owner_id = $1 AND d.id = $2`, [ownerId, id]);
   if (!row) throw refuse(404, "NOT_FOUND", "No such document");
   const analyses = await query<AnalysisRow>("SELECT * FROM analyses WHERE document_id = $1 ORDER BY created_at DESC LIMIT 50", [id]);
-  return { ...summary(row), sha256: row.sha256, text: row.text, insight: row.text ? insightOf(row.text, row.pages) : undefined, analyses: analyses.map(toAnalysis) };
+  return { ...summary(row), sha256: row.sha256, text: row.text, textSource: row.text_source ?? undefined, insight: row.text ? insightOf(row.text, row.pages) : undefined, analyses: analyses.map(toAnalysis) };
+}
+
+/** Whether a document was made from photos (its file is a PDF Yomizaka assembled: file-level authenticity signals would describe Yomizaka, not the document). */
+export async function isPhotoDocument(ownerId: string, id: string): Promise<boolean> {
+  const [row] = await query<{ photo: boolean }>("SELECT text_source IS NOT NULL AS photo FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, id]);
+  return row?.photo ?? false;
 }
 
 /** Where a document lives and until when (the info panel, ADR-0007), from its row and the store configured now. */
@@ -176,18 +182,26 @@ const REFUSALS: Record<RejectReason, { status: number; code: string }> = {
   TOO_MANY_PAGES: { status: 422, code: "FILE_TOO_MANY_PAGES" },
   ACTIVE_CONTENT: { status: 422, code: "FILE_ACTIVE_CONTENT" },
   ARCHIVE_BOMB: { status: 422, code: "FILE_ARCHIVE_BOMB" },
+  IMAGE_TOO_LARGE: { status: 413, code: "IMAGE_TOO_LARGE" },
 };
 
 const defaultInspector = createInspector(YOMIZAKA_RULES);
 
 /** The pre-flight (lib/preflight, ADR-0005): what an upload must be, decided here for nothing before anything is stored or sent to an engine. */
-export async function checkUpload(file: { name: string; type: string; size: number }, bytes: Uint8Array, rules?: PreflightRules): Promise<{ mimeType: "application/pdf" | "text/plain"; sha256: string; pages: number | null }> {
+export async function inspectUpload(file: { name: string; type: string; size: number }, bytes: Uint8Array, rules?: PreflightRules): Promise<{ fileKind: FileKind; sha256: string; pages: number | null }> {
   const outcome = await (rules ? createInspector(rules) : defaultInspector).inspect(bytes, file);
   if (outcome.kind === OUTCOME.rejected) {
     const { status, code } = REFUSALS[outcome.reason];
     throw refuse(status, code, `Refused by the pre-flight: ${outcome.reason}`, { reason: outcome.reason });
   }
-  return { mimeType: outcome.fileKind === "pdf" ? "application/pdf" : "text/plain", sha256: outcome.sha256, pages: outcome.pages };
+  return { fileKind: outcome.fileKind, sha256: outcome.sha256, pages: outcome.pages };
+}
+
+/** A PDF or a text file (photos go through lib/photos, which hands the pre-flight a PDF made of them). */
+export async function checkUpload(file: { name: string; type: string; size: number }, bytes: Uint8Array, rules?: PreflightRules): Promise<{ mimeType: "application/pdf" | "text/plain"; sha256: string; pages: number | null }> {
+  const { fileKind, sha256, pages } = await inspectUpload(file, bytes, rules);
+  if (fileKind !== "pdf" && fileKind !== "text") throw refuse(415, "UNSUPPORTED_TYPE", "Photos are sent as photos, not as a file");
+  return { mimeType: fileKind === "pdf" ? "application/pdf" : "text/plain", sha256, pages };
 }
 
 export const titleOf = (filename: string) => filename.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim().slice(0, 200) || "Document";
@@ -213,16 +227,25 @@ export interface StoragePolicy {
   rules?: PreflightRules;
 }
 
-export async function storeDocument(ownerId: string, file: { name: string; type: string; size: number }, bytes: Uint8Array, requested: DocumentKind | "auto", policy?: StoragePolicy): Promise<{ summary: DocumentSummary; duplicate: boolean }> {
-  const { mimeType, sha256 } = await checkUpload(file, bytes, policy?.rules);
+/** The text of a document that has no text layer — read only if the document is new (a duplicate is never read twice). */
+export type TextReader = () => Promise<{ text: string; source: TextSource }>;
+
+export async function storeDocument(ownerId: string, file: { name: string; type: string; size: number }, bytes: Uint8Array, requested: DocumentKind | "auto", policy?: StoragePolicy, textOf?: TextReader): Promise<{ summary: DocumentSummary; duplicate: boolean }> {
+  const { mimeType, sha256, pages } = await checkUpload(file, bytes, policy?.rules);
   const where = policy ? storageFor(policy.keep, policy.store.describe()) : "database";
   const [existing] = await query<DocumentRow & { purged: boolean }>(`SELECT ${SUMMARY_COLUMNS}, (d.storage = 'none' AND octet_length(d.content) = 0 AND d.text = '') AS purged FROM documents d WHERE d.owner_id = $1 AND d.sha256 = $2`, [ownerId, sha256]);
   // The same file again: reused as it is — unless it was purged and the person now keeps it, then it is restored below.
   if (existing && !(existing.purged && where !== "none")) return { summary: summary(existing), duplicate: true };
   let read: { text: string; pages: number | null };
+  let source: TextSource | null = null;
   try {
-    read = await readText(mimeType, bytes);
-  } catch {
+    if (textOf) {
+      const recognised = await textOf();
+      read = { text: recognised.text, pages: pages };
+      source = recognised.source;
+    } else read = await readText(mimeType, bytes);
+  } catch (error) {
+    if (error instanceof HttpError) throw error;
     throw refuse(422, "UNREADABLE_FILE", "This PDF cannot be opened");
   }
   const kind = requested === "auto" ? kindFromNature(understanding.understand(read.text, { pages: read.pages }).nature?.id ?? null) : requested;
@@ -230,13 +253,13 @@ export async function storeDocument(ownerId: string, file: { name: string; type:
   const deadline = where === "none" && policy ? purgeDeadline(policy.now, policy.purgeAfterHours) : null;
   // The bytes sit in the database until the document is placed (and, if not kept, until its check has run).
   const [row] = existing
-    ? await query<DocumentRow>(`WITH d AS (UPDATE documents SET content = $3, text = $4, storage = $5, retain_until = $6 WHERE owner_id = $1 AND id = $2 RETURNING *) SELECT ${SUMMARY_COLUMNS} FROM d`, [ownerId, existing.id, Buffer.from(bytes), read.text, where, deadline])
+    ? await query<DocumentRow>(`WITH d AS (UPDATE documents SET content = $3, text = $4, storage = $5, retain_until = $6, text_source = $7 WHERE owner_id = $1 AND id = $2 RETURNING *) SELECT ${SUMMARY_COLUMNS} FROM d`, [ownerId, existing.id, Buffer.from(bytes), read.text, where, deadline, source])
     : await query<DocumentRow>(
         `WITH d AS (
-           INSERT INTO documents (owner_id, title, filename, mime_type, kind, size_bytes, sha256, pages, content, text, storage, retain_until)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *)
+           INSERT INTO documents (owner_id, title, filename, mime_type, kind, size_bytes, sha256, pages, content, text, storage, retain_until, text_source)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *)
          SELECT ${SUMMARY_COLUMNS} FROM d`,
-        [ownerId, titleFor(filename, read.text), filename, mimeType, kind, bytes.length, sha256, read.pages, Buffer.from(bytes), read.text, where, deadline],
+        [ownerId, titleFor(filename, read.text), filename, mimeType, kind, bytes.length, sha256, read.pages, Buffer.from(bytes), read.text, where, deadline, source],
       );
   if (policy && EXTERNAL.has(where)) {
     try {

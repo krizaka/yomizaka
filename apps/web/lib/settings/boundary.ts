@@ -10,7 +10,7 @@ const value = <T>(s: Snapshot, key: SettingKey) => s[key].value as T;
 
 const MB = 1024 * 1024;
 /** The file kinds the pre-flight knows by the names the settings use. */
-const KIND_OF: Record<string, FileKind> = { pdf: "pdf", text: "text" };
+const KINDS_OF: Record<string, FileKind[]> = { pdf: ["pdf"], text: ["text"], image: ["png", "jpeg", "heic"] };
 
 /** The pre-flight rules as set in the configuration: the product's rules with the limits an administrator changed. */
 export function preflightRulesFrom(base: PreflightRules, s: Snapshot): PreflightRules {
@@ -18,7 +18,7 @@ export function preflightRulesFrom(base: PreflightRules, s: Snapshot): Preflight
     ...base,
     maxBytes: Math.min(MAX_FILE_BYTES, value<number>(s, "limits.maxFileMb") * MB),
     maxPages: value<number>(s, "limits.maxPages"),
-    allowedKinds: value<string[]>(s, "limits.allowedTypes").map((t) => KIND_OF[t]!).filter(Boolean),
+    allowedKinds: value<string[]>(s, "limits.allowedTypes").flatMap((t) => KINDS_OF[t] ?? []),
   };
 }
 
