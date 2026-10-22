@@ -1,0 +1,8 @@
+{
+  "product": "yomizaka",
+  "plans": [
+    { "lookupKey": "yomizaka_audit_cad", "name": "Yomizaka — one audit", "amount": 999, "currency": "cad", "taxCode": "txcd_10103001" },
+    { "lookupKey": "yomizaka_pro_monthly_cad", "name": "Yomizaka Pro — monthly", "amount": 2900, "currency": "cad", "interval": "month", "taxCode": "txcd_10103001" }
+  ],
+  "portal": { "headline": "Manage your Yomizaka subscription and invoices", "cancel": "at_period_end" }
+}

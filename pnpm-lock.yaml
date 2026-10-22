@@ -35,6 +35,9 @@ importers:
       '@krizaka/icons':
         specifier: ^0.7.0
         version: 0.7.0(react@19.3.1)
+      '@krizaka/payments':
+        specifier: 0.1.0
+        version: 0.1.0
       '@krizaka/query':
         specifier: ^0.2.1
         version: 0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1)
@@ -588,6 +591,11 @@ packages:
     peerDependenciesMeta:
       react:
         optional: true
+
+  '@krizaka/payments@0.1.0':
+    resolution: {integrity: sha512-Np3ZxEqNCr2Hup1GrrTf32ndlE49f+Ea2n4p8FZvgVvTpaY7iS0E2INkw3C4g1+qTMSC/GiZU/OXfG49eiMUig==}
+    engines: {node: '>=22'}
+    hasBin: true
 
   '@krizaka/query@0.2.1':
     resolution: {integrity: sha512-yFhfa2jWlSZWkf0xprsFAaQkxRJrMf5xiJQHqH2j341cCLCsx8ZuzixpZgv+5FrUATmAyCVZ09NiuRG91uafwg==}
@@ -4341,6 +4349,8 @@ snapshots:
       '@tanstack/pacer': 0.23.1
     optionalDependencies:
       react: 19.3.1
+
+  '@krizaka/payments@0.1.0': {}
 
   '@krizaka/query@0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1)':
     dependencies:

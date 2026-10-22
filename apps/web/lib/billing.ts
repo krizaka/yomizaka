@@ -1,7 +1,7 @@
+import { applyOnce, type PaymentEvent, pgEventStore } from "@krizaka/payments";
 import type { QueryResultRow } from "pg";
 
 import { refuse } from "./http";
-import type { PaymentEvent } from "./payments/port";
 
 /**
  * Entitlements — the domain, vendor-free (it speaks the payments port's events, never a processor's). A self-serve account
@@ -65,27 +65,30 @@ export async function refundFailedAudit(query: Query, analysisId: string): Promi
   return true;
 }
 
-/** Applies a verified payment event once: its id is recorded first (`ON CONFLICT DO NOTHING`), a replay changes nothing. */
+/** What a one-off payment of each plan buys, in audit credits (data: a new one-off plan is a line here). */
+const CREDITS_PER_KIND: Record<string, number | undefined> = { audit: 1 };
+
+/** Applies a verified payment event once (the shared package records its id first in `payment_events`; a replay changes nothing). */
 export async function applyPaymentEvent(query: Query, event: PaymentEvent): Promise<"applied" | "duplicate" | "ignored"> {
-  if (event.type === "ignored") return "ignored";
-  const fresh = await query("INSERT INTO payment_events (id, type) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING RETURNING id", [event.id, event.type]);
-  if (!fresh.length) return "duplicate";
-  switch (event.type) {
-    case "audit_paid":
-      if (event.customerId) await query("UPDATE accounts SET payment_customer_id = COALESCE(payment_customer_id, $2) WHERE id = $1", [event.accountId, event.customerId]);
-      await query("UPDATE accounts SET audit_credits = audit_credits + 1 WHERE id = $1", [event.accountId]);
-      return "applied";
-    case "subscription_started":
-      if (event.customerId) await query("UPDATE accounts SET payment_customer_id = COALESCE(payment_customer_id, $2) WHERE id = $1", [event.accountId, event.customerId]);
-      await query("UPDATE accounts SET plan = 'PRO', payment_subscription_id = $2, subscription_status = COALESCE(subscription_status, 'active') WHERE id = $1", [event.accountId, event.subscriptionId]);
-      return "applied";
-    case "subscription_changed": {
+  return applyOnce(pgEventStore((text, values) => query(text, values)), event, {
+    payment_paid: async (e) => {
+      const credits = CREDITS_PER_KIND[e.kind];
+      if (!credits) return "ignored";
+      if (e.customerId) await query("UPDATE accounts SET payment_customer_id = COALESCE(payment_customer_id, $2) WHERE id = $1", [e.accountId, e.customerId]);
+      await query("UPDATE accounts SET audit_credits = audit_credits + $2 WHERE id = $1", [e.accountId, credits]);
+      return undefined;
+    },
+    subscription_started: async (e) => {
+      if (e.customerId) await query("UPDATE accounts SET payment_customer_id = COALESCE(payment_customer_id, $2) WHERE id = $1", [e.accountId, e.customerId]);
+      await query("UPDATE accounts SET plan = 'PRO', payment_subscription_id = $2, subscription_status = COALESCE(subscription_status, 'active') WHERE id = $1", [e.accountId, e.subscriptionId]);
+    },
+    subscription_changed: async (e) => {
       const rows = await query(
         `UPDATE accounts SET plan = $3, subscription_status = $4, payment_subscription_id = $5, current_period_end = to_timestamp($6)
            WHERE payment_customer_id = $1 OR id::text = $2 RETURNING id`,
-        [event.customerId, event.accountId, event.active ? "PRO" : "FREE", event.status, event.subscriptionId, event.periodEnd],
+        [e.customerId, e.accountId, e.active ? "PRO" : "FREE", e.status, e.subscriptionId, e.periodEnd],
       );
-      return rows.length ? "applied" : "ignored";
-    }
-  }
+      return rows.length ? undefined : "ignored";
+    },
+  });
 }
