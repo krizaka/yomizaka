@@ -33,6 +33,18 @@ const analysis = {
 };
 const payload = buildPayload(doc, analysis, "fr");
 
+describe("the report's legal guardrail", () => {
+  it.each(["fr", "en"] as const)("says in %s that it is informative, not legal advice, and gives the absolute verification address", async (lang) => {
+    const issued = await issuePdf(buildPayload(doc, analysis, lang), reportLabels(lang), signingKey());
+    const { extractText, getDocumentProxy } = await import("unpdf");
+    const text = ((await extractText(await getDocumentProxy(new Uint8Array(issued.bytes)), { mergePages: true })).text as string).replace(/\s+/g, " ");
+    expect(text).toContain(lang === "fr" ? "Vérification informative, ce n’est pas un avis juridique" : "Informative check, not legal advice");
+    expect(text).toContain("https://www.yomizaka.com/verify");
+    expect(text).not.toMatch(/\bconforme\b/i);
+    expect(text).not.toMatch(/\bcompliant\b/i);
+  });
+});
+
 describe("the signed PDF report", () => {
   it("is a PDF with its attestation embedded and a visible signature page after the report's pages", async () => {
     const issued = await issuePdf(payload, reportLabels("fr"), signingKey());

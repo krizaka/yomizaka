@@ -75,8 +75,8 @@
   },
   "run": {
     "verdicts": {
-      "PASS": "Compliant",
-      "FAIL": "Non-compliant",
+      "PASS": "Requirement met",
+      "FAIL": "Requirement not met",
       "INSUFFICIENT_EVIDENCE": "Insufficient evidence"
     }
   },
@@ -244,8 +244,8 @@
       },
       "summary": "{failures} blocking failure(s) out of {rules} rules",
       "verdicts": {
-        "PASS": "Compliant",
-        "FAIL": "Non-compliant",
+        "PASS": "Requirement met",
+        "FAIL": "Requirement not met",
         "INSUFFICIENT_EVIDENCE": "Insufficient evidence"
       },
       "severity": "Severity",
@@ -589,6 +589,7 @@
   "report": {
     "title": "Audit report — {name}",
     "eyebrow": "Yomizaka · compliance audit report",
+    "disclaimer": "Informative check, not legal advice. Yomizaka compares your document with published rules; it is not a legal opinion, and only a member of the Barreau du Québec can give legal advice. A result is never a guarantee of compliance.",
     "summary": "{failures} blocking failure(s) out of {rules} rules checked.",
     "toReview": "Québec rules still to be reviewed by a lawyer: a demonstration report, not legal advice.",
     "documentHeading": "The document",
@@ -611,8 +612,8 @@
     "passage": "Passage",
     "noPassage": "No passage: the document says nothing on this point.",
     "verdicts": {
-      "PASS": "Compliant",
-      "FAIL": "Non-compliant",
+      "PASS": "Requirement met",
+      "FAIL": "Requirement not met",
       "INSUFFICIENT_EVIDENCE": "Insufficient evidence"
     },
     "guaranteeHeading": "What this report guarantees",
