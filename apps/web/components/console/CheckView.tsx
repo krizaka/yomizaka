@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 import { useSay } from "@/lib/i18n-client";
-import { CHECK_KINDS, type CheckKind, ROUTE_STATES } from "@/lib/route-state";
+import { CHECK_KINDS, ROUTE_STATES } from "@/lib/route-state";
 import { useRouteState } from "@/lib/use-route-state";
 
 import { DocumentUploader } from "./DocumentUploader";

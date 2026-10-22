@@ -19,7 +19,7 @@ import { formI18n } from "@/lib/form-i18n";
 import { useSay } from "@/lib/i18n-client";
 
 /** The sections of the settings: the tab is the route (/app/settings/<section>). */
-export function SettingsTabs({ section, children }: { section: SettingsSection; children: ReactNode }) {
+export function SettingsTabs({ children }: { children: ReactNode }) {
   const { say, locale } = useSay();
   const app = useAppConfig();
   const items = SETTINGS_SECTIONS.filter((s) => s !== "stockage" || app?.features.ownStorage !== false).map((s) => ({ value: s, label: say(`settings.tabs.${s}`) }));
