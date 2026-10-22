@@ -7,7 +7,7 @@ export const PRIVACY_UPDATED = "2026-10-14";
 export const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? "0.1.0";
 
 /** The pages, in both languages (sitemap, hreflang): the home and the privacy notice are public; /verify is for members (noindex, not in the sitemap or the menu). */
-export const PAGES = ["home", "verify", "privacy", "terms"] as const;
+export const PAGES = ["home", "verify", "download", "privacy", "terms"] as const;
 export type PageId = (typeof PAGES)[number];
 export const pagePath = (locale: "en" | "fr", page: PageId) => (page === "home" ? `/${locale}` : `/${locale}/${page}`);
 
