@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@krizaka/ui/badge";
 import { Button } from "@krizaka/ui/button";
 import { Card } from "@krizaka/ui/card";
 import { Mascot } from "@krizaka/ui/mascots";
@@ -23,7 +24,7 @@ export type ExampleDocuments = Record<"tenant" | "landlord", { title: string; fi
  * The library's first screen (ADR-0007): the person's libraries and their collections, then « Récents » — and, when there is
  * nothing yet, a drop zone with examples. One primary action (check a document), the tenant file only where the role is offered it.
  */
-export function LibraryView({ libraries, unfiled, recents, tags, perspective = null, screening = false, examples }: { libraries: LibraryOverview[]; unfiled: number; recents: DocumentSummary[]; tags: TagOption[]; perspective?: Audience | null; screening?: boolean; examples?: ExampleDocuments }) {
+export function LibraryView({ libraries, recents, tags, perspective = null, screening = false, examples }: { libraries: LibraryOverview[]; recents: DocumentSummary[]; tags: TagOption[]; perspective?: Audience | null; screening?: boolean; examples?: ExampleDocuments }) {
   const { say, locale } = useSay();
   const collections = libraries.flatMap((l) => l.collections);
   const screen = libraryScreen({ documents: recents.length + collections.length, screening });
@@ -58,7 +59,8 @@ export function LibraryView({ libraries, unfiled, recents, tags, perspective = n
                         <Link href={libraryPath(locale, lib.id, c.id)} className="font-semibold text-fg hover:text-fg-accent hover:underline">
                           {c.name}
                         </Link>
-                        <ItemMenu kind="collection" id={c.id} name={c.name} collections={destinations} tags={tags} current={c.tags.map((t) => t.id)} />
+                        {c.isDefault ? <Badge tone="neutral" size="sm">{say("organisation.default")}</Badge> : null}
+                        <ItemMenu kind="collection" id={c.id} name={c.name} isDefault={c.isDefault} collections={destinations} tags={tags} current={c.tags.map((t) => t.id)} />
                       </div>
                       <p className="m-0 text-sm text-fg-secondary">
                         {say(pluralKey("organisation.files", c.files), { count: c.files })}
@@ -68,16 +70,6 @@ export function LibraryView({ libraries, unfiled, recents, tags, perspective = n
                     </Card.Root>
                   </li>
                 ))}
-                {unfiled > 0 && lib.id === first?.id ? (
-                  <li>
-                    <Card.Root className="flex h-full flex-col gap-2 p-4" data-testid="unfiled-card">
-                      <Link href={`/${locale}/app/bibliotheque/sans-collection`} className="font-semibold text-fg hover:text-fg-accent hover:underline">
-                        {say("organisation.unfiled")}
-                      </Link>
-                      <p className="m-0 text-sm text-fg-secondary">{say(pluralKey("organisation.files", unfiled), { count: unfiled })}</p>
-                    </Card.Root>
-                  </li>
-                ) : null}
               </ul>
             </section>
           ))}

@@ -472,7 +472,8 @@
       "TOO_MANY_PHOTOS": "A document can have 12 photos at most.",
       "UNREADABLE_IMAGE": "This photo cannot be read. Take it again or choose another file.",
       "OCR_FAILED": "The text of this photo could not be read. Take it again, well lit and flat.",
-      "PHOTO_AUTHENTICITY": "This document comes from photos: its authenticity cannot be judged from a file."
+      "PHOTO_AUTHENTICITY": "This document comes from photos: its authenticity cannot be judged from a file.",
+      "DEFAULT_COLLECTION": "The default collection cannot be deleted. Make another collection the default first."
     },
     "adminConsole": {
       "shell": {
@@ -831,7 +832,6 @@
     "organisation": {
       "title": "Organisation",
       "recents": "Recent",
-      "unfiled": "No collection",
       "collections": "Collections",
       "noCollections": "No collection yet. Create one to group your documents.",
       "newCollection": "New collection",
@@ -856,7 +856,6 @@
       "deleteDocs": "Delete them too (this cannot be undone)",
       "moveToCollection": "Move to collection",
       "moveUpFolder": "Up, into the collection",
-      "moveToUnfiled": "To “No collection”",
       "moveTo": "Move to",
       "rootOfCollection": "The collection itself (no folder)",
       "emptyCollection": "Nothing here yet. Upload a document or create a folder.",
@@ -879,7 +878,13 @@
       "foldersOne": "{count} folder",
       "foldersMany": "{count} folders",
       "filterKind": "Type",
-      "filterStatus": "State"
+      "filterStatus": "State",
+      "default": "Default",
+      "defaultCollection": "Default collection",
+      "moveToDefault": "To the default collection",
+      "makeDefault": "Make the default collection",
+      "makeDefaultTitle": "Make “{name}” the default collection",
+      "makeDefaultAsk": "Documents with no destination will go here. The previous default becomes a collection like any other."
     },
     "settings": {
       "tabs": {

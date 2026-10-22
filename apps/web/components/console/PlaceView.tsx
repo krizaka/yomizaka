@@ -14,14 +14,14 @@ import { countLabel } from "@/lib/plural";
 type Say = Messages["console"]["organisation"];
 
 /**
- * A collection, one of its folders, or « Sans collection »: the breadcrumb, the tag filter (the URL's `?tags=`), the folders,
+ * A collection or one of its folders: the breadcrumb, the tag filter (the URL's `?tags=`), the folders,
  * the files, and a drop zone that files into this place. Rendered on the server; the actions are client islands.
  */
 export function PlaceView({ locale, t, library, collection, folder, folders, documents, tags, view, labels, tagsByDocument, folderTags, collections, collectionTags, path }: {
   locale: "en" | "fr";
   t: Say;
   library: { id: string; name: string };
-  collection?: { id: string; name: string };
+  collection: { id: string; name: string; isDefault: boolean };
   folder?: { id: string; name: string };
   folders: (Folder & { files: number; tags: Tag[] })[];
   documents: DocumentSummary[];
@@ -37,8 +37,8 @@ export function PlaceView({ locale, t, library, collection, folder, folders, doc
 }) {
   const crumbs = [
     { href: `/${locale}/app`, label: t.library },
-    ...(collection ? [{ href: libraryPath(locale, library.id, collection.id), label: collection.name }] : [{ href: path, label: t.unfiled }]),
-    ...(folder && collection ? [{ href: libraryPath(locale, library.id, collection.id, folder.id), label: folder.name }] : []),
+    { href: libraryPath(locale, library.id, collection.id), label: collection.name },
+    ...(folder ? [{ href: libraryPath(locale, library.id, collection.id, folder.id), label: folder.name }] : []),
   ];
   return (
     <div className="flex flex-col gap-6">
@@ -51,10 +51,10 @@ export function PlaceView({ locale, t, library, collection, folder, folders, doc
         ))}
       </nav>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="m-0 font-display text-xl font-bold text-fg">{folder?.name ?? collection?.name ?? t.unfiled}</h2>
+        <h2 className="m-0 font-display text-xl font-bold text-fg">{folder?.name ?? collection.name}</h2>
         <div className="flex flex-wrap items-center gap-3">
-          {collection && !folder ? <CreateButton kind="folder" parentId={collection.id} /> : null}
-          {collection && !folder ? <ItemMenu kind="collection" id={collection.id} name={collection.name} collections={collections} tags={tags} current={collectionTags} /> : null}
+          {!folder ? <CreateButton kind="folder" parentId={collection.id} /> : null}
+          {!folder ? <ItemMenu kind="collection" id={collection.id} name={collection.name} isDefault={collection.isDefault} collections={collections} tags={tags} current={collectionTags} /> : null}
         </div>
       </div>
       <TagFilter tags={tags} selected={view.tags} label={t.filterTags} clearLabel={t.clearTags} clearHref={viewHref(path, { ...view, tags: [] })} hrefFor={(id) => viewHref(path, { ...view, tags: toggleTag(view.tags, id) })} />

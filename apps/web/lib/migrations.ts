@@ -3,6 +3,8 @@
  * Kept in code rather than in .sql files so the standalone server carries them. A migration is never edited once
  * deployed: a change is a new entry.
  */
+import { DEFAULT_COLLECTION_MIGRATION } from "./organisation/default-collection";
+
 export interface Migration {
   version: string;
   sql: string;
@@ -402,4 +404,5 @@ CREATE INDEX settings_audit_key ON settings_audit(key, id DESC);
 ALTER TABLE documents ADD COLUMN text_source jsonb;
 `,
   },
+  { version: "0019_default_collection", sql: DEFAULT_COLLECTION_MIGRATION },
 ];

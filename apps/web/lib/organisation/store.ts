@@ -11,7 +11,7 @@ import { cleanName, type DeleteChoice, isId, type TagColor } from "./rules";
 export type Query = <T extends QueryResultRow>(text: string, values?: unknown[]) => Promise<T[]>;
 
 export interface Library { id: string; name: string }
-export interface Collection { id: string; library_id: string; name: string }
+export interface Collection { id: string; library_id: string; name: string; is_default: boolean }
 export interface Folder { id: string; collection_id: string; name: string }
 export interface Tag { id: string; name: string; color: TagColor }
 export type TagTarget = "collection" | "folder" | "document";
@@ -54,19 +54,21 @@ export async function deleteLibrary(q: Query, owner: string, id: string): Promis
   if (!isId(id)) throw notFound("library");
   const [lib] = await q<{ n: string; c: string }>("SELECT (SELECT count(*) FROM libraries WHERE owner_id = $1) AS n, (SELECT count(*) FROM collections WHERE library_id = $2) AS c", [owner, id]);
   if (Number(lib?.n) <= 1) throw refuse(409, "LAST_LIBRARY", "The last library cannot be deleted");
+  const [holdsDefault] = await q("SELECT 1 FROM collections WHERE library_id = $1 AND is_default", [id]);
+  if (holdsDefault) throw refuse(409, "DEFAULT_COLLECTION", "This library holds the default collection: make another collection the default first");
   if (Number(lib?.c) > 0) throw refuse(409, "NOT_EMPTY", "Move or delete its collections first");
   await one(q("DELETE FROM libraries WHERE owner_id = $1 AND id = $2 RETURNING id", [owner, id]), "library");
 }
 
 export interface LibraryOverview extends Library {
-  collections: { id: string; name: string; files: number; folders: number; tags: Tag[] }[];
+  collections: { id: string; name: string; files: number; folders: number; tags: Tag[]; isDefault: boolean }[];
 }
 
 /** Every library of the owner with its collections, file counts and tags. */
 export async function overview(q: Query, owner: string): Promise<LibraryOverview[]> {
   const libs = await q<Library>("SELECT id, name FROM libraries WHERE owner_id = $1 ORDER BY created_at", [owner]);
-  const cols = await q<{ id: string; library_id: string; name: string; files: string; folders: string }>(
-    `SELECT c.id, c.library_id, c.name,
+  const cols = await q<{ id: string; library_id: string; name: string; is_default: boolean; files: string; folders: string }>(
+    `SELECT c.id, c.library_id, c.name, c.is_default,
             (SELECT count(*) FROM documents d WHERE d.collection_id = c.id) AS files,
             (SELECT count(*) FROM folders f WHERE f.collection_id = c.id) AS folders
        FROM collections c JOIN libraries l ON l.id = c.library_id WHERE l.owner_id = $1 ORDER BY lower(c.name)`,
@@ -75,7 +77,7 @@ export async function overview(q: Query, owner: string): Promise<LibraryOverview
   const tags = await tagsOf(q, owner, "collection", cols.map((c) => c.id));
   return libs.map((l) => ({
     ...l,
-    collections: cols.filter((c) => c.library_id === l.id).map((c) => ({ id: c.id, name: c.name, files: Number(c.files), folders: Number(c.folders), tags: tags.get(c.id) ?? [] })),
+    collections: cols.filter((c) => c.library_id === l.id).map((c) => ({ id: c.id, name: c.name, files: Number(c.files), folders: Number(c.folders), tags: tags.get(c.id) ?? [], isDefault: c.is_default })),
   }));
 }
 
@@ -84,7 +86,7 @@ export async function overview(q: Query, owner: string): Promise<LibraryOverview
 /** What can be owned, how to find it for its owner, and what it is called in an error. */
 const OWNED = {
   library: { sql: "SELECT id, name FROM libraries WHERE owner_id = $1 AND id = $2" },
-  collection: { sql: "SELECT c.id, c.library_id, c.name FROM collections c JOIN libraries l ON l.id = c.library_id WHERE l.owner_id = $1 AND c.id = $2" },
+  collection: { sql: "SELECT c.id, c.library_id, c.name, c.is_default FROM collections c WHERE c.owner_id = $1 AND c.id = $2" },
   folder: { sql: "SELECT f.id, f.collection_id, f.name FROM folders f JOIN collections c ON c.id = f.collection_id JOIN libraries l ON l.id = c.library_id WHERE l.owner_id = $1 AND f.id = $2" },
   document: { sql: "SELECT id FROM documents WHERE owner_id = $1 AND id = $2" },
 } as const;
@@ -106,7 +108,7 @@ export const ownedFolder = (q: Query, owner: string, id: string) => owned(q, "fo
 
 /** A collection lives in a library, a folder in a collection: the same create, rename and move, by table. */
 const CHILD = {
-  collection: { table: "collections", parentColumn: "library_id", parent: "library", columns: "id, library_id, name" },
+  collection: { table: "collections", parentColumn: "library_id", parent: "library", columns: "id, library_id, name, is_default" },
   folder: { table: "folders", parentColumn: "collection_id", parent: "collection", columns: "id, collection_id, name" },
 } as const;
 type ChildKind = keyof typeof CHILD;
@@ -142,16 +144,28 @@ export async function moveFolder(q: Query, owner: string, id: string, collection
   return moved;
 }
 
-/** Deletes a collection after saying what becomes of its files (and its folders go with it): moved to another collection or to « sans collection », or deleted. */
-export async function deleteCollection(q: Query, owner: string, id: string, choice: DeleteChoice): Promise<void> {
+/** The owner's default collection: where a file goes when nothing else is said. */
+export async function defaultCollectionId(q: Query, owner: string): Promise<string> {
+  const [row] = await q<{ id: string }>("SELECT id FROM collections WHERE owner_id = $1 AND is_default", [owner]);
+  if (!row) throw refuse(500, "NO_DEFAULT_COLLECTION", "This account has no default collection");
+  return row.id;
+}
+
+/** Makes another collection the owner's default: one statement, so there is always exactly one. */
+export async function setDefaultCollection(q: Query, owner: string, id: string): Promise<void> {
   await ownedCollection(q, owner, id);
+  await q("UPDATE collections SET is_default = (id = $2) WHERE owner_id = $1 AND (is_default OR id = $2)", [owner, id]);
+}
+
+/** Deletes a collection after saying what becomes of its files (and its folders go with it): moved to another collection (the default one when none is named), or deleted. The default collection is never deleted. */
+export async function deleteCollection(q: Query, owner: string, id: string, choice: DeleteChoice): Promise<void> {
+  const collection = await ownedCollection(q, owner, id);
+  if (collection.is_default) throw refuse(409, "DEFAULT_COLLECTION", "The default collection cannot be deleted: make another one the default first");
   if (choice.files === "delete") await q("DELETE FROM documents WHERE owner_id = $1 AND collection_id = $2", [owner, id]);
   else {
-    if (choice.to !== null) {
-      if (choice.to === id) throw refuse(400, "BAD_REQUEST", "Choose another destination");
-      await ownedCollection(q, owner, choice.to);
-    }
-    await q("UPDATE documents SET collection_id = $3, folder_id = NULL WHERE owner_id = $1 AND collection_id = $2", [owner, id, choice.to]);
+    if (choice.to === id) throw refuse(400, "BAD_REQUEST", "Choose another destination");
+    const to = choice.to === null ? await defaultCollectionId(q, owner) : (await ownedCollection(q, owner, choice.to)).id;
+    await q("UPDATE documents SET collection_id = $3, folder_id = NULL WHERE owner_id = $1 AND collection_id = $2", [owner, id, to]);
   }
   await q("DELETE FROM collections WHERE id = $1", [id]);
 }
@@ -174,7 +188,7 @@ export async function deleteFolder(q: Query, owner: string, id: string, choice: 
 
 export interface Placement { collectionId: string | null; folderId: string | null }
 
-/** Places a document in a collection, or a folder of that collection; both null = « sans collection ». */
+/** Places a document in a collection, or a folder of that collection; both null = the owner's default collection. */
 export async function placeDocument(q: Query, owner: string, documentId: string, to: Placement): Promise<void> {
   await owned(q, "document", owner, documentId);
   if (to.folderId && !to.collectionId) throw refuse(400, "BAD_REQUEST", "A folder belongs to a collection");
@@ -183,7 +197,7 @@ export async function placeDocument(q: Query, owner: string, documentId: string,
     const folder = await ownedFolder(q, owner, to.folderId);
     if (folder.collection_id !== to.collectionId) throw refuse(400, "BAD_REQUEST", "That folder is in another collection");
   }
-  await q("UPDATE documents SET collection_id = $2, folder_id = $3 WHERE id = $1", [documentId, to.collectionId, to.folderId]);
+  await q("UPDATE documents SET collection_id = $2, folder_id = $3 WHERE id = $1", [documentId, to.collectionId ?? (await defaultCollectionId(q, owner)), to.folderId]);
 }
 
 // ── tags ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -249,10 +263,6 @@ export async function foldersOf(q: Query, owner: string, collectionId: string): 
   const rows = await q<Folder & { files: string }>("SELECT f.id, f.collection_id, f.name, (SELECT count(*) FROM documents d WHERE d.folder_id = f.id) AS files FROM folders f WHERE f.collection_id = $1 ORDER BY lower(f.name)", [collectionId]);
   const tags = await tagsOf(q, owner, "folder", rows.map((r) => r.id));
   return rows.map((r) => ({ ...r, files: Number(r.files), tags: tags.get(r.id) ?? [] }));
-}
-
-export async function unfiledIds(q: Query, owner: string): Promise<string[]> {
-  return (await q<{ id: string }>("SELECT id FROM documents WHERE owner_id = $1 AND collection_id IS NULL ORDER BY created_at DESC LIMIT 500", [owner])).map((r) => r.id);
 }
 
 export async function recentIds(q: Query, owner: string, limit: number): Promise<string[]> {

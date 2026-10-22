@@ -32,7 +32,7 @@ describe.runIf(enabled)("organisation (ADR-0007)", () => {
     expect(await where(d)).toEqual({ collection_id: c1.id, folder_id: f.id });
     await expect(org.placeDocument(query, owner, d, { collectionId: c2.id, folderId: f.id })).rejects.toMatchObject({ status: 400 });
     await org.placeDocument(query, owner, d, { collectionId: null, folderId: null });
-    expect(await where(d)).toEqual({ collection_id: null, folder_id: null });
+    expect(await where(d)).toEqual({ collection_id: await org.defaultCollectionId(query, owner), folder_id: null });
     const stranger = await account();
     await expect(org.placeDocument(query, stranger, d, { collectionId: c1.id, folderId: null })).rejects.toMatchObject({ status: 404 });
   });
@@ -60,7 +60,7 @@ describe.runIf(enabled)("organisation (ADR-0007)", () => {
     expect(await query("SELECT 1 FROM documents WHERE id = $1", [d2])).toHaveLength(0);
   });
 
-  it("deleting a collection moves its files to another collection or to « sans collection », or deletes them", async () => {
+  it("deleting a collection moves its files to another collection or to the default collection, or deletes them", async () => {
     const owner = await account();
     const lib = await org.ensureLibrary(query, owner, "L");
     const c1 = await org.createCollection(query, owner, lib.id, "one");
@@ -74,7 +74,7 @@ describe.runIf(enabled)("organisation (ADR-0007)", () => {
     await org.deleteCollection(query, owner, c1.id, { files: "move", to: c2.id });
     expect(await where(d1)).toEqual({ collection_id: c2.id, folder_id: null });
     await org.deleteCollection(query, owner, c3.id, { files: "move", to: null });
-    expect(await where(d2)).toEqual({ collection_id: null, folder_id: null });
+    expect(await where(d2)).toEqual({ collection_id: await org.defaultCollectionId(query, owner), folder_id: null });
     await org.deleteCollection(query, owner, c2.id, { files: "delete" });
     expect(await query("SELECT 1 FROM documents WHERE id = $1", [d1])).toHaveLength(0);
   });
@@ -114,7 +114,7 @@ describe.runIf(enabled)("organisation (ADR-0007)", () => {
     expect((await org.browse(query, owner, { collectionId: c.id, tagIds: [] })).documentIds.sort()).toEqual([d1, d2].sort());
   });
 
-  it("browse: a collection root shows the files not in a folder, a folder shows its own; recents and unfiled are separate", async () => {
+  it("browse: a collection root shows the files not in a folder, a folder shows its own; a loose file is in the default collection", async () => {
     const owner = await account();
     const lib = await org.ensureLibrary(query, owner, "L");
     const c = await org.createCollection(query, owner, lib.id, "C");
@@ -126,7 +126,7 @@ describe.runIf(enabled)("organisation (ADR-0007)", () => {
     await org.placeDocument(query, owner, inFolder, { collectionId: c.id, folderId: f.id });
     expect((await org.browse(query, owner, { collectionId: c.id, tagIds: [] })).documentIds).toEqual([root]);
     expect((await org.browse(query, owner, { collectionId: c.id, folderId: f.id, tagIds: [] })).documentIds).toEqual([inFolder]);
-    expect(await org.unfiledIds(query, owner)).toEqual([loose]);
+    expect((await org.browse(query, owner, { collectionId: await org.defaultCollectionId(query, owner), tagIds: [] })).documentIds).toEqual([loose]);
     expect((await org.recentIds(query, owner, 10)).sort()).toEqual([root, inFolder, loose].sort());
   });
 });
