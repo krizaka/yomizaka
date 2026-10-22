@@ -90,6 +90,7 @@ Every variable is declared once in `apps/web/lib/env.ts` (see `.env.example`); a
 | `PAYMENTS_PRICE_KEY_AUDIT` | the lookup key of the per-audit price (default `yomizaka_audit_cad`) |
 | `PAYMENTS_PRICE_KEY_PRO` | the lookup key of the Pro price (default `yomizaka_pro_monthly_cad`) |
 | `APP_FAIR_USE_AUDITS_PER_MONTH` | the Pro fair-use cap per month (default 100) |
+| `APP_ESTIMATED_RUN_COST_CENTS` | the estimated cost of one engine run, in cents (default 3), for the pre-flight's savings metric |
 | `MAIL_PROVIDER` | the e-mail vendor, as a value (`mailgun`) |
 | `MAIL_API_KEY` | the vendor's key (a secret) |
 | `MAIL_DOMAIN` | the sending domain |

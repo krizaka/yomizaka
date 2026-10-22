@@ -1,10 +1,11 @@
-import crypto from "node:crypto";
-
-import { type Analysis, type AnalysisStatus, type AuthenticityReport, type ComplianceReport, type DocumentDetail, type DocumentKind, type DocumentStatus, type DocumentSummary, MAX_FILE_BYTES, type Studio } from "@yomizaka/core";
+import { type Analysis, type AnalysisStatus, type AuthenticityReport, type ComplianceReport, type DocumentDetail, type DocumentKind, type DocumentStatus, type DocumentSummary, type Studio } from "@yomizaka/core";
 
 import { query } from "./db";
 import { refuse } from "./http";
-import { looksLikePdf, readText } from "./pdf-text";
+import { readText } from "./pdf-text";
+import { createInspector } from "./preflight/inspector";
+import { OUTCOME, type RejectReason } from "./preflight/port";
+import { YOMIZAKA_RULES } from "./preflight/rules";
 
 interface DocumentRow {
   id: string;
@@ -111,24 +112,38 @@ export async function deleteDocument(ownerId: string, id: string): Promise<void>
   if (rows.length === 0) throw refuse(404, "NOT_FOUND", "No such document");
 }
 
-/** What an upload must be: a PDF (checked by its first bytes) or UTF-8 text, at most 10 MB. */
-export function checkUpload(file: { name: string; type: string; size: number }, bytes: Uint8Array): "application/pdf" | "text/plain" {
-  if (bytes.length === 0) throw refuse(400, "EMPTY_FILE", "The file is empty");
-  if (bytes.length > MAX_FILE_BYTES) throw refuse(413, "FILE_TOO_LARGE", "The file is larger than 10 MB");
-  if (looksLikePdf(bytes)) return "application/pdf";
-  if (file.type === "text/plain" || /\.txt$/i.test(file.name)) {
-    if (bytes.includes(0)) throw refuse(415, "UNSUPPORTED_TYPE", "Not a text file");
-    return "text/plain";
+/** Why a file is refused: the HTTP answer and the stable code the page translates (messages `console.errors.*`). */
+const REFUSALS: Record<RejectReason, { status: number; code: string }> = {
+  EMPTY: { status: 400, code: "EMPTY_FILE" },
+  TOO_LARGE: { status: 413, code: "FILE_TOO_LARGE" },
+  UNSUPPORTED_TYPE: { status: 415, code: "UNSUPPORTED_TYPE" },
+  TYPE_MISMATCH: { status: 415, code: "FILE_TYPE_MISMATCH" },
+  EXECUTABLE: { status: 415, code: "FILE_EXECUTABLE" },
+  CORRUPT: { status: 422, code: "UNREADABLE_FILE" },
+  TRUNCATED: { status: 422, code: "FILE_TRUNCATED" },
+  ENCRYPTED: { status: 422, code: "FILE_ENCRYPTED" },
+  TOO_MANY_PAGES: { status: 422, code: "FILE_TOO_MANY_PAGES" },
+  ACTIVE_CONTENT: { status: 422, code: "FILE_ACTIVE_CONTENT" },
+  ARCHIVE_BOMB: { status: 422, code: "FILE_ARCHIVE_BOMB" },
+};
+
+const inspector = createInspector(YOMIZAKA_RULES);
+
+/** The pre-flight (lib/preflight, ADR-0005): what an upload must be, decided here for nothing before anything is stored or sent to an engine. */
+export async function checkUpload(file: { name: string; type: string; size: number }, bytes: Uint8Array): Promise<{ mimeType: "application/pdf" | "text/plain"; sha256: string; pages: number | null }> {
+  const outcome = await inspector.inspect(bytes, file);
+  if (outcome.kind === OUTCOME.rejected) {
+    const { status, code } = REFUSALS[outcome.reason];
+    throw refuse(status, code, `Refused by the pre-flight: ${outcome.reason}`, { reason: outcome.reason });
   }
-  throw refuse(415, "UNSUPPORTED_TYPE", "Only PDF and text files are accepted");
+  return { mimeType: outcome.fileKind === "pdf" ? "application/pdf" : "text/plain", sha256: outcome.sha256, pages: outcome.pages };
 }
 
 export const titleOf = (filename: string) => filename.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim().slice(0, 200) || "Document";
 export const safeFilename = (name: string) => name.replace(/[^\p{L}\p{N}._ -]+/gu, "_").slice(0, 200) || "document";
 
 export async function storeDocument(ownerId: string, file: { name: string; type: string; size: number }, bytes: Uint8Array, kind: DocumentKind): Promise<{ summary: DocumentSummary; duplicate: boolean }> {
-  const mimeType = checkUpload(file, bytes);
-  const sha256 = crypto.createHash("sha256").update(bytes).digest("hex");
+  const { mimeType, sha256 } = await checkUpload(file, bytes);
   const [existing] = await query<DocumentRow>(`SELECT ${SUMMARY_COLUMNS} FROM documents d WHERE d.owner_id = $1 AND d.sha256 = $2`, [ownerId, sha256]);
   if (existing) return { summary: summary(existing), duplicate: true };
   let read: { text: string; pages: number | null };

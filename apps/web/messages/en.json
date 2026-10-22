@@ -301,7 +301,8 @@
       "exportVerify": "Verify a report",
       "exportSha": "Report SHA-256",
       "exportKey": "Signing key",
-      "exportPdf": "Download the PDF"
+      "exportPdf": "Download the PDF",
+      "reused": "Result reused: this exact document was already checked against the same rules, so no new check was run."
     },
     "search": {
       "title": "Search",
@@ -349,7 +350,7 @@
       "FILE_TOO_LARGE": "The file is larger than 10 MB.",
       "UNSUPPORTED_TYPE": "Only PDF and text files are accepted.",
       "EMPTY_FILE": "The file is empty.",
-      "UNREADABLE_FILE": "This PDF cannot be opened.",
+      "UNREADABLE_FILE": "This file cannot be opened: it is damaged or not a valid document.",
       "NO_TEXT": "This document has no text layer to check.",
       "TEXT_TOO_LONG": "This document is longer than the check reads (60 000 characters).",
       "NOT_A_PDF": "Only a PDF can be examined as a file.",
@@ -381,7 +382,14 @@
       "PAYWALL": "Your free audit is used: pay for this audit or go Pro.",
       "FAIR_USE": "Monthly fair-use limit reached.",
       "PAYMENTS_OFF": "Payment is not available yet.",
-      "NO_CUSTOMER": "Nothing has been bought yet."
+      "NO_CUSTOMER": "Nothing has been bought yet.",
+      "FILE_TYPE_MISMATCH": "The file is not what its name says. Check that you chose the right file.",
+      "FILE_EXECUTABLE": "This is a program, not a document. It was not kept.",
+      "FILE_TRUNCATED": "This file looks cut short (incomplete download or upload). Send it again.",
+      "FILE_ENCRYPTED": "This PDF is password-protected. Remove the protection and send it again.",
+      "FILE_TOO_MANY_PAGES": "This PDF has too many pages to check.",
+      "FILE_ACTIVE_CONTENT": "This PDF contains active content (scripts, launched programs or attachments) and is refused for your safety.",
+      "FILE_ARCHIVE_BOMB": "This archive is refused: it expands far beyond a reasonable size."
     },
     "adminConsole": {
       "shell": {

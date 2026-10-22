@@ -257,6 +257,7 @@ function AnalysisCard({ documentId, initial, selection }: { documentId: string; 
 function StartCompliance({ documentId, disabled, jurisdictions, types }: { documentId: string; disabled: boolean; jurisdictions: readonly (typeof JURISDICTIONS)[number][]; types: readonly ("invoice" | "contract")[] }) {
   const { say, locale } = useSay();
   const client = useQueryClient();
+  const [reused, setReused] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const [paywall, setPaywall] = useState<"PAYWALL" | "FAIR_USE" | null>(null);
   const start = useMutation({
@@ -266,7 +267,10 @@ function StartCompliance({ documentId, disabled, jurisdictions, types }: { docum
         method: "POST",
         json: { studio: "compliance-check", asOf: body.asOf, ...(body.documentType === "invoice" ? { jurisdiction: "QC", ruleset: "qc-invoice" } : body.documentType === "contract" ? { jurisdiction: "QC", ruleset: "qc-service-contract" } : { jurisdiction: body.jurisdiction }) },
       }),
-    onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.document(documentId) }),
+    onSuccess: (data) => {
+      setReused(Boolean((data as { reused?: boolean } | null)?.reused));
+      return client.invalidateQueries({ queryKey: queryKeys.document(documentId) });
+    },
   });
   const form = compliance.useForm({
     i18n: { t: (key, vars) => say(key, vars as Record<string, string | number> | undefined), locale },
@@ -290,6 +294,7 @@ function StartCompliance({ documentId, disabled, jurisdictions, types }: { docum
       <form.Select name="jurisdiction" label={say("analysis.jurisdiction")} options={jurisdictions.map((j) => ({ value: j, label: say(`analysis.jurisdictions.${j}`) }))} />
       <form.DateField name="asOf" label={say("analysis.asOf")} />
       {paywall ? <Paywall reason={paywall} /> : null}
+      {reused ? <Alert tone="info">{say("analysis.reused")}</Alert> : null}
       {problem ? <Alert tone="danger">{problem}</Alert> : null}
       <form.Submit disabled={disabled}>
         {say("analysis.run")}
@@ -301,12 +306,16 @@ function StartCompliance({ documentId, disabled, jurisdictions, types }: { docum
 function StartAuthenticity({ documentId, disabled }: { documentId: string; disabled: boolean }) {
   const { say, locale } = useSay();
   const client = useQueryClient();
+  const [reused, setReused] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const [paywall, setPaywall] = useState<"PAYWALL" | "FAIR_USE" | null>(null);
   const start = useMutation({
     mutationFn: (body: { expectedIssuer: string }) =>
       krizakaFetch(`/api/documents/${documentId}`, { method: "POST", json: { studio: "document-authenticity", ...(body.expectedIssuer ? { expectedIssuer: body.expectedIssuer } : {}) } }),
-    onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.document(documentId) }),
+    onSuccess: (data) => {
+      setReused(Boolean((data as { reused?: boolean } | null)?.reused));
+      return client.invalidateQueries({ queryKey: queryKeys.document(documentId) });
+    },
   });
   const form = authenticity.useForm({
     i18n: { t: (key, vars) => say(key, vars as Record<string, string | number> | undefined), locale },
@@ -326,6 +335,7 @@ function StartAuthenticity({ documentId, disabled }: { documentId: string; disab
       <p className="text-sm text-fg-secondary">{say("analysis.authenticityText")}</p>
       <form.TextField name="expectedIssuer" label={say("analysis.expectedIssuer")} hint={say("analysis.expectedIssuerHint")} />
       {paywall ? <Paywall reason={paywall} /> : null}
+      {reused ? <Alert tone="info">{say("analysis.reused")}</Alert> : null}
       {problem ? <Alert tone="danger">{problem}</Alert> : null}
       <form.Submit variant="secondary" disabled={disabled}>
         {say("analysis.run")}

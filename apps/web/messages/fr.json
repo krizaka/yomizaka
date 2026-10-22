@@ -301,7 +301,8 @@
       "exportVerify": "Vérifier un rapport",
       "exportSha": "SHA-256 du rapport",
       "exportKey": "Clé de signature",
-      "exportPdf": "Télécharger le PDF"
+      "exportPdf": "Télécharger le PDF",
+      "reused": "Résultat réutilisé : ce document exact a déjà été vérifié avec les mêmes règles, aucune nouvelle vérification n’a été lancée."
     },
     "search": {
       "title": "Recherche",
@@ -349,7 +350,7 @@
       "FILE_TOO_LARGE": "Le fichier dépasse 10 Mo.",
       "UNSUPPORTED_TYPE": "Seuls les PDF et les fichiers texte sont acceptés.",
       "EMPTY_FILE": "Le fichier est vide.",
-      "UNREADABLE_FILE": "Ce PDF ne peut pas être ouvert.",
+      "UNREADABLE_FILE": "Ce fichier ne peut pas être ouvert : il est endommagé ou n’est pas un document valide.",
       "NO_TEXT": "Ce document n'a pas de couche texte à vérifier.",
       "TEXT_TOO_LONG": "Ce document dépasse ce que la vérification lit (60 000 caractères).",
       "NOT_A_PDF": "Seul un PDF peut être examiné en tant que fichier.",
@@ -381,7 +382,14 @@
       "PAYWALL": "Votre audit gratuit est utilisé : payez cet audit ou passez à Pro.",
       "FAIR_USE": "Limite d’utilisation mensuelle atteinte.",
       "PAYMENTS_OFF": "Le paiement n’est pas encore disponible.",
-      "NO_CUSTOMER": "Rien n’a encore été acheté."
+      "NO_CUSTOMER": "Rien n’a encore été acheté.",
+      "FILE_TYPE_MISMATCH": "Le fichier n’est pas ce que son nom annonce. Vérifiez que vous avez choisi le bon fichier.",
+      "FILE_EXECUTABLE": "Ceci est un programme, pas un document. Il n’a pas été conservé.",
+      "FILE_TRUNCATED": "Ce fichier semble coupé (envoi ou téléchargement incomplet). Envoyez-le de nouveau.",
+      "FILE_ENCRYPTED": "Ce PDF est protégé par un mot de passe. Retirez la protection et envoyez-le de nouveau.",
+      "FILE_TOO_MANY_PAGES": "Ce PDF a trop de pages pour être vérifié.",
+      "FILE_ACTIVE_CONTENT": "Ce PDF contient du contenu actif (scripts, programmes lancés ou pièces jointes) et il est refusé pour votre sécurité.",
+      "FILE_ARCHIVE_BOMB": "Cette archive est refusée : elle se décompresse bien au-delà d’une taille raisonnable."
     },
     "adminConsole": {
       "shell": {
