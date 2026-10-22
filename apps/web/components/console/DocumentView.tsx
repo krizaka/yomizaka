@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { type ComponentProps, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
+import { DocumentInsight } from "@/components/console/DocumentInsight";
 import { Paywall } from "@/components/console/Paywall";
 import { errorKey } from "@/lib/client";
 import { useSay } from "@/lib/i18n-client";
@@ -254,7 +255,7 @@ function AnalysisCard({ documentId, initial, selection }: { documentId: string; 
   );
 }
 
-function StartCompliance({ documentId, disabled, jurisdictions, types }: { documentId: string; disabled: boolean; jurisdictions: readonly (typeof JURISDICTIONS)[number][]; types: readonly ("invoice" | "contract")[] }) {
+function StartCompliance({ documentId, disabled, jurisdictions, types, initialType }: { documentId: string; disabled: boolean; initialType?: "lease" | "invoice" | "contract"; jurisdictions: readonly (typeof JURISDICTIONS)[number][]; types: readonly ("invoice" | "contract")[] }) {
   const { say, locale } = useSay();
   const client = useQueryClient();
   const [reused, setReused] = useState(false);
@@ -273,6 +274,7 @@ function StartCompliance({ documentId, disabled, jurisdictions, types }: { docum
     },
   });
   const form = compliance.useForm({
+    defaultValues: { documentType: initialType ?? "lease", jurisdiction: "QC", asOf: new Date().toISOString().slice(0, 10) },
     i18n: { t: (key, vars) => say(key, vars as Record<string, string | number> | undefined), locale },
     onSubmit: async (values) => {
       setProblem(null);
@@ -373,7 +375,7 @@ export function DocumentView({ initial, perspective = null, offer }: { initial: 
   const complianceCard = (
     <Card.Root key="compliance-check" className="p-4">
       <h3 className="mb-2 font-display text-base font-bold text-fg">{say("analysis.complianceTitle")}</h3>
-      {doc.hasText ? <StartCompliance documentId={doc.id} disabled={running("compliance-check")} jurisdictions={offer.jurisdictions} types={[...(offer.rulesets.includes("qc-invoice") ? (["invoice"] as const) : []), ...(offer.rulesets.includes("qc-service-contract") ? (["contract"] as const) : [])]} /> : <Alert tone="info">{say("document.noText")}</Alert>}
+      {doc.insight && doc.insight.understanding.nature && !doc.insight.understanding.check ? <Alert tone="info">{say("insight.noCheck")}</Alert> : doc.hasText ? <StartCompliance documentId={doc.id} initialType={doc.insight?.understanding.check?.documentType} disabled={running("compliance-check")} jurisdictions={offer.jurisdictions} types={[...(offer.rulesets.includes("qc-invoice") ? (["invoice"] as const) : []), ...(offer.rulesets.includes("qc-service-contract") ? (["contract"] as const) : [])]} /> : <Alert tone="info">{say("document.noText")}</Alert>}
     </Card.Root>
   );
   const authenticityCard = (
@@ -467,6 +469,7 @@ export function DocumentView({ initial, perspective = null, offer }: { initial: 
         </section>
 
         <section aria-labelledby="checks" className="flex min-w-0 flex-col gap-4">
+          {doc.insight ? <DocumentInsight insight={doc.insight} documentId={doc.id} /> : null}
           <div>
             <h2 id="checks" className="font-display text-lg font-bold text-fg">
               {say("document.checks")}

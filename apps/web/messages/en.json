@@ -191,6 +191,7 @@
       "remove": "Remove"
     },
     "kinds": {
+      "auto": "Automatic",
       "lease": "Lease",
       "contract": "Contract",
       "invoice": "Invoice",
@@ -659,6 +660,73 @@
       "notice": "9.99 $ CAD per audit, or 29 $ CAD per month for Pro, before GST and QST. An informative check, not legal advice.",
       "fairUseTitle": "Monthly limit reached",
       "fairUse": "Pro includes up to {limit} audits a month. The limit resets at the start of next month."
+    },
+    "insight": {
+      "title": "This document",
+      "issuer": "Issuer",
+      "language": "Language",
+      "pages": "Pages",
+      "unknown": "This document’s nature could not be determined.",
+      "alternative": "Could also be: {nature}",
+      "noCheck": "No legal check applies to this type of document; here is what it contains.",
+      "confidence": {
+        "high": "high confidence",
+        "medium": "medium confidence",
+        "low": "low confidence",
+        "unknown": "unknown"
+      },
+      "languages": {
+        "fr": "French",
+        "en": "English"
+      },
+      "dateKinds": {
+        "issued": "Issue date",
+        "effective": "Effective date",
+        "due": "Due date",
+        "period": "Period",
+        "other": "Date"
+      },
+      "roles": {
+        "landlord": "Landlord",
+        "tenant": "Tenant",
+        "contractor": "Contractor",
+        "client": "Client",
+        "employer": "Employer",
+        "employee": "Employee",
+        "company": "Business",
+        "supplier": "Supplier",
+        "buyer": "Buyer",
+        "holder": "Account holder"
+      },
+      "refKinds": {
+        "neq": "NEQ",
+        "gst": "GST no.",
+        "qst": "QST no.",
+        "invoice-number": "Invoice no.",
+        "reference": "Reference no."
+      },
+      "amountKinds": {
+        "total": "Total",
+        "subtotal": "Subtotal",
+        "gst": "GST",
+        "qst": "QST",
+        "rent": "Rent",
+        "deposit": "Deposit",
+        "other": "Amount"
+      },
+      "piiTitle": "Personal information detected",
+      "piiKinds": {
+        "sin": "SIN",
+        "email": "E-mail",
+        "phone": "Phone",
+        "address": "Address",
+        "postal-code": "Postal code",
+        "birth-date": "Date of birth",
+        "bank-account": "Bank account"
+      },
+      "piiRetention": "This document is kept in your vault until you delete it; you can delete it at any time. This information is sent nowhere except to the check you start.",
+      "piiRedacted": "Download the redacted version (text)",
+      "informative": "Automatic reading of the text: informative, to be checked. Not legal advice."
     }
   },
   "report": {

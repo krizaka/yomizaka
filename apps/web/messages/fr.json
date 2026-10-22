@@ -191,6 +191,7 @@
       "remove": "Retirer"
     },
     "kinds": {
+      "auto": "Automatique",
       "lease": "Bail",
       "contract": "Contrat",
       "invoice": "Facture",
@@ -659,6 +660,73 @@
       "notice": "9,99 $ CAD par audit, ou 29 $ CAD par mois pour Pro, avant TPS et TVQ. Vérification informative, ce n’est pas un avis juridique.",
       "fairUseTitle": "Limite mensuelle atteinte",
       "fairUse": "Pro comprend jusqu’à {limit} audits par mois. La limite revient au début du mois prochain."
+    },
+    "insight": {
+      "title": "Ce document",
+      "issuer": "Émetteur",
+      "language": "Langue",
+      "pages": "Pages",
+      "unknown": "La nature de ce document n’a pas pu être déterminée.",
+      "alternative": "Pourrait aussi être : {nature}",
+      "noCheck": "Aucune vérification juridique ne s’applique à ce type de document ; voici ce qu’il contient.",
+      "confidence": {
+        "high": "confiance élevée",
+        "medium": "confiance moyenne",
+        "low": "confiance faible",
+        "unknown": "inconnue"
+      },
+      "languages": {
+        "fr": "Français",
+        "en": "Anglais"
+      },
+      "dateKinds": {
+        "issued": "Date d’émission",
+        "effective": "Date d’effet",
+        "due": "Échéance",
+        "period": "Période",
+        "other": "Date"
+      },
+      "roles": {
+        "landlord": "Locateur",
+        "tenant": "Locataire",
+        "contractor": "Prestataire",
+        "client": "Client",
+        "employer": "Employeur",
+        "employee": "Employé",
+        "company": "Entreprise",
+        "supplier": "Fournisseur",
+        "buyer": "Acheteur",
+        "holder": "Titulaire"
+      },
+      "refKinds": {
+        "neq": "NEQ",
+        "gst": "N° de TPS",
+        "qst": "N° de TVQ",
+        "invoice-number": "N° de facture",
+        "reference": "N° de référence"
+      },
+      "amountKinds": {
+        "total": "Total",
+        "subtotal": "Sous-total",
+        "gst": "TPS",
+        "qst": "TVQ",
+        "rent": "Loyer",
+        "deposit": "Dépôt",
+        "other": "Montant"
+      },
+      "piiTitle": "Renseignements personnels détectés",
+      "piiKinds": {
+        "sin": "NAS",
+        "email": "Courriel",
+        "phone": "Téléphone",
+        "address": "Adresse",
+        "postal-code": "Code postal",
+        "birth-date": "Date de naissance",
+        "bank-account": "Compte bancaire"
+      },
+      "piiRetention": "Ce document est conservé dans votre coffre jusqu’à ce que vous le supprimiez; vous pouvez le supprimer en tout temps. Ces renseignements ne sont pas envoyés ailleurs que dans la vérification que vous lancez.",
+      "piiRedacted": "Télécharger la version caviardée (texte)",
+      "informative": "Lecture automatique du texte : informative, à vérifier. Ce n’est pas un avis juridique."
     }
   },
   "report": {

@@ -1,11 +1,13 @@
-import { type Analysis, type AnalysisStatus, type AuthenticityReport, type ComplianceReport, type DocumentDetail, type DocumentKind, type DocumentStatus, type DocumentSummary, type Studio } from "@yomizaka/core";
+import { type Analysis, type AnalysisStatus, type AuthenticityReport, type ComplianceReport, type DocumentDetail, type DocumentInsight, type DocumentKind, type DocumentStatus, type DocumentSummary, type Studio } from "@yomizaka/core";
 
 import { query } from "./db";
 import { refuse } from "./http";
 import { readText } from "./pdf-text";
+import { personalInfo } from "./pii";
 import { createInspector } from "./preflight/inspector";
 import { OUTCOME, type RejectReason } from "./preflight/port";
 import { YOMIZAKA_RULES } from "./preflight/rules";
+import { understanding } from "./understanding";
 
 interface DocumentRow {
   id: string;
@@ -96,7 +98,7 @@ export async function getDocument(ownerId: string, id: string): Promise<Document
   const [row] = await query<DocumentRow & { sha256: string; text: string }>(`SELECT ${SUMMARY_COLUMNS}, d.sha256, d.text FROM documents d WHERE d.owner_id = $1 AND d.id = $2`, [ownerId, id]);
   if (!row) throw refuse(404, "NOT_FOUND", "No such document");
   const analyses = await query<AnalysisRow>("SELECT * FROM analyses WHERE document_id = $1 ORDER BY created_at DESC LIMIT 50", [id]);
-  return { ...summary(row), sha256: row.sha256, text: row.text, analyses: analyses.map(toAnalysis) };
+  return { ...summary(row), sha256: row.sha256, text: row.text, insight: insightOf(row.text, row.pages), analyses: analyses.map(toAnalysis) };
 }
 
 export async function getFile(ownerId: string, id: string): Promise<{ filename: string; mimeType: string; content: Buffer }> {
@@ -110,6 +112,17 @@ export async function deleteDocument(ownerId: string, id: string): Promise<void>
   if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such document");
   const rows = await query("DELETE FROM documents WHERE owner_id = $1 AND id = $2 RETURNING id", [ownerId, id]);
   if (rows.length === 0) throw refuse(404, "NOT_FOUND", "No such document");
+}
+
+/** What the document is and holds — read in-process from its text, for nothing; personal information as counts only. */
+export function insightOf(text: string, pages: number | null): DocumentInsight {
+  const { total, counts } = personalInfo.scan(text);
+  return { understanding: understanding.understand(text, { pages }), pii: { total, counts: counts as Record<string, number> } };
+}
+
+/** The upload form's « automatic » choice: the document kind follows the detected nature (never a default that is wrong). */
+export function kindFromNature(natureId: string | null): DocumentKind {
+  return natureId === "residential-lease" ? "lease" : natureId === "invoice" ? "invoice" : natureId === "service-contract" ? "contract" : "other";
 }
 
 /** Why a file is refused: the HTTP answer and the stable code the page translates (messages `console.errors.*`). */
@@ -152,7 +165,7 @@ export function titleFor(filename: string, text: string): string {
 
 export const safeFilename = (name: string) => name.normalize("NFC").replace(/[^\p{L}\p{M}\p{N}._ '’-]+/gu, "_").slice(0, 200) || "document";
 
-export async function storeDocument(ownerId: string, file: { name: string; type: string; size: number }, bytes: Uint8Array, kind: DocumentKind): Promise<{ summary: DocumentSummary; duplicate: boolean }> {
+export async function storeDocument(ownerId: string, file: { name: string; type: string; size: number }, bytes: Uint8Array, requested: DocumentKind | "auto"): Promise<{ summary: DocumentSummary; duplicate: boolean }> {
   const { mimeType, sha256 } = await checkUpload(file, bytes);
   const [existing] = await query<DocumentRow>(`SELECT ${SUMMARY_COLUMNS} FROM documents d WHERE d.owner_id = $1 AND d.sha256 = $2`, [ownerId, sha256]);
   if (existing) return { summary: summary(existing), duplicate: true };
@@ -162,6 +175,7 @@ export async function storeDocument(ownerId: string, file: { name: string; type:
   } catch {
     throw refuse(422, "UNREADABLE_FILE", "This PDF cannot be opened");
   }
+  const kind = requested === "auto" ? kindFromNature(understanding.understand(read.text, { pages: read.pages }).nature?.id ?? null) : requested;
   const filename = safeFilename(file.name);
   const [row] = await query<DocumentRow>(
     `WITH d AS (
