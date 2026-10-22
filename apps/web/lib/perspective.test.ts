@@ -6,6 +6,7 @@ const state = vi.hoisted(() => ({ session: null as null | { account: { id: strin
 
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => undefined }) }));
 vi.mock("./session", async (orig) => ({ ...(await orig<typeof import("./session")>()), resolveSession: async () => state.session }));
+vi.mock("./settings/guards", () => ({ assertOpen: async () => undefined }));
 vi.mock("./audit", () => ({ audit: async (entry: Record<string, unknown>) => void state.audits.push(entry) }));
 vi.mock("./db", () => ({ query: async (_sql: string, values: unknown[]) => void state.saved.push(values) }));
 

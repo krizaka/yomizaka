@@ -7,30 +7,26 @@ import { Button } from "@krizaka/ui/button";
 import { Dialog } from "@krizaka/ui/dialog";
 import { createKrizakaForm } from "@krizaka/ui/form";
 import { RadioGroup } from "@krizaka/ui/radio-group";
-import { Tabs } from "@krizaka/ui/tabs";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useState } from "react";
 import { z } from "zod";
 
+import { RouteTabs } from "@/components/RouteTabs";
+import { useAppConfig } from "@/lib/app-config-client";
 import { errorKey } from "@/lib/client";
 import { SETTINGS_SECTIONS, type SettingsSection } from "@/lib/console-nav";
+import { formI18n } from "@/lib/form-i18n";
 import { useSay } from "@/lib/i18n-client";
 
-/** The sections of the settings: the tab is the route (/app/settings/<section>), so back, forward, refresh and a shared link all work. */
+/** The sections of the settings: the tab is the route (/app/settings/<section>). */
 export function SettingsTabs({ section, children }: { section: SettingsSection; children: ReactNode }) {
   const { say, locale } = useSay();
-  const router = useRouter();
+  const app = useAppConfig();
+  const items = SETTINGS_SECTIONS.filter((s) => s !== "stockage" || app?.features.ownStorage !== false).map((s) => ({ value: s, label: say(`settings.tabs.${s}`) }));
   return (
-    <Tabs.Root value={section} onValueChange={(v: string) => router.push(`/${locale}/app/settings/${v}`, { scroll: false })}>
-      <Tabs.List aria-label={say("settings.label")}>
-        {SETTINGS_SECTIONS.map((s) => (
-          <Tabs.Trigger key={s} value={s}>
-            {say(`settings.tabs.${s}`)}
-          </Tabs.Trigger>
-        ))}
-      </Tabs.List>
-      <div className="pt-6">{children}</div>
-    </Tabs.Root>
+    <RouteTabs value={section} base={`/${locale}/app/settings`} label={say("settings.label")} items={items}>
+      {children}
+    </RouteTabs>
   );
 }
 
@@ -59,7 +55,6 @@ function useCall<T>(run: (input: T) => Promise<unknown>) {
   };
 }
 
-const i18n = (say: (k: string, v?: Record<string, string | number>) => string, locale: string) => ({ t: (key: string, vars?: unknown) => say(key, vars as Record<string, string | number> | undefined), locale });
 
 // ── profile ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -71,7 +66,7 @@ export function ProfileSection({ email, name, avatarSeed, locale: current, child
   const { say, locale } = useSay();
   const router = useRouter();
   const patch = useCall<Record<string, unknown>>((body) => krizakaFetch("/api/me/profile", { method: "PATCH", json: body }));
-  const form = nameForm.useForm({ ...i18n(say, locale), defaultValues: { name: name ?? "" }, onSubmit: (v) => patch.go({ name: v.name === "" ? null : v.name }) });
+  const form = nameForm.useForm({ ...formI18n(say, locale), defaultValues: { name: name ?? "" }, onSubmit: (v) => patch.go({ name: v.name === "" ? null : v.name }) });
   const [seed, setSeed] = useState<string>(avatarSeed ?? "");
   return (
     <div className="flex max-w-2xl flex-col gap-8" data-testid="settings-profil">
@@ -122,8 +117,8 @@ export function SecuritySection({ email, pendingEmail, notice }: { email: string
   const { say, locale } = useSay();
   const mail = useCall<{ newEmail: string; password: string }>((body) => krizakaFetch("/api/me/email", { method: "POST", json: body }));
   const pass = useCall<{ current: string; next: string }>((body) => krizakaFetch("/api/me/password", { method: "PUT", json: body }));
-  const emailF = emailForm.useForm({ ...i18n(say, locale), onSubmit: (v) => mail.go(v) });
-  const passF = passwordForm.useForm({ ...i18n(say, locale), onSubmit: (v) => pass.go(v) });
+  const emailF = emailForm.useForm({ ...formI18n(say, locale), onSubmit: (v) => mail.go(v) });
+  const passF = passwordForm.useForm({ ...formI18n(say, locale), onSubmit: (v) => pass.go(v) });
   return (
     <div className="flex max-w-2xl flex-col gap-8" data-testid="settings-securite">
       {notice ? <Alert tone={notice === "changed" ? "success" : "danger"}>{say(notice === "changed" ? "settings.security.emailChanged" : "settings.security.emailInvalid")}</Alert> : null}
@@ -162,6 +157,7 @@ export function SecuritySection({ email, pendingEmail, notice }: { email: string
 const billing = z.object({
   entitlement: z.object({ credits: z.number(), pro: z.boolean(), proUntil: z.string().nullable(), freeAuditUsed: z.boolean(), selfServe: z.boolean(), hasCustomer: z.boolean() }),
   paymentsOn: z.boolean(),
+  paymentsDisplay: z.string().optional(),
 });
 const redirect = z.object({ url: z.string().url() });
 
@@ -190,6 +186,7 @@ export function BillingSection() {
         </ul>
       ) : null}
       {info.data && !info.data.paymentsOn ? <Alert tone="info">{say("settings.billing.off")}</Alert> : null}
+      {info.data?.paymentsOn && info.data.paymentsDisplay === "test" ? <Alert tone="warning">{say("settings.billing.testMode")}</Alert> : null}
       {info.data?.paymentsOn ? (
         <div className="flex flex-wrap gap-3">
           {e?.hasCustomer ? (
@@ -225,7 +222,7 @@ export function DataSection() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const erase = useCall<{ email: string; password: string }>((body) => krizakaFetch("/api/me/delete", { method: "POST", json: body }));
-  const form = deleteForm.useForm({ ...i18n(say, locale), onSubmit: (v) => erase.go(v, () => router.replace(`/${locale}`)) });
+  const form = deleteForm.useForm({ ...formI18n(say, locale), onSubmit: (v) => erase.go(v, () => router.replace(`/${locale}`)) });
   return (
     <div className="flex max-w-2xl flex-col gap-8" data-testid="settings-donnees">
       <section className="flex flex-col gap-3" aria-label={say("settings.data.exportTitle")}>

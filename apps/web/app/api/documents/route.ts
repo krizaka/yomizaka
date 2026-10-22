@@ -6,12 +6,14 @@ import { requireSession } from "@/lib/access";
 import { audit } from "@/lib/audit";
 import { query } from "@/lib/db";
 import { listDocuments, storeDocument } from "@/lib/documents";
-import { env } from "@/lib/env";
 import { handle, HttpError, refuse } from "@/lib/http";
 import { isId } from "@/lib/organisation/rules";
 import { placeDocument } from "@/lib/organisation/store";
+import { YOMIZAKA_RULES } from "@/lib/preflight/rules";
 import { recordPreflight } from "@/lib/preflight-events";
 import { limit } from "@/lib/rate-limit";
+import { preflightRulesFrom } from "@/lib/settings/boundary";
+import { assertFeature, settingsFor } from "@/lib/settings/guards";
 
 export const dynamic = "force-dynamic";
 
@@ -35,10 +37,12 @@ export function POST(req: Request) {
     // Where it may be kept is the owner's setting: « conserver » is refused while keeping is switched off (ADR-0007).
     const stores = await storesOf(session.account.id);
     const keep = form?.get("keep") === "true";
+    if (keep) await assertFeature("keepDocuments", session.account.id);
     if (keep && stores.settings.mode === STORAGE_MODE.none) throw refuse(409, "KEEP_DISABLED", "Keeping documents is switched off for this account");
+    const settings = await settingsFor(session.account.id);
     let stored;
     try {
-      stored = await storeDocument(session.account.id, { name: file.name, type: file.type, size: file.size }, bytes, kind, { keep, store: stores.write, now: new Date(), purgeAfterHours: env().APP_PURGE_AFTER_HOURS });
+      stored = await storeDocument(session.account.id, { name: file.name, type: file.type, size: file.size }, bytes, kind, { keep, store: stores.write, now: new Date(), purgeAfterHours: settings["limits.purgeAfterHours"].value as number, rules: preflightRulesFrom(YOMIZAKA_RULES, settings) });
     } catch (error) {
       // A file the pre-flight refused: an engine run that did not happen (counted per tenant).
       const reason = error instanceof HttpError ? error.body.reason : undefined;

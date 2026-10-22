@@ -5,6 +5,7 @@ import { consoleAllowedIps } from "./env";
 import { isAdminHost } from "./host";
 import { refuse } from "./http";
 import { resolveSession, type Session, SESSION_COOKIE } from "./session";
+import { assertOpen } from "./settings/guards";
 
 /**
  * Who may do what. Pages and API share the rules: a session for the library; for the administration three locks — a
@@ -34,6 +35,7 @@ const cookieToken = (header: string | null) =>
 export async function requireSession(req: Request): Promise<Session> {
   const session = await resolveSession(cookieToken(req.headers.get("cookie")));
   if (!session) throw refuse(401, "UNAUTHENTICATED", "Sign in first");
+  await assertOpen(session.account);
   return session;
 }
 

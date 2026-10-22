@@ -455,7 +455,13 @@
       "CONNECTION_FAILED": "Le test de connexion a échoué.",
       "STORAGE_IN_USE": "Des documents sont conservés sur ce stockage : exportez-les ou supprimez-les d'abord.",
       "SETTINGS_KEY_MISSING": "Cette installation ne peut pas enregistrer d'identifiants.",
-      "KEEP_DISABLED": "La conservation est désactivée pour ce compte."
+      "KEEP_DISABLED": "La conservation est désactivée pour ce compte.",
+      "MAINTENANCE": "L'application est en maintenance. Revenez dans quelques minutes.",
+      "FEATURE_OFF": "Cette fonction est désactivée.",
+      "DAILY_LIMIT": "Limite quotidienne atteinte. Revenez demain.",
+      "UNKNOWN_SETTING": "Ce réglage n'existe pas.",
+      "BAD_VALUE": "Cette valeur n'est pas valable.",
+      "BAD_SCOPE": "Ce réglage ne se règle pas à cette portée."
     },
     "adminConsole": {
       "shell": {
@@ -473,8 +479,10 @@
         "groups": {
           "people": "Personnes et fichiers",
           "engine": "Parcours et moteur",
-          "operations": "Exploitation"
-        }
+          "operations": "Exploitation",
+          "app": "Application"
+        },
+        "config": "Configuration"
       },
       "overview": {
         "health": "Santé",
@@ -729,7 +737,8 @@
       "soon": "Paiement bientôt disponible.",
       "notice": "9,99 $ CAD par audit, ou 29 $ CAD par mois pour Pro, avant TPS et TVQ. Vérification informative, ce n’est pas un avis juridique.",
       "fairUseTitle": "Limite mensuelle atteinte",
-      "fairUse": "Pro comprend jusqu’à {limit} audits par mois. La limite revient au début du mois prochain."
+      "fairUse": "Pro comprend jusqu’à {limit} audits par mois. La limite revient au début du mois prochain.",
+      "testMode": "Mode test : aucune vraie carte n'est débitée."
     },
     "insight": {
       "title": "Ce document",
@@ -901,7 +910,8 @@
         "portal": "Gérer l'abonnement et les factures",
         "portalHint": "Mode de paiement, factures (avec TPS et TVQ) et annulation : dans le portail sécurisé de Stripe.",
         "off": "Le paiement n'est pas encore disponible.",
-        "buy": "Acheter ou s'abonner"
+        "buy": "Acheter ou s'abonner",
+        "testMode": "Mode test : aucune vraie carte n'est débitée."
       },
       "data": {
         "exportTitle": "Exporter mes données",
@@ -953,6 +963,202 @@
       "lead": "Un clic pour utiliser cette adresse avec votre compte.",
       "button": "Confirmer la nouvelle adresse",
       "invalid": "Ce lien est invalide ou a expiré."
+    },
+    "maintenance": {
+      "title": "En maintenance"
+    },
+    "adminConfig": {
+      "title": "Configuration de l'application",
+      "lead": "Chaque réglage est une donnée : il s'applique tout de suite, sans redéploiement, et chaque changement est journalisé.",
+      "groups": {
+        "general": "Général",
+        "features": "Fonctions",
+        "limits": "Limites",
+        "plans": "Forfaits",
+        "packs": "Ensembles de règles",
+        "orazaka": "Orazaka"
+      },
+      "scope": {
+        "label": "Portée",
+        "global": "Global",
+        "workspace": "Espace de travail",
+        "user": "Personne",
+        "id": "Identifiant",
+        "idHint": "Identifiant de l'espace de travail ou de la personne.",
+        "apply": "Voir",
+        "workspaceNote": "Les espaces de travail arrivent avec le B2B : la résolution est prête.",
+        "resolution": "Valeur effective : personne, puis espace de travail, puis global, puis défaut."
+      },
+      "row": {
+        "modified": "modifié",
+        "inherited": "hérité : {source}",
+        "reset": "Rétablir le défaut",
+        "save": "Enregistrer",
+        "saved": "Enregistré.",
+        "default": "Défaut : {value}",
+        "on": "activé",
+        "off": "désactivé",
+        "fr": "FR",
+        "en": "EN",
+        "notHere": "Ne se règle pas à cette portée."
+      },
+      "sources": {
+        "default": "défaut",
+        "global": "global",
+        "workspace": "espace de travail",
+        "user": "personne"
+      },
+      "choices": {
+        "test": "Test",
+        "live": "Réel",
+        "pdf": "PDF",
+        "text": "Texte"
+      },
+      "settings": {
+        "app": {
+          "maintenance": {
+            "label": "Mode maintenance",
+            "hint": "Ferme l'application aux utilisateurs et affiche le message ci-dessous. Les administrateurs entrent toujours."
+          },
+          "maintenanceMessage": {
+            "label": "Message de maintenance",
+            "hint": "Ce que voient les utilisateurs, dans chaque langue."
+          }
+        },
+        "signup": {
+          "open": {
+            "label": "Inscription ouverte",
+            "hint": "Permet de créer un compte. Il faut aussi que l'envoi de courriels soit configuré."
+          }
+        },
+        "payments": {
+          "enabled": {
+            "label": "Paiements activés",
+            "hint": "Coupe l'achat d'un audit et de l'abonnement Pro. Le portail de facturation reste ouvert."
+          },
+          "display": {
+            "label": "Affichage des paiements",
+            "hint": "Mode test : un avis dit qu'aucune vraie carte n'est débitée."
+          }
+        },
+        "audit": {
+          "freeFirst": {
+            "label": "Premier audit gratuit",
+            "hint": "Le premier audit d'un compte en libre-service est offert."
+          }
+        },
+        "features": {
+          "documentInsight": {
+            "label": "Panneau « Ce document »",
+            "hint": "La nature du document et ses faits, lus dans le texte."
+          },
+          "personalInfo": {
+            "label": "Détection des renseignements personnels",
+            "hint": "Compte et caviarde les renseignements personnels."
+          },
+          "keepDocuments": {
+            "label": "Option « Conserver mes documents »",
+            "hint": "Sans elle, tout document est supprimé après sa vérification."
+          },
+          "ownStorage": {
+            "label": "Stockage S3 personnel",
+            "hint": "Permet de brancher son propre stockage compatible S3."
+          },
+          "assistant": {
+            "label": "Assistant (bientôt)",
+            "hint": "Poser une question à son document. Pas encore construit."
+          }
+        },
+        "limits": {
+          "maxFileMb": {
+            "label": "Taille maximale d'un fichier",
+            "hint": "Ne peut pas dépasser ce que la plateforme porte (10 Mo)."
+          },
+          "maxPages": {
+            "label": "Pages maximales d'un PDF",
+            "hint": "Seuil de la vérification préalable."
+          },
+          "allowedTypes": {
+            "label": "Types de fichiers acceptés",
+            "hint": "Au moins un."
+          },
+          "reuseDays": {
+            "label": "Fenêtre de réutilisation",
+            "hint": "Un résultat identique plus récent que cela est réutilisé sans nouvelle exécution. 0 : jamais."
+          },
+          "purgeAfterHours": {
+            "label": "Purge d'un document jamais vérifié",
+            "hint": "Heures avant la suppression d'un document non conservé et jamais vérifié."
+          },
+          "bonusAuditsPerMonth": {
+            "label": "Audits bonus par mois",
+            "hint": "S'ajoute au plafond mensuel de cette personne."
+          }
+        },
+        "plans": {
+          "free": {
+            "auditsPerDay": {
+              "label": "Gratuit : audits par jour",
+              "hint": "0 : sans plafond."
+            }
+          },
+          "pro": {
+            "auditsPerMonth": {
+              "label": "Pro : audits par mois",
+              "hint": "Plafond d'usage raisonnable."
+            },
+            "auditsPerDay": {
+              "label": "Pro : audits par jour",
+              "hint": "0 : sans plafond."
+            }
+          }
+        }
+      },
+      "history": {
+        "title": "Journal des changements",
+        "empty": "Aucun changement pour l'instant.",
+        "who": "Qui",
+        "when": "Quand",
+        "what": "Quoi",
+        "before": "Avant",
+        "after": "Après",
+        "scope": "Portée"
+      },
+      "packs": {
+        "lead": "Chaque ensemble de règles est un parcours : le désactiver le retire pour les consommateurs de cet environnement, tout de suite.",
+        "environment": "Environnement",
+        "flow": "Parcours",
+        "enabled": "Actif",
+        "manage": "Éditer les parcours",
+        "empty": "Aucun parcours."
+      },
+      "plans": {
+        "pricesTitle": "Prix (lus dans Stripe)",
+        "pricesLead": "Les prix restent dans Stripe : rien ici ne les modifie.",
+        "audit": "Un audit",
+        "pro": "Pro",
+        "off": "Les paiements ne sont pas configurés sur cette installation.",
+        "notFound": "Prix introuvable dans Stripe.",
+        "lookup": "Clé de prix",
+        "mode": "Stripe",
+        "entitlementsTitle": "Ce que chaque forfait inclut"
+      },
+      "orazaka": {
+        "keyTitle": "Clé d'API de ce produit",
+        "masked": "Clé : {key}",
+        "none": "Aucune clé configurée.",
+        "address": "Adresse : {url}",
+        "test": "Tester la connexion",
+        "testing": "Test en cours…",
+        "ok": "Connexion réussie en {ms} ms : {count} Studio(s) installé(s).",
+        "fail": "Connexion refusée ({code}).",
+        "usageTitle": "Usage de ce mois (enregistré ici)",
+        "runs": "Exécutions lancées : {count}",
+        "failed": "En échec : {count}",
+        "cost": "Coût estimé : {amount}",
+        "notExposed": "Le forfait et l'usage vus par Orazaka ne sont pas encore exposés par son API : ils ne sont pas affichés plutôt que devinés.",
+        "rotate": "La rotation de la clé se fait dans Orazaka, puis dans le secret de l'application : elle n'est pas faite d'ici."
+      }
     }
   },
   "report": {

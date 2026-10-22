@@ -5,7 +5,7 @@ import { refuse } from "./http";
 import { readText } from "./pdf-text";
 import { personalInfo } from "./pii";
 import { createInspector } from "./preflight/inspector";
-import { OUTCOME, type RejectReason } from "./preflight/port";
+import { OUTCOME, type PreflightRules, type RejectReason } from "./preflight/port";
 import { YOMIZAKA_RULES } from "./preflight/rules";
 import { EXTERNAL, objectKey, purgeDeadline, storageFor } from "./retention";
 import type { DocumentStore, StoreDescriptor } from "./storage/port";
@@ -178,11 +178,11 @@ const REFUSALS: Record<RejectReason, { status: number; code: string }> = {
   ARCHIVE_BOMB: { status: 422, code: "FILE_ARCHIVE_BOMB" },
 };
 
-const inspector = createInspector(YOMIZAKA_RULES);
+const defaultInspector = createInspector(YOMIZAKA_RULES);
 
 /** The pre-flight (lib/preflight, ADR-0005): what an upload must be, decided here for nothing before anything is stored or sent to an engine. */
-export async function checkUpload(file: { name: string; type: string; size: number }, bytes: Uint8Array): Promise<{ mimeType: "application/pdf" | "text/plain"; sha256: string; pages: number | null }> {
-  const outcome = await inspector.inspect(bytes, file);
+export async function checkUpload(file: { name: string; type: string; size: number }, bytes: Uint8Array, rules?: PreflightRules): Promise<{ mimeType: "application/pdf" | "text/plain"; sha256: string; pages: number | null }> {
+  const outcome = await (rules ? createInspector(rules) : defaultInspector).inspect(bytes, file);
   if (outcome.kind === OUTCOME.rejected) {
     const { status, code } = REFUSALS[outcome.reason];
     throw refuse(status, code, `Refused by the pre-flight: ${outcome.reason}`, { reason: outcome.reason });
@@ -209,10 +209,12 @@ export interface StoragePolicy {
   store: DocumentStore;
   now: Date;
   purgeAfterHours: number;
+  /** The pre-flight rules as configured (limits an administrator set); the product's own when absent. */
+  rules?: PreflightRules;
 }
 
 export async function storeDocument(ownerId: string, file: { name: string; type: string; size: number }, bytes: Uint8Array, requested: DocumentKind | "auto", policy?: StoragePolicy): Promise<{ summary: DocumentSummary; duplicate: boolean }> {
-  const { mimeType, sha256 } = await checkUpload(file, bytes);
+  const { mimeType, sha256 } = await checkUpload(file, bytes, policy?.rules);
   const where = policy ? storageFor(policy.keep, policy.store.describe()) : "database";
   const [existing] = await query<DocumentRow & { purged: boolean }>(`SELECT ${SUMMARY_COLUMNS}, (d.storage = 'none' AND octet_length(d.content) = 0 AND d.text = '') AS purged FROM documents d WHERE d.owner_id = $1 AND d.sha256 = $2`, [ownerId, sha256]);
   // The same file again: reused as it is — unless it was purged and the person now keeps it, then it is restored below.

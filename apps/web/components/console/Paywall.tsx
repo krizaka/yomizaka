@@ -9,7 +9,7 @@ import { z } from "zod";
 import { errorKey } from "@/lib/client";
 import { useSay } from "@/lib/i18n-client";
 
-const summary = z.object({ paymentsOn: z.boolean(), fairUsePerMonth: z.number() });
+const summary = z.object({ paymentsOn: z.boolean(), paymentsDisplay: z.string().optional(), fairUsePerMonth: z.number() });
 const redirect = z.object({ url: z.string().url() });
 
 /** The second audit: pay for this one or subscribe. Without payment configured it says so — no button that leads nowhere. */
@@ -41,6 +41,7 @@ export function Paywall({ reason }: { reason: "PAYWALL" | "FAIR_USE" }) {
         </p>
       ) : null}
       {problem ? <p className="mt-2">{problem}</p> : null}
+      {info.data?.paymentsOn && info.data.paymentsDisplay === "test" ? <p className="mt-2 text-sm font-semibold" data-testid="payments-test-mode">{say("paywall.testMode")}</p> : null}
       <p className="mt-3 text-sm">{say("paywall.notice")}</p>
     </Alert>
   );

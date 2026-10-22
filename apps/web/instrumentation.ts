@@ -16,4 +16,9 @@ export async function register() {
   const { seedDatabase } = await import("./lib/flows");
   const seeded = await seedDatabase();
   if (seeded.length) console.log(`[yomizaka] flows seeded: ${seeded.join(", ")}`);
+  const e = readEnv();
+  const { appSettings } = await import("./lib/settings/instance");
+  const { seedLegacySettings } = await import("./lib/settings/seed");
+  const legacy = await seedLegacySettings(appSettings(), { signupOpen: e.AUTH_SIGNUP_ENABLED, purgeAfterHours: e.APP_PURGE_AFTER_HOURS, proAuditsPerMonth: e.APP_FAIR_USE_AUDITS_PER_MONTH }, new Date());
+  if (legacy.length) console.log(`[yomizaka] settings seeded from the environment: ${legacy.join(", ")}`);
 }
