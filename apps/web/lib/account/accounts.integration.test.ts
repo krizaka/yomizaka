@@ -1,29 +1,17 @@
 import crypto from "node:crypto";
 
+import { postgresAccounts } from "@krizaka/auth";
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { migrate, query } from "../db";
 import type { Mail } from "../mailer";
 import { hashPassword, verifyPassword } from "../password";
-import { emailChangeMail, isEmailChangeToken, postgresAccounts } from "./postgres";
+import { tokenHash } from "../session";
 
-/** The account adapter against a real PostgreSQL (skipped without YOMIZAKA_DB_IT=1 and DATABASE_URL). */
+/** The account adapter (`@krizaka/auth`, whose own tests cover the rules) wired as Yomizaka wires it, against a real PostgreSQL (skipped without YOMIZAKA_DB_IT=1 and DATABASE_URL). */
 const enabled = process.env.YOMIZAKA_DB_IT === "1" && !!process.env.DATABASE_URL;
 const NOW = new Date("2026-10-22T12:00:00Z");
 const PASSWORD = "correct-horse-battery";
-
-describe("the e-mail change mail", () => {
-  it("is in the person's language, goes to the new address and carries the link, valid for a day", () => {
-    const fr = emailChangeMail("fr", "https://www.yomizaka.com/fr/confirm-email?token=x");
-    expect(fr.subject).toMatch(/adresse/i);
-    expect(fr.text).toContain("https://www.yomizaka.com/fr/confirm-email?token=x");
-    expect(emailChangeMail("en", "https://u").subject).toMatch(/address/i);
-  });
-  it("tokens have their own prefix", () => {
-    expect(isEmailChangeToken("ye1.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")).toBe(true);
-    expect(isEmailChangeToken("yv1.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")).toBe(false);
-  });
-});
 
 describe.runIf(enabled)("account service (Postgres adapter)", () => {
   beforeAll(async () => {
@@ -32,9 +20,12 @@ describe.runIf(enabled)("account service (Postgres adapter)", () => {
   const mails: Mail[] = [];
   const issued: string[] = [];
   const service = postgresAccounts({
-    query,
+    query: async (sql, params) => query(sql, params) as never,
     mail: async (m) => void mails.push(m),
     baseUrl: "https://www.yomizaka.com",
+    product: "Yomizaka",
+    tokenPrefix: "ye",
+    tokenHash: (token) => tokenHash(token),
     passwords: { hash: hashPassword, verify: verifyPassword },
     token: () => {
       const t = `ye1.${crypto.randomBytes(32).toString("base64url")}`;
