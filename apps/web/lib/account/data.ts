@@ -61,7 +61,7 @@ export async function exportData(q: Query, accountId: string, stores: StoresOf, 
     for (const r of rows) map.set(r.target, [...(map.get(r.target) ?? []), r.tag]);
     return map;
   };
-  const [colTags, folderTags, docTags] = await Promise.all([tagged("collection_tags", "collection_id"), tagged("folder_tags", "folder_id"), tagged("document_tags", "document_id")]);
+  const [colTags, folderTags, docTags] = await Promise.all([tagged("collections_tags", "collection_id"), tagged("folder_tags", "folder_id"), tagged("document_tags", "document_id")]);
   const docs = await q<{ id: string; title: string; filename: string; mime_type: string; kind: string; size_bytes: number; sha256: string; pages: number | null; created_at: Date; storage: StorageKind; storage_owner: CloudOwner; retain_until: Date | null; collection_id: string | null; folder_id: string | null; text: string; content: Buffer }>(
     "SELECT id, title, filename, mime_type, kind, size_bytes, sha256, pages, created_at, storage, storage_owner, retain_until, collection_id, folder_id, text, content FROM documents WHERE owner_id = $1 ORDER BY created_at",
     [accountId],
