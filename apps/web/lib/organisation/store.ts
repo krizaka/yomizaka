@@ -1,0 +1,255 @@
+import type { QueryResultRow } from "pg";
+
+import { refuse } from "../http";
+import { cleanName, type DeleteChoice, isId, type TagColor } from "./rules";
+
+/**
+ * The organisation's storage (ADR-0007): libraries, collections, folders (one level), tags and where a document sits.
+ * It takes its `query` as a parameter (tested against a real PostgreSQL) and knows nothing of the checks: it hands out
+ * document ids, the documents module turns them into summaries.
+ */
+export type Query = <T extends QueryResultRow>(text: string, values?: unknown[]) => Promise<T[]>;
+
+export interface Library { id: string; name: string }
+export interface Collection { id: string; library_id: string; name: string }
+export interface Folder { id: string; collection_id: string; name: string }
+export interface Tag { id: string; name: string; color: TagColor }
+export type TagTarget = "collection" | "folder" | "document";
+
+const notFound = (what: string) => refuse(404, "NOT_FOUND", `No such ${what}`);
+const taken = () => refuse(409, "NAME_TAKEN", "That name is already used here");
+
+/** A unique violation becomes the stable 409 the client translates. */
+async function unique<T>(run: () => Promise<T>): Promise<T> {
+  try {
+    return await run();
+  } catch (error) {
+    if ((error as { code?: string }).code === "23505") throw taken();
+    throw error;
+  }
+}
+
+const one = async <T>(rows: Promise<T[]>, what: string): Promise<T> => {
+  const [row] = await rows;
+  if (!row) throw notFound(what);
+  return row;
+};
+
+// ── libraries ─────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+/** The owner's default library, created on first use. */
+export async function ensureLibrary(q: Query, owner: string, name: string): Promise<Library> {
+  const label = cleanName(name);
+  const [found] = await q<Library>("SELECT id, name FROM libraries WHERE owner_id = $1 ORDER BY created_at LIMIT 1", [owner]);
+  if (found) return found;
+  const [row] = await q<Library>("INSERT INTO libraries (owner_id, name) VALUES ($1, $2) ON CONFLICT (owner_id, name) DO UPDATE SET name = excluded.name RETURNING id, name", [owner, label]);
+  return row!;
+}
+
+export const createLibrary = (q: Query, owner: string, name: string) => unique(async () => (await q<Library>("INSERT INTO libraries (owner_id, name) VALUES ($1, $2) RETURNING id, name", [owner, cleanName(name)]))[0]!);
+export const renameLibrary = (q: Query, owner: string, id: string, name: string) => unique(() => one(q<Library>("UPDATE libraries SET name = $3 WHERE owner_id = $1 AND id = $2 RETURNING id, name", [owner, id, cleanName(name)]), "library"));
+
+/** Only an empty library can be deleted (and never the last one). */
+export async function deleteLibrary(q: Query, owner: string, id: string): Promise<void> {
+  if (!isId(id)) throw notFound("library");
+  const [lib] = await q<{ n: string; c: string }>("SELECT (SELECT count(*) FROM libraries WHERE owner_id = $1) AS n, (SELECT count(*) FROM collections WHERE library_id = $2) AS c", [owner, id]);
+  if (Number(lib?.n) <= 1) throw refuse(409, "LAST_LIBRARY", "The last library cannot be deleted");
+  if (Number(lib?.c) > 0) throw refuse(409, "NOT_EMPTY", "Move or delete its collections first");
+  await one(q("DELETE FROM libraries WHERE owner_id = $1 AND id = $2 RETURNING id", [owner, id]), "library");
+}
+
+export interface LibraryOverview extends Library {
+  collections: { id: string; name: string; files: number; folders: number; tags: Tag[] }[];
+}
+
+/** Every library of the owner with its collections, file counts and tags. */
+export async function overview(q: Query, owner: string): Promise<LibraryOverview[]> {
+  const libs = await q<Library>("SELECT id, name FROM libraries WHERE owner_id = $1 ORDER BY created_at", [owner]);
+  const cols = await q<{ id: string; library_id: string; name: string; files: string; folders: string }>(
+    `SELECT c.id, c.library_id, c.name,
+            (SELECT count(*) FROM documents d WHERE d.collection_id = c.id) AS files,
+            (SELECT count(*) FROM folders f WHERE f.collection_id = c.id) AS folders
+       FROM collections c JOIN libraries l ON l.id = c.library_id WHERE l.owner_id = $1 ORDER BY lower(c.name)`,
+    [owner],
+  );
+  const tags = await tagsOf(q, owner, "collection", cols.map((c) => c.id));
+  return libs.map((l) => ({
+    ...l,
+    collections: cols.filter((c) => c.library_id === l.id).map((c) => ({ id: c.id, name: c.name, files: Number(c.files), folders: Number(c.folders), tags: tags.get(c.id) ?? [] })),
+  }));
+}
+
+// ── collections ───────────────────────────────────────────────────────────────────────────────────────────────────────
+
+async function ownedLibrary(q: Query, owner: string, id: string) {
+  if (!isId(id)) throw notFound("library");
+  return one(q<Library>("SELECT id, name FROM libraries WHERE owner_id = $1 AND id = $2", [owner, id]), "library");
+}
+export async function ownedCollection(q: Query, owner: string, id: string): Promise<Collection> {
+  if (!isId(id)) throw notFound("collection");
+  return one(q<Collection>("SELECT c.id, c.library_id, c.name FROM collections c JOIN libraries l ON l.id = c.library_id WHERE l.owner_id = $1 AND c.id = $2", [owner, id]), "collection");
+}
+export async function ownedFolder(q: Query, owner: string, id: string): Promise<Folder> {
+  if (!isId(id)) throw notFound("folder");
+  return one(q<Folder>("SELECT f.id, f.collection_id, f.name FROM folders f JOIN collections c ON c.id = f.collection_id JOIN libraries l ON l.id = c.library_id WHERE l.owner_id = $1 AND f.id = $2", [owner, id]), "folder");
+}
+async function ownedDocument(q: Query, owner: string, id: string): Promise<{ id: string }> {
+  if (!isId(id)) throw notFound("document");
+  return one(q<{ id: string }>("SELECT id FROM documents WHERE owner_id = $1 AND id = $2", [owner, id]), "document");
+}
+
+export async function createCollection(q: Query, owner: string, libraryId: string, name: string): Promise<Collection> {
+  await ownedLibrary(q, owner, libraryId);
+  return unique(async () => (await q<Collection>("INSERT INTO collections (library_id, name) VALUES ($1, $2) RETURNING id, library_id, name", [libraryId, cleanName(name)]))[0]!);
+}
+
+export async function renameCollection(q: Query, owner: string, id: string, name: string): Promise<Collection> {
+  await ownedCollection(q, owner, id);
+  return unique(async () => (await q<Collection>("UPDATE collections SET name = $2 WHERE id = $1 RETURNING id, library_id, name", [id, cleanName(name)]))[0]!);
+}
+
+export async function moveCollection(q: Query, owner: string, id: string, libraryId: string): Promise<Collection> {
+  await ownedCollection(q, owner, id);
+  await ownedLibrary(q, owner, libraryId);
+  return unique(async () => (await q<Collection>("UPDATE collections SET library_id = $2 WHERE id = $1 RETURNING id, library_id, name", [id, libraryId]))[0]!);
+}
+
+/** Deletes a collection after saying what becomes of its files (and its folders go with it): moved to another collection or to « sans collection », or deleted. */
+export async function deleteCollection(q: Query, owner: string, id: string, choice: DeleteChoice): Promise<void> {
+  await ownedCollection(q, owner, id);
+  if (choice.files === "delete") await q("DELETE FROM documents WHERE owner_id = $1 AND collection_id = $2", [owner, id]);
+  else {
+    if (choice.to !== null) {
+      if (choice.to === id) throw refuse(400, "BAD_REQUEST", "Choose another destination");
+      await ownedCollection(q, owner, choice.to);
+    }
+    await q("UPDATE documents SET collection_id = $3, folder_id = NULL WHERE owner_id = $1 AND collection_id = $2", [owner, id, choice.to]);
+  }
+  await q("DELETE FROM collections WHERE id = $1", [id]);
+}
+
+// ── folders (one level) ───────────────────────────────────────────────────────────────────────────────────────────────
+
+export async function createFolder(q: Query, owner: string, collectionId: string, name: string): Promise<Folder> {
+  await ownedCollection(q, owner, collectionId);
+  return unique(async () => (await q<Folder>("INSERT INTO folders (collection_id, name) VALUES ($1, $2) RETURNING id, collection_id, name", [collectionId, cleanName(name)]))[0]!);
+}
+
+export async function renameFolder(q: Query, owner: string, id: string, name: string): Promise<Folder> {
+  await ownedFolder(q, owner, id);
+  return unique(async () => (await q<Folder>("UPDATE folders SET name = $2 WHERE id = $1 RETURNING id, collection_id, name", [id, cleanName(name)]))[0]!);
+}
+
+/** Moves a folder to another collection of the owner; its files follow. */
+export async function moveFolder(q: Query, owner: string, id: string, collectionId: string): Promise<Folder> {
+  await ownedFolder(q, owner, id);
+  await ownedCollection(q, owner, collectionId);
+  const moved = await unique(async () => (await q<Folder>("UPDATE folders SET collection_id = $2 WHERE id = $1 RETURNING id, collection_id, name", [id, collectionId]))[0]!);
+  await q("UPDATE documents SET collection_id = $2 WHERE folder_id = $1", [id, collectionId]);
+  return moved;
+}
+
+/** Deletes a folder after saying what becomes of its files: moved up to its collection, or deleted. */
+export async function deleteFolder(q: Query, owner: string, id: string, choice: DeleteChoice): Promise<void> {
+  const folder = await ownedFolder(q, owner, id);
+  if (choice.files === "delete") await q("DELETE FROM documents WHERE owner_id = $1 AND folder_id = $2", [owner, id]);
+  else {
+    if (choice.to !== null) {
+      const target = await ownedFolder(q, owner, choice.to);
+      if (target.collection_id !== folder.collection_id || target.id === id) throw refuse(400, "BAD_REQUEST", "Choose a folder of the same collection");
+    }
+    await q("UPDATE documents SET folder_id = $3 WHERE owner_id = $1 AND folder_id = $2", [owner, id, choice.to]);
+  }
+  await q("DELETE FROM folders WHERE id = $1", [id]);
+}
+
+// ── where a document sits ─────────────────────────────────────────────────────────────────────────────────────────────
+
+export interface Placement { collectionId: string | null; folderId: string | null }
+
+/** Places a document in a collection, or a folder of that collection; both null = « sans collection ». */
+export async function placeDocument(q: Query, owner: string, documentId: string, to: Placement): Promise<void> {
+  await ownedDocument(q, owner, documentId);
+  if (to.folderId && !to.collectionId) throw refuse(400, "BAD_REQUEST", "A folder belongs to a collection");
+  if (to.collectionId) await ownedCollection(q, owner, to.collectionId);
+  if (to.folderId) {
+    const folder = await ownedFolder(q, owner, to.folderId);
+    if (folder.collection_id !== to.collectionId) throw refuse(400, "BAD_REQUEST", "That folder is in another collection");
+  }
+  await q("UPDATE documents SET collection_id = $2, folder_id = $3 WHERE id = $1", [documentId, to.collectionId, to.folderId]);
+}
+
+// ── tags ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+export const listTags = (q: Query, owner: string) => q<Tag>("SELECT id, name, color FROM tags WHERE owner_id = $1 ORDER BY lower(name)", [owner]);
+export const createTag = (q: Query, owner: string, name: string, color: TagColor) => unique(async () => (await q<Tag>("INSERT INTO tags (owner_id, name, color) VALUES ($1, $2, $3) RETURNING id, name, color", [owner, cleanName(name), color]))[0]!);
+
+export async function updateTag(q: Query, owner: string, id: string, patch: { name?: string; color?: TagColor }): Promise<Tag> {
+  if (!isId(id)) throw notFound("tag");
+  return unique(() => one(q<Tag>("UPDATE tags SET name = coalesce($3, name), color = coalesce($4, color) WHERE owner_id = $1 AND id = $2 RETURNING id, name, color", [owner, id, patch.name === undefined ? null : cleanName(patch.name), patch.color ?? null]), "tag"));
+}
+
+export async function deleteTag(q: Query, owner: string, id: string): Promise<void> {
+  if (!isId(id)) throw notFound("tag");
+  await one(q("DELETE FROM tags WHERE owner_id = $1 AND id = $2 RETURNING id", [owner, id]), "tag");
+}
+
+const TARGETS = {
+  collection: { table: "collection_tags", column: "collection_id" },
+  folder: { table: "folder_tags", column: "folder_id" },
+  document: { table: "document_tags", column: "document_id" },
+} as const;
+
+const OWNED = { collection: ownedCollection, folder: ownedFolder, document: ownedDocument } as const;
+
+/** Replaces the tags of a collection, a folder or a document (all of them must be the owner's). */
+export async function setTags(q: Query, owner: string, target: { kind: TagTarget; id: string }, tagIds: string[]): Promise<void> {
+  await OWNED[target.kind](q, owner, target.id);
+  const ids = [...new Set(tagIds)];
+  if (ids.some((t) => !isId(t))) throw notFound("tag");
+  if (ids.length) {
+    const owned = await q("SELECT id FROM tags WHERE owner_id = $1 AND id = ANY($2::uuid[])", [owner, ids]);
+    if (owned.length !== ids.length) throw notFound("tag");
+  }
+  const { table, column } = TARGETS[target.kind];
+  await q(`DELETE FROM ${table} WHERE ${column} = $1`, [target.id]);
+  if (ids.length) await q(`INSERT INTO ${table} (${column}, tag_id) SELECT $1, unnest($2::uuid[])`, [target.id, ids]);
+}
+
+/** The tags of many targets at once, by target id. */
+export async function tagsOf(q: Query, owner: string, kind: TagTarget, ids: string[]): Promise<Map<string, Tag[]>> {
+  const out = new Map<string, Tag[]>();
+  if (!ids.length) return out;
+  const { table, column } = TARGETS[kind];
+  const rows = await q<Tag & { target: string }>(`SELECT x.${column} AS target, t.id, t.name, t.color FROM ${table} x JOIN tags t ON t.id = x.tag_id WHERE t.owner_id = $1 AND x.${column} = ANY($2::uuid[]) ORDER BY lower(t.name)`, [owner, ids]);
+  for (const { target, ...tag } of rows) out.set(target, [...(out.get(target) ?? []), tag]);
+  return out;
+}
+
+// ── reading a place ───────────────────────────────────────────────────────────────────────────────────────────────────
+
+const ALL_TAGS = `AND NOT EXISTS (SELECT 1 FROM unnest($TAGS::uuid[]) want(id) WHERE NOT EXISTS (SELECT 1 FROM document_tags dt WHERE dt.document_id = d.id AND dt.tag_id = want.id))`;
+
+/** The files of a collection (its root, or one of its folders), newest first, matching ALL the selected tags. */
+export async function browse(q: Query, owner: string, where: { collectionId: string; folderId?: string; tagIds: string[] }): Promise<{ documentIds: string[] }> {
+  const rows = await q<{ id: string }>(
+    `SELECT d.id FROM documents d WHERE d.owner_id = $1 AND d.collection_id = $2 AND d.folder_id IS NOT DISTINCT FROM $3 ${ALL_TAGS.replace("$TAGS", "$4")} ORDER BY d.created_at DESC LIMIT 500`,
+    [owner, where.collectionId, where.folderId ?? null, where.tagIds],
+  );
+  return { documentIds: rows.map((r) => r.id) };
+}
+
+export async function foldersOf(q: Query, owner: string, collectionId: string): Promise<(Folder & { files: number; tags: Tag[] })[]> {
+  await ownedCollection(q, owner, collectionId);
+  const rows = await q<Folder & { files: string }>("SELECT f.id, f.collection_id, f.name, (SELECT count(*) FROM documents d WHERE d.folder_id = f.id) AS files FROM folders f WHERE f.collection_id = $1 ORDER BY lower(f.name)", [collectionId]);
+  const tags = await tagsOf(q, owner, "folder", rows.map((r) => r.id));
+  return rows.map((r) => ({ ...r, files: Number(r.files), tags: tags.get(r.id) ?? [] }));
+}
+
+export async function unfiledIds(q: Query, owner: string): Promise<string[]> {
+  return (await q<{ id: string }>("SELECT id FROM documents WHERE owner_id = $1 AND collection_id IS NULL ORDER BY created_at DESC LIMIT 500", [owner])).map((r) => r.id);
+}
+
+export async function recentIds(q: Query, owner: string, limit: number): Promise<string[]> {
+  return (await q<{ id: string }>("SELECT id FROM documents WHERE owner_id = $1 ORDER BY created_at DESC LIMIT $2", [owner, limit])).map((r) => r.id);
+}

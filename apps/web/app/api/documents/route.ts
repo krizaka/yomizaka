@@ -6,6 +6,8 @@ import { audit } from "@/lib/audit";
 import { query } from "@/lib/db";
 import { listDocuments, storeDocument } from "@/lib/documents";
 import { handle, HttpError, refuse } from "@/lib/http";
+import { isId } from "@/lib/organisation/rules";
+import { placeDocument } from "@/lib/organisation/store";
 import { recordPreflight } from "@/lib/preflight-events";
 import { limit } from "@/lib/rate-limit";
 
@@ -38,6 +40,12 @@ export function POST(req: Request) {
       throw error;
     }
     const { summary, duplicate } = stored;
+    // Uploaded from a collection or a folder: it lands there (ADR-0007).
+    const collectionId = form?.get("collectionId");
+    const folderId = form?.get("folderId");
+    if (!duplicate && typeof collectionId === "string" && isId(collectionId)) {
+      await placeDocument(query, session.account.id, summary.id, { collectionId, folderId: typeof folderId === "string" && isId(folderId) ? folderId : null });
+    }
     if (!duplicate) await recordPreflight(query, session.account.id, "accepted");
     if (!duplicate) await audit({ action: "document.uploaded", actorId: session.account.id, actorLabel: session.account.email, targetId: summary.id, detail: { size: summary.sizeBytes, mime: summary.mimeType }, headers: req.headers });
     return Response.json({ document: summary, duplicate }, { status: duplicate ? 200 : 201 });
