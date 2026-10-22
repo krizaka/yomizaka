@@ -3,6 +3,8 @@
  * Kept in code rather than in .sql files so the standalone server carries them. A migration is never edited once
  * deployed: a change is a new entry.
  */
+import { accountsMigration } from "@krizaka/auth";
+
 import { DEFAULT_COLLECTION_MIGRATION } from "./organisation/default-collection";
 
 export interface Migration {
@@ -441,5 +443,10 @@ CREATE INDEX api_keys_owner ON api_keys(owner_id, created_at);
 ALTER TABLE collection_tags RENAME TO collections_tags;
 ALTER TABLE collections ADD COLUMN description text CHECK (description IS NULL OR length(description) <= 500);
 `,
+  },
+  {
+    version: "0023_accounts_auth_package",
+    // @krizaka/auth: what the shared account adapter needs on top of 0014 (name, avatar seed, e-mail changes) — the theme the person chose. Idempotent.
+    sql: accountsMigration(),
   },
 ];

@@ -7,7 +7,7 @@ import type { DocumentStore } from "../storage/port";
 
 /** The store that holds a document: Krizaka's configured one, or the owner's own cloud. */
 export type StoresOf = (owner: CloudOwner) => DocumentStore | null;
-import type { AccountService } from "./port";
+import type { AccountService } from "@krizaka/auth";
 
 /**
  * What belongs to Yomizaka and not to the account port: exporting a person's data and erasing it (Loi 25: access and
