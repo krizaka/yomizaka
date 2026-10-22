@@ -45,6 +45,7 @@ export function ScopeBar({ scope }: { scope: ScopeState }) {
   const go = (next: Scope, nextId: string) => router.push(next === SCOPE.global ? path : `${path}?scope=${next}&id=${encodeURIComponent(nextId)}`);
   return (
     <section aria-label={say("adminConfig.scope.label")} className="flex flex-col gap-2" data-testid="scope-bar">
+      {/* @ephemeral: already in the URL (?scope=&id=, two linked parameters written by go()) */}
       <RadioGroup.Root variant="segmented" label={say("adminConfig.scope.label")} value={scope.scope} onValueChange={(v: string) => go(v as Scope, v === SCOPE.global ? "" : id)}>
         {SCOPE_CHOICES.map((s) => (
           <RadioGroup.Segment key={s} value={s}>

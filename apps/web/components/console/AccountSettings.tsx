@@ -14,17 +14,17 @@ import { z } from "zod";
 import { RouteTabs } from "@/components/RouteTabs";
 import { useAppConfig } from "@/lib/app-config-client";
 import { errorKey } from "@/lib/client";
-import { SETTINGS_SECTIONS, type SettingsSection } from "@/lib/console-nav";
+import { SETTINGS_SECTIONS } from "@/lib/console-nav";
 import { formI18n } from "@/lib/form-i18n";
 import { useSay } from "@/lib/i18n-client";
 
 /** The sections of the settings: the tab is the route (/app/settings/<section>). */
-export function SettingsTabs({ section, children }: { section: SettingsSection; children: ReactNode }) {
+export function SettingsTabs({ children }: { children: ReactNode }) {
   const { say, locale } = useSay();
   const app = useAppConfig();
   const items = SETTINGS_SECTIONS.filter((s) => s !== "stockage" || app?.features.ownStorage !== false).map((s) => ({ value: s, label: say(`settings.tabs.${s}`) }));
   return (
-    <RouteTabs value={section} base={`/${locale}/app/settings`} label={say("settings.label")} items={items}>
+    <RouteTabs base={`/${locale}/app/settings`} label={say("settings.label")} items={items}>
       {children}
     </RouteTabs>
   );
@@ -95,6 +95,7 @@ export function ProfileSection({ email, name, avatarSeed, locale: current, child
       </section>
 
       <section className="flex flex-col gap-3" aria-label={say("settings.profile.languageLabel")}>
+        {/* @ephemeral: a saved account setting (PATCH /me), not a view selection */}
         <RadioGroup.Root variant="segmented" label={say("settings.profile.languageLabel")} value={current} onValueChange={async (v: string) => { await patch.go({ locale: v }, () => router.replace(`/${v}/app/settings/profil`)); }}>
           {(["fr", "en"] as const).map((l) => (
             <RadioGroup.Segment key={l} value={l}>

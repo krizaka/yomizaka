@@ -439,6 +439,7 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
         </div>
       </div>
 
+      {/* @ephemeral: already the route (/documents/[id]/<tab>), pushed by go(); to move to Tabs.Nav */}
       <Tabs.Root value={tab} onValueChange={(v: string) => go(v as DocumentTab)}>
         <Tabs.List aria-label={say("document.viewer")}>
           <Tabs.Trigger value="infos">{say("document.tabs.infos")}</Tabs.Trigger>

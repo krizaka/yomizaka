@@ -42,7 +42,7 @@ export default async function SettingsSectionPage({ params, searchParams }: { pa
   return (
     <div className="flex flex-col gap-4">
       <h1 className="font-display text-xl font-bold text-fg">{getDictionary(locale).console.profile.settingsTitle}</h1>
-      <SettingsTabs section={section}>{views[section]()}</SettingsTabs>
+      <SettingsTabs>{views[section]()}</SettingsTabs>
     </div>
   );
 }
