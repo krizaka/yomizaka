@@ -7,10 +7,7 @@
  *   #/check/<document>/<run>   a check being followed
  *   #/settings
  */
-export type Route =
-  | { screen: "library"; folder: string | null }
-  | { screen: "check"; documentId: string; analysisId: string }
-  | { screen: "settings" };
+export type Route = { screen: "library"; folder: string | null } | { screen: "check"; documentId: string; analysisId: string } | { screen: "settings" };
 
 export const HOME: Route = { screen: "library", folder: null };
 
