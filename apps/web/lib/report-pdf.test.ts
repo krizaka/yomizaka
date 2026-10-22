@@ -45,6 +45,19 @@ describe("the report's legal guardrail", () => {
   });
 });
 
+describe("the service contract report", () => {
+  it("says what it did not check: the right to terminate (art. 2125), to be reviewed by a lawyer", async () => {
+    const contract = { ...analysis, report: { ...analysis.report, rulesetId: "qc-service-contract", rulesetVersion: "2026-10-19", rulesetRevision: 1 } };
+    const issued = await issuePdf(buildPayload(doc, contract, "fr"), reportLabels("fr"), signingKey());
+    const { extractText, getDocumentProxy } = await import("unpdf");
+    const text = ((await extractText(await getDocumentProxy(new Uint8Array(issued.bytes)), { mergePages: true })).text as string).replace(/\s+/g, " ");
+    expect(text).toContain("Non vérifié : droit de résiliation, art. 2125 C.c.Q.");
+    const lease = await issuePdf(payload, reportLabels("fr"), signingKey());
+    const leaseText = ((await extractText(await getDocumentProxy(new Uint8Array(lease.bytes)), { mergePages: true })).text as string);
+    expect(leaseText).not.toContain("2125");
+  });
+});
+
 describe("the signed PDF report", () => {
   it("is a PDF with its attestation embedded and a visible signature page after the report's pages", async () => {
     const issued = await issuePdf(payload, reportLabels("fr"), signingKey());

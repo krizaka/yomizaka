@@ -153,6 +153,7 @@ export function renderBody(payload: ReportPayload, labels: ReportLabels): string
 <h1>${esc(d.title)}</h1>
 <p>${esc(fill(labels.summary, { failures: payload.summary.blockingFailures, rules: payload.summary.rulesEvaluated }))}</p>
 ${c.reviewStatus ? `<p class="note">${esc(labels.toReview)}</p>` : ""}
+${c.rulesetId === "qc-service-contract" ? `<p class="note">${esc(labels.notCheckedServiceContract)}</p>` : ""}
 <h2>${esc(labels.documentHeading)}</h2>
 <dl>${row(labels.file, esc(d.filename))}${row(labels.size, `${d.sizeBytes} B${d.pages ? ` · ${d.pages} p.` : ""}`)}${row(labels.documentSha, `<code>${esc(d.sha256)}</code>`)}</dl>
 <h2>${esc(labels.checkHeading)}</h2>

@@ -34,6 +34,7 @@ export function reportBlocks(payload: ReportPayload, labels: ReportLabels): Bloc
   add(labels.disclaimer!, 10, { bold: true, gap: 8 });
   add(fill(labels.summary!, { failures: payload.summary.blockingFailures, rules: payload.summary.rulesEvaluated }), 10, { gap: 8 });
   if (c.reviewStatus) add(labels.toReview!, 9, { gap: 8 });
+  if (c.rulesetId === "qc-service-contract") add(labels.notCheckedServiceContract!, 9, { bold: true, gap: 8 });
   add(labels.documentHeading!, 12, { bold: true, gap: 2 });
   add(`${labels.file}: ${d.filename}`, 9);
   add(`${labels.size}: ${d.sizeBytes} B${d.pages ? ` · ${d.pages} p.` : ""}`, 9);

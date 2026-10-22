@@ -212,4 +212,25 @@ CREATE TABLE screenings (
 CREATE INDEX screenings_landlord ON screenings(landlord_id, created_at DESC);
 `,
   },
+  {
+    version: "0008_signup",
+    sql: `
+-- Self-serve sign-up (2026-10-21): the address is verified by a mailed link, the terms and the privacy notice accepted
+-- (version and date kept: Loi 25 consent). Existing accounts (QA, operators) are verified by construction.
+ALTER TABLE accounts ADD COLUMN email_verified_at timestamptz;
+UPDATE accounts SET email_verified_at = created_at;
+ALTER TABLE accounts ADD COLUMN terms_version text;
+ALTER TABLE accounts ADD COLUMN terms_accepted_at timestamptz;
+ALTER TABLE accounts ADD COLUMN privacy_accepted_at timestamptz;
+CREATE TABLE email_verifications (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  account_id uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  token_hash text NOT NULL UNIQUE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  expires_at timestamptz NOT NULL,
+  used_at    timestamptz
+);
+CREATE INDEX email_verifications_account ON email_verifications(account_id);
+`,
+  },
 ];

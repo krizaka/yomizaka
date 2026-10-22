@@ -36,6 +36,9 @@ export function SiteFooter({ locale }: { locale: Locale }) {
         <SiteFooterLink asChild>
           <Link href={pagePath(locale, "privacy")}>{t("chrome.legal")}</Link>
         </SiteFooterLink>
+        <SiteFooterLink asChild>
+          <Link href={pagePath(locale, "terms")}>{t("chrome.terms")}</Link>
+        </SiteFooterLink>
         <SiteFooterLink href={REPO_URL}>{t("chrome.sourceCode")}</SiteFooterLink>
         <SiteFooterLink href={contactHref("dev-yomizaka-footer")}>{t("chrome.contact")}</SiteFooterLink>
       </SiteFooterColumn>

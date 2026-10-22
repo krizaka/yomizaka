@@ -83,7 +83,12 @@ Every variable is declared once in `apps/web/lib/env.ts` (see `.env.example`); a
 | `APP_REPORT_SIGNING_KEY` | the Ed25519 key that signs reports |
 | `DATABASE_URL`, `DATABASE_CA_CERT` | PostgreSQL and its CA |
 | `AUTH_SESSION_SECRET` | keys the session hashes (≥ 32 characters in production) |
-| `AUTH_SIGNUP_ENABLED` | sign-up is closed unless `true` |
+| `AUTH_SIGNUP_ENABLED` | sign-up is closed unless `true` **and** the verification e-mail can be sent (the `MAIL_` variables below) |
+| `MAIL_PROVIDER` | the e-mail vendor, as a value (`mailgun`) |
+| `MAIL_API_KEY` | the vendor's key (a secret) |
+| `MAIL_DOMAIN` | the sending domain |
+| `MAIL_API_URL` | the vendor's API address (default `https://api.mailgun.net`) |
+| `MAIL_FROM` | the sender (default `Yomizaka <no-reply@MAIL_DOMAIN>`) |
 | `AUTH_ALLOWED_IPS` | the addresses of the administration (empty in production = nobody) |
 | `ABUSE_CLIENT_IP_HEADER`, `ABUSE_TRUSTED_PROXY_HOPS` | where the client address is read |
 | `AI_PROVIDER`, `AI_API_URL`, `AI_API_KEY` | Orazaka's edge and the service key (`oz_…`) |

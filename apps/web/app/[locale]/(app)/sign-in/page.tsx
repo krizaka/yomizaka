@@ -1,4 +1,5 @@
 import { YomizakaLogo } from "@krizaka/ui";
+import { Alert } from "@krizaka/ui/alert";
 import { AuthLayout } from "@krizaka/ui/auth-layout";
 import { Mascot } from "@krizaka/ui/mascots";
 import type { Metadata } from "next";
@@ -7,8 +8,9 @@ import { redirect } from "next/navigation";
 
 import { SignInForm } from "@/components/console/SignInForm";
 import { pageSession } from "@/lib/access";
+import { signupOpen } from "@/lib/env";
 import { asLocale, getDictionary } from "@/lib/i18n";
-import { contactHref, safeNext } from "@/lib/site";
+import { safeNext } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
@@ -18,9 +20,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /** Sign-in on @krizaka/ui's auth template, Yomizaka's mark and its owl. Sign-up is closed — the page says so. */
-export default async function SignInPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ next?: string }> }) {
+export default async function SignInPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ next?: string; verified?: string; verify?: string }> }) {
   const locale = asLocale((await params).locale);
-  const next = safeNext((await searchParams).next, locale);
+  const query = await searchParams;
+  const next = safeNext(query.next, locale);
   if (await pageSession().catch(() => null)) redirect(next);
   const t = getDictionary(locale).console.signIn;
   return (
@@ -36,13 +39,16 @@ export default async function SignInPage({ params, searchParams }: { params: Pro
       title={t.title}
       description={t.description}
       footer={
-        <>
-          <strong className="block font-semibold text-fg">{t.closedTitle}</strong>
-          <span className="block">{t.closed}</span>{" "}
-          <a className="font-semibold text-fg-accent" href={contactHref("yomizaka-sign-in")}>
-            {t.contact}
-          </a>
-        </>
+        signupOpen() ? (
+          <Link className="font-semibold text-fg-accent" href={`/${locale}/sign-up`}>
+            {t.signUpLink}
+          </Link>
+        ) : (
+          <>
+            <strong className="block font-semibold text-fg">{t.closedTitle}</strong>
+            <span className="block">{t.closed}</span>
+          </>
+        )
       }
       legal={
         <>
@@ -54,6 +60,8 @@ export default async function SignInPage({ params, searchParams }: { params: Pro
         </>
       }
     >
+      {query.verified ? <Alert tone="success">{t.verifiedNotice}</Alert> : null}
+      {query.verify ? <Alert tone="danger">{t.invalidNotice}</Alert> : null}
       <SignInForm next={next} />
     </AuthLayout>
   );
