@@ -24,3 +24,5 @@ apps/web/next-env.d.ts
 # PR captures go to Bunny Storage (krizaka-com scripts/pr-assets.mjs), never into the repository
 docs/screenshots/
 .github/pr-assets/
+
+*.traineddata

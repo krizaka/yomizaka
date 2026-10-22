@@ -52,7 +52,7 @@ export function tesseractEngine(): OcrEngine {
       // The worker answers a non-image with an event nobody can catch: only what is plainly a JPEG or a PNG reaches it.
       if (!images.length || images.some((b) => !(b[0] === 0xff && b[1] === 0xd8) && !(b[0] === 0x89 && b[1] === 0x50))) throw new OcrError("OCR_FAILED");
       const { createWorker } = await import("tesseract.js");
-      const worker = await createWorker([...languages], 1, { langPath: languageData(languages), gzip: true, cacheMethod: "none" }).catch((error: unknown) => {
+      const worker = await createWorker([...languages], 1, { langPath: languageData(languages), gzip: true, cachePath: os.tmpdir(), cacheMethod: "write" }).catch((error: unknown) => {
         throw new OcrError("OCR_FAILED", error);
       });
       const timer = setTimeout(() => void worker.terminate(), TIMEOUT_MS);
