@@ -17,10 +17,13 @@ jobs:
   # The pipeline is the org's (krizaka/.github docs/standards/ci-and-deploy.md): the changes gate, the pnpm and Playwright
   # caches, parallel legs, the timeouts and the gate that always reports live there. This file says only what is Yomizaka's.
   ci:
-    uses: krizaka/.github/.github/workflows/node-ci.yml@1cb2e1b6f572ba712083cb6f05fd041370c5ea0b # v1.5.0
+    uses: krizaka/.github/.github/workflows/node-ci.yml@abdf56a439d626836edfbe67d66a2588505673f4 # v1.5.1
     permissions:
       contents: read
     with:
+      container: true      # the image is built on every PR that can break it (Dockerfile, manifests, lockfiles, COPY paths)
+      container-dockerfile: deploy/docker/Dockerfile
+      container-image: app:ci
       duplication: true      # jscpd + dup-ratchet.json: duplicated lines may only go down
       package-manager: pnpm
       parallel: true
