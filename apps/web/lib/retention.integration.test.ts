@@ -28,12 +28,12 @@ describe.runIf(enabled)("keep or purge (ADR-0007)", () => {
   it("a document is NOT kept by default: after its check the file and the text are purged and the report stays", async () => {
     const owner = await account();
     const { summary } = await storeDocument(owner, file, bytes("a"), "lease", policy(false));
-    const before = await documentStorage(owner, summary.id, noneStore().describe());
+    const before = await documentStorage(owner, summary.id, () => noneStore().describe());
     expect(before).toMatchObject({ storage: { kind: "none" }, purged: false });
     expect(before.retainUntil).toBe("2026-10-23T12:00:00.000Z");
     await finish(summary.id);
     expect(await purgeIfDone(query, summary.id)).toBe(true);
-    const after = await documentStorage(owner, summary.id, noneStore().describe());
+    const after = await documentStorage(owner, summary.id, () => noneStore().describe());
     expect(after).toMatchObject({ storage: { kind: "none" }, purged: true, retainUntil: null });
     const detail = await getDocument(owner, summary.id);
     expect(detail.text).toBe("");
@@ -48,14 +48,14 @@ describe.runIf(enabled)("keep or purge (ADR-0007)", () => {
     const { summary } = await storeDocument(owner, file, bytes("b"), "lease", policy(false));
     await query("INSERT INTO analyses (document_id, studio, status, run_id) VALUES ($1, 'document-authenticity', 'running', gen_random_uuid())", [summary.id]);
     expect(await purgeIfDone(query, summary.id)).toBe(false);
-    expect((await documentStorage(owner, summary.id, noneStore().describe())).purged).toBe(false);
+    expect((await documentStorage(owner, summary.id, () => noneStore().describe())).purged).toBe(false);
   });
 
   it("a kept document goes to the configured store (Bunny in development), leaves nothing in the database, and says so", async () => {
     const owner = await account();
     const store = dev();
     const { summary } = await storeDocument(owner, file, bytes("c"), "lease", policy(true, store));
-    const info = await documentStorage(owner, summary.id, store.describe());
+    const info = await documentStorage(owner, summary.id, () => store.describe());
     expect(info.storage).toMatchObject({ kind: "bunny", devOnly: true });
     expect(info.purged).toBe(false);
     const [row] = await query<{ n: number }>("SELECT octet_length(content) AS n FROM documents WHERE id = $1", [summary.id]);
@@ -72,7 +72,7 @@ describe.runIf(enabled)("keep or purge (ADR-0007)", () => {
   it("a kept document with no external store stays in Krizaka's database", async () => {
     const owner = await account();
     const { summary } = await storeDocument(owner, file, bytes("d"), "lease", policy(true));
-    expect((await documentStorage(owner, summary.id, noneStore().describe())).storage).toMatchObject({ kind: "database", residency: "canada" });
+    expect((await documentStorage(owner, summary.id, () => noneStore().describe())).storage).toMatchObject({ kind: "database", residency: "canada" });
     expect((await getFile(owner, summary.id)).content.toString()).toContain("Loyer");
   });
 
@@ -98,7 +98,7 @@ describe.runIf(enabled)("keep or purge (ADR-0007)", () => {
     const restored = await storeDocument(owner, file, bytes("f"), "lease", policy(true));
     expect(restored).toMatchObject({ duplicate: false, summary: { id: first.summary.id } });
     expect((await getDocument(owner, first.summary.id)).text).toContain("Loyer");
-    expect((await documentStorage(owner, first.summary.id, noneStore().describe())).purged).toBe(false);
+    expect((await documentStorage(owner, first.summary.id, () => noneStore().describe())).purged).toBe(false);
     expect((await getDocument(owner, first.summary.id)).analyses).toHaveLength(1);
   });
 
@@ -107,6 +107,6 @@ describe.runIf(enabled)("keep or purge (ADR-0007)", () => {
     const { summary } = await storeDocument(owner, file, bytes("g"), "lease", policy(false));
     expect(await purgeExpired(query, new Date("2026-10-22T13:00:00Z"))).toBe(0);
     expect(await purgeExpired(query, new Date("2026-10-23T12:00:01Z"))).toBeGreaterThanOrEqual(1);
-    expect((await documentStorage(owner, summary.id, noneStore().describe())).purged).toBe(true);
+    expect((await documentStorage(owner, summary.id, () => noneStore().describe())).purged).toBe(true);
   });
 });

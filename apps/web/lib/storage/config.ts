@@ -2,6 +2,7 @@ import { bunnyStore } from "./bunny";
 import { encrypted, parseEncryptionKey } from "./encrypted";
 import { noneStore } from "./none";
 import type { DocumentStore } from "./port";
+import { residencyOf } from "./regions";
 import { s3Store } from "./s3";
 
 /** The settings the store needs — read from the environment by the edge, passed in (lib/env.ts's `Env` satisfies it). */
@@ -19,9 +20,6 @@ export interface StorageSettings {
   MEDIA_S3_ACCESS_KEY_ID?: string;
   MEDIA_S3_SECRET_ACCESS_KEY?: string;
 }
-
-/** The provider regions that are in Canada (data: a new region is a line here). */
-const CANADIAN_REGIONS = ["tor1", "ca-central-1", "ca-west-1", "ca-central", "ca-east", "ca-toronto-1", "ca-montreal-1", "canada-central", "canadacentral", "canadaeast"];
 
 const need = (provider: string, values: Record<string, string | undefined>) => {
   const missing = Object.entries(values).filter(([, v]) => !v).map(([k]) => k);
@@ -45,7 +43,7 @@ export function storageFrom(e: StorageSettings, now: () => Date): DocumentStore 
       secretAccessKey: e.MEDIA_S3_SECRET_ACCESS_KEY!,
       prefix: e.MEDIA_DOCUMENTS_PREFIX,
       now,
-      residency: CANADIAN_REGIONS.includes(e.MEDIA_S3_REGION!.toLowerCase()) ? "canada" : "elsewhere",
+      residency: residencyOf(e.MEDIA_S3_REGION!),
     });
   } else return noneStore();
   return e.MEDIA_DOCUMENTS_ENCRYPTION_KEY ? encrypted(store, parseEncryptionKey(e.MEDIA_DOCUMENTS_ENCRYPTION_KEY)) : store;

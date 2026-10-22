@@ -344,4 +344,25 @@ CREATE TABLE email_changes (
 );
 `,
   },
+  {
+    version: "0015_storage_settings",
+    sql: `
+-- ADR-0007: where a workspace's (today: an owner's) kept documents live — Krizaka's configured store, nothing kept, or its own
+-- S3-compatible cloud (the secret is sealed with the deployment's key, never stored or returned in clear).
+-- Which cloud holds a document kept outside the database: Krizaka's configured store or the owner's own.
+ALTER TABLE documents ADD COLUMN storage_owner text NOT NULL DEFAULT 'krizaka' CHECK (storage_owner IN ('krizaka', 'workspace'));
+CREATE TABLE storage_settings (
+  owner_id         uuid PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,
+  mode             text NOT NULL DEFAULT 'krizaka' CHECK (mode IN ('none', 'krizaka', 's3')),
+  keep_default     boolean NOT NULL DEFAULT false,
+  s3_endpoint      text,
+  s3_region        text,
+  s3_bucket        text,
+  s3_access_key_id text,
+  s3_secret_sealed text,
+  tested_at        timestamptz,
+  updated_at       timestamptz NOT NULL DEFAULT now()
+);
+`,
+  },
 ];

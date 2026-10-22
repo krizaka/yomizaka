@@ -1,7 +1,7 @@
 import { documentKind } from "@yomizaka/core";
 import { z } from "zod";
 
-import { activeStore } from "@/app/active-store";
+import { storesOf } from "@/app/active-store";
 import { requireSession } from "@/lib/access";
 import { audit } from "@/lib/audit";
 import { query } from "@/lib/db";
@@ -32,9 +32,13 @@ export function POST(req: Request) {
     if (!(file instanceof File)) throw refuse(400, "BAD_REQUEST", "A file is expected in the field `file`");
     const kind = documentKind.or(z.literal("auto")).catch("auto").parse(form?.get("kind") ?? "auto");
     const bytes = new Uint8Array(await file.arrayBuffer());
+    // Where it may be kept is the owner's setting: « conserver » is refused while keeping is switched off (ADR-0007).
+    const stores = await storesOf(session.account.id);
+    const keep = form?.get("keep") === "true";
+    if (keep && stores.settings.mode === "none") throw refuse(409, "KEEP_DISABLED", "Keeping documents is switched off for this account");
     let stored;
     try {
-      stored = await storeDocument(session.account.id, { name: file.name, type: file.type, size: file.size }, bytes, kind, { keep: form?.get("keep") === "true", store: activeStore(), now: new Date(), purgeAfterHours: env().APP_PURGE_AFTER_HOURS });
+      stored = await storeDocument(session.account.id, { name: file.name, type: file.type, size: file.size }, bytes, kind, { keep, store: stores.write, now: new Date(), purgeAfterHours: env().APP_PURGE_AFTER_HOURS });
     } catch (error) {
       // A file the pre-flight refused: an engine run that did not happen (counted per tenant).
       const reason = error instanceof HttpError ? error.body.reason : undefined;

@@ -1,11 +1,13 @@
 "use client";
 
+import { krizakaFetch, useQuery } from "@krizaka/query";
 import { Alert } from "@krizaka/ui/alert";
 import { Checkbox } from "@krizaka/ui/checkbox";
 import { Dropzone, type FileRejection, UploadList, useUploadQueue } from "@krizaka/ui/file-upload";
 import { type DocumentKind, type DocumentSummary, MAX_FILE_BYTES } from "@yomizaka/core";
 import { useRouter } from "next/navigation";
-import { type MutableRefObject, type ReactNode, useRef, useState } from "react";
+import { type MutableRefObject, type ReactNode, useEffect, useRef, useState } from "react";
+import { z } from "zod";
 
 import { useSay } from "@/lib/i18n-client";
 
@@ -43,8 +45,15 @@ export function DocumentUploader({ kindRef, placement, onUploaded, extra }: { ki
   const router = useRouter();
   const [notices, setNotices] = useState<string[]>([]);
   // Not kept by default (the document is purged after its check, only the report stays): « conserver » is the person's choice.
-  const [keep, setKeep] = useState(false);
+  const [chosen, setChosen] = useState<boolean | null>(null);
+  // The owner's setting (ADR-0007): keeping may be switched off, or ticked by default; the person's own tick wins.
+  const prefs = useQuery({ queryKey: ["storage-prefs"], queryFn: () => krizakaFetch("/api/me/storage", { schema: z.object({ settings: z.object({ mode: z.enum(["none", "krizaka", "s3"]), keepDefault: z.boolean() }) }) }) });
+  const keepOff = prefs.data?.settings.mode === "none";
+  const keep = !keepOff && (chosen ?? prefs.data?.settings.keepDefault ?? false);
   const keepRef = useRef(keep);
+  useEffect(() => {
+    keepRef.current = keep;
+  }, [keep]);
   const queue = useUploadQueue({
     previews: false,
     retries: 1,
@@ -64,20 +73,21 @@ export function DocumentUploader({ kindRef, placement, onUploaded, extra }: { ki
   const refusal = (r: FileRejection) => say(r.reason === "size" ? "library.refusedSize" : r.reason === "type" ? "library.refusedType" : "library.refusedCount", { name: r.file.name });
   return (
     <>
+      {keepOff ? (
+        <p className="m-0 text-sm text-fg-secondary" data-testid="keep-disabled">{say("library.keepDisabled")}</p>
+      ) : (
       <div className="flex items-start gap-3" data-testid="keep-choice">
         <Checkbox
           id="keep-documents"
           checked={keep}
-          onCheckedChange={(v) => {
-            keepRef.current = v === true;
-            setKeep(v === true);
-          }}
+          onCheckedChange={(v) => setChosen(v === true)}
         />
         <label htmlFor="keep-documents" className="flex cursor-pointer flex-col text-sm">
           <span className="font-semibold text-fg">{say("library.keep")}</span>
           <span className="text-fg-secondary">{say(keep ? "library.keepOn" : "library.keepOff")}</span>
         </label>
       </div>
+      )}
       <Dropzone title={say("library.dropTitle")} browseLabel={say("library.browse")} hint={say("library.hint")} accept="application/pdf,text/plain,.pdf,.txt" maxSize={MAX_FILE_BYTES} maxFiles={20} multiple onFiles={queue.add} refusalLabel={refusal} />
       {queue.items.length > 0 ? (
         <UploadList

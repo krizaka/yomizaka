@@ -1,6 +1,6 @@
 import { startAnalysis as startAnalysisBody } from "@yomizaka/core";
 
-import { activeStore } from "@/app/active-store";
+import { storeForDocument, storesOf } from "@/app/active-store";
 import { requireSession } from "@/lib/access";
 import { getAnalysis, startAnalysis } from "@/lib/analyses";
 import { audit } from "@/lib/audit";
@@ -21,7 +21,7 @@ export function GET(req: Request, { params }: Params) {
   return handle(async () => {
     const session = await requireSession(req);
     const id = (await params).id;
-    return Response.json({ document: { ...(await getDocument(session.account.id, id)), ...(await documentStorage(session.account.id, id, activeStore().describe())) } });
+    return Response.json({ document: { ...(await getDocument(session.account.id, id)), ...(await documentStorage(session.account.id, id, (await storesOf(session.account.id)).describe)) } });
   });
 }
 
@@ -44,7 +44,7 @@ export function POST(req: Request, { params }: Params) {
     const via = await reserveAudit(query, session.account.id, new Date(), env().APP_FAIR_USE_AUDITS_PER_MONTH);
     let analysis;
     try {
-      analysis = await startAnalysis(session.account.id, id, request, flowVersionId, via, activeStore());
+      analysis = await startAnalysis(session.account.id, id, request, flowVersionId, via, await storeForDocument(session.account.id, id));
     } catch (error) {
       await releaseAudit(query, session.account.id, via);
       throw error;
@@ -58,7 +58,7 @@ export function DELETE(req: Request, { params }: Params) {
   return handle(async () => {
     const session = await requireSession(req);
     const id = (await params).id;
-    await deleteDocument(session.account.id, id, activeStore());
+    await deleteDocument(session.account.id, id, await storeForDocument(session.account.id, id));
     await audit({ action: "document.deleted", actorId: session.account.id, actorLabel: session.account.email, targetId: id, headers: req.headers });
     return new Response(null, { status: 204 });
   });

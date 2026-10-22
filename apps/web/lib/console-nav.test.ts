@@ -68,7 +68,7 @@ import { isSettingsSection, SETTINGS_SECTIONS } from "./console-nav";
 
 describe("the settings' sections are routes", () => {
   it("lists them in order and knows only them", () => {
-    expect(SETTINGS_SECTIONS).toEqual(["profil", "securite", "facturation", "donnees"]);
+    expect(SETTINGS_SECTIONS).toEqual(["profil", "securite", "facturation", "stockage", "donnees"]);
     expect(isSettingsSection("securite")).toBe(true);
     expect(isSettingsSection("admin")).toBe(false);
   });

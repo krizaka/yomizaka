@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { accountService } from "@/app/accounts-edge";
 import { BillingSection, DataSection, ProfileSection, SecuritySection, SettingsTabs } from "@/components/console/AccountSettings";
 import { PerspectiveChooser } from "@/components/console/PerspectiveChooser";
+import { StorageSection } from "@/components/console/StorageSection";
 import { pageSession } from "@/lib/access";
 import { isSettingsSection } from "@/lib/console-nav";
 import { appEnvironment } from "@/lib/env";
@@ -37,6 +38,8 @@ export default async function SettingsSectionPage({ params, searchParams }: { pa
           <SecuritySection email={profile.email} pendingEmail={profile.pendingEmail} notice={email === "changed" || email === "invalid" ? email : null} />
         ) : section === "facturation" ? (
           <BillingSection />
+        ) : section === "stockage" ? (
+          <StorageSection />
         ) : (
           <DataSection />
         )}

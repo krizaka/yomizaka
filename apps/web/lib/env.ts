@@ -62,6 +62,8 @@ export const envSchema = z.object({
   MEDIA_DOCUMENTS_PROVIDER: z.enum(["none", "bunny", "s3"]).default("none"),
   /** A document that is not kept is purged after its check; one that is never checked, after this many hours. */
   APP_PURGE_AFTER_HOURS: z.coerce.number().int().min(1).max(720).default(24),
+  /** Seals the credentials of a workspace's own S3 in the database (AES-256-GCM, 32 bytes in base64); without it, storing credentials is unavailable. */
+  APP_SETTINGS_ENCRYPTION_KEY: z.string().optional(),
   MEDIA_DOCUMENTS_PREFIX: z.string().default("yomizaka"),
   /** AES-256-GCM key (32 bytes, base64) that encrypts every kept document before it leaves; the provider only holds ciphertext. */
   MEDIA_DOCUMENTS_ENCRYPTION_KEY: z.string().optional(),

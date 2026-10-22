@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 
-import { activeStore } from "@/app/active-store";
+import { storesOf } from "@/app/active-store";
 import { DocumentView } from "@/components/console/DocumentView";
 import { pageSession } from "@/lib/access";
 import { isDocumentTab } from "@/lib/console-nav";
@@ -21,7 +21,7 @@ export default async function DocumentTabPage({ params }: { params: Promise<{ lo
   if (!isDocumentTab(tab)) notFound();
   const session = await pageSession();
   if (!session) notFound();
-  const document = await getDocument(session.account.id, id).then(async (d) => ({ ...d, ...(await documentStorage(session.account.id, id, activeStore().describe())) })).catch((error: unknown) => {
+  const document = await getDocument(session.account.id, id).then(async (d) => ({ ...d, ...(await documentStorage(session.account.id, id, (await storesOf(session.account.id)).describe)) })).catch((error: unknown) => {
     if (error instanceof HttpError && error.status === 404) return null;
     throw error;
   });

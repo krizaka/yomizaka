@@ -114,11 +114,11 @@ export async function getDocument(ownerId: string, id: string): Promise<Document
 }
 
 /** Where a document lives and until when (the info panel, ADR-0007), from its row and the store configured now. */
-export async function documentStorage(ownerId: string, id: string, activeStore: StoreDescriptor): Promise<{ storage: StoreDescriptor; retainUntil: string | null; purged: boolean }> {
+export async function documentStorage(ownerId: string, id: string, describe: (owner: "krizaka" | "workspace") => StoreDescriptor): Promise<{ storage: StoreDescriptor; retainUntil: string | null; purged: boolean }> {
   if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such document");
-  const [row] = await query<{ storage: StoredKind; retain_until: Date | null; purged: boolean }>("SELECT storage, retain_until, (storage = 'none' AND octet_length(content) = 0 AND text = '') AS purged FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, id]);
+  const [row] = await query<{ storage: StoredKind; storage_owner: "krizaka" | "workspace"; retain_until: Date | null; purged: boolean }>("SELECT storage, storage_owner, retain_until, (storage = 'none' AND octet_length(content) = 0 AND text = '') AS purged FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, id]);
   if (!row) throw refuse(404, "NOT_FOUND", "No such document");
-  return { storage: storedAs(row.storage, activeStore), retainUntil: row.retain_until?.toISOString() ?? null, purged: row.purged };
+  return { storage: storedAs(row.storage, describe(row.storage_owner)), retainUntil: row.retain_until?.toISOString() ?? null, purged: row.purged };
 }
 
 /** The bytes of a document, from where it lives: the database, or the external store that holds it. A purged document has none (409 NOT_KEPT). */
@@ -243,7 +243,7 @@ export async function storeDocument(ownerId: string, file: { name: string; type:
       await query("DELETE FROM documents WHERE id = $1 AND NOT EXISTS (SELECT 1 FROM analyses WHERE document_id = $1)", [row!.id]);
       throw refuse(502, "STORAGE_UNAVAILABLE", "The storage that keeps documents did not answer");
     }
-    await query("UPDATE documents SET content = ''::bytea WHERE id = $1", [row!.id]);
+    await query("UPDATE documents SET content = ''::bytea, storage_owner = $2 WHERE id = $1", [row!.id, policy.store.describe().owner === "workspace" ? "workspace" : "krizaka"]);
   }
   return { summary: summary(row!), duplicate: false };
 }
