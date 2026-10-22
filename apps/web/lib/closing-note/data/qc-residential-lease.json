@@ -1,0 +1,169 @@
+{
+  "pack": "qc-residential-lease",
+  "what": {
+    "fr": "votre bail",
+    "en": "your lease"
+  },
+  "scope": {
+    "fr": "règles du Code civil du Québec sur le bail de logement",
+    "en": "rules of the Québec Civil Code on residential leases"
+  },
+  "notChecked": [
+    {
+      "fr": "Tout ce qui n'est pas dans ces règles : les clauses particulières (animaux, stationnement, entretien) n'ont pas été lues.",
+      "en": "Anything that is not in these rules: special clauses (pets, parking, upkeep) were not read."
+    },
+    {
+      "fr": "Nous n'avons pas vérifié que le bail est signé par les deux parties.",
+      "en": "We did not check that both sides signed the lease."
+    }
+  ],
+  "rules": {
+    "QC-LEASE-001": {
+      "ok": {
+        "fr": "Le propriétaire (le locateur) est nommé dans le bail.",
+        "en": "The landlord is named in the lease."
+      },
+      "attention": {
+        "fr": "Le propriétaire n'est pas clairement nommé dans le bail.",
+        "en": "The landlord is not clearly named in the lease."
+      },
+      "advice": {
+        "fr": "Demandez que le nom du propriétaire soit écrit dans le bail avant de signer.",
+        "en": "Ask for the landlord's name to be written in the lease before you sign."
+      }
+    },
+    "QC-LEASE-002": {
+      "ok": {
+        "fr": "Le locataire est nommé dans le bail.",
+        "en": "The tenant is named in the lease."
+      },
+      "attention": {
+        "fr": "Le locataire n'est pas clairement nommé dans le bail.",
+        "en": "The tenant is not clearly named in the lease."
+      },
+      "advice": {
+        "fr": "Demandez que le nom du locataire soit écrit dans le bail.",
+        "en": "Ask for the tenant's name to be written in the lease."
+      }
+    },
+    "QC-LEASE-003": {
+      "ok": {
+        "fr": "Le loyer est écrit en chiffres.",
+        "en": "The rent is written in figures."
+      },
+      "attention": {
+        "fr": "Le montant du loyer n'est pas clairement indiqué.",
+        "en": "The amount of the rent is not clearly stated."
+      },
+      "advice": {
+        "fr": "Demandez que le loyer de chaque mois soit écrit en chiffres dans le bail.",
+        "en": "Ask for the monthly rent to be written in figures in the lease."
+      }
+    },
+    "QC-LEASE-004": {
+      "ok": {
+        "fr": "Aucun dépôt de garantie n'est demandé.",
+        "en": "No security deposit is asked for."
+      },
+      "attention": {
+        "fr": "Le bail demande un dépôt de garantie. C'est interdit pour un logement.",
+        "en": "The lease asks for a security deposit. That is not allowed for a home."
+      },
+      "advice": {
+        "fr": "Demandez au propriétaire de retirer la clause de dépôt : elle est interdite pour un bail résidentiel. Seul le premier mois de loyer peut être demandé à l'avance.",
+        "en": "Ask the landlord to remove the deposit clause: it is not allowed in a residential lease. Only the first month's rent can be asked for in advance."
+      }
+    },
+    "QC-LEASE-005": {
+      "ok": {
+        "fr": "Aucun chèque daté d'avance n'est demandé.",
+        "en": "No post-dated cheques are asked for."
+      },
+      "attention": {
+        "fr": "Le bail demande des chèques datés d'avance. C'est interdit.",
+        "en": "The lease asks for post-dated cheques. That is not allowed."
+      },
+      "advice": {
+        "fr": "Demandez de retirer cette clause. Vous pouvez payer chaque mois par un autre moyen.",
+        "en": "Ask for this clause to be removed. You can pay each month another way."
+      }
+    },
+    "QC-LEASE-006": {
+      "ok": {
+        "fr": "Aucune clause ne refuse les enfants.",
+        "en": "No clause refuses children."
+      },
+      "attention": {
+        "fr": "Le bail refuse les enfants. Cette clause n'a aucun effet.",
+        "en": "The lease refuses children. This clause has no effect."
+      },
+      "advice": {
+        "fr": "Cette clause ne vous empêche pas d'avoir des enfants. Demandez quand même de la retirer.",
+        "en": "This clause does not stop you from having children. Still ask for it to be removed."
+      }
+    },
+    "QC-LEASE-007": {
+      "ok": {
+        "fr": "Le bail ne vous fait pas renoncer à votre droit de rester dans le logement.",
+        "en": "The lease does not make you give up your right to stay in the home."
+      },
+      "attention": {
+        "fr": "Le bail vous fait renoncer à votre droit de rester dans le logement à la fin du bail. Cette clause n'a aucun effet.",
+        "en": "The lease makes you give up your right to stay in the home when it ends. This clause has no effect."
+      },
+      "advice": {
+        "fr": "Gardez votre droit de rester. Demandez de retirer cette clause.",
+        "en": "Keep your right to stay. Ask for this clause to be removed."
+      }
+    },
+    "QC-LEASE-008": {
+      "ok": {
+        "fr": "L'avis du plus bas loyer des douze derniers mois est inscrit.",
+        "en": "The notice of the lowest rent paid in the last twelve months is filled in."
+      },
+      "attention": {
+        "fr": "Il manque l'avis du plus bas loyer payé dans les douze derniers mois.",
+        "en": "The notice of the lowest rent paid in the last twelve months is missing."
+      },
+      "advice": {
+        "fr": "Demandez au propriétaire de remplir cet avis : il vous aide à contester une hausse trop forte.",
+        "en": "Ask the landlord to fill in this notice: it helps you challenge a rent increase that is too high."
+      }
+    },
+    "QC-LEASE-009": {
+      "ok": {
+        "fr": "Le bail ne vous enlève pas d'avance vos droits en cas de hausse de loyer.",
+        "en": "The lease does not take away your rights in advance if the rent goes up."
+      },
+      "attention": {
+        "fr": "Le bail écarte d'avance vos droits en cas de hausse de loyer. Cette clause n'a aucun effet.",
+        "en": "The lease sets aside your rights in advance if the rent goes up. This clause has no effect."
+      },
+      "advice": {
+        "fr": "Vous gardez vos droits en cas de hausse. Demandez de retirer cette clause.",
+        "en": "You keep your rights if the rent goes up. Ask for this clause to be removed."
+      }
+    },
+    "QC-LEASE-020": {
+      "ok": {
+        "fr": "Aucune clause abusive n'a été trouvée.",
+        "en": "No unfair clause was found."
+      },
+      "attention": {
+        "fr": "Une clause pourrait être abusive.",
+        "en": "A clause may be unfair."
+      },
+      "advice": {
+        "fr": "Relisez les clauses qui vous semblent injustes et demandez conseil au besoin.",
+        "en": "Read again the clauses that seem unfair to you, and ask for advice if needed."
+      }
+    }
+  },
+  "unknown": {
+    "QC-LEASE-020": {
+      "fr": "Nous n'avons pas pu juger si une clause est abusive. Seule une personne peut en décider.",
+      "en": "We could not tell whether a clause is unfair. Only a person can decide that."
+    }
+  }
+}

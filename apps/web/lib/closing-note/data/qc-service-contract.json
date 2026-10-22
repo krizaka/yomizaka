@@ -1,0 +1,84 @@
+{
+  "pack": "qc-service-contract",
+  "what": {
+    "fr": "votre contrat de service",
+    "en": "your service contract"
+  },
+  "scope": {
+    "fr": "règles fédérales sur l'intérêt et le droit d'auteur",
+    "en": "federal rules on interest and copyright"
+  },
+  "notChecked": [
+    {
+      "fr": "La clause de non-concurrence n'a pas été vérifiée.",
+      "en": "The non-competition clause was not checked."
+    },
+    {
+      "fr": "La fin du contrat (articles 2125 et 2129 du Code civil du Québec) n'a pas été vérifiée.",
+      "en": "Ending the contract (articles 2125 and 2129 of the Québec Civil Code) was not checked."
+    },
+    {
+      "fr": "Les clauses de pénalité et la définition même du contrat de service (articles 2098 et suivants) n'ont pas été vérifiées.",
+      "en": "Penalty clauses and the definition of a service contract itself (articles 2098 and following) were not checked."
+    }
+  ],
+  "rules": {
+    "QC-SVC-001": {
+      "ok": {
+        "fr": "Les intérêts de retard sont écrits avec un taux par année.",
+        "en": "Late-payment interest is written with a yearly rate."
+      },
+      "attention": {
+        "fr": "Les intérêts de retard sont écrits par mois, par semaine ou par jour, sans taux par année. La loi demande un taux par année.",
+        "en": "Late-payment interest is written per month, week or day, with no yearly rate. The law asks for a yearly rate."
+      },
+      "advice": {
+        "fr": "Demandez d'écrire le taux d'intérêt par année.",
+        "en": "Ask for the interest rate to be written per year."
+      }
+    },
+    "QC-SVC-002": {
+      "ok": {
+        "fr": "Le contrat ne cède pas les droits moraux de l'auteur.",
+        "en": "The contract does not give away the author's moral rights."
+      },
+      "attention": {
+        "fr": "Le contrat dit céder les droits moraux de l'auteur. Ces droits ne se cèdent pas : on peut seulement y renoncer par écrit.",
+        "en": "The contract says it gives away the author's moral rights. These rights cannot be given away: they can only be waived in writing."
+      },
+      "advice": {
+        "fr": "Demandez de retirer cette cession, ou de la remplacer par une renonciation écrite et précise.",
+        "en": "Ask for this transfer to be removed, or replaced by a clear written waiver."
+      }
+    },
+    "QC-SVC-003": {
+      "ok": {
+        "fr": "Aucun droit d'auteur n'est cédé sans parler des droits moraux.",
+        "en": "No copyright is transferred without mentioning moral rights."
+      },
+      "attention": {
+        "fr": "Le droit d'auteur est cédé sans parler des droits moraux.",
+        "en": "Copyright is transferred without mentioning moral rights."
+      },
+      "advice": {
+        "fr": "Demandez d'ajouter une phrase sur les droits moraux.",
+        "en": "Ask for a sentence on moral rights to be added."
+      }
+    },
+    "QC-SVC-004": {
+      "ok": {
+        "fr": "Le contrat est signé, ou ne cède rien qui demande une signature.",
+        "en": "The contract is signed, or gives away nothing that needs a signature."
+      },
+      "attention": {
+        "fr": "Le texte ne parle d'aucune signature. Céder ou accorder un droit d'auteur demande un écrit signé.",
+        "en": "The text mentions no signature. Giving or licensing copyright needs a signed document."
+      },
+      "advice": {
+        "fr": "Faites signer le contrat par les deux parties.",
+        "en": "Have both sides sign the contract."
+      }
+    }
+  },
+  "unknown": {}
+}

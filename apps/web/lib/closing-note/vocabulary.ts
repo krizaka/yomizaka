@@ -1,0 +1,30 @@
+/** The closed sets of the closing note: one word for each idea, shared by the builder, the data and the tests. */
+export const LANG = { fr: "fr", en: "en" } as const;
+export type Lang = (typeof LANG)[keyof typeof LANG];
+export const LANGS = Object.values(LANG);
+
+/** How a finding came out in Orazaka's report (the verdicts of the packs). */
+export const VERDICT = { pass: "PASS", fail: "FAIL", undecided: "INSUFFICIENT_EVIDENCE" } as const;
+
+/** How much a failed rule matters, most important first. */
+export const SEVERITY = { blocking: "BLOCKING", major: "MAJOR", advisory: "ADVISORY" } as const;
+export const SEVERITY_ORDER: readonly string[] = [SEVERITY.blocking, SEVERITY.major, SEVERITY.advisory];
+
+/** What the note says about a finding. */
+export const FINDING_STATE = { ok: "ok", attention: "attention", undecided: "undecided" } as const;
+export type FindingState = (typeof FINDING_STATE)[keyof typeof FINDING_STATE];
+
+/** The kinds of check that have a note. */
+export const NOTE_KIND = { compliance: "compliance", authenticity: "authenticity" } as const;
+export type NoteKind = (typeof NOTE_KIND)[keyof typeof NOTE_KIND];
+
+/** Where a sentence of the note comes from: text written with the rules pack, or the report's own words (no plain text prepared). */
+export const NOTE_SOURCE = { pack: "pack", report: "report" } as const;
+export type NoteSource = (typeof NOTE_SOURCE)[keyof typeof NOTE_SOURCE];
+
+/** The levels Orazaka gives a signal of the authenticity check, mildest first. */
+export const SIGNAL_LEVEL = { observed: "observé", unusual: "inhabituel", incoherent: "incohérent" } as const;
+export const SIGNAL_LEVELS_ORDERED = [SIGNAL_LEVEL.observed, SIGNAL_LEVEL.unusual, SIGNAL_LEVEL.incoherent] as const;
+
+/** The check that has no rules pack: the PDF's own traces. */
+export const AUTHENTICITY_PACK = "document-authenticity";

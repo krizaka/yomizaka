@@ -1,0 +1,41 @@
+{
+  "pack": "document-authenticity",
+  "what": {
+    "fr": "ce PDF",
+    "en": "this PDF"
+  },
+  "notChecked": [
+    {
+      "fr": "Nous n'avons pas vérifié que ce que dit le document est vrai, ni qui l'a écrit.",
+      "en": "We did not check that what the document says is true, or who wrote it."
+    }
+  ],
+  "levels": {
+    "observé": {
+      "fr": "remarque simple",
+      "en": "plain remark"
+    },
+    "inhabituel": {
+      "fr": "point inhabituel",
+      "en": "unusual point"
+    },
+    "incohérent": {
+      "fr": "point qui ne colle pas",
+      "en": "point that does not fit"
+    }
+  },
+  "advice": {
+    "observé": {
+      "fr": "Rien à faire : c'est une remarque pour information.",
+      "en": "Nothing to do: this is a remark for your information."
+    },
+    "inhabituel": {
+      "fr": "Demandez une explication à la personne qui vous a remis le document.",
+      "en": "Ask the person who gave you the document for an explanation."
+    },
+    "incohérent": {
+      "fr": "Demandez l'original à la personne qui vous a remis le document, et ne vous fiez pas à cette copie avant.",
+      "en": "Ask the person who gave you the document for the original, and do not rely on this copy before that."
+    }
+  }
+}

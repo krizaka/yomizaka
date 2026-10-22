@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import { PDFDict, PDFDocument, type PDFFont, PDFName, PDFString, rgb, StandardFonts } from "pdf-lib";
 import { z } from "zod";
 
+import { LINE, type LineKind, noteLines } from "./closing-note/render";
 import { type Attestation, fill, REPORT_SCHEMA, type ReportLabels, type ReportPayload, reportPayload, sha256, signedMessage, type Verification, type VerifyFailure } from "./report";
 import { type SigningKey } from "./report-key";
 import { SITE_URL } from "./site";
@@ -20,6 +21,15 @@ import { SITE_URL } from "./site";
  */
 export const ATTESTATION_KEY = "YomizakaAttestation";
 const PAGE = { w: 595.28, h: 841.89, margin: 56 };
+
+/** How each kind of line of the closing note is printed. */
+const NOTE_STYLE: Record<LineKind, { size: number; bold?: boolean; gap?: number }> = {
+  [LINE.title]: { size: 12, bold: true, gap: 2 },
+  [LINE.heading]: { size: 10, bold: true, gap: 1 },
+  [LINE.text]: { size: 9 },
+  [LINE.item]: { size: 9 },
+  [LINE.note]: { size: 9, bold: true, gap: 4 },
+};
 
 type Block = { text: string; size: number; bold?: boolean; mono?: boolean; gap?: number };
 
@@ -56,6 +66,7 @@ export function reportBlocks(payload: ReportPayload, labels: ReportLabels): Bloc
     if (f.citation) add(`${labels.article}: ${f.citation}`, 8);
     add(`${labels.passage}: ${f.quote ? `« ${f.quote} »` : labels.noPassage}`, 8, { gap: 6 });
   }
+  if (payload.note) for (const { kind, text } of noteLines(payload.note)) add(kind === LINE.item ? `- ${text}` : text, NOTE_STYLE[kind].size, NOTE_STYLE[kind]);
   add(labels.guaranteeHeading!, 12, { bold: true, gap: 2 });
   add(labels.guarantees!, 9);
   add(labels.notGuaranteed!, 9);
