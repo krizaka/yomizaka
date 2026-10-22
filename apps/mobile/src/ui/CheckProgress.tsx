@@ -1,19 +1,23 @@
-import { Progress, StepProgress, Txt } from "@krizaka/ui/native";
+import { Stepper, Txt } from "@krizaka/ui/native";
+import { type CheckStep, STEP_STATE } from "@yomizaka/core";
+import { stepperSteps } from "@yomizaka/client";
 import * as React from "react";
 import { View } from "react-native";
 
-import { STAGE, STAGES_IN_ORDER, type Stage, stepOf } from "@yomizaka/client";
-import { useI18n } from "@/i18n";
+import { type MessageKey, useI18n } from "@/i18n";
 
-/** Where a check is: the three steps, and while it runs a bar that says so (the engine gives no percentage, so it does not invent one). */
-export function CheckProgress({ stage, runId }: { stage: Stage; runId: string | null }) {
+/** A check's four steps (the contract every app and the web draw, `checkSteps` of @yomizaka/core) with the Krizaka Stepper; the engine gives no percentage, so none is invented. */
+export function CheckProgress({ steps, runId }: { steps: readonly CheckStep[]; runId: string | null }) {
   const { t } = useI18n();
+  const working = steps.some((step) => step.state === STEP_STATE.current);
   return (
     <View style={{ gap: 12 }}>
-      <StepProgress step={stepOf(stage)} total={STAGES_IN_ORDER.length} label={(step, total) => t("stage.step", { step, total })} />
-      <Txt variant="label">{t(`stage.${stage}`)}</Txt>
-      {stage === STAGE.sending || stage === STAGE.checking ? <Progress value={null} label={t(`stage.${stage}`)} /> : null}
-      {stage === STAGE.checking ? <Txt tone="secondary">{t("result.runningHint")}</Txt> : null}
+      <Stepper
+        aria-label={t("steps.label")}
+        steps={stepperSteps(steps, (key) => t(key as MessageKey))}
+        statusLabels={{ done: t("steps.state.done"), current: t("steps.state.current"), upcoming: t("steps.state.upcoming"), error: t("steps.state.error") }}
+      />
+      {working ? <Txt tone="secondary">{t("result.runningHint")}</Txt> : null}
       {runId ? (
         <Txt tone="muted" variant="mono">
           {t("check.run", { runId })}

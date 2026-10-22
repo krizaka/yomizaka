@@ -1,4 +1,4 @@
-import { createI18n } from "@krizaka/i18n";
+import { createI18n, type MessageKey as KeyOf } from "@krizaka/i18n";
 import { createI18nReact } from "@krizaka/i18n/react";
 import { getLocales } from "expo-localization";
 
@@ -15,6 +15,7 @@ const fr = { ...ownFr, ...sharedFr, document: { ...ownFr.document, ...sharedFr.d
 const en = { ...ownEn, ...sharedEn, document: { ...ownEn.document, ...sharedEn.document }, common: { ...ownEn.common, ...sharedEn.common } };
 
 export type Messages = typeof fr;
+export type MessageKey = KeyOf<Messages>;
 /** French is the reference of the product (Yomizaka is made in Montréal): en.json type-checks against fr.json. */
 export const i18n = createI18n<Messages, Locale>({ fr, en }, { defaultLocale: "fr" });
 export const { I18nProvider, useI18n } = createI18nReact(i18n);

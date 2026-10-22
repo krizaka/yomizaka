@@ -5,13 +5,6 @@
     "tooLarge": "Le fichier est trop volumineux ({megabytes} Mo au maximum).",
     "unsupportedType": "Yomizaka lit les PDF et les fichiers texte."
   },
-  "stage": {
-    "step": "Étape {step} sur {total}",
-    "sending": "Envoi du document",
-    "checking": "Lecture et vérification en cours",
-    "done": "Vérification terminée",
-    "failed": "La vérification a échoué"
-  },
   "check": {
     "compliance": "Conformité au droit québécois",
     "authenticity": "Authenticité du fichier",
@@ -48,5 +41,22 @@
     "error": "Une erreur est survenue. Réessayez dans un instant.",
     "loading": "Chargement…",
     "close": "Fermer"
+  },
+  "steps": {
+    "label": "Progression de la vérification",
+    "working": "En cours…",
+    "read": "Lecture",
+    "preflight": "Contrôle préalable",
+    "report": "Rapport",
+    "rules": {
+      "compliance-check": "Vérification des règles",
+      "document-authenticity": "Examen du fichier"
+    },
+    "state": {
+      "done": "Terminé",
+      "current": "En cours",
+      "upcoming": "À venir",
+      "error": "Échec"
+    }
   }
 }

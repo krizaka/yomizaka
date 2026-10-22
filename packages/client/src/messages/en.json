@@ -5,13 +5,6 @@
     "tooLarge": "The file is too large ({megabytes} MB at most).",
     "unsupportedType": "Yomizaka reads PDFs and text files."
   },
-  "stage": {
-    "step": "Step {step} of {total}",
-    "sending": "Sending the document",
-    "checking": "Reading and checking",
-    "done": "Check finished",
-    "failed": "The check failed"
-  },
   "check": {
     "compliance": "Compliance with Québec law",
     "authenticity": "File authenticity",
@@ -48,5 +41,22 @@
     "error": "Something went wrong. Try again in a moment.",
     "loading": "Loading…",
     "close": "Close"
+  },
+  "steps": {
+    "label": "Check progress",
+    "working": "Working…",
+    "read": "Reading",
+    "preflight": "Pre-check",
+    "report": "Report",
+    "rules": {
+      "compliance-check": "Checking the rules",
+      "document-authenticity": "Examining the file"
+    },
+    "state": {
+      "done": "Done",
+      "current": "In progress",
+      "upcoming": "Upcoming",
+      "error": "Failed"
+    }
   }
 }

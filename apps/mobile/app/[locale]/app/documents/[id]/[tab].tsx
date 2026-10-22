@@ -5,7 +5,8 @@ import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import * as React from "react";
 import { View } from "react-native";
 
-import { availableChecks, CHECK, type DocumentDetail, keys, type Locale, stageOf } from "@yomizaka/client";
+import { availableChecks, CHECK, type DocumentDetail, keys, type Locale } from "@yomizaka/client";
+import { ANALYSIS_STATUS, checkSteps } from "@yomizaka/core";
 import { deviceStore } from "@/data/expo-files";
 import { queries, yomizaka } from "@/config";
 import { routes } from "@/domain/links";
@@ -82,7 +83,7 @@ function Verifications({ document, followed, locale }: { document: DocumentDetai
   });
   return (
     <View style={{ gap: 16 }}>
-      {followed ? <Followed documentId={document.id} analysisId={followed} locale={locale} /> : <EmptyState title={t("document.noChecks")} />}
+      {followed ? <Followed documentId={document.id} analysisId={followed} locale={locale} hasText={document.hasText} /> : <EmptyState title={t("document.noChecks")} />}
       {!document.hasText && document.mimeType === "application/pdf" ? <Txt tone="secondary">{t("verify.noTextLayer")}</Txt> : null}
       {checks.length === 0 ? <Txt tone="secondary">{t("verify.nothingToCheck")}</Txt> : null}
       {checks.map((request) => (
@@ -94,16 +95,16 @@ function Verifications({ document, followed, locale }: { document: DocumentDetai
   );
 }
 
-function Followed({ documentId, analysisId, locale }: { documentId: string; analysisId: string; locale: Locale }) {
+function Followed({ documentId, analysisId, locale, hasText }: { documentId: string; analysisId: string; locale: Locale; hasText: boolean }) {
   const { t } = useI18n();
   const run = useQuery(queries.analysis(documentId, analysisId, locale));
   const share = useMutation({ mutationFn: () => shareSignedReport(documentId, analysisId, locale) });
   const found = run.data?.analysis;
-  const stage = stageOf({ uploading: false, analysis: found ?? null });
+  const steps = checkSteps({ hasText, analysis: found ? { studio: found.studio, status: found.status } : null, studio: found?.studio });
   return (
     <View style={{ gap: 16 }}>
-      <CheckProgress stage={stage} runId={found?.runId ?? null} />
-      {stage === "failed" ? <Txt tone="danger">{found?.error ?? t("result.failedHint")}</Txt> : null}
+      <CheckProgress steps={steps} runId={found?.runId ?? null} />
+      {found && found.status !== ANALYSIS_STATUS.running && found.status !== ANALYSIS_STATUS.succeeded ? <Txt tone="danger">{found?.error ?? t("result.failedHint")}</Txt> : null}
       {run.data?.closingNote ? (
         <>
           <ClosingNote note={run.data.closingNote} />
