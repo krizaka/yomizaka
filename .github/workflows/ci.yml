@@ -24,6 +24,10 @@ jobs:
       container: true      # the image is built on every PR that can break it (Dockerfile, manifests, lockfiles, COPY paths)
       container-dockerfile: deploy/docker/Dockerfile
       container-image: app:ci
+      # What App Platform passes as build arguments: indexing off (a dev build), a placeholder commit.
+      container-build-args: |
+        APP_SEARCH_INDEXING=off
+        APP_COMMIT_SHA=ci
       duplication: true      # jscpd + dup-ratchet.json: duplicated lines may only go down
       package-manager: pnpm
       parallel: true
