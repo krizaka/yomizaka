@@ -27,8 +27,8 @@ importers:
   apps/mobile:
     dependencies:
       '@krizaka/app-client':
-        specifier: file:/private/tmp/claude-501/krizaka-app-client-0.0.0.tgz
-        version: file:../../../../../private/tmp/claude-501/krizaka-app-client-0.0.0.tgz(react@19.3.1)
+        specifier: ^0.1.0
+        version: 0.1.0(react@19.3.1)
       '@krizaka/app-config':
         specifier: ^0.2.0
         version: 0.2.0(react@19.3.1)
@@ -1444,9 +1444,8 @@ packages:
     peerDependencies:
       solid-js: ^1.8.8
 
-  '@krizaka/app-client@file:../../../../../private/tmp/claude-501/krizaka-app-client-0.0.0.tgz':
-    resolution: {integrity: sha512-ZOIutt9ewFJwsLaJ5EWLoU+utDkwmg1UyFrPlDmO1Xu0a2zF7pDbJQbf8TXBPv9/DM77a6gSKjSz3hfsbcEoFA==, tarball: file:../../../../../private/tmp/claude-501/krizaka-app-client-0.0.0.tgz}
-    version: 0.0.0
+  '@krizaka/app-client@0.1.0':
+    resolution: {integrity: sha512-Zuv+CX3iLJQs6375c3h9/OsykL2tGkMaiTp2WZ1lZlaAPUJrHLCBuGsHnbCnu+7baTBQtq+E8Tr7Vh/It8VK8Q==}
     engines: {node: '>=22'}
 
   '@krizaka/app-config@0.2.0':
@@ -8771,7 +8770,7 @@ snapshots:
       '@solid-primitives/utils': 6.4.1(solid-js@1.9.17)
       solid-js: 1.9.17
 
-  '@krizaka/app-client@file:../../../../../private/tmp/claude-501/krizaka-app-client-0.0.0.tgz(react@19.3.1)':
+  '@krizaka/app-client@0.1.0(react@19.3.1)':
     dependencies:
       '@krizaka/discovery': 0.1.0(react@19.3.1)
     transitivePeerDependencies:
