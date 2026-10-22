@@ -28,7 +28,7 @@ export default async function ConfigPage({ params, searchParams }: { params: Pro
         <h1 className="m-0 font-display text-xl font-bold text-fg">{t.title}</h1>
         <p className="m-0 mt-1 max-w-[70ch] text-sm text-fg-secondary">{t.lead}</p>
       </div>
-      <RouteTabs value={group} base={`/${locale}/config`} label={t.title} items={items}>
+      <RouteTabs base={`/${locale}/config`} label={t.title} items={items}>
         <div className="flex flex-col gap-6">
           {isSettingsGroup(group) ? <ScopeBar scope={scope} /> : null}
           {group === CONFIG_PAGE.plans ? <PricesPanel /> : null}

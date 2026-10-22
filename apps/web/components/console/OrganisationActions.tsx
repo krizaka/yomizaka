@@ -71,6 +71,7 @@ function NameDialog({ open, onOpenChange, title, initial = "", color, submit }: 
       <form.Form aria-label={title} className="flex flex-col gap-4">
         <form.TextField name="name" label={say("organisation.name")} maxLength={80} />
         {color === undefined ? null : (
+          // @ephemeral: a field of the tag form, saved with it
           <RadioGroup.Root variant="segmented" label={say("organisation.color")} value={chosen} onValueChange={(v: string) => setChosen(v as TagColor)}>
             {TAG_COLORS.map((c) => (
               <RadioGroup.Segment key={c} value={c}>

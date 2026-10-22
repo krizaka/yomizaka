@@ -129,6 +129,7 @@ function Control({ def, override, effective, say, onSet }: RowProps) {
   if (def.kind === KIND.flag) return <Switch label={say(`adminConfig.settings.${def.key}.label`)} checked={current === true} onCheckedChange={(v: boolean) => void onSet(v)} />;
   if (def.kind === KIND.choice) {
     return (
+      // @ephemeral: the value of a setting being edited (saved by onSet), not a view selection
       <RadioGroup.Root variant="segmented" label={say(`adminConfig.settings.${def.key}.label`)} value={String(current)} onValueChange={(v: string) => void onSet(v)}>
         {(def.choices ?? []).map((c) => (
           <RadioGroup.Segment key={c} value={c}>

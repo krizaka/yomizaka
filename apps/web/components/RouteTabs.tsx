@@ -1,25 +1,28 @@
 "use client";
 
 import { Tabs } from "@krizaka/ui/tabs";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 /**
- * Tabs whose state is the URL (`<base>/<tab>`): back, forward, refresh and a shared link all work. Until Krizaka UI's Tabs
- * route mode ships this pushes the route itself; it is the one place to switch over.
+ * Tabs whose state is the URL (`<base>/<tab>`): each tab is a link, the active one is read from the path (Krizaka UI's
+ * `Tabs.Nav`), so back, forward, refresh and a shared link all work.
  */
-export function RouteTabs({ value, base, label, items, children }: { value: string; base: string; label: string; items: readonly { value: string; label: string }[]; children: ReactNode }) {
-  const router = useRouter();
+export function RouteTabs({ base, label, items, children }: { base: string; label: string; items: readonly { value: string; label: string }[]; children: ReactNode }) {
+  const current = usePathname() ?? base;
   return (
-    <Tabs.Root value={value} onValueChange={(v: string) => router.push(`${base}/${v}`, { scroll: false })}>
-      <Tabs.List aria-label={label}>
+    <>
+      <Tabs.Nav label={label} current={current}>
         {items.map((item) => (
-          <Tabs.Trigger key={item.value} value={item.value}>
-            {item.label}
-          </Tabs.Trigger>
+          <Tabs.NavLink key={item.value} href={`${base}/${item.value}`} exact asChild>
+            <Link href={`${base}/${item.value}`} scroll={false}>
+              {item.label}
+            </Link>
+          </Tabs.NavLink>
         ))}
-      </Tabs.List>
+      </Tabs.Nav>
       <div className="pt-6">{children}</div>
-    </Tabs.Root>
+    </>
   );
 }

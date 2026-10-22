@@ -24,7 +24,7 @@ export function SettingsTabs({ section, children }: { section: SettingsSection; 
   const app = useAppConfig();
   const items = SETTINGS_SECTIONS.filter((s) => s !== "stockage" || app?.features.ownStorage !== false).map((s) => ({ value: s, label: say(`settings.tabs.${s}`) }));
   return (
-    <RouteTabs value={section} base={`/${locale}/app/settings`} label={say("settings.label")} items={items}>
+    <RouteTabs base={`/${locale}/app/settings`} label={say("settings.label")} items={items}>
       {children}
     </RouteTabs>
   );
@@ -95,6 +95,7 @@ export function ProfileSection({ email, name, avatarSeed, locale: current, child
       </section>
 
       <section className="flex flex-col gap-3" aria-label={say("settings.profile.languageLabel")}>
+        {/* @ephemeral: a saved account setting (PATCH /me), not a view selection */}
         <RadioGroup.Root variant="segmented" label={say("settings.profile.languageLabel")} value={current} onValueChange={async (v: string) => { await patch.go({ locale: v }, () => router.replace(`/${v}/app/settings/profil`)); }}>
           {(["fr", "en"] as const).map((l) => (
             <RadioGroup.Segment key={l} value={l}>

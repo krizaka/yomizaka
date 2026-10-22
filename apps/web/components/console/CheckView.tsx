@@ -15,14 +15,14 @@ import { DocumentUploader } from "./DocumentUploader";
 export function CheckView() {
   const { say, locale } = useSay();
   const router = useRouter();
-  const [kind, setKind] = useRouteState(ROUTE_STATES.checkKind.state);
+  const [kind] = useRouteState(ROUTE_STATES.checkKind.state);
   const kindRef = useRef<DocumentKind | "auto">(kind);
   useEffect(() => {
     kindRef.current = kind;
   }, [kind]);
   return (
     <section className="flex max-w-3xl flex-col gap-3" aria-label={say("library.dropTitle")}>
-      <RadioGroup.Root variant="segmented" label={say("library.kindLabel")} value={kind} onValueChange={(v: string) => setKind(v as CheckKind)}>
+      <RadioGroup.Root variant="segmented" label={say("library.kindLabel")} routeKey={ROUTE_STATES.checkKind.state.key} routeValues={CHECK_KINDS} defaultValue={ROUTE_STATES.checkKind.state.fallback}>
         {CHECK_KINDS.map((k) => (
           <RadioGroup.Segment key={k} value={k}>
             {say(`kinds.${k}`)}
