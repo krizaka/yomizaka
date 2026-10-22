@@ -1,0 +1,26 @@
+{
+  "name": "@yomizaka/client",
+  "version": "0.1.0",
+  "private": true,
+  "description": "What the Yomizaka apps (iPhone, Android, Mac) share: the pre-flight, which checks a document can have, the stages of a check, and the typed API calls.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./messages/fr.json": "./src/messages/fr.json",
+    "./messages/en.json": "./src/messages/en.json"
+  },
+  "scripts": {
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@krizaka/query": "^0.2.1",
+    "@yomizaka/core": "workspace:*",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
+  }
+}

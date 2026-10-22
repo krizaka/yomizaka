@@ -14,13 +14,7 @@ export const SEVERITY_ORDER: readonly string[] = [SEVERITY.blocking, SEVERITY.ma
 export const FINDING_STATE = { ok: "ok", attention: "attention", undecided: "undecided" } as const;
 export type FindingState = (typeof FINDING_STATE)[keyof typeof FINDING_STATE];
 
-/** The kinds of check that have a note. */
-export const NOTE_KIND = { compliance: "compliance", authenticity: "authenticity" } as const;
-export type NoteKind = (typeof NOTE_KIND)[keyof typeof NOTE_KIND];
-
-/** Where a sentence of the note comes from: text written with the rules pack, or the report's own words (no plain text prepared). */
-export const NOTE_SOURCE = { pack: "pack", report: "report" } as const;
-export type NoteSource = (typeof NOTE_SOURCE)[keyof typeof NOTE_SOURCE];
+export { NOTE_KIND, NOTE_SOURCE, type NoteKind, type NoteSource } from "@yomizaka/core";
 
 /** The levels Orazaka gives a signal of the authenticity check, mildest first. */
 export const SIGNAL_LEVEL = { observed: "observé", unusual: "inhabituel", incoherent: "incohérent" } as const;

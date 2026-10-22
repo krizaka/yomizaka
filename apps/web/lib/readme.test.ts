@@ -26,8 +26,10 @@ describe("README", () => {
   it("links only files that exist", () => {
     for (const [, path] of readme.matchAll(/\]\((?!https?:|#)([^)#]+)\)/g)) expect(existsSync(join(root, path!)), path).toBe(true);
   });
-  it("says that the Dev preview has no mobile app", () => {
-    expect(readme).toMatch(/no mobile app/i);
-    expect(readFileSync(join(root, "AGENTS.md"), "utf8")).toMatch(/no mobile app/i);
+  it("says that the Dev preview is web only, and where the apps live", () => {
+    for (const text of [readme, readFileSync(join(root, "AGENTS.md"), "utf8")]) {
+      expect(text).toMatch(/web only/i);
+      expect(text).toContain("apps/mobile");
+    }
   });
 });

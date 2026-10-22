@@ -1,0 +1,75 @@
+{
+  "name": "@yomizaka/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Yomizaka for iOS and Android (Expo): check a document, read the result, keep a library, with the files on the device.",
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start",
+    "ios": "expo run:ios",
+    "android": "expo run:android",
+    "lint": "eslint . --max-warnings 0",
+    "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "export": "expo export --platform ios --platform android"
+  },
+  "dependencies": {
+    "@krizaka/app-client": "^0.1.0",
+    "@krizaka/app-config": "^0.2.0",
+    "@krizaka/discovery": "^0.1.0",
+    "@krizaka/i18n": "^0.2.1",
+    "@krizaka/icons": "^0.7.0",
+    "@krizaka/query": "^0.2.1",
+    "@krizaka/tokens": "^3.45.0",
+    "@krizaka/ui": "^3.45.0",
+    "@shopify/flash-list": "2.3.2",
+    "@yomizaka/client": "workspace:*",
+    "@yomizaka/core": "workspace:*",
+    "expo": "~58.0.17",
+    "expo-constants": "~58.0.13",
+    "expo-document-picker": "~58.0.4",
+    "expo-file-system": "~58.0.10",
+    "expo-image-picker": "~58.0.10",
+    "expo-linking": "~58.0.14",
+    "expo-localization": "~58.0.5",
+    "expo-print": "~58.0.7",
+    "expo-router": "^58.0.25",
+    "expo-secure-store": "~58.0.2",
+    "expo-sharing": "~58.0.20",
+    "expo-status-bar": "~58.0.4",
+    "react": "^19.3.1",
+    "react-native": "^0.88.0",
+    "react-native-safe-area-context": "~5.10.1",
+    "react-native-screens": "~4.30.0",
+    "react-native-svg": "15.16.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@testing-library/react-native": "^14.1.0",
+    "@types/jest": "^30.0.0",
+    "@types/react": "^19.3.0",
+    "eslint": "^9.39.5",
+    "jest": "^30.5.2",
+    "jest-expo": "~58.0.12",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.0"
+  },
+  "jest": {
+    "preset": "jest-expo",
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1"
+    },
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/ios/",
+      "/android/"
+    ]
+  },
+  "expo": {
+    "install": {
+      "exclude": [
+        "react"
+      ]
+    }
+  }
+}

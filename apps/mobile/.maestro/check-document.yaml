@@ -1,0 +1,43 @@
+# The core journey on a simulator: sign in, pick a PDF in Files, the check runs, the result and its closing note.
+# maestro test -e PERSONA_EMAIL=… -e PERSONA_PASSWORD=… .maestro/check-document.yaml   (the persona's, never a QA account)
+appId: com.krizaka.yomizaka
+---
+- launchApp:
+    clearState: true
+# the Keychain survives a reinstall: sign in only when the sign-in screen is there
+- runFlow:
+    when:
+      visible:
+        id: email
+    commands:
+      - tapOn:
+          id: email
+      - inputText: ${PERSONA_EMAIL}
+      - hideKeyboard
+      - tapOn:
+          id: password
+      - inputText: ${PERSONA_PASSWORD}
+      - hideKeyboard
+      - tapOn:
+          id: submit
+- assertVisible: "Vérifier un document"
+- tapOn: "Choisir un PDF"
+# the system picker is a remote view: Maestro taps it by position (the Browse tab)
+- tapOn:
+    point: "71%,94%"
+- tapOn:
+    point: "71%,94%"
+- waitForAnimationToEnd
+- tapOn:
+    point: "29%,37%"
+- waitForAnimationToEnd
+- tapOn:
+    point: "18%,29%"
+- extendedWaitUntil:
+    visible: "Vérification terminée"
+    timeout: 120000
+- scrollUntilVisible:
+    element: "Partager le rapport signé (PDF)"
+- tapOn: "Partager le rapport signé (PDF)"
+- waitForAnimationToEnd
+- takeScreenshot: share-sheet
