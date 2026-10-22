@@ -8,7 +8,7 @@ import { Dialog } from "@krizaka/ui/dialog";
 import { Field, Input } from "@krizaka/ui/field";
 import { createKrizakaForm } from "@krizaka/ui/form";
 import { SettingsLayout, SettingsRow, SettingsSection, useSaveStatus } from "@krizaka/ui/settings-layout";
-import type { Audience } from "@yomizaka/core";
+import { type Audience, AVATAR_SEEDS } from "@yomizaka/core";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
@@ -64,7 +64,6 @@ function useCall<T>(run: (input: T) => Promise<unknown>) {
 
 // ── profile ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-export const AVATAR_SEEDS = ["v1", "v2", "v3", "v4", "v5", "v6"] as const;
 export const LANGUAGES = ["fr", "en"] as const;
 
 /** What the profile section edits: saved together, with one button. */
