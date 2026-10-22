@@ -140,7 +140,17 @@ export async function checkUpload(file: { name: string; type: string; size: numb
 }
 
 export const titleOf = (filename: string) => filename.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim().slice(0, 200) || "Document";
-export const safeFilename = (name: string) => name.replace(/[^\p{L}\p{N}._ -]+/gu, "_").slice(0, 200) || "document";
+/** NFC first (a macOS name arrives decomposed: the accent is a combining mark), then keep letters, marks, digits and apostrophes. */
+/** A filename that says nothing (scan, IMG_2041, a hash): the title then comes from the (normalised) first line of the text. */
+const GENERIC_NAME = /^(document|doc|scan|scanner|image|img|photo|file|fichier|untitled|sans titre|download|télécharg\w*)?[\s_-]*[\d\s_()-]*$|^[a-f0-9-]{16,}$/i;
+export function titleFor(filename: string, text: string): string {
+  const fromName = titleOf(filename);
+  if (!GENERIC_NAME.test(fromName)) return fromName;
+  const first = text.split("\n").map((l) => l.trim()).find((l) => l.length >= 4);
+  return first ? first.slice(0, 120) : fromName;
+}
+
+export const safeFilename = (name: string) => name.normalize("NFC").replace(/[^\p{L}\p{M}\p{N}._ '’-]+/gu, "_").slice(0, 200) || "document";
 
 export async function storeDocument(ownerId: string, file: { name: string; type: string; size: number }, bytes: Uint8Array, kind: DocumentKind): Promise<{ summary: DocumentSummary; duplicate: boolean }> {
   const { mimeType, sha256 } = await checkUpload(file, bytes);
@@ -158,7 +168,7 @@ export async function storeDocument(ownerId: string, file: { name: string; type:
        INSERT INTO documents (owner_id, title, filename, mime_type, kind, size_bytes, sha256, pages, content, text)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *)
      SELECT ${SUMMARY_COLUMNS} FROM d`,
-    [ownerId, titleOf(filename), filename, mimeType, kind, bytes.length, sha256, read.pages, Buffer.from(bytes), read.text],
+    [ownerId, titleFor(filename, read.text), filename, mimeType, kind, bytes.length, sha256, read.pages, Buffer.from(bytes), read.text],
   );
   return { summary: summary(row!), duplicate: false };
 }

@@ -11,6 +11,12 @@ export interface ReadText {
 /** Collapses the PDF's layout whitespace, keeps line breaks (a clause stays on its line). */
 export function normaliseText(raw: string): string {
   return raw
+    // Unicode NFC: a combining accent joins its letter (a PDF's text layer often has "e" + U+0301). œ and æ are letters and stay.
+    .normalize("NFC")
+    // Presentation ligatures (ﬁ ﬂ ﬀ ﬃ ﬄ…) are glyph shortcuts: as letters the text can be searched and quoted.
+    .replace(/[\uFB00-\uFB06]/g, (c) => c.normalize("NFKC"))
+    // Zero-width characters split words invisibly.
+    .replace(/\u200B|\u200C|\u200D|\u2060|\uFEFF/g, "")
     .replace(/\r\n?/g, "\n")
     .replace(/[\t\f\v\u00a0]+/g, " ")
     .replace(/ {2,}/g, " ")
