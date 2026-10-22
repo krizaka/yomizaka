@@ -16,9 +16,11 @@ import { useRouter } from "next/navigation";
 import { type ComponentProps, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
+import { ClosingNoteView } from "@/components/ClosingNoteView";
 import { DocumentInsight } from "@/components/console/DocumentInsight";
 import { Paywall } from "@/components/console/Paywall";
 import { errorKey } from "@/lib/client";
+import { buildNote, noteInputOf } from "@/lib/closing-note/build";
 import { type DocumentTab } from "@/lib/console-nav";
 import { useSay } from "@/lib/i18n-client";
 import { firstCheck, wordingOf } from "@/lib/perspective-defaults";
@@ -252,6 +254,7 @@ function AnalysisCard({ documentId, initial, selection }: { documentId: string; 
       {a.report && "findings" in a.report ? <ComplianceFindings report={a.report} runId={a.runId} selection={selection} /> : null}
       {a.status === "succeeded" && a.studio === "compliance-check" && a.report && "findings" in a.report ? <ReportExport documentId={documentId} analysisId={a.id} /> : null}
       {a.report && "signals" in a.report ? <AuthenticitySignals report={a.report} /> : null}
+      {a.status === "succeeded" && a.report ? <ClosingNoteView note={buildNote(noteInputOf(a.report), locale)} /> : null}
       {a.report ? <p className="text-xs text-fg-muted">{say("analysis.language")}</p> : null}
     </Card.Root>
   );

@@ -9,6 +9,7 @@ import { createKrizakaForm } from "@krizaka/ui/form";
 import { useState } from "react";
 import { z } from "zod";
 
+import { ClosingNoteView } from "@/components/ClosingNoteView";
 import type { Locale } from "@/lib/i18n";
 import type { Verification } from "@/lib/report";
 
@@ -131,6 +132,7 @@ function VerifyResult({ result, labels }: { result: Verification; labels: Verify
           { term: labels.facts.findings, details: <Badge tone="neutral">{payload.findings.length}</Badge> },
         ]}
       />
+      {payload.note ? <ClosingNoteView note={payload.note} /> : null}
     </Card.Root>
   );
 }

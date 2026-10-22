@@ -1,0 +1,208 @@
+{
+  "title": {
+    "fr": "Ce que nous avons vérifié",
+    "en": "What we checked"
+  },
+  "headings": {
+    "what": {
+      "fr": "Ce qui a été vérifié",
+      "en": "What was checked"
+    },
+    "how": {
+      "fr": "Comment",
+      "en": "How"
+    },
+    "notChecked": {
+      "fr": "Ce qui n'a pas été vérifié",
+      "en": "What was not checked"
+    },
+    "result": {
+      "fr": "Le résultat",
+      "en": "The result"
+    },
+    "next": {
+      "fr": "Que faire maintenant",
+      "en": "What to do now"
+    },
+    "decides": {
+      "fr": "Qui décide",
+      "en": "Who decides"
+    }
+  },
+  "whatCompliance": {
+    "fr": "Nous avons lu {what} puis comparé son contenu à {count} {scope}, en vigueur le {date}.",
+    "en": "We read {what} and compared it with {count} {scope}, in force on {date}."
+  },
+  "whatComplianceOne": {
+    "fr": "Nous avons lu {what} puis comparé son contenu à 1 règle ({scope}), en vigueur le {date}.",
+    "en": "We read {what} and compared it with 1 rule ({scope}), in force on {date}."
+  },
+  "whatAuthenticity": {
+    "fr": "Nous avons examiné la façon dont {what} a été créé et modifié : le logiciel qui l'a produit, les dates, et les changements faits après coup.",
+    "en": "We looked at how {what} was created and changed: the software that made it, the dates, and any changes made afterwards."
+  },
+  "how": [
+    {
+      "fr": "Chaque règle compare un passage précis de votre document au texte de loi. Nous citons le passage exact.",
+      "en": "Each rule compares a precise passage of your document with the text of the law. We quote the exact passage."
+    },
+    {
+      "fr": "Une règle est respectée quand le document dit ce qu'il faut. Elle demande votre attention quand une clause pose problème.",
+      "en": "A rule is met when the document says what it should. It needs your attention when a clause is a problem."
+    }
+  ],
+  "howModel": {
+    "fr": "Pour certaines règles, un modèle de langage aide à lire le texte. Le rapport complet indique la méthode utilisée pour chaque règle.",
+    "en": "For some rules, a language model helps to read the text. The full report says which method was used for each rule."
+  },
+  "howAuthenticity": [
+    {
+      "fr": "Nous regardons les traces laissées dans le fichier PDF, comme le logiciel utilisé et les dates.",
+      "en": "We look at the traces left in the PDF file, such as the software used and the dates."
+    },
+    {
+      "fr": "Chaque point relevé est classé : remarque simple, point inhabituel, ou point qui ne colle pas.",
+      "en": "Each point found is sorted: plain remark, unusual point, or point that does not fit."
+    }
+  ],
+  "nothingToDo": {
+    "fr": "Rien à signaler sur ces règles.",
+    "en": "Nothing to report on these rules."
+  },
+  "adviceFallback": {
+    "fr": "Demandez conseil au sujet de ce point : {title}.",
+    "en": "Ask for advice about this point: {title}."
+  },
+  "adviceUndecided": {
+    "fr": "Relisez vous-même ce point : {title}.",
+    "en": "Read this point again yourself: {title}."
+  },
+  "disclaimer": {
+    "fr": "Vérification informative : ce n'est pas un avis juridique. Pour une décision, consultez un professionnel.",
+    "en": "This check is for information only: it is not legal advice. For a decision, consult a professional."
+  },
+  "decides": {
+    "fr": "C'est vous qui décidez. Cette vérification vous aide à lire le document : elle ne décide rien à votre place.",
+    "en": "You decide. This check helps you read the document: it decides nothing for you."
+  },
+  "reviewPending": {
+    "fr": "Les règles de ce contrôle attendent encore la relecture d'une avocate ou d'un avocat.",
+    "en": "The rules behind this check are still waiting to be reviewed by a lawyer."
+  },
+  "unknownPack": {
+    "fr": "Nous avons lu {what} avec les règles « {pack} » et nous n'avons pas de texte simple pour ce contrôle.",
+    "en": "We read {what} with the “{pack}” rules, and we have no plain text for this check."
+  },
+  "source": {
+    "pack": {
+      "fr": "Texte simple écrit avec les règles.",
+      "en": "Plain text written with the rules."
+    },
+    "report": {
+      "fr": "Texte tiré du rapport, sans texte simple prévu.",
+      "en": "Text taken from the report, with no plain text prepared."
+    }
+  },
+  "dates": {
+    "locale": {
+      "fr": "fr-CA",
+      "en": "en-CA"
+    }
+  },
+  "undecidedListOne": {
+    "fr": "Pour 1 règle, le document ne permettait pas de trancher : {titles}.",
+    "en": "For 1 rule, the document did not allow a decision: {titles}."
+  },
+  "undecidedListMany": {
+    "fr": "Pour {count} règles, le document ne permettait pas de trancher : {titles}.",
+    "en": "For {count} rules, the document did not allow a decision: {titles}."
+  },
+  "resultLead": {
+    "fr": "Résultat : ",
+    "en": "Result: "
+  },
+  "okOne": {
+    "fr": "1 règle respectée",
+    "en": "1 rule met"
+  },
+  "okMany": {
+    "fr": "{count} règles respectées",
+    "en": "{count} rules met"
+  },
+  "attentionOne": {
+    "fr": "1 demande votre attention",
+    "en": "1 needs your attention"
+  },
+  "attentionMany": {
+    "fr": "{count} demandent votre attention",
+    "en": "{count} need your attention"
+  },
+  "blockingOne": {
+    "fr": "dont 1 importante",
+    "en": "1 of them important"
+  },
+  "blockingMany": {
+    "fr": "dont {count} importantes",
+    "en": "{count} of them important"
+  },
+  "undecidedOne": {
+    "fr": "1 impossible à trancher",
+    "en": "1 impossible to decide"
+  },
+  "undecidedMany": {
+    "fr": "{count} impossibles à trancher",
+    "en": "{count} impossible to decide"
+  },
+  "allFineOne": {
+    "fr": "Résultat : la règle vérifiée est respectée.",
+    "en": "Result: the rule checked is met."
+  },
+  "allFineMany": {
+    "fr": "Résultat : les {count} règles vérifiées sont respectées.",
+    "en": "Result: all {count} rules checked are met."
+  },
+  "observéOne": {
+    "fr": "1 remarque simple",
+    "en": "1 plain remark"
+  },
+  "observéMany": {
+    "fr": "{count} remarques simples",
+    "en": "{count} plain remarks"
+  },
+  "inhabituelOne": {
+    "fr": "1 point inhabituel",
+    "en": "1 unusual point"
+  },
+  "inhabituelMany": {
+    "fr": "{count} points inhabituels",
+    "en": "{count} unusual points"
+  },
+  "incohérentOne": {
+    "fr": "1 point qui ne colle pas",
+    "en": "1 point that does not fit"
+  },
+  "incohérentMany": {
+    "fr": "{count} points qui ne collent pas",
+    "en": "{count} points that do not fit"
+  },
+  "authenticityNone": {
+    "fr": "Résultat : aucun point relevé.",
+    "en": "Result: no point found."
+  },
+  "whatFallback": {
+    "fr": "votre document",
+    "en": "your document"
+  },
+  "signalsOne": {
+    "fr": "1 point relevé",
+    "en": "1 point found"
+  },
+  "signalsMany": {
+    "fr": "{count} points relevés",
+    "en": "{count} points found"
+  },
+  "importantTag": {
+    "fr": "Important : ",
+    "en": "Important: "
+  }
+}

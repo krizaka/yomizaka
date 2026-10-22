@@ -1,0 +1,136 @@
+{
+  "pack": "qc-invoice",
+  "what": {
+    "fr": "votre facture",
+    "en": "your invoice"
+  },
+  "scope": {
+    "fr": "règles québécoises sur les mentions d'une facture",
+    "en": "Québec rules on what an invoice must show"
+  },
+  "notChecked": [
+    {
+      "fr": "Nous n'avons pas vérifié que les montants sont justes, ni que le fournisseur existe vraiment : seulement que les mentions attendues sont là.",
+      "en": "We did not check that the amounts are right, or that the supplier really exists: only that the expected details are there."
+    },
+    {
+      "fr": "Les numéros de taxes sont vérifiés sur leur forme, pas auprès des gouvernements.",
+      "en": "Tax numbers are checked for their shape, not with the governments."
+    }
+  ],
+  "rules": {
+    "QC-INV-001": {
+      "ok": {
+        "fr": "La facture porte une date.",
+        "en": "The invoice has a date."
+      },
+      "attention": {
+        "fr": "La facture n'a pas de date.",
+        "en": "The invoice has no date."
+      },
+      "advice": {
+        "fr": "Demandez une facture datée.",
+        "en": "Ask for a dated invoice."
+      }
+    },
+    "QC-INV-002": {
+      "ok": {
+        "fr": "Le total à payer est écrit en chiffres.",
+        "en": "The total to pay is written in figures."
+      },
+      "attention": {
+        "fr": "Le total à payer n'est pas clairement indiqué.",
+        "en": "The total to pay is not clearly stated."
+      },
+      "advice": {
+        "fr": "Demandez une facture qui indique le total à payer.",
+        "en": "Ask for an invoice that shows the total to pay."
+      }
+    },
+    "QC-INV-003": {
+      "ok": {
+        "fr": "Le numéro de TPS (la taxe fédérale) du fournisseur figure sur la facture.",
+        "en": "The supplier's GST number (the federal tax) is on the invoice."
+      },
+      "attention": {
+        "fr": "Le numéro de TPS (la taxe fédérale) du fournisseur est absent.",
+        "en": "The supplier's GST number (the federal tax) is missing."
+      },
+      "advice": {
+        "fr": "Demandez ce numéro au fournisseur : il sert à récupérer la taxe payée.",
+        "en": "Ask the supplier for this number: it is needed to claim back the tax paid."
+      }
+    },
+    "QC-INV-004": {
+      "ok": {
+        "fr": "Le numéro de la taxe fédérale (TPS) est bien écrit.",
+        "en": "The federal tax (GST) number is written correctly."
+      },
+      "attention": {
+        "fr": "Le numéro de la taxe fédérale (TPS) semble mal écrit.",
+        "en": "The federal tax (GST) number looks wrong."
+      },
+      "advice": {
+        "fr": "Faites confirmer le numéro de taxe fédérale (TPS) par le fournisseur.",
+        "en": "Ask the supplier to confirm the federal tax (GST) number."
+      }
+    },
+    "QC-INV-005": {
+      "ok": {
+        "fr": "Le numéro de la taxe du Québec (TVQ) est bien écrit.",
+        "en": "The Québec tax (QST) number is written correctly."
+      },
+      "attention": {
+        "fr": "Le numéro de la taxe du Québec (TVQ) semble mal écrit.",
+        "en": "The Québec tax (QST) number looks wrong."
+      },
+      "advice": {
+        "fr": "Faites confirmer le numéro de taxe du Québec (TVQ) par le fournisseur.",
+        "en": "Ask the supplier to confirm the Québec tax (QST) number."
+      }
+    },
+    "QC-INV-006": {
+      "ok": {
+        "fr": "Le numéro de TVQ (la taxe du Québec) du fournisseur figure sur la facture.",
+        "en": "The supplier's QST number (Québec's tax) is on the invoice."
+      },
+      "attention": {
+        "fr": "Le numéro de TVQ (la taxe du Québec) du fournisseur est absent.",
+        "en": "The supplier's QST number (Québec's tax) is missing."
+      },
+      "advice": {
+        "fr": "Demandez ce numéro au fournisseur.",
+        "en": "Ask the supplier for this number."
+      }
+    },
+    "QC-INV-007": {
+      "ok": {
+        "fr": "Les taxes sont indiquées, ou dites incluses.",
+        "en": "The taxes are shown, or said to be included."
+      },
+      "attention": {
+        "fr": "Les taxes ne sont ni indiquées ni dites incluses.",
+        "en": "The taxes are neither shown nor said to be included."
+      },
+      "advice": {
+        "fr": "Demandez une facture qui montre les taxes, ou qui dit qu'elles sont incluses.",
+        "en": "Ask for an invoice that shows the taxes, or says they are included."
+      }
+    },
+    "QC-INV-008": {
+      "ok": {
+        "fr": "Les conditions de paiement sont indiquées.",
+        "en": "The payment terms are stated."
+      },
+      "attention": {
+        "fr": "Les conditions de paiement ne sont pas indiquées.",
+        "en": "The payment terms are not stated."
+      },
+      "advice": {
+        "fr": "Demandez au fournisseur d'ajouter quand et comment payer.",
+        "en": "Ask the supplier to add when and how to pay."
+      }
+    }
+  },
+  "unknown": {}
+}

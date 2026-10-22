@@ -24,6 +24,9 @@ import { SITE_URL } from "./site";
 
 export const REPORT_SCHEMA = "yomizaka.report/1";
 
+import { buildNote, closingNote, noteInputOf } from "./closing-note/build";
+import { LINE, noteLines } from "./closing-note/render";
+
 const payloadFinding = z.object({
   ruleId: z.string(),
   title: z.string().nullable(),
@@ -55,6 +58,8 @@ export const reportPayload = z.object({
   }),
   summary: z.object({ rulesEvaluated: z.number(), blockingFailures: z.number(), byVerdict: z.record(z.string(), z.number()) }),
   findings: z.array(payloadFinding),
+  /** « Ce que nous avons vérifié »: the closing note in plain words, signed with the rest (absent from reports issued before it existed). */
+  note: closingNote.optional(),
   /** Set only by a demo key: a specimen is never an attestation, and verification rejects it (ADR-0002). */
   specimen: z.literal(true).optional(),
 });
@@ -92,6 +97,7 @@ export function buildPayload(doc: Pick<DocumentDetail, "sha256" | "filename" | "
       finishedAt: analysis.finishedAt,
     },
     summary: { rulesEvaluated: report.summary?.rulesEvaluated ?? report.findings.length, blockingFailures: report.summary?.blockingFailures ?? report.findings.filter((f) => f.verdict === "FAIL" && f.severity === "BLOCKING").length, byVerdict },
+    note: buildNote(noteInputOf(report), lang),
     findings: report.findings.map((f) => ({
       ruleId: f.ruleId,
       title: f.title ?? null,
@@ -125,6 +131,27 @@ export const ATTESTATION_MARKER = "<!--yomizaka-attestation-->";
 const BLOCK = /<script type="application\/json" id="yomizaka-attestation">([^<]*)<\/script>/;
 
 const CSS = `:root{color-scheme:light}*{box-sizing:border-box}body{margin:0 auto;max-width:52rem;padding:2rem 1.25rem;font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;color:#14161f;background:#fff}h1{font-size:1.6rem;margin:.2rem 0 .4rem}h2{font-size:1.1rem;margin:2rem 0 .6rem;border-bottom:1px solid #d6d9e2;padding-bottom:.3rem}.eyebrow{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:#4b5163}dl{display:grid;grid-template-columns:max-content 1fr;gap:.25rem 1rem;margin:0}dt{color:#4b5163}dd{margin:0;overflow-wrap:anywhere}code{font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace}.note{border:1px solid #d6d9e2;border-left:4px solid #6b5bd2;background:#f6f5fd;padding:.7rem .9rem;border-radius:6px;margin:1rem 0}.finding{border:1px solid #d6d9e2;border-radius:8px;padding:.8rem 1rem;margin:.7rem 0;break-inside:avoid}.finding h3{font-size:1rem;margin:0 0 .3rem;display:flex;justify-content:space-between;gap:1rem}.verdict{font-size:.8rem;font-weight:700;padding:.1rem .5rem;border-radius:99px;border:1px solid currentColor;white-space:nowrap}.v-PASS{color:#0b6b3a}.v-FAIL{color:#a1182b}.v-INSUFFICIENT_EVIDENCE{color:#8a5a00}blockquote{margin:.5rem 0;padding:.2rem .8rem;border-left:3px solid #b8bccb;color:#2b2f3d;font-style:italic}footer{margin-top:2.5rem;font-size:.85rem;color:#4b5163}@media print{body{padding:0}a{color:inherit}}`;
+
+/** The closing note as HTML: the same lines the PDF prints. */
+const NOTE_TAG = { [LINE.title]: "h2", [LINE.heading]: "h3", [LINE.text]: "p", [LINE.item]: "li", [LINE.note]: "p" } as const;
+function renderNote(note: NonNullable<ReportPayload["note"]>): string {
+  const out: string[] = [];
+  let list = false;
+  for (const { kind, text } of noteLines(note)) {
+    if (list && kind !== LINE.item) {
+      out.push("</ul>");
+      list = false;
+    }
+    if (kind === LINE.item && !list) {
+      out.push("<ul>");
+      list = true;
+    }
+    const tag = NOTE_TAG[kind];
+    out.push(`<${tag}${kind === LINE.note ? ' class="note"' : ""}>${esc(text)}</${tag}>`);
+  }
+  if (list) out.push("</ul>");
+  return `<section class="closing-note">\n${out.join("\n")}\n</section>`;
+}
 
 /** The report's HTML with the attestation marker where its block goes. Pure: payload and labels in, text out. */
 export function renderBody(payload: ReportPayload, labels: ReportLabels): string {
@@ -160,6 +187,7 @@ ${c.rulesetId === "qc-service-contract" ? `<p class="note">${esc(labels.notCheck
 <dl>${row(labels.engine, `${esc(c.engine)} · ${esc(c.studio)}${c.studioVersion ? ` ${esc(c.studioVersion)}` : ""}`)}${row(labels.runId, `<code>${esc(c.runId)}</code>`)}${row(labels.jurisdiction, esc(c.jurisdiction))}${row(labels.asOf, esc(c.asOf))}${row(labels.ruleset, `${esc(c.rulesetId)} · ${esc(c.rulesetVersion)}${c.rulesetRevision !== null ? ` (rev. ${c.rulesetRevision})` : ""}`)}${row(labels.model, esc(labels.modelValue))}${row(labels.started, esc(c.startedAt))}${row(labels.finished, esc(c.finishedAt))}</dl>
 <h2>${esc(fill(labels.findingsHeading, { count: payload.findings.length }))}</h2>
 ${findings}
+${payload.note ? renderNote(payload.note) : ""}
 <h2>${esc(labels.guaranteeHeading)}</h2>
 <p>${esc(labels.guarantees)}</p>
 <p>${esc(labels.notGuaranteed)}</p>
