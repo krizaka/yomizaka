@@ -1,3 +1,5 @@
+import type { CloudOwner } from "@yomizaka/core";
+
 import type { DocumentStore } from "./port";
 import { assertKey, StorageError } from "./port";
 import { type Credentials, hashPayload, presignGet, signRequest } from "./sigv4";
@@ -14,7 +16,7 @@ export interface S3Config {
   /** Whether the region is in Canada (read from lib/storage/config.ts's table, or said by the workspace). */
   residency: "canada" | "elsewhere" | "unknown";
   /** Krizaka's own bucket (default) or a workspace's (bring your own cloud). */
-  owner?: "krizaka" | "workspace";
+  owner?: CloudOwner;
   /** Server-side encryption asked from the provider (`AES256`), in addition to ours. */
   serverSideEncryption?: boolean;
   fetch?: typeof fetch;

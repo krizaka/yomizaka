@@ -1,3 +1,4 @@
+import type { CloudOwner, StorageKind } from "@yomizaka/core";
 import type { QueryResultRow } from "pg";
 
 import { refuse } from "../http";
@@ -5,8 +6,7 @@ import { EXTERNAL, objectKey } from "../retention";
 import type { DocumentStore } from "../storage/port";
 
 /** The store that holds a document: Krizaka's configured one, or the owner's own cloud. */
-export type StoresOf = (owner: "krizaka" | "workspace") => DocumentStore | null;
-import type { StoredKind } from "../storage/where";
+export type StoresOf = (owner: CloudOwner) => DocumentStore | null;
 import type { AccountService } from "./port";
 
 /**
@@ -62,7 +62,7 @@ export async function exportData(q: Query, accountId: string, stores: StoresOf, 
     return map;
   };
   const [colTags, folderTags, docTags] = await Promise.all([tagged("collection_tags", "collection_id"), tagged("folder_tags", "folder_id"), tagged("document_tags", "document_id")]);
-  const docs = await q<{ id: string; title: string; filename: string; mime_type: string; kind: string; size_bytes: number; sha256: string; pages: number | null; created_at: Date; storage: StoredKind; storage_owner: "krizaka" | "workspace"; retain_until: Date | null; collection_id: string | null; folder_id: string | null; text: string; content: Buffer }>(
+  const docs = await q<{ id: string; title: string; filename: string; mime_type: string; kind: string; size_bytes: number; sha256: string; pages: number | null; created_at: Date; storage: StorageKind; storage_owner: CloudOwner; retain_until: Date | null; collection_id: string | null; folder_id: string | null; text: string; content: Buffer }>(
     "SELECT id, title, filename, mime_type, kind, size_bytes, sha256, pages, created_at, storage, storage_owner, retain_until, collection_id, folder_id, text, content FROM documents WHERE owner_id = $1 ORDER BY created_at",
     [accountId],
   );
@@ -103,7 +103,7 @@ export async function eraseAccount(deps: { query: Query; stores: StoresOf; accou
   const [a] = await q<{ plan: string; subscription_status: string | null }>("SELECT plan, subscription_status FROM accounts WHERE id = $1", [accountId]);
   if (!a) throw refuse(404, "NOT_FOUND", "No such account");
   if (a.plan === "PRO" && (a.subscription_status === "active" || a.subscription_status === "trialing")) throw refuse(409, "CANCEL_SUBSCRIPTION_FIRST", "Cancel the subscription first");
-  const kept = await q<{ id: string; mime_type: string; storage: StoredKind; storage_owner: "krizaka" | "workspace" }>("SELECT id, mime_type, storage, storage_owner FROM documents WHERE owner_id = $1", [accountId]);
+  const kept = await q<{ id: string; mime_type: string; storage: StorageKind; storage_owner: CloudOwner }>("SELECT id, mime_type, storage, storage_owner FROM documents WHERE owner_id = $1", [accountId]);
   for (const d of kept) {
     if (!EXTERNAL.has(d.storage)) continue;
     const store = deps.stores(d.storage_owner);

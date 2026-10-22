@@ -275,14 +275,39 @@ export const documentInsight = z.object({
 });
 export type DocumentInsight = z.infer<typeof documentInsight>;
 
+/** The values of a closed set, as the non-empty tuple `z.enum` wants. */
+const valuesOf = <T extends Record<string, string>>(set: T) => Object.values(set) as [T[keyof T], ...T[keyof T][]];
+
+/** Where a document lives: the DocumentStore adapters, the database (the home of a document kept with Krizaka) and the person's device. */
+export const STORAGE_KIND = { none: "none", database: "database", bunny: "bunny", s3: "s3", device: "device" } as const;
+export type StorageKind = (typeof STORAGE_KIND)[keyof typeof STORAGE_KIND];
+
+/** Whose storage it is: Krizaka's, the workspace's own cloud, or the person's device. */
+export const STORAGE_OWNER = { krizaka: "krizaka", workspace: "workspace", device: "device" } as const;
+export type StorageOwner = (typeof STORAGE_OWNER)[keyof typeof STORAGE_OWNER];
+/** The owners of a store a server talks to (a device is never one). */
+export type CloudOwner = Exclude<StorageOwner, "device">;
+
+export const STORAGE_RESIDENCY = { canada: "canada", elsewhere: "elsewhere", unknown: "unknown", device: "device" } as const;
+export type StorageResidency = (typeof STORAGE_RESIDENCY)[keyof typeof STORAGE_RESIDENCY];
+
+/** The adapters a deployment can be configured with (`MEDIA_DOCUMENTS_PROVIDER`): nothing kept, or an external store. */
+export const STORAGE_PROVIDERS = [STORAGE_KIND.none, STORAGE_KIND.bunny, STORAGE_KIND.s3] as const;
+export type StorageProvider = (typeof STORAGE_PROVIDERS)[number];
+
+/** What a person chooses for their kept documents: nothing, Krizaka's store, or their own S3. */
+export const STORAGE_MODE = { none: "none", krizaka: "krizaka", s3: "s3" } as const;
+export type StorageMode = (typeof STORAGE_MODE)[keyof typeof STORAGE_MODE];
+export const STORAGE_MODES = valuesOf(STORAGE_MODE);
+
 /** Where a document lives (the DocumentStore adapter that holds it), as the info panel says it (apps/web/lib/storage). */
 export const storageDescriptor = z.object({
-  kind: z.enum(["none", "database", "bunny", "s3", "device"]),
+  kind: z.enum(valuesOf(STORAGE_KIND)),
   endpoint: z.string().nullable(),
   region: z.string().nullable(),
-  residency: z.enum(["canada", "elsewhere", "unknown", "device"]),
+  residency: z.enum(valuesOf(STORAGE_RESIDENCY)),
   encrypted: z.boolean(),
-  owner: z.enum(["krizaka", "workspace", "device"]),
+  owner: z.enum(valuesOf(STORAGE_OWNER)),
   devOnly: z.boolean(),
 });
 export type StorageDescriptor = z.infer<typeof storageDescriptor>;

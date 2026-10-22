@@ -1,3 +1,4 @@
+import { STORAGE_KIND, STORAGE_PROVIDERS } from "@yomizaka/core";
 import { z } from "zod";
 
 import { parseSigningKey } from "./report-key";
@@ -59,7 +60,7 @@ export const envSchema = z.object({
   /** Signs the audit reports (Ed25519, base64 of the PKCS#8 DER — `node scripts/generate-report-key.mjs`), a DO SECRET. */
   APP_REPORT_SIGNING_KEY: z.string().optional(),
   /** Where a kept document lives (ADR-0007): nothing kept by default; `bunny` is for development and fictional data only (no Canadian region); `s3` is Spaces tor1, a workspace's own bucket or a local test server. */
-  MEDIA_DOCUMENTS_PROVIDER: z.enum(["none", "bunny", "s3"]).default("none"),
+  MEDIA_DOCUMENTS_PROVIDER: z.enum(STORAGE_PROVIDERS).default(STORAGE_KIND.none),
   /** A document that is not kept is purged after its check; one that is never checked, after this many hours. */
   APP_PURGE_AFTER_HOURS: z.coerce.number().int().min(1).max(720).default(24),
   /** Seals the credentials of a workspace's own S3 in the database (AES-256-GCM, 32 bytes in base64); without it, storing credentials is unavailable. */
@@ -106,7 +107,7 @@ export function productionProblems(env: Env): string[] {
     } catch (error) {
       problems.push((error as Error).message);
     }
-  if (env.APP_ENVIRONMENT === "prod" && env.MEDIA_DOCUMENTS_PROVIDER === "bunny") problems.push("MEDIA_DOCUMENTS_PROVIDER=bunny has no Canadian region: development and fictional data only");
+  if (env.APP_ENVIRONMENT === "prod" && env.MEDIA_DOCUMENTS_PROVIDER === STORAGE_KIND.bunny) problems.push("MEDIA_DOCUMENTS_PROVIDER=bunny has no Canadian region: development and fictional data only");
   if (env.DATABASE_URL && /sslmode=(require|verify)/.test(env.DATABASE_URL) && !env.DATABASE_CA_CERT) problems.push("DATABASE_CA_CERT is required for a TLS database");
   return problems;
 }

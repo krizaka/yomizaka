@@ -9,6 +9,7 @@ import { TagChips, TagFilter, ValueFilter } from "@/components/console/TagChips"
 import type { Messages } from "@/lib/i18n";
 import { libraryPath, toggleTag, viewHref,type ViewState } from "@/lib/organisation/rules";
 import type { Folder, Tag } from "@/lib/organisation/store";
+import { countLabel } from "@/lib/plural";
 
 type Say = Messages["console"]["organisation"];
 
@@ -39,7 +40,6 @@ export function PlaceView({ locale, t, library, collection, folder, folders, doc
     ...(collection ? [{ href: libraryPath(locale, library.id, collection.id), label: collection.name }] : [{ href: path, label: t.unfiled }]),
     ...(folder && collection ? [{ href: libraryPath(locale, library.id, collection.id, folder.id), label: folder.name }] : []),
   ];
-  const count = (n: number, one: string, many: string) => (n === 1 ? one : many).replace("{count}", String(n));
   return (
     <div className="flex flex-col gap-6">
       <nav aria-label="breadcrumb" className="flex flex-wrap items-center gap-2 text-sm text-fg-secondary">
@@ -73,7 +73,7 @@ export function PlaceView({ locale, t, library, collection, folder, folders, doc
                     </Link>
                     <ItemMenu kind="folder" id={f.id} name={f.name} collections={collections} folders={folders.map((x) => ({ id: x.id, name: x.name }))} tags={tags} current={folderTags?.[f.id] ?? []} />
                   </div>
-                  <p className="m-0 text-sm text-fg-secondary">{count(f.files, t.filesOne, t.filesMany)}</p>
+                  <p className="m-0 text-sm text-fg-secondary">{countLabel(t, "files", f.files)}</p>
                   <TagChips tags={f.tags} />
                 </Card.Root>
               </li>

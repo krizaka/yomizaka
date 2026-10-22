@@ -79,39 +79,67 @@ export async function overview(q: Query, owner: string): Promise<LibraryOverview
   }));
 }
 
-// ── collections ───────────────────────────────────────────────────────────────────────────────────────────────────────
+// ── what an owner owns, and the containers one level down ─────────────────────────────────────────────────────────────
 
-async function ownedLibrary(q: Query, owner: string, id: string) {
-  if (!isId(id)) throw notFound("library");
-  return one(q<Library>("SELECT id, name FROM libraries WHERE owner_id = $1 AND id = $2", [owner, id]), "library");
-}
-export async function ownedCollection(q: Query, owner: string, id: string): Promise<Collection> {
-  if (!isId(id)) throw notFound("collection");
-  return one(q<Collection>("SELECT c.id, c.library_id, c.name FROM collections c JOIN libraries l ON l.id = c.library_id WHERE l.owner_id = $1 AND c.id = $2", [owner, id]), "collection");
-}
-export async function ownedFolder(q: Query, owner: string, id: string): Promise<Folder> {
-  if (!isId(id)) throw notFound("folder");
-  return one(q<Folder>("SELECT f.id, f.collection_id, f.name FROM folders f JOIN collections c ON c.id = f.collection_id JOIN libraries l ON l.id = c.library_id WHERE l.owner_id = $1 AND f.id = $2", [owner, id]), "folder");
-}
-async function ownedDocument(q: Query, owner: string, id: string): Promise<{ id: string }> {
-  if (!isId(id)) throw notFound("document");
-  return one(q<{ id: string }>("SELECT id FROM documents WHERE owner_id = $1 AND id = $2", [owner, id]), "document");
+/** What can be owned, how to find it for its owner, and what it is called in an error. */
+const OWNED = {
+  library: { sql: "SELECT id, name FROM libraries WHERE owner_id = $1 AND id = $2" },
+  collection: { sql: "SELECT c.id, c.library_id, c.name FROM collections c JOIN libraries l ON l.id = c.library_id WHERE l.owner_id = $1 AND c.id = $2" },
+  folder: { sql: "SELECT f.id, f.collection_id, f.name FROM folders f JOIN collections c ON c.id = f.collection_id JOIN libraries l ON l.id = c.library_id WHERE l.owner_id = $1 AND f.id = $2" },
+  document: { sql: "SELECT id FROM documents WHERE owner_id = $1 AND id = $2" },
+} as const;
+
+interface Owned {
+  library: Library;
+  collection: Collection;
+  folder: Folder;
+  document: { id: string };
 }
 
-export async function createCollection(q: Query, owner: string, libraryId: string, name: string): Promise<Collection> {
-  await ownedLibrary(q, owner, libraryId);
-  return unique(async () => (await q<Collection>("INSERT INTO collections (library_id, name) VALUES ($1, $2) RETURNING id, library_id, name", [libraryId, cleanName(name)]))[0]!);
+async function owned<K extends keyof Owned>(q: Query, kind: K, owner: string, id: string): Promise<Owned[K]> {
+  if (!isId(id)) throw notFound(kind);
+  return one(q<Owned[K] & QueryResultRow>(OWNED[kind].sql, [owner, id]), kind);
 }
 
-export async function renameCollection(q: Query, owner: string, id: string, name: string): Promise<Collection> {
-  await ownedCollection(q, owner, id);
-  return unique(async () => (await q<Collection>("UPDATE collections SET name = $2 WHERE id = $1 RETURNING id, library_id, name", [id, cleanName(name)]))[0]!);
+export const ownedCollection = (q: Query, owner: string, id: string) => owned(q, "collection", owner, id);
+export const ownedFolder = (q: Query, owner: string, id: string) => owned(q, "folder", owner, id);
+
+/** A collection lives in a library, a folder in a collection: the same create, rename and move, by table. */
+const CHILD = {
+  collection: { table: "collections", parentColumn: "library_id", parent: "library", columns: "id, library_id, name" },
+  folder: { table: "folders", parentColumn: "collection_id", parent: "collection", columns: "id, collection_id, name" },
+} as const;
+type ChildKind = keyof typeof CHILD;
+
+async function createChild<K extends ChildKind>(q: Query, kind: K, owner: string, parentId: string, name: string): Promise<Owned[K]> {
+  const { table, parentColumn, parent, columns } = CHILD[kind];
+  await owned(q, parent, owner, parentId);
+  return unique(async () => (await q<Owned[K] & QueryResultRow>(`INSERT INTO ${table} (${parentColumn}, name) VALUES ($1, $2) RETURNING ${columns}`, [parentId, cleanName(name)]))[0]!);
 }
 
-export async function moveCollection(q: Query, owner: string, id: string, libraryId: string): Promise<Collection> {
-  await ownedCollection(q, owner, id);
-  await ownedLibrary(q, owner, libraryId);
-  return unique(async () => (await q<Collection>("UPDATE collections SET library_id = $2 WHERE id = $1 RETURNING id, library_id, name", [id, libraryId]))[0]!);
+async function renameChild<K extends ChildKind>(q: Query, kind: K, owner: string, id: string, name: string): Promise<Owned[K]> {
+  await owned(q, kind, owner, id);
+  return unique(async () => (await q<Owned[K] & QueryResultRow>(`UPDATE ${CHILD[kind].table} SET name = $2 WHERE id = $1 RETURNING ${CHILD[kind].columns}`, [id, cleanName(name)]))[0]!);
+}
+
+async function moveChild<K extends ChildKind>(q: Query, kind: K, owner: string, id: string, parentId: string): Promise<Owned[K]> {
+  const { table, parentColumn, parent, columns } = CHILD[kind];
+  await owned(q, kind, owner, id);
+  await owned(q, parent, owner, parentId);
+  return unique(async () => (await q<Owned[K] & QueryResultRow>(`UPDATE ${table} SET ${parentColumn} = $2 WHERE id = $1 RETURNING ${columns}`, [id, parentId]))[0]!);
+}
+
+export const createCollection = (q: Query, owner: string, libraryId: string, name: string) => createChild(q, "collection", owner, libraryId, name);
+export const renameCollection = (q: Query, owner: string, id: string, name: string) => renameChild(q, "collection", owner, id, name);
+export const moveCollection = (q: Query, owner: string, id: string, libraryId: string) => moveChild(q, "collection", owner, id, libraryId);
+export const createFolder = (q: Query, owner: string, collectionId: string, name: string) => createChild(q, "folder", owner, collectionId, name);
+export const renameFolder = (q: Query, owner: string, id: string, name: string) => renameChild(q, "folder", owner, id, name);
+
+/** Moves a folder to another collection of the owner; its files follow. */
+export async function moveFolder(q: Query, owner: string, id: string, collectionId: string): Promise<Folder> {
+  const moved = await moveChild(q, "folder", owner, id, collectionId);
+  await q("UPDATE documents SET collection_id = $2 WHERE folder_id = $1", [id, collectionId]);
+  return moved;
 }
 
 /** Deletes a collection after saying what becomes of its files (and its folders go with it): moved to another collection or to « sans collection », or deleted. */
@@ -126,27 +154,6 @@ export async function deleteCollection(q: Query, owner: string, id: string, choi
     await q("UPDATE documents SET collection_id = $3, folder_id = NULL WHERE owner_id = $1 AND collection_id = $2", [owner, id, choice.to]);
   }
   await q("DELETE FROM collections WHERE id = $1", [id]);
-}
-
-// ── folders (one level) ───────────────────────────────────────────────────────────────────────────────────────────────
-
-export async function createFolder(q: Query, owner: string, collectionId: string, name: string): Promise<Folder> {
-  await ownedCollection(q, owner, collectionId);
-  return unique(async () => (await q<Folder>("INSERT INTO folders (collection_id, name) VALUES ($1, $2) RETURNING id, collection_id, name", [collectionId, cleanName(name)]))[0]!);
-}
-
-export async function renameFolder(q: Query, owner: string, id: string, name: string): Promise<Folder> {
-  await ownedFolder(q, owner, id);
-  return unique(async () => (await q<Folder>("UPDATE folders SET name = $2 WHERE id = $1 RETURNING id, collection_id, name", [id, cleanName(name)]))[0]!);
-}
-
-/** Moves a folder to another collection of the owner; its files follow. */
-export async function moveFolder(q: Query, owner: string, id: string, collectionId: string): Promise<Folder> {
-  await ownedFolder(q, owner, id);
-  await ownedCollection(q, owner, collectionId);
-  const moved = await unique(async () => (await q<Folder>("UPDATE folders SET collection_id = $2 WHERE id = $1 RETURNING id, collection_id, name", [id, collectionId]))[0]!);
-  await q("UPDATE documents SET collection_id = $2 WHERE folder_id = $1", [id, collectionId]);
-  return moved;
 }
 
 /** Deletes a folder after saying what becomes of its files: moved up to its collection, or deleted. */
@@ -169,7 +176,7 @@ export interface Placement { collectionId: string | null; folderId: string | nul
 
 /** Places a document in a collection, or a folder of that collection; both null = « sans collection ». */
 export async function placeDocument(q: Query, owner: string, documentId: string, to: Placement): Promise<void> {
-  await ownedDocument(q, owner, documentId);
+  await owned(q, "document", owner, documentId);
   if (to.folderId && !to.collectionId) throw refuse(400, "BAD_REQUEST", "A folder belongs to a collection");
   if (to.collectionId) await ownedCollection(q, owner, to.collectionId);
   if (to.folderId) {
@@ -200,11 +207,9 @@ const TARGETS = {
   document: { table: "document_tags", column: "document_id" },
 } as const;
 
-const OWNED = { collection: ownedCollection, folder: ownedFolder, document: ownedDocument } as const;
-
 /** Replaces the tags of a collection, a folder or a document (all of them must be the owner's). */
 export async function setTags(q: Query, owner: string, target: { kind: TagTarget; id: string }, tagIds: string[]): Promise<void> {
-  await OWNED[target.kind](q, owner, target.id);
+  await owned(q, target.kind, owner, target.id);
   const ids = [...new Set(tagIds)];
   if (ids.some((t) => !isId(t))) throw notFound("tag");
   if (ids.length) {

@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 
+import { STORAGE_MODE, STORAGE_MODES } from "@yomizaka/core";
 import { z } from "zod";
 
 import { settingsKey } from "@/app/active-store";
@@ -9,7 +10,7 @@ import { audit } from "@/lib/audit";
 import { query } from "@/lib/db";
 import { env } from "@/lib/env";
 import { readJson, refuse } from "@/lib/http";
-import { loadSettings, saveSettings, STORAGE_MODES } from "@/lib/storage/settings";
+import { loadSettings, saveSettings } from "@/lib/storage/settings";
 import { verifyS3 } from "@/lib/storage/verify";
 
 
@@ -25,13 +26,13 @@ export const PUT = (req: Request) => accountAct(req, "storage", async (s) => {
   const input = await readJson(req, z.object({ mode: z.enum(STORAGE_MODES), keepDefault: z.boolean(), s3: s3Body.optional() }));
   const owner = s.account.id;
   const current = await loadSettings(query, owner);
-  const leaving = current.mode === "s3" && (input.mode !== "s3" || input.s3?.endpoint.replace(/\/$/, "") !== current.s3?.endpoint || input.s3?.bucket !== current.s3?.bucket);
+  const leaving = current.mode === STORAGE_MODE.s3 && (input.mode !== STORAGE_MODE.s3 || input.s3?.endpoint.replace(/\/$/, "") !== current.s3?.endpoint || input.s3?.bucket !== current.s3?.bucket);
   if (leaving) {
     const [inUse] = await query("SELECT 1 FROM documents WHERE owner_id = $1 AND storage_owner = 'workspace' AND storage <> 'none' LIMIT 1", [owner]);
     if (inUse) throw refuse(409, "STORAGE_IN_USE", "Documents are kept on this storage: export or delete them first");
   }
   let s3;
-  if (input.mode === "s3") {
+  if (input.mode === STORAGE_MODE.s3) {
     if (!input.s3) throw refuse(400, "BAD_REQUEST", "The S3 settings are required");
     const secretAccessKey = await secretFor(owner, input.s3.secretAccessKey);
     const v = await verifyS3({ ...input.s3, secretAccessKey }, { allowLocal: env().APP_ENVIRONMENT === "dev", now: () => new Date(), probeId: crypto.randomUUID() });
