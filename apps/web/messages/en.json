@@ -150,7 +150,18 @@
       "devBuild": "DEV · v{version}",
       "language": "Language",
       "theme": "Theme",
-      "signOut": "Sign out"
+      "signOut": "Sign out",
+      "check": "Check",
+      "account": "Account",
+      "admin": "Administration",
+      "titles": {
+        "library": "Library",
+        "check": "Check a document",
+        "search": "Search",
+        "document": "Document",
+        "account": "Account",
+        "screening": "Screening"
+      }
     },
     "library": {
       "title": "Library",
@@ -176,7 +187,8 @@
       "open": "Open {title}",
       "noText": "no text layer",
       "pages": "{count} p.",
-      "screening": "Check a tenant's application (with their consent)"
+      "screening": "Check a tenant's application (with their consent)",
+      "checkCta": "Check a document"
     },
     "upload": {
       "queued": "Waiting",
@@ -234,6 +246,10 @@
         "landlord": "Before sending: your lease template against Québec's rules; for a tenant's PDF paper, the examination of the file itself.",
         "freelancer": "Choose what Yomizaka reads: your invoice against Québec's mandatory mentions and the GST/QST number formats, your service contract against the federal rules on interest and copyright, or the PDF file itself. Civil Code rules are coming soon.",
         "business": "Choose what Yomizaka reads: a supplier's invoice against Québec's mandatory mentions and the GST/QST number formats, or the PDF file itself. Contract rules are coming soon."
+      },
+      "tabs": {
+        "infos": "Information",
+        "verifications": "Checks"
       }
     },
     "analysis": {

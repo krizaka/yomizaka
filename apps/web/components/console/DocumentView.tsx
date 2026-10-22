@@ -19,6 +19,7 @@ import { z } from "zod";
 import { DocumentInsight } from "@/components/console/DocumentInsight";
 import { Paywall } from "@/components/console/Paywall";
 import { errorKey } from "@/lib/client";
+import { type DocumentTab } from "@/lib/console-nav";
 import { useSay } from "@/lib/i18n-client";
 import { firstCheck, wordingOf } from "@/lib/perspective-defaults";
 
@@ -347,7 +348,7 @@ function StartAuthenticity({ documentId, disabled }: { documentId: string; disab
 }
 
 /** The document page: the file and its text on one side, Orazaka's checks on the other — each a traced run. */
-export function DocumentView({ initial, perspective = null, offer }: { initial: DocumentDetail; perspective?: Audience | null; offer: { studios: readonly Studio[]; jurisdictions: readonly Jurisdiction[]; rulesets: readonly string[] } }) {
+export function DocumentView({ initial, tab, perspective = null, offer }: { initial: DocumentDetail; tab: DocumentTab; perspective?: Audience | null; offer: { studios: readonly Studio[]; jurisdictions: readonly Jurisdiction[]; rulesets: readonly string[] } }) {
   const { say, locale } = useSay();
   const router = useRouter();
   const client = useQueryClient();
@@ -364,7 +365,8 @@ export function DocumentView({ initial, perspective = null, offer }: { initial: 
     },
   });
   const [confirming, setConfirming] = useState(false);
-  const [tab, setTab] = useState(initial.mimeType === "application/pdf" ? "file" : "text");
+  // The tab is the route (/documents/[id]/infos|verifications|fichier|texte): back, forward, refresh and sharing all work.
+  const go = (next: DocumentTab) => router.push(`/${locale}/app/documents/${initial.id}/${next}`, { scroll: false });
   const [activeId, setActiveId] = useState<string | null>(null);
   const [found, setFound] = useState<Record<string, Located | null>>({});
   const viewerRef = useRef<HTMLElement>(null);
@@ -395,7 +397,7 @@ export function DocumentView({ initial, perspective = null, offer }: { initial: 
     onSelect: (id) => {
       setActiveId(id);
       if (id) {
-        setTab(isPdf ? "file" : "text");
+        go(isPdf ? "fichier" : "texte");
         // On a narrow screen the file sits above the findings: bring it into view; the viewer scrolls to the passage itself.
         if (window.matchMedia?.("(max-width: 1279px)").matches) viewerRef.current?.scrollIntoView({ block: "start", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
         if (!isPdf) document.getElementById(`passage-${id}`)?.scrollIntoView({ block: "center" });
@@ -433,57 +435,67 @@ export function DocumentView({ initial, perspective = null, offer }: { initial: 
         </div>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-        <section ref={viewerRef} aria-label={say("document.viewer")} className="flex min-w-0 flex-col gap-3 xl:sticky xl:top-4 xl:self-start">
-          <Tabs.Root value={tab} onValueChange={setTab}>
-            <Tabs.List aria-label={say("document.viewer")}>
-              {isPdf ? <Tabs.Trigger value="file">{say("document.file")}</Tabs.Trigger> : null}
-              <Tabs.Trigger value="text">{say("document.text")}</Tabs.Trigger>
-            </Tabs.List>
-            {isPdf ? (
-              <Tabs.Content value="file">
-                <DocumentViewer
-                  src={fileUrl}
-                  loadPdfjs={loadPdfjs}
-                  workerSrc={WORKER_SRC}
-                  highlights={highlights}
-                  activeId={activeId}
-                  onActiveChange={setActiveId}
-                  onLocate={setFound}
-                  className="[--kz-document-viewer-height:72vh]"
-                  labels={{ region: say("document.viewerRegion"), loading: say("document.loadingPdf"), failed: say("document.pdfFailed"), page: say("document.pageLabel"), onPage: say("document.onPage"), notFound: say("document.notFound") }}
-                />
-              </Tabs.Content>
-            ) : null}
-            <Tabs.Content value="text">{doc.hasText ? <DocumentText text={doc.text} report={latestReport} /> : <Alert tone="info">{say("document.noText")}</Alert>}</Tabs.Content>
-          </Tabs.Root>
-          <DescriptionList
-            items={[
-              { term: say("document.file"), details: doc.filename },
-              ...(doc.pages ? [{ term: say("document.pages"), details: String(doc.pages) }] : []),
-              { term: say("document.size"), details: formatBytes(doc.sizeBytes, locale) },
-              { term: say("document.added"), details: formatDate(doc.createdAt, locale, true) },
-              { term: say("document.fingerprint"), details: <code className="break-all font-mono text-xs">{doc.sha256}</code> },
-            ]}
-          />
-        </section>
+      <Tabs.Root value={tab} onValueChange={(v: string) => go(v as DocumentTab)}>
+        <Tabs.List aria-label={say("document.viewer")}>
+          <Tabs.Trigger value="infos">{say("document.tabs.infos")}</Tabs.Trigger>
+          <Tabs.Trigger value="verifications">{say("document.tabs.verifications")}</Tabs.Trigger>
+          {isPdf ? <Tabs.Trigger value="fichier">{say("document.file")}</Tabs.Trigger> : null}
+          <Tabs.Trigger value="texte">{say("document.text")}</Tabs.Trigger>
+        </Tabs.List>
 
-        <section aria-labelledby="checks" className="flex min-w-0 flex-col gap-4">
-          {doc.insight ? <DocumentInsight insight={doc.insight} documentId={doc.id} /> : null}
-          <div>
-            <h2 id="checks" className="font-display text-lg font-bold text-fg">
-              {say("document.checks")}
-            </h2>
-            <p className="text-sm text-fg-secondary">{say(`document.checksLeadBy.${wordingOf(perspective)}`)}</p>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-            {(firstCheck(perspective, doc.kind) === "compliance-check" ? [complianceCard, authenticityCard] : [authenticityCard, complianceCard]).filter((c) => offer.studios.includes(c.key as Studio))}
-          </div>
-          {doc.analyses.map((a) => (
-            <AnalysisCard key={a.id} documentId={doc.id} initial={a} selection={a.id === latestCompliance?.id ? selection : undefined} />
-          ))}
-        </section>
-      </div>
+        <Tabs.Content value="infos">
+          <section aria-label={say("document.tabs.infos")} className="flex min-w-0 flex-col gap-4 pt-4">
+            {doc.insight ? <DocumentInsight insight={doc.insight} documentId={doc.id} /> : null}
+            <DescriptionList
+              items={[
+                { term: say("document.file"), details: doc.filename },
+                ...(doc.pages ? [{ term: say("document.pages"), details: String(doc.pages) }] : []),
+                { term: say("document.size"), details: formatBytes(doc.sizeBytes, locale) },
+                { term: say("document.added"), details: formatDate(doc.createdAt, locale, true) },
+                { term: say("document.fingerprint"), details: <code className="break-all font-mono text-xs">{doc.sha256}</code> },
+              ]}
+            />
+          </section>
+        </Tabs.Content>
+
+        <Tabs.Content value="verifications">
+          <section aria-labelledby="checks" className="flex min-w-0 flex-col gap-4 pt-4">
+            <div>
+              <h2 id="checks" className="font-display text-lg font-bold text-fg">
+                {say("document.checks")}
+              </h2>
+              <p className="text-sm text-fg-secondary">{say(`document.checksLeadBy.${wordingOf(perspective)}`)}</p>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              {(firstCheck(perspective, doc.kind) === "compliance-check" ? [complianceCard, authenticityCard] : [authenticityCard, complianceCard]).filter((c) => offer.studios.includes(c.key as Studio))}
+            </div>
+            {doc.analyses.map((a) => (
+              <AnalysisCard key={a.id} documentId={doc.id} initial={a} selection={a.id === latestCompliance?.id ? selection : undefined} />
+            ))}
+          </section>
+        </Tabs.Content>
+
+        {isPdf ? (
+          <Tabs.Content value="fichier">
+            <section ref={viewerRef} aria-label={say("document.viewer")} className="min-w-0 pt-4">
+              <DocumentViewer
+                src={fileUrl}
+                loadPdfjs={loadPdfjs}
+                workerSrc={WORKER_SRC}
+                highlights={highlights}
+                activeId={activeId}
+                onActiveChange={setActiveId}
+                onLocate={setFound}
+                className="[--kz-document-viewer-height:72vh]"
+                labels={{ region: say("document.viewerRegion"), loading: say("document.loadingPdf"), failed: say("document.pdfFailed"), page: say("document.pageLabel"), onPage: say("document.onPage"), notFound: say("document.notFound") }}
+              />
+            </section>
+          </Tabs.Content>
+        ) : null}
+        <Tabs.Content value="texte">
+          <div className="pt-4">{doc.hasText ? <DocumentText text={doc.text} report={latestReport} /> : <Alert tone="info">{say("document.noText")}</Alert>}</div>
+        </Tabs.Content>
+      </Tabs.Root>
     </div>
   );
 }

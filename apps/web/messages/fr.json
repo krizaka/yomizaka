@@ -150,7 +150,18 @@
       "devBuild": "DEV · v{version}",
       "language": "Langue",
       "theme": "Thème",
-      "signOut": "Se déconnecter"
+      "signOut": "Se déconnecter",
+      "check": "Vérifier",
+      "account": "Compte",
+      "admin": "Administration",
+      "titles": {
+        "library": "Bibliothèque",
+        "check": "Vérifier un document",
+        "search": "Recherche",
+        "document": "Document",
+        "account": "Compte",
+        "screening": "Vérification de locataire"
+      }
     },
     "library": {
       "title": "Bibliothèque",
@@ -176,7 +187,8 @@
       "open": "Ouvrir {title}",
       "noText": "sans couche texte",
       "pages": "{count} p.",
-      "screening": "Vérifier le dossier d'un locataire (avec son consentement)"
+      "screening": "Vérifier le dossier d'un locataire (avec son consentement)",
+      "checkCta": "Vérifier un document"
     },
     "upload": {
       "queued": "En attente",
@@ -234,6 +246,10 @@
         "landlord": "Avant d'envoyer : votre modèle de bail au regard des règles du Québec ; pour une pièce du locataire en PDF, l'examen du fichier lui-même.",
         "freelancer": "Choisissez ce que Yomizaka lit : votre facture au regard des mentions obligatoires du Québec et du format des numéros de TPS et de TVQ, votre contrat de services au regard des règles fédérales sur l'intérêt et le droit d'auteur, ou le fichier PDF lui-même. Les règles du Code civil arrivent bientôt.",
         "business": "Choisissez ce que Yomizaka lit : une facture de fournisseur au regard des mentions obligatoires du Québec et du format des numéros de TPS et de TVQ, ou le fichier PDF lui-même. Les règles des contrats arrivent bientôt."
+      },
+      "tabs": {
+        "infos": "Informations",
+        "verifications": "Vérifications"
       }
     },
     "analysis": {
