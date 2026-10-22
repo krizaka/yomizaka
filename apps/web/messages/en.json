@@ -198,7 +198,10 @@
       "exampleLandlord": "A landlord's lease template",
       "exampleTenantHint": "Rue Saint-Denis, 4½",
       "exampleLandlordHint": "Avenue du Parc, 3½",
-      "dropAgain": "Add documents"
+      "dropAgain": "Add documents",
+      "keep": "Keep my documents",
+      "keepOn": "The document stays in your library, where the info panel says.",
+      "keepOff": "By default the document is deleted after its check: only the report stays."
     },
     "upload": {
       "queued": "Waiting",
@@ -275,7 +278,9 @@
         "retentionNotKept": "Only the report stays.",
         "deleteNow": "Delete now",
         "deleteNowConfirm": "Delete for good",
-        "deleteNowHint": "The document and its checks are deleted at once. This cannot be undone."
+        "deleteNowHint": "The document and its checks are deleted at once. This cannot be undone.",
+        "pendingPurge": "Not kept: deleted once its check has run (at the latest {date}). Only the report stays.",
+        "notKeptText": "This document is not kept: its text and file were deleted after the check. Only the report stays."
       }
     },
     "analysis": {
@@ -435,7 +440,9 @@
       "FILE_ARCHIVE_BOMB": "This archive is refused: it expands far beyond a reasonable size.",
       "NAME_TAKEN": "That name is already used here.",
       "NOT_EMPTY": "Move or delete its collections first.",
-      "LAST_LIBRARY": "The last library cannot be deleted."
+      "LAST_LIBRARY": "The last library cannot be deleted.",
+      "NOT_KEPT": "This document is not kept: only its report stays. Upload it again with “Keep my documents” to check it again.",
+      "STORAGE_UNAVAILABLE": "The storage that keeps documents did not answer."
     },
     "adminConsole": {
       "shell": {

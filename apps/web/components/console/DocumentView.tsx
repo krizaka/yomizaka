@@ -440,14 +440,14 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
         <Tabs.List aria-label={say("document.viewer")}>
           <Tabs.Trigger value="infos">{say("document.tabs.infos")}</Tabs.Trigger>
           <Tabs.Trigger value="verifications">{say("document.tabs.verifications")}</Tabs.Trigger>
-          {isPdf ? <Tabs.Trigger value="fichier">{say("document.file")}</Tabs.Trigger> : null}
+          {isPdf && !doc.purged ? <Tabs.Trigger value="fichier">{say("document.file")}</Tabs.Trigger> : null}
           <Tabs.Trigger value="texte">{say("document.text")}</Tabs.Trigger>
         </Tabs.List>
 
         <Tabs.Content value="infos">
           <section aria-label={say("document.tabs.infos")} className="flex min-w-0 flex-col gap-4 pt-4">
             {doc.insight ? <DocumentInsight insight={doc.insight} documentId={doc.id} /> : null}
-            <StorageNotice storage={doc.storage} retainUntil={doc.retainUntil} onDelete={() => remove.mutate()} deleting={remove.isPending} />
+            <StorageNotice storage={doc.storage} retainUntil={doc.retainUntil} purged={doc.purged} onDelete={() => remove.mutate()} deleting={remove.isPending} />
             <DescriptionList
               items={[
                 { term: say("document.file"), details: doc.filename },
@@ -495,7 +495,7 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
           </Tabs.Content>
         ) : null}
         <Tabs.Content value="texte">
-          <div className="pt-4">{doc.hasText ? <DocumentText text={doc.text} report={latestReport} /> : <Alert tone="info">{say("document.noText")}</Alert>}</div>
+          <div className="pt-4">{doc.purged ? <Alert tone="info">{say("document.where.notKeptText")}</Alert> : doc.hasText ? <DocumentText text={doc.text} report={latestReport} /> : <Alert tone="info">{say("document.noText")}</Alert>}</div>
         </Tabs.Content>
       </Tabs.Root>
     </div>

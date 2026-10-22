@@ -7,7 +7,8 @@ import { personalInfo } from "./pii";
 import { createInspector } from "./preflight/inspector";
 import { OUTCOME, type RejectReason } from "./preflight/port";
 import { YOMIZAKA_RULES } from "./preflight/rules";
-import type { StoreDescriptor } from "./storage/port";
+import { EXTERNAL, objectKey, purgeDeadline, storageFor } from "./retention";
+import type { DocumentStore, StoreDescriptor } from "./storage/port";
 import { storedAs,type StoredKind } from "./storage/where";
 import { understanding } from "./understanding";
 
@@ -26,6 +27,7 @@ interface DocumentRow {
 
 export interface AnalysisRow {
   id: string;
+  document_id: string;
   studio: Studio;
   status: AnalysisStatus;
   run_id: string | null;
@@ -108,28 +110,46 @@ export async function getDocument(ownerId: string, id: string): Promise<Document
   const [row] = await query<DocumentRow & { sha256: string; text: string }>(`SELECT ${SUMMARY_COLUMNS}, d.sha256, d.text FROM documents d WHERE d.owner_id = $1 AND d.id = $2`, [ownerId, id]);
   if (!row) throw refuse(404, "NOT_FOUND", "No such document");
   const analyses = await query<AnalysisRow>("SELECT * FROM analyses WHERE document_id = $1 ORDER BY created_at DESC LIMIT 50", [id]);
-  return { ...summary(row), sha256: row.sha256, text: row.text, insight: insightOf(row.text, row.pages), analyses: analyses.map(toAnalysis) };
+  return { ...summary(row), sha256: row.sha256, text: row.text, insight: row.text ? insightOf(row.text, row.pages) : undefined, analyses: analyses.map(toAnalysis) };
 }
 
 /** Where a document lives and until when (the info panel, ADR-0007), from its row and the store configured now. */
-export async function documentStorage(ownerId: string, id: string, activeStore: StoreDescriptor): Promise<{ storage: StoreDescriptor; retainUntil: string | null }> {
+export async function documentStorage(ownerId: string, id: string, activeStore: StoreDescriptor): Promise<{ storage: StoreDescriptor; retainUntil: string | null; purged: boolean }> {
   if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such document");
-  const [row] = await query<{ storage: StoredKind; retain_until: Date | null }>("SELECT storage, retain_until FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, id]);
+  const [row] = await query<{ storage: StoredKind; retain_until: Date | null; purged: boolean }>("SELECT storage, retain_until, (storage = 'none' AND octet_length(content) = 0 AND text = '') AS purged FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, id]);
   if (!row) throw refuse(404, "NOT_FOUND", "No such document");
-  return { storage: storedAs(row.storage, activeStore), retainUntil: row.retain_until?.toISOString() ?? null };
+  return { storage: storedAs(row.storage, activeStore), retainUntil: row.retain_until?.toISOString() ?? null, purged: row.purged };
 }
 
-export async function getFile(ownerId: string, id: string): Promise<{ filename: string; mimeType: string; content: Buffer }> {
-  if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such document");
-  const [row] = await query<{ filename: string; mime_type: string; content: Buffer }>("SELECT filename, mime_type, content FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, id]);
-  if (!row) throw refuse(404, "NOT_FOUND", "No such document");
-  return { filename: row.filename, mimeType: row.mime_type, content: row.content };
+/** The bytes of a document, from where it lives: the database, or the external store that holds it. A purged document has none (409 NOT_KEPT). */
+export async function readBytes(row: { mime_type: string; content: Buffer; storage: StoredKind }, ids: { ownerId: string; id: string }, store?: DocumentStore): Promise<Buffer> {
+  if (EXTERNAL.has(row.storage)) {
+    if (!store || store.describe().kind !== row.storage) throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds this document is not available");
+    const found = await store.get(objectKey(ids.ownerId, ids.id, row.mime_type));
+    if (!found) throw refuse(404, "NOT_FOUND", "No such document");
+    return Buffer.from(found.bytes);
+  }
+  if (row.storage === "none" && row.content.length === 0) throw refuse(409, "NOT_KEPT", "This document is not kept: only its report stays");
+  return row.content;
 }
 
-export async function deleteDocument(ownerId: string, id: string): Promise<void> {
+export async function getFile(ownerId: string, id: string, store?: DocumentStore): Promise<{ filename: string; mimeType: string; content: Buffer }> {
   if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such document");
-  const rows = await query("DELETE FROM documents WHERE owner_id = $1 AND id = $2 RETURNING id", [ownerId, id]);
-  if (rows.length === 0) throw refuse(404, "NOT_FOUND", "No such document");
+  const [row] = await query<{ filename: string; mime_type: string; content: Buffer; storage: StoredKind }>("SELECT filename, mime_type, content, storage FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, id]);
+  if (!row) throw refuse(404, "NOT_FOUND", "No such document");
+  return { filename: row.filename, mimeType: row.mime_type, content: await readBytes(row, { ownerId, id }, store) };
+}
+
+/** Deletes a document at once: its file on the external store first, then the row (its reports go with it). */
+export async function deleteDocument(ownerId: string, id: string, store?: DocumentStore): Promise<void> {
+  if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such document");
+  const [row] = await query<{ mime_type: string; storage: StoredKind }>("SELECT mime_type, storage FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, id]);
+  if (!row) throw refuse(404, "NOT_FOUND", "No such document");
+  if (EXTERNAL.has(row.storage)) {
+    if (!store || store.describe().kind !== row.storage) throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds this document is not available");
+    await store.delete(objectKey(ownerId, id, row.mime_type));
+  }
+  await query("DELETE FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, id]);
 }
 
 /** What the document is and holds — read in-process from its text, for nothing; personal information as counts only. */
@@ -183,10 +203,20 @@ export function titleFor(filename: string, text: string): string {
 
 export const safeFilename = (name: string) => name.normalize("NFC").replace(/[^\p{L}\p{M}\p{N}._ '’-]+/gu, "_").slice(0, 200) || "document";
 
-export async function storeDocument(ownerId: string, file: { name: string; type: string; size: number }, bytes: Uint8Array, requested: DocumentKind | "auto"): Promise<{ summary: DocumentSummary; duplicate: boolean }> {
+/** What a new document is subject to: kept or purged after the check (ADR-0007). Without a policy a document is kept in the database (legacy callers, tests). */
+export interface StoragePolicy {
+  keep: boolean;
+  store: DocumentStore;
+  now: Date;
+  purgeAfterHours: number;
+}
+
+export async function storeDocument(ownerId: string, file: { name: string; type: string; size: number }, bytes: Uint8Array, requested: DocumentKind | "auto", policy?: StoragePolicy): Promise<{ summary: DocumentSummary; duplicate: boolean }> {
   const { mimeType, sha256 } = await checkUpload(file, bytes);
-  const [existing] = await query<DocumentRow>(`SELECT ${SUMMARY_COLUMNS} FROM documents d WHERE d.owner_id = $1 AND d.sha256 = $2`, [ownerId, sha256]);
-  if (existing) return { summary: summary(existing), duplicate: true };
+  const where = policy ? storageFor(policy.keep, policy.store.describe()) : "database";
+  const [existing] = await query<DocumentRow & { purged: boolean }>(`SELECT ${SUMMARY_COLUMNS}, (d.storage = 'none' AND octet_length(d.content) = 0 AND d.text = '') AS purged FROM documents d WHERE d.owner_id = $1 AND d.sha256 = $2`, [ownerId, sha256]);
+  // The same file again: reused as it is — unless it was purged and the person now keeps it, then it is restored below.
+  if (existing && !(existing.purged && where !== "none")) return { summary: summary(existing), duplicate: true };
   let read: { text: string; pages: number | null };
   try {
     read = await readText(mimeType, bytes);
@@ -195,13 +225,26 @@ export async function storeDocument(ownerId: string, file: { name: string; type:
   }
   const kind = requested === "auto" ? kindFromNature(understanding.understand(read.text, { pages: read.pages }).nature?.id ?? null) : requested;
   const filename = safeFilename(file.name);
-  const [row] = await query<DocumentRow>(
-    `WITH d AS (
-       INSERT INTO documents (owner_id, title, filename, mime_type, kind, size_bytes, sha256, pages, content, text)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *)
-     SELECT ${SUMMARY_COLUMNS} FROM d`,
-    [ownerId, titleFor(filename, read.text), filename, mimeType, kind, bytes.length, sha256, read.pages, Buffer.from(bytes), read.text],
-  );
+  const deadline = where === "none" && policy ? purgeDeadline(policy.now, policy.purgeAfterHours) : null;
+  // The bytes sit in the database until the document is placed (and, if not kept, until its check has run).
+  const [row] = existing
+    ? await query<DocumentRow>(`WITH d AS (UPDATE documents SET content = $3, text = $4, storage = $5, retain_until = $6 WHERE owner_id = $1 AND id = $2 RETURNING *) SELECT ${SUMMARY_COLUMNS} FROM d`, [ownerId, existing.id, Buffer.from(bytes), read.text, where, deadline])
+    : await query<DocumentRow>(
+        `WITH d AS (
+           INSERT INTO documents (owner_id, title, filename, mime_type, kind, size_bytes, sha256, pages, content, text, storage, retain_until)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *)
+         SELECT ${SUMMARY_COLUMNS} FROM d`,
+        [ownerId, titleFor(filename, read.text), filename, mimeType, kind, bytes.length, sha256, read.pages, Buffer.from(bytes), read.text, where, deadline],
+      );
+  if (policy && EXTERNAL.has(where)) {
+    try {
+      await policy.store.put(objectKey(ownerId, row!.id, mimeType), bytes, { contentType: mimeType });
+    } catch {
+      await query("DELETE FROM documents WHERE id = $1 AND NOT EXISTS (SELECT 1 FROM analyses WHERE document_id = $1)", [row!.id]);
+      throw refuse(502, "STORAGE_UNAVAILABLE", "The storage that keeps documents did not answer");
+    }
+    await query("UPDATE documents SET content = ''::bytea WHERE id = $1", [row!.id]);
+  }
   return { summary: summary(row!), duplicate: false };
 }
 

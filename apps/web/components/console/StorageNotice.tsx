@@ -10,21 +10,23 @@ import { storageNotice } from "@/lib/storage/where";
 import { formatDate } from "./format";
 
 /** « Where does this document live? »: where it is kept, until when, and « Delete now » (ADR-0007, #164). */
-export function StorageNotice({ storage, retainUntil, onDelete, deleting }: { storage: StorageDescriptor; retainUntil: string | null; onDelete: () => void; deleting: boolean }) {
+export function StorageNotice({ storage, retainUntil, purged, onDelete, deleting }: { storage: StorageDescriptor; retainUntil: string | null; purged: boolean; onDelete: () => void; deleting: boolean }) {
   const { say, locale } = useSay();
   const [confirming, setConfirming] = useState(false);
   const notice = storageNotice(storage);
   const kept = storage.kind !== "none";
+  // Not kept but the file is still there until its check has run: say it, with the deadline.
+  const pending = !kept && !purged;
   return (
     <section aria-labelledby="where-title" className="flex flex-col gap-2" data-testid="document-storage">
       <h2 id="where-title" className="text-lg font-semibold">
         {say("document.where.title")}
       </h2>
       <p className="m-0 font-semibold" data-testid="document-storage-notice">
-        {say(`document.where.${notice.key}`, notice.vars)}
+        {pending ? say("document.where.pendingPurge", { date: retainUntil ? formatDate(retainUntil, locale) : "" }) : say(`document.where.${notice.key}`, notice.vars)}
       </p>
-      <p className="m-0 text-sm text-fg-secondary">{kept ? (retainUntil ? say("document.where.retentionUntil", { date: formatDate(retainUntil, locale) }) : say("document.where.retentionNone")) : say("document.where.retentionNotKept")}</p>
-      {kept ? (
+      <p className="m-0 text-sm text-fg-secondary" hidden={pending}>{kept ? (retainUntil ? say("document.where.retentionUntil", { date: formatDate(retainUntil, locale) }) : say("document.where.retentionNone")) : say("document.where.retentionNotKept")}</p>
+      {kept || pending ? (
         <div className="flex flex-col items-start gap-2">
           {confirming ? <p className="m-0 text-sm text-fg-secondary">{say("document.where.deleteNowHint")}</p> : null}
           {confirming ? (

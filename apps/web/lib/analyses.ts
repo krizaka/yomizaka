@@ -2,9 +2,12 @@ import { type Analysis, AUTHENTICITY_MAX_BYTES, COMPLIANCE_MAX_CHARS, fromRunSta
 
 import { refundFailedAudit } from "./billing";
 import { query } from "./db";
-import { type AnalysisRow, isUuid, needsAttention, toAnalysis } from "./documents";
+import { type AnalysisRow, isUuid, needsAttention, readBytes, toAnalysis } from "./documents";
 import { refuse } from "./http";
 import { orazaka } from "./orazaka";
+import { purgeIfDone } from "./retention";
+import type { DocumentStore } from "./storage/port";
+import type { StoredKind } from "./storage/where";
 
 /**
  * An analysis is an Orazaka run. Starting one sends the document to the Studio that does the job — the compliance
@@ -30,13 +33,16 @@ export function searchText(report: ReturnType<typeof reportOf>): string {
   return report.signals.flatMap((s) => [s.signalId, s.observation, s.mayIndicate ?? "", s.where ?? ""]).join("\n");
 }
 
-export async function startAnalysis(ownerId: string, documentId: string, request: StartAnalysis, flowVersionId: string | null = null, billedVia: string | null = null): Promise<Analysis> {
+export async function startAnalysis(ownerId: string, documentId: string, request: StartAnalysis, flowVersionId: string | null = null, billedVia: string | null = null, store?: DocumentStore): Promise<Analysis> {
   if (!isUuid(documentId)) throw refuse(404, "NOT_FOUND", "No such document");
-  const [doc] = await query<{ mime_type: string; text: string; content: Buffer }>("SELECT mime_type, text, content FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, documentId]);
+  const [doc] = await query<{ mime_type: string; text: string; content: Buffer; storage: StoredKind }>("SELECT mime_type, text, content, storage FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, documentId]);
   if (!doc) throw refuse(404, "NOT_FOUND", "No such document");
+  // The file comes from where the document lives (a purged one has none: 409 NOT_KEPT); the compliance check reads the text, which a purge also removes.
+  const content = request.studio === "compliance-check" ? doc.content : await readBytes(doc, { ownerId, id: documentId }, store);
+  if (request.studio === "compliance-check" && doc.storage === "none" && doc.text === "" && doc.content.length === 0) throw refuse(409, "NOT_KEPT", "This document is not kept: only its report stays");
   const [running] = await query("SELECT id FROM analyses WHERE document_id = $1 AND studio = $2 AND status = 'running'", [documentId, request.studio]);
   if (running) throw refuse(409, "ALREADY_RUNNING", "This check is already running");
-  const inputs = runInputs(request, { mimeType: doc.mime_type, text: doc.text, content: doc.content });
+  const inputs = runInputs(request, { mimeType: doc.mime_type, text: doc.text, content });
   const run = await orazaka().startRun(request.studio, inputs);
   const kept = Object.fromEntries(Object.entries(inputs).filter(([k]) => k !== "document" && k !== "documentBase64"));
   const [row] = await query<AnalysisRow>(
@@ -62,6 +68,8 @@ export async function refresh(row: AnalysisRow, known?: OrazakaRun): Promise<Ana
   );
   // A run that failed gives its audit back (once): the person is not charged for a check that produced nothing.
   if (!report) await refundFailedAudit(query, row.id);
+  // Not kept: once the check has run, the file and the text are purged; only the report stays.
+  await purgeIfDone(query, row.document_id);
   return toAnalysis(updated!);
 }
 

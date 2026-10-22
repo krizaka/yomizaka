@@ -300,6 +300,8 @@ export const documentView = documentDetail.extend({
   storage: storageDescriptor,
   /** When it is purged (ISO), or null: kept until the person deletes it. */
   retainUntil: z.string().nullable(),
+  /** Not kept and already purged: only the report stays. */
+  purged: z.boolean(),
 });
 export type DocumentView = z.infer<typeof documentView>;
 
