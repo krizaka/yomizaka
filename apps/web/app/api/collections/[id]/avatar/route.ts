@@ -5,7 +5,7 @@ import { requireSession } from "@/lib/access";
 import { query } from "@/lib/db";
 import { handle, refuse } from "@/lib/http";
 import { act, type Params } from "@/lib/organisation/api";
-import { avatarKey, readAvatar, removeAvatar, uploadAvatar } from "@/lib/organisation/avatar";
+import { readAvatar, removeAvatar, uploadAvatar } from "@/lib/organisation/avatar";
 import { ownedCollection } from "@/lib/organisation/store";
 import { limit } from "@/lib/rate-limit";
 import { assertFeature, settingsFor } from "@/lib/settings/guards";
@@ -28,8 +28,6 @@ export function GET(req: Request, { params }: Params) {
     if (!store) throw refuse(404, "NOT_FOUND", "No avatar image");
     const collection = await ownedCollection(query, owner, id);
     if (collection.avatar?.kind !== AVATAR_KIND.image) throw refuse(404, "NOT_FOUND", "No avatar image");
-    const signed = await store.signedUrl(avatarKey(owner, id, collection.avatar.version), 120);
-    if (signed) return new Response(null, { status: 302, headers: { Location: signed, "Cache-Control": "private, max-age=90" } });
     const image = await readAvatar(query, owner, id, store);
     if (!image) throw refuse(404, "NOT_FOUND", "No avatar image");
     return new Response(Buffer.from(image.bytes), { headers: { "Content-Type": image.contentType, "Cache-Control": "private, max-age=31536000, immutable", "X-Content-Type-Options": "nosniff" } });

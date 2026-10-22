@@ -1,4 +1,3 @@
-import { AVATAR_KIND } from "@yomizaka/core";
 import { z } from "zod";
 
 import { avatarStore } from "@/app/active-store";
@@ -6,7 +5,7 @@ import { avatarStore } from "@/app/active-store";
 import { readJson } from "../http";
 import { assertFeature, settingsFor } from "../settings/guards";
 import { act, type Params } from "./api";
-import { avatarKey, setSetAvatar } from "./avatar";
+import { forgetAvatarImage, setSetAvatar } from "./avatar";
 import { deleteChoice } from "./rules";
 import { createCollection, createFolder, deleteCollection, deleteFolder, moveCollection, moveFolder, ownedCollection, renameCollection, renameFolder, setDefaultCollection } from "./store";
 
@@ -57,7 +56,7 @@ export function containerHandlers(kind: keyof typeof CONTAINER) {
         const before = kind === "collection" ? await ownedCollection(q, owner, id).catch(() => null) : null;
         await c.remove(q, owner, id, choice);
         // a stored avatar image goes with its collection
-        if (before?.avatar?.kind === AVATAR_KIND.image) await avatarStore()?.delete(avatarKey(owner, id, before.avatar.version)).catch(() => undefined);
+        await forgetAvatarImage(avatarStore() ?? undefined, owner, id, before?.avatar ?? null);
         await note(c.audit, { id, files: choice.files });
       }),
   };

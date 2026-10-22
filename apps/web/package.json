@@ -17,7 +17,7 @@
     "@krizaka/fonts": "0.3.0",
     "@krizaka/i18n": "^0.2.1",
     "@krizaka/icons": "^0.7.0",
-    "@krizaka/organize": "0.2.0",
+    "@krizaka/organize": "0.3.0",
     "@krizaka/payments": "0.1.0",
     "@krizaka/query": "^0.2.1",
     "@krizaka/tailwind": "^3.45.0",
