@@ -201,7 +201,8 @@
       "dropAgain": "Add documents",
       "keep": "Keep my documents",
       "keepOn": "The document stays in your library, where the info panel says.",
-      "keepOff": "By default the document is deleted after its check: only the report stays."
+      "keepOff": "By default the document is deleted after its check: only the report stays.",
+      "keepDisabled": "Keeping is switched off in your settings: the document is deleted after its check."
     },
     "upload": {
       "queued": "Waiting",
@@ -448,7 +449,13 @@
       "PASSWORD_TOO_LONG": "The password is too long.",
       "MAIL_OFF": "E-mail sending is not available yet.",
       "CANCEL_SUBSCRIPTION_FIRST": "Cancel your subscription in the billing portal first.",
-      "EMAIL_MISMATCH": "The address you typed is not the account's."
+      "EMAIL_MISMATCH": "The address you typed is not the account's.",
+      "ENDPOINT_INVALID": "This address is not valid: it must be an https address that answers.",
+      "ENDPOINT_NOT_ALLOWED": "This address is not allowed.",
+      "CONNECTION_FAILED": "The connection test failed.",
+      "STORAGE_IN_USE": "Documents are kept on this storage: export or delete them first.",
+      "SETTINGS_KEY_MISSING": "This installation cannot store credentials.",
+      "KEEP_DISABLED": "Keeping is switched off for this account."
     },
     "adminConsole": {
       "shell": {
@@ -849,7 +856,8 @@
         "profil": "Profile",
         "securite": "Security",
         "facturation": "Plan and billing",
-        "donnees": "My data"
+        "donnees": "My data",
+        "stockage": "Storage"
       },
       "label": "Account settings",
       "profile": {
@@ -905,6 +913,39 @@
         "deleteEmail": "Type your e-mail address to confirm",
         "deletePassword": "Password",
         "deleteButton": "Delete for good"
+      },
+      "storage": {
+        "title": "Where your kept documents live",
+        "lead": "By default nothing is kept: the document is deleted after its check and only the report stays. Choose here where the documents you decide to keep go.",
+        "modeLabel": "Storage",
+        "none": "Keep nothing",
+        "noneHint": "“Keep” is switched off: everything is deleted after the check.",
+        "krizaka": "Krizaka's storage",
+        "krizakaHint": "Encrypted, in Canada in production.",
+        "s3": "My own storage (S3)",
+        "s3Hint": "An S3-compatible storage you run: your kept documents go there, not to us.",
+        "endpoint": "Service address (https)",
+        "region": "Region",
+        "bucket": "Bucket",
+        "accessKeyId": "Access key ID",
+        "secretAccessKey": "Secret access key",
+        "secretSaved": "A key is saved (encrypted). Leave empty to keep it.",
+        "secretHint": "Encrypted before it is saved, never shown again.",
+        "test": "Test the connection",
+        "testing": "Testing…",
+        "steps": "The test writes a small file, reads it back, then deletes it.",
+        "stepWrite": "Write",
+        "stepRead": "Read back",
+        "stepDelete": "Delete",
+        "stepOk": "passed",
+        "stepFail": "failed",
+        "whereCanada": "Your documents would be kept at {host}, region {region} (Canada).",
+        "whereElsewhere": "Your documents would be kept at {host}, region {region} (outside Canada: yours to judge).",
+        "testRequired": "Test the connection before saving.",
+        "keepDefault": "Tick “Keep my documents” by default",
+        "save": "Save",
+        "saved": "Saved.",
+        "noKey": "This installation cannot store credentials: your own S3 storage is unavailable."
       }
     },
     "confirmEmail": {

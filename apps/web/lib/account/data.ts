@@ -3,6 +3,9 @@ import type { QueryResultRow } from "pg";
 import { refuse } from "../http";
 import { EXTERNAL, objectKey } from "../retention";
 import type { DocumentStore } from "../storage/port";
+
+/** The store that holds a document: Krizaka's configured one, or the owner's own cloud. */
+export type StoresOf = (owner: "krizaka" | "workspace") => DocumentStore | null;
 import type { StoredKind } from "../storage/where";
 import type { AccountService } from "./port";
 
@@ -42,7 +45,7 @@ export interface DataExport {
 }
 
 /** Everything the person has with Yomizaka, as one JSON document: their profile, organisation, documents (kept files included) and reports. */
-export async function exportData(q: Query, accountId: string, store: DocumentStore, now: Date): Promise<DataExport> {
+export async function exportData(q: Query, accountId: string, stores: StoresOf, now: Date): Promise<DataExport> {
   const [a] = await q<{ id: string; email: string; name: string | null; locale: string; perspective: string | null; created_at: Date; terms_accepted_at: Date | null; privacy_accepted_at: Date | null; plan: string; audit_credits: number; free_audit_used_at: Date | null; subscription_status: string | null; current_period_end: Date | null }>(
     "SELECT id, email, name, locale, perspective, created_at, terms_accepted_at, privacy_accepted_at, plan, audit_credits, free_audit_used_at, subscription_status, current_period_end FROM accounts WHERE id = $1",
     [accountId],
@@ -59,14 +62,15 @@ export async function exportData(q: Query, accountId: string, store: DocumentSto
     return map;
   };
   const [colTags, folderTags, docTags] = await Promise.all([tagged("collection_tags", "collection_id"), tagged("folder_tags", "folder_id"), tagged("document_tags", "document_id")]);
-  const docs = await q<{ id: string; title: string; filename: string; mime_type: string; kind: string; size_bytes: number; sha256: string; pages: number | null; created_at: Date; storage: StoredKind; retain_until: Date | null; collection_id: string | null; folder_id: string | null; text: string; content: Buffer }>(
-    "SELECT id, title, filename, mime_type, kind, size_bytes, sha256, pages, created_at, storage, retain_until, collection_id, folder_id, text, content FROM documents WHERE owner_id = $1 ORDER BY created_at",
+  const docs = await q<{ id: string; title: string; filename: string; mime_type: string; kind: string; size_bytes: number; sha256: string; pages: number | null; created_at: Date; storage: StoredKind; storage_owner: "krizaka" | "workspace"; retain_until: Date | null; collection_id: string | null; folder_id: string | null; text: string; content: Buffer }>(
+    "SELECT id, title, filename, mime_type, kind, size_bytes, sha256, pages, created_at, storage, storage_owner, retain_until, collection_id, folder_id, text, content FROM documents WHERE owner_id = $1 ORDER BY created_at",
     [accountId],
   );
   const analyses = await q<{ id: string; document_id: string; studio: string; status: string; run_id: string | null; created_at: Date; report: unknown }>("SELECT a.id, a.document_id, a.studio, a.status, a.run_id, a.created_at, a.report FROM analyses a JOIN documents d ON d.id = a.document_id WHERE d.owner_id = $1 ORDER BY a.created_at", [accountId]);
   const consents = await q("SELECT * FROM consents WHERE account_id = $1", [accountId]);
   const fileOf = async (d: (typeof docs)[number]) => {
-    if (EXTERNAL.has(d.storage) && store.describe().kind === d.storage) {
+    const store = stores(d.storage_owner);
+    if (EXTERNAL.has(d.storage) && store && store.describe().kind === d.storage) {
       const found = await store.get(objectKey(accountId, d.id, d.mime_type));
       return found ? { contentType: d.mime_type, base64: Buffer.from(found.bytes).toString("base64") } : null;
     }
@@ -94,16 +98,17 @@ export async function exportData(q: Query, accountId: string, store: DocumentSto
  * Erases an account (Loi 25): refuses while a subscription is active (cancel it in the portal first), deletes the kept files
  * from their store, strips the person from the audit trail (the rows stay, without name, address or detail), then deletes the identity.
  */
-export async function eraseAccount(deps: { query: Query; store: DocumentStore; accounts: AccountService }, accountId: string): Promise<void> {
+export async function eraseAccount(deps: { query: Query; stores: StoresOf; accounts: AccountService }, accountId: string): Promise<void> {
   const { query: q } = deps;
   const [a] = await q<{ plan: string; subscription_status: string | null }>("SELECT plan, subscription_status FROM accounts WHERE id = $1", [accountId]);
   if (!a) throw refuse(404, "NOT_FOUND", "No such account");
   if (a.plan === "PRO" && (a.subscription_status === "active" || a.subscription_status === "trialing")) throw refuse(409, "CANCEL_SUBSCRIPTION_FIRST", "Cancel the subscription first");
-  const kept = await q<{ id: string; mime_type: string; storage: StoredKind }>("SELECT id, mime_type, storage FROM documents WHERE owner_id = $1", [accountId]);
+  const kept = await q<{ id: string; mime_type: string; storage: StoredKind; storage_owner: "krizaka" | "workspace" }>("SELECT id, mime_type, storage, storage_owner FROM documents WHERE owner_id = $1", [accountId]);
   for (const d of kept) {
     if (!EXTERNAL.has(d.storage)) continue;
-    if (deps.store.describe().kind !== d.storage) throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds a document is not available");
-    await deps.store.delete(objectKey(accountId, d.id, d.mime_type));
+    const store = deps.stores(d.storage_owner);
+    if (!store || store.describe().kind !== d.storage) throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds a document is not available");
+    await store.delete(objectKey(accountId, d.id, d.mime_type));
   }
   await q("UPDATE audit_log SET actor_label = 'deleted account', ip = NULL, detail = '{}'::jsonb WHERE actor_id = $1 OR target_id = $2", [accountId, accountId]);
   await deps.accounts.deleteAccount(accountId);

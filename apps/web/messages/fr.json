@@ -201,7 +201,8 @@
       "dropAgain": "Ajouter des documents",
       "keep": "Conserver mes documents",
       "keepOn": "Le document reste dans votre bibliothèque, là où le panneau d'information l'indique.",
-      "keepOff": "Par défaut, le document est supprimé après sa vérification : seul le rapport reste."
+      "keepOff": "Par défaut, le document est supprimé après sa vérification : seul le rapport reste.",
+      "keepDisabled": "La conservation est désactivée dans vos réglages : le document sera supprimé après sa vérification."
     },
     "upload": {
       "queued": "En attente",
@@ -448,7 +449,13 @@
       "PASSWORD_TOO_LONG": "Le mot de passe est trop long.",
       "MAIL_OFF": "L'envoi de courriels n'est pas encore disponible.",
       "CANCEL_SUBSCRIPTION_FIRST": "Annulez d'abord votre abonnement dans le portail de facturation.",
-      "EMAIL_MISMATCH": "L'adresse tapée n'est pas celle du compte."
+      "EMAIL_MISMATCH": "L'adresse tapée n'est pas celle du compte.",
+      "ENDPOINT_INVALID": "Cette adresse n'est pas valable : il faut une adresse https qui répond.",
+      "ENDPOINT_NOT_ALLOWED": "Cette adresse n'est pas autorisée.",
+      "CONNECTION_FAILED": "Le test de connexion a échoué.",
+      "STORAGE_IN_USE": "Des documents sont conservés sur ce stockage : exportez-les ou supprimez-les d'abord.",
+      "SETTINGS_KEY_MISSING": "Cette installation ne peut pas enregistrer d'identifiants.",
+      "KEEP_DISABLED": "La conservation est désactivée pour ce compte."
     },
     "adminConsole": {
       "shell": {
@@ -849,7 +856,8 @@
         "profil": "Profil",
         "securite": "Sécurité",
         "facturation": "Abonnement et facturation",
-        "donnees": "Mes données"
+        "donnees": "Mes données",
+        "stockage": "Stockage"
       },
       "label": "Réglages du compte",
       "profile": {
@@ -905,6 +913,39 @@
         "deleteEmail": "Tapez votre adresse e-mail pour confirmer",
         "deletePassword": "Mot de passe",
         "deleteButton": "Supprimer définitivement"
+      },
+      "storage": {
+        "title": "Où vivent vos documents conservés",
+        "lead": "Par défaut, rien n'est conservé : le document est supprimé après sa vérification et seul le rapport reste. Choisissez ici où vont les documents que vous décidez de conserver.",
+        "modeLabel": "Stockage",
+        "none": "Ne rien conserver",
+        "noneHint": "« Conserver » est désactivé : tout est supprimé après la vérification.",
+        "krizaka": "Le stockage de Krizaka",
+        "krizakaHint": "Chiffré, au Canada en production.",
+        "s3": "Mon propre stockage (S3)",
+        "s3Hint": "Un stockage compatible S3 que vous administrez : vos documents conservés y vont, pas chez nous.",
+        "endpoint": "Adresse du service (https)",
+        "region": "Région",
+        "bucket": "Bucket",
+        "accessKeyId": "Identifiant d'accès",
+        "secretAccessKey": "Clé secrète",
+        "secretSaved": "Une clé est enregistrée (chiffrée). Laissez vide pour la garder.",
+        "secretHint": "Chiffrée avant d'être enregistrée, jamais réaffichée.",
+        "test": "Tester la connexion",
+        "testing": "Test en cours…",
+        "steps": "Le test écrit un petit fichier, le relit puis le supprime.",
+        "stepWrite": "Écrire",
+        "stepRead": "Relire",
+        "stepDelete": "Supprimer",
+        "stepOk": "réussi",
+        "stepFail": "échec",
+        "whereCanada": "Vos documents seraient conservés chez {host}, région {region} (Canada).",
+        "whereElsewhere": "Vos documents seraient conservés chez {host}, région {region} (hors Canada : à vous de juger si cela convient).",
+        "testRequired": "Testez la connexion avant d'enregistrer.",
+        "keepDefault": "Cocher « Conserver mes documents » par défaut",
+        "save": "Enregistrer",
+        "saved": "Enregistré.",
+        "noKey": "Cette installation ne peut pas enregistrer d'identifiants : le stockage S3 personnel est indisponible."
       }
     },
     "confirmEmail": {

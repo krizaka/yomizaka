@@ -32,7 +32,7 @@ describe.runIf(enabled)("export and erasure (Loi 25)", () => {
     await query("UPDATE documents SET content = ''::bytea, text = '' WHERE id = $1", [gone.summary.id]);
     const [lib] = await query<{ id: string }>("INSERT INTO libraries (owner_id, name) VALUES ($1, 'Ma bibliothèque') RETURNING id", [owner]);
     await query("INSERT INTO collections (library_id, name) VALUES ($1, 'Baux')", [lib!.id]);
-    const out = await exportData(query, owner, store, NOW);
+    const out = await exportData(query, owner, () => store, NOW);
     expect(out.exportedAt).toBe(NOW.toISOString());
     expect(JSON.stringify(out)).not.toContain("password");
     expect(out.profile).toMatchObject({ name: "Éric" });
@@ -52,7 +52,7 @@ describe.runIf(enabled)("export and erasure (Loi 25)", () => {
     const doc = await storeDocument(owner, file, bytes("e"), "lease", policy(true, store));
     await query("INSERT INTO audit_log (actor_id, actor_label, action, target_id, detail, ip) VALUES ($1, 'eric@example.test', 'document.uploaded', $2, '{\"size\":1}', '203.0.113.9')", [owner, doc.summary.id]);
     expect(store.size()).toBe(1);
-    await eraseAccount({ query, store, accounts }, owner);
+    await eraseAccount({ query, stores: () => store, accounts }, owner);
     expect(store.size()).toBe(0);
     expect(await query("SELECT 1 FROM accounts WHERE id = $1", [owner])).toHaveLength(0);
     expect(await query("SELECT 1 FROM documents WHERE owner_id = $1", [owner])).toHaveLength(0);
@@ -63,7 +63,7 @@ describe.runIf(enabled)("export and erasure (Loi 25)", () => {
   it("refuses while a subscription is active: cancel it in the portal first", async () => {
     const owner = await account("plan='PRO'");
     await query("UPDATE accounts SET subscription_status = 'active' WHERE id = $1", [owner]);
-    await expect(eraseAccount({ query, store: noneStore(), accounts }, owner)).rejects.toMatchObject({ status: 409, body: { code: "CANCEL_SUBSCRIPTION_FIRST" } });
+    await expect(eraseAccount({ query, stores: () => noneStore(), accounts }, owner)).rejects.toMatchObject({ status: 409, body: { code: "CANCEL_SUBSCRIPTION_FIRST" } });
     expect(await query("SELECT 1 FROM accounts WHERE id = $1", [owner])).toHaveLength(1);
   });
 });

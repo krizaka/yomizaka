@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { z } from "zod";
 
 import { accountService } from "@/app/accounts-edge";
-import { activeStore } from "@/app/active-store";
+import { storesOf } from "@/app/active-store";
 import { accountAct } from "@/lib/account/act";
 import { eraseAccount } from "@/lib/account/data";
 import { audit } from "@/lib/audit";
@@ -18,7 +18,8 @@ export const POST = (req: Request) => accountAct(req, "delete-account", async (s
   if (input.email !== s.account.email) throw refuse(400, "EMAIL_MISMATCH", "Type your e-mail address to confirm");
   const accounts = accountService();
   await accounts.confirmPassword(s.account.id, input.password);
-  await eraseAccount({ query, store: activeStore(), accounts }, s.account.id);
+  const stores = await storesOf(s.account.id);
+  await eraseAccount({ query, stores: stores.of, accounts }, s.account.id);
   await audit({ action: "account.deleted", actorId: null, actorLabel: "deleted account", headers: req.headers });
   (await cookies()).delete(SESSION_COOKIE);
   return { ok: true };
