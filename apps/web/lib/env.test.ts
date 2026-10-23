@@ -17,6 +17,13 @@ describe("env", () => {
     expect(Object.keys(envSchema.shape)).not.toContain("APP_PUBLIC_ACTIONS");
   });
 
+  it("declares the demo seed credentials under the app context", () => {
+    expect(readEnv({ APP_DEMO_ACCOUNT_EMAIL: "demo@example.test", APP_DEMO_ACCOUNT_PASSWORD: "long-enough-password" })).toMatchObject({
+      APP_DEMO_ACCOUNT_EMAIL: "demo@example.test",
+      APP_DEMO_ACCOUNT_PASSWORD: "long-enough-password",
+    });
+  });
+
   it("closes sign-up unless AUTH_SIGNUP_ENABLED is exactly true", () => {
     expect(readEnv({}).AUTH_SIGNUP_ENABLED).toBe(false);
     expect(readEnv({ AUTH_SIGNUP_ENABLED: "yes" }).AUTH_SIGNUP_ENABLED).toBe(false);

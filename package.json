@@ -19,6 +19,8 @@
     "lint:sg:test": "ast-grep test --skip-snapshot-tests",
     "sg:ratchet:update": "node scripts/sg-ratchet.mjs --update",
     "sg:fix": "node scripts/sg-fix.mjs",
+    "demo:documents": "node scripts/demo-documents/cli.mjs",
+    "demo:seed": "node scripts/demo-seed/cli.mjs",
     "check:overflow": "node scripts/check-overflow.mjs",
     "check:admin-live": "node scripts/check-admin-live.mjs",
     "payments:setup": "pnpm --filter @yomizaka/web exec krizaka-payments-setup --catalogue ../../deploy/payments-catalogue.json"

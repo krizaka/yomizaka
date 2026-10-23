@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { complianceReport, fromRunStatus, isTerminal, passages, queryKeys, reportOf, startAnalysis } from "./index";
+import { complianceReport, fromRunStatus, isSeededCheck, isTerminal, passages, queryKeys, reportOf, SEEDED_INPUTS, startAnalysis } from "./index";
 
 // A report exactly as the compliance Studio assembles it (orazaka-packs document-validation worker, `_assemble`).
 const COMPLIANCE = {
@@ -104,5 +104,16 @@ describe("passages", () => {
   it("returns the whole text when nothing is quoted", () => {
     expect(passages("abc", [])).toEqual([{ text: "abc" }]);
     expect(passages("", [])).toEqual([{ text: "" }]);
+  });
+});
+
+describe("a seeded check (the demo data set) is shown, never certified", () => {
+  it("is recognised by the marker the seed writes in its inputs, and nothing else", () => {
+    expect(SEEDED_INPUTS).toEqual({ seeded: "true" });
+    expect(isSeededCheck({ inputs: { ...SEEDED_INPUTS } })).toBe(true);
+    expect(isSeededCheck({ inputs: { seeded: "true", jurisdiction: "QC" } })).toBe(true);
+    expect(isSeededCheck({ inputs: {} })).toBe(false);
+    expect(isSeededCheck({ inputs: { seeded: "false" } })).toBe(false);
+    expect(isSeededCheck({ inputs: { jurisdiction: "QC", asOf: "2026-10-23" } })).toBe(false);
   });
 });

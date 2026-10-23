@@ -374,6 +374,8 @@
       "exportVerify": "Vérifier un rapport",
       "exportSha": "SHA-256 du rapport",
       "exportKey": "Clé de signature",
+      "seededNote": "Une vérification de démonstration (jeu de données semé) : rien n’a tourné sur le moteur, aucun rapport signé n’est produit pour elle.",
+      "exportUnavailable": "Ce rapport ne peut pas être produit pour l’instant.",
       "exportPdf": "Télécharger le PDF",
       "reused": "Résultat réutilisé : ce document exact a déjà été vérifié avec les mêmes règles, aucune nouvelle vérification n’a été lancée.",
       "photoOrigin": {
@@ -1649,6 +1651,25 @@
       "mac": {
         "name": "Mac",
         "body": "Gardez une bibliothèque dans un dossier de votre Mac, glissez-y des documents depuis le Finder. Vos documents ne quittent jamais le dossier."
+      }
+    }
+  },
+  "demo": {
+    "eric": {
+      "persona": "Éric, gestionnaire d'immeubles (données de démonstration fictives)",
+      "collections": {
+        "rosemont": {
+          "name": "Immeuble Rosemont",
+          "description": "Les baux et le contrat d'entretien de l'immeuble Rosemont — documents spécimens fictifs, certains avec des défauts que les vérifications doivent trouver."
+        },
+        "villeray": {
+          "name": "Candidats — 4½ Villeray",
+          "description": "Relevés de paie, relevés bancaires et lettres d'emploi des candidats au 4½ de Villeray — documents spécimens fictifs."
+        },
+        "invoices": {
+          "name": "Factures 2026",
+          "description": "Les factures d'entretien de 2026 — documents spécimens fictifs, dont une avec un total inexact."
+        }
       }
     }
   }
