@@ -7,7 +7,7 @@ const config = z.object({
   config: z.object({
     maxFileBytes: z.number(),
     allowedTypes: z.array(z.string()),
-    features: z.object({ keepDocuments: z.boolean(), ownStorage: z.boolean(), documentInsight: z.boolean(), assistant: z.boolean() }),
+    features: z.object({ keepDocuments: z.boolean(), ownStorage: z.boolean(), documentInsight: z.boolean(), assistant: z.boolean(), batches: z.boolean().default(false) }),
     payments: z.object({ enabled: z.boolean(), display: z.string() }),
     avatars: z.object({ enabled: z.boolean(), maxBytes: z.number(), seeds: z.array(z.string()), canUpload: z.boolean() }),
   }),

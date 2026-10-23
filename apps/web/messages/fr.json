@@ -532,7 +532,17 @@
       "AVATAR_TOO_LARGE": "Cette image est trop lourde pour un avatar.",
       "AVATAR_STORAGE_UNAVAILABLE": "Le stockage des avatars ne répond pas.",
       "AVATAR_STORAGE_OFF": "Les images d'avatar ne sont pas disponibles ici : choisissez un avatar de la série.",
-      "BATCH_TOO_LARGE": "Ce lot dépasse {limit} lignes : coupez-le en deux."
+      "BATCH_TOO_LARGE": "Ce lot dépasse {limit} lignes : coupez-le en deux.",
+      "MISSING_FILE": "Aucun fichier n'est nommé sur cette ligne.",
+      "UNKNOWN_CHECK": "Vérification inconnue : écrivez « compliance » ou « authenticity ».",
+      "INVALID_OPTIONS": "Les options de cette vérification ne sont pas valides (juridiction, règles).",
+      "UNKNOWN_DOCUMENT_TYPE": "Type de document inconnu : bail, contrat, facture ou autre.",
+      "DUPLICATE_ROW": "Ce document et cette vérification sont déjà demandés plus haut.",
+      "FILE_NOT_SENT": "Ce fichier n'a pas été déposé avec le CSV.",
+      "BATCH_EMPTY": "Le CSV ne contient aucune ligne.",
+      "FAILED": "La vérification n'a pas abouti.",
+      "CANCELLED": "La vérification a été annulée.",
+      "REFUSED": "Ligne refusée."
     },
     "adminConsole": {
       "shell": {
@@ -1308,6 +1318,59 @@
         "current": "En cours",
         "upcoming": "À venir",
         "error": "Échec"
+      }
+    },
+    "batch": {
+      "title": "Vérifier un lot de documents",
+      "lead": "Un fichier CSV (une ligne par document) et les documents qu'il nomme, déposés ensemble. Avant tout lancement, l'aperçu dit ce qui sera vérifié, réutilisé ou refusé, et ce que ça coûte.",
+      "drop": "Déposez le CSV et ses documents",
+      "hint": "CSV + PDF, Word ou texte — jusqu'à 10 Mo par document",
+      "template": "Télécharger le modèle CSV",
+      "received": "{csv} · {count} document(s)",
+      "previewing": "Lecture du lot…",
+      "previewCaption": "Aperçu du lot, ligne par ligne",
+      "rowsCaption": "Les lignes du lot",
+      "missingColumns": "Colonnes obligatoires absentes : {columns}.",
+      "unknownColumns": "Colonnes ignorées : {columns}.",
+      "unnamedFiles": "Documents qu'aucune ligne ne nomme (ignorés) : {files}.",
+      "summary": "{check} à vérifier · {reuse} déjà vérifié(s), réutilisé(s) sans frais · {refused} refusé(s)",
+      "cost": {
+        "pro": "Pro : les {audits} vérifications sont incluses.",
+        "covered": "Ce lot utilise {audits} audit(s) ; vous avez {credits} crédit(s).",
+        "short": "Ce lot demande {audits} audit(s) et vous avez {credits} crédit(s) : les lignes non couvertes attendront votre achat."
+      },
+      "start": "Lancer le lot ({count})",
+      "export": "Exporter les résultats (CSV)",
+      "progressLabel": "Avancement du lot",
+      "progress": "{settled} sur {total}",
+      "paused": "Ajouter des crédits",
+      "finished": "Lot terminé : {done} vérifié(s), {failed} en échec, {refused} refusé(s).",
+      "fromCheck": "Plusieurs documents ?",
+      "fromCheckLink": "Importer un lot depuis un CSV",
+      "columns": {
+        "line": "Ligne",
+        "file": "Fichier",
+        "check": "Vérification",
+        "state": "État",
+        "reason": "Raison",
+        "reference": "Référence"
+      },
+      "studios": {
+        "compliance-check": "Conformité",
+        "document-authenticity": "Authenticité"
+      },
+      "preview": {
+        "check": "À vérifier",
+        "reuse": "Réutilisé",
+        "refused": "Refusé"
+      },
+      "states": {
+        "pending": "En attente",
+        "reused": "Réutilisé",
+        "running": "En cours",
+        "done": "Vérifié",
+        "failed": "En échec",
+        "refused": "Refusé"
       }
     }
   },

@@ -457,4 +457,35 @@ ALTER TABLE documents DROP CONSTRAINT IF EXISTS documents_mime_type_check;
 ALTER TABLE documents ADD CONSTRAINT documents_mime_type_check CHECK (mime_type IN ('application/pdf', 'text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'));
 `,
   },
+  {
+    version: "0025_batches",
+    sql: `
+-- yomizaka#232: a batch of checks from a CSV. The batch is rows, the source of truth; each item one row of the CSV,
+-- the document it stored and the analysis it runs or reuses. Deleting the account, the batch or the document
+-- takes the rows with it (the analysis keeps its own lifecycle).
+CREATE TABLE batches (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id    uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  name        text NOT NULL CHECK (length(name) BETWEEN 1 AND 200),
+  created_at  timestamptz NOT NULL DEFAULT now(),
+  finished_at timestamptz
+);
+CREATE INDEX batches_owner ON batches(owner_id, created_at DESC);
+
+CREATE TABLE batch_items (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  batch_id    uuid NOT NULL REFERENCES batches(id) ON DELETE CASCADE,
+  line        integer NOT NULL CHECK (line >= 2),
+  file_name   text NOT NULL,
+  reference   text,
+  request     jsonb,
+  document_id uuid REFERENCES documents(id) ON DELETE SET NULL,
+  analysis_id uuid REFERENCES analyses(id) ON DELETE SET NULL,
+  state       text NOT NULL CHECK (state IN ('pending', 'reused', 'running', 'done', 'failed', 'refused')),
+  error       text,
+  UNIQUE (batch_id, line)
+);
+CREATE INDEX batch_items_state ON batch_items(batch_id, state);
+`,
+  },
 ];

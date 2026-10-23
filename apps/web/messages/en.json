@@ -532,7 +532,17 @@
       "AVATAR_TOO_LARGE": "This image is too heavy for an avatar.",
       "AVATAR_STORAGE_UNAVAILABLE": "The avatar storage did not answer.",
       "AVATAR_STORAGE_OFF": "Avatar images are not available here: pick one from the set.",
-      "BATCH_TOO_LARGE": "This batch is over {limit} rows: split it in two."
+      "BATCH_TOO_LARGE": "This batch is over {limit} rows: split it in two.",
+      "MISSING_FILE": "No file is named on this row.",
+      "UNKNOWN_CHECK": "Unknown check: write « compliance » or « authenticity ».",
+      "INVALID_OPTIONS": "This check's options are not valid (jurisdiction, rules).",
+      "UNKNOWN_DOCUMENT_TYPE": "Unknown document type: lease, contract, invoice or other.",
+      "DUPLICATE_ROW": "This document and check are already asked for above.",
+      "FILE_NOT_SENT": "This file was not dropped with the CSV.",
+      "BATCH_EMPTY": "The CSV has no row.",
+      "FAILED": "The check did not complete.",
+      "CANCELLED": "The check was cancelled.",
+      "REFUSED": "Row refused."
     },
     "adminConsole": {
       "shell": {
@@ -1308,6 +1318,59 @@
         "current": "In progress",
         "upcoming": "Upcoming",
         "error": "Failed"
+      }
+    },
+    "batch": {
+      "title": "Check a batch of documents",
+      "lead": "A CSV file (one row per document) and the documents it names, dropped together. Before anything starts, the preview says what will be checked, reused or refused, and what it costs.",
+      "drop": "Drop the CSV and its documents",
+      "hint": "CSV + PDF, Word or text — up to 10 MB per document",
+      "template": "Download the CSV template",
+      "received": "{csv} · {count} document(s)",
+      "previewing": "Reading the batch…",
+      "previewCaption": "The batch, row by row",
+      "rowsCaption": "The batch's rows",
+      "missingColumns": "Required columns missing: {columns}.",
+      "unknownColumns": "Columns ignored: {columns}.",
+      "unnamedFiles": "Documents no row names (ignored): {files}.",
+      "summary": "{check} to check · {reuse} already checked, reused at no cost · {refused} refused",
+      "cost": {
+        "pro": "Pro: the {audits} checks are included.",
+        "covered": "This batch uses {audits} audit(s); you have {credits} credit(s).",
+        "short": "This batch needs {audits} audit(s) and you have {credits} credit(s): the rows not covered wait for your purchase."
+      },
+      "start": "Start the batch ({count})",
+      "export": "Export the results (CSV)",
+      "progressLabel": "Batch progress",
+      "progress": "{settled} of {total}",
+      "paused": "Add credits",
+      "finished": "Batch done: {done} checked, {failed} failed, {refused} refused.",
+      "fromCheck": "Several documents?",
+      "fromCheckLink": "Import a batch from a CSV",
+      "columns": {
+        "line": "Line",
+        "file": "File",
+        "check": "Check",
+        "state": "State",
+        "reason": "Reason",
+        "reference": "Reference"
+      },
+      "studios": {
+        "compliance-check": "Compliance",
+        "document-authenticity": "Authenticity"
+      },
+      "preview": {
+        "check": "To check",
+        "reuse": "Reused",
+        "refused": "Refused"
+      },
+      "states": {
+        "pending": "Waiting",
+        "reused": "Reused",
+        "running": "Running",
+        "done": "Checked",
+        "failed": "Failed",
+        "refused": "Refused"
       }
     }
   },
