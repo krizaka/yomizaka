@@ -21,12 +21,12 @@ import { useSay } from "@/lib/i18n-client";
 import { TAG_COLORS, type TagColor } from "@/lib/organisation/rules";
 
 /** The creating, renaming, moving, tagging and deleting of the organisation (ADR-0007): each a call to its route, then the page refreshes. */
-export type Option = { id: string; name: string; avatar?: CollectionAvatarData | null };
+export type Option = { id: string; name: string; avatar?: CollectionAvatarData | null; libraryId?: string };
 export type TagOption = Option & { color: TagColor };
 
 const nameForm = createKrizakaForm({ schema: z.object({ name: z.string().trim().min(1).max(80) }), defaultValues: { name: "" } });
 
-function useAction<T>(run: (input: T) => Promise<unknown>, done: () => void) {
+function useAction<T>(run: (input: T) => Promise<unknown>, done: () => void, after?: (input: T) => string | null | undefined) {
   const { say } = useSay();
   const router = useRouter();
   const [problem, setProblem] = useState<string | null>(null);
@@ -40,7 +40,10 @@ function useAction<T>(run: (input: T) => Promise<unknown>, done: () => void) {
       try {
         await mutation.mutateAsync(input);
         done();
-        router.refresh();
+        // Once the place this page shows is gone or moved (its folder deleted or moved), go to a valid address — never refresh the old one.
+        const next = after?.(input);
+        if (next) router.push(next);
+        else router.refresh();
       } catch (error) {
         setProblem(say(`errors.${errorKey(error)}`));
       }
@@ -212,7 +215,7 @@ type Action = (typeof MENU)[number]["action"];
  * The menu of a collection, a folder or a document: rename, move, edit tags, delete. A deletion always asks what becomes of
  * the files. `collections` and `folders` are the destinations (the folders of the item's collection); `tags` the owner's tags.
  */
-export function ItemMenu({ kind, id, name, avatar = null, isDefault = false, collections = [], folders = [], tags = [], current = [], collectionId = null }: { kind: ItemKind; id: string; name: string; avatar?: CollectionAvatarData | null; isDefault?: boolean; collections?: Option[]; folders?: Option[]; tags?: TagOption[]; current?: string[]; collectionId?: string | null }) {
+export function ItemMenu({ kind, id, name, avatar = null, isDefault = false, collections = [], folders = [], tags = [], current = [], collectionId = null, afterDelete, afterMove }: { kind: ItemKind; id: string; name: string; avatar?: CollectionAvatarData | null; isDefault?: boolean; collections?: Option[]; folders?: Option[]; tags?: TagOption[]; current?: string[]; collectionId?: string | null; afterDelete?: string; afterMove?: Record<string, string> }) {
   const { say } = useSay();
   const [dialog, setDialog] = useState<Action | null>(null);
   const close = () => setDialog(null);
@@ -234,11 +237,11 @@ export function ItemMenu({ kind, id, name, avatar = null, isDefault = false, col
         </DropdownMenu.Content>
       </DropdownMenu.Root>
       {dialog === "rename" ? <NameDialog open onOpenChange={close} title={say("organisation.rename")} initial={name} submit={(n) => krizakaFetch(api, { method: "PATCH", json: { name: n } })} /> : null}
-      {dialog === "move" ? <MoveDialog kind={kind} id={id} api={api} collections={collections} folders={folders} collectionId={collectionId} onClose={close} /> : null}
+      {dialog === "move" ? <MoveDialog kind={kind} id={id} api={api} collections={collections} folders={folders} collectionId={collectionId} onClose={close} after={afterMove} /> : null}
       {dialog === "avatar" ? <AvatarDialog id={id} name={name} avatar={avatar} onClose={close} /> : null}
       {dialog === "default" ? <DefaultDialog api={api} name={name} onClose={close} /> : null}
       {dialog === "tags" ? <TagsDialog kind={kind} id={id} tags={tags} current={current} onClose={close} /> : null}
-      {dialog === "delete" ? <DeleteDialog kind={kind} id={id} name={name} api={api} collections={collections} folders={folders} onClose={close} /> : null}
+      {dialog === "delete" ? <DeleteDialog kind={kind} id={id} name={name} api={api} collections={collections} folders={folders} onClose={close} after={afterDelete} /> : null}
     </>
   );
 }
@@ -246,7 +249,7 @@ export function ItemMenu({ kind, id, name, avatar = null, isDefault = false, col
 const DEFAULT = "__default__";
 const ROOT = "__root__";
 
-function MoveDialog({ kind, id, api, collections, folders, collectionId, onClose }: { kind: ItemKind; id: string; api: string; collections: Option[]; folders: Option[]; collectionId: string | null; onClose: () => void }) {
+function MoveDialog({ kind, id, api, collections, folders, collectionId, onClose, after }: { kind: ItemKind; id: string; api: string; collections: Option[]; folders: Option[]; collectionId: string | null; onClose: () => void; after?: Record<string, string> }) {
   const { say } = useSay();
   const [target, setTarget] = useState<string>("");
   const move = useAction<string>(async (to) => {
@@ -254,7 +257,7 @@ function MoveDialog({ kind, id, api, collections, folders, collectionId, onClose
     if (kind === "folder") return krizakaFetch(api, { method: "PATCH", json: { collectionId: to } });
     const [c, f] = to.split("|");
     return krizakaFetch(`${api}/placement`, { method: "PUT", json: { collectionId: c === DEFAULT ? null : c, folderId: f && f !== ROOT ? f : null } });
-  }, onClose);
+  }, onClose, (to) => after?.[to] ?? null);
   // A document goes to a collection (its root) or to a folder of its own collection; a folder to another collection.
   const options: Option[] =
     kind === "document"
@@ -298,11 +301,11 @@ function TagsDialog({ kind, id, tags, current, onClose }: { kind: ItemKind; id: 
   );
 }
 
-function DeleteDialog({ kind, id, name, api, collections, folders, onClose }: { kind: ItemKind; id: string; name: string; api: string; collections: Option[]; folders: Option[]; onClose: () => void }) {
+function DeleteDialog({ kind, id, name, api, collections, folders, onClose, after }: { kind: ItemKind; id: string; name: string; api: string; collections: Option[]; folders: Option[]; onClose: () => void; after?: string }) {
   const { say } = useSay();
   const [files, setFiles] = useState<"move" | "delete">("move");
   const [to, setTo] = useState<string>(kind === "folder" ? ROOT : DEFAULT);
-  const remove = useAction<null>(() => krizakaFetch(api, { method: "DELETE", json: { files, to: files === "move" && to !== ROOT && to !== DEFAULT ? to : null } }), onClose);
+  const remove = useAction<null>(() => krizakaFetch(api, { method: "DELETE", json: { files, to: files === "move" && to !== ROOT && to !== DEFAULT ? to : null } }), onClose, () => after ?? null);
   const destinations: Option[] =
     kind === "folder"
       ? [{ id: ROOT, name: say("organisation.moveUpFolder") }, ...folders.filter((f) => f.id !== id)]

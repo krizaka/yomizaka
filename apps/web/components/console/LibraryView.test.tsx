@@ -53,7 +53,7 @@ describe("the library home (yomizaka#275, the UX review's Y3)", () => {
     const html = render({ latest: [check(1, "attention"), check(2, "checked")] });
     const section = html.slice(html.indexOf('data-testid="latest-checks"'), html.indexOf('data-testid="library-section"'));
     expect(section.match(/<li\b/g)).toHaveLength(2);
-    expect(section).toContain('href="/fr/app/documents/d1/verifications"');
+    expect(section).toContain('href="/fr/app/documents/d1/rapport"');
     expect(section).toContain('href="/fr/app/verifications"');
     expect(readable(section)).toContain("Dernières vérifications");
     expect(readable(section)).toContain("Tout voir");

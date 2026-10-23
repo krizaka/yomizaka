@@ -3,6 +3,7 @@
 import { Alert } from "@krizaka/ui/alert";
 import { type DocumentInsight as Insight, TEXT_SOURCE, type TextSource } from "@yomizaka/core";
 
+import { amountsOnce } from "@/lib/document-face";
 import { useSay } from "@/lib/i18n-client";
 
 const date = (iso: string, locale: string) => new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "UTC" }).format(new Date(`${iso}T00:00:00Z`));
@@ -21,7 +22,8 @@ export function DocumentInsight({ insight, documentId, source }: { insight: Insi
   for (const d of u.dates.filter((x) => x.kind !== "other").concat(u.dates.filter((x) => x.kind === "other").slice(0, 3))) rows.push([say(`insight.dateKinds.${d.kind}`), date(d.value, locale)]);
   for (const p of u.parties) rows.push([say(`insight.roles.${p.role}`), p.name]);
   for (const r of u.references) rows.push([say(`insight.refKinds.${r.kind}`), <span key={r.kind} className="font-mono">{r.value}</span>]);
-  for (const a of u.amounts.slice(0, 8)) rows.push([say(`insight.amountKinds.${a.kind}`), money(a.cents, locale)]);
+  // One amount per kind (the review's D3): « Loyer » never twice.
+  for (const a of amountsOnce(u.amounts).slice(0, 8)) rows.push([say(`insight.amountKinds.${a.kind}`), money(a.cents, locale)]);
   if (u.language !== "unknown") rows.push([say("insight.language"), say(`insight.languages.${u.language}`)]);
   if (u.pages) rows.push([say("insight.pages"), String(u.pages)]);
   // A photo: how its text was read and where the photo comes from — reported, never a verdict.

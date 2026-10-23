@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+
+import { KrizakaQueryProvider } from "@krizaka/query";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
@@ -5,7 +8,7 @@ import { I18nProvider } from "@/lib/i18n-client";
 import en from "@/messages/en.json";
 import fr from "@/messages/fr.json";
 
-import { queueItemsOf, UploadTray } from "./LibraryDrop";
+import { AddFilesButton, bundlePhotos, DropZone, LibraryDrop, queueItemsOf, UploadTray } from "./LibraryDrop";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh() {}, push() {}, replace() {} }) }));
 
@@ -46,5 +49,43 @@ describe("drop anywhere on the library (the review's B4): the tray follows the q
     expect(text).not.toContain("en échec");
     expect(readable(render(queueItemsOf([item("a", "error", { error: "x" })], say), "en"))).toContain("0 in progress · 0 done · 1 failed");
     expect(render([])).toBe("");
+  });
+
+  it("several photos dropped together are the pages of one document: the first carries the group, the other files go one by one, the tray says so", () => {
+    const f = (name: string, type: string) => new File(["x"], name, { type });
+    const one = bundlePhotos([f("a.pdf", "application/pdf"), f("p1.jpg", "image/jpeg")]);
+    expect(one.queued.map((x) => x.name)).toEqual(["a.pdf", "p1.jpg"]);
+    expect(one.groups.size).toBe(0);
+    const many = bundlePhotos([f("p1.jpg", "image/jpeg"), f("a.pdf", "application/pdf"), f("p2.heic", "image/heic"), f("p3.png", "image/png")]);
+    expect(many.queued.map((x) => x.name)).toEqual(["a.pdf", "p1.jpg"]);
+    expect([...many.groups.keys()].map((x) => x.name)).toEqual(["p1.jpg"]);
+    expect([...many.groups.values()][0]!.map((x) => x.name)).toEqual(["p1.jpg", "p2.heic", "p3.png"]);
+    const rows = queueItemsOf([item("p1", "uploading"), item("a", "queued")], say, undefined, new Map([["p1.pdf", 3]]));
+    expect(rows[0]!.name).toBe("p1.pdf et 2 autres photos, un seul document");
+    expect(rows[1]!.name).toBe("a.pdf");
+    expect(readFileSync(new URL("./LibraryDrop.tsx", import.meta.url), "utf8")).toContain("send(GROUPS.get(file) ?? [file]");
+  });
+
+  it("a place wraps its page in the island: the header's picker button and the zone where the page wants it — nothing outside one (the review's Y7)", () => {
+    const wrap = (node: React.ReactNode) =>
+      renderToStaticMarkup(
+        <I18nProvider locale="fr" messages={MESSAGES.fr as never}>
+          <KrizakaQueryProvider>{node}</KrizakaQueryProvider>
+        </I18nProvider>,
+      );
+    expect(wrap(<AddFilesButton>Ajouter</AddFilesButton>)).toBe("");
+    expect(wrap(<DropZone />)).toBe("");
+    const html = wrap(
+      <LibraryDrop placement={{ collectionId: "c1", folderId: null }}>
+        <AddFilesButton>Ajouter des documents</AddFilesButton>
+        <DropZone />
+      </LibraryDrop>,
+    );
+    expect(html).toContain('data-testid="add-files"');
+    expect(html).toContain('type="file"');
+    expect(html).toContain('data-testid="library-dropzone"');
+    expect(html.match(/data-testid="library-dropzone"/g)).toHaveLength(1);
+    // The dropped files go to the place: the placement reaches `send`.
+    expect(readFileSync(new URL("./LibraryDrop.tsx", import.meta.url), "utf8")).toContain('send(GROUPS.get(file) ?? [file], "auto", placement, keep, signal, onProgress)');
   });
 });

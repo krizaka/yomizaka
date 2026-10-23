@@ -63,7 +63,7 @@ export function BatchProgress({ initial }: { initial: Batch }) {
         value: (i) => i.file,
         cell: (i) =>
           i.documentId ? (
-            <Link className="font-mono text-sm font-semibold text-fg-accent underline" href={`/${locale}/app/documents/${i.documentId}/verifications`}>
+            <Link className="font-mono text-sm font-semibold text-fg-accent underline" href={`/${locale}/app/documents/${i.documentId}/rapport`}>
               {i.file}
             </Link>
           ) : (
