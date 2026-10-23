@@ -271,6 +271,8 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
 - **Principle**: the header answers « where am I, what is here, what can I do »; one drop zone per screen (§ 12).
 - **Refused**: a tree in a side panel (a collection rarely has more than a handful of folders); moving the table's
   filters into the bar (the table's are the documented ones; the bar holds what the table cannot: the tags).
-- **Cost**: a folder's menu is one click further (open the folder first); the tag menu lists names without their
-  colour (the chips and the table keep it).
+- **Cost**: a folder's menu is one click further (open the folder first) — and once the folder is deleted or moved from
+  its own page, the page leads to the collection or to the folder's new address, never to a dead one; the tag menu lists
+  names without their colour (the chips and the table keep it); photos dropped together are one document (the task
+  page's default), said in the tray.
 - **Signal we are wrong**: people look for the folder's menu on the chip; the folder row wraps on three lines.

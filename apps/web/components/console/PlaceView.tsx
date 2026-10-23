@@ -2,7 +2,7 @@ import { ChipLink } from "@krizaka/ui/chip-link";
 import { EmptyState } from "@krizaka/ui/empty-state";
 import { Mascot } from "@krizaka/ui/mascots";
 import { PageHeader } from "@krizaka/ui/page-header";
-import { type CollectionAvatar as CollectionAvatarData, type DocumentSummary } from "@yomizaka/core";
+import { type CollectionAvatar as CollectionAvatarData, type DocumentSummary, type Jurisdiction } from "@yomizaka/core";
 import Link from "next/link";
 
 import { CollectionMark } from "@/components/console/CollectionMark";
@@ -11,7 +11,7 @@ import { AddFilesButton, DropZone, LibraryDrop } from "@/components/console/Libr
 import { CreateButton, ItemMenu } from "@/components/console/OrganisationActions";
 import { PlaceFilters } from "@/components/console/PlaceFilters";
 import type { Messages } from "@/lib/i18n";
-import { libraryPath, type ViewState } from "@/lib/organisation/rules";
+import { libraryPath, movedFolderHrefs, type ViewState } from "@/lib/organisation/rules";
 import type { Folder, Tag } from "@/lib/organisation/store";
 import { countLabel } from "@/lib/plural";
 
@@ -23,7 +23,7 @@ type Say = Messages["console"]["organisation"];
  * folder's page); the folders as a row of chips; the tags as a filter bar (`?tags=`); the files; and the whole page as a drop
  * zone that files into this place (the only zone is the empty place's). Rendered on the server; the actions are client islands.
  */
-export function PlaceView({ locale, t, library, collection, folder, folders, documents, tags, view, tagsByDocument, folderTags, collections, collectionTags, path }: {
+export function PlaceView({ locale, t, library, collection, folder, folders, documents, tags, view, tagsByDocument, folderTags, collections, collectionTags, path, jurisdictions }: {
   locale: "en" | "fr";
   t: Say;
   library: { id: string; name: string };
@@ -35,9 +35,11 @@ export function PlaceView({ locale, t, library, collection, folder, folders, doc
   view: ViewState;
   tagsByDocument: Record<string, Tag[]>;
   folderTags?: Record<string, string[]>;
-  collections: { id: string; name: string; avatar: CollectionAvatarData | null }[];
+  collections: { id: string; name: string; avatar: CollectionAvatarData | null; libraryId?: string }[];
   collectionTags: string[];
   path: string;
+  /** The jurisdictions the account is offered: a dropped file is checked at once only when one is possible (Y4). */
+  jurisdictions?: readonly Jurisdiction[];
 }) {
   const crumbs = [
     { href: `/${locale}/app`, label: t.library },
@@ -47,7 +49,7 @@ export function PlaceView({ locale, t, library, collection, folder, folders, doc
   const counts = [...(folder ? [] : [countLabel(t, "folders", folders.length)]), countLabel(t, "files", documents.length)].join(" · ");
   const folderOptions = folders.map((f) => ({ id: f.id, name: f.name }));
   return (
-    <LibraryDrop placement={{ collectionId: collection.id, folderId: folder?.id ?? null }}>
+    <LibraryDrop placement={{ collectionId: collection.id, folderId: folder?.id ?? null }} jurisdictions={jurisdictions}>
       <div className="flex flex-col gap-6">
         <PageHeader
           breadcrumb={
@@ -80,7 +82,7 @@ export function PlaceView({ locale, t, library, collection, folder, folders, doc
             <>
               <AddFilesButton>{t.addDocuments}</AddFilesButton>
               {folder ? (
-                <ItemMenu kind="folder" id={folder.id} name={folder.name} collections={collections} folders={folderOptions} tags={tags} current={folderTags?.[folder.id] ?? []} collectionId={collection.id} />
+                <ItemMenu kind="folder" id={folder.id} name={folder.name} collections={collections} folders={folderOptions} tags={tags} current={folderTags?.[folder.id] ?? []} collectionId={collection.id} afterDelete={libraryPath(locale, library.id, collection.id)} afterMove={movedFolderHrefs(locale, collections, folder.id)} />
               ) : (
                 <>
                   <CreateButton kind="folder" parentId={collection.id} variant="ghost" />

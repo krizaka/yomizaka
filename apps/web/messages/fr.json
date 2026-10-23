@@ -210,7 +210,8 @@
         "failedOne": "{count} en échec",
         "failedMany": "{count} en échec",
         "collapse": "Replier",
-        "show": "Afficher"
+        "show": "Afficher",
+        "photos": "{name} et {count} autres photos, un seul document"
       },
       "checkLead": "Un fichier à la fois ; plusieurs d’un coup ? Importez un lot.",
       "caption": "Vos documents",

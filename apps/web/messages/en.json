@@ -210,7 +210,8 @@
         "failedOne": "{count} failed",
         "failedMany": "{count} failed",
         "collapse": "Collapse",
-        "show": "Show"
+        "show": "Show",
+        "photos": "{name} and {count} more photos, one document"
       },
       "checkLead": "One file at a time; many at once? Import a batch.",
       "caption": "Your documents",

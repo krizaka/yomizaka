@@ -4,6 +4,8 @@ import { PlaceView } from "@/components/console/PlaceView";
 import { pageSession } from "@/lib/access";
 import { query } from "@/lib/db";
 import { documentsByIds } from "@/lib/documents";
+import { appEnvironment } from "@/lib/env";
+import { availableFlows, offerFor } from "@/lib/flows";
 import { asLocale, getDictionary } from "@/lib/i18n";
 import { isId, libraryPath, parseView } from "@/lib/organisation/rules";
 import * as org from "@/lib/organisation/store";
@@ -23,7 +25,9 @@ export async function PlacePage({ params, searchParams }: Props) {
   const t = dict.organisation;
   const tags = await org.listTags(query, owner);
   const overview = await org.overview(query, owner);
-  const collections = overview.flatMap((l) => l.collections).map((c) => ({ id: c.id, name: c.name, avatar: c.avatar }));
+  const collections = overview.flatMap((l) => l.collections.map((c) => ({ id: c.id, name: c.name, avatar: c.avatar, libraryId: l.id })));
+  // The account's offer: a dropped file is checked at once only when one jurisdiction is possible (Y4), as on the library's home.
+  const jurisdictions = offerFor(await availableFlows(appEnvironment()), session.account.perspective).jurisdictions;
 
   if (!isId(p.library) || !isId(p.collection)) notFound();
   const collection = await org.ownedCollection(query, owner, p.collection).catch(() => null);
@@ -48,6 +52,7 @@ export async function PlacePage({ params, searchParams }: Props) {
       documents={documents}
       tags={tags}
       view={view}
+      jurisdictions={jurisdictions}
      
       tagsByDocument={Object.fromEntries(byDoc)}
       folderTags={Object.fromEntries(folders.map((f) => [f.id, f.tags.map((x) => x.id)]))}

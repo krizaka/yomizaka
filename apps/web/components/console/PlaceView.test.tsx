@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 import { KrizakaQueryProvider } from "@krizaka/query";
 import type { DocumentSummary } from "@yomizaka/core";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -93,6 +95,21 @@ describe("a collection (the UX review's Y7)", () => {
     expect(text).toContain("Urgent");
     expect(text).toContain(fr.console.organisation.clearTags);
     expect(text).toContain("2 fichiers");
+  });
+
+  it("a dropped file is checked under the account's offer, and a folder's menu leads somewhere valid once the folder is deleted or moved", () => {
+    const page = readFileSync(new URL("./PlacePage.tsx", import.meta.url), "utf8");
+    expect(page).toContain("offerFor(await availableFlows(appEnvironment()), session.account.perspective).jurisdictions");
+    expect(page).toContain("jurisdictions={jurisdictions}");
+    expect(page).toContain("libraryId: l.id");
+    const view = readFileSync(new URL("./PlaceView.tsx", import.meta.url), "utf8");
+    expect(view).toContain("jurisdictions={jurisdictions}>");
+    expect(view).toContain("afterDelete={libraryPath(locale, library.id, collection.id)}");
+    expect(view).toContain("afterMove={movedFolderHrefs(locale, collections, folder.id)}");
+    const actions = readFileSync(new URL("./OrganisationActions.tsx", import.meta.url), "utf8");
+    expect(actions).toContain("if (next) router.push(next);");
+    expect(actions).toContain("onClose, (to) => after?.[to] ?? null)");
+    expect(actions).toContain("onClose, () => after ?? null)");
   });
 
   it("the whole page is the drop zone (an overlay); the empty place shows the only visible zone with the owl, the full one its table", () => {

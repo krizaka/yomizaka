@@ -16,7 +16,7 @@ import { useSay } from "@/lib/i18n-client";
 import { pluralKey } from "@/lib/plural";
 
 import { startIfSure } from "./start-check";
-import { ACCEPT, ACCEPT_RULES, type Placement, refusalCode, send, translated } from "./upload";
+import { ACCEPT, ACCEPT_RULES, isPhotoFile, type Placement, refusalCode, send, translated } from "./upload";
 
 type Say = (key: string, vars?: Record<string, string | number>) => string;
 
@@ -24,13 +24,24 @@ type Say = (key: string, vars?: Record<string, string | number>) => string;
 const STATUS: Record<UploadItem["status"], QueueStatus> = { queued: QueueStatus.Queued, uploading: QueueStatus.Reading, paused: QueueStatus.Queued, done: QueueStatus.Done, error: QueueStatus.Failed };
 const REFUSAL: Partial<Record<string, string>> = { size: "library.refusedSize", type: "library.refusedType", count: "library.refusedCount" };
 
-/** The tray's rows from the queue: the file, where it stands in words, its progress while it sends, a retry once it failed. */
-export function queueItemsOf(items: readonly UploadItem[], say: Say, retry?: (id: string) => void): UploadQueueItem[] {
+/** Several photos dropped together are the pages of ONE document (the default, as on the task page): the first photo carries the group, the other files go one by one. */
+export function bundlePhotos(files: readonly File[]): { queued: File[]; groups: Map<File, File[]> } {
+  const photos = files.filter(isPhotoFile);
+  if (photos.length < 2) return { queued: [...files], groups: new Map() };
+  return { queued: [...files.filter((f) => !isPhotoFile(f)), photos[0]!], groups: new Map([[photos[0]!, photos]]) };
+}
+
+/** The photo groups by their lead file, read by the upload that carries them (the File is the key: nothing to clean up). */
+const GROUPS = new WeakMap<File, File[]>();
+
+/** The tray's rows from the queue: the file (a photo group says how many it carries), where it stands in words, its progress while it sends, a retry once it failed. */
+export function queueItemsOf(items: readonly UploadItem[], say: Say, retry?: (id: string) => void, pages?: ReadonlyMap<string, number>): UploadQueueItem[] {
   return items.map((i) => {
     const status = STATUS[i.status];
+    const count = pages?.get(i.name) ?? 1;
     return {
       id: i.id,
-      name: i.name,
+      name: count > 1 ? say("library.tray.photos", { name: i.name, count: count - 1 }) : i.name,
       status,
       statusText: status === QueueStatus.Failed && i.error ? i.error : say(`upload.${i.status}`),
       progress: status === QueueStatus.Reading ? i.progress : undefined,
@@ -104,6 +115,8 @@ export function LibraryDrop({ zone = false, examples, jurisdictions = ["QC"], pl
   const router = useRouter();
   const app = useAppConfig();
   const [notice, setNotice] = useState<string | null>(null);
+  // How many photos each group carries, by its lead file's name: the tray says it.
+  const [pages, setPages] = useState<ReadonlyMap<string, number>>(new Map());
   const prefs = useQuery({ queryKey: ["storage-prefs"], queryFn: () => krizakaFetch("/api/me/storage", { schema: z.object({ settings: z.object({ mode: z.enum(STORAGE_MODES), keepDefault: z.boolean() }) }) }), throwOnError: false, retry: false });
   const keep = prefs.data?.settings.mode !== STORAGE_MODE.none && app?.features.keepDocuments !== false && Boolean(prefs.data?.settings.keepDefault);
   const queue = useUploadQueue({
@@ -113,7 +126,7 @@ export function LibraryDrop({ zone = false, examples, jurisdictions = ["QC"], pl
     upload: async (file, { signal, onProgress }) => {
       let stored;
       try {
-        stored = await send([file], "auto", placement, keep, signal, onProgress);
+        stored = await send(GROUPS.get(file) ?? [file], "auto", placement, keep, signal, onProgress);
       } catch (error) {
         throw translated(error, say);
       }
@@ -123,10 +136,16 @@ export function LibraryDrop({ zone = false, examples, jurisdictions = ["QC"], pl
     },
   });
   const refusal = (r: FileRejection) => say(REFUSAL[r.reason] ?? "library.refusedCount", { name: r.file.name });
-  const items = queueItemsOf(queue.items, say, queue.retry);
+  const add = (files: readonly File[]) => {
+    const { queued, groups } = bundlePhotos(files);
+    for (const [lead, group] of groups) GROUPS.set(lead, group);
+    if (groups.size) setPages((m) => new Map([...m, ...[...groups].map(([lead, group]) => [lead.name, group.length] as const)]));
+    queue.add(queued);
+  };
+  const items = queueItemsOf(queue.items, say, queue.retry, pages);
   const zoneNode = (
     <div data-testid="library-dropzone">
-      <Dropzone title={say("library.dropTitle")} browseLabel={say("library.browse")} hint={say("library.hint")} accept={ACCEPT} maxSize={app?.maxFileBytes ?? MAX_FILE_BYTES} maxFiles={20} multiple onFiles={(files) => queue.add(files)} refusalLabel={refusal} />
+      <Dropzone title={say("library.dropTitle")} browseLabel={say("library.browse")} hint={say("library.hint")} accept={ACCEPT} maxSize={app?.maxFileBytes ?? MAX_FILE_BYTES} maxFiles={20} multiple onFiles={(files) => add(files)} refusalLabel={refusal} />
     </div>
   );
   return (
@@ -136,14 +155,14 @@ export function LibraryDrop({ zone = false, examples, jurisdictions = ["QC"], pl
         hint={say("library.dropAnywhereHint")}
         accept={ACCEPT_RULES}
         onFiles={(accepted, rejected) => {
-          if (accepted.length) queue.add(accepted);
+          if (accepted.length) add(accepted);
           setNotice(rejected.length ? say("library.refusedType", { name: rejected[0]!.name }) : null);
         }}
       />
       {zone ? zoneNode : null}
-      {examples?.(queue.add)}
+      {examples?.(add)}
       {notice ? <Alert tone="warning">{notice}</Alert> : null}
-      {children !== undefined ? <DropIsland.Provider value={{ add: queue.add, zone: zoneNode }}>{children}</DropIsland.Provider> : null}
+      {children !== undefined ? <DropIsland.Provider value={{ add, zone: zoneNode }}>{children}</DropIsland.Provider> : null}
       <UploadTray items={items} />
     </>
   );
