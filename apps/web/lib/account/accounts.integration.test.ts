@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 
 import { postgresAccounts } from "@krizaka/auth";
+import { addHours } from "date-fns";
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { migrate, query } from "../db";
@@ -10,7 +11,8 @@ import { tokenHash } from "../session";
 
 /** The account adapter (`@krizaka/auth`, whose own tests cover the rules) wired as Yomizaka wires it, against a real PostgreSQL (skipped without YOMIZAKA_DB_IT=1 and DATABASE_URL). */
 const enabled = process.env.YOMIZAKA_DB_IT === "1" && !!process.env.DATABASE_URL;
-const NOW = new Date("2026-10-22T12:00:00Z");
+// The clock, not a date written in the file: the e-mail change token lives 24 h, and a fixed date became a time bomb (yomizaka#271).
+const NOW = new Date();
 const PASSWORD = "correct-horse-battery";
 
 describe.runIf(enabled)("account service (Postgres adapter)", () => {
@@ -66,7 +68,7 @@ describe.runIf(enabled)("account service (Postgres adapter)", () => {
   it("a link that expired, or that is not a link, changes nothing", async () => {
     const { id, email } = await account();
     await service.requestEmailChange(id, { newEmail: `e-${Math.random().toString(36).slice(2)}@yomizaka.test`, password: PASSWORD }, NOW);
-    expect(await service.confirmEmailChange(last(), new Date("2026-10-24T12:00:01Z"))).toBe("INVALID");
+    expect(await service.confirmEmailChange(last(), addHours(NOW, 49))).toBe("INVALID");
     expect(await service.confirmEmailChange("garbage", NOW)).toBe("INVALID");
     expect((await service.profile(id)).email).toBe(email);
   });
