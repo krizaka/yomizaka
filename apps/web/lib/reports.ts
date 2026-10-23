@@ -27,34 +27,30 @@ async function translationOf(ownerId: string, analysis: Analysis, lang: Locale) 
   return { trace: view.trace, texts: view.texts };
 }
 
-/** The signed audit report of one finished compliance check, for the document's owner — or the reason it cannot be made. */
-export async function reportFor(ownerId: string, documentId: string, analysisId: string, lang: Locale): Promise<{ issued: IssuedReport; filename: string }> {
+/** The document, its check and the payload a report in this language is built from — or the reason it cannot be made. */
+async function payloadFor(ownerId: string, documentId: string, analysisId: string, lang: Locale) {
   const document = await getDocument(ownerId, documentId);
   const analysis = await getAnalysis(ownerId, documentId, analysisId);
-  let payload;
   try {
-    payload = buildPayload(document, analysis, lang, (await translationOf(ownerId, analysis, lang)) ?? undefined);
+    return { document, analysis, payload: buildPayload(document, analysis, lang, (await translationOf(ownerId, analysis, lang)) ?? undefined) };
   } catch (error) {
     if (error instanceof ReportError) throw refuse(409, "REPORT_NOT_READY", error.message);
     throw error;
   }
+}
+
+const slugOf = (title: string) => title.normalize("NFKD").replace(/[^\w-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "document";
+
+/** The signed audit report of one finished compliance check, for the document's owner — or the reason it cannot be made. */
+export async function reportFor(ownerId: string, documentId: string, analysisId: string, lang: Locale): Promise<{ issued: IssuedReport; filename: string }> {
+  const { document, analysis, payload } = await payloadFor(ownerId, documentId, analysisId, lang);
   const issued = issueReport(payload, reportLabels(lang), signingKey());
-  const slug = document.title.normalize("NFKD").replace(/[^\w-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "document";
-  return { issued, filename: `yomizaka-audit-${slug}-${(analysis.runId ?? analysis.id).slice(0, 8)}.html` };
+  return { issued, filename: `yomizaka-audit-${slugOf(document.title)}-${(analysis.runId ?? analysis.id).slice(0, 8)}.html` };
 }
 
 /** The signed PDF of the same check: the report's pages, a visible signature page, the attestation embedded. */
 export async function reportPdfFor(ownerId: string, documentId: string, analysisId: string, lang: Locale): Promise<{ issued: IssuedPdf; filename: string }> {
-  const document = await getDocument(ownerId, documentId);
-  const analysis = await getAnalysis(ownerId, documentId, analysisId);
-  let payload;
-  try {
-    payload = buildPayload(document, analysis, lang, (await translationOf(ownerId, analysis, lang)) ?? undefined);
-  } catch (error) {
-    if (error instanceof ReportError) throw refuse(409, "REPORT_NOT_READY", error.message);
-    throw error;
-  }
+  const { document, analysis, payload } = await payloadFor(ownerId, documentId, analysisId, lang);
   const issued = await issuePdf(payload, reportLabels(lang), signingKey());
-  const slug = document.title.normalize("NFKD").replace(/[^\w-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "document";
-  return { issued, filename: `yomizaka-audit-${slug}-${(analysis.runId ?? analysis.id).slice(0, 8)}.pdf` };
+  return { issued, filename: `yomizaka-audit-${slugOf(document.title)}-${(analysis.runId ?? analysis.id).slice(0, 8)}.pdf` };
 }
