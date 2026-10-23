@@ -237,7 +237,6 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
 - **Cost**: the address and the password keep their own forms (two sections on the Security route: each needs the
   password, a different act from the profile's save).
 - **Signal we are wrong**: people change the language and do not expect the page to move to it; the undo is never used.
-
 ## 14. Checking a document: drop first, the kind as a choice, the options once the files are known, the run on the drop
 
 - **Decision** (2026-10-23, the UX review's Y4, #281; the CTO's answer to question 2): on « Vérifier un document » the
@@ -256,3 +255,30 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
 - **Cost**: a drop of several photos is grouped by the default (one document) before the option is visible; the option
   rules the next drop.
 - **Signal we are wrong**: people cancel runs started on the drop; « Autre » is chosen to avoid the automatic start.
+## 15. The document on DetailLayout: the verdict first, the tabs as routes, the engine's facts folded
+
+- **Decision** (2026-10-23, the UX review's Y5, #281): the document page is `DetailLayout` — back to the library, the kind
+  and the filename as the eyebrow, one h1 that says what the document is and who it is with (`displayTitle`: the
+  insight's nature and the tenant — or the other party, or the issuer —, the stored title when nothing is sure), the
+  status chip, pages · size · retention as the meta, one primary action by state (« Télécharger le rapport » once a real
+  check finished; nothing to press before), the rest in a ⋯ menu (open the file, the PDF, delete with a confirm). Three
+  tabs are three routes: `/rapport` — the verdict band (the points to look at on the rules read, in the report's tone,
+  one line of context: the jurisdiction's rules, the ruleset, its date), the findings with what failed first (blocking
+  before major, in words and tone, the quote, the article; what passed folded), then the engine's facts folded (the run
+  id once, the Studio version, the ruleset, the dates, the report's fingerprint and key) and the detailed note folded;
+  `/document` — the file or its text, what Yomizaka read (each kind of amount once), where it lives, the file facts;
+  `/historique` — only once a second run exists. The sharing sits in the side panel, only for a check that can be
+  certified; a seeded demo check says it has no certified report. The old addresses (`/infos`, `/fichier`, `/texte`,
+  `/verifications`) answer 308 to their tab.
+- **Problem**: the filename was the title (« bail-rosemont-5.pdf »); the run id, the Studio version and the fingerprint
+  sat on the face before the verdict; severities read as codes (BLOCKING, DETERMINISTIC); the amounts repeated; four
+  tabs for two things; two equal export buttons.
+- **Principle**: the answer first, the proof on demand; the title is what the document is, not what the file is called;
+  one primary action by state.
+- **Refused**: a verdict of Yomizaka's own (the report's figures only — rules read, points to look at —, never
+  « conforme »); a tab per analysis; hiding the run id (it is in the technical details, once); a local copy of a verdict
+  block (K5 goes to krizaka-ui; until it ships, the band is `Stat` in a toned section and the findings are cards).
+- **Cost**: the authenticity signals share the report tab, under the verdict; a document with no check shows the start
+  cards under « Pas encore vérifié »; « Voir dans le fichier » moves to the document tab, where the passage is lit.
+- **Signal we are wrong**: people open the technical details on every report to find the run id; the switch to the
+  document tab on « Voir dans le fichier » loses them.

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { DOCUMENT_KINDS, DOCUMENT_STATUSES } from "./vocabulary";
 
-export { DOCUMENT_KINDS, DOCUMENT_STATUSES, DOCUMENT_TABS, type DocumentTab } from "./vocabulary";
+export { DOCUMENT_KINDS, DOCUMENT_STATUSES, DOCUMENT_TABS, type DocumentTab, movedDocumentTab, OLD_DOCUMENT_TABS } from "./vocabulary";
 
 /*
  * Yomizaka's contracts — what the API answers and the web reads, validated on both sides. Structure only: the words are

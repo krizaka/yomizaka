@@ -321,8 +321,9 @@
         "business": "Choose what Yomizaka reads: a supplier's invoice against Québec's mandatory mentions and the GST/QST number formats, or the PDF file itself. Contract rules are coming soon."
       },
       "tabs": {
-        "infos": "Information",
-        "verifications": "Checks"
+        "rapport": "Report",
+        "document": "Document",
+        "historique": "History"
       },
       "where": {
         "title": "Where this document lives",
@@ -360,6 +361,11 @@
         "invoice": "A supplier's invoice (Québec: GST and QST numbers, mandatory mentions)",
         "contract": "A service contract (Québec: late-payment interest, copyright and moral rights)"
       },
+      "jurisdictionNames": {
+        "QC": "Québec",
+        "FR": "France",
+        "BE-WAL": "Wallonia"
+      },
       "jurisdictions": {
         "QC": "Québec — residential lease (Civil Code, art. 1851 ff.)",
         "FR": "France — residential lease",
@@ -388,6 +394,11 @@
         "INSUFFICIENT_EVIDENCE": "Insufficient evidence"
       },
       "severity": "Severity",
+      "severities": {
+        "blocking": "blocking",
+        "major": "major",
+        "advice": "advice"
+      },
       "citation": "Source",
       "passage": "Passage",
       "noPassage": "No passage: the document says nothing on this point.",
@@ -1448,6 +1459,32 @@
         "when": "When",
         "run": "Run"
       }
+    },
+    "reportFace": {
+      "label": "The result",
+      "attentionOne": "{count} point to look at",
+      "attentionMany": "{count} points to look at",
+      "attentionNone": "Nothing to look at",
+      "onRules": "on {rules} rules",
+      "rulesOf": "Rules of {jurisdiction} · {ruleset} · in force on {date}",
+      "passedOne": "{count} rule met",
+      "passedMany": "{count} rules met",
+      "unsureOne": "{count} rule could not be checked",
+      "unsureMany": "{count} rules could not be checked",
+      "technical": "Technical details (run, version, fingerprints)",
+      "whoSees": "Who can see this report",
+      "onlyYou": "You alone, unless you share it.",
+      "history": "Every run of this document, newest first.",
+      "oneRun": "One run so far.",
+      "notChecked": "Not checked yet",
+      "notCheckedText": "Start a check: the verdict comes first, then every finding with its line.",
+      "fileAndText": "The file, its text, and what Yomizaka read in it.",
+      "seeInFile": "See in the file",
+      "more": "Details",
+      "downloadReport": "Download the report",
+      "backToReport": "Back to the report",
+      "otherChecks": "Other checks: another jurisdiction, the authenticity",
+      "openRun": "Open this report"
     },
     "batch": {
       "title": "Check a batch of documents",
