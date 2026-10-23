@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { cleanName, deleteChoice, libraryPath } from "./rules";
+import { cleanName, deleteChoice, libraryPath, movedFolderHrefs } from "./rules";
 
 const A = "11111111-1111-4111-8111-111111111111";
 
@@ -27,5 +27,12 @@ describe("what happens to the files of a deleted folder or collection", () => {
     expect(deleteChoice({ files: "move", to: A })).toEqual({ files: "move", to: A });
     expect(() => deleteChoice({})).toThrow();
     expect(() => deleteChoice({ files: "move", to: "nope" })).toThrow();
+  });
+});
+
+describe("a folder moved from its own page (the UX review's Y7)", () => {
+  it("has a new address under each collection whose library is known — none for the others", () => {
+    expect(movedFolderHrefs("fr", [{ id: "c2", libraryId: "l1" }, { id: "c3" }], "f1")).toEqual({ c2: "/fr/app/bibliotheque/l1/c2/f1" });
+    expect(movedFolderHrefs("en", [], "f1")).toEqual({});
   });
 });

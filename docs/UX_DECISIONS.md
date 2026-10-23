@@ -255,6 +255,26 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
 - **Cost**: a drop of several photos is grouped by the default (one document) before the option is visible; the option
   rules the next drop.
 - **Signal we are wrong**: people cancel runs started on the drop; « Autre » is chosen to avoid the automatic start.
+## 17. The collection: the header says what is here, folders as a row, the drop on the whole page, the tags as a filter bar
+
+- **Decision** (2026-10-23, the UX review's Y7, #281): a collection (or a folder) is `PageHeader` — the breadcrumb whose
+  root is « Bibliothèque », the place mark and the name, the counts under it (« 2 dossiers · 12 fichiers »), the actions:
+  « Ajouter des documents » (the page's file picker), « Nouveau dossier », the ⋯ menu of the place (a folder's menu is on
+  the folder's page, no longer on each card). The folders are a row of chips with their counts. The tags are a
+  `FilterBar` (`?tags=`, the URL is the state), the table keeps its own filters (title, kind, state). A file dragged
+  anywhere on the page is filed into this place and checked when its kind is sure; the only drop zone is the empty
+  collection's. The search says « 1 résultat » and « 3 résultats ».
+- **Problem**: the collection repeated the drop zone under the table (B4); the folders were cards with a menu each
+  (three per row, a page for six folders); the table's filter read « Rechercher dans « Document » » (B6); the search
+  said « 1 résultat(s) » (H1).
+- **Principle**: the header answers « where am I, what is here, what can I do »; one drop zone per screen (§ 12).
+- **Refused**: a tree in a side panel (a collection rarely has more than a handful of folders); moving the table's
+  filters into the bar (the table's are the documented ones; the bar holds what the table cannot: the tags).
+- **Cost**: a folder's menu is one click further (open the folder first) — and once the folder is deleted or moved from
+  its own page, the page leads to the collection or to the folder's new address, never to a dead one; the tag menu lists
+  names without their colour (the chips and the table keep it); photos dropped together are one document (the task
+  page's default), said in the tray.
+- **Signal we are wrong**: people look for the folder's menu on the chip; the folder row wraps on three lines.
 ## 16. Vérifications: the filters in the address, their counts on the menus, a « nothing matches » that clears itself
 
 - **Decision** (2026-10-23, the UX review's Y6, #281): above the list of checks, `FilterBar` — a search on the title, the
