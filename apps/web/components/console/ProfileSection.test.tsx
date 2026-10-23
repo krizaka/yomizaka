@@ -6,7 +6,7 @@ import { I18nProvider } from "@/lib/i18n-client";
 import en from "@/messages/en.json";
 import fr from "@/messages/fr.json";
 
-import { profileDirty, profilePatch, ProfileSection, type ProfileValues } from "./ProfileSection";
+import { profileDirty, profilePatch, ProfileSection, type ProfileValues, undoable } from "./ProfileSection";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push() {}, replace() {}, refresh() {} }), usePathname: () => "/fr/app/settings/profil", useSearchParams: () => new URLSearchParams() }));
 
@@ -37,12 +37,20 @@ describe("the profile is one section with one save (the review's E2)", () => {
     expect(profileDirty(SAVED, { ...SAVED, perspective: "tenant" })).toBe(true);
   });
 
-  it("sends only what changed: the profile patch (a blank name clears it), the perspective when it moved", () => {
+  it("sends only the fields that changed — never the others, which another session may have edited — and the perspective when it moved", () => {
     expect(profilePatch(SAVED, { ...SAVED })).toEqual({ profile: null, perspective: null });
-    expect(profilePatch(SAVED, { ...SAVED, name: "  " })).toEqual({ profile: { name: null, avatarSeed: "plain-2", locale: "fr" }, perspective: null });
-    expect(profilePatch(SAVED, { ...SAVED, locale: "en", perspective: "tenant" })).toEqual({ profile: { name: "Éric Tremblay", avatarSeed: "plain-2", locale: "en" }, perspective: "tenant" });
-    expect(profilePatch(SAVED, { ...SAVED, perspective: "tenant" })).toEqual({ profile: null, perspective: "tenant" });
-    expect(profilePatch({ ...SAVED, avatarSeed: "" }, { ...SAVED, avatarSeed: "" })).toEqual({ profile: null, perspective: null });
+    expect(profilePatch(SAVED, { ...SAVED, name: "  " })).toEqual({ profile: { name: null }, perspective: null });
+    expect(profilePatch(SAVED, { ...SAVED, avatarSeed: "plain-4" })).toEqual({ profile: { avatarSeed: "plain-4" }, perspective: null });
+    expect(profilePatch(SAVED, { ...SAVED, avatarSeed: "" })).toEqual({ profile: { avatarSeed: null }, perspective: null });
+    expect(profilePatch(SAVED, { ...SAVED, locale: "en", perspective: "tenant" })).toEqual({ profile: { locale: "en" }, perspective: "tenant" });
+    expect(profilePatch(SAVED, { ...SAVED, name: " Éric ", perspective: "tenant" })).toEqual({ profile: null, perspective: "tenant" });
+  });
+
+  it("undo puts the previous values back, except a first perspective the server cannot unset", () => {
+    expect(undoable({ ...SAVED, perspective: "tenant" }, SAVED)).toBe(true);
+    expect(undoable({ ...SAVED, name: "Éric" }, SAVED)).toBe(true);
+    expect(undoable({ ...SAVED, perspective: null }, SAVED)).toBe(false);
+    expect(undoable({ ...SAVED, perspective: null }, { ...SAVED, perspective: null })).toBe(true);
   });
 
   it("renders the four rows — name, picture, language, side of the lease — and exactly one save, in both languages", () => {

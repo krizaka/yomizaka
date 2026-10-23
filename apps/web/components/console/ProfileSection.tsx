@@ -19,17 +19,26 @@ export interface ProfileValues {
   perspective: Audience | null;
 }
 
+/** The fields of `/api/me/profile`'s patch: only the ones that changed travel (another session's edit of the others is never overwritten). */
+export type ProfileFields = Partial<{ name: string | null; avatarSeed: string | null; locale: "en" | "fr" }>;
+
 /** Whether anything differs from what is saved: the one save is enabled only then. */
 export const profileDirty = (saved: ProfileValues, current: ProfileValues): boolean =>
   saved.name.trim() !== current.name.trim() || saved.avatarSeed !== current.avatarSeed || saved.locale !== current.locale || saved.perspective !== current.perspective;
 
-/** What the account API receives for the change: the profile patch (name, picture, language) and the perspective, each only when it changed. */
-export function profilePatch(saved: ProfileValues, current: ProfileValues): { profile: { name: string | null; avatarSeed: string | null; locale: "en" | "fr" } | null; perspective: Audience | null } {
+/** What the account API receives for the change: a field-level profile patch, and the perspective when it moved — each only when it changed. */
+export function profilePatch(saved: ProfileValues, current: ProfileValues): { profile: ProfileFields | null; perspective: Audience | null } {
   const name = current.name.trim();
-  const profile = saved.name.trim() !== name || saved.avatarSeed !== current.avatarSeed || saved.locale !== current.locale ? { name: name === "" ? null : name, avatarSeed: current.avatarSeed === "" ? null : current.avatarSeed, locale: current.locale } : null;
+  const profile: ProfileFields = {};
+  if (saved.name.trim() !== name) profile.name = name === "" ? null : name;
+  if (saved.avatarSeed !== current.avatarSeed) profile.avatarSeed = current.avatarSeed === "" ? null : current.avatarSeed;
+  if (saved.locale !== current.locale) profile.locale = current.locale;
   const perspective = current.perspective && saved.perspective !== current.perspective ? current.perspective : null;
-  return { profile, perspective };
+  return { profile: Object.keys(profile).length ? profile : null, perspective };
 }
+
+/** Undo puts the previous values back — except a first perspective, which the server cannot unset (the onboarding needs one). */
+export const undoable = (previous: ProfileValues, saved: ProfileValues): boolean => !(previous.perspective === null && saved.perspective !== null);
 
 const SOON = { available: false, soon: true } as const;
 const LANGUAGES = ["fr", "en"] as const;
@@ -37,6 +46,8 @@ const LANGUAGES = ["fr", "en"] as const;
 /**
  * The profile as one section with one save (the review's E2): name, picture (`AvatarPicker`), language (`LanguagePicker`),
  * which side of the lease (`ChoiceCards`) — dirty → saving → saved, with an undo; a changed language moves the page to it.
+ * The save sends only what changed and commits each call as it succeeds (the profile, then the perspective), so a refusal of
+ * the second never hides that the first is stored; edits typed while it saves stay in the draft.
  */
 export function ProfileSection({ initial, audiences }: { initial: ProfileValues; audiences: readonly { audience: Audience; status: "available" | "soon" }[] }) {
   const { say } = useSay();
@@ -46,16 +57,22 @@ export function ProfileSection({ initial, audiences }: { initial: ProfileValues;
   const [previous, setPrevious] = useState<ProfileValues | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const save = useSaveStatus();
-  const apply = async (next: ProfileValues, from: ProfileValues) => {
-    const { profile, perspective } = profilePatch(from, next);
-    if (profile) await krizakaFetch("/api/me/profile", { method: "PATCH", json: profile });
-    if (perspective) await krizakaFetch("/api/me/perspective", { method: "PUT", json: { perspective } });
-  };
   const run = async (next: ProfileValues, from: ProfileValues) => {
     setProblem(null);
+    const { profile, perspective } = profilePatch(from, next);
+    let committed = from;
     const ok = await save.track(async () => {
       try {
-        await apply(next, from);
+        if (profile) {
+          await krizakaFetch("/api/me/profile", { method: "PATCH", json: profile });
+          committed = { ...committed, name: next.name.trim(), avatarSeed: next.avatarSeed, locale: next.locale };
+          setSaved(committed);
+        }
+        if (perspective) {
+          await krizakaFetch("/api/me/perspective", { method: "PUT", json: { perspective } });
+          committed = { ...committed, perspective };
+          setSaved(committed);
+        }
       } catch (error) {
         setProblem(say(`errors.${errorKey(error)}`));
         throw error;
@@ -63,8 +80,6 @@ export function ProfileSection({ initial, audiences }: { initial: ProfileValues;
     });
     if (!ok) return;
     setPrevious(from);
-    setSaved(next);
-    setValues(next);
     if (next.locale !== from.locale) router.replace(`/${next.locale}/app/settings/profil`);
     else router.refresh();
   };
@@ -79,7 +94,7 @@ export function ProfileSection({ initial, audiences }: { initial: ProfileValues;
         dirty,
         status: save.status,
         onSave: () => void run(values, saved),
-        onUndo: previous ? () => void run(previous, saved) : undefined,
+        onUndo: previous && undoable(previous, saved) ? () => void run(previous, saved) : undefined,
         onDiscard: dirty
           ? () => {
               setValues(saved);
