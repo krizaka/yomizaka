@@ -19,7 +19,8 @@ export const COMPLIANCE_MAX_CHARS = 60_000;
 /** What can be uploaded: a PDF (its text layer is read) or plain text. */
 /** A Word file (.docx), accepted since yomizaka#229: its text is read for the checks, the file itself is examined for authenticity. */
 export const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-export const ACCEPTED_TYPES = ["application/pdf", "text/plain", DOCX_MIME] as const;
+export const ODT_MIME = "application/vnd.oasis.opendocument.text";
+export const ACCEPTED_TYPES = ["application/pdf", "text/plain", DOCX_MIME, ODT_MIME] as const;
 export const acceptedType = z.enum(ACCEPTED_TYPES);
 export type AcceptedType = z.infer<typeof acceptedType>;
 

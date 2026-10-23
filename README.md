@@ -21,11 +21,11 @@ and a real run. The Dev preview is **web only** (phone-first); the phone app (`a
 
 ## What it does
 
-- **Library** — upload PDFs or text files (a queue that pauses, resumes and retries); each is kept as sent, its text
+- **Library** — upload PDF, Word (.docx), OpenDocument text (.odt) or plain text files (a queue that pauses, resumes and retries); each is kept as sent, its text
   layer read for search, its SHA-256 recorded; a file sent twice is one document.
 - **Against the law** — a lease checked rule by rule against the rules of its jurisdiction (Québec, France, Wallonia) in force
   on a date: each finding gives its rule, severity, verdict, citation and the exact passage, highlighted in the text.
-- **Signs of editing** — a PDF examined as a file (producer, dates, successive saves, fonts): signals at three
+- **Signs of editing** — a PDF or office file (.docx, .odt) examined as a file by Orazaka (metadata, dates, revision history): signals at three
   plain levels, never a score, never a "fake" stamp.
 - **Search** — every document and every finding, one field (PostgreSQL full text, French and English alike).
 - **Traced** — every analysis is an **Orazaka run** (the document-validation pack's Studios); its run id is kept and shown.

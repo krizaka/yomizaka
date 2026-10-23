@@ -10,7 +10,7 @@ const value = <T>(s: Snapshot, key: SettingKey) => s[key].value as T;
 
 const MB = 1024 * 1024;
 /** The file kinds the pre-flight knows by the names the settings use. */
-const KINDS_OF: Record<string, FileKind[]> = { pdf: ["pdf"], text: ["text"], image: ["png", "jpeg", "heic"], word: ["docx"] };
+const KINDS_OF: Record<string, FileKind[]> = { pdf: ["pdf"], text: ["text"], image: ["png", "jpeg", "heic"], word: ["docx", "odt"] };
 
 /** The pre-flight rules as set in the configuration: the product's rules with the limits an administrator changed. */
 export function preflightRulesFrom(base: PreflightRules, s: Snapshot): PreflightRules {

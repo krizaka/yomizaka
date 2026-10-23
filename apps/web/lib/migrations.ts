@@ -488,4 +488,12 @@ CREATE TABLE batch_items (
 CREATE INDEX batch_items_state ON batch_items(batch_id, state);
 `,
   },
+  {
+    version: "0026_opendocument_text",
+    sql: `
+-- yomizaka#229: OpenDocument text uses the Word upload and analysis path.
+ALTER TABLE documents DROP CONSTRAINT IF EXISTS documents_mime_type_check;
+ALTER TABLE documents ADD CONSTRAINT documents_mime_type_check CHECK (mime_type IN ('application/pdf', 'text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.oasis.opendocument.text'));
+`,
+  },
 ];

@@ -17,6 +17,10 @@ describe("the pre-flight rules follow the configuration", () => {
   it("the defaults are the product's own rules", () => {
     expect(preflightRulesFrom(YOMIZAKA_RULES, snapshot())).toEqual(YOMIZAKA_RULES);
   });
+  it("allows both Word formats through the existing database-backed word setting", () => {
+    expect(preflightRulesFrom(YOMIZAKA_RULES, snapshot({ "limits.allowedTypes": ["word"] })).allowedKinds).toEqual(["docx", "odt"]);
+    expect(preflightRulesFrom(YOMIZAKA_RULES, snapshot({ "limits.allowedTypes": ["pdf", "text", "image"] })).allowedKinds).not.toContain("odt");
+  });
 });
 
 describe("maintenance", () => {

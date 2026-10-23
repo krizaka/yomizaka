@@ -1,3 +1,4 @@
+import { ODT_MIME } from "@yomizaka/core";
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { listUsers } from "./accounts";
@@ -5,6 +6,7 @@ import { allDocuments, allRuns, auditLog, overview, setUserStatus, userDetail } 
 import { migrate, pool, query } from "./db";
 import { deleteDocument, getDocument, getFile, listDocuments, storeDocument } from "./documents";
 import { hashPassword } from "./password";
+import { zipOf } from "./preflight/fixtures";
 import { search } from "./search";
 import { createSession, resolveSession, revokeSession } from "./session";
 import { getShowcase, setSample, setShowcase, showcaseFile } from "./showcase";
@@ -40,6 +42,22 @@ describe.runIf(enabled)("database", () => {
     expect(again).toMatchObject({ duplicate: true, summary: { id: first.summary.id } });
     expect((await listDocuments(owner!.id)).map((d) => d.id)).toContain(first.summary.id);
     expect((await getFile(owner!.id, first.summary.id)).content.toString()).toBe(LEASE);
+  });
+
+  it("stores OpenDocument text after widening the MIME constraint, and makes its text searchable", async () => {
+    const bytes = zipOf([
+      { name: "mimetype", data: Buffer.from(ODT_MIME), stored: true },
+      { name: "content.xml", data: Buffer.from("<text:p>OpenDocument locataire</text:p>") },
+    ]);
+    const stored = await storeDocument(owner!.id, { name: "bail.odt", type: ODT_MIME, size: bytes.length }, bytes, "lease");
+    try {
+      expect(stored.summary).toMatchObject({ mimeType: ODT_MIME, hasText: true, pages: null });
+      expect((await getDocument(owner!.id, stored.summary.id)).text).toBe("OpenDocument locataire");
+      expect((await getFile(owner!.id, stored.summary.id)).content).toEqual(Buffer.from(bytes));
+      expect((await search(owner!.id, "locataire")).some((hit) => hit.documentId === stored.summary.id)).toBe(true);
+    } finally {
+      await deleteDocument(owner!.id, stored.summary.id);
+    }
   });
 
   it("keeps a document to its owner: another person gets a 404", async () => {

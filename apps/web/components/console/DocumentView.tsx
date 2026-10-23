@@ -10,7 +10,7 @@ import { DocumentViewer, type Located } from "@krizaka/ui/document-viewer";
 import { createKrizakaForm } from "@krizaka/ui/form";
 import { Spinner } from "@krizaka/ui/spinner";
 import { Tabs } from "@krizaka/ui/tabs";
-import { type Analysis, analysis as analysisSchema, type Audience, AUTHENTICITY_MAX_BYTES, type AuthenticityReport, checkSteps,type ComplianceReport, type DocumentView as DocumentViewData, documentView, DOCX_MIME, type Jurisdiction, JURISDICTIONS, passages, queryKeys, type Studio, type TextSource } from "@yomizaka/core";
+import { type Analysis, analysis as analysisSchema, type Audience, AUTHENTICITY_MAX_BYTES, type AuthenticityReport, checkSteps,type ComplianceReport, type DocumentView as DocumentViewData, documentView, DOCX_MIME, type Jurisdiction, JURISDICTIONS, ODT_MIME, passages, queryKeys, type Studio, type TextSource } from "@yomizaka/core";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ComponentProps, useEffect, useMemo, useRef, useState } from "react";
@@ -391,7 +391,7 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
   const latestCompliance = doc.analyses.find((a) => a.studio === "compliance-check" && a.report && "findings" in a.report);
   const running = (studio: Analysis["studio"]) => doc.analyses.some((a) => a.studio === studio && a.status === "running");
   const isPdf = doc.mimeType === "application/pdf";
-  const examinable = isPdf || doc.mimeType === DOCX_MIME;
+  const examinable = isPdf || doc.mimeType === DOCX_MIME || doc.mimeType === ODT_MIME;
   const complianceCard = (
     <Card.Root key="compliance-check" className="p-4">
       <h3 className="mb-2 font-display text-base font-bold text-fg">{say("analysis.complianceTitle")}</h3>

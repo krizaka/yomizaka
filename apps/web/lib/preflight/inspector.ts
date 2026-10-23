@@ -1,5 +1,7 @@
 import crypto from "node:crypto";
+import { inflateRawSync } from "node:zlib";
 
+import { ODT_MIME } from "@yomizaka/core";
 import { EncryptedPDFError, PDFArray, PDFDict, PDFDocument, PDFName } from "pdf-lib";
 
 import { imageSize, isHeif } from "./image-size";
@@ -7,10 +9,12 @@ import type { DocumentPreflight, FileKind, Inspection, PdfFacts, PreflightRules,
 
 /**
  * The pre-flight inspector: pure and deterministic, no network, no model, nothing executed or rendered. A PDF is read as
- * bytes and as an object tree (pdf-lib); an archive's directory is read, never inflated.
+ * bytes and as an object tree (pdf-lib); an archive's directory is read, only its bounded mimetype entry inflated.
  */
 const ascii = (bytes: Uint8Array, from: number, to: number) => Buffer.from(bytes.subarray(from, to)).toString("latin1");
 const startsWith = (bytes: Uint8Array, signature: readonly number[]) => signature.every((b, i) => bytes[i] === b);
+// @fixed: cap the inflated main XML part independently of archive directory claims and workspace limits.
+export const MAX_OFFICE_PART_BYTES = 20 * 1024 * 1024;
 
 /** What the bytes are — not what the name or the browser said. */
 export function sniff(bytes: Uint8Array): FileKind {
@@ -19,7 +23,10 @@ export function sniff(bytes: Uint8Array): FileKind {
   if (startsWith(bytes, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) return "png";
   if (startsWith(bytes, [0xff, 0xd8, 0xff])) return "jpeg";
   if (isHeif(bytes)) return "heic";
-  if (startsWith(bytes, [0x50, 0x4b, 0x03, 0x04])) return isDocx(bytes) ? "docx" : "zip";
+  if (startsWith(bytes, [0x50, 0x4b, 0x03, 0x04])) {
+    if (zipEntryBytes(bytes, "mimetype", ODT_MIME.length)?.toString("utf8") === ODT_MIME) return "odt";
+    return isDocx(bytes) ? "docx" : "zip";
+  }
   if (bytes.includes(0)) return "unknown";
   try {
     new TextDecoder("utf-8", { fatal: true }).decode(bytes);
@@ -29,8 +36,8 @@ export function sniff(bytes: Uint8Array): FileKind {
   }
 }
 
-const EXTENSIONS: Record<FileKind, readonly string[]> = { pdf: ["pdf"], text: ["txt", "text", "md"], png: ["png"], jpeg: ["jpg", "jpeg"], heic: ["heic", "heif"], docx: ["docx"], zip: ["zip"], executable: [], unknown: [] };
-const MIME: Record<string, FileKind> = { "application/pdf": "pdf", "text/plain": "text", "image/png": "png", "image/jpeg": "jpeg", "image/heic": "heic", "image/heif": "heic", "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx", "application/zip": "zip" };
+const EXTENSIONS: Record<FileKind, readonly string[]> = { pdf: ["pdf"], text: ["txt", "text", "md"], png: ["png"], jpeg: ["jpg", "jpeg"], heic: ["heic", "heif"], docx: ["docx"], odt: ["odt"], zip: ["zip"], executable: [], unknown: [] };
+const MIME: Record<string, FileKind> = { "application/pdf": "pdf", "text/plain": "text", "image/png": "png", "image/jpeg": "jpeg", "image/heic": "heic", "image/heif": "heic", "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx", [ODT_MIME]: "odt", "application/zip": "zip" };
 
 /** The kind the client claims (extension first, then MIME type), or null when it claims nothing we know. */
 function claimed(declared: { name: string; type: string }): FileKind | null {
@@ -43,7 +50,7 @@ interface ZipEntry {
   name: string;
   compressed: number;
   uncompressed: number;
-  /** Where its local header starts, for the one reader that inflates an entry (lib/docx-text). */
+  /** Where its local header starts, for bounded entry reads. */
   offset: number;
 }
 
@@ -71,6 +78,26 @@ export function zipEntries(bytes: Uint8Array): ZipEntry[] | null {
     offset += 46 + nameLength + extra + comment;
   }
   return entries;
+}
+
+/** One stored or deflated entry, bounded independently of the sizes claimed by the directory. */
+export function zipEntryBytes(bytes: Uint8Array, name: string, maxBytes: number): Buffer | null {
+  const entry = zipEntries(bytes)?.find((e) => e.name === name);
+  if (!entry || entry.uncompressed > maxBytes) return null;
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const at = entry.offset;
+  if (at + 30 > bytes.length || view.getUint32(at, true) !== 0x04034b50) return null;
+  const method = view.getUint16(at + 8, true);
+  const start = at + 30 + view.getUint16(at + 26, true) + view.getUint16(at + 28, true);
+  if (start + entry.compressed > bytes.length) return null;
+  const data = bytes.subarray(start, start + entry.compressed);
+  try {
+    const result = method === 0 ? (data.length <= maxBytes ? Buffer.from(data) : null)
+      : method === 8 ? inflateRawSync(data, { maxOutputLength: maxBytes }) : null;
+    return result?.length === entry.uncompressed ? result : null;
+  } catch {
+    return null;
+  }
 }
 
 function isDocx(bytes: Uint8Array): boolean {
@@ -124,11 +151,15 @@ export function createInspector(rules: PreflightRules): DocumentPreflight {
       if (detected === "executable") return reject("EXECUTABLE");
       const said = claimed(declared);
       if (said && said !== detected && !(said === "text" && detected === "unknown")) return reject("TYPE_MISMATCH", `${said} ≠ ${detected}`);
-      if (detected === "zip" || detected === "docx") {
+      if (detected === "zip" || detected === "docx" || detected === "odt") {
         const problem = archiveProblem(bytes, rules);
         if (problem) return reject(problem);
       }
       if (!rules.allowedKinds.includes(detected)) return reject("UNSUPPORTED_TYPE", detected);
+      if (detected === "odt") {
+        const xml = zipEntryBytes(bytes, "content.xml", MAX_OFFICE_PART_BYTES)?.toString("utf8");
+        if (xml && /<(?:[\w.-]+:)?(?:script|event-listener)(?=[\s/>])/i.test(xml)) return reject("ACTIVE_CONTENT");
+      }
       const sha256 = crypto.createHash("sha256").update(bytes).digest("hex");
 
       if (detected === "text") return { kind: "accepted", fileKind: "text", sha256, pages: null, facts: null };
@@ -137,8 +168,8 @@ export function createInspector(rules: PreflightRules): DocumentPreflight {
         if (size && size.width * size.height > rules.maxImagePixels) return reject("IMAGE_TOO_LARGE", `${size.width}x${size.height}`);
         return { kind: "accepted", fileKind: detected, sha256, pages: null, facts: null };
       }
-      // A Word file passed the archive guards above (no macro, no bomb): its pages are not counted (no layout here).
-      if (detected === "docx") return { kind: "accepted", fileKind: "docx", sha256, pages: null, facts: null };
+      // An office file passed the archive guards above (no macro, no bomb): its pages are not counted (no layout here).
+      if (detected === "docx" || detected === "odt") return { kind: "accepted", fileKind: detected, sha256, pages: null, facts: null };
       if (detected !== "pdf") return reject("UNSUPPORTED_TYPE", detected);
 
       const raw = ascii(bytes, 0, bytes.length);
@@ -171,7 +202,7 @@ export function createInspector(rules: PreflightRules): DocumentPreflight {
   };
 }
 
-/** The archive guards, for the day DOCX is allowed: entries, total size, ratio — from the directory alone, never inflating. */
+/** The archive guards: entries, total size, ratio — from the directory alone, never inflating. */
 export function archiveProblem(bytes: Uint8Array, rules: PreflightRules): RejectReason | null {
   const entries = zipEntries(bytes);
   if (!entries) return "CORRUPT";
@@ -179,6 +210,6 @@ export function archiveProblem(bytes: Uint8Array, rules: PreflightRules): Reject
   const total = entries.reduce((sum, e) => sum + e.uncompressed, 0);
   if (total > rules.maxArchiveBytes) return "ARCHIVE_BOMB";
   if (entries.some((e) => e.compressed > 0 && e.uncompressed / e.compressed > rules.maxArchiveRatio)) return "ARCHIVE_BOMB";
-  if (entries.some((e) => /vbaProject\.bin$|ActiveX|\.exe$/i.test(e.name))) return "ACTIVE_CONTENT";
+  if (entries.some((e) => /vbaProject\.bin$|ActiveX|\.exe$|^(?:Basic|Scripts)\//i.test(e.name))) return "ACTIVE_CONTENT";
   return null;
 }
