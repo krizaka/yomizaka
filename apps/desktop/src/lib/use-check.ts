@@ -1,18 +1,13 @@
 import { ApiError } from "@krizaka/app-client";
 import { useMutation, useQueryClient } from "@krizaka/query";
-import { availableChecks, DEFAULT_LIMITS, keys, type PreflightReason, preflight } from "@yomizaka/client";
+import { availableChecks, DEFAULT_LIMITS, keys } from "@yomizaka/client";
 
 import { yomizaka } from "./config";
 import { localDocuments } from "./local-documents";
-import { bytesOf, native } from "./native";
+import { prepare, Refused } from "./prepare";
 import { type Route } from "./route";
 
-/** Why a file did not become a check: a refusal of the pre-flight, or the server's. */
-export class Refused extends Error {
-  constructor(readonly reason: PreflightReason | "paywall" | "unreadable" | "failed") {
-    super(reason);
-  }
-}
+export { Refused } from "./prepare";
 
 const PAYWALL_STATUS = 402;
 const CONFLICT_STATUS = 409;
@@ -25,14 +20,10 @@ export function useCheck(onStarted: (route: Route) => void) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (path: string): Promise<Route | null> => {
-      const document = await native.readDocument(path).catch(() => {
-        throw new Refused("unreadable");
-      });
       const limits = await yomizaka.fetchLimits().catch(() => DEFAULT_LIMITS);
-      const verdict = preflight({ uri: path, name: document.name, mimeType: document.mime, size: document.size }, limits);
-      if (!verdict.ok) throw new Refused(verdict.reason);
+      const file = await prepare(path, limits);
       const form = new FormData();
-      form.append("file", new Blob([bytesOf(document.data)], { type: document.mime }), document.name);
+      form.append("file", file.blob, file.name);
       form.append("kind", "auto");
       const { document: uploaded } = await yomizaka.uploadDocument(form);
       localDocuments.remember(uploaded.id, path);

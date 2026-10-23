@@ -1,9 +1,9 @@
-import { browserStorage, createApiClient, createAppDiscovery, createSessionStore, type KeyValueStorage } from "@krizaka/app-client";
+import { browserStorage, createApiClient, createAppDiscovery, createSessionStore } from "@krizaka/app-client";
 import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 import { createQueries, createYomizakaApi } from "@yomizaka/client";
 
 import { currentLocale } from "../i18n";
-import { native } from "./native";
+import { keychain } from "./desktop";
 
 /** The Mac app's wiring, once. The backend comes from the signed manifest on krizaka.com (ADR-003), like the phone's. */
 export const PRODUCT = "yomizaka";
@@ -12,13 +12,8 @@ export const APP_VERSION = import.meta.env.VITE_APP_VERSION ?? "0.1.0";
 const API_TIMEOUT_MS = 30_000;
 const BAKED = { apiBase: "https://dev.yomizaka.com", webBase: "https://dev.yomizaka.com" } as const;
 
-/** The session lives in the Keychain, never in the page's storage. */
-const keychain: KeyValueStorage = {
-  get: () => native.sessionToken(),
-  set: (_key, value) => native.storeSessionToken(value),
-  remove: () => native.clearSessionToken(),
-};
-export const session = createSessionStore({ storage: keychain, key: "session" });
+/** The session lives in the Keychain (tauri-plugin-krizaka), never in the page's storage: the same store as the phone's. */
+export const session = createSessionStore({ storage: keychain, key: "yomizaka.session" });
 
 export const discovery = createAppDiscovery({
   product: PRODUCT,

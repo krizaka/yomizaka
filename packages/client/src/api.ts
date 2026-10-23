@@ -1,4 +1,4 @@
-import { analysis, closingNote, documentSummary, type StartAnalysis, storageDescriptor } from "@yomizaka/core";
+import { analysis, BATCH_CHECKS, BATCH_ITEM_STATES, closingNote, documentSummary, type StartAnalysis, storageDescriptor, writeBatchManifest } from "@yomizaka/core";
 import { z } from "zod";
 
 import { limitsFromConfig, type PreflightLimits } from "./preflight";
@@ -30,6 +30,32 @@ const libraries = z.object({
   tags: z.array(tag),
 });
 
+const me = z.object({ account: z.object({ email: z.string(), name: z.string().nullable(), avatarSeed: z.string().nullable() }) });
+
+const batchItem = z.object({
+  id: z.string(),
+  line: z.number(),
+  file: z.string(),
+  reference: z.string().nullable(),
+  state: z.enum(BATCH_ITEM_STATES),
+  error: z.string().nullable(),
+  documentId: z.string().nullable(),
+  analysisId: z.string().nullable(),
+});
+const batch = z.object({
+  id: z.string(),
+  name: z.string(),
+  createdAt: z.string(),
+  finishedAt: z.string().nullable(),
+  items: z.array(batchItem),
+  counts: z.record(z.enum(BATCH_ITEM_STATES), z.number()),
+  pausedBy: z.string().nullable(),
+});
+const batchList = z.object({ batches: z.array(z.object({ id: z.string(), name: z.string(), createdAt: z.string(), finishedAt: z.string().nullable(), items: z.number(), done: z.number() })) });
+
+/** The check a batch runs on every file, as the manifest names it. */
+export type BatchCheck = keyof typeof BATCH_CHECKS;
+
 /**
  * Yomizaka's API as the apps use it. Every answer is parsed at the edge: a shape the server did not promise stops here,
  * never inside a screen.
@@ -47,6 +73,8 @@ export function createYomizakaApi(port: ApiPort, session: SessionPort) {
       await port.call("/api/auth/sign-out", { method: "POST" }).catch(() => undefined);
       await session.clearToken();
     },
+    /** Who is signed in (`GET /api/me`, yomizaka#243): what the header's account menu shows. */
+    fetchMe: () => get(me, "/api/me").then((r) => r.account),
     /** The limits the web applies, read from the server so the app's pre-flight is the web's. */
     async fetchLimits(): Promise<PreflightLimits> {
       return limitsFromConfig((await get(appConfig, "/api/me/app")).config);
@@ -69,6 +97,20 @@ export function createYomizakaApi(port: ApiPort, session: SessionPort) {
     async deleteDocument(documentId: string): Promise<void> {
       await port.call(`/api/documents/${documentId}`, { method: "DELETE" });
     },
+    /**
+     * A batch (yomizaka#232): the same check on several files at once — a folder of the Mac, or files dropped on it. The
+     * manifest is written here (one row per file); the server stores the files under the workspace's purge and runs the rows.
+     */
+    async createBatch(name: string, files: readonly { name: string; blob: Blob }[], check: BatchCheck) {
+      const form = new FormData();
+      form.append("name", name);
+      form.append("manifest", writeBatchManifest(files.map((f) => ({ file: f.name, check }))));
+      for (const f of files) form.append("files", f.blob, f.name);
+      return batch.parse((await port.call<{ batch: unknown }>("/api/batches", { method: "POST", body: form })).batch);
+    },
+    /** A batch, advanced as it is read: ask again while rows run. */
+    fetchBatch: (batchId: string) => get(z.object({ batch }), `/api/batches/${batchId}`).then((r) => r.batch),
+    listBatches: () => get(batchList, "/api/batches").then((r) => r.batches),
     /** The signed report, as a PDF: its address and the person's headers, for the download. */
     async reportRequest(documentId: string, analysisId: string, locale: Locale) {
       return { url: port.url(`/api/documents/${documentId}/analyses/${analysisId}/report?format=pdf&lang=${locale}`), headers: await port.authHeaders() };
@@ -78,3 +120,5 @@ export function createYomizakaApi(port: ApiPort, session: SessionPort) {
 
 export type YomizakaApi = ReturnType<typeof createYomizakaApi>;
 export type DocumentDetail = Awaited<ReturnType<YomizakaApi["fetchDocument"]>>;
+export type Batch = Awaited<ReturnType<YomizakaApi["fetchBatch"]>>;
+export type BatchSummary = Awaited<ReturnType<YomizakaApi["listBatches"]>>[number];

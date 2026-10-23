@@ -3,10 +3,17 @@
 use base64::{engine::general_purpose::STANDARD, Engine};
 use serde::Serialize;
 use std::fs;
+use std::io::Write;
 use std::path::{Path, PathBuf};
 
-/// The files a check reads, by extension: the library lists nothing else.
-const CHECKABLE: &[(&str, &str)] = &[("pdf", "application/pdf"), ("txt", "text/plain")];
+/// The files a check reads, by extension: the library lists nothing else. The same types as `ACCEPTED_TYPES` of
+/// `@yomizaka/core` (PDF, text, Word since yomizaka#229, OpenDocument since #236); the server's pre-flight decides last.
+const CHECKABLE: &[(&str, &str)] = &[
+    ("pdf", "application/pdf"),
+    ("txt", "text/plain"),
+    ("docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+    ("odt", "application/vnd.oasis.opendocument.text"),
+];
 
 fn extension(name: &str) -> String {
     Path::new(name).extension().map(|e| e.to_string_lossy().to_lowercase()).unwrap_or_default()
@@ -76,7 +83,9 @@ pub fn save_report(document: &Path, name: &str, base64_pdf: &str) -> Result<Path
         return Err("the report is not a PDF".into());
     }
     let destination = report_destination(document, name)?;
-    fs::write(&destination, bytes).map_err(|e| e.to_string())?;
+    // `create_new`: a file that appeared since the name was chosen is never overwritten.
+    let mut out = fs::OpenOptions::new().write(true).create_new(true).open(&destination).map_err(|e| e.to_string())?;
+    out.write_all(&bytes).map_err(|e| e.to_string())?;
     Ok(destination)
 }
 
@@ -87,7 +96,7 @@ mod tests {
 
     #[test]
     fn lists_only_what_a_check_reads() {
-        for (name, ok) in [("bail.pdf", true), ("BAIL.PDF", true), ("notes.txt", true), ("photo.heic", false), ("sheet.xlsx", false), ("noext", false)] {
+        for (name, ok) in [("bail.pdf", true), ("BAIL.PDF", true), ("notes.txt", true), ("bail.docx", true), ("bail.odt", true), ("photo.heic", false), ("sheet.xlsx", false), ("noext", false)] {
             assert_eq!(is_checkable(name), ok, "{name}");
         }
         assert_eq!(mime_of("a.PDF"), Some("application/pdf"));

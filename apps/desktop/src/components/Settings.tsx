@@ -1,42 +1,49 @@
 import { Button } from "@krizaka/ui/button";
 import { Card } from "@krizaka/ui/card";
+import { List } from "@krizaka/ui/list";
+import { useState } from "react";
 
-import { LOCALES, type Locale, rememberLocale, useI18n } from "../i18n";
-import { APP_VERSION, yomizaka } from "../lib/config";
+import { useI18n } from "../i18n";
+import { APP_VERSION } from "../lib/config";
+import { inbox } from "../lib/inbox-store";
 
-/** The language, where the documents live, the account. */
-export function Settings({ onLocale }: { onLocale: (locale: Locale) => void }) {
-  const { t, locale } = useI18n();
+/** Where the documents live, the watched folders, the version. The language and the account are in the header's menu. */
+export function Settings() {
+  const { t } = useI18n();
+  const [watched, setWatched] = useState(() => inbox.watched());
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-5 p-6">
-      <h1 className="text-xl font-semibold">{t("settings.title")}</h1>
-      <div className="flex flex-col gap-2">
-        <h2 className="text-sm font-semibold">{t("settings.language")}</h2>
-        <div className="flex gap-2">
-          {LOCALES.map((value) => (
-            <Button
-              key={value}
-              variant={value === locale ? "primary" : "secondary"}
-              onClick={() => {
-                rememberLocale(value);
-                onLocale(value);
-              }}
-            >
-              {value === "fr" ? "Français" : "English"}
-            </Button>
-          ))}
-        </div>
-      </div>
+    <div className="flex max-w-2xl flex-col gap-5">
       <Card.Root className="flex flex-col gap-2 p-4">
         <h2 className="text-sm font-semibold">{t("settings.storage")}</h2>
         <p className="text-fg-secondary">{t("settings.storageBody")}</p>
       </Card.Root>
-      <div>
-        <Button variant="secondary" onClick={() => void yomizaka.signOut()}>
-          {t("nav.signOut")}
-        </Button>
+      <div className="flex flex-col gap-2">
+        <h2 className="text-sm font-semibold">{t("settings.watched")}</h2>
+        <List
+          aria-label={t("settings.watched")}
+          density="compact"
+          items={watched}
+          getId={(folder) => folder}
+          empty={<p className="text-sm text-fg-secondary">{t("settings.watchedNone")}</p>}
+          row={(folder) => ({
+            title: folder.split("/").filter(Boolean).pop() ?? folder,
+            description: folder,
+            actions: (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  inbox.set(folder, false);
+                  setWatched(inbox.watched());
+                }}
+              >
+                {t("settings.unwatch")}
+              </Button>
+            ),
+          })}
+        />
       </div>
       <p className="text-xs text-fg-muted">{t("settings.version", { version: APP_VERSION })}</p>
-    </main>
+    </div>
   );
 }

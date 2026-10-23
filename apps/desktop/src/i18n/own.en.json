@@ -1,6 +1,26 @@
 {
-  "app": { "name": "Yomizaka", "tagline": "Your documents, read and checked" },
-  "nav": { "label": "Main navigation", "library": "Library", "settings": "Settings", "signOut": "Sign out" },
+  "app": {
+    "name": "Yomizaka",
+    "tagline": "Your documents, read and checked"
+  },
+  "nav": {
+    "label": "Main navigation",
+    "library": "Library",
+    "batches": "Batches",
+    "reports": "Reports",
+    "settings": "Settings",
+    "signOut": "Sign out"
+  },
+  "shell": {
+    "account": "Your account",
+    "language": "Language",
+    "theme": "Theme",
+    "menu": "Open the menu",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "close": "Close",
+    "skip": "Skip to content"
+  },
   "signIn": {
     "title": "Sign in",
     "lead": "The same account as on yomizaka.com.",
@@ -15,20 +35,52 @@
     "lead": "Your documents stay in the folders of your Mac. Only what a check needs is sent, then erased.",
     "addFolder": "Add a folder",
     "emptyFolders": "No folder yet. Pick the one where you keep your leases and contracts.",
-    "emptyFolder": "No PDF or text file in this folder.",
+    "emptyFolder": "No document a check reads in this folder (PDF, text, Word, OpenDocument).",
     "revoke": "Remove this folder",
     "check": "Check",
-    "drop": "Drop a document here to check it",
-    "dropHint": "From Finder, without adding it to a folder.",
+    "checkAll": "Check the whole folder",
+    "drop": "Drop your documents to check them",
+    "dropHint": "From Finder, without adding them to a folder. Several documents make a batch.",
     "onMac": "Stored on this Mac",
-    "folderDenied": "This folder cannot be added: it is too broad or protected."
+    "folderDenied": "This folder cannot be added: it is too broad or protected.",
+    "watch": "Check new documents automatically",
+    "watchHint": "A document added to this folder is checked as soon as it arrives. Those already there are not sent.",
+    "folders": "Folders",
+    "watched": "Watched"
   },
   "check": {
     "preparing": "Preparing the document…",
     "readFailed": "The file could not be read.",
     "startFailed": "The check could not start.",
     "paywall": "This check is not available with your account right now.",
+    "feature": "Batches are not open on your account.",
     "back": "Back to the library"
+  },
+  "batch": {
+    "title": "Batches",
+    "lead": "Several documents checked at once: a folder, or the documents dropped together.",
+    "empty": "No batch yet. Drop several documents, or check a whole folder.",
+    "progress": "{done} of {total} finished",
+    "refusedHere": "{count} document(s) stayed on this Mac: unreadable or refused by the pre-flight.",
+    "paused": "The batch is waiting: {reason}",
+    "open": "Open",
+    "nameOfFolder": "Folder {name}",
+    "nameOfDrop": "Drop of {date}",
+    "state": {
+      "pending": "Waiting",
+      "reused": "Already checked",
+      "running": "Running",
+      "done": "Done",
+      "failed": "Failed",
+      "refused": "Refused"
+    }
+  },
+  "reports": {
+    "title": "Reports",
+    "lead": "The documents checked and their signed reports. The files themselves stayed on your Mac.",
+    "empty": "No document checked yet.",
+    "checks": "Checks",
+    "none": "No check for this document."
   },
   "report": {
     "save": "Save the signed report (PDF)",
@@ -41,6 +93,31 @@
     "language": "Language",
     "storage": "Storage",
     "storageBody": "Your documents are read from your folders and never leave them. For a copy in the cloud, choose it on yomizaka.com.",
-    "version": "Version {version}"
+    "watched": "Watched folders",
+    "watchedNone": "No watched folder.",
+    "version": "Version {version}",
+    "unwatch": "Stop watching"
+  },
+  "menu": {
+    "about": "About Yomizaka",
+    "hide": "Hide Yomizaka",
+    "hideOthers": "Hide Others",
+    "showAll": "Show All",
+    "quit": "Quit Yomizaka",
+    "edit": "Edit",
+    "undo": "Undo",
+    "redo": "Redo",
+    "cut": "Cut",
+    "copy": "Copy",
+    "paste": "Paste",
+    "selectAll": "Select All",
+    "window": "Window",
+    "minimize": "Minimize",
+    "zoom": "Zoom",
+    "close": "Close",
+    "file": "File",
+    "addFolder": "Add a Folder…",
+    "go": "Go",
+    "settings": "Settings…"
   }
 }

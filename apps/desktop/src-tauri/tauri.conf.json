@@ -17,10 +17,12 @@
         "title": "Yomizaka",
         "width": 1080,
         "height": 740,
-        "minWidth": 860,
-        "minHeight": 560,
+        "minWidth": 960,
+        "minHeight": 600,
         "center": true,
-        "dragDropEnabled": true
+        "dragDropEnabled": true,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true
       }
     ],
     "security": {

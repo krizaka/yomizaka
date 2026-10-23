@@ -147,4 +147,19 @@ export const BATCH_TEMPLATE = [
   "talon-paie-dupont.pdf,authenticity,other,,,Employeur inc.,LOC-0012,Immeuble Laurier",
 ].join("\r\n");
 
+/** The state of a batch's row, as the server reports it (`GET /api/batches/:id`). */
+export const BATCH_ITEM = { pending: "pending", reused: "reused", running: "running", done: "done", failed: "failed", refused: "refused" } as const;
+export type BatchItemState = (typeof BATCH_ITEM)[keyof typeof BATCH_ITEM];
+export const BATCH_ITEM_STATES = Object.values(BATCH_ITEM) as [BatchItemState, ...BatchItemState[]];
+
+const csvCell = (value: string) => (/[",\r\n;]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value);
+
+/**
+ * A manifest written for the person (the Mac app checks a folder or the files dropped on it): one row per file, the check
+ * named as the CSV names it, an optional reference. `readBatchManifest` reads it back to the same rows.
+ */
+export function writeBatchManifest(rows: readonly { file: string; check: keyof typeof BATCH_CHECKS; reference?: string | null }[]): string {
+  return [["file", "check", "reference"].join(","), ...rows.map((r) => [r.file, r.check, r.reference ?? ""].map(csvCell).join(","))].join("\r\n");
+}
+
 export const batchRowSchema = z.object({ line: z.number().int(), file: z.string(), errors: z.array(z.string()) });

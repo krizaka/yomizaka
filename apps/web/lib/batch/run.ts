@@ -1,4 +1,4 @@
-import { ANALYSIS_STATUS, type Audience, type FlowEnvironment, readBatchManifest, type StartAnalysis } from "@yomizaka/core";
+import { ANALYSIS_STATUS, type Audience, BATCH_ITEM, type BatchItemState, type FlowEnvironment, readBatchManifest, type StartAnalysis } from "@yomizaka/core";
 
 import { storesOf } from "@/app/active-store";
 
@@ -18,8 +18,8 @@ import { type BatchFile, PREVIEW_ROW, previewBatch } from "./preview";
  * entitlement, flow) up to the workspace's concurrency. A batch advances while it is looked at, like a single check (no
  * second scheduler); a row that fails never stops the others, and a missing entitlement pauses the rest with its reason.
  */
-export const BATCH_ITEM = { pending: "pending", reused: "reused", running: "running", done: "done", failed: "failed", refused: "refused" } as const;
-export type BatchItemState = (typeof BATCH_ITEM)[keyof typeof BATCH_ITEM];
+// The row states are the apps' contract too: @yomizaka/core holds them.
+export { BATCH_ITEM, type BatchItemState } from "@yomizaka/core";
 
 /** The refusals that would refuse every next row too: the batch waits for the account instead of failing them one by one. */
 const PAUSING = new Set(["PAYWALL", "DAILY_LIMIT", "FAIR_USE"]);

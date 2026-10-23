@@ -1,11 +1,12 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "main-window",
-  "description": "The app's one window. No fs, no shell, no opener: files are read by Rust commands that go through the folder scope. The network is Yomizaka's own addresses and nothing else.",
+  "description": "The app's one window. No fs, no shell, no opener: folders, the Keychain, the menu and deep links are tauri-plugin-krizaka's commands, and Yomizaka's own commands read a document through the same folder scope. The network is Yomizaka's own addresses and nothing else.",
   "windows": ["main"],
   "permissions": [
     "core:default",
-    "dialog:default",
+    "krizaka:default",
+    "core:window:allow-start-dragging",
     {
       "identifier": "http:default",
       "allow": [{ "url": "https://*.yomizaka.com" }, { "url": "http://localhost:*" }]

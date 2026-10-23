@@ -1,6 +1,26 @@
 {
-  "app": { "name": "Yomizaka", "tagline": "Vos documents, lus et vérifiés" },
-  "nav": { "label": "Navigation principale", "library": "Bibliothèque", "settings": "Réglages", "signOut": "Se déconnecter" },
+  "app": {
+    "name": "Yomizaka",
+    "tagline": "Vos documents, lus et vérifiés"
+  },
+  "nav": {
+    "label": "Navigation principale",
+    "library": "Bibliothèque",
+    "batches": "Lots",
+    "reports": "Rapports",
+    "settings": "Réglages",
+    "signOut": "Se déconnecter"
+  },
+  "shell": {
+    "account": "Votre compte",
+    "language": "Langue",
+    "theme": "Thème",
+    "menu": "Ouvrir le menu",
+    "collapse": "Replier",
+    "expand": "Déplier",
+    "close": "Fermer",
+    "skip": "Aller au contenu"
+  },
   "signIn": {
     "title": "Se connecter",
     "lead": "Le même compte que sur yomizaka.com.",
@@ -15,20 +35,52 @@
     "lead": "Vos documents restent dans les dossiers de votre Mac. Seul ce qu'une vérification demande est envoyé, puis effacé.",
     "addFolder": "Ajouter un dossier",
     "emptyFolders": "Aucun dossier pour l'instant. Choisissez celui où vous gardez vos baux et vos contrats.",
-    "emptyFolder": "Aucun PDF ni fichier texte dans ce dossier.",
+    "emptyFolder": "Aucun document vérifiable dans ce dossier (PDF, texte, Word, OpenDocument).",
     "revoke": "Retirer ce dossier",
     "check": "Vérifier",
-    "drop": "Déposez un document ici pour le vérifier",
-    "dropHint": "Depuis le Finder, sans l'ajouter à un dossier.",
+    "checkAll": "Vérifier tout le dossier",
+    "drop": "Déposez vos documents pour les vérifier",
+    "dropHint": "Depuis le Finder, sans les ajouter à un dossier. Plusieurs documents forment un lot.",
     "onMac": "Stocké sur ce Mac",
-    "folderDenied": "Ce dossier ne peut pas être ajouté : il est trop large ou protégé."
+    "folderDenied": "Ce dossier ne peut pas être ajouté : il est trop large ou protégé.",
+    "watch": "Vérifier automatiquement les nouveaux documents",
+    "watchHint": "Un document ajouté à ce dossier est vérifié dès qu'il arrive. Ceux qui y sont déjà ne sont pas envoyés.",
+    "folders": "Dossiers",
+    "watched": "Surveillé"
   },
   "check": {
     "preparing": "Préparation du document…",
     "readFailed": "Le fichier n'a pas pu être lu.",
     "startFailed": "La vérification n'a pas pu démarrer.",
     "paywall": "Cette vérification n'est pas disponible avec votre compte pour l'instant.",
+    "feature": "Les lots ne sont pas ouverts sur votre compte.",
     "back": "Retour à la bibliothèque"
+  },
+  "batch": {
+    "title": "Lots",
+    "lead": "Plusieurs documents vérifiés d'un coup : un dossier, ou les documents déposés ensemble.",
+    "empty": "Aucun lot pour l'instant. Déposez plusieurs documents, ou vérifiez tout un dossier.",
+    "progress": "{done} sur {total} terminés",
+    "refusedHere": "{count} document(s) restés sur ce Mac : illisibles ou refusés par le contrôle préalable.",
+    "paused": "Le lot attend : {reason}",
+    "open": "Ouvrir",
+    "nameOfFolder": "Dossier {name}",
+    "nameOfDrop": "Dépôt du {date}",
+    "state": {
+      "pending": "En attente",
+      "reused": "Déjà vérifié",
+      "running": "En cours",
+      "done": "Terminé",
+      "failed": "Échoué",
+      "refused": "Refusé"
+    }
+  },
+  "reports": {
+    "title": "Rapports",
+    "lead": "Les documents vérifiés et leurs rapports signés. Les fichiers, eux, sont restés sur votre Mac.",
+    "empty": "Aucun document vérifié pour l'instant.",
+    "checks": "Vérifications",
+    "none": "Aucune vérification pour ce document."
   },
   "report": {
     "save": "Enregistrer le rapport signé (PDF)",
@@ -41,6 +93,31 @@
     "language": "Langue",
     "storage": "Stockage",
     "storageBody": "Vos documents sont lus dans vos dossiers et n'en sortent pas. Pour une copie dans le nuage, choisissez-la sur yomizaka.com.",
-    "version": "Version {version}"
+    "watched": "Dossiers surveillés",
+    "watchedNone": "Aucun dossier surveillé.",
+    "version": "Version {version}",
+    "unwatch": "Ne plus surveiller"
+  },
+  "menu": {
+    "about": "À propos de Yomizaka",
+    "hide": "Masquer Yomizaka",
+    "hideOthers": "Masquer les autres",
+    "showAll": "Tout afficher",
+    "quit": "Quitter Yomizaka",
+    "edit": "Édition",
+    "undo": "Annuler",
+    "redo": "Rétablir",
+    "cut": "Couper",
+    "copy": "Copier",
+    "paste": "Coller",
+    "selectAll": "Tout sélectionner",
+    "window": "Fenêtre",
+    "minimize": "Réduire",
+    "zoom": "Zoom",
+    "close": "Fermer",
+    "file": "Fichier",
+    "addFolder": "Ajouter un dossier…",
+    "go": "Aller",
+    "settings": "Réglages…"
   }
 }

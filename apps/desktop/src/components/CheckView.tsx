@@ -9,7 +9,7 @@ import { Stepper } from "@krizaka/ui/stepper";
 import { type MessageKey, useI18n } from "../i18n";
 import { queries, yomizaka } from "../lib/config";
 import { localDocuments } from "../lib/local-documents";
-import { base64Of, native } from "../lib/native";
+import { base64Of, yomizakaNative } from "../lib/desktop";
 import { type Route } from "../lib/route";
 import { ClosingNote } from "./ClosingNote";
 
@@ -28,11 +28,11 @@ export function CheckView({ documentId, analysisId, go }: { documentId: string; 
       if (!res.ok) throw new Error(String(res.status));
       const path = localDocuments.pathOf(documentId);
       if (!path) throw new Error("the document's file is not known on this Mac");
-      return native.saveReport(path, `yomizaka-audit-${analysisId.slice(0, 8)}.pdf`, base64Of(new Uint8Array(await res.arrayBuffer())));
+      return yomizakaNative.saveReport(path, `yomizaka-audit-${analysisId.slice(0, 8)}.pdf`, base64Of(new Uint8Array(await res.arrayBuffer())));
     },
   });
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-5 p-6">
+    <div className="flex max-w-3xl flex-col gap-5">
       <Button variant="ghost" size="sm" className="self-start" onClick={() => go({ screen: "library", folder: null })}>
         {t("check.back")}
       </Button>
@@ -60,6 +60,6 @@ export function CheckView({ documentId, analysisId, go }: { documentId: string; 
           ) : null}
         </>
       ) : null}
-    </main>
+    </div>
   );
 }
