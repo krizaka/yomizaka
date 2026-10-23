@@ -21,7 +21,7 @@ export function runInputs(request: StartAnalysis, doc: { mimeType: string; text:
     return { document: doc.text, jurisdiction: request.jurisdiction, asOf: request.asOf ?? today.toISOString().slice(0, 10), ...(request.ruleset ? { ruleset: request.ruleset } : {}) };
   }
   if (doc.mimeType !== "application/pdf") throw refuse(422, "NOT_A_PDF", "The authenticity check reads PDF files");
-  if (doc.content.length > AUTHENTICITY_MAX_BYTES) throw refuse(422, "PDF_TOO_LARGE", "The authenticity check reads PDFs up to 1 MB");
+  if (doc.content.length > AUTHENTICITY_MAX_BYTES) throw refuse(422, "PDF_TOO_LARGE", "The authenticity check reads files up to 5 MB");
   return { documentBase64: doc.content.toString("base64"), ...(request.expectedIssuer ? { expectedIssuer: request.expectedIssuer } : {}) };
 }
 

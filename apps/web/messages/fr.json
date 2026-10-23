@@ -357,7 +357,7 @@
       "language": "Les rapports sont rédigés en français, la langue de leurs règles.",
       "history": "Runs précédents",
       "noPdf": "Seul un PDF peut être examiné en tant que fichier.",
-      "tooLarge": "Yomizaka examine les PDF jusqu'à 1 Mo.",
+      "tooLarge": "Yomizaka examine les fichiers jusqu'à 5 Mo.",
       "toReview": "Corpus québécois à faire relire par un avocat : un tri de démonstration, pas un avis juridique.",
       "showInFile": "Voir dans le fichier",
       "findingPage": "Page {page}",
@@ -372,7 +372,34 @@
       "exportKey": "Clé de signature",
       "exportPdf": "Télécharger le PDF",
       "reused": "Résultat réutilisé : ce document exact a déjà été vérifié avec les mêmes règles, aucune nouvelle vérification n’a été lancée.",
-      "noPhoto": "L'authenticité d'un fichier ne se mesure pas sur une photo : le fichier a été assemblé par Yomizaka à partir de vos photos."
+      "photoOrigin": {
+        "header": "Lu sur vos photos à l'importation, avant que leurs métadonnées soient retirées : des faits sur les fichiers, pas une expertise. Ils ne disent pas si le document est authentique.",
+        "where": "Métadonnées des photos, lues à l'importation",
+        "declared": {
+          "observation": "Les photos déclarent l'appareil « {device} » et le logiciel « {software} ».",
+          "mayIndicate": "Rien en soi : c'est ce que l'appareil ou le logiciel a inscrit en enregistrant la photo."
+        },
+        "absent": {
+          "observation": "Les photos ne déclarent ni appareil, ni logiciel, ni date de prise de vue.",
+          "mayIndicate": "Des métadonnées retirées. Les messageries, les captures d'écran et les réseaux sociaux les retirent aussi d'office."
+        },
+        "noDevice": {
+          "observation": "Les photos ne déclarent aucun appareil de prise de vue : c'est vraisemblablement une capture d'écran ou un export.",
+          "mayIndicate": "Rien quant à l'authenticité. Noté parce qu'une photo d'un document papier porte d'ordinaire la marque de l'appareil."
+        },
+        "modifiedAfter": {
+          "observation": "Une photo déclare avoir été modifiée après la prise de vue : prise le {taken}, modifiée le {modified}.",
+          "mayIndicate": "Un enregistrement postérieur. Une rotation, un recadrage ou un export depuis la photothèque laissent la même trace."
+        },
+        "modifiedBefore": {
+          "observation": "Une photo déclare une date de modification ({modified}) antérieure à sa prise de vue ({taken}).",
+          "mayIndicate": "Des dates réécrites, ou une horloge d'appareil mal réglée — ce qui arrive aussi après un changement de fuseau."
+        },
+        "gpsRemoved": {
+          "observation": "Une photo portait une position GPS. Elle a été retirée à l'importation et n'a jamais été conservée.",
+          "mayIndicate": "Rien quant à l'authenticité : la plupart des téléphones l'inscrivent d'office."
+        }
+      }
     },
     "search": {
       "title": "Recherche",
@@ -424,7 +451,7 @@
       "NO_TEXT": "Ce document n'a pas de couche texte à vérifier.",
       "TEXT_TOO_LONG": "Ce document dépasse ce que la vérification lit (60 000 caractères).",
       "NOT_A_PDF": "Seul un PDF peut être examiné en tant que fichier.",
-      "PDF_TOO_LARGE": "Yomizaka examine les PDF jusqu'à 1 Mo.",
+      "PDF_TOO_LARGE": "Yomizaka examine les fichiers jusqu'à 5 Mo.",
       "ALREADY_RUNNING": "Cette vérification est déjà en cours.",
       "ORAZAKA_NOT_CONFIGURED": "La connexion à Orazaka n'est pas configurée.",
       "ORAZAKA_UNAVAILABLE": "Orazaka n'a pas répondu. Réessayez dans un instant.",

@@ -25,6 +25,7 @@ import { buildNote, noteInputOf, noteSourceOf } from "@/lib/closing-note/build";
 import { type DocumentTab } from "@/lib/console-nav";
 import { useSay } from "@/lib/i18n-client";
 import { firstCheck, wordingOf } from "@/lib/perspective-defaults";
+import { photoOriginSignals } from "@/lib/photo-origin";
 
 import { STATUS_TONE } from "./DocumentTable";
 import { formatBytes, formatDate } from "./format";
@@ -190,7 +191,7 @@ function ReportExport({ documentId, analysisId }: { documentId: string; analysis
   );
 }
 
-function AuthenticitySignals({ report }: { report: AuthenticityReport }) {
+function AuthenticitySignals({ report }: { report: Pick<AuthenticityReport, "header" | "signals"> }) {
   const { say } = useSay();
   return (
     <div className="flex flex-col gap-3">
@@ -215,6 +216,16 @@ function AuthenticitySignals({ report }: { report: AuthenticityReport }) {
       </ul>
     </div>
   );
+}
+
+/** A photo document's origin, read at upload (its metadata never leaves the intake, ADR-0010), as the report's signals. */
+function PhotoOriginSignals({ source }: { source: TextSource }) {
+  const { say, locale } = useSay();
+  const signals = photoOriginSignals(source.origin).map((s) => {
+    const facts = { ...s.facts, ...(s.facts.taken ? { taken: formatDate(s.facts.taken, locale, true), modified: formatDate(s.facts.modified, locale, true) } : {}) };
+    return { signalId: s.signalId, level: s.level, observation: say(`analysis.photoOrigin.${s.case}.observation`, facts), mayIndicate: say(`analysis.photoOrigin.${s.case}.mayIndicate`), where: say("analysis.photoOrigin.where") };
+  });
+  return <AuthenticitySignals report={{ header: say("analysis.photoOrigin.header"), signals }} />;
 }
 
 /** One analysis: its Orazaka run (id, version, status), polled while it runs, then its report. */
@@ -389,7 +400,7 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
   const authenticityCard = (
     <Card.Root key="document-authenticity" className="p-4">
       <h3 className="mb-2 font-display text-base font-bold text-fg">{say("analysis.authenticityTitle")}</h3>
-      {doc.textSource ? <Alert tone="info">{say("analysis.noPhoto")}</Alert> : !isPdf ? <Alert tone="info">{say("analysis.noPdf")}</Alert> : doc.sizeBytes > AUTHENTICITY_MAX_BYTES ? <Alert tone="info">{say("analysis.tooLarge")}</Alert> : <StartAuthenticity documentId={doc.id} disabled={running("document-authenticity")} />}
+      {doc.textSource ? <PhotoOriginSignals source={doc.textSource} /> : !isPdf ? <Alert tone="info">{say("analysis.noPdf")}</Alert> : doc.sizeBytes > AUTHENTICITY_MAX_BYTES ? <Alert tone="info">{say("analysis.tooLarge")}</Alert> : <StartAuthenticity documentId={doc.id} disabled={running("document-authenticity")} />}
     </Card.Root>
   );
   const latestReport = latestCompliance?.report && "findings" in latestCompliance.report ? latestCompliance.report : null;
