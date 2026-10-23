@@ -31,22 +31,26 @@ describe.runIf(enabled)("the demo seed (Éric)", () => {
     const counts = Object.fromEntries(overview.flatMap((l) => l.collections.map((c) => [c.name, c.files])));
     for (const [name, n] of Object.entries(expected)) expect(counts[name], name).toBe(n);
     expect(PERSONA_ERIC.collections).toHaveLength(3);
-    const checks = await query<{ run_id: string; inputs: Record<string, string> }>("SELECT a.run_id, a.inputs FROM analyses a JOIN documents d ON d.id = a.document_id WHERE d.owner_id = $1", [owner]);
+    const checks = await query<{ run_id: string; blueprint_version: string | null; inputs: Record<string, string> }>("SELECT a.run_id, a.blueprint_version, a.inputs FROM analyses a JOIN documents d ON d.id = a.document_id WHERE d.owner_id = $1", [owner]);
     expect(checks).toHaveLength(PERSONA_ERIC.checked.length);
     for (const c of checks) {
       expect(c.run_id).toMatch(/^seeded-/);
+      expect(c.blueprint_version).toBeNull();
       expect(c.inputs.seeded).toBe("true");
     }
+    expect((await query<{ perspective: string | null }>("SELECT perspective FROM accounts WHERE id = $1", [owner]))[0]?.perspective).toBe("landlord");
   });
 
   it("changes nothing on a re-run, and starts over with reset", async () => {
     const email = fresh();
     const first = await run(email);
     const before = await snapshot(first.owner);
+    await query("UPDATE accounts SET perspective = 'tenant' WHERE id = $1", [first.owner]);
     const again = await run(email);
     expect(again.owner).toBe(first.owner);
     expect(again.collections).toEqual(expected);
     expect(await snapshot(first.owner)).toEqual(before);
+    expect((await query<{ perspective: string | null }>("SELECT perspective FROM accounts WHERE id = $1", [first.owner]))[0]?.perspective).toBe("tenant");
     const reset = await run(email, { reset: true });
     expect(reset.collections).toEqual(expected);
     expect(await snapshot(first.owner)).toEqual(before);

@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { createHash } from "node:crypto";
 
 import { buildDocument, DEFAULT_SEED, SPECS } from "./catalogue.mjs";
-import { pageCount, renderPdf } from "./render.mjs";
+import { renderPdf } from "./render.mjs";
 
 export { AS_OF, DEFAULT_SEED, PERSONA_ERIC, SPECS } from "./catalogue.mjs";
 export { WATERMARK } from "./render.mjs";
@@ -13,8 +13,8 @@ export async function generateDocument(id, seed = DEFAULT_SEED) {
   const spec = SPECS.find((s) => s.id === id);
   if (!spec) throw new Error(`no such demo document: ${id}`);
   const doc = buildDocument(spec, seed);
-  const bytes = await renderPdf(doc.title, doc.lines);
-  return { ...doc, text: doc.lines.join("\n"), pages: pageCount(doc.lines), bytes, sha256: createHash("sha256").update(bytes).digest("hex") };
+  const { bytes, pages } = await renderPdf(doc.title, doc.lines);
+  return { ...doc, text: doc.lines.join("\n"), pages, bytes, sha256: createHash("sha256").update(bytes).digest("hex") };
 }
 
 export async function generateAll(seed = DEFAULT_SEED) {

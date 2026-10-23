@@ -1,14 +1,16 @@
+import { PDFDocument, StandardFonts } from "pdf-lib";
 import { describe, expect, it } from "vitest";
 
 // A plain ES module script (scripts/demo-documents), tested here where the PDF text reader lives.
 import { generateAll, generateDocument, PERSONA_ERIC, SPECS, WATERMARK } from "../../../scripts/demo-documents/index.mjs";
+import { wrapLines } from "../../../scripts/demo-documents/render.mjs";
 import { readText } from "./pdf-text";
 
 interface Finding { code: string; present?: string[]; absent?: string[] }
-interface Generated { id: string; family: string; flaw: string | null; kind: string; bytes: Uint8Array; text: string; pages: number; findings: Finding[] }
+interface Generated { id: string; family: string; flaw: string | null; kind: string; bytes: Uint8Array; text: string; lines: string[]; pages: number; findings: Finding[] }
 
 const all: Generated[] = await generateAll();
-const textOf = async (doc: Generated) => (await readText("application/pdf", doc.bytes)).text;
+const textOf = async (doc: Generated) => (await readText("application/pdf", doc.bytes)).text.replace(/\s+/g, " ");
 
 describe("the demo documents generator", () => {
   it("gives the same bytes for the same seed, and others for another seed", async () => {
@@ -25,6 +27,17 @@ describe("the demo documents generator", () => {
       expect(pages).toBe(doc.pages);
       expect(text.split(WATERMARK).length - 1, doc.id).toBeGreaterThanOrEqual(doc.pages);
     }
+  });
+
+  it("wraps every source line within the PDF text width and counts the wrapped pages", async () => {
+    const pdf = await PDFDocument.create();
+    const font = await pdf.embedFont(StandardFonts.Helvetica);
+    for (const doc of all) {
+      const wrapped = wrapLines(doc.lines, (line: string) => font.widthOfTextAtSize(line, 10.5), 500);
+      expect(wrapped.every((line: string) => font.widthOfTextAtSize(line, 10.5) <= 500), doc.id).toBe(true);
+      expect(Math.max(1, Math.ceil(wrapped.length / 44)), doc.id).toBe(doc.pages);
+    }
+    expect(wrapLines(["Le locateur remet au locataire l'avis « Renseignements au nouveau locataire d'un logement » du Tribunal administratif du logement (TAL)."], (line: string) => font.widthOfTextAtSize(line, 10.5), 500).length).toBeGreaterThan(1);
   });
 
   it("finds every recorded finding in the document: what is said is there, what is missing is missing, and a clean sibling has it", async () => {

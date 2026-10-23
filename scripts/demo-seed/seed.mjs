@@ -51,8 +51,8 @@ export async function seedPersona(q, { persona = "eric", email, locale = "fr", m
   if (!def) throw new Error(`unknown persona "${persona}" (known: ${Object.keys(PERSONAS).join(", ")})`);
   const address = (email ?? DEFAULT_EMAILS[persona]).trim().toLowerCase();
   const [account] = await q(
-    `INSERT INTO accounts (email, locale, email_verified_at, password_hash) VALUES ($1, $2, now(), $3)
-     ON CONFLICT (email) DO UPDATE SET locale = accounts.locale, password_hash = coalesce(EXCLUDED.password_hash, accounts.password_hash)
+    `INSERT INTO accounts (email, locale, email_verified_at, password_hash, perspective) VALUES ($1, $2, now(), $3, 'landlord')
+     ON CONFLICT (email) DO UPDATE SET locale = accounts.locale, password_hash = coalesce(EXCLUDED.password_hash, accounts.password_hash), perspective = coalesce(accounts.perspective, EXCLUDED.perspective)
      RETURNING id, locale`,
     [address, locale, passwordHash],
   );
@@ -88,7 +88,7 @@ export async function seedPersona(q, { persona = "eric", email, locale = "fr", m
         const runId = `${SEEDED_RUN_PREFIX}${id}`;
         await q(
           `INSERT INTO analyses (document_id, studio, status, run_id, blueprint_version, inputs, report, search_text, finished_at)
-           SELECT $1, $2, 'succeeded', $3, 'seeded', $4, $5, $6, now()
+           SELECT $1, $2, 'succeeded', $3, NULL, $4, $5, $6, now()
             WHERE NOT EXISTS (SELECT 1 FROM analyses WHERE document_id = $1 AND run_id = $3)`,
           [stored.id, studio, runId, JSON.stringify({ seeded: "true" }), JSON.stringify({ ...report, attention: needsAttention(report) }), searchTextOf(report)],
         );
