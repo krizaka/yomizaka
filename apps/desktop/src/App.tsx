@@ -107,14 +107,15 @@ function Account({ locale, onLocale, go }: { locale: Locale; onLocale: (locale: 
   const { t } = useI18n();
   const me = useQuery(queries.me());
   const email = me.data?.email ?? "";
-  const name = me.data?.name ?? email;
+  // The account's name when it has one; otherwise the e-mail alone (never shown twice).
+  const name = me.data?.name ?? undefined;
   return (
     <AccountMenu
       label={t("shell.account")}
-      name={name}
-      email={email}
+      name={name ?? email}
+      email={name ? email : undefined}
       showName
-      avatar={{ defaultAvatar: { brand: "yomizaka", seed: me.data?.avatarSeed ?? email }, fallback: (name || "Y").charAt(0).toUpperCase() }}
+      avatar={{ defaultAvatar: { brand: "yomizaka", seed: me.data?.avatarSeed ?? email }, fallback: (name || email || "Y").charAt(0).toUpperCase() }}
       links={[{ id: "settings", label: t("nav.settings"), href: hashOf({ screen: "settings" }), icon: <SettingsIcon size={16} /> }]}
       language={{ label: t("shell.language"), value: locale, options: LOCALES.map((value) => ({ value, label: LANGUAGE_NAMES[value] })), onChange: (to) => onLocale(to as Locale) }}
       signOut={{ label: t("nav.signOut"), onSelect: () => void yomizaka.signOut().then(() => go({ screen: "library", folder: null })), icon: <LogoutIcon size={16} /> }}

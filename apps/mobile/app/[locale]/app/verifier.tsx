@@ -11,6 +11,7 @@ import { yomizaka, queries } from "@/config";
 import { uploadForm } from "@/data/upload";
 import { routes } from "@/domain/links";
 import { useI18n } from "@/i18n";
+import { AppHeader } from "@/ui/AppHeader";
 import { pick, SOURCE, type Source } from "@/pickers";
 import { useLocale } from "@/use-locale";
 
@@ -71,9 +72,8 @@ export default function Verify() {
   });
 
   return (
-    <Screen>
+    <Screen header={<AppHeader title={t("verify.title")} />}>
       <View style={{ gap: 8 }}>
-        <Txt variant="title">{t("verify.title")}</Txt>
         <Txt tone="secondary">{t("verify.lead")}</Txt>
       </View>
       <View style={{ gap: 12 }}>

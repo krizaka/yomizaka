@@ -73,5 +73,9 @@
     "signOut": "Se déconnecter",
     "version": "Version {version}",
     "privacy": "Confidentialité"
+  },
+  "account": {
+    "open": "Votre compte",
+    "openNamed": "Votre compte : {name}"
   }
 }

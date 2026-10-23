@@ -8,6 +8,7 @@ import { useAuth } from "@/auth";
 import { APP_VERSION, webUrl } from "@/config";
 import { LOCALES } from "@/domain/links";
 import { useI18n } from "@/i18n";
+import { AppHeader } from "@/ui/AppHeader";
 import { useLocale } from "@/use-locale";
 
 /** The settings: the language (the URL's), where the documents live, the account. */
@@ -17,8 +18,7 @@ export default function Settings() {
   const { signOut } = useAuth();
   const router = useRouter();
   return (
-    <Screen>
-      <Txt variant="title">{t("settings.title")}</Txt>
+    <Screen header={<AppHeader title={t("settings.title")} />}>
       <View style={{ gap: 8 }}>
         <Txt variant="label">{t("settings.language")}</Txt>
         <Segmented aria-label={t("settings.language")} options={LOCALES.map((value) => ({ value, label: t(`settings.languages.${value}`) }))} value={locale} onValueChange={setLocale} />

@@ -27,8 +27,8 @@ importers:
   apps/desktop:
     dependencies:
       '@krizaka/app-client':
-        specifier: ^0.1.0
-        version: 0.1.0(react@19.3.1)
+        specifier: ^0.2.0
+        version: 0.2.0(react@19.3.1)
       '@krizaka/app-desktop':
         specifier: ^0.1.0
         version: 0.1.0(react@19.3.1)
@@ -109,8 +109,8 @@ importers:
   apps/mobile:
     dependencies:
       '@krizaka/app-client':
-        specifier: ^0.1.0
-        version: 0.1.0(react@19.3.1)
+        specifier: ^0.2.0
+        version: 0.2.0(react@19.3.1)
       '@krizaka/app-config':
         specifier: ^0.2.0
         version: 0.2.0(react@19.3.1)
@@ -1631,6 +1631,15 @@ packages:
   '@krizaka/app-client@0.1.0':
     resolution: {integrity: sha512-Zuv+CX3iLJQs6375c3h9/OsykL2tGkMaiTp2WZ1lZlaAPUJrHLCBuGsHnbCnu+7baTBQtq+E8Tr7Vh/It8VK8Q==}
     engines: {node: '>=22'}
+
+  '@krizaka/app-client@0.2.0':
+    resolution: {integrity: sha512-Xkd+braZUuYewWBN1LEmOl3WG32Ha1SC6MEnm/ocf1WwhNs8IKIN7eiDI04HN7ukH41bQczy1KfcIRLH3m8Nzw==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      react: '>=18'
+    peerDependenciesMeta:
+      react:
+        optional: true
 
   '@krizaka/app-config@0.2.0':
     resolution: {integrity: sha512-Su2NNZJP5aIhTMo5mq5xPBbAk+u3w/1E4ZD9GbgkG2yZKJvZyVQ9JETV32gB0b1uskfrvZ/tKMJPA30VtE0MeA==}
@@ -9435,6 +9444,12 @@ snapshots:
       '@krizaka/discovery': 0.1.0(react@19.3.1)
     transitivePeerDependencies:
       - react
+
+  '@krizaka/app-client@0.2.0(react@19.3.1)':
+    dependencies:
+      '@krizaka/discovery': 0.1.0(react@19.3.1)
+    optionalDependencies:
+      react: 19.3.1
 
   '@krizaka/app-config@0.2.0(react@19.3.1)':
     optionalDependencies:

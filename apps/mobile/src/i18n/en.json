@@ -73,5 +73,9 @@
     "signOut": "Sign out",
     "version": "Version {version}",
     "privacy": "Privacy"
+  },
+  "account": {
+    "open": "Your account",
+    "openNamed": "Your account: {name}"
   }
 }

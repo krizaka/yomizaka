@@ -9,6 +9,7 @@ import { View } from "react-native";
 import { queries } from "@/config";
 import { routes } from "@/domain/links";
 import { useI18n } from "@/i18n";
+import { AppHeader } from "@/ui/AppHeader";
 import { DocumentRow } from "@/ui/DocumentRow";
 import { useLocale } from "@/use-locale";
 
@@ -23,7 +24,6 @@ export default function Library() {
 
   const header = (
     <View style={{ gap: 12, paddingBottom: 12 }}>
-      <Txt variant="title">{t("library.title")}</Txt>
       {collections.map((collection) => (
         <Card.Root key={collection.id} onPress={() => router.navigate(routes.library(locale, collection.libraryId, collection.id) as never)}>
           <Card.Body>
@@ -39,7 +39,7 @@ export default function Library() {
   );
 
   return (
-    <Screen scroll={false}>
+    <Screen header={<AppHeader title={t("library.title")} />} scroll={false}>
       <List<DocumentSummary>
         label={t("library.recent")}
         data={documents.data ?? []}

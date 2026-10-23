@@ -8,8 +8,9 @@ import { AppState } from "react-native";
 import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AuthProvider } from "@/auth";
-import { discovery } from "@/config";
+import { discovery, session } from "@/config";
 import { I18nProvider } from "@/i18n";
+import { SessionBoundary } from "@/session-boundary";
 import { useLocale } from "@/use-locale";
 
 /** A refresh of the signed manifest each time the app comes back to the foreground. */
@@ -25,7 +26,9 @@ export default function RootLayout() {
       <Themed>
         <DiscoveryProvider discovery={discovery} subscribeForeground={onForeground}>
           <KrizakaQueryProvider throwOnError={false}>
-            <Localised />
+            <SessionBoundary session={session}>
+              <Localised />
+            </SessionBoundary>
           </KrizakaQueryProvider>
         </DiscoveryProvider>
       </Themed>
