@@ -8,9 +8,8 @@ import fr from "../messages/fr.json";
 
 describe("the demo seed", () => {
   it("refuses production, and anything that is not dev", () => {
-    expect(() => assertNotProduction({ APP_ENVIRONMENT: "prod" })).toThrow(/refused/);
+    expect(() => assertNotProduction({ APP_ENVIRONMENT: "prod", APP_DEMO_ACCOUNT_EMAIL: "demo@example.test", APP_DEMO_ACCOUNT_PASSWORD: "long-enough-password" })).toThrow(/refused/);
     expect(() => assertNotProduction({ APP_ENVIRONMENT: "staging" })).toThrow(/refused/);
-    expect(() => assertNotProduction({ APP_ENVIRONMENT: "dev", DEMO_SEED_ALLOW_PRODUCTION: "1" })).toThrow(/refused/);
   });
 
   it("works on dev and on a local machine (the default environment is dev)", () => {

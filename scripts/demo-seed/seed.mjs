@@ -11,7 +11,6 @@ export const SEEDED_RUN_PREFIX = "seeded-";
 export function assertNotProduction(env) {
   const environment = env.APP_ENVIRONMENT ?? "dev";
   if (environment !== "dev") throw new Error(`demo:seed works only on dev and local, and APP_ENVIRONMENT is "${environment}" — refused`);
-  if (env.DEMO_SEED_ALLOW_PRODUCTION) throw new Error("demo:seed never runs on production — refused");
 }
 
 /** The words of the persona (collection names and descriptions) in a language, from the app's messages. */

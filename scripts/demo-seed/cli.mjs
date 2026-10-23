@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // The demo data set of a persona, on dev and local only.
-//   DATABASE_URL=… [DATABASE_CA_CERT=…] [DEMO_ACCOUNT_EMAIL=…] [DEMO_ACCOUNT_PASSWORD=…] \
+//   DATABASE_URL=… [DATABASE_CA_CERT=…] [APP_DEMO_ACCOUNT_EMAIL=…] [APP_DEMO_ACCOUNT_PASSWORD=…] \
 //     node scripts/demo-seed/cli.mjs --persona eric [--locale fr|en] [--reset]
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -26,15 +26,15 @@ async function main() {
   const client = new pg.Client({ connectionString: url.toString(), ...(tls ? { ssl: { ca: process.env.DATABASE_CA_CERT?.replace(/\\n/g, "\n"), rejectUnauthorized: true } } : {}) });
   const messagesByLocale = Object.fromEntries(["fr", "en"].map((l) => [l, JSON.parse(readFileSync(new URL(`../../apps/web/messages/${l}.json`, import.meta.url), "utf8"))]));
   let passwordHash = null;
-  if (process.env.DEMO_ACCOUNT_PASSWORD) {
-    if (process.env.DEMO_ACCOUNT_PASSWORD.length < 12) throw new Error("DEMO_ACCOUNT_PASSWORD must have at least 12 characters");
-    passwordHash = await (await import("../../apps/web/scripts/qa-accounts.mjs")).hashPassword(process.env.DEMO_ACCOUNT_PASSWORD);
+  if (process.env.APP_DEMO_ACCOUNT_PASSWORD) {
+    if (process.env.APP_DEMO_ACCOUNT_PASSWORD.length < 12) throw new Error("APP_DEMO_ACCOUNT_PASSWORD must have at least 12 characters");
+    passwordHash = await (await import("../../apps/web/scripts/qa-accounts.mjs")).hashPassword(process.env.APP_DEMO_ACCOUNT_PASSWORD);
   }
   await client.connect();
   try {
     const result = await seedPersona((sql, values) => client.query(sql, values).then((r) => r.rows), {
       persona,
-      email: process.env.DEMO_ACCOUNT_EMAIL,
+      email: process.env.APP_DEMO_ACCOUNT_EMAIL,
       locale,
       messagesByLocale,
       reset: process.argv.includes("--reset"),
