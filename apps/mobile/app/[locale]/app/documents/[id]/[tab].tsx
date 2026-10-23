@@ -6,10 +6,10 @@ import * as React from "react";
 import { View } from "react-native";
 
 import { availableChecks, CHECK, type DocumentDetail, keys, type Locale } from "@yomizaka/client";
-import { ANALYSIS_STATUS, checkSteps, OLD_DOCUMENT_TABS } from "@yomizaka/core";
+import { ANALYSIS_STATUS, checkSteps } from "@yomizaka/core";
 import { deviceStore } from "@/data/expo-files";
 import { queries, yomizaka } from "@/config";
-import { routes } from "@/domain/links";
+import { legacyDocumentHref, routes } from "@/domain/links";
 import { useI18n } from "@/i18n";
 import { shareSignedReport } from "@/report";
 import { CheckProgress } from "@/ui/CheckProgress";
@@ -32,7 +32,7 @@ export default function DocumentScreen() {
   const document = useQuery(queries.document(id));
 
   // An old address (`infos`, `verifications`…) opens its tab, as the web answers 308; anything else opens the report.
-  if (!isTab(tab)) return <Redirect href={routes.document(locale, id, OLD_DOCUMENT_TABS[tab] === "document" ? "document" : "rapport") as never} />;
+  if (!isTab(tab)) return <Redirect href={legacyDocumentHref(locale, id, tab, analysis) as never} />;
 
   return (
     <Screen header={<Header title={document.data?.title ?? t("document.title")} backLabel={t("common.back")} onBack={() => router.back()} size="inline" />}>

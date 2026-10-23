@@ -16,11 +16,11 @@ const MESSAGES = { en: { console: en.console }, fr: { console: fr.console } } as
 const readable = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ");
 
 /** A finished compliance check, as Orazaka returns it — or as the demo seed wrote it (`inputs.seeded`). */
-const check = (inputs: Record<string, string>, id = "a1") => ({
+const check = (inputs: Record<string, string>, id = "a1", runId = "run_8f3a2c") => ({
   id,
   studio: "compliance-check",
   status: "succeeded",
-  runId: inputs.seeded ? "seeded-bail-rosemont-5-clause-illegale" : "run_8f3a2c",
+  runId: inputs.seeded ? "seeded-bail-rosemont-5-clause-illegale" : runId,
   blueprintVersion: inputs.seeded ? null : "1.4.0",
   inputs,
   report: {
@@ -123,6 +123,34 @@ describe("the document on DetailLayout (the UX review's Y5)", () => {
     expect(html).toContain('data-testid="document-storage"');
     expect((readable(html).match(/Loyer/g) ?? []).length).toBe(1);
     expect(readable(html)).toContain("bail-rosemont-5.pdf");
+  });
+
+  it("once a report exists, the other checks (another jurisdiction, the authenticity) stay reachable, folded under the verdict", () => {
+    nav.search = "";
+    const html = render(document([check({ jurisdiction: "QC" })]));
+    const more = html.indexOf('data-testid="more-checks"');
+    expect(more).toBeGreaterThan(html.indexOf('data-testid="technical-details"'));
+    expect(readable(html.slice(more))).toContain(fr.console.analysis.complianceTitle);
+    expect(readable(html.slice(more))).toContain(fr.console.analysis.authenticityTitle);
+  });
+
+  it("the history opens an earlier run's report (`?run=`): its findings, its download and its sharing follow it", () => {
+    nav.search = "run=a0";
+    const docs = document([check({ jurisdiction: "QC" }), check({ jurisdiction: "QC" }, "a0", "run_older")]);
+    const report = render(docs);
+    expect(report.match(/run_older/g)).toHaveLength(1);
+    expect(report).not.toContain("run_8f3a2c");
+    expect(report).toContain("/analyses/a0/report?lang=fr");
+    const history = render(docs, "historique");
+    expect(history).toContain('href="/fr/app/documents/d1/rapport?run=a0"');
+    expect(history).toContain('href="/fr/app/documents/d1/rapport?run=a1"');
+    nav.search = "";
+  });
+
+  it("a photo's text (an image-only PDF, read by OCR) is shown under the viewer, so a finding can be found in it", () => {
+    const ocr = { kind: "ocr", engine: "tesseract", confidence: 0.9, photos: 2, lowConfidence: false, origin: null };
+    expect(render(document([check({ jurisdiction: "QC" })], { textSource: ocr }), "document")).toContain('data-testid="document-text"');
+    expect(render(document([check({ jurisdiction: "QC" })]), "document")).not.toContain('data-testid="document-text"');
   });
 
   it("« Voir dans le fichier » carries the finding in the address: the document tab names it, and leads back to the report", () => {

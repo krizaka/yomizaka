@@ -1482,7 +1482,9 @@
       "seeInFile": "See in the file",
       "more": "Details",
       "downloadReport": "Download the report",
-      "backToReport": "Back to the report"
+      "backToReport": "Back to the report",
+      "otherChecks": "Other checks: another jurisdiction, the authenticity",
+      "openRun": "Open this report"
     },
     "batch": {
       "title": "Check a batch of documents",

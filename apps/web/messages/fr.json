@@ -1482,7 +1482,9 @@
       "seeInFile": "Voir dans le fichier",
       "more": "Détails",
       "downloadReport": "Télécharger le rapport",
-      "backToReport": "Retour au rapport"
+      "backToReport": "Retour au rapport",
+      "otherChecks": "Autres vérifications : une autre juridiction, l'authenticité",
+      "openRun": "Ouvrir ce rapport"
     },
     "batch": {
       "title": "Vérifier un lot de documents",

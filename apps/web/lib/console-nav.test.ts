@@ -1,10 +1,10 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { OLD_DOCUMENT_TABS } from "@yomizaka/core";
+import { movedDocumentTab,OLD_DOCUMENT_TABS } from "@yomizaka/core";
 import { describe, expect, it } from "vitest";
 
-import { activeNav, CHECKS_TABS, checksTabHref, checksTabOf, CONSOLE_ROUTES, DOCUMENT_TABS, isDocumentTab, isSettingsSection, SETTINGS_SECTIONS, withoutLocale } from "./console-nav";
+import { activeNav, CHECKS_TABS, checksTabHref, checksTabOf, CONSOLE_ROUTES, DOCUMENT_TABS, isDocumentTab, isSettingsSection, movedDocumentHref, searchOf,SETTINGS_SECTIONS, withoutLocale } from "./console-nav";
 import { ROUTE_STATES } from "./route-state";
 
 const ROOT = join(__dirname, "..");
@@ -69,8 +69,16 @@ describe("tabs are routes: the URL is the state", () => {
   it("a bare document address opens on its report; the four old tab addresses answer 308 to their tab; an unknown tab is a 404", () => {
     expect(readFileSync(app("documents/[id]/page.tsx"), "utf8")).toContain("/rapport");
     const page = readFileSync(app("documents/[id]/[tab]/page.tsx"), "utf8");
-    expect(page).toContain("OLD_DOCUMENT_TABS[tab]");
-    expect(page).toContain("permanentRedirect(");
+    expect(page).toContain("movedDocumentHref(asLocale(locale), id, tab, searchOf(await searchParams))");
+    expect(page).toContain("permanentRedirect(moved)");
+    // By the map's own keys, the query kept (`?refused=`, `?analysis=`).
+    expect(movedDocumentTab("verifications")).toBe("rapport");
+    expect(movedDocumentTab("constructor")).toBeNull();
+    expect(movedDocumentTab("rapport")).toBeNull();
+    expect(movedDocumentHref("fr", "d1", "verifications", "refused=PAYWALL&analysis=a0")).toBe("/fr/app/documents/d1/rapport?refused=PAYWALL&analysis=a0");
+    expect(movedDocumentHref("en", "d1", "infos")).toBe("/en/app/documents/d1/document");
+    expect(movedDocumentHref("fr", "d1", "toString")).toBeNull();
+    expect(searchOf({ a: "1", b: ["2", "3"], c: undefined }).toString()).toBe("a=1&b=2&b=3");
     expect(page).toMatch(/isDocumentTab\(tab\)\) notFound\(\)/);
     expect(OLD_DOCUMENT_TABS).toEqual({ infos: "document", fichier: "document", texte: "document", verifications: "rapport" });
   });
@@ -83,6 +91,9 @@ describe("tabs are routes: the URL is the state", () => {
     expect(view).toContain("router.push(`${path}/${next}${query}`");
     expect(view).not.toContain("<Tabs.Root");
     expect(view).not.toMatch(/useState\([^)]*"(file|text|rapport|document|historique)"/);
+    // A running analysis is asked again until it ends, and the document and the lists are read again then.
+    expect(view).toContain("refetchInterval");
+    expect(view).toContain("<LiveAnalysis key={a.id}");
   });
   it("search keeps its query in the address, and the old address redirects", () => {
     expect(CONSOLE_ROUTES.search).toBe("/app/recherche");

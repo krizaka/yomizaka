@@ -1,11 +1,10 @@
-import { OLD_DOCUMENT_TABS } from "@yomizaka/core";
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 
 import { storesOf } from "@/app/active-store";
 import { DocumentView } from "@/components/console/DocumentView";
 import { pageSession } from "@/lib/access";
-import { isDocumentTab } from "@/lib/console-nav";
+import { isDocumentTab, movedDocumentHref, searchOf } from "@/lib/console-nav";
 import { documentStorage, getDocument } from "@/lib/documents";
 import { appEnvironment } from "@/lib/env";
 import { availableFlows, offerFor } from "@/lib/flows";
@@ -19,10 +18,11 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /** One document, one tab per route — another person's document is a 404, never a 403; an old tab address answers 308 to its tab; an unknown tab is a 404. */
-export default async function DocumentTabPage({ params }: { params: Promise<{ locale: string; id: string; tab: string }> }) {
+export default async function DocumentTabPage({ params, searchParams }: { params: Promise<{ locale: string; id: string; tab: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const { locale, id, tab } = await params;
-  const moved = OLD_DOCUMENT_TABS[tab];
-  if (moved) permanentRedirect(`/${asLocale(locale)}/app/documents/${id}/${moved}`);
+  // An old tab address answers 308 to its tab with its query kept (`?refused=`, `?analysis=`), by the map's own keys only.
+  const moved = movedDocumentHref(asLocale(locale), id, tab, searchOf(await searchParams));
+  if (moved) permanentRedirect(moved);
   if (!isDocumentTab(tab)) notFound();
   const session = await pageSession();
   if (!session) notFound();

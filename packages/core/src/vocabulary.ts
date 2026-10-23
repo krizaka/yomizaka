@@ -7,3 +7,6 @@ export const DOCUMENT_TABS = ["rapport", "document", "historique"] as const;
 export type DocumentTab = (typeof DOCUMENT_TABS)[number];
 /** The four addresses of before (the UX review's Y5), each answering 308 to the tab that holds it now. */
 export const OLD_DOCUMENT_TABS: Readonly<Record<string, DocumentTab>> = { infos: "document", fichier: "document", texte: "document", verifications: "rapport" };
+
+/** Where an old tab address went — by the map's own keys only (`tab=constructor` is an unknown tab, not a redirect); null when the tab did not move. */
+export const movedDocumentTab = (tab: string): DocumentTab | null => (Object.prototype.hasOwnProperty.call(OLD_DOCUMENT_TABS, tab) ? (OLD_DOCUMENT_TABS[tab as keyof typeof OLD_DOCUMENT_TABS] ?? null) : null);

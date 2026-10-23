@@ -12,10 +12,10 @@ import { DocumentViewer, type Located } from "@krizaka/ui/document-viewer";
 import { DropdownMenu } from "@krizaka/ui/dropdown-menu";
 import { createKrizakaForm } from "@krizaka/ui/form";
 import { Tabs } from "@krizaka/ui/tabs";
-import { type Analysis, type Audience, AUTHENTICITY_MAX_BYTES, type AuthenticityReport, checkSteps, type ComplianceReport, DOCUMENT_TABS, type DocumentView as DocumentViewData, documentView, DOCX_MIME, isSeededCheck, type Jurisdiction, JURISDICTIONS, ODT_MIME, passages, queryKeys, type Studio, type TextSource } from "@yomizaka/core";
+import { type Analysis, analysis as analysisSchema, ANALYSIS_STATUS, type Audience, AUTHENTICITY_MAX_BYTES, type AuthenticityReport, checkSteps, type ComplianceReport, DOCUMENT_TABS, type DocumentView as DocumentViewData, documentView, DOCX_MIME, isSeededCheck, type Jurisdiction, JURISDICTIONS, ODT_MIME, passages, queryKeys, type Studio, type TextSource } from "@yomizaka/core";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { type ComponentProps, useMemo, useRef, useState } from "react";
+import { type ComponentProps, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
 import { ClosingNoteView } from "@/components/ClosingNoteView";
@@ -67,7 +67,7 @@ function DocumentText({ text, report }: { text: string; report: ComplianceReport
     [text, report],
   );
   return (
-    <div className="max-h-[70vh] overflow-auto whitespace-pre-wrap rounded-lg border border-border-default bg-surface-1 p-4 font-mono text-xs leading-relaxed text-fg-secondary">
+    <div className="max-h-[70vh] overflow-auto whitespace-pre-wrap rounded-lg border border-border-default bg-surface-1 p-4 font-mono text-xs leading-relaxed text-fg-secondary" data-testid="document-text">
       {parts.map((p, i) =>
         p.mark ? (
           <mark key={i} id={`passage-${p.mark}`} className="ym-passage text-fg" title={say("document.passageOf", { rule: p.mark })}>
@@ -222,6 +222,22 @@ function StartAuthenticity({ documentId, disabled }: { documentId: string; disab
   );
 }
 
+/** A running analysis, asked again every 3 s (the BFF fetches and keeps Orazaka's result); once it ends, the document and the lists are read again. */
+function LiveAnalysis({ documentId, analysis: initial }: { documentId: string; analysis: Analysis }) {
+  const client = useQueryClient();
+  const live = useQuery({
+    queryKey: [...queryKeys.document(documentId), "analysis", initial.id],
+    queryFn: () => krizakaFetch(`/api/documents/${documentId}/analyses/${initial.id}`, { schema: z.object({ analysis: analysisSchema }) }).then((r) => r.analysis),
+    initialData: initial,
+    refetchInterval: (q) => (q.state.data?.status === ANALYSIS_STATUS.running ? 3000 : false),
+  });
+  const status = live.data?.status ?? initial.status;
+  useEffect(() => {
+    if (status !== ANALYSIS_STATUS.running) void Promise.all([client.invalidateQueries({ queryKey: queryKeys.document(documentId) }), client.invalidateQueries({ queryKey: queryKeys.documents() })]);
+  }, [status, client, documentId]);
+  return null;
+}
+
 /**
  * The document on `DetailLayout` (the UX review's Y5): the title the insight knows, the status, the one primary action by state,
  * the rest in a menu; three tabs as routes — the report first (the verdict, the findings with what failed first, the engine's
@@ -232,6 +248,7 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
   const { say, locale } = useSay();
   const router = useRouter();
   const client = useQueryClient();
+  const params = useSearchParams();
   const doc = useQuery({
     queryKey: queryKeys.document(initial.id),
     queryFn: () => krizakaFetch(`/api/documents/${initial.id}`, { schema: z.object({ document: documentView }) }).then((r) => r.document),
@@ -248,15 +265,17 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
   const path = `/${locale}/app/documents/${initial.id}`;
   // The tab is the route (/documents/[id]/rapport|document|historique): back, forward, refresh and sharing all work.
   const go = (next: DocumentTab, query = "") => router.push(`${path}/${next}${query}`, { scroll: false });
-  const params = useSearchParams();
   // The lit finding is in the address (`?finding=`): « Voir dans le fichier » opens the document tab on it; back returns to the report.
   const [activeId, setActiveId] = useState<string | null>(params.get("finding"));
   const [found, setFound] = useState<Record<string, Located | null>>({});
   const viewerRef = useRef<HTMLElement>(null);
   const fileUrl = `/api/documents/${doc.id}/file`;
-  const latestCompliance = doc.analyses.find((a) => a.studio === "compliance-check" && a.report && "findings" in a.report);
+  const isComplianceReport = (a: Analysis) => a.studio === "compliance-check" && !!a.report && "findings" in a.report;
+  // The history can open an earlier run's report (`?run=`): its findings, its download and its sharing follow it.
+  const runParam = params.get("run");
+  const latestCompliance = (runParam ? doc.analyses.find((a) => a.id === runParam && isComplianceReport(a)) : undefined) ?? doc.analyses.find(isComplianceReport);
   const latestAuthenticity = doc.analyses.find((a) => a.studio === "document-authenticity" && a.report && "signals" in a.report);
-  const running = (studio: Analysis["studio"]) => doc.analyses.some((a) => a.studio === studio && a.status === "running");
+  const running = (studio: Analysis["studio"]) => doc.analyses.some((a) => a.studio === studio && a.status === ANALYSIS_STATUS.running);
   const failures = doc.analyses.filter((a) => a.error);
   const isPdf = doc.mimeType === "application/pdf";
   const examinable = isPdf || doc.mimeType === DOCX_MIME || doc.mimeType === ODT_MIME;
@@ -280,7 +299,7 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
         go("document", `?finding=${encodeURIComponent(id)}`);
         // On a narrow screen the file sits above the findings: bring it into view; the viewer scrolls to the passage itself.
         if (window.matchMedia?.("(max-width: 1279px)").matches) viewerRef.current?.scrollIntoView({ block: "start", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
-        if (!isPdf) document.getElementById(`passage-${id}`)?.scrollIntoView({ block: "center" });
+        if (!isPdf || doc.textSource) document.getElementById(`passage-${id}`)?.scrollIntoView({ block: "center" });
       }
     },
   };
@@ -320,6 +339,10 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
             <div className="mt-3">
               <ClosingNoteView note={buildNote(noteInputOf(latestReport, noteSourceOf(doc.textSource)), locale)} />
             </div>
+          </details>
+          <details className="rounded-lg border border-border-default p-3" data-testid="more-checks">
+            <summary className="cursor-pointer text-sm font-semibold text-fg">{say("reportFace.otherChecks")}</summary>
+            <div className="mt-3 grid gap-4 md:grid-cols-2">{startCards}</div>
           </details>
         </>
       ) : latestAuthenticity?.report && "signals" in latestAuthenticity.report ? (
@@ -374,6 +397,8 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
       ) : (
         <Alert tone="info">{say("document.noText")}</Alert>
       )}
+      {/* A photo becomes an image-only PDF: its text (OCR or vision) is shown under the viewer, where a finding can be found. */}
+      {isPdf && !doc.purged && doc.textSource && doc.hasText ? <DocumentText text={doc.text} report={latestReport} /> : null}
       {doc.insight ? <DocumentInsight insight={doc.insight} documentId={doc.id} source={doc.textSource} /> : null}
       <StorageNotice storage={doc.storage} retainUntil={doc.retainUntil} purged={doc.purged} onDelete={() => remove.mutate()} deleting={remove.isPending} />
       <DescriptionList
@@ -399,6 +424,11 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
               <Badge tone={RUN_TONE[a.status]}>{say(`analysis.statuses.${a.status}`)}</Badge>
             </div>
             <span className="text-xs text-fg-muted">{formatDate(a.createdAt, locale, true)}</span>
+            {isComplianceReport(a) ? (
+              <Link href={`${path}/rapport?run=${a.id}`} scroll={false} aria-current={latestCompliance?.id === a.id ? "true" : undefined} className="text-sm font-semibold text-fg-accent hover:underline" data-testid="open-run">
+                {say("reportFace.openRun")}
+              </Link>
+            ) : null}
             <TechnicalDetails documentId={doc.id} analysis={a} />
           </li>
         ))}
@@ -475,6 +505,9 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
         ) : undefined
       }
     >
+      {doc.analyses.filter((a) => a.status === ANALYSIS_STATUS.running).map((a) => (
+        <LiveAnalysis key={a.id} documentId={doc.id} analysis={a} />
+      ))}
       {tab === "rapport" ? report : tab === "document" ? document_ : history}
     </DetailLayout>
   );
