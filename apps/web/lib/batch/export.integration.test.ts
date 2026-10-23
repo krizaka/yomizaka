@@ -118,6 +118,13 @@ describe.runIf(enabled)("the ZIP of a batch's reports", () => {
     expect(audit!.actor_label).toMatch(/^api-key:/);
   });
 
+  it("the API answers in French when lang is omitted — as the OpenAPI document says — and in English when asked", async () => {
+    resetRateLimits();
+    const bytes = new Uint8Array(await (await apiExport(get({ key: bearer }, `/api/v1/batches/${batchId}/export`), params(batchId))).arrayBuffer());
+    expect(zipEntries(bytes)!.map((e) => e.name)).toContain("rapports/2-LAURIER-ETIENNE-fr.pdf");
+    expect(zipEntryBytes(bytes, "LISEZ-MOI.txt", 1 << 20)!.toString()).toContain("avis juridique");
+  });
+
   it("without a key 401; another account's batch 404; a malformed id 404", async () => {
     resetRateLimits();
     expect((await apiExport(get({}, `/api/v1/batches/${batchId}/export`), params(batchId))).status).toBe(401);

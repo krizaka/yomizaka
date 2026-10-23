@@ -2,6 +2,7 @@ import type { Analysis } from "@yomizaka/core";
 
 import { refuse } from "../http";
 import { buildZip, type ZipEntry } from "../zip";
+import { csvCell } from "./csv-out";
 import { BATCH_ITEM, type BatchItemView, type BatchView } from "./run";
 
 /**
@@ -18,10 +19,6 @@ export interface ExportDeps {
   maxBytes: number;
 }
 
-const csvCell = (v: string | number | null) => {
-  const s = v === null ? "" : String(v);
-  return /[",\r\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-};
 
 /** A file name that survives every system: accents folded, no separator, no leading dot. */
 export const safeName = (text: string): string => text.normalize("NFKD").replace(/\p{M}/gu, "").replace(/[^\w.-]+/g, "-").replace(/^[-.]+|[-.]+$/g, "").slice(0, 60) || "document";
@@ -40,7 +37,14 @@ export async function exportBatchZip(batch: BatchView, lang: "fr" | "en", deps: 
   const modified = new Date(batch.finishedAt ?? batch.createdAt);
   const entries: ZipEntry[] = [];
   const rows: ExportResult["rows"] = [];
-  const add = (name: string, data: Uint8Array) => entries.push({ name, data, modified });
+  // The budget is held as each file is added: an oversized batch stops rendering reports the moment it cannot fit (review of #265).
+  let used = 0;
+  const tooLarge = () => refuse(413, "EXPORT_TOO_LARGE", "The archive would be larger than the limit", { bytes: used, limit: deps.maxBytes });
+  const add = (name: string, data: Uint8Array) => {
+    used += data.length;
+    if (used > deps.maxBytes) throw tooLarge();
+    entries.push({ name, data, modified });
+  };
   for (const item of batch.items) {
     const base = `${item.line}-${safeName(item.reference ?? item.file.replace(/\.[^.]+$/, ""))}`;
     if (!REPORTED.has(item.state)) {
@@ -72,7 +76,7 @@ export async function exportBatchZip(batch: BatchView, lang: "fr" | "en", deps: 
     return [i.line, i.file, i.reference, i.state, row.reason, row.file].map(csvCell).join(",");
   })];
   const all: ZipEntry[] = [{ name: "lot.csv", data: Buffer.from(`\uFEFF${table.join("\r\n")}\r\n`), modified }, { name: "LISEZ-MOI.txt", data: Buffer.from(deps.readme), modified }, ...entries];
-  const total = all.reduce((sum, e) => sum + e.data.length, 0);
-  if (total > deps.maxBytes) throw refuse(413, "EXPORT_TOO_LARGE", "The archive would be larger than the limit", { bytes: total, limit: deps.maxBytes });
+  used = all.reduce((sum, e) => sum + e.data.length, 0);
+  if (used > deps.maxBytes) throw tooLarge();
   return { bytes: buildZip(all), files: all.map((e) => e.name), rows };
 }

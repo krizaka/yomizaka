@@ -1,5 +1,6 @@
 import { requireSession } from "@/lib/access";
 import { audit } from "@/lib/audit";
+import { csvCell } from "@/lib/batch/csv-out";
 import { batchZipFor } from "@/lib/batch/export-for";
 import { batchView } from "@/lib/batch/run";
 import { isUuid } from "@/lib/documents";
@@ -9,10 +10,6 @@ import { limit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
-const csvCell = (v: string | number | null) => {
-  const s = v === null ? "" : String(v);
-  return /[",\r\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-};
 
 /**
  * The batch's results as CSV, one line per row of the CSV it came from: what each became, and its reason when it did not run.

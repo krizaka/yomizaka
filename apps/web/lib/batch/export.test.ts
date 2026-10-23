@@ -54,6 +54,23 @@ describe("the reports of a batch in one archive (yomizaka#242)", () => {
     await expect(exportBatchZip(batch([item(2)]), "fr", deps({ maxBytes: 50 }))).rejects.toMatchObject({ status: 413, body: { code: "EXPORT_TOO_LARGE" } });
   });
 
+  it("stops rendering reports the moment the budget is exceeded — later reports are not even requested", async () => {
+    const requested: number[] = [];
+    const pdf: ExportDeps["pdf"] = async (i) => {
+      requested.push(i.line);
+      return { bytes: Buffer.alloc(40) };
+    };
+    await expect(exportBatchZip(batch([item(2), item(3), item(4), item(5), item(6)]), "fr", deps({ pdf, maxBytes: 100, analysis: async () => ({ studio: "compliance-check", runId: "r", blueprintVersion: "1", report: REPORT }) }))).rejects.toMatchObject({ status: 413, body: { code: "EXPORT_TOO_LARGE" } });
+    expect(requested).toEqual([2, 3, 4]);
+  });
+
+  it("neutralises a formula in a file name or a reference, in lot.csv", async () => {
+    const out = await exportBatchZip(batch([item(2, { file: "=cmd.pdf", reference: "@SUM(1)" })]), "fr", deps());
+    const csv = zipEntryBytes(out.bytes, "lot.csv", 1 << 20)!.toString();
+    expect(csv).toContain("2,'=cmd.pdf,'@SUM(1),done,,");
+    expect(csv).not.toMatch(/,=cmd|,@SUM/);
+  });
+
   it("is deterministic", async () => {
     const a = await exportBatchZip(batch([item(2)]), "fr", deps());
     const b = await exportBatchZip(batch([item(2)]), "fr", deps());
