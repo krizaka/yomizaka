@@ -55,6 +55,10 @@ export const SETTINGS = {
   "limits.apiRequestsPerMinute": integer(GROUP.limits, 60, { min: 1, max: 6000, unit: "requests" }, WORKSPACE),
   "limits.batchMaxRows": integer(GROUP.limits, 200, { min: 1, max: 1000, unit: "rows" }, WORKSPACE),
   "limits.batchConcurrency": integer(GROUP.limits, 2, { min: 1, max: 10, unit: "checks" }),
+  /** A batch advances by itself (yomizaka#240): how often the server looks (0 = never, the batch then advances only when read), how old a batch may be, how many it takes per look. */
+  "limits.batchTickSeconds": integer(GROUP.limits, 20, { min: 0, max: 3600, unit: "seconds" }),
+  "limits.batchTickMaxAgeHours": integer(GROUP.limits, 48, { min: 1, max: 720, unit: "hours" }),
+  "limits.batchTickBatches": integer(GROUP.limits, 10, { min: 1, max: 100, unit: "batches" }),
   "limits.avatarMaxKb": integer(GROUP.limits, 512, { min: 16, max: 2048, unit: "KB" }),
   "limits.bonusAuditsPerMonth": integer(GROUP.limits, 0, { min: 0, max: 10000, unit: "audits" }, [SCOPE.user]),
   // Plans: what each plan includes (prices stay in Stripe).

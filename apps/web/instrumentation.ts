@@ -21,4 +21,16 @@ export async function register() {
   const { seedLegacySettings } = await import("./lib/settings/seed");
   const legacy = await seedLegacySettings(appSettings(), { signupOpen: e.AUTH_SIGNUP_ENABLED, purgeAfterHours: e.APP_PURGE_AFTER_HOURS, proAuditsPerMonth: e.APP_FAIR_USE_AUDITS_PER_MONTH }, new Date());
   if (legacy.length) console.log(`[yomizaka] settings seeded from the environment: ${legacy.join(", ")}`);
+  // A batch advances without anyone looking at it (yomizaka#240): the interval is a setting, re-read at every look.
+  const { startScheduler } = await import("./lib/batch/scheduler");
+  const { tickBatches } = await import("./lib/batch/tick");
+  const { appEnvironment } = await import("./lib/env");
+  startScheduler({
+    seconds: async () => (await appSettings().get("limits.batchTickSeconds")) as number,
+    run: async () => {
+      const report = await tickBatches(new Date(), appEnvironment(), (message, error) => console.error(`[yomizaka] ${message}`, error));
+      if (report.advanced || report.failed) console.log(`[yomizaka] batch tick: ${report.advanced} advanced, ${report.failed} failed`);
+    },
+    onError: (error) => console.error("[yomizaka] batch tick", error),
+  });
 }

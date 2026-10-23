@@ -496,4 +496,13 @@ ALTER TABLE documents DROP CONSTRAINT IF EXISTS documents_mime_type_check;
 ALTER TABLE documents ADD CONSTRAINT documents_mime_type_check CHECK (mime_type IN ('application/pdf', 'text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.oasis.opendocument.text'));
 `,
   },
+  {
+    version: "0028_batch_tick",
+    sql: `
+-- yomizaka#240: a batch advances without anyone looking at it. A batch that waits (the account must pay, the engine is busy)
+-- is not tried again before tick_after.
+ALTER TABLE batches ADD COLUMN tick_after timestamptz;
+CREATE INDEX batches_open ON batches(created_at) WHERE finished_at IS NULL;
+`,
+  },
 ];
