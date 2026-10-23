@@ -138,7 +138,10 @@
       "privacy": "avis de confidentialité",
       "signUpLink": "Créer un compte",
       "verifiedNotice": "Votre adresse est confirmée. Vous pouvez vous connecter.",
-      "invalidNotice": "Ce lien de confirmation est invalide ou a expiré."
+      "invalidNotice": "Ce lien de confirmation est invalide ou a expiré.",
+      "proofOne": "Chaque constat cite sa règle et la ligne sur laquelle il repose.",
+      "proofTwo": "Vos documents restent au Canada.",
+      "proofThree": "Rapport en français et en anglais."
     },
     "shell": {
       "skip": "Aller au contenu",

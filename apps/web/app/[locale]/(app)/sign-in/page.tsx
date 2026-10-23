@@ -35,8 +35,16 @@ export default async function SignInPage({ params, searchParams }: { params: Pro
         </Link>
       }
       promise={t.promise}
-      aside={<Mascot bird="owl" mood="welcome" size={72} />}
-      asideFooter={t.asideFooter}
+      aside={
+        <>
+          <Mascot bird="owl" mood="welcome" size={160} />
+          <ul className="mt-6 grid gap-2">
+            <li>{t.proofOne}</li>
+            <li>{t.proofTwo}</li>
+            <li>{t.proofThree}</li>
+          </ul>
+        </>
+      }
       title={t.title}
       description={t.description}
       footer={

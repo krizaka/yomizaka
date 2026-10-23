@@ -138,7 +138,10 @@
       "privacy": "privacy notice",
       "signUpLink": "Create an account",
       "verifiedNotice": "Your address is confirmed. You can sign in.",
-      "invalidNotice": "This confirmation link is invalid or has expired."
+      "invalidNotice": "This confirmation link is invalid or has expired.",
+      "proofOne": "Every finding cites its rule and the line it rests on.",
+      "proofTwo": "Your documents stay in Canada.",
+      "proofThree": "The report in French and in English."
     },
     "shell": {
       "skip": "Skip to content",
