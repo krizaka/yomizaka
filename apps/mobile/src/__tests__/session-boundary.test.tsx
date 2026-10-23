@@ -43,7 +43,8 @@ const wrap = (client: QueryClient, session: ReturnType<typeof fakeSession>, node
 
 describe("one account's data never shows to the next", () => {
   it("drops the previous account from the header when the session changes, even when the next account's refresh fails", async () => {
-    const client = createQueryClient({ staleTime: 0, maxRetries: 0 });
+    // The root layout's client: errors stay in the query (`throwOnError={false}`), nothing is retried here, nothing is fresh.
+    const client = createQueryClient({ staleTime: 0, maxRetries: 0, throwOnError: false });
     const session = fakeSession();
     // Alice's identity is cached; every refresh fails (the phone is offline): Query keeps her beside the error.
     client.setQueryData(["yomizaka", "me"], { name: "Alice Tremblay", email: "alice@example.test", avatarSeed: null });
