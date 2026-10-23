@@ -67,7 +67,7 @@ export default function Verify() {
     onSuccess: async (done) => {
       if (!done) return;
       await queryClient.invalidateQueries({ queryKey: keys.documents() });
-      router.navigate(`${routes.document(locale, done.document.id, "verifications")}${done.analysisId ? `?analysis=${done.analysisId}` : ""}` as never);
+      router.navigate(`${routes.document(locale, done.document.id, "rapport")}${done.analysisId ? `?analysis=${done.analysisId}` : ""}` as never);
     },
   });
 

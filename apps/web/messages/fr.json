@@ -322,8 +322,9 @@
         "business": "Choisissez ce que Yomizaka lit : une facture de fournisseur au regard des mentions obligatoires du Québec et du format des numéros de TPS et de TVQ, ou le fichier PDF lui-même. Les règles des contrats arrivent bientôt."
       },
       "tabs": {
-        "infos": "Informations",
-        "verifications": "Vérifications"
+        "rapport": "Rapport",
+        "document": "Document",
+        "historique": "Historique"
       },
       "where": {
         "title": "Où vit ce document",
@@ -361,6 +362,11 @@
         "invoice": "Une facture de fournisseur (Québec : numéros de TPS et de TVQ, mentions obligatoires)",
         "contract": "Un contrat de service (Québec : intérêt de retard, droit d'auteur et droits moraux)"
       },
+      "jurisdictionNames": {
+        "QC": "du Québec",
+        "FR": "de France",
+        "BE-WAL": "de Wallonie"
+      },
       "jurisdictions": {
         "QC": "Québec — bail de logement (C.c.Q., art. 1851 et suiv.)",
         "FR": "France — bail d'habitation",
@@ -389,6 +395,11 @@
         "INSUFFICIENT_EVIDENCE": "Éléments insuffisants"
       },
       "severity": "Gravité",
+      "severities": {
+        "blocking": "bloquant",
+        "major": "majeur",
+        "advice": "conseil"
+      },
       "citation": "Source",
       "passage": "Passage",
       "noPassage": "Aucun passage : le document ne dit rien sur ce point.",
@@ -1450,7 +1461,54 @@
         "result": "Résultat",
         "when": "Quand",
         "run": "Exécution"
+      },
+      "filters": {
+        "label": "Filtrer les vérifications",
+        "search": "Chercher un document",
+        "clearSearch": "Effacer la recherche",
+        "result": "Résultat",
+        "kind": "Type",
+        "period": "Période",
+        "periods": {
+          "7d": "7 derniers jours",
+          "30d": "30 derniers jours",
+          "year": "Cette année"
+        },
+        "clear": "Effacer les filtres",
+        "remove": "Retirer {label}"
+      },
+      "resultsOne": "{count} vérification",
+      "resultsMany": "{count} vérifications",
+      "noMatch": {
+        "title": "Aucune vérification ne correspond",
+        "text": "Élargissez un filtre, ou effacez-les tous."
       }
+    },
+    "reportFace": {
+      "label": "Le résultat",
+      "attentionOne": "{count} point à regarder",
+      "attentionMany": "{count} points à regarder",
+      "attentionNone": "Rien à regarder",
+      "onRules": "sur {rules} règles",
+      "rulesOf": "Règles {jurisdiction} · {ruleset} · en vigueur le {date}",
+      "passedOne": "{count} règle respectée",
+      "passedMany": "{count} règles respectées",
+      "unsureOne": "{count} règle n’a pu être vérifiée",
+      "unsureMany": "{count} règles n’ont pu être vérifiées",
+      "technical": "Détails techniques (exécution, version, empreintes)",
+      "whoSees": "Qui peut voir ce rapport",
+      "onlyYou": "Vous seul, sauf si vous le partagez.",
+      "history": "Chaque exécution de ce document, la plus récente d’abord.",
+      "oneRun": "Une seule exécution pour l’instant.",
+      "notChecked": "Pas encore vérifié",
+      "notCheckedText": "Lancez une vérification : le verdict d’abord, puis chaque constat avec sa ligne.",
+      "fileAndText": "Le fichier, son texte, et ce que Yomizaka y a lu.",
+      "seeInFile": "Voir dans le fichier",
+      "more": "Détails",
+      "downloadReport": "Télécharger le rapport",
+      "backToReport": "Retour au rapport",
+      "otherChecks": "Autres vérifications : une autre juridiction, l'authenticité",
+      "openRun": "Ouvrir ce rapport"
     },
     "batch": {
       "title": "Vérifier un lot de documents",

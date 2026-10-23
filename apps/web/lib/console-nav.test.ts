@@ -1,9 +1,10 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { movedDocumentTab,OLD_DOCUMENT_TABS } from "@yomizaka/core";
 import { describe, expect, it } from "vitest";
 
-import { activeNav, CHECKS_TABS, checksTabHref, checksTabOf, CONSOLE_ROUTES, DOCUMENT_TABS, isDocumentTab, isSettingsSection, SETTINGS_SECTIONS, withoutLocale } from "./console-nav";
+import { activeNav, CHECKS_TABS, checksTabHref, checksTabOf, CONSOLE_ROUTES, DOCUMENT_TABS, isDocumentTab, isSettingsSection, movedDocumentHref, searchOf,SETTINGS_SECTIONS, withoutLocale } from "./console-nav";
 import { ROUTE_STATES } from "./route-state";
 
 const ROOT = join(__dirname, "..");
@@ -58,21 +59,41 @@ describe("Vérifications is a destination; its « Lots » tab lives in the addre
 });
 
 describe("tabs are routes: the URL is the state", () => {
-  it("each document tab has its own route, and an unknown one is not a tab", () => {
-    expect(DOCUMENT_TABS).toEqual(["infos", "verifications", "fichier", "texte"]);
-    expect(isDocumentTab("texte")).toBe(true);
+  it("a document has three tabs as routes — the report, the document, the history — and an unknown one is not a tab", () => {
+    expect(DOCUMENT_TABS).toEqual(["rapport", "document", "historique"]);
+    expect(isDocumentTab("document")).toBe(true);
+    expect(isDocumentTab("texte")).toBe(false);
     expect(isDocumentTab("nope")).toBe(false);
     expect(existsSync(app("documents/[id]/[tab]/page.tsx"))).toBe(true);
   });
-  it("a bare document address opens on its information (a redirect), and an unknown tab is a 404", () => {
-    expect(readFileSync(app("documents/[id]/page.tsx"), "utf8")).toContain("/infos");
-    expect(readFileSync(app("documents/[id]/[tab]/page.tsx"), "utf8")).toMatch(/isDocumentTab\(tab\)\) notFound\(\)/);
+  it("a bare document address opens on its report; the four old tab addresses answer 308 to their tab; an unknown tab is a 404", () => {
+    expect(readFileSync(app("documents/[id]/page.tsx"), "utf8")).toContain("/rapport");
+    const page = readFileSync(app("documents/[id]/[tab]/page.tsx"), "utf8");
+    expect(page).toContain("movedDocumentHref(asLocale(locale), id, tab, searchOf(await searchParams))");
+    expect(page).toContain("permanentRedirect(moved)");
+    // By the map's own keys, the query kept (`?refused=`, `?analysis=`).
+    expect(movedDocumentTab("verifications")).toBe("rapport");
+    expect(movedDocumentTab("constructor")).toBeNull();
+    expect(movedDocumentTab("rapport")).toBeNull();
+    expect(movedDocumentHref("fr", "d1", "verifications", "refused=PAYWALL&analysis=a0")).toBe("/fr/app/documents/d1/rapport?refused=PAYWALL&analysis=a0");
+    expect(movedDocumentHref("en", "d1", "infos")).toBe("/en/app/documents/d1/document");
+    expect(movedDocumentHref("fr", "d1", "toString")).toBeNull();
+    expect(searchOf({ a: "1", b: ["2", "3"], c: undefined }).toString()).toBe("a=1&b=2&b=3");
+    expect(page).toMatch(/isDocumentTab\(tab\)\) notFound\(\)/);
+    expect(OLD_DOCUMENT_TABS).toEqual({ infos: "document", fichier: "document", texte: "document", verifications: "rapport" });
   });
   it("the view takes its tab from the route and a click navigates (no local tab state)", () => {
     const view = read("components/console/DocumentView.tsx");
-    expect(view).toContain("value={tab}");
-    expect(view).toContain("router.push(`/${locale}/app/documents/${initial.id}/${next}`");
-    expect(view).not.toMatch(/useState\([^)]*"(file|text)"/);
+    // Y5: the tabs are `Tabs.Nav` links to the tab routes, lit by the current path; the view never holds a tab in state.
+    expect(view).toContain("<Tabs.Nav");
+    expect(view).toContain("current={`${path}/${tab}`}");
+    expect(view).toContain("<Tabs.NavLink key={t} href={`${path}/${t}`}");
+    expect(view).toContain("router.push(`${path}/${next}${query}`");
+    expect(view).not.toContain("<Tabs.Root");
+    expect(view).not.toMatch(/useState\([^)]*"(file|text|rapport|document|historique)"/);
+    // A running analysis is asked again until it ends, and the document and the lists are read again then.
+    expect(view).toContain("refetchInterval");
+    expect(view).toContain("<LiveAnalysis key={a.id}");
   });
   it("search keeps its query in the address, and the old address redirects", () => {
     expect(CONSOLE_ROUTES.search).toBe("/app/recherche");
@@ -139,12 +160,18 @@ describe("the shell follows Orazaka's pattern (krizaka/yomizaka#278, the UX revi
     expect(view).not.toContain("RadioGroup.Segment");
     expect(ROUTE_STATES.checkKind.state.fallback).toBe("auto");
   });
-  it("every signed-in page draws its h1 with PageHeader (the header names the product, never the page)", () => {
-    for (const file of ["components/console/LibraryView.tsx", "components/console/CheckView.tsx", "components/console/ChecksView.tsx", "components/console/SearchView.tsx", "components/console/DocumentView.tsx", "components/console/PlaceView.tsx", "components/console/BatchProgress.tsx", "app/[locale]/(app)/app/settings/[section]/page.tsx", "app/[locale]/(app)/app/bienvenue/page.tsx"]) {
+  it("every signed-in page draws its h1 with PageHeader — the document with DetailLayout's title (Y5) — (the header names the product, never the page)", () => {
+    for (const file of ["components/console/LibraryView.tsx", "components/console/CheckView.tsx", "components/console/ChecksView.tsx", "components/console/SearchView.tsx", "components/console/PlaceView.tsx", "components/console/BatchProgress.tsx", "app/[locale]/(app)/app/settings/[section]/page.tsx", "app/[locale]/(app)/app/bienvenue/page.tsx"]) {
       expect(read(file), file).toContain('from "@krizaka/ui/page-header"');
       expect(read(file), file).toMatch(/<PageHeader\b/);
       expect(read(file), file).not.toMatch(/<h1\b/);
     }
+    const view = read("components/console/DocumentView.tsx");
+    expect(view).toContain('from "@krizaka/ui/detail-layout"');
+    expect(view).toMatch(/<DetailLayout\b/);
+    expect(view).toContain("title={title}");
+    expect(view).not.toMatch(/<h1\b/);
+    expect(view).not.toContain("@krizaka/ui/page-header");
     expect(read("components/screening/LandlordScreening.tsx")).toMatch(/<h1\b/);
   });
 });
