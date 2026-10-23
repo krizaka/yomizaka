@@ -195,6 +195,21 @@
       },
       "kindLabel": "Kind of the next documents",
       "lead": "Your documents, by collection — and every report.",
+      "emptyPitch": "Drop a lease, a pay stub or an invoice: Yomizaka reads it against Québec's rules and quotes the line behind every finding.",
+      "tryExamples": "Or try:",
+      "dropAnywhere": "Drop to check",
+      "dropAnywhereHint": "PDF, Word, text or photo — 10 MB",
+      "tray": {
+        "title": "Checks in progress",
+        "workingOne": "{count} in progress",
+        "workingMany": "{count} in progress",
+        "doneOne": "{count} done",
+        "doneMany": "{count} done",
+        "failedOne": "{count} failed",
+        "failedMany": "{count} failed",
+        "collapse": "Collapse",
+        "show": "Show"
+      },
       "checkLead": "One file at a time; many at once? Import a batch.",
       "caption": "Your documents",
       "columns": {
@@ -988,7 +1003,14 @@
         "upload": "An image of your own",
         "uploadHint": "PNG, JPEG or HEIC, up to {size} KB. The image is cropped square and its data (position, device) is removed.",
         "off": "Avatars are switched off."
-      }
+      },
+      "defaultName": "My documents",
+      "latestChecks": "Latest checks",
+      "noChecks": "No check yet.",
+      "lastCheck": "Last check {date}",
+      "neverChecked": "Not checked yet",
+      "seeAll": "See all",
+      "report": "Report"
     },
     "settings": {
       "tabs": {

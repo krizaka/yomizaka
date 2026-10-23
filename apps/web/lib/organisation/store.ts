@@ -63,23 +63,31 @@ export async function deleteLibrary(q: Query, owner: string, id: string): Promis
 }
 
 export interface LibraryOverview extends Library {
-  collections: { id: string; name: string; files: number; folders: number; tags: Tag[]; isDefault: boolean; avatar: CollectionAvatar | null; description: string | null }[];
+  collections: { id: string; name: string; files: number; folders: number; tags: Tag[]; isDefault: boolean; avatar: CollectionAvatar | null; description: string | null; lastCheck: LastCheck | null }[];
 }
+
+/** The latest finished check of a collection's files: when, and its result (the document status vocabulary). */
+export interface LastCheck { at: string; status: "checked" | "attention" | "failed" }
 
 /** Every library of the owner with its collections, file counts and tags. */
 export async function overview(q: Query, owner: string): Promise<LibraryOverview[]> {
   const libs = await q<Library>("SELECT id, name FROM libraries WHERE owner_id = $1 ORDER BY created_at", [owner]);
-  const cols = await q<{ id: string; library_id: string; name: string; is_default: boolean; avatar: CollectionAvatar | null; description: string | null; files: string; folders: string }>(
+  const cols = await q<{ id: string; library_id: string; name: string; is_default: boolean; avatar: CollectionAvatar | null; description: string | null; files: string; folders: string; last_at: Date | string | null; last_status: LastCheck["status"] | null }>(
     `SELECT c.id, c.library_id, c.name, c.is_default, c.avatar, c.description,
             (SELECT count(*) FROM documents d WHERE d.collection_id = c.id) AS files,
-            (SELECT count(*) FROM folders f WHERE f.collection_id = c.id) AS folders
-       FROM collections c JOIN libraries l ON l.id = c.library_id WHERE l.owner_id = $1 ORDER BY lower(c.name)`,
+            (SELECT count(*) FROM folders f WHERE f.collection_id = c.id) AS folders,
+            coalesce(la.finished_at, la.created_at) AS last_at,
+            CASE WHEN la.status = 'failed' THEN 'failed' WHEN coalesce((la.report->>'attention')::boolean, false) THEN 'attention' WHEN la.id IS NOT NULL THEN 'checked' END AS last_status
+       FROM collections c JOIN libraries l ON l.id = c.library_id
+       LEFT JOIN LATERAL (SELECT a.id, a.status, a.report, a.created_at, a.finished_at FROM analyses a JOIN documents d ON d.id = a.document_id
+                           WHERE d.collection_id = c.id AND a.status IN ('succeeded', 'failed') ORDER BY coalesce(a.finished_at, a.created_at) DESC LIMIT 1) la ON true
+      WHERE l.owner_id = $1 ORDER BY lower(c.name)`,
     [owner],
   );
   const tags = await tagsOf(q, owner, "collection", cols.map((c) => c.id));
   return libs.map((l) => ({
     ...l,
-    collections: cols.filter((c) => c.library_id === l.id).map((c) => ({ id: c.id, name: c.name, files: Number(c.files), folders: Number(c.folders), tags: tags.get(c.id) ?? [], isDefault: c.is_default, avatar: c.avatar, description: c.description })),
+    collections: cols.filter((c) => c.library_id === l.id).map((c) => ({ id: c.id, name: c.name, files: Number(c.files), folders: Number(c.folders), tags: tags.get(c.id) ?? [], isDefault: c.is_default, avatar: c.avatar, description: c.description, lastCheck: c.last_at && c.last_status ? { at: new Date(c.last_at).toISOString(), status: c.last_status } : null })),
   }));
 }
 

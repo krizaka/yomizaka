@@ -195,6 +195,21 @@
       },
       "kindLabel": "Type des prochains documents",
       "lead": "Vos documents, par collection — et chaque rapport.",
+      "emptyPitch": "Déposez un bail, une fiche de paie ou une facture : Yomizaka le lit selon les règles du Québec et cite la ligne de chaque constat.",
+      "tryExamples": "Ou essayez :",
+      "dropAnywhere": "Déposez pour vérifier",
+      "dropAnywhereHint": "PDF, Word, texte ou photo — 10 Mo",
+      "tray": {
+        "title": "Vérifications en cours",
+        "workingOne": "{count} en cours",
+        "workingMany": "{count} en cours",
+        "doneOne": "{count} terminée",
+        "doneMany": "{count} terminées",
+        "failedOne": "{count} en échec",
+        "failedMany": "{count} en échec",
+        "collapse": "Replier",
+        "show": "Afficher"
+      },
       "checkLead": "Un fichier à la fois ; plusieurs d’un coup ? Importez un lot.",
       "caption": "Vos documents",
       "columns": {
@@ -988,7 +1003,14 @@
         "upload": "Une image à vous",
         "uploadHint": "PNG, JPEG ou HEIC, {size} Ko au plus. L'image est recadrée en carré et ses données (position, appareil) sont retirées.",
         "off": "Les avatars sont désactivés."
-      }
+      },
+      "defaultName": "Mes documents",
+      "latestChecks": "Dernières vérifications",
+      "noChecks": "Aucune vérification pour l’instant.",
+      "lastCheck": "Dernière vérification : {date}",
+      "neverChecked": "Pas encore vérifié",
+      "seeAll": "Tout voir",
+      "report": "Rapport"
     },
     "settings": {
       "tabs": {

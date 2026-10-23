@@ -14,34 +14,9 @@ import { useSay } from "@/lib/i18n-client";
 import { ROUTE_STATES } from "@/lib/route-state";
 import { useRouteState } from "@/lib/use-route-state";
 
-/** What the drop zone offers: PDF, office text and photos. A HEIC is named by extension too (a browser often gives it no type). */
-const ACCEPT = "application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.oasis.opendocument.text,image/png,image/jpeg,image/heic,image/heif,.pdf,.txt,.docx,.odt,.png,.jpg,.jpeg,.heic,.heif";
-const isPhotoFile = (file: File) => /^image\/(png|jpeg|heic|heif)$/.test(file.type) || /\.(png|jpe?g|heic|heif)$/i.test(file.name);
+import { ACCEPT, isPhotoFile, type Placement, send } from "./upload";
 
-export interface Placement {
-  collectionId: string | null;
-  folderId: string | null;
-}
-
-/** Sends one file to the BFF with its progress (XMLHttpRequest: fetch reports no upload progress), aborted on pause. */
-function send(files: File[], kind: DocumentKind | "auto", placement: Placement | undefined, keep: boolean, signal: AbortSignal, onProgress: (sent: number) => void): Promise<{ document: DocumentSummary; duplicate: boolean }> {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/documents");
-    xhr.responseType = "json";
-    xhr.upload.onprogress = (e) => onProgress(e.loaded);
-    xhr.onload = () => (xhr.status < 300 ? resolve(xhr.response) : reject(Object.assign(new Error(xhr.response?.code ?? "UNKNOWN"), { body: xhr.response })));
-    xhr.onerror = () => reject(Object.assign(new Error("NETWORK"), { body: { code: "NETWORK" } }));
-    signal.addEventListener("abort", () => xhr.abort());
-    const body = new FormData();
-    for (const file of files) body.append("file", file);
-    body.append("kind", kind);
-    body.append("keep", String(keep));
-    if (placement?.collectionId) body.append("collectionId", placement.collectionId);
-    if (placement?.folderId) body.append("folderId", placement.folderId);
-    xhr.send(body);
-  });
-}
+export type { Placement } from "./upload";
 
 /**
  * The drop zone and its queue (pause, resume, retry), shared by the library, a collection and « Check a document ». A file

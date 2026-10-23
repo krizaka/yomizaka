@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { LibraryView } from "@/components/console/LibraryView";
 import { SAMPLES } from "@/content/recorded-runs/samples.mjs";
 import { pageSession } from "@/lib/access";
+import { listChecks } from "@/lib/checks";
 import { query } from "@/lib/db";
 import { documentsByIds } from "@/lib/documents";
 import { appEnvironment } from "@/lib/env";
@@ -31,6 +32,6 @@ export default async function LibraryPage({ params }: { params: Promise<{ locale
   // The sweep: documents that were not kept and never checked are purged once their window has passed.
   await purgeExpired(query, new Date());
   await org.ensureLibrary(query, owner, getDictionary(locale).console.organisation.library);
-  const [libraries, recents, tags] = await Promise.all([org.overview(query, owner), org.recentIds(query, owner, 20).then((ids) => documentsByIds(owner, ids)), org.listTags(query, owner)]);
-  return <LibraryView libraries={libraries} recents={recents} tags={tags} perspective={perspective} screening={screeningOffered} examples={SAMPLES} />;
+  const [libraries, recents, tags, latest] = await Promise.all([org.overview(query, owner), org.recentIds(query, owner, 20).then((ids) => documentsByIds(owner, ids)), org.listTags(query, owner), listChecks(query, owner, 5)]);
+  return <LibraryView libraries={libraries} recents={recents} latest={latest} tags={tags} perspective={perspective} screening={screeningOffered} examples={SAMPLES} />;
 }
