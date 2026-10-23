@@ -16,7 +16,7 @@
     "build:app": "tauri build --bundles dmg --target aarch64-apple-darwin"
   },
   "dependencies": {
-    "@krizaka/app-client": "^0.1.0",
+    "@krizaka/app-client": "^0.2.0",
     "@krizaka/app-desktop": "^0.1.0",
     "@krizaka/i18n": "^0.2.1",
     "@krizaka/icons": "^0.7.0",
