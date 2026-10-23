@@ -28,7 +28,7 @@ describe("what Yomizaka sends to Orazaka", () => {
     expect(() => runInputs({ studio: "compliance-check", jurisdiction: "FR" }, { mimeType: "application/pdf", text: "  ", content: pdf(1) })).toThrow(/no text layer/);
     expect(() => runInputs({ studio: "compliance-check", jurisdiction: "FR" }, { mimeType: "text/plain", text: "a".repeat(60_001), content: Buffer.from("a") })).toThrow(/longer/);
     expect(() => runInputs({ studio: "document-authenticity" }, { mimeType: "text/plain", text: "x", content: Buffer.from("x") })).toThrow(/PDF files/);
-    expect(() => runInputs({ studio: "document-authenticity" }, { mimeType: "application/pdf", text: "", content: pdf(1_000_001) })).toThrow(/1 MB/);
+    expect(() => runInputs({ studio: "document-authenticity" }, { mimeType: "application/pdf", text: "", content: pdf(5_000_001) })).toThrow(/5 MB/);
   });
 });
 

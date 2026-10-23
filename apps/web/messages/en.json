@@ -357,7 +357,7 @@
       "language": "Reports are written in French, the language of their rules.",
       "history": "Earlier runs",
       "noPdf": "Only a PDF can be examined as a file.",
-      "tooLarge": "Yomizaka examines PDFs up to 1 MB.",
+      "tooLarge": "Yomizaka examines files up to 5 MB.",
       "toReview": "Québec rules still to be reviewed by a lawyer: a demonstration screen, not legal advice.",
       "showInFile": "Show in the file",
       "findingPage": "Page {page}",
@@ -372,7 +372,34 @@
       "exportKey": "Signing key",
       "exportPdf": "Download the PDF",
       "reused": "Result reused: this exact document was already checked against the same rules, so no new check was run.",
-      "noPhoto": "File-level authenticity cannot be measured on a photo: Yomizaka assembled the file from your photos."
+      "photoOrigin": {
+        "header": "Read on your photos at upload, before their metadata was removed: facts about the files, not an expert examination. They do not say whether the document is authentic.",
+        "where": "The photos' metadata, read at upload",
+        "declared": {
+          "observation": "The photos declare the device “{device}” and the software “{software}”.",
+          "mayIndicate": "Nothing in itself: it is what the device or the software wrote when it saved the photo."
+        },
+        "absent": {
+          "observation": "The photos declare no device, no software and no capture date.",
+          "mayIndicate": "Metadata removed. Messaging apps, screenshots and social networks also remove it by default."
+        },
+        "noDevice": {
+          "observation": "The photos declare no capture device: most likely a screenshot or an export.",
+          "mayIndicate": "Nothing about authenticity. Noted because a photo of a paper document usually carries the device's name."
+        },
+        "modifiedAfter": {
+          "observation": "A photo declares it was modified after it was taken: taken {taken}, modified {modified}.",
+          "mayIndicate": "A later save. A rotation, a crop or an export from the photo library leave the same trace."
+        },
+        "modifiedBefore": {
+          "observation": "A photo declares a modification date ({modified}) earlier than its capture ({taken}).",
+          "mayIndicate": "Dates rewritten, or a device clock set wrong — which also happens after a time-zone change."
+        },
+        "gpsRemoved": {
+          "observation": "A photo carried a GPS position. It was removed at upload and never kept.",
+          "mayIndicate": "Nothing about authenticity: most phones write it by default."
+        }
+      }
     },
     "search": {
       "title": "Search",
@@ -424,7 +451,7 @@
       "NO_TEXT": "This document has no text layer to check.",
       "TEXT_TOO_LONG": "This document is longer than the check reads (60 000 characters).",
       "NOT_A_PDF": "Only a PDF can be examined as a file.",
-      "PDF_TOO_LARGE": "Yomizaka examines PDFs up to 1 MB.",
+      "PDF_TOO_LARGE": "Yomizaka examines files up to 5 MB.",
       "ALREADY_RUNNING": "This check is already running.",
       "ORAZAKA_NOT_CONFIGURED": "The connection to Orazaka is not configured.",
       "ORAZAKA_UNAVAILABLE": "Orazaka did not answer. Try again in a moment.",

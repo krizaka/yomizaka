@@ -12,8 +12,8 @@ export { DOCUMENT_KINDS, DOCUMENT_STATUSES, DOCUMENT_TABS, type DocumentTab } fr
 
 /** The largest file Yomizaka keeps (the MVP stores files in its own database). */
 export const MAX_FILE_BYTES = 10 * 1024 * 1024;
-/** The largest PDF Orazaka's authenticity Studio reads (its input is the file in base64, ≤ 1 400 000 characters). */
-export const AUTHENTICITY_MAX_BYTES = 1_000_000;
+/** The largest file Orazaka's authenticity Studio reads (its input is the file in base64, ≤ 7 000 000 characters since document-authenticity 1.3.0). */
+export const AUTHENTICITY_MAX_BYTES = 5_000_000;
 /** The longest text Orazaka's compliance Studio reads (its `document` input). */
 export const COMPLIANCE_MAX_CHARS = 60_000;
 /** What can be uploaded: a PDF (its text layer is read) or plain text. */
