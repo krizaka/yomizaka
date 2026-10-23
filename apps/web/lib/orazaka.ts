@@ -2,7 +2,7 @@ import { type OrazakaRun, orazakaRun, type Studio } from "@yomizaka/core";
 import { z } from "zod";
 
 import { readEnv } from "./env";
-import { refuse } from "./http";
+import { HttpError, refuse } from "./http";
 
 /**
  * Orazaka's edge — the only place Yomizaka's analyses run. Yomizaka calls it with its service key (`oz_…`, a DO
@@ -32,6 +32,8 @@ export function orazakaRefusal(status: number): { status: number; code: string }
   if (status === 409) return { status: 502, code: "ORAZAKA_LOCKED" };
   if (status === 400 || status === 422) return { status: 422, code: "ORAZAKA_INPUT" };
   if (status === 404) return { status: 502, code: "ORAZAKA_NOT_FOUND" };
+  // « too many concurrent runs »: the engine says when to come back; not a failure of the document (yomizaka#248).
+  if (status === 429) return { status: 429, code: "ORAZAKA_BUSY" };
   return { status: 502, code: "ORAZAKA_UNAVAILABLE" };
 }
 
@@ -56,6 +58,10 @@ export function createOrazakaClient(options: { baseUrl: string; apiKey: string |
     }
     if (!res.ok) {
       const { status, code } = orazakaRefusal(res.status);
+      if (res.status === 429) {
+        const wait = Math.min(300, Math.max(1, Number(((await res.json().catch(() => null)) as { retryAfterSeconds?: unknown } | null)?.retryAfterSeconds) || 15));
+        throw new HttpError(status, `Orazaka is busy on ${init.method ?? "GET"} ${path.split("?")[0]}`, { code, retryAfter: wait }, { "Retry-After": String(wait) });
+      }
       throw refuse(status, code, `Orazaka answered ${res.status} on ${init.method ?? "GET"} ${path.split("?")[0]}`);
     }
     const parsed = schema.safeParse(await res.json().catch(() => undefined));

@@ -7,8 +7,11 @@ import { startCheck } from "../checks";
 import { query } from "../db";
 import { storeDocument } from "../documents";
 import { HttpError, refuse } from "../http";
+import { placeDocument } from "../organisation/store";
+import { isPhoto, storePhotos } from "../photos";
 import { YOMIZAKA_RULES } from "../preflight/rules";
 import { preflightRulesFrom, type Snapshot } from "../settings/boundary";
+import { pausesBatch } from "./pausing";
 import { type BatchFile, PREVIEW_ROW, previewBatch } from "./preview";
 
 /**
@@ -21,8 +24,6 @@ import { type BatchFile, PREVIEW_ROW, previewBatch } from "./preview";
 export const BATCH_ITEM = { pending: "pending", reused: "reused", running: "running", done: "done", failed: "failed", refused: "refused" } as const;
 export type BatchItemState = (typeof BATCH_ITEM)[keyof typeof BATCH_ITEM];
 
-/** The refusals that would refuse every next row too: the batch waits for the account instead of failing them one by one. */
-const PAUSING = new Set(["PAYWALL", "DAILY_LIMIT", "FAIR_USE"]);
 
 export interface BatchItemView {
   id: string;
@@ -66,10 +67,25 @@ export async function createBatch(account: Account, name: string, manifestText: 
       continue;
     }
     const file = byName.get(row.file.toLowerCase())!;
-    const { summary } = await storeDocument(account.id, { name: file.name, type: file.type, size: file.bytes.length }, file.bytes, source.documentType ?? "auto", policy);
-    await insertItem(batch!.id, row.line, row.file, row.reference, source.request, summary.id, BATCH_ITEM.pending, null);
+    // One file that cannot be stored is that row's refusal, never the batch's: the others go on (yomizaka#249).
+    try {
+      const stored = isPhoto(file.bytes)
+        ? await storePhotos(account.id, [file], source.documentType ?? "auto", { policy })
+        : await storeDocument(account.id, { name: file.name, type: file.type, size: file.bytes.length }, file.bytes, source.documentType ?? "auto", policy);
+      await placeInCollection(account.id, stored.summary.id, source.collection).catch(() => undefined);
+      await insertItem(batch!.id, row.line, row.file, row.reference, source.request, stored.summary.id, BATCH_ITEM.pending, null);
+    } catch (error) {
+      await insertItem(batch!.id, row.line, row.file, row.reference, null, null, BATCH_ITEM.refused, codeOf(error));
+    }
   }
   return advanceBatch(account, batch!.id, { settings, now, environment });
+}
+
+/** A row naming the building's collection files its document there (yomizaka#251); a name that is not one of the owner's collections leaves it where it is. */
+async function placeInCollection(ownerId: string, documentId: string, name: string | null) {
+  if (!name) return;
+  const [found] = await query<{ id: string }>("SELECT c.id FROM collections c JOIN libraries l ON l.id = c.library_id WHERE l.owner_id = $1 AND lower(c.name) = lower($2) ORDER BY c.created_at LIMIT 1", [ownerId, name]);
+  if (found) await placeDocument(query, ownerId, documentId, { collectionId: found.id, folderId: null });
 }
 
 async function insertItem(batchId: string, line: number, file: string, reference: string | null, request: StartAnalysis | null, documentId: string | null, state: BatchItemState, error: string | null) {
@@ -100,7 +116,7 @@ export async function advanceBatch(account: Account, batchId: string, { settings
       if (!started.reused) running++;
     } catch (error) {
       const code = codeOf(error);
-      if (PAUSING.has(code)) {
+      if (pausesBatch(code)) {
         pausedBy = code;
         break;
       }

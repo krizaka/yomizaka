@@ -546,7 +546,8 @@
       "BATCH_EMPTY": "Le CSV ne contient aucune ligne.",
       "FAILED": "La vérification n'a pas abouti.",
       "CANCELLED": "La vérification a été annulée.",
-      "REFUSED": "Ligne refusée."
+      "REFUSED": "Ligne refusée.",
+      "ORAZAKA_BUSY": "Orazaka est occupé en ce moment. Le lot continue tout seul dès qu'il a de la place."
     },
     "adminConsole": {
       "shell": {
@@ -1231,7 +1232,7 @@
           },
           "batchConcurrency": {
             "label": "Vérifications d'un lot menées en même temps",
-            "hint": "Les autres attendent leur tour ; une ligne en échec n'arrête pas le lot."
+            "hint": "Les autres attendent leur tour (Orazaka lance quelques vérifications à la fois pour tout le produit) ; une ligne en échec n'arrête jamais le lot."
           }
         },
         "plans": {
@@ -1375,7 +1376,8 @@
         "done": "Vérifié",
         "failed": "En échec",
         "refused": "Refusé"
-      }
+      },
+      "engineBusy": "Orazaka est occupé par d'autres vérifications : les lignes restantes attendent leur tour et démarrent toutes seules. Rien à faire."
     }
   },
   "report": {

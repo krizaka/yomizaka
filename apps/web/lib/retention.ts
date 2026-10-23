@@ -34,9 +34,12 @@ export async function purgeDocument(q: Query, documentId: string): Promise<boole
   return rows.length > 0;
 }
 
-/** After a check: purges the document when it is not kept and no other check of it is still running. */
+/**
+ * After a check: purges the document when it is not kept, no other check of it is still running and no batch row is still
+ * waiting to check it (yomizaka#250: one lease listed for compliance and for authenticity is one document).
+ */
 export async function purgeIfDone(q: Query, documentId: string): Promise<boolean> {
-  const running = await q("SELECT 1 FROM analyses WHERE document_id = $1 AND status = 'running' LIMIT 1", [documentId]);
+  const running = await q("SELECT 1 FROM analyses WHERE document_id = $1 AND status = 'running' UNION ALL SELECT 1 FROM batch_items WHERE document_id = $1 AND state = 'pending' LIMIT 1", [documentId]);
   return running.length === 0 && (await purgeDocument(q, documentId));
 }
 
