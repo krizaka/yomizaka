@@ -254,7 +254,7 @@
         "filters": "Filtrer les documents",
         "clear": "Effacer les filtres",
         "remove": "Retirer le filtre {label}",
-        "search": "Rechercher dans « {header} »",
+        "search": "Filtrer par titre",
         "pagination": "Pages des documents",
         "previous": "Page précédente",
         "next": "Page suivante",
@@ -453,13 +453,14 @@
       "label": "Chercher dans vos documents et leurs constats",
       "placeholder": "dépôt de garantie, facture 2026, « solidarité »…",
       "hint": "Deux caractères au moins. Des guillemets pour une expression exacte, un signe moins pour exclure un mot.",
-      "results": "{count} résultat(s)",
       "none": "Rien ne correspond à « {q} ».",
       "sources": {
         "title": "Titre",
         "text": "Texte",
         "finding": "Constat"
-      }
+      },
+      "resultsOne": "{count} résultat",
+      "resultsMany": "{count} résultats"
     },
     "admin": {
       "title": "Personnes",
@@ -1017,7 +1018,8 @@
       "lastCheck": "Dernière vérification : {date}",
       "neverChecked": "Pas encore vérifié",
       "seeAll": "Tout voir",
-      "report": "Rapport"
+      "report": "Rapport",
+      "removeTag": "Retirer {label}"
     },
     "settings": {
       "tabs": {

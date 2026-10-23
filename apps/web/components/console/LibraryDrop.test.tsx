@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+
+import { KrizakaQueryProvider } from "@krizaka/query";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
@@ -5,7 +8,7 @@ import { I18nProvider } from "@/lib/i18n-client";
 import en from "@/messages/en.json";
 import fr from "@/messages/fr.json";
 
-import { queueItemsOf, UploadTray } from "./LibraryDrop";
+import { AddFilesButton, DropZone, LibraryDrop, queueItemsOf, UploadTray } from "./LibraryDrop";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh() {}, push() {}, replace() {} }) }));
 
@@ -46,5 +49,28 @@ describe("drop anywhere on the library (the review's B4): the tray follows the q
     expect(text).not.toContain("en échec");
     expect(readable(render(queueItemsOf([item("a", "error", { error: "x" })], say), "en"))).toContain("0 in progress · 0 done · 1 failed");
     expect(render([])).toBe("");
+  });
+
+  it("a place wraps its page in the island: the header's picker button and the zone where the page wants it — nothing outside one (the review's Y7)", () => {
+    const wrap = (node: React.ReactNode) =>
+      renderToStaticMarkup(
+        <I18nProvider locale="fr" messages={MESSAGES.fr as never}>
+          <KrizakaQueryProvider>{node}</KrizakaQueryProvider>
+        </I18nProvider>,
+      );
+    expect(wrap(<AddFilesButton>Ajouter</AddFilesButton>)).toBe("");
+    expect(wrap(<DropZone />)).toBe("");
+    const html = wrap(
+      <LibraryDrop placement={{ collectionId: "c1", folderId: null }}>
+        <AddFilesButton>Ajouter des documents</AddFilesButton>
+        <DropZone />
+      </LibraryDrop>,
+    );
+    expect(html).toContain('data-testid="add-files"');
+    expect(html).toContain('type="file"');
+    expect(html).toContain('data-testid="library-dropzone"');
+    expect(html.match(/data-testid="library-dropzone"/g)).toHaveLength(1);
+    // The dropped files go to the place: the placement reaches `send`.
+    expect(readFileSync(new URL("./LibraryDrop.tsx", import.meta.url), "utf8")).toContain('send([file], "auto", placement, keep, signal, onProgress)');
   });
 });

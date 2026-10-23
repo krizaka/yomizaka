@@ -8,7 +8,7 @@ import { Dropzone, type FileRejection, type UploadItem, useUploadQueue } from "@
 import { QueueStatus, tally, TaskTray, UploadQueue, type UploadQueueItem } from "@krizaka/ui/upload-queue";
 import { type Jurisdiction, MAX_FILE_BYTES, STORAGE_MODE, STORAGE_MODES } from "@yomizaka/core";
 import { useRouter } from "next/navigation";
-import { type ReactNode, useState } from "react";
+import { createContext, type ReactNode, useContext, useRef, useState } from "react";
 import { z } from "zod";
 
 import { useAppConfig } from "@/lib/app-config-client";
@@ -16,7 +16,7 @@ import { useSay } from "@/lib/i18n-client";
 import { pluralKey } from "@/lib/plural";
 
 import { startIfSure } from "./start-check";
-import { ACCEPT, ACCEPT_RULES, refusalCode, send, translated } from "./upload";
+import { ACCEPT, ACCEPT_RULES, type Placement, refusalCode, send, translated } from "./upload";
 
 type Say = (key: string, vars?: Record<string, string | number>) => string;
 
@@ -58,12 +58,48 @@ export function UploadTray({ items }: { items: readonly UploadQueueItem[] }) {
   );
 }
 
+/** What the drop island offers the page it wraps: adding files (a picker button in a header), and its zone where the page wants it. */
+const DropIsland = createContext<{ add: (files: File[]) => void; zone: ReactNode } | null>(null);
+
+/** « Ajouter des documents »: a picker button that feeds the drop island it sits in (the header's action of a place); nothing outside one. */
+export function AddFilesButton({ children, variant = "secondary", size = "md" }: { children: ReactNode; variant?: "primary" | "secondary" | "ghost"; size?: "sm" | "md" }) {
+  const island = useContext(DropIsland);
+  const input = useRef<HTMLInputElement>(null);
+  if (!island) return null;
+  return (
+    <>
+      <Button variant={variant} size={size} onClick={() => input.current?.click()} data-testid="add-files">
+        {children}
+      </Button>
+      <input
+        ref={input}
+        type="file"
+        accept={ACCEPT}
+        multiple
+        hidden
+        tabIndex={-1}
+        aria-hidden
+        onChange={(e) => {
+          const files = Array.from(e.currentTarget.files ?? []);
+          if (files.length) island.add(files);
+          e.currentTarget.value = "";
+        }}
+      />
+    </>
+  );
+}
+
+/** The island's drop zone, where the page wants it (an empty place); nothing outside an island. */
+export function DropZone() {
+  return useContext(DropIsland)?.zone ?? null;
+}
+
 /**
- * Drop anywhere on the library (the review's B4): a full-window overlay takes a file dragged over the page, an optional zone
+ * Drop anywhere on the library (the review's B4) — or on a place, filing into it (Y7): a full-window overlay takes a file dragged over the page, an optional zone
  * (the empty library's only one) takes a click, and the tray follows the queue while the person keeps browsing. One path
  * (`send`) with the kind left to Yomizaka and the owner's keeping preference; the lists refresh as each file lands.
  */
-export function LibraryDrop({ zone = false, examples, jurisdictions = ["QC"] }: { zone?: boolean; examples?: (add: (files: File[]) => void) => ReactNode; jurisdictions?: readonly Jurisdiction[] }) {
+export function LibraryDrop({ zone = false, examples, jurisdictions = ["QC"], placement, children }: { zone?: boolean; examples?: (add: (files: File[]) => void) => ReactNode; jurisdictions?: readonly Jurisdiction[]; placement?: Placement; children?: ReactNode }) {
   const { say } = useSay();
   const router = useRouter();
   const app = useAppConfig();
@@ -77,7 +113,7 @@ export function LibraryDrop({ zone = false, examples, jurisdictions = ["QC"] }: 
     upload: async (file, { signal, onProgress }) => {
       let stored;
       try {
-        stored = await send([file], "auto", undefined, keep, signal, onProgress);
+        stored = await send([file], "auto", placement, keep, signal, onProgress);
       } catch (error) {
         throw translated(error, say);
       }
@@ -88,6 +124,11 @@ export function LibraryDrop({ zone = false, examples, jurisdictions = ["QC"] }: 
   });
   const refusal = (r: FileRejection) => say(REFUSAL[r.reason] ?? "library.refusedCount", { name: r.file.name });
   const items = queueItemsOf(queue.items, say, queue.retry);
+  const zoneNode = (
+    <div data-testid="library-dropzone">
+      <Dropzone title={say("library.dropTitle")} browseLabel={say("library.browse")} hint={say("library.hint")} accept={ACCEPT} maxSize={app?.maxFileBytes ?? MAX_FILE_BYTES} maxFiles={20} multiple onFiles={(files) => queue.add(files)} refusalLabel={refusal} />
+    </div>
+  );
   return (
     <>
       <DropOverlay
@@ -99,13 +140,10 @@ export function LibraryDrop({ zone = false, examples, jurisdictions = ["QC"] }: 
           setNotice(rejected.length ? say("library.refusedType", { name: rejected[0]!.name }) : null);
         }}
       />
-      {zone ? (
-        <div data-testid="library-dropzone">
-          <Dropzone title={say("library.dropTitle")} browseLabel={say("library.browse")} hint={say("library.hint")} accept={ACCEPT} maxSize={app?.maxFileBytes ?? MAX_FILE_BYTES} maxFiles={20} multiple onFiles={(files) => queue.add(files)} refusalLabel={refusal} />
-        </div>
-      ) : null}
+      {zone ? zoneNode : null}
       {examples?.(queue.add)}
       {notice ? <Alert tone="warning">{notice}</Alert> : null}
+      {children !== undefined ? <DropIsland.Provider value={{ add: queue.add, zone: zoneNode }}>{children}</DropIsland.Provider> : null}
       <UploadTray items={items} />
     </>
   );

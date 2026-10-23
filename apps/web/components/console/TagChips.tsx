@@ -1,6 +1,4 @@
 import { Chip } from "@krizaka/ui/chip";
-import { ChipLink } from "@krizaka/ui/chip-link";
-import Link from "next/link";
 
 import type { TagColor } from "@/lib/organisation/rules";
 
@@ -32,28 +30,5 @@ export function TagChips({ tags }: { tags: { id: string; name: string; color: Ta
         </li>
       ))}
     </ul>
-  );
-}
-
-/** The tag filter of a view: each chip is a link, the selected ones are the URL's `?tags=` (the URL is the state). */
-export function TagFilter({ tags, selected, hrefFor, label, clearLabel, clearHref }: { tags: { id: string; name: string; color: TagColor }[]; selected: string[]; hrefFor: (id: string) => string; label: string; clearLabel: string; clearHref: string }) {
-  if (!tags.length) return null;
-  return (
-    <nav aria-label={label} className="flex flex-wrap items-center gap-2" data-testid="tag-filter">
-      <span className="text-sm text-fg-secondary">{label}</span>
-      {tags.map((t) => (
-        <ChipLink key={t.id} asChild size="sm" selected={selected.includes(t.id)}>
-          <Link href={hrefFor(t.id)} className="gap-1.5">
-            <Dot color={t.color} />
-            {t.name}
-          </Link>
-        </ChipLink>
-      ))}
-      {selected.length ? (
-        <Link href={clearHref} className="text-sm text-fg-accent underline">
-          {clearLabel}
-        </Link>
-      ) : null}
-    </nav>
   );
 }

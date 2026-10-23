@@ -254,7 +254,7 @@
         "filters": "Filter the documents",
         "clear": "Clear filters",
         "remove": "Remove the {label} filter",
-        "search": "Search in “{header}”",
+        "search": "Filter by title",
         "pagination": "Document pages",
         "previous": "Previous page",
         "next": "Next page",
@@ -453,13 +453,14 @@
       "label": "Search your documents and their findings",
       "placeholder": "dépôt de garantie, invoice 2026, “solidarité”…",
       "hint": "Two characters at least. Quotes for an exact phrase, a minus sign to leave a word out.",
-      "results": "{count} result(s)",
       "none": "Nothing matches “{q}”.",
       "sources": {
         "title": "Title",
         "text": "Text",
         "finding": "Finding"
-      }
+      },
+      "resultsOne": "{count} result",
+      "resultsMany": "{count} results"
     },
     "admin": {
       "title": "People",
@@ -1017,7 +1018,8 @@
       "lastCheck": "Last check {date}",
       "neverChecked": "Not checked yet",
       "seeAll": "See all",
-      "report": "Report"
+      "report": "Report",
+      "removeTag": "Remove {label}"
     },
     "settings": {
       "tabs": {
