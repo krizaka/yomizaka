@@ -3,7 +3,7 @@
 Check a lease or an invoice from your own tool (an ERP, a property-management system, a script). A check is an Orazaka run;
 the report is returned as Orazaka produced it (in French). **Yomizaka is a triage tool, not legal advice.**
 
-- Contract: [`/api/v1/openapi.json`](https://dev.yomizaka.com/api/v1/openapi.json) (OpenAPI 3.1, generated from the code; a test refuses a route that is not in it).
+- Contract: [`/api/v1/openapi.json`](https://www.yomizaka.com/api/v1/openapi.json) (OpenAPI 3.1, generated from the code; a test refuses a route that is not in it).
 - Access: a **Pro** plan; the keys are created in the account. `Authorization: Bearer yzk_…`. A key has scopes
   (`checks:write` to start, `reports:read` to read), a life of 1 to 365 days, a rotation with a 24 h grace, and a per-minute
   limit set by the administrator (429 with `Retry-After`). Never put a key in a repository or a log.
@@ -13,12 +13,12 @@ the report is returned as Orazaka produced it (in French). **Yomizaka is a triag
 ## One check
 
 ```sh
-curl -X POST https://dev.yomizaka.com/api/v1/checks \
+curl -X POST https://www.yomizaka.com/api/v1/checks \
   -H "Authorization: Bearer $YOMIZAKA_KEY" \
   -F file=@bail.pdf -F check=compliance -F reference=APT-12
 # 201 { "check": { "id": "…", "state": "running", … } }
 
-curl https://dev.yomizaka.com/api/v1/checks/<id> -H "Authorization: Bearer $YOMIZAKA_KEY"
+curl https://www.yomizaka.com/api/v1/checks/<id> -H "Authorization: Bearer $YOMIZAKA_KEY"
 # poll until "state" is "done" (the "report" is there), "failed" or "refused"
 ```
 
@@ -30,9 +30,9 @@ file); the French words `conformite` / `authenticite` work too. States: `pending
 ## A batch
 
 ```sh
-curl -X POST https://dev.yomizaka.com/api/v1/batches -H "Authorization: Bearer $YOMIZAKA_KEY" \
+curl -X POST https://www.yomizaka.com/api/v1/batches -H "Authorization: Bearer $YOMIZAKA_KEY" \
   -F manifest=@immeuble.csv -F files=@bail-1.pdf -F files=@bail-2.pdf
-curl https://dev.yomizaka.com/api/v1/batches/<id> -H "Authorization: Bearer $YOMIZAKA_KEY"
+curl https://www.yomizaka.com/api/v1/batches/<id> -H "Authorization: Bearer $YOMIZAKA_KEY"
 ```
 
 The CSV (`file`, `check`, and optionally `documentType`, `jurisdiction`, `ruleset`, `expectedIssuer`, `reference`, `collection`; the
