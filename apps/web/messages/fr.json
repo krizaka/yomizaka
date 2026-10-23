@@ -403,6 +403,14 @@
           "observation": "Une photo portait une position GPS. Elle a été retirée à l'importation et n'a jamais été conservée.",
           "mayIndicate": "Rien quant à l'authenticité : la plupart des téléphones l'inscrivent d'office."
         }
+      },
+      "translating": "Traduction de ce rapport en français par Orazaka… l’original reste disponible.",
+      "translationFailed": "La traduction n’est pas disponible pour le moment : le rapport s’affiche tel qu’Orazaka l’a écrit.",
+      "translatedNote": "Langue d’origine : {original}. Ces explications sont une traduction produite par Orazaka (exécution {runId}). Les passages cités, les références d’articles, les montants et les dates sont ceux de l’original et ne sont pas traduits.",
+      "quoteAid": "Traduction indicative",
+      "languageNames": {
+        "fr": "français",
+        "en": "anglais"
       }
     },
     "search": {
@@ -1121,7 +1129,9 @@
         "test": "Test",
         "live": "Réel",
         "pdf": "PDF",
-        "text": "Texte"
+        "text": "Texte",
+        "fr": "Français",
+        "en": "English"
       },
       "settings": {
         "app": {
@@ -1196,6 +1206,14 @@
           "webhooks": {
             "label": "Webhooks",
             "hint": "Désactivé : aucun webhook n'est envoyé ni enregistré, quel que soit le forfait."
+          },
+          "reportTranslation": {
+            "label": "Traduction des rapports",
+            "hint": "Désactivée tant que le Studio de traduction n'est pas en service : un rapport se lit et se signe dans la langue où Orazaka l'a écrit. Activée : les explications sont traduites par Orazaka ; les passages cités, les références d'articles, les montants et les dates ne le sont jamais."
+          },
+          "reportLanguages": {
+            "label": "Langues des rapports proposées",
+            "hint": "Les langues dans lesquelles un rapport peut être lu et signé. Le français, l'original, est toujours disponible."
           }
         },
         "limits": {
@@ -1258,6 +1276,10 @@
           "batchExportMaxMb": {
             "label": "ZIP le plus lourd des rapports d'un lot",
             "hint": "Au-delà, l'export est refusé et invite à en exporter moins ; les lignes ne sont jamais coupées en silence."
+          },
+          "reportTranslationCredits": {
+            "label": "Crédits par traduction de rapport",
+            "hint": "Pris à la première traduction d'un rapport dans une autre langue (et rendus si elle échoue) ; un rapport déjà traduit n'est jamais facturé de nouveau. 0 : inclus."
           }
         },
         "plans": {
@@ -1456,7 +1478,13 @@
     "signatureBody": "SHA-256 du texte du rapport (pages précédentes)",
     "signatureValue": "Signature (base64)",
     "signatureNote": "L'attestation — le contenu signé, l'empreinte du texte et cette signature — est aussi intégrée au fichier PDF. Un membre à qui le propriétaire a donné accès la vérifie en donnant ce fichier à la page de vérification ; tout changement au texte des pages précédentes la fait échouer.",
-    "notCheckedServiceContract": "Non vérifié : droit de résiliation, art. 2125 C.c.Q., et le reste du Code civil du Québec sur le contrat de service (art. 2098 et suiv.). À faire relire par un avocat."
+    "notCheckedServiceContract": "Non vérifié : droit de résiliation, art. 2125 C.c.Q., et le reste du Code civil du Québec sur le contrat de service (art. 2098 et suiv.). À faire relire par un avocat.",
+    "quoteAid": "Traduction indicative",
+    "translatedNote": "Langue d'origine : {original}. Les explications de ce rapport sont une traduction produite par Orazaka (exécution {runId}, glossaire juridique v{glossary}). Les passages cités, les références d'articles, les montants et les dates sont ceux de l'original et ne sont pas traduits.",
+    "language": {
+      "fr": "français",
+      "en": "anglais"
+    }
   },
   "verify": {
     "title": "Vérifier un rapport",

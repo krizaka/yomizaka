@@ -39,7 +39,7 @@ export const maintenanceOf = (s: Snapshot): Maintenance => ({ on: value<boolean>
 export interface ClientConfig {
   maxFileBytes: number;
   allowedTypes: string[];
-  features: { keepDocuments: boolean; ownStorage: boolean; documentInsight: boolean; assistant: boolean; batches: boolean };
+  features: { keepDocuments: boolean; ownStorage: boolean; documentInsight: boolean; assistant: boolean; batches: boolean; reportTranslation: boolean };
   payments: { enabled: boolean; display: string };
   /** Collection avatars: on or off, the heaviest uploaded image, the set offered. */
   avatars: { enabled: boolean; maxBytes: number; seeds: string[] };
@@ -47,7 +47,7 @@ export interface ClientConfig {
 export const clientConfigOf = (s: Snapshot): ClientConfig => ({
   maxFileBytes: Math.min(MAX_FILE_BYTES, value<number>(s, "limits.maxFileMb") * MB),
   allowedTypes: value<string[]>(s, "limits.allowedTypes"),
-  features: { keepDocuments: value(s, "features.keepDocuments"), ownStorage: value(s, "features.ownStorage"), documentInsight: value(s, "features.documentInsight"), assistant: value(s, "features.assistant"), batches: value(s, "features.batches") },
+  features: { keepDocuments: value(s, "features.keepDocuments"), ownStorage: value(s, "features.ownStorage"), documentInsight: value(s, "features.documentInsight"), assistant: value(s, "features.assistant"), batches: value(s, "features.batches"), reportTranslation: value(s, "features.reportTranslation") },
   payments: { enabled: value(s, "payments.enabled"), display: value(s, "payments.display") },
   avatars: { enabled: value(s, "features.collectionAvatars"), maxBytes: value<number>(s, "limits.avatarMaxKb") * 1024, seeds: value<string[]>(s, "features.avatarSet") },
 });

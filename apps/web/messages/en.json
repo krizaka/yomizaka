@@ -403,6 +403,14 @@
           "observation": "A photo carried a GPS position. It was removed at upload and never kept.",
           "mayIndicate": "Nothing about authenticity: most phones write it by default."
         }
+      },
+      "translating": "Translating this report into English through Orazaka… the original French stays available.",
+      "translationFailed": "The translation is not available right now: the report is shown as Orazaka wrote it (in French).",
+      "translatedNote": "Original language: {original}. These explanations are a translation produced through Orazaka (run {runId}). Quoted passages, article references, amounts and dates are the original’s and are not translated.",
+      "quoteAid": "Indicative translation",
+      "languageNames": {
+        "fr": "French",
+        "en": "English"
       }
     },
     "search": {
@@ -1121,7 +1129,9 @@
         "test": "Test",
         "live": "Live",
         "pdf": "PDF",
-        "text": "Text"
+        "text": "Text",
+        "fr": "French",
+        "en": "English"
       },
       "settings": {
         "app": {
@@ -1196,6 +1206,14 @@
           "webhooks": {
             "label": "Webhooks",
             "hint": "Off: no webhook is sent and none can be registered, whatever the plan."
+          },
+          "reportTranslation": {
+            "label": "Report translation",
+            "hint": "Off until the translation Studio is live: a report is read and signed in the language Orazaka wrote it in. On: the explanations are translated through Orazaka; quoted passages, article references, amounts and dates never are."
+          },
+          "reportLanguages": {
+            "label": "Report languages offered",
+            "hint": "The languages a report may be read and signed in. French, the original, is always available."
           }
         },
         "limits": {
@@ -1258,6 +1276,10 @@
           "batchExportMaxMb": {
             "label": "Heaviest ZIP of a batch's reports",
             "hint": "Above it the export is refused and says to export fewer rows; the rows are never cut silently."
+          },
+          "reportTranslationCredits": {
+            "label": "Credits per report translation",
+            "hint": "Taken when a report is first translated into another language (and given back if the translation fails); a report already translated is never charged again. 0: included."
           }
         },
         "plans": {
@@ -1456,7 +1478,13 @@
     "signatureBody": "SHA-256 of the report's text (pages before this one)",
     "signatureValue": "Signature (base64)",
     "signatureNote": "The attestation — the payload, the text fingerprint and this signature — is also embedded in the PDF file. A member the owner gave access to checks it by giving this file to the verification page; any change to the text of the earlier pages makes it fail.",
-    "notCheckedServiceContract": "Not checked: the right to terminate (art. 2125 C.c.Q.) and the rest of the Civil Code of Québec on service contracts (art. 2098 and following). To be reviewed by a lawyer."
+    "notCheckedServiceContract": "Not checked: the right to terminate (art. 2125 C.c.Q.) and the rest of the Civil Code of Québec on service contracts (art. 2098 and following). To be reviewed by a lawyer.",
+    "quoteAid": "Indicative translation",
+    "translatedNote": "Original language: {original}. The explanations of this report are a translation produced through Orazaka (run {runId}, legal glossary v{glossary}). Quoted passages, article references, amounts and dates are the original's and are not translated.",
+    "language": {
+      "fr": "French",
+      "en": "English"
+    }
   },
   "verify": {
     "title": "Verify a report",

@@ -44,6 +44,7 @@ export function reportBlocks(payload: ReportPayload, labels: ReportLabels): Bloc
   add(labels.disclaimer!, 10, { bold: true, gap: 8 });
   add(fill(labels.summary!, { failures: payload.summary.blockingFailures, rules: payload.summary.rulesEvaluated }), 10, { gap: 8 });
   if (c.reviewStatus) add(labels.toReview!, 9, { gap: 8 });
+  if (payload.translation) add(fill(labels.translatedNote!, { original: labels[`language.${payload.translation.original}`] ?? payload.translation.original, runId: payload.translation.runId, glossary: payload.translation.glossaryVersion }), 9, { bold: true, gap: 8 });
   if (c.rulesetId === "qc-service-contract") add(labels.notCheckedServiceContract!, 9, { bold: true, gap: 8 });
   add(labels.documentHeading!, 12, { bold: true, gap: 2 });
   add(`${labels.file}: ${d.filename}`, 9);
@@ -64,7 +65,8 @@ export function reportBlocks(payload: ReportPayload, labels: ReportLabels): Bloc
     add(f.explanation, 9);
     add(`${labels.rule}: ${f.ruleId} · ${f.severity}${f.method ? ` · ${f.method}` : ""}`, 8);
     if (f.citation) add(`${labels.article}: ${f.citation}`, 8);
-    add(`${labels.passage}: ${f.quote ? `« ${f.quote} »` : labels.noPassage}`, 8, { gap: 6 });
+    add(`${labels.passage}: ${f.quote ? `« ${f.quote} »` : labels.noPassage}`, 8, { gap: f.quote && f.quoteAid ? 1 : 6 });
+    if (f.quote && f.quoteAid) add(`${labels.quoteAid}: « ${f.quoteAid} »`, 8, { gap: 6 });
   }
   if (payload.note) for (const { kind, text } of noteLines(payload.note)) add(kind === LINE.item ? `- ${text}` : text, NOTE_STYLE[kind].size, NOTE_STYLE[kind]);
   add(labels.guaranteeHeading!, 12, { bold: true, gap: 2 });

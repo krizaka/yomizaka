@@ -511,4 +511,47 @@ CREATE INDEX batches_open ON batches(created_at) WHERE finished_at IS NULL;
     // yomizaka#241: signed outgoing webhooks (endpoints, one queued delivery per endpoint and event, the log).
     sql: webhooksMigration("accounts"),
   },
+  {
+    version: "0030_report_translation",
+    sql: `
+-- yomizaka#246: a report's generated texts translated through Orazaka (Studio text-translation), cached per analysis and language.
+-- The legal glossary is data an administrator manages, versioned: a translation keeps the version it used.
+CREATE TABLE translation_glossary (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  source     text NOT NULL CHECK (length(source) BETWEEN 1 AND 200),
+  target     text NOT NULL CHECK (length(target) BETWEEN 1 AND 200),
+  UNIQUE (source)
+);
+CREATE TABLE translation_glossary_version (
+  only_row   boolean PRIMARY KEY DEFAULT true CHECK (only_row),
+  version    integer NOT NULL,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+INSERT INTO translation_glossary_version (version) VALUES (1);
+INSERT INTO translation_glossary (source, target) VALUES
+  ('bail', 'lease'), ('locateur', 'landlord'), ('locataire', 'tenant'), ('dépôt de garantie', 'security deposit'),
+  ('loyer', 'rent'), ('reconduction', 'renewal'), ('Tribunal administratif du logement', 'Tribunal administratif du logement (Québec housing tribunal)'),
+  ('avis de non-reconduction', 'notice of non-renewal'), ('sous-location', 'sublease'), ('cession de bail', 'lease assignment');
+
+CREATE TABLE report_translations (
+  id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  analysis_id      uuid NOT NULL REFERENCES analyses(id) ON DELETE CASCADE,
+  language         text NOT NULL CHECK (language IN ('en', 'fr')),
+  source_version   text NOT NULL,
+  glossary_version integer NOT NULL,
+  status           text NOT NULL CHECK (status IN ('running', 'done', 'failed')),
+  run_id           text NOT NULL DEFAULT '',
+  studio_version   text,
+  spans            jsonb NOT NULL DEFAULT '{}',
+  texts            jsonb,
+  error            text,
+  charged          integer NOT NULL DEFAULT 0,
+  created_at       timestamptz NOT NULL DEFAULT now(),
+  finished_at      timestamptz
+);
+CREATE INDEX report_translations_analysis ON report_translations(analysis_id, language, created_at DESC);
+-- One active translation per key: two requests that ask at once start one run (a failed one may be replaced).
+CREATE UNIQUE INDEX report_translations_active ON report_translations(analysis_id, language, source_version, glossary_version) WHERE status <> 'failed';
+`,
+  },
 ];

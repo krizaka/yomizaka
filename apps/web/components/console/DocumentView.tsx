@@ -20,12 +20,14 @@ import { ClosingNoteView } from "@/components/ClosingNoteView";
 import { CheckSteps } from "@/components/console/CheckSteps";
 import { DocumentInsight } from "@/components/console/DocumentInsight";
 import { Paywall } from "@/components/console/Paywall";
+import { useAppConfig } from "@/lib/app-config-client";
 import { errorKey } from "@/lib/client";
 import { buildNote, noteInputOf, noteSourceOf } from "@/lib/closing-note/build";
 import { type DocumentTab } from "@/lib/console-nav";
 import { useSay } from "@/lib/i18n-client";
 import { firstCheck, wordingOf } from "@/lib/perspective-defaults";
 import { photoOriginSignals } from "@/lib/photo-origin";
+import { ORIGINAL } from "@/lib/translation/port";
 
 import { STATUS_TONE } from "./DocumentTable";
 import { formatBytes, formatDate } from "./format";
@@ -78,12 +80,46 @@ function DocumentText({ text, report }: { text: string; report: ComplianceReport
   );
 }
 
-function ComplianceFindings({ report, runId, selection }: { report: ComplianceReport; runId: string | null; selection?: Selection }) {
+/** A finished report's generated texts in the reader's language (yomizaka#246): the page asks, the server translates once through Orazaka, the quotes are never in it. */
+const translationSchema = z.object({
+  translation: z.object({
+    status: z.enum(["original", "running", "done", "failed"]),
+    texts: z.record(z.string(), z.string()).nullable(),
+    trace: z.object({ original: z.string(), runId: z.string(), glossaryVersion: z.number() }).nullable(),
+  }),
+});
+type TranslationView = z.infer<typeof translationSchema>["translation"];
+
+function useReportTranslation(documentId: string, analysisId: string, enabled: boolean): TranslationView | undefined {
+  const { locale } = useSay();
+  const query = useQuery({
+    queryKey: [...queryKeys.document(documentId), "translation", analysisId, locale],
+    queryFn: () => krizakaFetch(`/api/documents/${documentId}/analyses/${analysisId}/translation?lang=${locale}`, { schema: translationSchema }).then((r) => r.translation),
+    enabled,
+    retry: false,
+    throwOnError: false,
+    refetchInterval: (q) => (q.state.data?.status === "running" ? 3000 : false),
+  });
+  // A refusal of the request itself (not enough credits, the language not offered, Orazaka down) is shown like a failed translation:
+  // the reader keeps the original and is told why it is not translated (review of #247).
+  return query.isError ? { status: "failed", texts: null, trace: null } : query.data;
+}
+
+export function ComplianceFindings({ report, runId, selection, translation }: { report: ComplianceReport; runId: string | null; selection?: Selection; translation?: TranslationView }) {
   const { say } = useSay();
+  const texts = translation?.status === "done" ? translation.texts : null;
+  const originalLanguage = say(`analysis.languageNames.${translation?.trace?.original ?? "fr"}`);
   const failures = report.summary?.blockingFailures ?? report.findings.filter((f) => f.verdict === "FAIL" && f.severity === "BLOCKING").length;
   return (
     <div className="flex flex-col gap-3">
       {report.reviewStatus ? <Alert tone="warning">{say("analysis.toReview")}</Alert> : null}
+      {translation?.status === "running" ? <Alert tone="info">{say("analysis.translating")}</Alert> : null}
+      {translation?.status === "failed" ? <Alert tone="warning">{say("analysis.translationFailed")}</Alert> : null}
+      {texts && translation?.trace ? (
+        <Alert tone="info" data-testid="translation-notice">
+          {say("analysis.translatedNote", { original: originalLanguage, runId: translation.trace.runId })}
+        </Alert>
+      ) : null}
       <p className="text-sm text-fg-secondary">{say("analysis.summary", { failures, rules: report.summary?.rulesEvaluated ?? report.findings.length })}</p>
       <ul className="flex flex-col gap-2">
         {report.findings.map((f) => {
@@ -92,10 +128,10 @@ function ComplianceFindings({ report, runId, selection }: { report: ComplianceRe
           return (
             <li key={f.ruleId} id={`finding-${f.ruleId}`} data-active={active} className="rounded-lg border border-border-default bg-surface-1 p-3 text-sm data-[active=true]:border-accent data-[active=true]:bg-surface-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-semibold text-fg">{f.title ?? f.ruleId}</span>
+                <span className="font-semibold text-fg">{texts?.[`title:${f.ruleId}`] ?? f.title ?? f.ruleId}</span>
                 <Badge tone={VERDICT_TONE[f.verdict] ?? "neutral"}>{say(`analysis.verdicts.${f.verdict}`)}</Badge>
               </div>
-              <p className="mt-1 text-fg-secondary">{f.explanation}</p>
+              <p className="mt-1 text-fg-secondary">{texts?.[`explanation:${f.ruleId}`] ?? f.explanation}</p>
               <dl className="mt-2 grid gap-1 text-xs text-fg-muted sm:grid-cols-[auto_1fr] sm:gap-x-3">
                 <dt>{say("analysis.severity")}</dt>
                 <dd className="font-mono">
@@ -116,6 +152,11 @@ function ComplianceFindings({ report, runId, selection }: { report: ComplianceRe
                         « {f.evidenceSpan.quote} »
                       </a>
                       {place ? <span className="ml-2 whitespace-nowrap" data-testid="finding-place">· {place}</span> : null}
+                      {texts?.[`quote:${f.ruleId}`] ? (
+                        <span className="mt-1 block text-fg-muted" data-testid="quote-aid">
+                          {say("analysis.quoteAid")} : « {texts[`quote:${f.ruleId}`]} »
+                        </span>
+                      ) : null}
                     </>
                   ) : (
                     say("analysis.noPassage")
@@ -240,6 +281,8 @@ function AnalysisCard({ documentId, initial, selection, source, hasText }: { doc
     refetchInterval: (q) => (q.state.data?.status === "running" ? 3000 : false),
   });
   const a = live.data ?? initial;
+  const config = useAppConfig();
+  const translation = useReportTranslation(documentId, a.id, !!config?.features.reportTranslation && a.studio === "compliance-check" && a.status === "succeeded" && locale !== ORIGINAL);
   useEffect(() => {
     if (initial.status === "running" && a.status !== "running") void client.invalidateQueries({ queryKey: queryKeys.documents() });
   }, [a.status, initial.status, client]);
@@ -264,7 +307,7 @@ function AnalysisCard({ documentId, initial, selection, source, hasText }: { doc
       />
       {a.status === "running" ? <p className="text-sm text-fg-secondary">{say("analysis.running")}</p> : null}
       {a.error ? <Alert tone="danger">{a.error}</Alert> : null}
-      {a.report && "findings" in a.report ? <ComplianceFindings report={a.report} runId={a.runId} selection={selection} /> : null}
+      {a.report && "findings" in a.report ? <ComplianceFindings report={a.report} runId={a.runId} selection={selection} translation={translation} /> : null}
       {a.status === "succeeded" && a.studio === "compliance-check" && a.report && "findings" in a.report ? <ReportExport documentId={documentId} analysisId={a.id} /> : null}
       {a.report && "signals" in a.report ? <AuthenticitySignals report={a.report} /> : null}
       {a.status === "succeeded" && a.report ? <ClosingNoteView note={buildNote(noteInputOf(a.report, noteSourceOf(source)), locale)} /> : null}

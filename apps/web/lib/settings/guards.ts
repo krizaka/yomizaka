@@ -14,6 +14,7 @@ export const FEATURE = {
   collectionAvatars: "features.collectionAvatars",
   batches: "features.batches",
   webhooks: "features.webhooks",
+  reportTranslation: "features.reportTranslation",
 } as const satisfies Record<string, SettingKey>;
 export type Feature = keyof typeof FEATURE;
 

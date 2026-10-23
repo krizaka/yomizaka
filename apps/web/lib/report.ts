@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { type SigningKey } from "./report-key";
 import { SITE_URL } from "./site";
+import { applyToCompliance, type TranslatedCompliance, type TranslatedTexts, type TranslationTrace } from "./translation/apply";
 
 /*
  * The audit report of a compliance check: a self-contained HTML file (print it to PDF from any browser) and what it
@@ -36,6 +37,18 @@ const payloadFinding = z.object({
   quote: z.string().nullable(),
   explanation: z.string(),
   method: z.string().nullable(),
+  /** The indicative translation of the quoted passage (yomizaka#246): shown beside the quote, which stays in its original language. */
+  quoteAid: z.string().nullable().optional(),
+});
+
+/** Where the report's translated texts come from (yomizaka#246): signed with the rest, so a reader knows which language is the original. */
+export const reportTranslation = z.object({
+  original: z.enum(["en", "fr"]),
+  language: z.enum(["en", "fr"]),
+  runId: z.string(),
+  studioVersion: z.string().nullable(),
+  glossaryVersion: z.number(),
+  sourceVersion: z.string(),
 });
 
 export const reportPayload = z.object({
@@ -60,6 +73,8 @@ export const reportPayload = z.object({
   findings: z.array(payloadFinding),
   /** « Ce que nous avons vérifié »: the closing note in plain words, signed with the rest (absent from reports issued before it existed). */
   note: closingNote.optional(),
+  /** Present when the generated texts are a translation of the original (the quotes, references, amounts and dates are not). */
+  translation: reportTranslation.optional(),
   /** Set only by a demo key: a specimen is never an attestation, and verification rejects it (ADR-0002). */
   specimen: z.literal(true).optional(),
 });
@@ -71,11 +86,13 @@ export type ReportLabels = Record<string, string>;
 export class ReportError extends Error {}
 
 /** A report's payload from a stored check. Only a finished compliance check with a run id and a report can be certified. */
-export function buildPayload(doc: Pick<DocumentDetail, "sha256" | "filename" | "title" | "sizeBytes" | "pages" | "textSource">, analysis: Analysis, lang: "en" | "fr"): ReportPayload {
+export function buildPayload(doc: Pick<DocumentDetail, "sha256" | "filename" | "title" | "sizeBytes" | "pages" | "textSource">, analysis: Analysis, lang: "en" | "fr", translation?: { trace: TranslationTrace; texts: TranslatedTexts }): ReportPayload {
   if (analysis.studio !== "compliance-check" || analysis.status !== "succeeded" || !analysis.report || !("findings" in analysis.report) || !analysis.runId || !analysis.finishedAt) {
     throw new ReportError("Only a finished compliance check can be certified");
   }
-  const report: ComplianceReport = analysis.report;
+  const source: ComplianceReport = analysis.report;
+  // The generated texts — the findings' and, through them, the closing note's titles and explanations — are read through the translation.
+  const report: TranslatedCompliance = translation ? applyToCompliance(source, translation.texts) : source;
   const byVerdict: Record<string, number> = {};
   for (const f of report.findings) byVerdict[f.verdict] = (byVerdict[f.verdict] ?? 0) + 1;
   return {
@@ -98,6 +115,7 @@ export function buildPayload(doc: Pick<DocumentDetail, "sha256" | "filename" | "
     },
     summary: { rulesEvaluated: report.summary?.rulesEvaluated ?? report.findings.length, blockingFailures: report.summary?.blockingFailures ?? report.findings.filter((f) => f.verdict === "FAIL" && f.severity === "BLOCKING").length, byVerdict },
     note: buildNote(noteInputOf(report, noteSourceOf(doc.textSource)), lang),
+    ...(translation ? { translation: translation.trace } : {}),
     findings: report.findings.map((f) => ({
       ruleId: f.ruleId,
       title: f.title ?? null,
@@ -107,6 +125,7 @@ export function buildPayload(doc: Pick<DocumentDetail, "sha256" | "filename" | "
       quote: f.evidenceSpan?.quote ?? null,
       explanation: f.explanation,
       method: f.method ?? null,
+      ...("quoteAid" in f && typeof f.quoteAid === "string" ? { quoteAid: f.quoteAid } : {}),
     })),
   };
 }
@@ -162,7 +181,7 @@ export function renderBody(payload: ReportPayload, labels: ReportLabels): string
     .map(
       (f) => `<section class="finding"><h3><span>${esc(f.title ?? f.ruleId)}</span><span class="verdict v-${esc(f.verdict)}">${esc(labels[`verdict.${f.verdict}`] ?? f.verdict)}</span></h3>
 <p>${esc(f.explanation)}</p>
-<dl>${row(labels.rule, `<code>${esc(f.ruleId)}</code> · ${esc(f.severity)}${f.method ? ` · ${esc(f.method)}` : ""}`)}${f.citation ? row(labels.article, esc(f.citation)) : ""}${row(labels.passage, f.quote ? `<blockquote>« ${esc(f.quote)} »</blockquote>` : esc(labels.noPassage))}</dl></section>`,
+<dl>${row(labels.rule, `<code>${esc(f.ruleId)}</code> · ${esc(f.severity)}${f.method ? ` · ${esc(f.method)}` : ""}`)}${f.citation ? row(labels.article, esc(f.citation)) : ""}${row(labels.passage, f.quote ? `<blockquote lang="${esc(payload.translation?.original ?? payload.lang)}">« ${esc(f.quote)} »</blockquote>${f.quoteAid ? `<p class="aid"><em>${esc(labels.quoteAid)}:</em> « ${esc(f.quoteAid)} »</p>` : ""}` : esc(labels.noPassage))}</dl></section>`,
     )
     .join("\n");
   return `<!doctype html>
@@ -180,6 +199,7 @@ export function renderBody(payload: ReportPayload, labels: ReportLabels): string
 <h1>${esc(d.title)}</h1>
 <p>${esc(fill(labels.summary, { failures: payload.summary.blockingFailures, rules: payload.summary.rulesEvaluated }))}</p>
 ${c.reviewStatus ? `<p class="note">${esc(labels.toReview)}</p>` : ""}
+${payload.translation ? `<p class="note">${esc(fill(labels.translatedNote, { original: labels[`language.${payload.translation.original}`] ?? payload.translation.original, runId: payload.translation.runId, glossary: payload.translation.glossaryVersion }))}</p>` : ""}
 ${c.rulesetId === "qc-service-contract" ? `<p class="note">${esc(labels.notCheckedServiceContract)}</p>` : ""}
 <h2>${esc(labels.documentHeading)}</h2>
 <dl>${row(labels.file, esc(d.filename))}${row(labels.size, `${d.sizeBytes} B${d.pages ? ` · ${d.pages} p.` : ""}`)}${row(labels.documentSha, `<code>${esc(d.sha256)}</code>`)}</dl>
