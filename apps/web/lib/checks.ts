@@ -86,3 +86,6 @@ export async function listChecks(q: Query, owner: string, limit = 500): Promise<
   );
   return rows.map((r) => ({ id: r.id, documentId: r.document_id, title: r.title, kind: r.kind, studio: r.studio, result: documentStatus([{ status: r.status, attention: r.attention }]), runId: r.run_id, at: r.at.toISOString() }));
 }
+
+/** The checks still running: the page refreshes them from Orazaka before listing (a standalone check otherwise stays « Analysing » until its own page is opened). */
+export const runningChecks = (checks: readonly CheckSummary[]): CheckSummary[] => checks.filter((c) => c.result === "analysing");

@@ -44,13 +44,29 @@ const searchTextOf = (report) =>
 const needsAttention = (report) => ("findings" in report ? report.findings.some((f) => f.verdict === "FAIL" && f.severity === "BLOCKING") : report.signals.some((s) => s.level === "incohérent"));
 
 /**
- * Seeds the persona into the database behind `q` (`(sql, values) => Promise<rows>`). `messagesByLocale` holds the app's catalogues:
- * the collections take the account's language. Returns what is there after the run.
+ * Seeds the persona into the database behind `q` (`(sql, values) => Promise<rows>`, ONE connection: the seed is one transaction).
+ * `messagesByLocale` holds the app's catalogues: the collections take the account's language. One seed at a time per account:
+ * a second process waits on the account's advisory lock, then finds everything already there (idempotent). Returns what is
+ * there after the run.
  */
 export async function seedPersona(q, { persona = "eric", email, locale = "fr", messagesByLocale, reset = false, passwordHash = null, seed = DEFAULT_SEED }) {
   const def = PERSONAS[persona];
   if (!def) throw new Error(`unknown persona "${persona}" (known: ${Object.keys(PERSONAS).join(", ")})`);
   const address = (email ?? DEFAULT_EMAILS[persona]).trim().toLowerCase();
+  await q("BEGIN");
+  try {
+    await q("SELECT pg_advisory_xact_lock(hashtext($1))", [`demo-seed:${address}`]);
+    const result = await seedInTransaction(q, def, { persona, address, locale, messagesByLocale, reset, passwordHash, seed });
+    await q("COMMIT");
+    return result;
+  } catch (error) {
+    // The rollback never masks what went wrong.
+    await q("ROLLBACK").catch(() => undefined);
+    throw error;
+  }
+}
+
+async function seedInTransaction(q, def, { persona, address, locale, messagesByLocale, reset, passwordHash, seed }) {
   // An existing account keeps what the person chose (language, password, perspective, name); the seed only fills what is missing.
   const [account] = await q(
     `INSERT INTO accounts (email, locale, email_verified_at, password_hash, perspective, name) VALUES ($1, $2, now(), $3, 'landlord', $4)

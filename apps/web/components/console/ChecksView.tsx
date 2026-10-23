@@ -7,11 +7,12 @@ import { Mascot } from "@krizaka/ui/mascots";
 import { PageHeader } from "@krizaka/ui/page-header";
 import { Tabs } from "@krizaka/ui/tabs";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo } from "react";
 
 import { ButtonLink } from "@/components/ButtonLink";
 import type { CheckSummary } from "@/lib/checks";
+import { runningChecks } from "@/lib/checks";
 import { CHECKS_TAB_KEY, CHECKS_TABS, checksTabHref, checksTabOf, CONSOLE_ROUTES } from "@/lib/console-nav";
 import { useSay } from "@/lib/i18n-client";
 
@@ -57,11 +58,19 @@ export function ChecksView({ checks, batches }: { checks: CheckSummary[]; batche
   const { say, locale } = useSay();
   const path = usePathname() ?? `/${locale}${CONSOLE_ROUTES.checks}`;
   const search = useSearchParams();
+  const router = useRouter();
   const tab = batches ? checksTabOf(search?.get(CHECKS_TAB_KEY)) : CHECKS_TABS[0];
+  // While a check runs the list asks again every 4 s (the page refreshes it from Orazaka), as the documents table does.
+  const live = runningChecks(checks).length > 0;
+  useEffect(() => {
+    if (!live) return;
+    const timer = setInterval(() => router.refresh(), 4000);
+    return () => clearInterval(timer);
+  }, [live, router]);
   // Each tab names itself for the match (`?tab=checks` · `?tab=lots`); the first one's real link keeps the address clean.
   const current = `${path}?${CHECKS_TAB_KEY}=${tab}`;
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6" data-live={live || undefined}>
       <PageHeader
         title={say("checks.title")}
         description={say("checks.lead")}
