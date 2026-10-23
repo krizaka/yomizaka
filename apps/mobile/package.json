@@ -14,7 +14,7 @@
     "export": "expo export --platform ios --platform android"
   },
   "dependencies": {
-    "@krizaka/app-client": "^0.1.0",
+    "@krizaka/app-client": "^0.2.0",
     "@krizaka/app-config": "^0.2.0",
     "@krizaka/discovery": "^0.1.0",
     "@krizaka/i18n": "^0.2.1",
@@ -63,6 +63,10 @@
       "/node_modules/",
       "/ios/",
       "/android/"
+    ],
+    "resolver": "<rootDir>/jest.resolver.js",
+    "transformIgnorePatterns": [
+      "node_modules/(?!(\\.pnpm|(jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@krizaka/.*|@tanstack/.*|react-native-svg|@shopify/flash-list))"
     ]
   },
   "expo": {

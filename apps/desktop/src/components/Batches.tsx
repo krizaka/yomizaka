@@ -31,21 +31,24 @@ export function BatchesView({ go: _go }: { go: (route: Route) => void }) {
   return (
     <div className="flex max-w-3xl flex-col gap-4">
       <p className="text-fg-secondary">{t("batch.lead")}</p>
-      <List
-        aria-label={t("batch.title")}
-        items={list.data ?? []}
-        getId={(b) => b.id}
-        loading={list.isPending}
-        chevrons
-        error={list.isError ? t("common.offline") : undefined}
-        empty={<EmptyState icon={<BatchIcon size={28} />} title={t("batch.title")} description={t("batch.empty")} />}
-        row={(b) => ({
-          title: b.name,
-          description: when(b.createdAt),
-          href: hashOf({ screen: "batch", batchId: b.id }),
-          meta: <Badge tone={b.finishedAt ? "success" : "accent"}>{t("batch.progress", { done: b.done, total: b.items })}</Badge>,
-        })}
-      />
+      {list.data?.length === 0 ? (
+        <EmptyState icon={<BatchIcon size={28} />} title={t("batch.title")} description={t("batch.empty")} />
+      ) : (
+        <List
+          aria-label={t("batch.title")}
+          items={list.data ?? []}
+          getId={(b) => b.id}
+          loading={list.isPending}
+          chevrons
+          error={list.isError ? t("common.offline") : undefined}
+          row={(b) => ({
+            title: b.name,
+            description: when(b.createdAt),
+            href: hashOf({ screen: "batch", batchId: b.id }),
+            meta: <Badge tone={b.finishedAt ? "success" : "accent"}>{t("batch.progress", { done: b.done, total: b.items })}</Badge>,
+          })}
+        />
+      )}
     </div>
   );
 }

@@ -17,16 +17,19 @@ export function ReportsView({ go: _go }: { go: (route: Route) => void }) {
   return (
     <div className="flex max-w-3xl flex-col gap-4">
       <p className="text-fg-secondary">{t("reports.lead")}</p>
-      <List
-        aria-label={t("reports.title")}
-        items={documents.data ?? []}
-        getId={(d) => d.id}
-        loading={documents.isPending}
-        chevrons
-        error={documents.isError ? t("common.offline") : undefined}
-        empty={<EmptyState icon={<DebriefIcon size={28} />} title={t("reports.title")} description={t("reports.empty")} />}
-        row={(d) => ({ title: d.title || d.filename, description: when(d.createdAt), href: hashOf({ screen: "document", documentId: d.id }) })}
-      />
+      {documents.data?.length === 0 ? (
+        <EmptyState icon={<DebriefIcon size={28} />} title={t("reports.title")} description={t("reports.empty")} />
+      ) : (
+        <List
+          aria-label={t("reports.title")}
+          items={documents.data ?? []}
+          getId={(d) => d.id}
+          loading={documents.isPending}
+          chevrons
+          error={documents.isError ? t("common.offline") : undefined}
+          row={(d) => ({ title: d.title || d.filename, description: when(d.createdAt), href: hashOf({ screen: "document", documentId: d.id }) })}
+        />
+      )}
     </div>
   );
 }
