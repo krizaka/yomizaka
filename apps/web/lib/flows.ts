@@ -1,7 +1,7 @@
 import { type Audience, AUDIENCE_STATUS, AUDIENCES, FLOW_STATUS, type FlowDefinition, flowDefinition, type FlowEnvironment, type FlowVersionStatus, offerOf, STEP_KIND, type Studio, VERSION_STATUS } from "@yomizaka/core";
 
 import { audit } from "./audit";
-import { query } from "./db";
+import { query, withBlockingLock } from "./db";
 import { SEED_FLOWS } from "./flows-seed";
 import { refuse } from "./http";
 
@@ -195,6 +195,11 @@ export async function setEnvironment(actor: Actor, flowId: string, environment: 
 
 /** Seeds the flows that exist today, once: a key already in the database is left alone (the administration owns it from then on). */
 export async function seedDatabase(): Promise<string[]> {
+  // Two starts (two instances, two test files) seeding at once would both insert the same key: one waits for the other, then finds it done.
+  return withBlockingLock("seed:flows", seedOnce);
+}
+
+async function seedOnce(): Promise<string[]> {
   const created: string[] = [];
   for (const seed of SEED_FLOWS) {
     const [exists] = await query("SELECT id FROM flows WHERE key = $1", [seed.key]);

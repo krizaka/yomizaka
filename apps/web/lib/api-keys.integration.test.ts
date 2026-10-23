@@ -28,6 +28,9 @@ const status = async (p: Promise<unknown>) => {
   }
 };
 
+/** The secret part of `yzk_<public id>_<secret>`: the secret is base64url, so it may itself contain « _ » — never split on it. */
+const secretOf = (key: string) => key.slice(key.indexOf("_", key.indexOf("_") + 1) + 1);
+
 describe.runIf(enabled)("api keys", () => {
   const stamp = Date.now();
   let owner = "";
@@ -62,12 +65,12 @@ describe.runIf(enabled)("api keys", () => {
     expect(key).toMatch(/^yzk_[0-9a-f]{12}_/);
     expect(apiKey).toMatchObject({ name: "Mon ERP", status: "active", scopes: ["checks:write", "reports:read"], hint: key.slice(0, 16) });
     const list = JSON.stringify(await (await listRoute(as(token, "GET", "/api/me/api-keys"))).json());
-    expect(list).not.toContain(key.split("_")[2]);
+    expect(list).not.toContain(secretOf(key));
     expect(list).not.toMatch(/secret|hash/i);
     // the audit trail says who did what, never the key
     const rows = JSON.stringify(await query("SELECT action, target_id, detail FROM audit_log WHERE actor_id = $1 AND action LIKE 'apikey.%'", [owner]));
     expect(rows).toContain("apikey.created");
-    expect(rows).not.toContain(key.split("_")[2]);
+    expect(rows).not.toContain(secretOf(key));
     (globalThis as { __key?: string }).__key = key;
   });
 
