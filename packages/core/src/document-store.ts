@@ -44,8 +44,12 @@ export class StorageError extends Error {
 }
 
 const KEY = /^[a-z0-9][a-z0-9/_.-]{0,254}$/;
-/** An object key: lowercase path made of letters, digits and `/_.-`, never a `..` or an empty segment (no escaping the prefix). */
+/**
+ * An object key: a lowercase name made of letters, digits and `/_.-` — never `..`, an empty segment or a `.` segment, nor a
+ * trailing `/`. Nothing escapes the prefix, and no two adapters read one key as two objects (`a/./b.pdf` is one file on a disk
+ * and another entry in a map: refused everywhere).
+ */
 export function assertKey(key: string): string {
-  if (!KEY.test(key) || key.includes("..") || key.includes("//") || key.endsWith("/")) throw new StorageError(400, "Not a valid object key");
+  if (!KEY.test(key) || key.includes("..") || key.includes("//") || key.endsWith("/") || key.split("/").includes(".")) throw new StorageError(400, "Not a valid object key");
   return key;
 }

@@ -29,9 +29,24 @@ export function documentStoreContract(name: string, make: () => DocumentStore | 
     expect(await store.get(key)).toBeNull();
   });
 
-  it(`${name}: refuses a key that could leave its prefix`, async () => {
+  it(`${name}: refuses a key that could leave its prefix, or that two adapters could read differently`, async () => {
     const store = await make();
-    for (const bad of ["../x", "a/../b", "/abs", "a//b", "UPPER/case", "a/b/", ""]) await expect(store.put(bad, bytes(), { contentType: "text/plain" })).rejects.toMatchObject({ status: 400 });
+    // A `.` segment is refused everywhere: a store that keeps files would see `a/./b.pdf` and `a/b.pdf` as one object, a Map as two.
+    for (const bad of ["../x", "a/../b", "/abs", "a//b", "UPPER/case", "a/b/", "", "a/./b.pdf", "a/."]) await expect(store.put(bad, bytes(), { contentType: "text/plain" })).rejects.toMatchObject({ status: 400 });
+  });
+
+  it(`${name}: keeps a key and a longer key under it apart`, async () => {
+    // Keys are names, not folders: `contract/x` and `contract/x/b.pdf` are two objects, whatever the adapter keeps them in.
+    const store = await make();
+    const short = id().replace(/\/doc\.pdf$/, "");
+    const under = `${short}/b.pdf`;
+    await store.put(short, new Uint8Array([1]), { contentType: "text/plain" });
+    await store.put(under, new Uint8Array([2]), { contentType: "application/pdf" });
+    expect([...(await store.get(short))!.bytes]).toEqual([1]);
+    expect([...(await store.get(under))!.bytes]).toEqual([2]);
+    await store.delete(short);
+    expect(await store.get(under)).not.toBeNull();
+    await store.delete(under);
   });
 
   it(`${name}: says where it lives`, async () => {
