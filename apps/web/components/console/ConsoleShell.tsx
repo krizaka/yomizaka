@@ -1,6 +1,6 @@
 "use client";
 
-import { HomeIcon, LogoutIcon, PlusIcon, SearchIcon, SettingsIcon, ShieldIcon } from "@krizaka/icons";
+import { CheckIcon, HomeIcon, LogoutIcon, PlusIcon, SearchIcon, SettingsIcon, ShieldIcon, UserIcon, WalletIcon } from "@krizaka/icons";
 import { krizakaFetch, useMutation } from "@krizaka/query";
 import { YomizakaLogo } from "@krizaka/ui";
 import { AccountMenu } from "@krizaka/ui/account-menu";
@@ -11,6 +11,7 @@ import { ThemeToggle } from "@krizaka/ui/theme";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
+import { ButtonLink } from "@/components/ButtonLink";
 import { activeNav, CONSOLE_ROUTES, titleOf, withoutLocale } from "@/lib/console-nav";
 import { useSay } from "@/lib/i18n-client";
 
@@ -48,7 +49,12 @@ export function ConsoleShell({ locale, email, name, avatarSeed, role, children }
         showName
         avatar={{ defaultAvatar: { brand: "yomizaka", seed: avatarSeed ?? email }, fallback: (name ?? email).charAt(0).toUpperCase() }}
         linkAs={Link}
-        links={[{ id: "account", label: say("shell.account"), href: href(CONSOLE_ROUTES.account), icon: <SettingsIcon size={16} /> }]}
+        links={[
+          { id: "profile", label: say("shell.profile"), href: href(`${CONSOLE_ROUTES.account}/profil`), icon: <UserIcon size={16} /> },
+          { id: "settings", label: say("shell.settings"), href: href(`${CONSOLE_ROUTES.account}/securite`), icon: <SettingsIcon size={16} /> },
+          { id: "billing", label: say("shell.billing"), href: href(`${CONSOLE_ROUTES.account}/facturation`), icon: <WalletIcon size={16} /> },
+          ...(role === "ADMIN" ? [{ id: "admin", label: say("shell.admin"), href: ADMIN_URL, icon: <ShieldIcon size={16} /> }] : []),
+        ]}
         language={{ label: say("shell.language"), value: locale, options: languages.map((l) => ({ value: l.code, label: l.name })), onChange: (to) => router.push(languages.find((l) => l.code === to)?.href ?? `/${to}${rest}`) }}
         signOut={{ label: say("shell.signOut"), onSelect: () => signOut.mutate(), icon: <LogoutIcon size={16} /> }}
       >
@@ -78,23 +84,11 @@ export function ConsoleShell({ locale, email, name, avatarSeed, role, children }
             <YomizakaLogo size={28} animated={false} />
           </Link>
         }
-        footer={
-          <>
-            <RailNav.Item asChild icon={<SettingsIcon size={22} />} label={say("shell.account")} current={active === "account"}>
-              <Link href={href(CONSOLE_ROUTES.account)} />
-            </RailNav.Item>
-            {role === "ADMIN" ? (
-              <RailNav.Item asChild icon={<ShieldIcon size={22} />} label={say("shell.admin")}>
-                <a href={ADMIN_URL} />
-              </RailNav.Item>
-            ) : null}
-          </>
-        }
       >
         <RailNav.Item asChild icon={<HomeIcon size={22} />} label={say("shell.library")} current={active === "library"}>
           <Link href={href(CONSOLE_ROUTES.library)} />
         </RailNav.Item>
-        <RailNav.Item asChild icon={<PlusIcon size={22} />} label={say("shell.check")} current={active === "check"}>
+        <RailNav.Item asChild icon={<CheckIcon size={22} />} label={say("shell.checks")} current={active === "check"}>
           <Link href={href(CONSOLE_ROUTES.check)} />
         </RailNav.Item>
         <RailNav.Item asChild icon={<SearchIcon size={22} />} label={say("shell.search")} current={active === "search"}>
@@ -108,6 +102,10 @@ export function ConsoleShell({ locale, email, name, avatarSeed, role, children }
           homeLink={<Link href={href(CONSOLE_ROUTES.library)} aria-label="Yomizaka" />}
           actions={
             <>
+              <ButtonLink href={href(CONSOLE_ROUTES.check)} size="sm" shape="cut" data-testid="header-check">
+                <PlusIcon size={16} aria-hidden />
+                {say("shell.checkAction")}
+              </ButtonLink>
               {account()}
             </>
           }

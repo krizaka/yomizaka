@@ -81,3 +81,36 @@ describe("the settings' sections are routes", () => {
     for (const s of SETTINGS_SECTIONS) expect(activeNav(`/fr/app/settings/${s}`)).toBe("account");
   });
 });
+
+describe("the shell follows Orazaka's pattern", () => {
+  const shell = readFileSync(join(ROOT, "components/console/ConsoleShell.tsx"), "utf8");
+  const railItems = shell.match(/<RailNav\.Item\b/g) ?? [];
+  it("the rail holds the three destinations only, with no footer and no « + » action", () => {
+    expect(railItems).toHaveLength(3);
+    expect(shell).not.toContain("footer={");
+    expect(shell).not.toMatch(/<RailNav\.Item[^>]*PlusIcon/);
+  });
+  it("« Check a document » is the header's primary cut button, at every width", () => {
+    expect(shell).toMatch(/<ButtonLink[^>]*shape="cut"[^>]*>[\s\S]*shell\.checkAction/);
+    expect(shell).not.toMatch(/(sm|md|lg):(inline|hidden|block)|className="hidden/);
+  });
+  it("the account menu has profile, settings, billing, language, theme and sign out; nothing sends the owner elsewhere", () => {
+    for (const id of ["profile", "settings", "billing"]) expect(shell).toContain(`id: "${id}"`);
+    expect(shell).toContain("language={{");
+    expect(shell).toContain("ThemeToggle");
+    expect(shell).toContain("signOut={{");
+    for (const l of ["en", "fr"]) {
+      const m = JSON.parse(readFileSync(join(ROOT, `messages/${l}.json`), "utf8"));
+      expect(JSON.stringify(m)).not.toMatch(/Ouvrir la plateforme|Open the platform/i);
+    }
+  });
+  it("the type picker is a labelled choice with « auto » preselected and a hint each", () => {
+    const view = readFileSync(join(ROOT, "components/console/CheckView.tsx"), "utf8");
+    expect(view).toContain("library.kindPick");
+    expect(view).toContain("RadioGroup.Button");
+    expect(view).not.toContain("RadioGroup.Segment");
+    expect(ROUTE_STATES.checkKind.state.fallback).toBe("auto");
+  });
+});
+
+import { ROUTE_STATES } from "./route-state";

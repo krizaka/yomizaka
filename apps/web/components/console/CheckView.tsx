@@ -25,13 +25,16 @@ export function CheckView() {
   }, [kind]);
   return (
     <section className="flex max-w-3xl flex-col gap-3" aria-label={say("library.dropTitle")}>
-      <RadioGroup.Root variant="segmented" label={say("library.kindLabel")} routeKey={ROUTE_STATES.checkKind.state.key} routeValues={CHECK_KINDS} defaultValue={ROUTE_STATES.checkKind.state.fallback}>
-        {CHECK_KINDS.map((k) => (
-          <RadioGroup.Segment key={k} value={k}>
-            {say(`kinds.${k}`)}
-          </RadioGroup.Segment>
-        ))}
-      </RadioGroup.Root>
+      <div className="flex flex-col gap-2">
+        <p className="text-sm font-semibold text-fg">{say("library.kindPick")}</p>
+        <RadioGroup.Root variant="buttons" label={say("library.kindPick")} routeKey={ROUTE_STATES.checkKind.state.key} routeValues={CHECK_KINDS} defaultValue={ROUTE_STATES.checkKind.state.fallback}>
+          {CHECK_KINDS.map((k) => (
+            <RadioGroup.Button key={k} value={k} hint={say(`library.kindHints.${k}`)}>
+              {say(`kinds.${k}`)}
+            </RadioGroup.Button>
+          ))}
+        </RadioGroup.Root>
+      </div>
       <DocumentUploader kindRef={kindRef} onUploaded={(d) => router.push(`/${locale}/app/documents/${d.id}/infos`)} />
       {app?.features.batches ? (
         <p className="text-sm text-fg-secondary">

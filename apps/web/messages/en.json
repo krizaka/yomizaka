@@ -159,6 +159,11 @@
       "check": "Check",
       "account": "Account",
       "admin": "Administration",
+      "checks": "Checks",
+      "checkAction": "Check a document",
+      "profile": "Profile",
+      "settings": "Settings",
+      "billing": "Billing",
       "titles": {
         "library": "Library",
         "check": "Check a document",
@@ -177,6 +182,14 @@
       "refusedSize": "{name}: larger than 10 MB",
       "refusedType": "{name}: only PDF, text files and photos",
       "refusedCount": "{name}: too many files at once",
+      "kindPick": "Which document?",
+      "kindHints": {
+        "auto": "Yomizaka recognises it",
+        "lease": "Rent, term, tenant's rights",
+        "contract": "Clauses, duties, penalties",
+        "invoice": "Amounts, taxes, payee",
+        "other": "Any other document"
+      },
       "kindLabel": "Kind of the next documents",
       "caption": "Your documents",
       "columns": {

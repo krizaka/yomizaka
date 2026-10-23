@@ -159,6 +159,11 @@
       "check": "Vérifier",
       "account": "Compte",
       "admin": "Administration",
+      "checks": "Vérifications",
+      "checkAction": "Vérifier un document",
+      "profile": "Profil",
+      "settings": "Paramètres",
+      "billing": "Facturation",
       "titles": {
         "library": "Bibliothèque",
         "check": "Vérifier un document",
@@ -177,6 +182,14 @@
       "refusedSize": "{name} : plus de 10 Mo",
       "refusedType": "{name} : seulement des PDF, des fichiers texte et des photos",
       "refusedCount": "{name} : trop de fichiers à la fois",
+      "kindPick": "Quel document ?",
+      "kindHints": {
+        "auto": "Yomizaka le reconnaît",
+        "lease": "Loyer, durée, droits du locataire",
+        "contract": "Clauses, obligations, pénalités",
+        "invoice": "Montants, taxes, bénéficiaire",
+        "other": "Tout autre document"
+      },
       "kindLabel": "Type des prochains documents",
       "caption": "Vos documents",
       "columns": {
