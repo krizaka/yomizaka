@@ -1,3 +1,4 @@
+import { PageHeader } from "@krizaka/ui/page-header";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
@@ -41,7 +42,7 @@ export default async function SettingsSectionPage({ params, searchParams }: { pa
   };
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="font-display text-xl font-bold text-fg">{getDictionary(locale).console.profile.settingsTitle}</h1>
+      <PageHeader title={getDictionary(locale).console.profile.settingsTitle} />
       <SettingsTabs>{views[section]()}</SettingsTabs>
     </div>
   );

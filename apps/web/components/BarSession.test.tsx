@@ -5,25 +5,33 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const krizakaFetch = vi.fn();
 vi.mock("@krizaka/query", async (original) => ({ ...(await original<typeof import("@krizaka/query")>()), krizakaFetch: (...args: unknown[]) => krizakaFetch(...args) }));
 
-import { BarActionsView, fetchMe, type Me, ME_KEY, signOutAndForget } from "./BarSession";
+import { BarActionsView, fetchMe, HeroActionsView, type Me, ME_KEY, signOutAndForget } from "./BarSession";
 import { SiteHeader } from "./SiteChrome";
 
 const text = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/\s+/g, " ");
 const ME: Me = { email: "eric@example.test", name: "Éric", avatarSeed: null };
 const view = (props: Partial<Parameters<typeof BarActionsView>[0]> = {}) => renderToStaticMarkup(<BarActionsView locale="en" placement="bar" me={null} signupOpen={false} onSignOut={() => {}} {...props} />);
+const hero = (props: Partial<Parameters<typeof HeroActionsView>[0]> = {}) => renderToStaticMarkup(<HeroActionsView locale="en" me={null} status="In development: sign-up is closed." {...props} />);
 
 beforeEach(() => {
   krizakaFetch.mockReset();
 });
 
-describe("the public bar knows who is signed in (yomizaka#243)", () => {
-  it("signed in: « Open the app » to the app, and the account (avatar, name) — no « Sign in »", () => {
+describe("the public bar knows who is signed in (yomizaka#243) — a quiet account entry, never the raw e-mail (the review's F0)", () => {
+  it("signed in: the account (avatar, the name when there is one) with « My documents » inside; no primary button in the bar, no « Sign in »", () => {
     const html = view({ me: ME });
-    expect(text(html)).toContain("Open the app");
-    expect(html).toContain('href="/en/app"');
     expect(html).toContain('aria-label="Account"');
+    expect(html).toContain('data-name="Éric"');
+    expect(text(html)).not.toContain("Open my documents");
     expect(text(html)).not.toContain("Sign in");
-    expect(text(view({ me: ME, locale: "fr" }))).toContain("Ouvrir l'app");
+    expect(html).not.toContain("eric@example.test");
+  });
+
+  it("signed in without a name: the avatar alone — the e-mail address is never shown in the bar", () => {
+    const html = view({ me: { ...ME, name: null } });
+    expect(html).toContain('aria-label="Account"');
+    expect(html).not.toContain("data-name=");
+    expect(html).not.toContain("eric@example.test");
   });
 
   it("signed out: « Sign in » while sign-up is closed; « Try Yomizaka » first, then « Sign in », once it is open", () => {
@@ -36,9 +44,12 @@ describe("the public bar knows who is signed in (yomizaka#243)", () => {
     expect(text(view({ locale: "fr" }))).toContain("Se connecter");
   });
 
-  it("the mobile panel has the same words, full width, and no account menu", () => {
-    expect(text(view({ placement: "panel", me: ME }))).toContain("Open the app");
-    expect(view({ placement: "panel", me: ME })).not.toContain('aria-label="Account"');
+  it("the mobile panel, a drawer, says it in full: « Open my documents » full width, no account menu", () => {
+    const panel = view({ placement: "panel", me: ME });
+    expect(text(panel)).toContain("Open my documents");
+    expect(panel).toContain('href="/en/app"');
+    expect(panel).not.toContain('aria-label="Account"');
+    expect(text(view({ placement: "panel", me: ME, locale: "fr" }))).toContain("Ouvrir mes documents");
     expect(text(view({ placement: "panel" }))).toContain("Sign in");
   });
 
@@ -51,6 +62,35 @@ describe("the public bar knows who is signed in (yomizaka#243)", () => {
         ));
       expect(html).not.toMatch(/Talk to us|Nous parler|Contact us/);
     }
+  });
+});
+
+describe("the hero's action reads the same answer (F0): rendered on the server in both states, never two truths on one screen", () => {
+  it("signed in: « Open my documents » to the library, and no status line", () => {
+    const html = hero({ me: ME });
+    expect(html).toContain('data-session="in"');
+    expect(html).toContain('href="/en/app"');
+    expect(text(html)).toContain("Open my documents");
+    expect(text(html)).not.toContain("Sign in");
+    expect(html).not.toContain('data-testid="hero-status"');
+    expect(text(hero({ me: ME, locale: "fr" }))).toContain("Ouvrir mes documents");
+  });
+
+  it("signed out: « Sign in » with the product's status line", () => {
+    const html = hero();
+    expect(html).toContain('data-session="out"');
+    expect(html).toContain('href="/en/sign-in"');
+    expect(text(html)).toContain("Sign in");
+    expect(text(html)).toContain("In development: sign-up is closed.");
+    expect(text(html)).not.toContain("Open my documents");
+    expect(hero({ locale: "fr" })).toContain('href="/fr/sign-in"');
+  });
+
+  it("the bar and the hero use the same words for the way in, in both languages", async () => {
+    const en = (await import("@/messages/en.json")).default;
+    const fr = (await import("@/messages/fr.json")).default;
+    expect(en.landing.openApp).toBe(en.chrome.openApp);
+    expect(fr.landing.openApp).toBe(fr.chrome.openApp);
   });
 });
 

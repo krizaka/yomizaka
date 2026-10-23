@@ -16,11 +16,15 @@ const words = (o: unknown): string[] => (typeof o === "string" ? [o] : o && type
 describe("the home is one short page: who it is for, one real check, one way in", () => {
   const home = read("app/[locale]/page.tsx");
 
-  it("has the two sections the menu points to, in this order, and one primary action", () => {
+  it("has the two sections the menu points to, in this order, and one primary action — the hero's island, which follows the session (F0)", () => {
     expect(home.indexOf('id="what"')).toBeGreaterThan(0);
     expect(home.indexOf('id="proof"')).toBeGreaterThan(home.indexOf('id="what"'));
-    expect((home.match(/variant="primary"/g) ?? []).length).toBe(1);
-    expect(home).toContain("signInPath(locale)");
+    expect((home.match(/<HeroActions\b/g) ?? []).length).toBe(1);
+    expect(home).not.toContain('variant="primary"');
+    // The island draws the one primary action per state: « Se connecter » signed out, « Ouvrir mes documents » signed in.
+    const island = read("components/BarSession.tsx");
+    expect(island).toContain("signInPath(locale)");
+    expect(island).toContain('t("landing.openApp")');
   });
 
   it("carries no template tell: no glow, no gradient backdrop, no sparkle, no figure counter, no mascot quote", () => {

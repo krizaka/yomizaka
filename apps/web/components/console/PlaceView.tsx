@@ -1,4 +1,5 @@
 import { Card } from "@krizaka/ui/card";
+import { PageHeader } from "@krizaka/ui/page-header";
 import { type CollectionAvatar as CollectionAvatarData, type DocumentSummary } from "@yomizaka/core";
 import Link from "next/link";
 
@@ -41,25 +42,33 @@ export function PlaceView({ locale, t, library, collection, folder, folders, doc
   ];
   return (
     <div className="flex flex-col gap-6">
-      <nav aria-label="breadcrumb" className="flex flex-wrap items-center gap-2 text-sm text-fg-secondary">
-        {crumbs.map((c, i) => (
-          <span key={c.href} className="flex items-center gap-2">
-            {i > 0 ? <span aria-hidden>/</span> : null}
-            {"avatar" in c ? c.avatar : null}
-            {i === crumbs.length - 1 ? <span aria-current="page" className="font-semibold text-fg">{c.label}</span> : <Link href={c.href} className="hover:text-fg-accent hover:underline">{c.label}</Link>}
+      <PageHeader
+        breadcrumb={
+          <nav aria-label="breadcrumb" className="flex flex-wrap items-center gap-2 text-sm text-fg-secondary">
+            {crumbs.map((c, i) => (
+              <span key={c.href} className="flex items-center gap-2">
+                {i > 0 ? <span aria-hidden>/</span> : null}
+                {"avatar" in c ? c.avatar : null}
+                {i === crumbs.length - 1 ? <span aria-current="page" className="font-semibold text-fg">{c.label}</span> : <Link href={c.href} className="hover:text-fg-accent hover:underline">{c.label}</Link>}
+              </span>
+            ))}
+          </nav>
+        }
+        title={
+          <span className="flex items-center gap-3">
+            <CollectionAvatar id={collection.id} name={collection.name} avatar={collection.avatar} />
+            {folder?.name ?? collection.name}
           </span>
-        ))}
-      </nav>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="m-0 flex items-center gap-3 font-display text-xl font-bold text-fg">
-          <CollectionAvatar id={collection.id} name={collection.name} avatar={collection.avatar} />
-          {folder?.name ?? collection.name}
-        </h2>
-        <div className="flex flex-wrap items-center gap-3">
-          {!folder ? <CreateButton kind="folder" parentId={collection.id} /> : null}
-          {!folder ? <ItemMenu kind="collection" id={collection.id} name={collection.name} avatar={collection.avatar} isDefault={collection.isDefault} collections={collections} tags={tags} current={collectionTags} /> : null}
-        </div>
-      </div>
+        }
+        actions={
+          !folder ? (
+            <>
+              <CreateButton kind="folder" parentId={collection.id} />
+              <ItemMenu kind="collection" id={collection.id} name={collection.name} avatar={collection.avatar} isDefault={collection.isDefault} collections={collections} tags={tags} current={collectionTags} />
+            </>
+          ) : null
+        }
+      />
       <TagFilter tags={tags} selected={view.tags} label={t.filterTags} clearLabel={t.clearTags} clearHref={viewHref(path, { ...view, tags: [] })} hrefFor={(id) => viewHref(path, { ...view, tags: toggleTag(view.tags, id) })} />
       {collection && !folder && folders.length > 0 ? (
         <section aria-label={t.foldersIn} className="flex flex-col gap-3">

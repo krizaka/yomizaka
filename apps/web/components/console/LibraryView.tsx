@@ -4,6 +4,7 @@ import { Badge } from "@krizaka/ui/badge";
 import { Button } from "@krizaka/ui/button";
 import { Card } from "@krizaka/ui/card";
 import { Mascot } from "@krizaka/ui/mascots";
+import { PageHeader } from "@krizaka/ui/page-header";
 import { type Audience, type DocumentSummary } from "@yomizaka/core";
 import Link from "next/link";
 
@@ -34,17 +35,21 @@ export function LibraryView({ libraries, recents, tags, perspective = null, scre
   const destinations = collections.map((c) => ({ id: c.id, name: c.name, avatar: c.avatar }));
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-wrap items-center justify-end gap-3" data-testid="library-actions">
-        {first ? <CreateButton kind="collection" parentId={first.id} /> : null}
-        {screen.secondary ? (
-          <Button asChild variant="secondary" size="md">
-            <Link href={`/${locale}${screen.secondary}`}>{say("library.screeningCta")}</Link>
-          </Button>
-        ) : null}
-        <Button asChild variant="primary" size="md">
-          <Link href={`/${locale}${screen.primary}`}>{say("library.checkCta")}</Link>
-        </Button>
-      </div>
+      {/* The page's h1 and its secondary actions; the one primary action of every screen (« Vérifier un document ») is the header's (the review's A6). */}
+      <PageHeader
+        title={say("shell.titles.library")}
+        description={say("library.lead")}
+        actions={
+          <span className="flex flex-wrap items-center gap-3" data-testid="library-actions">
+            {first ? <CreateButton kind="collection" parentId={first.id} /> : null}
+            {screen.secondary ? (
+              <Button asChild variant="secondary" size="md">
+                <Link href={`/${locale}${screen.secondary}`}>{say("library.screeningCta")}</Link>
+              </Button>
+            ) : null}
+          </span>
+        }
+      />
 
       {screen.table || collections.length > 0 ? (
         <>

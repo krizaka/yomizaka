@@ -177,3 +177,26 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
 - **Refused**: a hint cookie (a second source of truth that can lie); the account at the rail's foot (it adds an empty
   column to the phone's tab bar until the rail counts hidden children).
 - **Signal we are wrong**: the avatar flashes « Sign in » visibly before the island answers.
+
+## 11. The shell on Orazaka's pattern: destinations on the rail, the product in the header, the action in the header
+
+- **Decision** (2026-10-23, the UX review of October 2026 — `docs/ux/2026-10-full-review.md`, krizaka/yomizaka#278, #281):
+  the rail holds destinations only — Bibliothèque · Vérifications · Recherche — with the collapse control alone at its
+  foot; the header names the product (`AppHeader name="Yomizaka"`), carries the DEV build as a chip and the one action of
+  every signed-in screen, « Vérifier un document » (its word from `sm`, its icon with the same accessible name below);
+  the account menu owns the settings (Profil · Réglages · Facturation · Langue · Thème · Se déconnecter) and shows the
+  name only when there is one, never the raw address; every page draws its own `h1` with `PageHeader`. Vérifications is
+  a destination: every check, newest first, « Lots » as a tab in the address (`?tab=lots`); `/app/verifier/lots` answers
+  308 to it. On the public home the hero's action follows the session from the bar's own query — « Ouvrir mes documents »
+  signed in, « Se connecter » and the status line otherwise — and the bar keeps a quiet account entry, no second primary.
+- **Problem**: an action (« + Vérifier ») sat on the rail between two places, a cog and a lone chevron at its foot, the
+  page's title in the header and no `h1` anywhere, the e-mail address beside the avatar; signed in, the home's hero still
+  said « Sign in » beside a bar that said « Open the app ».
+- **Principle**: where you work on the rail, who you are under the avatar, nothing in both; the header names the product,
+  the page names itself; one primary action per screen; one answer for the whole page.
+- **Refused**: a settings entry on the rail (the account owns it); hiding the header's action on a phone (its icon stays,
+  named); a second « Open the app » button in the bar beside the hero's; a hint cookie for the hero (§ 10).
+- **Cost**: at 360 px the header's action is an icon with a tooltip until `AppHeader` grows a `primary` slot
+  (krizaka-ui#588); the theme row is composed by hand until `AccountMenu` takes a `theme` prop (krizaka-ui#589).
+- **Signal we are wrong**: people look for « Vérifier » on the rail; the Vérifications list is opened less than the
+  library's « Dernières vérifications ».

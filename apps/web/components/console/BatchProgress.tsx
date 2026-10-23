@@ -6,11 +6,13 @@ import { Badge } from "@krizaka/ui/badge";
 import { Button } from "@krizaka/ui/button";
 import { Card } from "@krizaka/ui/card";
 import { DataTable, type DataTableColumn } from "@krizaka/ui/data-table";
+import { PageHeader } from "@krizaka/ui/page-header";
 import { Progress } from "@krizaka/ui/progress";
 import Link from "next/link";
 import { useMemo } from "react";
 
 import { waitsForAccount, waitsForEngine } from "@/lib/batch/pausing";
+import { checksTabHref } from "@/lib/console-nav";
 import { useSay } from "@/lib/i18n-client";
 
 type ItemState = "pending" | "reused" | "running" | "done" | "failed" | "refused";
@@ -77,10 +79,21 @@ export function BatchProgress({ initial }: { initial: Batch }) {
 
   return (
     <div className="flex flex-col gap-5">
-      <Card.Root className="flex flex-col gap-4 p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-display text-lg font-bold text-fg">{batch.name}</h2>
-          <div className="flex flex-wrap gap-2">
+      <PageHeader
+        breadcrumb={
+          <nav aria-label={say("checks.tabsLabel")} className="flex flex-wrap items-center gap-2 text-sm text-fg-secondary">
+            <Link href={checksTabHref(locale, "checks")} className="hover:text-fg-accent hover:underline">
+              {say("shell.checks")}
+            </Link>
+            <span aria-hidden>/</span>
+            <Link href={checksTabHref(locale, "lots")} className="hover:text-fg-accent hover:underline">
+              {say("checks.tabs.lots")}
+            </Link>
+          </nav>
+        }
+        title={batch.name}
+        actions={
+          <>
             <Button asChild variant="secondary" size="sm">
               <a href={`/api/batches/${batch.id}/export`} download>
                 {say("batch.export")}
@@ -93,8 +106,10 @@ export function BatchProgress({ initial }: { initial: Batch }) {
                 </a>
               </Button>
             ) : null}
-          </div>
-        </div>
+          </>
+        }
+      />
+      <Card.Root className="flex flex-col gap-4 p-4">
         <Progress value={settled} max={Math.max(total, 1)} label={say("batch.progressLabel")} valueText={say("batch.progress", { settled, total })} showLabel status={waitsForAccount(batch.pausedBy) ? "paused" : undefined} />
         {waitsForAccount(batch.pausedBy) ? (
           <Alert tone="warning">

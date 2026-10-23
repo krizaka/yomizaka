@@ -72,6 +72,7 @@ pnpm run check                             # lint · typecheck · tests (what th
 | `packages/core` | zod contracts, query keys, the report readers — shared by the API and the web |
 | `scripts/check-seo-family.mjs` | the Krizaka family SEO guard, run in CI on the built site |
 | `scripts/check-overflow.mjs` | the responsive crawl (dark and light, 360–1440 px, no console error), run in CI |
+| `scripts/check-app-pages.mjs` | the signed-in pages rendered as the seeded persona (`E2E_EMAIL`, `E2E_PASSWORD`): exactly one `h1`, no overflow at 360–1440 px, the header's action on screen, no unnamed button — run in CI after the build (`scripts/lib/page-audit.mjs` holds what both crawls measure) |
 | `scripts/check-admin-live.mjs` | the walk of the live administration from an allowed address (`pnpm run check:admin-live`) |
 | `deploy/` | the Docker image and the DigitalOcean App Platform spec (`dev.yomizaka.com`) |
 

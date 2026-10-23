@@ -8,6 +8,7 @@ import { Card } from "@krizaka/ui/card";
 import { DescriptionList } from "@krizaka/ui/description-list";
 import { DocumentViewer, type Located } from "@krizaka/ui/document-viewer";
 import { createKrizakaForm } from "@krizaka/ui/form";
+import { PageHeader } from "@krizaka/ui/page-header";
 import { Spinner } from "@krizaka/ui/spinner";
 import { Tabs } from "@krizaka/ui/tabs";
 import { type Analysis, analysis as analysisSchema, type Audience, AUTHENTICITY_MAX_BYTES, type AuthenticityReport, checkSteps,type ComplianceReport, type DocumentView as DocumentViewData, documentView, DOCX_MIME, isSeededCheck, type Jurisdiction, JURISDICTIONS, ODT_MIME, passages, queryKeys, type Studio, type TextSource } from "@yomizaka/core";
@@ -442,38 +443,43 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
   };
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="min-w-0">
+      <PageHeader
+        breadcrumb={
           <Link href={`/${locale}/app`} className="text-sm text-fg-muted hover:text-fg">
             ← {say("document.back")}
           </Link>
-          <h2 className="mt-1 break-words font-display text-2xl font-extrabold tracking-tight text-fg">{doc.title}</h2>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
+        }
+        title={<span className="break-words">{doc.title}</span>}
+        description={
+          <span className="flex flex-wrap items-center gap-2">
             <Badge tone={STATUS_TONE[doc.status]}>{say(`statuses.${doc.status}`)}</Badge>
             <Badge tone="neutral">{say(`kinds.${doc.kind}`)}</Badge>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button asChild variant="secondary" size="sm">
-            <a href={fileUrl} target="_blank" rel="noreferrer">
-              {say("document.openFile")}
-            </a>
-          </Button>
-          {confirming ? (
-            <Button variant="danger" size="sm" loading={remove.isPending} onClick={() => remove.mutate()}>
-              {say("document.deleteConfirm")}
+          </span>
+        }
+        actions={
+          <>
+            <Button asChild variant="secondary" size="sm">
+              <a href={fileUrl} target="_blank" rel="noreferrer">
+                {say("document.openFile")}
+              </a>
             </Button>
-          ) : (
-            <Button variant="ghost" size="sm" onClick={() => setConfirming(true)}>
-              {say("document.delete")}
-            </Button>
-          )}
-        </div>
-      </div>
+            {confirming ? (
+              <Button variant="danger" size="sm" loading={remove.isPending} onClick={() => remove.mutate()}>
+                {say("document.deleteConfirm")}
+              </Button>
+            ) : (
+              <Button variant="ghost" size="sm" onClick={() => setConfirming(true)}>
+                {say("document.delete")}
+              </Button>
+            )}
+          </>
+        }
+      />
 
       {/* @ephemeral: already the route (/documents/[id]/<tab>), pushed by go(); to move to Tabs.Nav */}
       <Tabs.Root value={tab} onValueChange={(v: string) => go(v as DocumentTab)}>
-        <Tabs.List aria-label={say("document.viewer")}>
+        {/* Four tabs do not fit a 360 px phone: the row scrolls sideways rather than widening the page (D6; Y5 brings them to three). */}
+        <Tabs.List aria-label={say("document.viewer")} className="max-w-full overflow-x-auto">
           <Tabs.Trigger value="infos">{say("document.tabs.infos")}</Tabs.Trigger>
           <Tabs.Trigger value="verifications">{say("document.tabs.verifications")}</Tabs.Trigger>
           {isPdf && !doc.purged ? <Tabs.Trigger value="fichier">{say("document.file")}</Tabs.Trigger> : null}

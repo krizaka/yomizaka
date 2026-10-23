@@ -4,6 +4,7 @@ import { krizakaFetch, useQuery } from "@krizaka/query";
 import { Badge } from "@krizaka/ui/badge";
 import { EmptyState } from "@krizaka/ui/empty-state";
 import { Mascot } from "@krizaka/ui/mascots";
+import { PageHeader } from "@krizaka/ui/page-header";
 import { SearchField } from "@krizaka/ui/search-field";
 import { Skeleton } from "@krizaka/ui/skeleton";
 import { queryKeys, searchHit } from "@yomizaka/core";
@@ -32,6 +33,7 @@ export function SearchView({ initialQuery }: { initialQuery: string }) {
   };
   return (
     <div className="flex max-w-3xl flex-col gap-5">
+      <PageHeader title={say("shell.titles.search")} description={say("search.lead")} />
       <SearchField label={say("search.label")} placeholder={say("search.placeholder")} defaultValue={initialQuery} onSearch={onSearch} debounce={250} />
       <p className="text-xs text-fg-muted">{say("search.hint")}</p>
       {hits.isFetching && !hits.data ? <Skeleton className="h-24 w-full" /> : null}

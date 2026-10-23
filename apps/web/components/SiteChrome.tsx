@@ -5,6 +5,7 @@ import { languagesFor } from "@krizaka/ui/language-switch";
 import { NavBar } from "@krizaka/ui/nav-bar";
 import { ThemeToggle } from "@krizaka/ui/theme";
 import Link from "next/link";
+import { Fragment } from "react";
 
 import { BarActions, BarQueryRoot } from "@/components/BarSession";
 import { type Locale, translator } from "@/lib/i18n";
@@ -18,14 +19,16 @@ import { type PageId, pagePath, REPO_URL } from "@/lib/site";
  * Contact lives in the footer. No dropdown: the menu is short enough to
  * show. No version chip (the version is in the footer), no family switcher, no link to another product.
  */
-export function SiteHeader({ locale, current }: { locale: Locale; current: PageId }) {
+/** `provider`: false when the page already wraps the bar in `BarQueryRoot` (the home shares the session answer with its hero). */
+export function SiteHeader({ locale, current, provider = true }: { locale: Locale; current: PageId; provider?: boolean }) {
   const t = translator(locale);
+  const Root = provider ? BarQueryRoot : Fragment;
   const languages = languagesFor(pagePath(locale, current));
   const home = pagePath(locale, "home");
   const items = MENU.map((m) => ({ ...m, href: menuHref(locale, m), label: t(`chrome.nav.${m.id}`), active: m.page === current && !m.hash }));
   return (
     <div className="pointer-events-none fixed inset-x-0 top-3 z-50 px-3">
-      <BarQueryRoot>
+      <Root>
       <NavBar.Root label={t("chrome.navLabel")} className="pointer-events-auto mx-auto max-w-(--kz-page-max,72rem)">
         <NavBar.Brand asChild>
           <Link href={home} aria-label={t("chrome.brandHome")}>
@@ -65,7 +68,7 @@ export function SiteHeader({ locale, current }: { locale: Locale; current: PageI
           </NavBar.Mobile>
         </NavBar.Actions>
       </NavBar.Root>
-      </BarQueryRoot>
+      </Root>
     </div>
   );
 }
