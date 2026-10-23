@@ -4,7 +4,7 @@ import { storesOf } from "@/app/active-store";
 
 import { getAnalysis } from "../analyses";
 import { startCheck } from "../checks";
-import { query } from "../db";
+import { query, withNamedLock } from "../db";
 import { storeDocument } from "../documents";
 import { HttpError, refuse } from "../http";
 import { placeDocument } from "../organisation/store";
@@ -51,6 +51,8 @@ export interface BatchView {
 type Account = { id: string; perspective: Audience | null };
 /** Where the checks run (the flows are offered per environment): read by the route, given here — domain code reads no env. */
 type Context = { settings: Snapshot; now: Date; environment: FlowEnvironment };
+// @fixed: the code `startAnalysis` answers when the same check of the same document is already running — a technical identifier
+const ALREADY_RUNNING = "ALREADY_RUNNING";
 const codeOf = (error: unknown) => (error instanceof HttpError ? String((error.body as { code?: string })?.code ?? "FAILED") : "FAILED");
 
 export async function createBatch(account: Account, name: string, manifestText: string, files: readonly BatchFile[], { settings, now, environment }: Context): Promise<BatchView> {
@@ -94,8 +96,15 @@ async function insertItem(batchId: string, line: number, file: string, reference
 }
 
 /** Reads the running rows back, starts pending ones up to the concurrency, closes the batch when nothing is left. */
-export async function advanceBatch(account: Account, batchId: string, { settings, now, environment }: Context): Promise<BatchView> {
+export async function advanceBatch(account: Account, batchId: string, context: Context): Promise<BatchView> {
   await ownBatch(account.id, batchId);
+  // One advance of a batch at a time (yomizaka#266): the server tick and someone reading it would both start the same pending row.
+  // The caller that finds it taken gets the batch as it stands; the one working will have moved it.
+  const advanced = await withNamedLock(`batch:${batchId.toLowerCase()}`, () => advanceOnce(account, batchId, context));
+  return advanced ?? { ...(await batchView(account.id, batchId)), pausedBy: null };
+}
+
+async function advanceOnce(account: Account, batchId: string, { settings, now, environment }: Context): Promise<BatchView> {
   const items = await query<{ id: string; state: BatchItemState; document_id: string | null; analysis_id: string | null; request: StartAnalysis | null }>(
     "SELECT id, state, document_id, analysis_id, request FROM batch_items WHERE batch_id = $1 ORDER BY line",
     [batchId],
@@ -111,18 +120,28 @@ export async function advanceBatch(account: Account, batchId: string, { settings
   let pausedBy: string | null = null;
   for (const item of items.filter((i) => i.state === BATCH_ITEM.pending)) {
     if (running >= concurrency) break;
-    try {
-      const started = await startCheck(account, item.document_id!, item.request!, now, environment);
-      await query("UPDATE batch_items SET analysis_id = $2, state = $3, error = NULL WHERE id = $1", [item.id, started.analysis.id, started.reused ? BATCH_ITEM.reused : BATCH_ITEM.running]);
-      if (!started.reused) running++;
-    } catch (error) {
-      const code = codeOf(error);
-      if (pausesBatch(code)) {
-        pausedBy = code;
+    for (let attempt = 1; ; attempt++) {
+      try {
+        const started = await startCheck(account, item.document_id!, item.request!, now, environment);
+        await query("UPDATE batch_items SET analysis_id = $2, state = $3, error = NULL WHERE id = $1", [item.id, started.analysis.id, started.reused ? BATCH_ITEM.reused : BATCH_ITEM.running]);
+        if (!started.reused) running++;
+        break;
+      } catch (error) {
+        const code = codeOf(error);
+        // The same check of the same document is already running (a row of another batch, a page). Bring it up to date — it may have
+        // finished in Orazaka while nobody looked — then the normal rules apply again (reuse its result or start); while it truly
+        // runs, this row waits for it.
+        if (code === ALREADY_RUNNING) {
+          if (attempt < 2 && !(await refreshBlocking(account.id, item.document_id!, item.request!.studio))) continue;
+          running++;
+          break;
+        }
+        if (pausesBatch(code)) pausedBy = code;
+        else await setState(item.id, BATCH_ITEM.failed, code);
         break;
       }
-      await setState(item.id, BATCH_ITEM.failed, code);
     }
+    if (pausedBy) break;
   }
   const [{ left }] = (await query<{ left: number }>("SELECT count(*)::int AS left FROM batch_items WHERE batch_id = $1 AND state IN ('pending', 'running')", [batchId])) as [{ left: number }];
   // The batch closes once; the one call that closes it tells the observer (the customer's webhooks, yomizaka#241).
@@ -130,6 +149,14 @@ export async function advanceBatch(account: Account, batchId: string, { settings
   const view = { ...(await batchView(account.id, batchId)), pausedBy };
   if (closed.length) await notifyFinished(account.id, view, now);
   return view;
+}
+
+/** Brings up to date the analyses already running on a document for a Studio; true while one still runs. */
+async function refreshBlocking(ownerId: string, documentId: string, studio: string): Promise<boolean> {
+  const rows = await query<{ id: string }>("SELECT id FROM analyses WHERE document_id = $1 AND studio = $2 AND status = 'running'", [documentId, studio]);
+  let stillRunning = false;
+  for (const row of rows) if ((await getAnalysis(ownerId, documentId, row.id)).status === ANALYSIS_STATUS.running) stillRunning = true;
+  return stillRunning;
 }
 
 async function setState(id: string, state: BatchItemState, error: string | null) {

@@ -68,14 +68,48 @@ export async function migrate(client?: pg.Pool): Promise<string[]> {
  * instances must never do at once. `null` when the lock is held elsewhere.
  */
 export async function withAdvisoryLock<T>(key: number, work: () => Promise<T>): Promise<T | null> {
-  const conn = await pool().connect();
+  return withLock("SELECT pg_try_advisory_lock($1) AS ok", "SELECT pg_advisory_unlock($1)", key, work);
+}
+
+/** The same for a lock named by a string (one batch, one document…): two callers of the same name never work at once. */
+export async function withNamedLock<T>(name: string, work: () => Promise<T>): Promise<T | null> {
+  return withLock("SELECT pg_try_advisory_lock(hashtextextended($1, 0)) AS ok", "SELECT pg_advisory_unlock(hashtextextended($1, 0))", name, work);
+}
+
+/**
+ * Locks live on their own small pool: a holder keeps its connection for the whole of its work, and that work runs its queries on the
+ * main pool — if both came from one pool, as many concurrent holders as it has connections would wait forever for a connection to
+ * read with (yomizaka#266, review). Holders beyond the pool simply wait their turn for a lock connection.
+ */
+const lockHolder = globalThis as unknown as { __yomizakaLockPool?: pg.Pool };
+// @fixed: connections kept for locks — a technical bound; the main pool is never touched by it
+const LOCK_CONNECTIONS = 4;
+const lockPool = (): pg.Pool => (lockHolder.__yomizakaLockPool ??= new pg.Pool({ ...poolConfig(), max: LOCK_CONNECTIONS, allowExitOnIdle: true }));
+
+async function withLock<T>(lock: string, unlock: string, key: number | string, work: () => Promise<T>): Promise<T | null> {
+  const conn = await lockPool().connect();
   try {
-    const [row] = (await conn.query<{ ok: boolean }>("SELECT pg_try_advisory_lock($1) AS ok", [key])).rows;
+    const [row] = (await conn.query<{ ok: boolean }>(lock, [key])).rows;
     if (!row?.ok) return null;
     try {
       return await work();
     } finally {
-      await conn.query("SELECT pg_advisory_unlock($1)", [key]).catch(() => undefined);
+      await conn.query(unlock, [key]).catch(() => undefined);
+    }
+  } finally {
+    conn.release();
+  }
+}
+
+/** The same lock, but waits its turn instead of giving up: for work that must happen once and that every caller needs done (seeding). */
+export async function withBlockingLock<T>(name: string, work: () => Promise<T>): Promise<T> {
+  const conn = await lockPool().connect();
+  try {
+    await conn.query("SELECT pg_advisory_lock(hashtextextended($1, 0))", [name]);
+    try {
+      return await work();
+    } finally {
+      await conn.query("SELECT pg_advisory_unlock(hashtextextended($1, 0))", [name]).catch(() => undefined);
     }
   } finally {
     conn.release();

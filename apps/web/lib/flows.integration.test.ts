@@ -7,6 +7,15 @@ import { buildPayload, issueReport, sha256, verifyReport } from "./report";
 import { reportLabels } from "./report-labels";
 import { signingKey } from "./report-signer";
 
+// Two starts seeding at once (two instances, or the tests of several files) must not collide on the same key (the CI flake, #268).
+describe.runIf(process.env.YOMIZAKA_DB_IT === "1" && !!process.env.DATABASE_URL)("seeding the flows", () => {
+  it("is safe to run many times at once", async () => {
+    await migrate();
+    const runs = await Promise.allSettled(Array.from({ length: 8 }, () => seedDatabase()));
+    expect(runs.filter((r) => r.status === "rejected")).toEqual([]);
+  });
+});
+
 /** ADR-0003 against a real PostgreSQL (CI's service; locally `YOMIZAKA_DB_IT=1 DATABASE_URL=… pnpm test`). */
 const enabled = process.env.YOMIZAKA_DB_IT === "1" && !!process.env.DATABASE_URL;
 
