@@ -1,4 +1,4 @@
-import { type AcceptedType, type Analysis, type AnalysisStatus, type AuthenticityReport, type CloudOwner, type ComplianceReport, type DocumentDetail, type DocumentInsight, type DocumentKind, type DocumentStatus, type DocumentSummary, DOCX_MIME, type StorageKind, type Studio, type TextSource } from "@yomizaka/core";
+import { type AcceptedType, type Analysis, type AnalysisStatus, type AuthenticityReport, type CloudOwner, type ComplianceReport, type DocumentDetail, type DocumentInsight, type DocumentKind, type DocumentStatus, type DocumentSummary, DOCX_MIME, ODT_MIME, type StorageKind, type Studio, type TextSource } from "@yomizaka/core";
 
 import { query } from "./db";
 import { HttpError, refuse } from "./http";
@@ -199,11 +199,11 @@ export async function inspectUpload(file: { name: string; type: string; size: nu
 
 /** A PDF or a text file (photos go through lib/photos, which hands the pre-flight a PDF made of them). */
 /** The stored type of each kind a file upload accepts. */
-const MIME_OF = { pdf: "application/pdf", text: "text/plain", docx: DOCX_MIME } as const satisfies Record<string, AcceptedType>;
+const MIME_OF = { pdf: "application/pdf", text: "text/plain", docx: DOCX_MIME, odt: ODT_MIME } as const satisfies Record<string, AcceptedType>;
 
 export async function checkUpload(file: { name: string; type: string; size: number }, bytes: Uint8Array, rules?: PreflightRules): Promise<{ mimeType: AcceptedType; sha256: string; pages: number | null }> {
   const { fileKind, sha256, pages } = await inspectUpload(file, bytes, rules);
-  if (fileKind !== "pdf" && fileKind !== "text" && fileKind !== "docx") throw refuse(415, "UNSUPPORTED_TYPE", "Photos are sent as photos, not as a file");
+  if (fileKind !== "pdf" && fileKind !== "text" && fileKind !== "docx" && fileKind !== "odt") throw refuse(415, "UNSUPPORTED_TYPE", "Photos are sent as photos, not as a file");
   return { mimeType: MIME_OF[fileKind], sha256, pages };
 }
 

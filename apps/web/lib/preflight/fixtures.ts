@@ -77,17 +77,17 @@ export function pngWithSize(width: number, height: number): Uint8Array {
 export const pngBytes = (): Uint8Array => Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(64)]);
 
 /** A minimal zip (stored directory entries of deflated content) — enough for the directory-only reads. */
-export function zipOf(entries: { name: string; data: Buffer }[]): Uint8Array {
+export function zipOf(entries: { name: string; data: Buffer; stored?: boolean }[]): Uint8Array {
   const parts: Buffer[] = [];
   const central: Buffer[] = [];
   let offset = 0;
   for (const e of entries) {
-    const body = zlib.deflateRawSync(e.data, { level: 9 });
+    const body = e.stored ? e.data : zlib.deflateRawSync(e.data, { level: 9 });
     const name = Buffer.from(e.name);
     const local = Buffer.alloc(30);
     local.writeUInt32LE(0x04034b50, 0);
     local.writeUInt16LE(20, 4);
-    local.writeUInt16LE(8, 8);
+    local.writeUInt16LE(e.stored ? 0 : 8, 8);
     local.writeUInt32LE(body.length, 18);
     local.writeUInt32LE(e.data.length, 22);
     local.writeUInt16LE(name.length, 26);
@@ -96,7 +96,7 @@ export function zipOf(entries: { name: string; data: Buffer }[]): Uint8Array {
     dir.writeUInt32LE(0x02014b50, 0);
     dir.writeUInt16LE(20, 4);
     dir.writeUInt16LE(20, 6);
-    dir.writeUInt16LE(8, 10);
+    dir.writeUInt16LE(e.stored ? 0 : 8, 10);
     dir.writeUInt32LE(body.length, 20);
     dir.writeUInt32LE(e.data.length, 24);
     dir.writeUInt16LE(name.length, 28);

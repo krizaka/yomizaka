@@ -1,4 +1,4 @@
-import { type Analysis, AUTHENTICITY_MAX_BYTES, COMPLIANCE_MAX_CHARS, DOCX_MIME, fromRunStatus, isTerminal, type OrazakaRun, reportOf, type StartAnalysis,type StorageKind } from "@yomizaka/core";
+import { type Analysis, AUTHENTICITY_MAX_BYTES, COMPLIANCE_MAX_CHARS, DOCX_MIME, fromRunStatus, isTerminal, ODT_MIME, type OrazakaRun, reportOf, type StartAnalysis,type StorageKind } from "@yomizaka/core";
 
 import { refundFailedAudit } from "./billing";
 import { query } from "./db";
@@ -15,7 +15,7 @@ import type { DocumentStore } from "./storage/port";
  * words a search should find in it). Yomizaka adds no verdict of its own.
  */
 /** What the authenticity Studio examines as a file (document-authenticity 1.3.0 reads PDF, images and office files; a photo document is read at upload instead, ADR-0010). */
-const AUTHENTICITY_TYPES: ReadonlySet<string> = new Set(["application/pdf", DOCX_MIME]);
+const AUTHENTICITY_TYPES: ReadonlySet<string> = new Set(["application/pdf", DOCX_MIME, ODT_MIME]);
 
 export function runInputs(request: StartAnalysis, doc: { mimeType: string; text: string; content: Buffer }, today = new Date()): Record<string, string> {
   if (request.studio === "compliance-check") {
