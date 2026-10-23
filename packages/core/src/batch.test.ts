@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { BATCH_TEMPLATE, detectDelimiter, matchBatchFiles, parseCsv, readBatchManifest } from "./batch";
+import { BATCH_ITEM_STATES, BATCH_TEMPLATE, detectDelimiter, matchBatchFiles, parseCsv, readBatchManifest, writeBatchManifest } from "./batch";
 
 describe("a batch manifest (yomizaka#232)", () => {
   it("reads RFC 4180: quotes, doubled quotes, separators and line breaks inside quotes, CRLF, a BOM", () => {
@@ -55,5 +55,19 @@ describe("a batch manifest (yomizaka#232)", () => {
     const { rows, unnamedFiles } = matchBatchFiles(m, ["bail.pdf", "extra.jpg"]);
     expect(rows.map((r) => r.errors)).toEqual([[], ["FILE_NOT_SENT"]]);
     expect(unnamedFiles).toEqual(["extra.jpg"]);
+  });
+
+  it("writes a manifest the parser reads back to the same rows, names with commas and quotes included", () => {
+    const text = writeBatchManifest([
+      { file: "bail, Dupont.pdf", check: "compliance", reference: 'LOC "12"' },
+      { file: "talon.pdf", check: "authenticite" },
+    ]);
+    const m = readBatchManifest(text);
+    expect(m.missingColumns).toEqual([]);
+    expect(m.rows.map((r) => [r.file, r.request?.studio, r.reference, r.errors])).toEqual([
+      ["bail, Dupont.pdf", "compliance-check", 'LOC "12"', []],
+      ["talon.pdf", "document-authenticity", null, []],
+    ]);
+    expect(BATCH_ITEM_STATES).toEqual(["pending", "reused", "running", "done", "failed", "refused"]);
   });
 });

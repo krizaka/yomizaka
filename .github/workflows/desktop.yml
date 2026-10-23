@@ -1,0 +1,31 @@
+# The Mac app (apps/desktop): the org's reusable Tauri pipeline (krizaka/.github tauri-macos.yml, ADR-005). The checks run on
+# every pull request that touches the app or the contracts it reads; a `desktop-v*` tag builds the arm64 .dmg and attaches it
+# to the release (signed and notarised once the Apple secrets exist).
+name: Desktop
+
+on:
+  pull_request:
+    paths:
+      - "apps/desktop/**"
+      - "packages/client/**"
+      - "packages/core/**"
+      - ".github/workflows/desktop.yml"
+  push:
+    tags: ["desktop-v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  desktop:
+    permissions:
+      contents: write
+    uses: krizaka/.github/.github/workflows/tauri-macos.yml@eebba5e6e80145b0892af1742b5c09aa3d1560eb # main
+    with:
+      working-directory: apps/desktop
+      product-name: Yomizaka
+    secrets: inherit
