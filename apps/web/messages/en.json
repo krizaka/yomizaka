@@ -1651,5 +1651,24 @@
         "body": "Keep a library in a folder on your Mac, drag documents in from Finder. Your documents never leave the folder."
       }
     }
+  },
+  "demo": {
+    "eric": {
+      "persona": "Éric, property manager (fictitious demo data)",
+      "collections": {
+        "rosemont": {
+          "name": "Rosemont building",
+          "description": "Leases and the maintenance contract of the Rosemont building — fictitious specimen documents, some with flaws for the checks to find."
+        },
+        "villeray": {
+          "name": "Candidates — 4½ Villeray",
+          "description": "Pay stubs, bank statements and employment letters of the candidates for the 4½ in Villeray — fictitious specimen documents."
+        },
+        "invoices": {
+          "name": "Invoices 2026",
+          "description": "The 2026 maintenance invoices — fictitious specimen documents, one with a wrong total."
+        }
+      }
+    }
   }
 }

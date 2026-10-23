@@ -1651,5 +1651,24 @@
         "body": "Gardez une bibliothèque dans un dossier de votre Mac, glissez-y des documents depuis le Finder. Vos documents ne quittent jamais le dossier."
       }
     }
+  },
+  "demo": {
+    "eric": {
+      "persona": "Éric, gestionnaire d'immeubles (données de démonstration fictives)",
+      "collections": {
+        "rosemont": {
+          "name": "Immeuble Rosemont",
+          "description": "Les baux et le contrat d'entretien de l'immeuble Rosemont — documents spécimens fictifs, certains avec des défauts que les vérifications doivent trouver."
+        },
+        "villeray": {
+          "name": "Candidats — 4½ Villeray",
+          "description": "Relevés de paie, relevés bancaires et lettres d'emploi des candidats au 4½ de Villeray — documents spécimens fictifs."
+        },
+        "invoices": {
+          "name": "Factures 2026",
+          "description": "Les factures d'entretien de 2026 — documents spécimens fictifs, dont une avec un total inexact."
+        }
+      }
+    }
   }
 }
