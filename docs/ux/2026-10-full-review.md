@@ -621,3 +621,11 @@ Base: `https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/ux-review-2026-10/`. 
 
 Audit numbers quoted in section 3 (horizontal overflow, `h1` counts, unnamed buttons, page heights) are in
 `audit.json` at the same base.
+
+## Errata (from the review of this document, 2026-10-23): these override the sections above
+1. **Y1 and Y6:** `/app/verifier/lots` redirects to `/app/verifications?tab=lots` only once Y6 ships the Lots tab. Until then the old address keeps working.
+2. **Y5:** existing document links (`/app/documents/<id>`) keep working. The new tabs (`/rapport`, `/document`, `/historique`) are sub-routes, and the bare address opens « Rapport ». A test covers the old links.
+3. **Public copy (Y9):** no unconditional « hébergé au Canada ». The residency claim follows the storage choice (ADR-0007): Canadian by default, and the customer's own endpoint when they choose one. Say exactly that.
+4. **Public copy (Y9):** don't promise an English report beyond what runs. Today the finding titles and explanations come from Orazaka unchanged, so « report in English » is claimed only for the parts that are translated, until yomizaka#247 ships.
+5. **Labels (Y3, Y5, Y6):** never an unqualified « conforme ». The success chip says what was checked (« Aucun problème trouvé sur les règles vérifiées »), matching `needsAttention()`. A clean result is never a legal certificate.
+6. **Y4:** when a recognised kind starts the run on the drop, the retention and photo-grouping choices are asked **before** the upload (a short step), never after. Otherwise the defaults apply and the user is told which.
