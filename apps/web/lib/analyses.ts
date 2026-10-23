@@ -1,4 +1,4 @@
-import { type Analysis, AUTHENTICITY_MAX_BYTES, COMPLIANCE_MAX_CHARS, fromRunStatus, isTerminal, type OrazakaRun, reportOf, type StartAnalysis,type StorageKind } from "@yomizaka/core";
+import { type Analysis, AUTHENTICITY_MAX_BYTES, COMPLIANCE_MAX_CHARS, DOCX_MIME, fromRunStatus, isTerminal, type OrazakaRun, reportOf, type StartAnalysis,type StorageKind } from "@yomizaka/core";
 
 import { refundFailedAudit } from "./billing";
 import { query } from "./db";
@@ -14,13 +14,16 @@ import type { DocumentStore } from "./storage/port";
  * run id. Reading one asks Orazaka for the run until it is finished, then keeps the report Orazaka returned (and the
  * words a search should find in it). Yomizaka adds no verdict of its own.
  */
+/** What the authenticity Studio examines as a file (document-authenticity 1.3.0 reads PDF, images and office files; a photo document is read at upload instead, ADR-0010). */
+const AUTHENTICITY_TYPES: ReadonlySet<string> = new Set(["application/pdf", DOCX_MIME]);
+
 export function runInputs(request: StartAnalysis, doc: { mimeType: string; text: string; content: Buffer }, today = new Date()): Record<string, string> {
   if (request.studio === "compliance-check") {
     if (!doc.text.trim()) throw refuse(422, "NO_TEXT", "This document has no text layer to check");
     if (doc.text.length > COMPLIANCE_MAX_CHARS) throw refuse(422, "TEXT_TOO_LONG", "This document is longer than the compliance check reads");
     return { document: doc.text, jurisdiction: request.jurisdiction, asOf: request.asOf ?? today.toISOString().slice(0, 10), ...(request.ruleset ? { ruleset: request.ruleset } : {}) };
   }
-  if (doc.mimeType !== "application/pdf") throw refuse(422, "NOT_A_PDF", "The authenticity check reads PDF files");
+  if (!AUTHENTICITY_TYPES.has(doc.mimeType)) throw refuse(422, "NOT_A_PDF", "The authenticity check reads PDF and Word files");
   if (doc.content.length > AUTHENTICITY_MAX_BYTES) throw refuse(422, "PDF_TOO_LARGE", "The authenticity check reads files up to 5 MB");
   return { documentBase64: doc.content.toString("base64"), ...(request.expectedIssuer ? { expectedIssuer: request.expectedIssuer } : {}) };
 }

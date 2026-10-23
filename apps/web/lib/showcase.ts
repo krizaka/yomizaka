@@ -1,4 +1,4 @@
-import { type Analysis, type ComplianceReport, complianceReport } from "@yomizaka/core";
+import { type AcceptedType, type Analysis, type ComplianceReport, complianceReport } from "@yomizaka/core";
 
 import { audit } from "./audit";
 import { query } from "./db";
@@ -18,7 +18,7 @@ export interface Showcase {
   runId: string;
   studioVersion: string | null;
   finishedAt: string;
-  document: { title: string; filename: string; sha256: string; pages: number | null; text: string; mimeType: "application/pdf" | "text/plain" };
+  document: { title: string; filename: string; sha256: string; pages: number | null; text: string; mimeType: AcceptedType };
   report: ComplianceReport;
 }
 
@@ -29,7 +29,7 @@ interface ShowcaseRow extends AnalysisRow {
   d_size_bytes: number;
   d_pages: number | null;
   d_text: string;
-  d_mime_type: "application/pdf" | "text/plain";
+  d_mime_type: AcceptedType;
 }
 
 /** Only the sample documents' promoted, finished compliance checks — the guard every public read goes through. */

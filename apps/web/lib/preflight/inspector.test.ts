@@ -44,9 +44,10 @@ describe("pre-flight: what the bytes are", () => {
     expect(await why(await fx.imageOf("jpeg"), { name: "scan.png", type: "image/png" })).toBe("TYPE_MISMATCH");
     expect(await why(fx.pngWithSize(9000, 9000), { name: "huge.png", type: "image/png" })).toBe("IMAGE_TOO_LARGE");
   });
-  it("recognises Word files but does not accept them", async () => {
+  it("recognises a Word file and accepts it (yomizaka#229); a workspace that allows no Word files still refuses it", async () => {
     expect(sniff(fx.docx())).toBe("docx");
-    expect(await why(fx.docx(), { name: "bail.docx", type: "" })).toBe("UNSUPPORTED_TYPE");
+    expect(await why(fx.docx(), { name: "bail.docx", type: "" })).toBe("accepted");
+    expect(await createInspector({ ...YOMIZAKA_RULES, allowedKinds: ["pdf", "text"] }).inspect(fx.docx(), { name: "bail.docx", type: "" })).toMatchObject({ kind: "rejected", reason: "UNSUPPORTED_TYPE" });
   });
 });
 

@@ -19,7 +19,7 @@ const WORKSPACE = WORKSPACE_SCOPES;
 
 export const PAYMENT_DISPLAY = { test: "test", live: "live" } as const;
 export const AVATAR_SEED_CHOICES = ["v1", "v2", "v3", "v4", "v5", "v6"] as const;
-export const FILE_TYPES = ["pdf", "text", "image"] as const;
+export const FILE_TYPES = ["pdf", "text", "image", "word"] as const;
 
 /** The platform's cap on a file: a limit here can only go down from it. */
 // @fixed: what the pre-flight and the uploads can carry
