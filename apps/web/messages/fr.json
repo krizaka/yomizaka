@@ -531,7 +531,8 @@
       "AVATAR_NOT_ALLOWED": "Cet avatar n'est pas dans la série proposée.",
       "AVATAR_TOO_LARGE": "Cette image est trop lourde pour un avatar.",
       "AVATAR_STORAGE_UNAVAILABLE": "Le stockage des avatars ne répond pas.",
-      "AVATAR_STORAGE_OFF": "Les images d'avatar ne sont pas disponibles ici : choisissez un avatar de la série."
+      "AVATAR_STORAGE_OFF": "Les images d'avatar ne sont pas disponibles ici : choisissez un avatar de la série.",
+      "BATCH_TOO_LARGE": "Ce lot dépasse {limit} lignes : coupez-le en deux."
     },
     "adminConsole": {
       "shell": {
@@ -1171,6 +1172,10 @@
           "avatarSet": {
             "label": "Série d'avatars proposée",
             "hint": "Les avatars de la série que les personnes peuvent choisir."
+          },
+          "batches": {
+            "label": "Lots de vérifications",
+            "hint": "Un CSV et ses fichiers créent plusieurs vérifications d'un coup, avec un aperçu et le coût avant le lancement."
           }
         },
         "limits": {
@@ -1205,6 +1210,14 @@
           "avatarMaxKb": {
             "label": "Taille maximale d'un avatar téléversé",
             "hint": "En Ko, avant que l'image soit recadrée et allégée."
+          },
+          "batchMaxRows": {
+            "label": "Lignes par lot",
+            "hint": "Au-delà, l'aperçu refuse le lot et dit de le couper en deux."
+          },
+          "batchConcurrency": {
+            "label": "Vérifications d'un lot menées en même temps",
+            "hint": "Les autres attendent leur tour ; une ligne en échec n'arrête pas le lot."
           }
         },
         "plans": {

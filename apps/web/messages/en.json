@@ -531,7 +531,8 @@
       "AVATAR_NOT_ALLOWED": "That avatar is not in the offered set.",
       "AVATAR_TOO_LARGE": "This image is too heavy for an avatar.",
       "AVATAR_STORAGE_UNAVAILABLE": "The avatar storage did not answer.",
-      "AVATAR_STORAGE_OFF": "Avatar images are not available here: pick one from the set."
+      "AVATAR_STORAGE_OFF": "Avatar images are not available here: pick one from the set.",
+      "BATCH_TOO_LARGE": "This batch is over {limit} rows: split it in two."
     },
     "adminConsole": {
       "shell": {
@@ -1171,6 +1172,10 @@
           "avatarSet": {
             "label": "Avatar set offered",
             "hint": "The avatars of the set that people may choose."
+          },
+          "batches": {
+            "label": "Batches of checks",
+            "hint": "A CSV and its files create many checks at once, with a preview and the cost before the start."
           }
         },
         "limits": {
@@ -1205,6 +1210,14 @@
           "avatarMaxKb": {
             "label": "Largest uploaded avatar",
             "hint": "In KB, before the image is cropped and made lighter."
+          },
+          "batchMaxRows": {
+            "label": "Rows per batch",
+            "hint": "Above it, the preview refuses the batch and says to split it."
+          },
+          "batchConcurrency": {
+            "label": "A batch's checks run at once",
+            "hint": "The others wait their turn; a failed row never stops the batch."
           }
         },
         "plans": {
