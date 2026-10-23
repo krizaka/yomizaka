@@ -14,7 +14,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { ButtonLink } from "@/components/ButtonLink";
-import { applyCheckFilters, CHECK_PERIODS, CHECK_RESULTS, type CheckFilters, type CheckPeriod, countByPeriod, countByValue, NO_CHECK_FILTERS, readCheckFilters, writeCheckFilters } from "@/lib/check-filters";
+import { applyCheckFilters, CHECK_PERIODS, CHECK_RESULTS, type CheckFilters, type CheckPeriod, countByPeriod, countByValue, type DraftState, FILTER_HISTORY, type FilterHistory, NO_CHECK_FILTERS, readCheckFilters, reconcileDraft, writeCheckFilters } from "@/lib/check-filters";
 import type { CheckSummary } from "@/lib/checks";
 import { runningChecks } from "@/lib/checks-live";
 import { CHECKS_TAB_KEY, CHECKS_TABS, checksTabHref, checksTabOf, CONSOLE_ROUTES } from "@/lib/console-nav";
@@ -58,25 +58,31 @@ function ChecksTable({ rows }: { rows: CheckSummary[] }) {
  * The filters of the list (the UX review's Y6): the search, the result, the kind and the period as menus with their counts, the ones
  * in force as removable chips, the count of results — every one in the address, so a filtered list is a link and back undoes a filter.
  */
-function ChecksFilters({ filters, counts, periods, results, onChange }: { filters: CheckFilters; counts: { result: Record<string, number>; kind: Record<string, number> }; periods: Record<CheckPeriod, number>; results: number; onChange: (next: CheckFilters) => void }) {
+function ChecksFilters({ filters, counts, periods, results, onChange }: { filters: CheckFilters; counts: { result: Record<string, number>; kind: Record<string, number> }; periods: Record<CheckPeriod, number>; results: number; onChange: (next: CheckFilters, history: FilterHistory) => void }) {
   const { say } = useSay();
-  // What is typed, until the address carries it: the field never jumps back while the words travel.
-  const [draft, setDraft] = useState<string | null>(null);
-  const q = draft !== null && draft !== filters.q ? draft : filters.q;
-  const set = (patch: Partial<CheckFilters>) => onChange({ ...filters, ...patch });
+  // What is typed, until the address carries it: the field never jumps back while the words travel, and follows the address when it changes elsewhere.
+  const [state, setState] = useState<DraftState>({ draft: null, pending: filters.q, seen: filters.q });
+  const reconciled = reconcileDraft(state, filters.q);
+  if (reconciled !== state) setState(reconciled);
+  const q = reconciled.draft ?? filters.q;
+  const set = (patch: Partial<CheckFilters>) => onChange({ ...filters, ...patch }, FILTER_HISTORY.chosen);
+  const commit = (value: string, history: FilterHistory) => {
+    setState((s) => ({ ...s, pending: value }));
+    onChange({ ...filters, q: value }, history);
+  };
   const clear = () => {
-    setDraft(null);
-    onChange(NO_CHECK_FILTERS);
+    setState((s) => ({ ...s, draft: null, pending: "" }));
+    onChange(NO_CHECK_FILTERS, FILTER_HISTORY.chosen);
   };
   const active: ActiveFilter[] = [
-    ...(filters.q ? [{ id: "q", label: `${say("checks.filters.search")} : ${filters.q}`, onRemove: () => { setDraft(null); set({ q: "" }); } }] : []),
+    ...(filters.q ? [{ id: "q", label: `${say("checks.filters.search")} : ${filters.q}`, onRemove: () => commit("", FILTER_HISTORY.chosen) }] : []),
     ...filters.result.map((v) => ({ id: `result:${v}`, label: `${say("checks.filters.result")} : ${say(`statuses.${v}`)}`, onRemove: () => set({ result: filters.result.filter((r) => r !== v) }) })),
     ...filters.kind.map((v) => ({ id: `kind:${v}`, label: `${say("checks.filters.kind")} : ${say(`kinds.${v}`)}`, onRemove: () => set({ kind: filters.kind.filter((k) => k !== v) }) })),
     ...(filters.period ? [{ id: "period", label: `${say("checks.filters.period")} : ${say(`checks.filters.periods.${filters.period}`)}`, onRemove: () => set({ period: null }) }] : []),
   ];
   return (
     <FilterBar label={say("checks.filters.label")} active={active} onClearAll={clear} clearLabel={say("checks.filters.clear")} removeLabel={(label) => say("checks.filters.remove", { label })} results={say(pluralKey("checks.results", results), { count: results })} data-testid="checks-filters">
-      <SearchField size="sm" label={say("checks.filters.search")} placeholder={say("checks.filters.search")} clearLabel={say("checks.filters.clearSearch")} value={q} onValueChange={setDraft} onSearch={(v) => set({ q: v })} onSubmit={(v) => set({ q: v })} landmark={false} />
+      <SearchField size="sm" label={say("checks.filters.search")} placeholder={say("checks.filters.search")} clearLabel={say("checks.filters.clearSearch")} value={q} onValueChange={(v) => setState((s) => ({ ...s, draft: v }))} onSearch={(v) => commit(v, FILTER_HISTORY.typed)} onSubmit={(v) => commit(v, FILTER_HISTORY.chosen)} landmark={false} />
       <FilterMenu label={say("checks.filters.result")} options={CHECK_RESULTS.map((v) => ({ value: v, label: say(`statuses.${v}`), count: counts.result[v] ?? 0 }))} value={filters.result} onValueChange={(v) => set({ result: v as DocumentStatus[] })} />
       <FilterMenu label={say("checks.filters.kind")} options={DOCUMENT_KINDS.map((v) => ({ value: v, label: say(`kinds.${v}`), count: counts.kind[v] ?? 0 }))} value={filters.kind} onValueChange={(v) => set({ kind: v as DocumentKind[] })} />
       <FilterMenu label={say("checks.filters.period")} multiple={false} options={CHECK_PERIODS.map((p) => ({ value: p, label: say(`checks.filters.periods.${p}`), count: periods[p] }))} value={filters.period ?? ""} onValueChange={(v) => set({ period: CHECK_PERIODS.find((p) => p === v) ?? null })} />
@@ -142,7 +148,7 @@ export function ChecksView({ checks, batches, now }: { checks: CheckSummary[]; b
         <BatchImport />
       ) : checks.length ? (
         <>
-          <ChecksFilters filters={filters} counts={counts} periods={periods} results={rows.length} onChange={(next) => router.replace(hrefWith(next), { scroll: false })} />
+          <ChecksFilters filters={filters} counts={counts} periods={periods} results={rows.length} onChange={(next, history) => router[history](hrefWith(next), { scroll: false })} />
           {rows.length ? (
             <ChecksTable rows={rows} />
           ) : (

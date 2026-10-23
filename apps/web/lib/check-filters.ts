@@ -1,7 +1,8 @@
 import { readFilterParams, writeFilterParams } from "@krizaka/ui/filter-bar";
 import { DOCUMENT_KINDS, DOCUMENT_STATUSES, type DocumentKind, type DocumentStatus } from "@yomizaka/core";
-import { isBefore, startOfYear, subDays } from "date-fns";
+import { differenceInMinutes, isBefore, subHours, subMinutes } from "date-fns";
 
+import { DISPLAY_TIME_ZONE } from "@/components/console/format";
 import type { CheckSummary } from "@/lib/checks";
 
 /** The filters of the Vérifications list, each a key in the address (`?q=bail&result=attention,failed&kind=lease&period=30d`) — the URL is the state (§ 7). */
@@ -40,10 +41,49 @@ export function writeCheckFilters(base: URLSearchParams, filters: CheckFilters):
 
 export const hasCheckFilters = (f: CheckFilters): boolean => f.q.length > 0 || f.result.length > 0 || f.kind.length > 0 || f.period !== null;
 
-/** When a period starts, from `now`: the last 7 or 30 days, or this year. */
-export function periodStart(period: CheckPeriod, now: Date): Date {
-  return period === "year" ? startOfYear(now) : subDays(now, period === "7d" ? 7 : 30);
+const HOURS_IN_DAY = 24;
+
+/** The minutes a zone is ahead of UTC at an instant (Intl only, no library). */
+function offsetMinutes(zone: string, at: Date): number {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-CA", { timeZone: zone, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" })
+      .formatToParts(at)
+      .filter((p) => p.type !== "literal")
+      .map((p) => [p.type, Number(p.value)]),
+  ) as Record<"year" | "month" | "day" | "hour" | "minute" | "second", number>;
+  return differenceInMinutes(new Date(Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second)), at);
 }
+
+/** The first instant of `now`'s year in a zone — the console's (America/Toronto) on both sides, so the server and the browser keep the same rows. */
+function startOfYearIn(zone: string, now: Date): Date {
+  const year = Number(new Intl.DateTimeFormat("en-CA", { timeZone: zone, year: "numeric" }).format(now));
+  const guess = new Date(Date.UTC(year, 0, 1));
+  return subMinutes(guess, offsetMinutes(zone, guess));
+}
+
+/** When a period starts, from `now`: the last 7 or 30 days (instants — no local calendar, no DST shift), or this year in the console's zone. */
+export function periodStart(period: CheckPeriod, now: Date, zone = DISPLAY_TIME_ZONE): Date {
+  return period === "year" ? startOfYearIn(zone, now) : subHours(now, HOURS_IN_DAY * (period === "7d" ? 7 : 30));
+}
+
+/** The search field's draft against the address: our own commit landing retires the draft unless a newer edit is in flight; a change made elsewhere (a chip, « Effacer », back) replaces it. */
+export interface DraftState {
+  /** What is typed and not yet in the address; null when the field shows the address. */
+  draft: string | null;
+  /** The last query we committed to the address. */
+  pending: string;
+  /** The last query the address gave us. */
+  seen: string;
+}
+export function reconcileDraft(state: DraftState, q: string): DraftState {
+  if (q === state.seen) return state;
+  if (q === state.pending) return { ...state, seen: q, draft: state.draft === q ? null : state.draft };
+  return { draft: null, pending: q, seen: q };
+}
+
+/** How a filter change enters the history: a choice (a menu, a chip, « Effacer ») is a step Back undoes; typing is one act, replaced as it goes. */
+export const FILTER_HISTORY = { chosen: "push", typed: "replace" } as const;
+export type FilterHistory = (typeof FILTER_HISTORY)[keyof typeof FILTER_HISTORY];
 
 /** Text without its accents and case, for the search (« Dépôt » matches « depot »). */
 const fold = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();

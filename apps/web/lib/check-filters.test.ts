@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { applyCheckFilters, countByPeriod, countByValue, hasCheckFilters, NO_CHECK_FILTERS, periodStart, readCheckFilters, writeCheckFilters } from "./check-filters";
+import { applyCheckFilters, countByPeriod, countByValue, FILTER_HISTORY, hasCheckFilters, NO_CHECK_FILTERS, periodStart, readCheckFilters, reconcileDraft, writeCheckFilters } from "./check-filters";
 import type { CheckSummary } from "./checks";
 
 const NOW = new Date("2026-10-30T12:00:00.000Z");
@@ -23,11 +23,23 @@ describe("the filters of the Vérifications list live in the address (the UX rev
     expect(writeCheckFilters(new URLSearchParams("q=x&result=failed"), NO_CHECK_FILTERS).toString()).toBe("");
   });
 
-  it("a period starts 7 or 30 days before now, or on the first of the year", () => {
+  it("a period starts 7 or 30 days of instants before now, or on the first of the year in the console's zone — the same on a UTC server and in a Montréal browser", () => {
     expect(periodStart("7d", NOW).toISOString()).toBe("2026-10-23T12:00:00.000Z");
     expect(periodStart("30d", NOW).toISOString()).toBe("2026-09-30T12:00:00.000Z");
-    expect(periodStart("year", NOW).getFullYear()).toBe(2026);
-    expect(periodStart("year", NOW).getMonth()).toBe(0);
+    expect(periodStart("year", NOW).toISOString()).toBe("2026-01-01T05:00:00.000Z");
+    expect(periodStart("year", new Date("2027-01-01T03:00:00.000Z")).toISOString()).toBe("2026-01-01T05:00:00.000Z");
+    expect(periodStart("year", NOW, "UTC").toISOString()).toBe("2026-01-01T00:00:00.000Z");
+    expect(periodStart("year", NOW, "Asia/Tokyo").toISOString()).toBe("2025-12-31T15:00:00.000Z");
+  });
+
+  it("the search field's draft follows the address without losing an edit in flight; a choice is a history step, typing is not", () => {
+    const typed = { draft: "ba", pending: "ba", seen: "" };
+    expect(reconcileDraft(typed, "")).toBe(typed);
+    expect(reconcileDraft(typed, "ba")).toEqual({ draft: null, pending: "ba", seen: "ba" });
+    expect(reconcileDraft({ draft: "bai", pending: "ba", seen: "" }, "ba")).toEqual({ draft: "bai", pending: "ba", seen: "ba" });
+    expect(reconcileDraft({ draft: "bai", pending: "ba", seen: "ba" }, "")).toEqual({ draft: null, pending: "", seen: "" });
+    expect(reconcileDraft({ draft: null, pending: "", seen: "" }, "x")).toEqual({ draft: null, pending: "x", seen: "x" });
+    expect(FILTER_HISTORY).toEqual({ chosen: "push", typed: "replace" });
   });
 
   it("keeps the rows whose title holds every word (accents and case aside), whose result, kind and period match", () => {

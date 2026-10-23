@@ -264,7 +264,8 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
   (`?q=&result=&kind=&period=`, `lib/check-filters.ts`): a filtered list is a link, back undoes a filter, a stale value
   is dropped. Filters that keep nothing say « Aucune vérification ne correspond » and offer « Effacer les filtres » (the
   plain address); the owl's « Aucune vérification encore » stays for an account with no check. The periods read the
-  server's `now`, so both sides agree.
+  server's `now` in the console's zone (America/Toronto, as every date shown), so the server and the browser keep the
+  same rows; a choice (a menu, a chip, « Effacer ») is a history step Back undoes, typing is replaced as it goes.
 - **Problem**: up to 500 checks and no way in but the table's own text filter; a result could not be shared as a link.
 - **Principle**: the URL is the state (§ 7); the count before the click.
 - **Refused**: the `DataTable`'s column filters (not in the address, no period); a date picker (three periods answer

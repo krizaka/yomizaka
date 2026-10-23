@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 import { KrizakaQueryProvider } from "@krizaka/query";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
@@ -109,6 +111,13 @@ describe("the filters of the list live in the address (the UX review's Y6)", () 
     expect(text).not.toContain("logement 2");
     expect(text).toContain(`${fr.console.checks.filters.period} : ${fr.console.checks.filters.periods["7d"]}`);
     nav.search = "";
+  });
+  it("a choice is a history step Back undoes, typing is replaced as it goes; the field's draft is reconciled with the address", () => {
+    const view = readFileSync(new URL("./ChecksView.tsx", import.meta.url), "utf8");
+    expect(view).toContain("router[history](hrefWith(next)");
+    expect(view).toContain("onSearch={(v) => commit(v, FILTER_HISTORY.typed)}");
+    expect(view).toContain("onSubmit={(v) => commit(v, FILTER_HISTORY.chosen)}");
+    expect(view).toContain("reconcileDraft(state, filters.q)");
   });
   it("with filters that keep nothing: says so and offers to clear them — back to the plain address; the owl stays for « no check yet »", () => {
     nav.search = "q=introuvable&tab=checks";
