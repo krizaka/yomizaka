@@ -5,7 +5,8 @@
   "description": "Yomizaka's contracts: the zod schemas the API answers with and the web reads, and the query keys.",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./document-store/contract": "./src/document-store.contract.ts"
   },
   "scripts": {
     "lint": "tsc --noEmit -p tsconfig.json",
