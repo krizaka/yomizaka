@@ -78,7 +78,31 @@
       "runLabel": "Run id",
       "dateLabel": "Recorded",
       "rulesetLabel": "Québec rules",
-      "powered": "Powered by Orazaka."
+      "powered": "Powered by Orazaka.",
+      "owlLabel": "What the owl promises"
+    },
+    "eyebrow": "Québec · leases, contracts, invoices",
+    "proofs": {
+      "rules": "rules checked",
+      "articles": "articles of law cited",
+      "findings": "findings on this sample lease"
+    },
+    "who": {
+      "title": "For whom",
+      "items": {
+        "tenant": "Tenants",
+        "landlord": "Landlords",
+        "freelancer": "Self-employed workers",
+        "business": "Small businesses"
+      }
+    },
+    "closing": {
+      "title": "One document, one answer.",
+      "body": "Sign in to check a document. Your documents stay in Canada, visible to your account only."
+    },
+    "visual": {
+      "window": "www.yomizaka.com",
+      "caption": "A real check, recorded as it came back"
     }
   },
   "run": {

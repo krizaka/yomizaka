@@ -23,7 +23,7 @@ export default async function Download({ params }: { params: Promise<{ locale: s
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
       <SiteHeader locale={locale} current="download" />
-      <main id="content" className="pt-20">
+      <main id="content">
         <PageHero back={{ href: pagePath(locale, "home"), label: t.meta.siteName }} linkAs={Link} title={t.download.title} backdrop="plain" lead={t.download.lead} />
         <Page>
           <Section>

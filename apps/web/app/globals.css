@@ -23,3 +23,17 @@ body {
   border-radius: 2px;
   scroll-margin-top: 6rem;
 }
+
+/* One frame for the public pages (the UX review's F6): the fixed bar sits 12 px from the top and is 56 px tall; the page and every
+   PageHero start 24 px under it. */
+:root {
+  --kz-hero-top: 5.75rem;
+}
+/* The landing (LandingPage draws its own hero, without the PageHero's offset): the page starts under the bar, and the menu's
+   anchor inside the features' heading clears the bar when followed. */
+main[data-landing] {
+  padding-top: var(--kz-hero-top);
+}
+main[data-landing] [id="what"] {
+  scroll-margin-top: var(--kz-anchor-offset, 96px);
+}

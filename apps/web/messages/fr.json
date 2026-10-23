@@ -78,7 +78,31 @@
       "runLabel": "Numéro d'exécution",
       "dateLabel": "Enregistrée le",
       "rulesetLabel": "Règles du Québec",
-      "powered": "Propulsé par Orazaka."
+      "powered": "Propulsé par Orazaka.",
+      "owlLabel": "Ce que la chouette promet"
+    },
+    "eyebrow": "Québec · baux, contrats, factures",
+    "proofs": {
+      "rules": "règles vérifiées",
+      "articles": "articles de loi cités",
+      "findings": "constats sur ce bail d'exemple"
+    },
+    "who": {
+      "title": "Pour qui",
+      "items": {
+        "tenant": "Locataires",
+        "landlord": "Propriétaires",
+        "freelancer": "Travailleurs autonomes",
+        "business": "Petites entreprises"
+      }
+    },
+    "closing": {
+      "title": "Un document, une réponse.",
+      "body": "Connectez-vous pour vérifier un document. Vos documents restent au Canada, visibles par votre seul compte."
+    },
+    "visual": {
+      "window": "www.yomizaka.com",
+      "caption": "Une vraie vérification, enregistrée telle qu'elle est revenue"
     }
   },
   "run": {

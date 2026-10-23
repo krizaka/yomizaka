@@ -17,6 +17,7 @@ pnpm run seo:check
 node scripts/sync-brand-icons.mjs --check
 # Responsive guard: no horizontal overflow at 360-1440 px in both themes, chips of at least 44 px.
 pnpm run check:overflow -- --base http://localhost:3000
+node scripts/check-home-first-screen.mjs --base http://localhost:3000
 test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:3000/api/auth/sign-up)" = "403"
 # The signed-in pages, rendered as the seeded persona Éric (the demo data set of scripts/demo-seed, CI-only credentials, never a
 # real account): exactly one h1 each, no horizontal overflow at 360-1440 px, the header's action on screen, no unnamed button.

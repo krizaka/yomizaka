@@ -21,7 +21,7 @@ export default async function Privacy({ params }: { params: Promise<{ locale: st
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
       <SiteHeader locale={locale} current="privacy" />
-      <main id="content" className="pt-20">
+      <main id="content">
         <PageHero back={{ href: pagePath(locale, "home"), label: t.meta.siteName }} linkAs={Link} title={t.privacy.title} backdrop="plain" lead={format(t.privacy.updated, { date: PRIVACY_UPDATED })} />
         <Page>
           <p className="max-w-3xl text-base leading-relaxed text-fg-secondary">{t.privacy.body}</p>
