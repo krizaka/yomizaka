@@ -1,3 +1,5 @@
+import { randomBytes } from "node:crypto";
+
 import { ACCEPTED_TYPES, ODT_MIME } from "@yomizaka/core";
 import { describe, expect, it } from "vitest";
 
@@ -59,6 +61,18 @@ describe("an OpenDocument text file (yomizaka#229)", () => {
       { name: "content.xml", data: Buffer.from("<office:document-content><office:scripts/><text:p>Lease</text:p></office:document-content>") },
     ]);
     expect(await inspector.inspect(empty, { name: "bail.odt", type: MIME })).toMatchObject({ kind: "accepted", fileKind: "odt" });
+  });
+
+  it("fails closed when the main XML cannot be inspected within its bound", async () => {
+    const bytes = Buffer.from(zipOf([
+      { name: "content.xml", data: randomBytes(256 * 1024) },
+      { name: "mimetype", data: Buffer.from(MIME), stored: true },
+    ]));
+    const directory = bytes.readUInt32LE(bytes.length - 6);
+    bytes.writeUInt32LE(21 * 1024 * 1024, directory + 24);
+    expect(await createInspector(YOMIZAKA_RULES).inspect(bytes, { name: "bail.odt", type: MIME })).toMatchObject({ kind: "rejected", reason: "CORRUPT" });
+    const missing = zipOf([{ name: "mimetype", data: Buffer.from(MIME), stored: true }]);
+    expect(await createInspector(YOMIZAKA_RULES).inspect(missing, { name: "bail.odt", type: MIME })).toMatchObject({ kind: "rejected", reason: "CORRUPT" });
   });
 
   it("reads headings, paragraphs, spans, tabs, breaks and entities, without layout whitespace", () => {

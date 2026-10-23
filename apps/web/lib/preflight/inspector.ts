@@ -158,7 +158,8 @@ export function createInspector(rules: PreflightRules): DocumentPreflight {
       if (!rules.allowedKinds.includes(detected)) return reject("UNSUPPORTED_TYPE", detected);
       if (detected === "odt") {
         const xml = zipEntryBytes(bytes, "content.xml", MAX_OFFICE_PART_BYTES)?.toString("utf8");
-        if (xml && /<(?:[\w.-]+:)?(?:script|event-listener)(?=[\s/>])/i.test(xml)) return reject("ACTIVE_CONTENT");
+        if (xml === undefined) return reject("CORRUPT");
+        if (/<(?:[\w.-]+:)?(?:script|event-listener)(?=[\s/>])/i.test(xml)) return reject("ACTIVE_CONTENT");
       }
       const sha256 = crypto.createHash("sha256").update(bytes).digest("hex");
 
