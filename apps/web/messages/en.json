@@ -547,7 +547,8 @@
       "FAILED": "The check did not complete.",
       "CANCELLED": "The check was cancelled.",
       "REFUSED": "Row refused.",
-      "ORAZAKA_BUSY": "Orazaka is busy right now. The batch goes on by itself as soon as it has room."
+      "ORAZAKA_BUSY": "Orazaka is busy right now. The batch goes on by itself as soon as it has room.",
+      "EXPORT_TOO_LARGE": "The reports of this batch are too heavy for one archive: export fewer rows."
     },
     "adminConsole": {
       "shell": {
@@ -1253,6 +1254,10 @@
           "webhookMaxAttempts": {
             "label": "Tries per webhook delivery",
             "hint": "The first one included; after the last the delivery is given up and stays in the log. The waits grow from 30 seconds to 12 hours."
+          },
+          "batchExportMaxMb": {
+            "label": "Heaviest ZIP of a batch's reports",
+            "hint": "Above it the export is refused and says to export fewer rows; the rows are never cut silently."
           }
         },
         "plans": {
@@ -1405,7 +1410,9 @@
         "failed": "Failed",
         "refused": "Refused"
       },
-      "engineBusy": "Orazaka is busy with other checks: the remaining rows wait their turn and start by themselves. Nothing to do."
+      "engineBusy": "Orazaka is busy with other checks: the remaining rows wait their turn and start by themselves. Nothing to do.",
+      "exportReadme": "Yomizaka — reports of a batch of checks.\n\nlot.csv lists every row: its state, the reason when it did not run, and its file here.\nrapports/ holds the signed PDF of each compliance check.\nsignaux/ holds the signals of each authenticity check, as Orazaka returned them.\n\nThese are informative checks, not legal advice. To verify a signed report, sign in to Yomizaka and open https://www.yomizaka.com/verify (only the people the report's owner gave access to can).\nThe Québec rules are still to be reviewed by a lawyer.\n",
+      "exportZip": "Reports (ZIP)"
     }
   },
   "report": {

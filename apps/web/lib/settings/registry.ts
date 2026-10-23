@@ -63,6 +63,8 @@ export const SETTINGS = {
   "limits.batchTickBatches": integer(GROUP.limits, 10, { min: 1, max: 100, unit: "batches" }),
   /** Tries before a webhook delivery is given up (the first included); the waits grow from 30 s to 12 h. */
   "limits.webhookMaxAttempts": integer(GROUP.limits, 6, { min: 1, max: 12, unit: "tries" }),
+  /** The heaviest ZIP of a batch's reports the server will build (yomizaka#242). */
+  "limits.batchExportMaxMb": integer(GROUP.limits, 50, { min: 1, max: 200, unit: "MB" }),
   "limits.avatarMaxKb": integer(GROUP.limits, 512, { min: 16, max: 2048, unit: "KB" }),
   "limits.bonusAuditsPerMonth": integer(GROUP.limits, 0, { min: 0, max: 10000, unit: "audits" }, [SCOPE.user]),
   // Plans: what each plan includes (prices stay in Stripe).

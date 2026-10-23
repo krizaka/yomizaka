@@ -114,6 +114,16 @@ export function openApiDocument(serverUrl: string) {
           responses: { "200": { description: "The batch.", content: json({ type: "object", properties: { batch: ref("Batch") } }) }, "404": failure("`NOT_FOUND`."), ...COMMON },
         },
       },
+      "/api/v1/batches/{id}/export": {
+        get: {
+          operationId: "exportBatch",
+          summary: "The reports of a batch in one ZIP",
+          description: "`lot.csv` (each row's state, reason and file), `rapports/` (the signed PDF of every compliance row that has a report, in `lang`), `signaux/` (the signals of every authenticity row), `LISEZ-MOI.txt`. A row whose report cannot be issued is listed with its reason. Too heavy an archive is refused (`EXPORT_TOO_LARGE`).",
+          security: secured(READ),
+          parameters: [id, { name: "lang", in: "query", required: false, schema: { type: "string", enum: ["fr", "en"], default: "fr" } }],
+          responses: { "200": { description: "The archive.", content: { "application/zip": { schema: { type: "string", format: "binary" } } } }, "404": failure("`NOT_FOUND`."), "413": failure("`EXPORT_TOO_LARGE`: export fewer rows."), ...COMMON },
+        },
+      },
       "/api/v1/openapi.json": {
         get: { operationId: "getOpenApi", summary: "This document", security: [], responses: { "200": { description: "The OpenAPI 3.1 document.", content: json({ type: "object" }) } } },
       },
