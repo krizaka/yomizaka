@@ -30,10 +30,19 @@ describe("APP_SEARCH_INDEXING — one flag closes a deployment to search engines
     }
   });
 
-  it("on: nothing is closed on the product host", async () => {
+  it("on: the public host is open; a dev.* host is closed anyway, even without APP_DEV_HOST (krizaka/yomizaka#239)", async () => {
     vi.stubEnv("APP_SEARCH_INDEXING", "on");
-    const res = await ask("https://dev.yomizaka.com/en", "dev.yomizaka.com");
-    expect(res.headers.get("x-robots-tag")).toBeNull();
+    vi.stubEnv("APP_DEV_HOST", "");
+    const www = await ask("https://www.yomizaka.com/en", "www.yomizaka.com");
+    expect(www.headers.get("x-robots-tag")).toBeNull();
+    expect(indexableOn("www.yomizaka.com")).toBe(true);
+    for (const host of ["dev.yomizaka.com", "dev.example.test"]) {
+      expect(indexableOn(host), host).toBe(false);
+      const res = await ask(`https://${host}/en`, host);
+      expect(res.headers.get("x-robots-tag"), host).toBe(NOINDEX_HEADER);
+      expect(await (await ask(`https://${host}/robots.txt`, host)).text(), host).toBe(CLOSED_ROBOTS);
+      expect((await ask(`https://${host}/sitemap.xml`, host)).status, host).toBe(404);
+    }
   });
 
   it("the console host is closed whatever the flag, redirects included", async () => {
@@ -55,7 +64,8 @@ describe("the public host is indexed, the dev host never (epic krizaka/.github#1
     expect(indexableOn("dev.yomizaka.com", ENV)).toBe(false);
     expect(indexableOn("admin.yomizaka.com", ENV)).toBe(false);
     expect(indexableOn("anything.test", ENV)).toBe(false);
-    expect(indexableOn("dev.yomizaka.com", { APP_SEARCH_INDEXING: "on" })).toBe(true);
+    expect(indexableOn("dev.yomizaka.com", { APP_SEARCH_INDEXING: "on" })).toBe(false);
+    expect(indexableOn("www.yomizaka.com", { APP_SEARCH_INDEXING: "on" })).toBe(true);
   });
 
   it("the dev host is the one APP_DEV_HOST names", () => {

@@ -61,7 +61,7 @@
 - Environment variables are named by bounded context (`APP_`, `DATABASE_`, `AUTH_`, `ABUSE_`, `AI_`), never by product or
   vendor; each is declared once in `apps/web/lib/env.ts`.
 
-- **The live DO spec must equal `deploy/digitalocean/dev.app.yaml`** (the repository is the intent; `doctl apps update` is not run by CI). The sitemap was a 404 on dev because the live app still had `APP_SEARCH_INDEXING=off` while the file said `on`: after any spec change, run `node scripts/check-seo-family.mjs --base https://dev.yomizaka.com --host https://dev.yomizaka.com`.
+- **The live DO spec must equal `deploy/digitalocean/dev.app.yaml`** (the repository is the intent; `doctl apps update` is not run by CI). The sitemap was a 404 because the live app still had `APP_SEARCH_INDEXING=off` while the file said `on`: after any spec change, run `node scripts/check-seo-family.mjs --base https://www.yomizaka.com --host https://www.yomizaka.com`. **`dev.*` is never indexed** (www is production; dev redirects to it today and becomes a separate dev environment later): `indexableOn` is false for any `dev.*` host, tested in `lib/indexing.test.ts`.
 
 ## 5. Storage and cost
 

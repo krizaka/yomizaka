@@ -33,7 +33,7 @@ describe("sitemap.xml", () => {
 });
 
 describe("the proxy serves /sitemap.xml and /robots.txt only when the deployment is indexed", () => {
-  const ask = (path: string) => proxy(new NextRequest(`https://dev.yomizaka.com${path}`, { headers: { host: "dev.yomizaka.com" } }));
+  const ask = (path: string, host = "www.yomizaka.com") => proxy(new NextRequest(`https://${host}${path}`, { headers: { host } }));
   const before = process.env.APP_SEARCH_INDEXING;
   const restore = () => (before === undefined ? delete process.env.APP_SEARCH_INDEXING : (process.env.APP_SEARCH_INDEXING = before));
 
@@ -48,11 +48,22 @@ describe("the proxy serves /sitemap.xml and /robots.txt only when the deployment
     }
   });
 
+  it("on: a dev.* host never serves it (krizaka/yomizaka#239)", async () => {
+    process.env.APP_SEARCH_INDEXING = "on";
+    try {
+      const res = ask("/sitemap.xml", "dev.yomizaka.com");
+      expect(res.status).toBe(404);
+      expect(res.headers.get("x-robots-tag")).toContain("noindex");
+    } finally {
+      restore();
+    }
+  });
+
   it("off: answers 404 and a closed robots.txt", async () => {
     process.env.APP_SEARCH_INDEXING = "off";
     try {
-      expect(ask("/sitemap.xml").status).toBe(404);
-      expect(await ask("/robots.txt").text()).toContain("Disallow: /");
+      expect(ask("/sitemap.xml", "staging.example.test").status).toBe(404);
+      expect(await ask("/robots.txt", "staging.example.test").text()).toContain("Disallow: /");
     } finally {
       restore();
     }

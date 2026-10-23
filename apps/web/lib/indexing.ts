@@ -23,8 +23,10 @@ export const publicHost = (env: Record<string, string | undefined> = process.env
     return "";
   }
 };
+/** A `dev.*` address is never indexed (krizaka/yomizaka#239), whatever the flag and whether or not APP_DEV_HOST names it. */
+const isDevName = (host: string | null | undefined) => bare(host).startsWith("dev.");
 /** Whether a response to this host may be indexed. */
-export const indexableOn = (host: string | null | undefined, env: Record<string, string | undefined> = process.env): boolean => indexable(env) || bare(host) === publicHost(env);
+export const indexableOn = (host: string | null | undefined, env: Record<string, string | undefined> = process.env): boolean => !isDevName(host) && (indexable(env) || bare(host) === publicHost(env));
 export const isDevHost = (host: string | null | undefined, env: Record<string, string | undefined> = process.env): boolean => !!env.APP_DEV_HOST?.trim() && bare(host) === bare(env.APP_DEV_HOST);
 
 /** What the dev host keeps serving: robots.txt, /healthz, the API (auth callbacks, webhooks, the mobile apps' calls) and /.well-known. */
