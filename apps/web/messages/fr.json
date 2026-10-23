@@ -13,7 +13,6 @@
       "privacy": "Confidentialité"
     },
     "signIn": "Se connecter",
-    "talk": "Nous parler",
     "themeToggle": "Thème",
     "languageLabel": "Langue",
     "footerLabel": "Pied de page",
@@ -27,7 +26,12 @@
     },
     "version": "v{version}",
     "terms": "Conditions",
-    "download": "Télécharger"
+    "download": "Télécharger",
+    "openApp": "Ouvrir l'app",
+    "tryIt": "Essayer Yomizaka",
+    "account": "Compte",
+    "settings": "Réglages",
+    "signOut": "Se déconnecter"
   },
   "landing": {
     "title": "Lisez avant de signer.",

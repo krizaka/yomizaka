@@ -163,3 +163,17 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
 - **Cost**: the invoice, contract and landlord recordings are no longer shown (the landlord's stays in the repository for
   the recording script); a role's pitch lives in one line of the home.
 - **Signal we are wrong**: invited users ask where the landlord or freelancer pages went.
+
+## 10. One product bar: use the app first, and the signed-in person always visible
+
+- **Decision** (2026-10-23, krizaka/yomizaka#243, krizaka-ui#505): the bar's primary action is using the app —
+  « Sign in » while sign-up is closed, « Try Yomizaka » (then « Sign in » beside it) once the product's own setting opens it,
+  « Open the app » and the avatar when signed in (`ProductBarActions` of `@krizaka/ui/nav-bar`). « Talk to us » is gone from
+  the bar and the mobile panel; Contact stays in the footer. The public pages stay static: a client island asks
+  `/api/me` (401 = signed out) and `/api/auth/sign-up/status` through `@krizaka/query`. The result only changes what is
+  shown; the app and the API check the real session on every request (`lib/gate.test.ts`). In the app the account menu
+  (avatar, name, e-mail, settings, theme, language, sign out) is in the header on every width.
+- **Problem**: a signed-in person on the home saw « Sign in »; the bar pushed a sales call before the product.
+- **Refused**: a hint cookie (a second source of truth that can lie); the account at the rail's foot (it adds an empty
+  column to the phone's tab bar until the rail counts hidden children).
+- **Signal we are wrong**: the avatar flashes « Sign in » visibly before the island answers.

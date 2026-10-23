@@ -13,7 +13,6 @@
       "privacy": "Privacy"
     },
     "signIn": "Sign in",
-    "talk": "Talk to us",
     "themeToggle": "Theme",
     "languageLabel": "Language",
     "footerLabel": "Site footer",
@@ -27,7 +26,12 @@
     },
     "version": "v{version}",
     "terms": "Terms",
-    "download": "Download"
+    "download": "Download",
+    "openApp": "Open the app",
+    "tryIt": "Try Yomizaka",
+    "account": "Account",
+    "settings": "Settings",
+    "signOut": "Sign out"
   },
   "landing": {
     "title": "Read before you sign.",

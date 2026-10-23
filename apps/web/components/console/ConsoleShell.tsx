@@ -5,7 +5,7 @@ import { krizakaFetch, useMutation } from "@krizaka/query";
 import { YomizakaLogo } from "@krizaka/ui";
 import { AccountMenu } from "@krizaka/ui/account-menu";
 import { AppHeader } from "@krizaka/ui/app-header";
-import { languagesFor, LanguageSwitch } from "@krizaka/ui/language-switch";
+import { languagesFor } from "@krizaka/ui/language-switch";
 import { RailNav } from "@krizaka/ui/rail-nav";
 import { ThemeToggle } from "@krizaka/ui/theme";
 import Link from "next/link";
@@ -36,6 +36,33 @@ export function ConsoleShell({ locale, email, name, avatarSeed, role, children }
       router.refresh();
     },
   });
+  // The signed-in person is always visible (yomizaka#243): the header's account menu, on every width — avatar, name and e-mail,
+  // settings, theme, language, sign out. (The rail's footer would add an empty column to the phone's tab bar: see the PR.)
+  const languages = languagesFor(`/${locale}${rest}`);
+  const account = () => (
+    <span className="flex">
+      <AccountMenu
+        label={say("shell.account")}
+        name={name ?? email}
+        email={email}
+        showName
+        avatar={{ defaultAvatar: { brand: "yomizaka", seed: avatarSeed ?? email }, fallback: (name ?? email).charAt(0).toUpperCase() }}
+        linkAs={Link}
+        links={[{ id: "account", label: say("shell.account"), href: href(CONSOLE_ROUTES.account), icon: <SettingsIcon size={16} /> }]}
+        language={{ label: say("shell.language"), value: locale, options: languages.map((l) => ({ value: l.code, label: l.name })), onChange: (to) => router.push(languages.find((l) => l.code === to)?.href ?? `/${to}${rest}`) }}
+        signOut={{ label: say("shell.signOut"), onSelect: () => signOut.mutate(), icon: <LogoutIcon size={16} /> }}
+      >
+        <div className="px-3 py-1">
+          <ThemeToggle label={say("shell.theme")} variant="ghost" />
+        </div>
+        {BUILD ? (
+          <p className="px-3 py-1 text-xs text-fg-muted" data-testid="app-version">
+            {say("shell.devBuild", { version: BUILD })}
+          </p>
+        ) : null}
+      </AccountMenu>
+    </span>
+  );
   return (
     <RailNav.Shell>
       <a href="#content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-[100] focus:rounded-sm focus:bg-surface-1 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold">
@@ -81,24 +108,7 @@ export function ConsoleShell({ locale, email, name, avatarSeed, role, children }
           homeLink={<Link href={href(CONSOLE_ROUTES.library)} aria-label="Yomizaka" />}
           actions={
             <>
-              <LanguageSwitch label={say("shell.language")} current={locale} languages={languagesFor(`/${locale}${rest}`)} linkAs={Link} />
-              <ThemeToggle label={say("shell.theme")} variant="ghost" />
-              <AccountMenu
-                label={say("shell.account")}
-                name={name ?? email}
-                email={email}
-                showName
-                avatar={{ defaultAvatar: { brand: "yomizaka", seed: avatarSeed ?? email }, fallback: (name ?? email).charAt(0).toUpperCase() }}
-                linkAs={Link}
-                links={[{ id: "account", label: say("shell.account"), href: href(CONSOLE_ROUTES.account), icon: <SettingsIcon size={16} /> }]}
-                signOut={{ label: say("shell.signOut"), onSelect: () => signOut.mutate(), icon: <LogoutIcon size={16} /> }}
-              >
-                {BUILD ? (
-                  <p className="px-3 py-1 text-xs text-fg-muted" data-testid="app-version">
-                    {say("shell.devBuild", { version: BUILD })}
-                  </p>
-                ) : null}
-              </AccountMenu>
+              {account()}
             </>
           }
         />
