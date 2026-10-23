@@ -44,6 +44,32 @@ a failed row never stops the others. Reading a check or a batch advances it (up 
 Every call that starts or reads a check or a batch is recorded in the audit log as `api.check.created`, `api.check.read`,
 `api.batch.created`, `api.batch.read`, by `api-key:<key id>` (never the key). A key's last use is kept by `@krizaka/api-keys`.
 
+## Webhooks
+
+Instead of polling, register an endpoint and Yomizaka calls it when work finishes (Pro, like the keys; the plan's number of endpoints
+and the global switch are an administrator's settings). Endpoints are managed with your session, not with an API key:
+
+```sh
+POST   /api/me/webhooks                 { "url": "https://erp.example.com/yomizaka", "events": ["batch.finished", "check.finished"] }
+# 201 { "endpoint": { "id": "…" }, "secret": "whsec_…" }   the secret is shown once; at rest it is sealed
+GET    /api/me/webhooks                 your endpoints, the events, your plan's allowance (never a secret)
+PATCH  /api/me/webhooks/{id}            { "events": [...] } or { "active": false }
+POST   /api/me/webhooks/{id}/rotate     a new secret (the old one stops signing at once)
+GET    /api/me/webhooks/{id}/deliveries what was sent and how it went
+DELETE /api/me/webhooks/{id}
+```
+
+The address must be **https** and public (never a private or internal address, checked again at every send, no redirect followed).
+Events: `batch.finished` (every row is done, failed or refused) and `check.finished` (a check started with `POST /api/v1/checks`).
+The payload has ids, states, your own `reference` and the reason of a row — **never a document, a quoted passage or a report**; read
+those with `GET /api/v1/checks/{id}` and your key.
+
+Each request carries `x-krizaka-event`, `x-krizaka-event-id` (stable: apply an event once) and `x-krizaka-signature: t=<unix seconds>,v1=<hex>`
+where `v1` is the HMAC-SHA256, with your secret, of `"<t>.<raw body>"`. Verify it over the raw body and refuse an old `t`. Any non-2xx answer
+(or no answer within 8 s) is retried after 30 s, 5 min, 30 min, 2 h and 12 h (the number of tries is a setting, 6 by default); after the last
+it is given up and stays in the deliveries log. Deliveries go out with the server's tick: if an administrator turns the tick off
+(`limits.batchTickSeconds` = 0) nothing is sent. The OpenAPI document describes both events under `webhooks`.
+
 ## Not yet
 
-Signed PDF of a report, idempotent webhooks on finish, a ZIP of the reports (yomizaka#202, follow-ups).
+Signed PDF of a report, a ZIP of the reports (yomizaka#202, #242).

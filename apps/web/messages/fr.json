@@ -1191,6 +1191,10 @@
           "batches": {
             "label": "Lots de vérifications",
             "hint": "Un CSV et ses fichiers créent plusieurs vérifications d'un coup, avec un aperçu et le coût avant le lancement."
+          },
+          "webhooks": {
+            "label": "Webhooks",
+            "hint": "Désactivé : aucun webhook n'est envoyé ni enregistré, quel que soit le forfait."
           }
         },
         "limits": {
@@ -1245,6 +1249,10 @@
           "batchTickBatches": {
             "label": "Lots avancés à chaque passage",
             "hint": "Les plus anciens d'abord ; les autres attendent le passage suivant."
+          },
+          "webhookMaxAttempts": {
+            "label": "Essais par envoi de webhook",
+            "hint": "Le premier compris ; après le dernier l'envoi est abandonné et reste dans le journal. Les attentes passent de 30 secondes à 12 heures."
           }
         },
         "plans": {
@@ -1256,6 +1264,10 @@
             "apiKeys": {
               "label": "Gratuit : clés d'API",
               "hint": "Nombre de clés actives. 0 : le forfait n'a pas d'API."
+            },
+            "webhookEndpoints": {
+              "label": "Gratuit : points de terminaison webhook",
+              "hint": "Nombre de points de terminaison. 0 : le forfait n'a pas de webhooks."
             }
           },
           "pro": {
@@ -1270,6 +1282,10 @@
             "apiKeys": {
               "label": "Pro : clés d'API",
               "hint": "Nombre de clés actives. 0 : le forfait n'a pas d'API."
+            },
+            "webhookEndpoints": {
+              "label": "Pro : points de terminaison webhook",
+              "hint": "Nombre de points de terminaison. 0 : le forfait n'a pas de webhooks."
             }
           }
         }

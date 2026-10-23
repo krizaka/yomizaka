@@ -1191,6 +1191,10 @@
           "batches": {
             "label": "Batches of checks",
             "hint": "A CSV and its files create many checks at once, with a preview and the cost before the start."
+          },
+          "webhooks": {
+            "label": "Webhooks",
+            "hint": "Off: no webhook is sent and none can be registered, whatever the plan."
           }
         },
         "limits": {
@@ -1245,6 +1249,10 @@
           "batchTickBatches": {
             "label": "Batches advanced per look",
             "hint": "The oldest first; the others wait for the next look."
+          },
+          "webhookMaxAttempts": {
+            "label": "Tries per webhook delivery",
+            "hint": "The first one included; after the last the delivery is given up and stays in the log. The waits grow from 30 seconds to 12 hours."
           }
         },
         "plans": {
@@ -1256,6 +1264,10 @@
             "apiKeys": {
               "label": "Free: API keys",
               "hint": "Number of active keys. 0: the plan has no API."
+            },
+            "webhookEndpoints": {
+              "label": "Free: webhook endpoints",
+              "hint": "Number of endpoints. 0: the plan has no webhooks."
             }
           },
           "pro": {
@@ -1270,6 +1282,10 @@
             "apiKeys": {
               "label": "Pro: API keys",
               "hint": "Number of active keys. 0: the plan has no API."
+            },
+            "webhookEndpoints": {
+              "label": "Pro: webhook endpoints",
+              "hint": "Number of endpoints. 0: the plan has no webhooks."
             }
           }
         }

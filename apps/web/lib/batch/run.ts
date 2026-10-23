@@ -11,6 +11,7 @@ import { placeDocument } from "../organisation/store";
 import { isPhoto, storePhotos } from "../photos";
 import { YOMIZAKA_RULES } from "../preflight/rules";
 import { preflightRulesFrom, type Snapshot } from "../settings/boundary";
+import { notifyFinished } from "./observer";
 import { pausesBatch } from "./pausing";
 import { type BatchFile, PREVIEW_ROW, previewBatch } from "./preview";
 
@@ -124,8 +125,11 @@ export async function advanceBatch(account: Account, batchId: string, { settings
     }
   }
   const [{ left }] = (await query<{ left: number }>("SELECT count(*)::int AS left FROM batch_items WHERE batch_id = $1 AND state IN ('pending', 'running')", [batchId])) as [{ left: number }];
-  if (left === 0) await query("UPDATE batches SET finished_at = COALESCE(finished_at, $2) WHERE id = $1", [batchId, now]);
-  return { ...(await batchView(account.id, batchId)), pausedBy };
+  // The batch closes once; the one call that closes it tells the observer (the customer's webhooks, yomizaka#241).
+  const closed = left === 0 ? await query("UPDATE batches SET finished_at = $2 WHERE id = $1 AND finished_at IS NULL RETURNING id", [batchId, now]) : [];
+  const view = { ...(await batchView(account.id, batchId)), pausedBy };
+  if (closed.length) await notifyFinished(account.id, view, now);
+  return view;
 }
 
 async function setState(id: string, state: BatchItemState, error: string | null) {
