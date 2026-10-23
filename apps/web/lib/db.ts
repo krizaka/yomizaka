@@ -62,3 +62,22 @@ export async function migrate(client?: pg.Pool): Promise<string[]> {
   }
   return applied;
 }
+
+/**
+ * Runs `work` only if no other instance holds this advisory lock (session level, one connection): the job of a tick that two
+ * instances must never do at once. `null` when the lock is held elsewhere.
+ */
+export async function withAdvisoryLock<T>(key: number, work: () => Promise<T>): Promise<T | null> {
+  const conn = await pool().connect();
+  try {
+    const [row] = (await conn.query<{ ok: boolean }>("SELECT pg_try_advisory_lock($1) AS ok", [key])).rows;
+    if (!row?.ok) return null;
+    try {
+      return await work();
+    } finally {
+      await conn.query("SELECT pg_advisory_unlock($1)", [key]).catch(() => undefined);
+    }
+  } finally {
+    conn.release();
+  }
+}

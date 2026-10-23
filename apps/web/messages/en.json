@@ -1233,6 +1233,18 @@
           "batchConcurrency": {
             "label": "A batch's checks run at once",
             "hint": "The others wait their turn (Orazaka runs a few checks at once for the whole product); a failed row never stops the batch."
+          },
+          "batchTickSeconds": {
+            "label": "The server looks at unfinished batches every",
+            "hint": "Seconds; 0 turns it off (a batch then advances only when someone opens it). A batch that waits for the account to pay is looked at again after ten minutes."
+          },
+          "batchTickMaxAgeHours": {
+            "label": "A batch is advanced by the server for",
+            "hint": "Hours after its creation; after that it only advances when opened."
+          },
+          "batchTickBatches": {
+            "label": "Batches advanced per look",
+            "hint": "The oldest first; the others wait for the next look."
           }
         },
         "plans": {

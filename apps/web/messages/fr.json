@@ -1233,6 +1233,18 @@
           "batchConcurrency": {
             "label": "Vérifications d'un lot menées en même temps",
             "hint": "Les autres attendent leur tour (Orazaka lance quelques vérifications à la fois pour tout le produit) ; une ligne en échec n'arrête jamais le lot."
+          },
+          "batchTickSeconds": {
+            "label": "Le serveur regarde les lots non terminés toutes les",
+            "hint": "Secondes ; 0 le désactive (un lot n'avance alors que lorsqu'on l'ouvre). Un lot qui attend le paiement du compte est revu après dix minutes."
+          },
+          "batchTickMaxAgeHours": {
+            "label": "Un lot est avancé par le serveur pendant",
+            "hint": "Heures après sa création ; ensuite il n'avance que lorsqu'on l'ouvre."
+          },
+          "batchTickBatches": {
+            "label": "Lots avancés à chaque passage",
+            "hint": "Les plus anciens d'abord ; les autres attendent le passage suivant."
           }
         },
         "plans": {
