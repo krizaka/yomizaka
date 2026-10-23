@@ -68,14 +68,23 @@ export async function migrate(client?: pg.Pool): Promise<string[]> {
  * instances must never do at once. `null` when the lock is held elsewhere.
  */
 export async function withAdvisoryLock<T>(key: number, work: () => Promise<T>): Promise<T | null> {
+  return withLock("SELECT pg_try_advisory_lock($1) AS ok", "SELECT pg_advisory_unlock($1)", key, work);
+}
+
+/** The same for a lock named by a string (one batch, one document…): two callers of the same name never work at once. */
+export async function withNamedLock<T>(name: string, work: () => Promise<T>): Promise<T | null> {
+  return withLock("SELECT pg_try_advisory_lock(hashtextextended($1, 0)) AS ok", "SELECT pg_advisory_unlock(hashtextextended($1, 0))", name, work);
+}
+
+async function withLock<T>(lock: string, unlock: string, key: number | string, work: () => Promise<T>): Promise<T | null> {
   const conn = await pool().connect();
   try {
-    const [row] = (await conn.query<{ ok: boolean }>("SELECT pg_try_advisory_lock($1) AS ok", [key])).rows;
+    const [row] = (await conn.query<{ ok: boolean }>(lock, [key])).rows;
     if (!row?.ok) return null;
     try {
       return await work();
     } finally {
-      await conn.query("SELECT pg_advisory_unlock($1)", [key]).catch(() => undefined);
+      await conn.query(unlock, [key]).catch(() => undefined);
     }
   } finally {
     conn.release();

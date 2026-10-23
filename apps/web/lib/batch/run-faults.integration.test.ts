@@ -105,6 +105,32 @@ describe.runIf(enabled)("a batch against a busy engine and awkward files", () =>
     expect(doc!.text).toBe("");
   });
 
+  it("two advances at once (the tick and a reader) start a row once and fail nothing (#266)", async () => {
+    state.busy = true;
+    const created = await createBatch(account, "Concurrence", "file,check\nrace-a.pdf,compliance", [await pdf("race-a.pdf", "BAIL RACE A")], await ctx());
+    expect(created.items[0]!.state).toBe("pending");
+    state.busy = false;
+    const before = state.started.length;
+    const both = await Promise.all([advanceBatch(account, created.id, await ctx()), advanceBatch(account, created.id, await ctx()), advanceBatch(account, created.id, await ctx())]);
+    expect(state.started.length - before).toBe(1);
+    for (const view of both) expect(view.counts.failed).toBe(0);
+    const [row] = await query<{ state: string }>("SELECT state FROM batch_items WHERE batch_id = $1", [created.id]);
+    expect(row!.state).toBe("running");
+    finishAll();
+    expect((await advanceBatch(account, created.id, await ctx())).finishedAt).not.toBeNull();
+  });
+
+  it("a check already running on the document (another batch, the page) is waited for, never a row's failure (#266)", async () => {
+    state.busy = true;
+    const created = await createBatch(account, "Déjà en cours", "file,check\nrunning-a.pdf,compliance", [await pdf("running-a.pdf", "BAIL DEJA EN COURS")], await ctx());
+    state.busy = false;
+    await query("INSERT INTO analyses (document_id, studio, status, run_id) VALUES ($1, 'compliance-check', 'running', 'run-elsewhere')", [created.items[0]!.documentId]);
+    const advanced = await advanceBatch(account, created.id, await ctx());
+    expect(advanced.items[0]!.state).toBe("pending");
+    expect(advanced.counts.failed).toBe(0);
+    expect(advanced.finishedAt).toBeNull();
+  });
+
   it("a row naming one of the owner's collections files its document there; an unknown name leaves it where it is", async () => {
     const library = await createLibrary(query, account.id, "Gestion Laurier");
     const building = await createCollection(query, account.id, library.id, "Immeuble Laurier");
