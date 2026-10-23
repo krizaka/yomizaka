@@ -11,15 +11,15 @@ import { DetailLayout } from "@krizaka/ui/detail-layout";
 import { DocumentViewer, type Located } from "@krizaka/ui/document-viewer";
 import { DropdownMenu } from "@krizaka/ui/dropdown-menu";
 import { createKrizakaForm } from "@krizaka/ui/form";
-import { StepProgress } from "@krizaka/ui/step-progress";
 import { Tabs } from "@krizaka/ui/tabs";
-import { type Analysis, type Audience, AUTHENTICITY_MAX_BYTES, type AuthenticityReport, checkSteps, type ComplianceReport, DOCUMENT_TABS, type DocumentView as DocumentViewData, documentView, DOCX_MIME, isSeededCheck, type Jurisdiction, JURISDICTIONS, ODT_MIME, passages, queryKeys, STEP_STATE, type Studio, type TextSource } from "@yomizaka/core";
+import { type Analysis, type Audience, AUTHENTICITY_MAX_BYTES, type AuthenticityReport, checkSteps, type ComplianceReport, DOCUMENT_TABS, type DocumentView as DocumentViewData, documentView, DOCX_MIME, isSeededCheck, type Jurisdiction, JURISDICTIONS, ODT_MIME, passages, queryKeys, type Studio, type TextSource } from "@yomizaka/core";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type ComponentProps, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
 import { ClosingNoteView } from "@/components/ClosingNoteView";
+import { CheckSteps } from "@/components/console/CheckSteps";
 import { DocumentInsight } from "@/components/console/DocumentInsight";
 import { Paywall } from "@/components/console/Paywall";
 import { errorKey } from "@/lib/client";
@@ -270,10 +270,8 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
     () => (latestReport?.findings ?? []).filter((f) => f.evidenceSpan?.quote).map((f) => ({ id: f.ruleId, quote: f.evidenceSpan!.quote, label: f.title ?? f.ruleId })),
     [latestReport],
   );
-  // While a check runs, where it stands (Lecture › Contrôle › Règles › Rapport), at the top of the report (the review's C4).
+  // While a check runs, where it stands (Lecture › Contrôle › Règles › Rapport) at the top of the report: Krizaka UI's Stepper fed by the core's steps (#208).
   const runningStudio = (["compliance-check", "document-authenticity"] as const).find((s) => running(s)) ?? null;
-  const runningSteps = runningStudio ? checkSteps({ hasText: doc.hasText, analysis: { studio: runningStudio, status: "running" } }) : [];
-  const runningStep = Math.max(1, runningSteps.findIndex((s) => s.state === STEP_STATE.current) + 1);
   const selection: FindingSelection = {
     activeId,
     onSelect: (id) => {
@@ -305,7 +303,7 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
 
   const report = (
     <section aria-label={say("document.tabs.rapport")} className="flex min-w-0 flex-col gap-4" data-testid="tab-rapport">
-      {runningStudio ? <StepProgress step={runningStep} total={runningSteps.length} label={(step, total) => say("steps.progress", { step, total })} data-testid="run-progress" /> : null}
+      {runningStudio ? <CheckSteps steps={checkSteps({ hasText: doc.hasText, analysis: { studio: runningStudio, status: "running" } })} /> : null}
       {failures.map((a) => (
         <Alert key={a.id} tone="danger">
           {a.error}

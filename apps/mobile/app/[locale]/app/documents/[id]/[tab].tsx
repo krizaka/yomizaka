@@ -6,7 +6,7 @@ import * as React from "react";
 import { View } from "react-native";
 
 import { availableChecks, CHECK, type DocumentDetail, keys, type Locale } from "@yomizaka/client";
-import { ANALYSIS_STATUS, checkSteps } from "@yomizaka/core";
+import { ANALYSIS_STATUS, checkSteps, OLD_DOCUMENT_TABS } from "@yomizaka/core";
 import { deviceStore } from "@/data/expo-files";
 import { queries, yomizaka } from "@/config";
 import { routes } from "@/domain/links";
@@ -16,8 +16,8 @@ import { CheckProgress } from "@/ui/CheckProgress";
 import { ClosingNote } from "@/ui/ClosingNote";
 import { useLocale } from "@/use-locale";
 
-/** The tabs this app draws of the web's four (`fichier` and `texte` stay on the web), each its own route. */
-const TABS = ["infos", "verifications"] as const;
+/** The tabs this app draws of the web's three (`historique` stays on the web), each its own route — the same addresses. */
+const TABS = ["rapport", "document"] as const;
 type Tab = (typeof TABS)[number];
 const isTab = (value: string): value is Tab => (TABS as readonly string[]).includes(value);
 
@@ -31,7 +31,8 @@ export default function DocumentScreen() {
   const router = useRouter();
   const document = useQuery(queries.document(id));
 
-  if (!isTab(tab)) return <Redirect href={routes.document(locale, id) as never} />;
+  // An old address (`infos`, `verifications`…) opens its tab, as the web answers 308; anything else opens the report.
+  if (!isTab(tab)) return <Redirect href={routes.document(locale, id, OLD_DOCUMENT_TABS[tab] === "document" ? "document" : "rapport") as never} />;
 
   return (
     <Screen header={<Header title={document.data?.title ?? t("document.title")} backLabel={t("common.back")} onBack={() => router.back()} size="inline" />}>
@@ -42,8 +43,8 @@ export default function DocumentScreen() {
         onValueChange={(next) => router.replace(routes.document(locale, id, next) as never)}
       />
       {document.isError ? <EmptyState title={t("document.notFound")} /> : null}
-      {document.data && tab === "infos" ? <Infos document={document.data} /> : null}
-      {document.data && tab === "verifications" ? <Verifications document={document.data} followed={analysis ?? document.data.analyses[0]?.id} locale={locale} /> : null}
+      {document.data && tab === "document" ? <Infos document={document.data} /> : null}
+      {document.data && tab === "rapport" ? <Verifications document={document.data} followed={analysis ?? document.data.analyses[0]?.id} locale={locale} /> : null}
     </Screen>
   );
 }
@@ -78,7 +79,7 @@ function Verifications({ document, followed, locale }: { document: DocumentDetai
     mutationFn: (request: (typeof checks)[number]) => yomizaka.startAnalysis(document.id, request),
     onSuccess: async ({ analysis }) => {
       await queryClient.invalidateQueries({ queryKey: keys.document(document.id) });
-      router.replace(`${routes.document(locale, document.id, "verifications")}?analysis=${analysis.id}` as never);
+      router.replace(`${routes.document(locale, document.id, "rapport")}?analysis=${analysis.id}` as never);
     },
   });
   return (
@@ -129,7 +130,7 @@ function OtherRuns({ analyses, documentId, locale }: { analyses: readonly Analys
   return (
     <>
       {analyses.map((run) => (
-        <Card.Root key={run.id} onPress={() => router.replace(`${routes.document(locale, documentId, "verifications")}?analysis=${run.id}` as never)}>
+        <Card.Root key={run.id} onPress={() => router.replace(`${routes.document(locale, documentId, "rapport")}?analysis=${run.id}` as never)}>
           <Card.Body>
             <Txt variant="label">{t(CHECK_LABEL[run.studio])}</Txt>
             <Txt tone="muted" variant="caption">

@@ -10,8 +10,8 @@ describe("the app's links are the web's paths", () => {
 
   it("writes each screen's path", () => {
     expect(routes.verify("fr")).toBe("/fr/app/verifier");
-    expect(routes.document("en", A)).toBe(`/en/app/documents/${A}/infos`);
-    expect(routes.document("fr", A, "verifications")).toBe(`/fr/app/documents/${A}/verifications`);
+    expect(routes.document("en", A)).toBe(`/en/app/documents/${A}/rapport`);
+    expect(routes.document("fr", A, "document")).toBe(`/fr/app/documents/${A}/document`);
     expect(routes.settings("fr")).toBe("/fr/app/settings");
   });
 

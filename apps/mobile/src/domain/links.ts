@@ -16,7 +16,7 @@ export const routes = {
   verify: (locale: Locale) => app(locale, "verifier"),
   library: (locale: Locale, library?: string, collection?: string, tags: readonly string[] = []) =>
     tagsHref(app(locale, "bibliotheque", ...[library, library ? collection : undefined].filter((p): p is string => !!p)), tags),
-  document: (locale: Locale, id: string, tab: DocumentTab = "infos") => app(locale, "documents", id, tab),
+  document: (locale: Locale, id: string, tab: DocumentTab = "rapport") => app(locale, "documents", id, tab),
   settings: (locale: Locale) => app(locale, "settings"),
 } as const;
 
