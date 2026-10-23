@@ -25,6 +25,9 @@ const enabled = process.env.YOMIZAKA_DB_IT === "1" && !!process.env.DATABASE_URL
 const REPORT = readFileSync(new URL("../fixtures/orazaka-compliance-qc-1.2.0.json", import.meta.url), "utf8");
 const params = (id: string) => ({ params: Promise.resolve({ id }) });
 
+/** The secret part of `yzk_<public id>_<secret>`: the secret is base64url, so it may itself contain « _ » — never split on it. */
+const secretOf = (key: string) => key.slice(key.indexOf("_", key.indexOf("_") + 1) + 1);
+
 describe.runIf(enabled)("the public API v1 (yomizaka#202)", () => {
   const stamp = `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
   const runs = new Map<string, string>();
@@ -145,6 +148,6 @@ describe.runIf(enabled)("the public API v1 (yomizaka#202)", () => {
     const actions = new Set(rows.map((r) => r.action));
     for (const action of ["api.check.created", "api.check.read", "api.batch.created", "api.batch.read"]) expect(actions, action).toContain(action);
     expect(rows.every((r) => /^api-key:[0-9a-f-]{36}$/.test(r.actor_label))).toBe(true);
-    expect(JSON.stringify(rows)).not.toContain(bearer.split("_")[2]);
+    expect(JSON.stringify(rows)).not.toContain(secretOf(bearer));
   });
 });
