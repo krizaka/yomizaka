@@ -12,7 +12,7 @@ import { useEffect, useMemo } from "react";
 
 import { ButtonLink } from "@/components/ButtonLink";
 import type { CheckSummary } from "@/lib/checks";
-import { runningChecks } from "@/lib/checks";
+import { runningChecks } from "@/lib/checks-live";
 import { CHECKS_TAB_KEY, CHECKS_TABS, checksTabHref, checksTabOf, CONSOLE_ROUTES } from "@/lib/console-nav";
 import { useSay } from "@/lib/i18n-client";
 
