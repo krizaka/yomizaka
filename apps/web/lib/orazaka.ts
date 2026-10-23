@@ -4,6 +4,9 @@ import { z } from "zod";
 import { readEnv } from "./env";
 import { HttpError, refuse } from "./http";
 
+/** The Studios Yomizaka runs: the two checks, and the translation of a report's generated texts (yomizaka#246). */
+export type RunnableStudio = Studio | "text-translation";
+
 /**
  * Orazaka's edge — the only place Yomizaka's analyses run. Yomizaka calls it with its service key (`oz_…`, a DO
  * SECRET): the edge exchanges the key for a session of the `svc_yomizaka` account, whose operator grants open the
@@ -17,7 +20,7 @@ import { HttpError, refuse } from "./http";
 type Fetch = typeof fetch;
 
 export interface OrazakaClient {
-  startRun(studio: Studio, inputs: Record<string, string>): Promise<OrazakaRun>;
+  startRun(studio: RunnableStudio, inputs: Record<string, string>): Promise<OrazakaRun>;
   getRun(runId: string): Promise<OrazakaRun>;
   /** The Studios this product's key has installed — also the cheapest call that proves the key and the connection. */
   studios(): Promise<string[]>;
@@ -69,7 +72,7 @@ export function createOrazakaClient(options: { baseUrl: string; apiKey: string |
     return parsed.data;
   }
 
-  async function ensureInstalled(studio: Studio) {
+  async function ensureInstalled(studio: RunnableStudio) {
     if (installed.has(studio)) return;
     const mine = await call("/api/v1/studios/installations", z.array(installation));
     if (!mine.some((i) => i.studioKey === studio)) {

@@ -19,6 +19,7 @@ const WORKSPACE = WORKSPACE_SCOPES;
 
 export const PAYMENT_DISPLAY = { test: "test", live: "live" } as const;
 export const AVATAR_SEED_CHOICES = ["v1", "v2", "v3", "v4", "v5", "v6"] as const;
+export const REPORT_LANGUAGES = ["fr", "en"] as const;
 export const FILE_TYPES = ["pdf", "text", "image", "word"] as const;
 
 /** The platform's cap on a file: a limit here can only go down from it. */
@@ -47,6 +48,10 @@ export const SETTINGS = {
   "features.batches": flag(GROUP.features, true, WORKSPACE),
   /** Signed webhooks when a batch or a check finishes (yomizaka#241): the global switch; what a plan holds is below. */
   "features.webhooks": flag(GROUP.features, true, WORKSPACE),
+  /** The check report in the other language, translated through Orazaka (yomizaka#246): off until the Studio `text-translation` is live. */
+  "features.reportTranslation": flag(GROUP.features, false, WORKSPACE),
+  /** The languages a report may be read and signed in; the original (French, Orazaka's rules) is always offered. */
+  "features.reportLanguages": subset(GROUP.features, REPORT_LANGUAGES, [...REPORT_LANGUAGES]),
   "features.avatarSet": subset(GROUP.features, AVATAR_SEED_CHOICES, [...AVATAR_SEED_CHOICES]),
   // Limits: what one document and one account may do.
   "limits.maxFileMb": integer(GROUP.limits, PLATFORM_MAX_FILE_MB, { min: 1, max: PLATFORM_MAX_FILE_MB, unit: "MB" }, WORKSPACE),
@@ -63,6 +68,8 @@ export const SETTINGS = {
   "limits.batchTickBatches": integer(GROUP.limits, 10, { min: 1, max: 100, unit: "batches" }),
   /** Tries before a webhook delivery is given up (the first included); the waits grow from 30 s to 12 h. */
   "limits.webhookMaxAttempts": integer(GROUP.limits, 6, { min: 1, max: 12, unit: "tries" }),
+  /** Credits one translation of a report costs (0 = included), from the pricebook. */
+  "limits.reportTranslationCredits": integer(GROUP.limits, 0, { min: 0, max: 100, unit: "credits" }, WORKSPACE),
   "limits.avatarMaxKb": integer(GROUP.limits, 512, { min: 16, max: 2048, unit: "KB" }),
   "limits.bonusAuditsPerMonth": integer(GROUP.limits, 0, { min: 0, max: 10000, unit: "audits" }, [SCOPE.user]),
   // Plans: what each plan includes (prices stay in Stripe).

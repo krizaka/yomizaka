@@ -48,6 +48,13 @@ and an audit log of every operator action. It answers only addresses of `AUTH_AL
 A Pro account can run checks and batches from its own tools with an API key: `POST /api/v1/checks`, `GET /api/v1/checks/{id}`,
 `POST /api/v1/batches`, `GET /api/v1/batches/{id}`, described by `GET /api/v1/openapi.json` — see [docs/API.md](docs/API.md).
 
+## The report in two languages
+
+A finished compliance report can be read, and its signed PDF issued, in French (the original) and English: the generated texts go
+through Orazaka's Studio `text-translation`; quoted passages, article references, amounts and dates are never translated
+([docs/adr/ADR-0012-report-translation.md](docs/adr/ADR-0012-report-translation.md)). Off until an administrator switches
+`features.reportTranslation` on.
+
 ## Next
 
 Yomizaka will also check **identity documents** (photos and scans as well as PDFs) for other Krizaka products that need a
