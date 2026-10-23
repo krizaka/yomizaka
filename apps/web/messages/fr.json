@@ -1447,6 +1447,27 @@
         "result": "Résultat",
         "when": "Quand",
         "run": "Exécution"
+      },
+      "filters": {
+        "label": "Filtrer les vérifications",
+        "search": "Chercher un document",
+        "clearSearch": "Effacer la recherche",
+        "result": "Résultat",
+        "kind": "Type",
+        "period": "Période",
+        "periods": {
+          "7d": "7 derniers jours",
+          "30d": "30 derniers jours",
+          "year": "Cette année"
+        },
+        "clear": "Effacer les filtres",
+        "remove": "Retirer {label}"
+      },
+      "resultsOne": "{count} vérification",
+      "resultsMany": "{count} vérifications",
+      "noMatch": {
+        "title": "Aucune vérification ne correspond",
+        "text": "Élargissez un filtre, ou effacez-les tous."
       }
     },
     "batch": {

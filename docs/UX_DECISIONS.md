@@ -256,3 +256,20 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
 - **Cost**: a drop of several photos is grouped by the default (one document) before the option is visible; the option
   rules the next drop.
 - **Signal we are wrong**: people cancel runs started on the drop; « Autre » is chosen to avoid the automatic start.
+## 16. Vérifications: the filters in the address, their counts on the menus, a « nothing matches » that clears itself
+
+- **Decision** (2026-10-23, the UX review's Y6, #281): above the list of checks, `FilterBar` — a search on the title, the
+  result, the kind and the period as `FilterMenu`s (each option with the count it would give, the other filters in
+  force), the filters in force as removable chips, the count of checks. Every filter is a key of the address
+  (`?q=&result=&kind=&period=`, `lib/check-filters.ts`): a filtered list is a link, back undoes a filter, a stale value
+  is dropped. Filters that keep nothing say « Aucune vérification ne correspond » and offer « Effacer les filtres » (the
+  plain address); the owl's « Aucune vérification encore » stays for an account with no check. The periods read the
+  server's `now`, so both sides agree.
+- **Problem**: up to 500 checks and no way in but the table's own text filter; a result could not be shared as a link.
+- **Principle**: the URL is the state (§ 7); the count before the click.
+- **Refused**: the `DataTable`'s column filters (not in the address, no period); a date picker (three periods answer
+  the question; a range comes when someone asks for one); server-side filtering (the list is capped at the newest 500,
+  filtered on the client in one pass).
+- **Cost**: the filters apply to the rows the page loaded; the search field keeps what is typed until the address
+  carries it.
+- **Signal we are wrong**: people type a date in the search; the chips wrap on three lines at 360 px.
