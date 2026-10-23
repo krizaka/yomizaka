@@ -64,3 +64,11 @@ describe("the Vérifications destination (the UX review's § 4.1)", () => {
     expect(lots.match(/<h1\b/g)).toHaveLength(1);
   });
 });
+
+describe("a running check keeps the list live", () => {
+  it("marks the view live while a row is analysing, so it asks again until the run ends", () => {
+    nav.search = "";
+    expect(render({ checks: [check(1, "analysing")], batches: false })).toContain('data-live="true"');
+    expect(render({ checks: [check(1, "checked")], batches: false })).not.toContain("data-live");
+  });
+});

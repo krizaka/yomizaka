@@ -4,18 +4,36 @@ import { PERSONA_ERIC } from "../../../scripts/demo-documents/index.mjs";
 import { seedPersona } from "../../../scripts/demo-seed/seed.mjs";
 import en from "../messages/en.json";
 import fr from "../messages/fr.json";
-import { migrate, query } from "./db";
+import { migrate, pool, query } from "./db";
 import * as org from "./organisation/store";
 
-/** The persona's seed against a real PostgreSQL: idempotent, resettable, and the library shows the three collections with their counts. */
+/** The persona's seed against a real PostgreSQL: idempotent, resettable, one at a time per account, and the library shows the three collections with their counts. */
 const enabled = process.env.YOMIZAKA_DB_IT === "1" && !!process.env.DATABASE_URL;
 const messagesByLocale = { fr, en };
-const run = (email: string, options: { reset?: boolean; locale?: string } = {}) => seedPersona((sql: string, values?: unknown[]) => query(sql, values), { persona: "eric", email, messagesByLocale, ...options });
+/** The seed is one transaction: it needs one connection, not the pool. */
+const onOneConnection = async <T>(work: (q: (sql: string, values?: unknown[]) => Promise<unknown[]>) => Promise<T>): Promise<T> => {
+  const client = await pool().connect();
+  try {
+    return await work((sql, values) => client.query(sql, values).then((r) => r.rows));
+  } finally {
+    client.release();
+  }
+};
+const run = (email: string, options: { reset?: boolean; locale?: string } = {}) => onOneConnection((q) => seedPersona(q, { persona: "eric", email, messagesByLocale, ...options }));
 const expected = { "Immeuble Rosemont": 6, "Candidats — 4½ Villeray": 6, "Factures 2026": 4 };
 
 describe.runIf(enabled)("the demo seed (Éric)", () => {
   beforeAll(async () => {
     await migrate();
+  });
+
+  it("seeds one account once even when two seeds run at the same time (the account's advisory lock)", async () => {
+    const email = fresh();
+    const [a, b] = await Promise.all([run(email), run(email)]);
+    expect(a.owner).toBe(b.owner);
+    expect(a.collections).toEqual(expected);
+    expect(b.collections).toEqual(expected);
+    expect(await snapshot(a.owner)).toEqual({ documents: 16, analyses: PERSONA_ERIC.checked.length, collections: 4 });
   });
   const fresh = () => `eric-${Math.random().toString(36).slice(2)}@demo.yomizaka.test`;
   const snapshot = async (owner: string) => ({
