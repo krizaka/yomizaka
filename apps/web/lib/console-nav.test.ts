@@ -91,7 +91,7 @@ describe("the shell follows Orazaka's pattern", () => {
     expect(shell).not.toMatch(/<RailNav\.Item[^>]*PlusIcon/);
   });
   it("« Check a document » is the header's primary cut button, at every width", () => {
-    expect(shell).toMatch(/<ButtonLink[^>]*shape="cut"[^>]*>[\s\S]*shell\.checkAction/);
+    expect(shell).toMatch(/<ButtonLink\b(?=[^>]*\bvariant="primary")(?=[^>]*\bshape="cut")[^>]*>[\s\S]*shell\.checkAction/);
     expect(shell).not.toMatch(/(sm|md|lg):(inline|hidden|block)|className="hidden/);
   });
   it("the account menu has profile, settings, billing, language, theme and sign out; nothing sends the owner elsewhere", () => {
