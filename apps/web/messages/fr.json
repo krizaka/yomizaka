@@ -374,6 +374,8 @@
       "exportVerify": "Vérifier un rapport",
       "exportSha": "SHA-256 du rapport",
       "exportKey": "Clé de signature",
+      "seededNote": "Une vérification de démonstration (jeu de données semé) : rien n’a tourné sur le moteur, aucun rapport signé n’est produit pour elle.",
+      "exportUnavailable": "Ce rapport ne peut pas être produit pour l’instant.",
       "exportPdf": "Télécharger le PDF",
       "reused": "Résultat réutilisé : ce document exact a déjà été vérifié avec les mêmes règles, aucune nouvelle vérification n’a été lancée.",
       "photoOrigin": {

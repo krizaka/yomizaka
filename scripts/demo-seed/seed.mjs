@@ -6,6 +6,8 @@ import { generateDocument, PERSONA_ERIC, AS_OF, DEFAULT_SEED } from "../demo-doc
 export const PERSONAS = { eric: PERSONA_ERIC };
 export const DEFAULT_EMAILS = { eric: "eric@demo.yomizaka.test" };
 export const SEEDED_RUN_PREFIX = "seeded-";
+/** What a seeded check carries in its inputs — the same marker `@yomizaka/core` reads (`isSeededCheck`). */
+export const SEEDED_INPUTS = { seeded: "true" };
 
 /** The seed works on dev and local only: anything that says it is production is refused, and so is a value it does not know. */
 export function assertNotProduction(env) {
@@ -91,7 +93,7 @@ export async function seedPersona(q, { persona = "eric", email, locale = "fr", m
           `INSERT INTO analyses (document_id, studio, status, run_id, blueprint_version, inputs, report, search_text, finished_at)
            SELECT $1, $2, 'succeeded', $3, NULL, $4, $5, $6, now()
             WHERE NOT EXISTS (SELECT 1 FROM analyses WHERE document_id = $1 AND run_id = $3)`,
-          [stored.id, studio, runId, JSON.stringify({ seeded: "true" }), JSON.stringify({ ...report, attention: needsAttention(report) }), searchTextOf(report)],
+          [stored.id, studio, runId, JSON.stringify(SEEDED_INPUTS), JSON.stringify({ ...report, attention: needsAttention(report) }), searchTextOf(report)],
         );
       }
     }

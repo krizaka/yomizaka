@@ -374,6 +374,8 @@
       "exportVerify": "Verify a report",
       "exportSha": "Report SHA-256",
       "exportKey": "Signing key",
+      "seededNote": "A demo check from the seeded data set: nothing ran on the engine, so no signed report is issued for it.",
+      "exportUnavailable": "This report cannot be issued yet.",
       "exportPdf": "Download the PDF",
       "reused": "Result reused: this exact document was already checked against the same rules, so no new check was run.",
       "photoOrigin": {

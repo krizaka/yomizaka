@@ -1,8 +1,8 @@
-import { authenticityReport, complianceReport } from "@yomizaka/core";
+import { authenticityReport, complianceReport, isSeededCheck, SEEDED_INPUTS } from "@yomizaka/core";
 import { describe, expect, it } from "vitest";
 
 import { generateDocument, PERSONA_ERIC } from "../../../scripts/demo-documents/index.mjs";
-import { assertNotProduction, collectionWords, seededReport } from "../../../scripts/demo-seed/seed.mjs";
+import { assertNotProduction, collectionWords, SEEDED_INPUTS as SEED_MARKER, seededReport } from "../../../scripts/demo-seed/seed.mjs";
 import en from "../messages/en.json";
 import fr from "../messages/fr.json";
 
@@ -15,6 +15,11 @@ describe("the demo seed", () => {
   it("works on dev and on a local machine (the default environment is dev)", () => {
     expect(() => assertNotProduction({ APP_ENVIRONMENT: "dev" })).not.toThrow();
     expect(() => assertNotProduction({})).not.toThrow();
+  });
+
+  it("marks its checks with the marker the app reads: shown like any check, never certified", () => {
+    expect(SEED_MARKER).toEqual(SEEDED_INPUTS);
+    expect(isSeededCheck({ inputs: { ...SEED_MARKER } })).toBe(true);
   });
 
   it("gives the persona a display name the header can show instead of the address (A4), within the column's limit", () => {

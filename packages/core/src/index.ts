@@ -247,6 +247,11 @@ export const analysis = z.object({
 });
 export type Analysis = z.infer<typeof analysis>;
 
+/** The marker the demo seed writes in a check's inputs (scripts/demo-seed): no engine ran, the result was written. */
+export const SEEDED_INPUTS = { seeded: "true" } as const;
+/** A seeded demo check is shown like any other but never certified, reused, or taken as the current Studio version. */
+export const isSeededCheck = (check: Pick<Analysis, "inputs">): boolean => check.inputs.seeded === SEEDED_INPUTS.seeded;
+
 export const documentSummary = z.object({
   id: z.string(),
   title: z.string(),

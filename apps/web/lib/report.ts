@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 
-import { type Analysis, type ComplianceReport, type DocumentDetail, textSource } from "@yomizaka/core";
+import { type Analysis, type ComplianceReport, type DocumentDetail, isSeededCheck, textSource } from "@yomizaka/core";
 import { z } from "zod";
 
 import { type SigningKey } from "./report-key";
@@ -72,7 +72,7 @@ export class ReportError extends Error {}
 
 /** A report's payload from a stored check. Only a finished compliance check with a run id and a report can be certified. */
 export function buildPayload(doc: Pick<DocumentDetail, "sha256" | "filename" | "title" | "sizeBytes" | "pages" | "textSource">, analysis: Analysis, lang: "en" | "fr"): ReportPayload {
-  if (analysis.inputs.seeded === "true") throw new ReportError("A seeded demo check cannot be certified");
+  if (isSeededCheck(analysis)) throw new ReportError("A seeded demo check cannot be certified");
   if (analysis.studio !== "compliance-check" || analysis.status !== "succeeded" || !analysis.report || !("findings" in analysis.report) || !analysis.runId || !analysis.finishedAt) {
     throw new ReportError("Only a finished compliance check can be certified");
   }

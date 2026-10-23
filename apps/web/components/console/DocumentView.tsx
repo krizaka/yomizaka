@@ -10,7 +10,7 @@ import { DocumentViewer, type Located } from "@krizaka/ui/document-viewer";
 import { createKrizakaForm } from "@krizaka/ui/form";
 import { Spinner } from "@krizaka/ui/spinner";
 import { Tabs } from "@krizaka/ui/tabs";
-import { type Analysis, analysis as analysisSchema, type Audience, AUTHENTICITY_MAX_BYTES, type AuthenticityReport, checkSteps,type ComplianceReport, type DocumentView as DocumentViewData, documentView, DOCX_MIME, type Jurisdiction, JURISDICTIONS, ODT_MIME, passages, queryKeys, type Studio, type TextSource } from "@yomizaka/core";
+import { type Analysis, analysis as analysisSchema, type Audience, AUTHENTICITY_MAX_BYTES, type AuthenticityReport, checkSteps,type ComplianceReport, type DocumentView as DocumentViewData, documentView, DOCX_MIME, isSeededCheck, type Jurisdiction, JURISDICTIONS, ODT_MIME, passages, queryKeys, type Studio, type TextSource } from "@yomizaka/core";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ComponentProps, useEffect, useMemo, useRef, useState } from "react";
@@ -152,11 +152,22 @@ interface Selection {
 function ReportExport({ documentId, analysisId }: { documentId: string; analysisId: string }) {
   const { say, locale } = useSay();
   const base = `/api/documents/${documentId}/analyses/${analysisId}/report?lang=${locale}`;
+  // A report the server refuses (409 REPORT_NOT_READY) is said in place; it never takes the page down.
   const meta = useQuery({
     queryKey: [...queryKeys.document(documentId), "report", analysisId, locale],
     queryFn: () => krizakaFetch(`${base}&meta=1`, { schema: z.object({ report: z.object({ fileSha256: z.string(), keyId: z.string(), filename: z.string() }) }) }).then((r) => r.report),
     staleTime: Infinity,
+    retry: false,
+    throwOnError: false,
   });
+  if (meta.isError) {
+    return (
+      <div className="flex flex-col gap-2 border-t border-border-default pt-3">
+        <h4 className="text-sm font-semibold text-fg">{say("analysis.exportReport")}</h4>
+        <Alert tone="info" data-testid="report-unavailable">{say("analysis.exportUnavailable")}</Alert>
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col gap-2 border-t border-border-default pt-3">
       <h4 className="text-sm font-semibold text-fg">{say("analysis.exportReport")}</h4>
@@ -265,7 +276,14 @@ function AnalysisCard({ documentId, initial, selection, source, hasText }: { doc
       {a.status === "running" ? <p className="text-sm text-fg-secondary">{say("analysis.running")}</p> : null}
       {a.error ? <Alert tone="danger">{a.error}</Alert> : null}
       {a.report && "findings" in a.report ? <ComplianceFindings report={a.report} runId={a.runId} selection={selection} /> : null}
-      {a.status === "succeeded" && a.studio === "compliance-check" && a.report && "findings" in a.report ? <ReportExport documentId={documentId} analysisId={a.id} /> : null}
+      {a.status === "succeeded" && a.studio === "compliance-check" && a.report && "findings" in a.report ? (
+        isSeededCheck(a) ? (
+          // The demo data set (krizaka/yomizaka#274): its checks were written, not run — shown, never certified.
+          <Alert tone="info" data-testid="seeded-note">{say("analysis.seededNote")}</Alert>
+        ) : (
+          <ReportExport documentId={documentId} analysisId={a.id} />
+        )
+      ) : null}
       {a.report && "signals" in a.report ? <AuthenticitySignals report={a.report} /> : null}
       {a.status === "succeeded" && a.report ? <ClosingNoteView note={buildNote(noteInputOf(a.report, noteSourceOf(source)), locale)} /> : null}
       {a.report ? <p className="text-xs text-fg-muted">{say("analysis.language")}</p> : null}
