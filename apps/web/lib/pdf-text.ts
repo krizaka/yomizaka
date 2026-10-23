@@ -1,3 +1,6 @@
+import { type AcceptedType, DOCX_MIME } from "@yomizaka/core";
+
+import { docxText } from "./docx-text";
 /**
  * Reading a file's text layer — deterministic parsing, no model: a PDF's embedded text (pdf.js, through unpdf) or a text
  * file as UTF-8. It is the input of Orazaka's compliance Studio and of search. A scanned PDF has no text layer: `text`
@@ -25,7 +28,8 @@ export function normaliseText(raw: string): string {
     .trim();
 }
 
-export async function readText(mimeType: "application/pdf" | "text/plain", bytes: Uint8Array): Promise<ReadText> {
+export async function readText(mimeType: AcceptedType, bytes: Uint8Array): Promise<ReadText> {
+  if (mimeType === DOCX_MIME) return { text: normaliseText(docxText(bytes)), pages: null };
   if (mimeType === "text/plain") return { text: normaliseText(new TextDecoder("utf-8", { fatal: false }).decode(bytes)), pages: null };
   const { extractText, getDocumentProxy } = await import("unpdf");
   const pdf = await getDocumentProxy(new Uint8Array(bytes));

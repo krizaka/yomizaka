@@ -15,7 +15,7 @@ import { ROUTE_STATES } from "@/lib/route-state";
 import { useRouteState } from "@/lib/use-route-state";
 
 /** What the drop zone offers: PDF, text and photos. A HEIC is named by extension too (a browser often gives it no type). */
-const ACCEPT = "application/pdf,text/plain,image/png,image/jpeg,image/heic,image/heif,.pdf,.txt,.png,.jpg,.jpeg,.heic,.heif";
+const ACCEPT = "application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/png,image/jpeg,image/heic,image/heif,.pdf,.txt,.docx,.png,.jpg,.jpeg,.heic,.heif";
 const isPhotoFile = (file: File) => /^image\/(png|jpeg|heic|heif)$/.test(file.type) || /\.(png|jpe?g|heic|heif)$/i.test(file.name);
 
 export interface Placement {

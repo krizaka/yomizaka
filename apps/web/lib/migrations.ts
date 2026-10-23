@@ -449,4 +449,12 @@ ALTER TABLE collections ADD COLUMN description text CHECK (description IS NULL O
     // @krizaka/auth: what the shared account adapter needs on top of 0014 (name, avatar seed, e-mail changes) — the theme the person chose. Idempotent.
     sql: accountsMigration(),
   },
+  {
+    version: "0024_word_documents",
+    sql: `
+-- yomizaka#229: a Word file (.docx) is a document — its text read for the checks, the file examined for authenticity.
+ALTER TABLE documents DROP CONSTRAINT IF EXISTS documents_mime_type_check;
+ALTER TABLE documents ADD CONSTRAINT documents_mime_type_check CHECK (mime_type IN ('application/pdf', 'text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'));
+`,
+  },
 ];

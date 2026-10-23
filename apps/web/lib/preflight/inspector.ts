@@ -43,6 +43,8 @@ interface ZipEntry {
   name: string;
   compressed: number;
   uncompressed: number;
+  /** Where its local header starts, for the one reader that inflates an entry (lib/docx-text). */
+  offset: number;
 }
 
 /** The central directory of a zip, read without inflating anything. Null when it cannot be read. */
@@ -65,7 +67,7 @@ export function zipEntries(bytes: Uint8Array): ZipEntry[] | null {
     const nameLength = view.getUint16(offset + 28, true);
     const extra = view.getUint16(offset + 30, true);
     const comment = view.getUint16(offset + 32, true);
-    entries.push({ compressed: view.getUint32(offset + 20, true), uncompressed: view.getUint32(offset + 24, true), name: Buffer.from(bytes.subarray(offset + 46, offset + 46 + nameLength)).toString("utf8") });
+    entries.push({ compressed: view.getUint32(offset + 20, true), uncompressed: view.getUint32(offset + 24, true), offset: view.getUint32(offset + 42, true), name: Buffer.from(bytes.subarray(offset + 46, offset + 46 + nameLength)).toString("utf8") });
     offset += 46 + nameLength + extra + comment;
   }
   return entries;
@@ -135,6 +137,8 @@ export function createInspector(rules: PreflightRules): DocumentPreflight {
         if (size && size.width * size.height > rules.maxImagePixels) return reject("IMAGE_TOO_LARGE", `${size.width}x${size.height}`);
         return { kind: "accepted", fileKind: detected, sha256, pages: null, facts: null };
       }
+      // A Word file passed the archive guards above (no macro, no bomb): its pages are not counted (no layout here).
+      if (detected === "docx") return { kind: "accepted", fileKind: "docx", sha256, pages: null, facts: null };
       if (detected !== "pdf") return reject("UNSUPPORTED_TYPE", detected);
 
       const raw = ascii(bytes, 0, bytes.length);

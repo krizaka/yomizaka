@@ -17,7 +17,9 @@ export const AUTHENTICITY_MAX_BYTES = 5_000_000;
 /** The longest text Orazaka's compliance Studio reads (its `document` input). */
 export const COMPLIANCE_MAX_CHARS = 60_000;
 /** What can be uploaded: a PDF (its text layer is read) or plain text. */
-export const ACCEPTED_TYPES = ["application/pdf", "text/plain"] as const;
+/** A Word file (.docx), accepted since yomizaka#229: its text is read for the checks, the file itself is examined for authenticity. */
+export const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+export const ACCEPTED_TYPES = ["application/pdf", "text/plain", DOCX_MIME] as const;
 export const acceptedType = z.enum(ACCEPTED_TYPES);
 export type AcceptedType = z.infer<typeof acceptedType>;
 

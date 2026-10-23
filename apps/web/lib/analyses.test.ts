@@ -1,3 +1,4 @@
+import { DOCX_MIME } from "@yomizaka/core";
 import { describe, expect, it } from "vitest";
 
 import { runInputs, searchText } from "./analyses";
@@ -27,7 +28,10 @@ describe("what Yomizaka sends to Orazaka", () => {
   it("refuses what a Studio cannot read, before calling Orazaka", () => {
     expect(() => runInputs({ studio: "compliance-check", jurisdiction: "FR" }, { mimeType: "application/pdf", text: "  ", content: pdf(1) })).toThrow(/no text layer/);
     expect(() => runInputs({ studio: "compliance-check", jurisdiction: "FR" }, { mimeType: "text/plain", text: "a".repeat(60_001), content: Buffer.from("a") })).toThrow(/longer/);
-    expect(() => runInputs({ studio: "document-authenticity" }, { mimeType: "text/plain", text: "x", content: Buffer.from("x") })).toThrow(/PDF files/);
+    expect(() => runInputs({ studio: "document-authenticity" }, { mimeType: "text/plain", text: "x", content: Buffer.from("x") })).toThrow(/PDF and Word files/);
+    // A Word file is examined as a file too (yomizaka#229, document-authenticity 1.3.0).
+    const word = Buffer.from("PK\u0003\u0004 word");
+    expect(runInputs({ studio: "document-authenticity" }, { mimeType: DOCX_MIME, text: "", content: word })).toEqual({ documentBase64: word.toString("base64") });
     expect(() => runInputs({ studio: "document-authenticity" }, { mimeType: "application/pdf", text: "", content: pdf(5_000_001) })).toThrow(/5 MB/);
   });
 });
