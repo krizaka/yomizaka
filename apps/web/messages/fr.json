@@ -27,7 +27,8 @@
     "version": "v{version}",
     "terms": "Conditions",
     "download": "Télécharger",
-    "openApp": "Ouvrir l'app",
+    "openApp": "Ouvrir mes documents",
+    "myDocuments": "Mes documents",
     "tryIt": "Essayer Yomizaka",
     "account": "Compte",
     "settings": "Réglages",
@@ -48,6 +49,7 @@
       "findingCaption": "Ce que Yomizaka renvoie, avec sa source"
     },
     "signIn": "Se connecter",
+    "openApp": "Ouvrir mes documents",
     "what": {
       "title": "Ce que ça fait",
       "lead": "Trois choses, sans rien de caché derrière.",
@@ -162,10 +164,11 @@
       "checks": "Vérifications",
       "checkAction": "Vérifier un document",
       "profile": "Profil",
-      "settings": "Paramètres",
+      "settings": "Réglages",
       "billing": "Facturation",
       "titles": {
         "library": "Bibliothèque",
+        "checks": "Vérifications",
         "check": "Vérifier un document",
         "search": "Recherche",
         "document": "Document",
@@ -191,6 +194,8 @@
         "other": "Tout autre document"
       },
       "kindLabel": "Type des prochains documents",
+      "lead": "Vos documents, par collection — et chaque rapport.",
+      "checkLead": "Un fichier à la fois ; plusieurs d’un coup ? Importez un lot.",
       "caption": "Vos documents",
       "columns": {
         "title": "Document",
@@ -419,6 +424,7 @@
       }
     },
     "search": {
+      "lead": "Un mot, et chaque document et chaque constat reviennent.",
       "title": "Recherche",
       "label": "Chercher dans vos documents et leurs constats",
       "placeholder": "dépôt de garantie, facture 2026, « solidarité »…",
@@ -1369,6 +1375,29 @@
         "current": "En cours",
         "upcoming": "À venir",
         "error": "Échec"
+      }
+    },
+    "checks": {
+      "title": "Vérifications",
+      "lead": "Chaque vérification, son résultat et son exécution — la plus récente d’abord.",
+      "tabsLabel": "Sections des vérifications",
+      "tabs": {
+        "checks": "Vérifications",
+        "lots": "Lots"
+      },
+      "import": "Importer un lot",
+      "empty": {
+        "title": "Aucune vérification encore",
+        "text": "Déposez un bail, une fiche de paie ou une facture : Yomizaka le lit selon les règles du Québec et le résultat arrive ici."
+      },
+      "caption": "Vos vérifications",
+      "columns": {
+        "document": "Document",
+        "kind": "Type",
+        "check": "Vérification",
+        "result": "Résultat",
+        "when": "Quand",
+        "run": "Exécution"
       }
     },
     "batch": {

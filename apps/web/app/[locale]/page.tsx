@@ -1,15 +1,14 @@
-import { Button } from "@krizaka/ui/button";
 import { Page, Section } from "@krizaka/ui/page";
 import { PageHero } from "@krizaka/ui/page-hero";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { BarQueryRoot, HeroActions } from "@/components/BarSession";
 import { BeforeAfter } from "@/components/home/BeforeAfter";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
 import { asLocale, format, getDictionary } from "@/lib/i18n";
 import { HERO_FIGURES, productStatus } from "@/lib/landing";
-import { signInPath } from "@/lib/nav";
 import { recordedRun } from "@/lib/recorded-runs";
 import { pageMetadata, siteJsonLd } from "@/lib/seo";
 import { pagePath } from "@/lib/site";
@@ -35,16 +34,13 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
-      <SiteHeader locale={locale} current="home" />
-      <main id="content" className="pt-20">
-        <PageHero title={d.title} lead={d.lead} backdrop="plain">
-          <div className="flex flex-wrap items-center gap-3">
-            <Button asChild variant="primary" size="lg">
-              <Link href={signInPath(locale)}>{d.signIn}</Link>
-            </Button>
-          </div>
-          <p className="mt-4 max-w-[60ch] text-sm text-fg-secondary">{d.status[productStatus(preview)]}</p>
-        </PageHero>
+      <BarQueryRoot>
+        <SiteHeader locale={locale} current="home" provider={false} />
+        <main id="content" className="pt-20">
+          <PageHero title={d.title} lead={d.lead} backdrop="plain">
+            {/* Signed in, « Ouvrir mes documents »; otherwise « Se connecter » and the status line — the same answer as the bar (F0). */}
+            <HeroActions locale={locale} status={d.status[productStatus(preview)]} />
+          </PageHero>
         <Page>
           <Section id="what" title={d.what.title} lead={d.what.lead} spacing="sm">
             <ul className="m-0 grid list-none gap-6 p-0 md:grid-cols-3">
@@ -76,7 +72,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             </p>
           </Section>
         </Page>
-      </main>
+        </main>
+      </BarQueryRoot>
       <SiteFooter locale={locale} />
     </>
   );

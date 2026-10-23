@@ -1,13 +1,14 @@
-import type { Analysis, Audience, FlowEnvironment, StartAnalysis } from "@yomizaka/core";
+import type { Analysis, AnalysisStatus, Audience, DocumentKind, DocumentStatus, FlowEnvironment, StartAnalysis, Studio } from "@yomizaka/core";
 
 import { storeForDocument } from "@/app/active-store";
 
 import { getAnalysis, startAnalysis } from "./analyses";
 import { type AuditVia, releaseAudit, reserveAudit } from "./billing";
 import { query } from "./db";
-import { isPhotoDocument } from "./documents";
+import { documentStatus, isPhotoDocument } from "./documents";
 import { resolveStart } from "./flows";
 import { refuse } from "./http";
+import type { Query } from "./organisation/store";
 import { findReusableAnalysis, recordPreflight } from "./preflight-events";
 import { auditCapsOf } from "./settings/boundary";
 import { settingsFor } from "./settings/guards";
@@ -44,4 +45,44 @@ export async function startCheck(account: { id: string; perspective: Audience | 
     await releaseAudit(query, account.id, via);
     throw error;
   }
+}
+
+/** One check of the Vérifications list (the UX review's § 4.1): the document it read, what ran, how it ended, and its Orazaka run. */
+export interface CheckSummary {
+  id: string;
+  documentId: string;
+  title: string;
+  kind: DocumentKind;
+  studio: Studio;
+  /** The run's state, then the report's own attention flag — Orazaka's answer in the library's words, never a verdict of Yomizaka's. */
+  result: DocumentStatus;
+  runId: string | null;
+  /** When it finished, or started while it runs (ISO). */
+  at: string;
+}
+
+interface CheckRow {
+  id: string;
+  document_id: string;
+  title: string;
+  kind: DocumentKind;
+  studio: Studio;
+  status: AnalysisStatus;
+  attention: boolean;
+  run_id: string | null;
+  at: Date;
+}
+
+/** Every check of the owner, newest first — the Vérifications destination (filters in the address come with Y6). */
+export async function listChecks(q: Query, owner: string, limit = 500): Promise<CheckSummary[]> {
+  const rows = await q<CheckRow>(
+    `SELECT a.id, a.document_id, d.title, d.kind, a.studio, a.status, coalesce((a.report->>'attention')::boolean, false) AS attention, a.run_id,
+            coalesce(a.finished_at, a.created_at) AS at
+       FROM analyses a JOIN documents d ON d.id = a.document_id
+      WHERE d.owner_id = $1
+      ORDER BY coalesce(a.finished_at, a.created_at) DESC, a.id
+      LIMIT $2`,
+    [owner, limit],
+  );
+  return rows.map((r) => ({ id: r.id, documentId: r.document_id, title: r.title, kind: r.kind, studio: r.studio, result: documentStatus([{ status: r.status, attention: r.attention }]), runId: r.run_id, at: r.at.toISOString() }));
 }

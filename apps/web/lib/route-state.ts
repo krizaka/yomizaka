@@ -1,5 +1,7 @@
 import { DOCUMENT_KINDS } from "@yomizaka/core";
 
+import { CHECKS_TAB_KEY, CHECKS_TABS, type ChecksTab } from "./console-nav";
+
 /** A choice that lives in the address: `?<key>=<value>`, one of a closed list, absent when it is the default. */
 export interface RouteState<V extends string> {
   key: string;
@@ -22,6 +24,8 @@ export const ROUTE_STATES = {
   /** Several photos dropped together are the pages of one document (the default), or separate documents. */
   groupPhotos: { path: "/app/verifier", state: { key: "pages", values: GROUP_CHOICES, fallback: "1" } satisfies RouteState<GroupChoice> },
   keepDocuments: { path: "/app/verifier", state: { key: "conserver", values: KEEP_CHOICES, fallback: "0" } satisfies RouteState<KeepChoice> },
+  /** The tab of the Vérifications destination: the list of checks, or the batches (« Lots »). */
+  checksTab: { path: "/app/verifications", state: { key: CHECKS_TAB_KEY, values: CHECKS_TABS, fallback: "checks" } satisfies RouteState<ChecksTab> },
 } as const;
 
 /** The value in the address; an unknown or missing one is the default (a stale link never breaks the page). */

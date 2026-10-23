@@ -3,34 +3,57 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { activeNav, CONSOLE_ROUTES, DOCUMENT_TABS, isDocumentTab, titleOf, withoutLocale } from "./console-nav";
+import { activeNav, CHECKS_TABS, checksTabHref, checksTabOf, CONSOLE_ROUTES, DOCUMENT_TABS, isDocumentTab, isSettingsSection, SETTINGS_SECTIONS, withoutLocale } from "./console-nav";
+import { ROUTE_STATES } from "./route-state";
 
 const ROOT = join(__dirname, "..");
 const app = (p: string) => join(ROOT, "app/[locale]/(app)/app", p);
+const read = (p: string) => readFileSync(join(ROOT, p), "utf8");
 
 describe("the rail's active entry comes from the route", () => {
   it.each([
     ["/fr/app", "library"],
     ["/en/app/documents/abc/verifications", "library"],
-    ["/fr/app/verifier", "check"],
+    ["/fr/app/bibliotheque/lib/coll", "library"],
+    ["/fr/app/bibliotheque/lib/coll/folder", "library"],
+    ["/fr/app/screening", "library"],
+    ["/fr/app/verifications", "checks"],
+    ["/fr/app/verifications/", "checks"],
+    ["/fr/app/verifier", "checks"],
+    ["/fr/app/verifier/lots/abc", "checks"],
     ["/fr/app/recherche?q=bail".split("?")[0]!, "search"],
     ["/fr/app/search", "search"],
     ["/fr/app/settings", "account"],
     ["/fr/app/settings/profil", "account"],
-    ["/fr/app/screening", "library"],
   ])("%s → %s", (path, nav) => expect(activeNav(path)).toBe(nav));
   it("an unknown path belongs to no entry", () => {
     expect(activeNav("/fr/elsewhere")).toBeNull();
   });
-  it("the top bar shows the page, not the navigation", () => {
-    expect(titleOf("/fr/app/documents/abc/texte")).toBe("document");
-    expect(titleOf("/fr/app/recherche")).toBe("search");
-    expect(titleOf("/en/app/verifier")).toBe("check");
-    expect(titleOf("/fr/app/bienvenue")).toBe("welcome");
-  });
   it("strips the language segment only", () => {
     expect(withoutLocale("/fr/app/x")).toBe("/app/x");
     expect(withoutLocale("/frog/app")).toBe("/frog/app");
+  });
+});
+
+describe("Vérifications is a destination; its « Lots » tab lives in the address", () => {
+  it("knows its two tabs, falls back on the list, and keeps the first tab's address clean", () => {
+    expect(CHECKS_TABS).toEqual(["checks", "lots"]);
+    expect(checksTabOf("lots")).toBe("lots");
+    expect(checksTabOf("checks")).toBe("checks");
+    expect(checksTabOf(null)).toBe("checks");
+    expect(checksTabOf("nope")).toBe("checks");
+    expect(checksTabHref("fr", "checks")).toBe("/fr/app/verifications");
+    expect(checksTabHref("en", "lots")).toBe("/en/app/verifications?tab=lots");
+    expect(ROUTE_STATES.checksTab).toEqual({ path: "/app/verifications", state: { key: "tab", values: CHECKS_TABS, fallback: "checks" } });
+  });
+  it("has its page, and the old batches address answers 308 to the tab (a batch's own page keeps its address)", () => {
+    expect(existsSync(app("verifications/page.tsx"))).toBe(true);
+    const old = readFileSync(app("verifier/lots/page.tsx"), "utf8");
+    expect(old).toContain("permanentRedirect(");
+    expect(old).toContain('checksTabHref(');
+    expect(old).toContain('"lots"');
+    expect(existsSync(app("verifier/lots/[id]/page.tsx"))).toBe(true);
+    expect(read("components/console/CheckView.tsx")).toContain('checksTabHref(locale, "lots")');
   });
 });
 
@@ -46,7 +69,7 @@ describe("tabs are routes: the URL is the state", () => {
     expect(readFileSync(app("documents/[id]/[tab]/page.tsx"), "utf8")).toMatch(/isDocumentTab\(tab\)\) notFound\(\)/);
   });
   it("the view takes its tab from the route and a click navigates (no local tab state)", () => {
-    const view = readFileSync(join(ROOT, "components/console/DocumentView.tsx"), "utf8");
+    const view = read("components/console/DocumentView.tsx");
     expect(view).toContain("value={tab}");
     expect(view).toContain("router.push(`/${locale}/app/documents/${initial.id}/${next}`");
     expect(view).not.toMatch(/useState\([^)]*"(file|text)"/);
@@ -55,16 +78,14 @@ describe("tabs are routes: the URL is the state", () => {
     expect(CONSOLE_ROUTES.search).toBe("/app/recherche");
     expect(existsSync(app("recherche/page.tsx"))).toBe(true);
     expect(readFileSync(app("search/page.tsx"), "utf8")).toContain("redirect(");
-    expect(readFileSync(join(ROOT, "components/console/SearchView.tsx"), "utf8")).toContain("router.replace");
+    expect(read("components/console/SearchView.tsx")).toContain("router.replace");
   });
   it("the rail has no local active state", () => {
-    const shell = readFileSync(join(ROOT, "components/console/ConsoleShell.tsx"), "utf8");
+    const shell = read("components/console/ConsoleShell.tsx");
     expect(shell).toContain("activeNav(path)");
     expect(shell).not.toMatch(/useState/);
   });
 });
-
-import { isSettingsSection, SETTINGS_SECTIONS } from "./console-nav";
 
 describe("the settings' sections are routes", () => {
   it("lists them in order and knows only them", () => {
@@ -82,35 +103,47 @@ describe("the settings' sections are routes", () => {
   });
 });
 
-describe("the shell follows Orazaka's pattern", () => {
-  const shell = readFileSync(join(ROOT, "components/console/ConsoleShell.tsx"), "utf8");
+describe("the shell follows Orazaka's pattern (krizaka/yomizaka#278, the UX review's Y1)", () => {
+  const shell = read("components/console/ConsoleShell.tsx");
   const railItems = shell.match(/<RailNav\.Item\b/g) ?? [];
-  it("the rail holds the three destinations only, with no footer and no « + » action", () => {
+  it("the rail holds the three destinations only — no footer, no « + » action, no settings cog", () => {
     expect(railItems).toHaveLength(3);
+    for (const route of [CONSOLE_ROUTES.library, CONSOLE_ROUTES.checks, CONSOLE_ROUTES.search]) expect(shell).toContain(`href(CONSOLE_ROUTES.${Object.entries(CONSOLE_ROUTES).find(([, v]) => v === route)![0]})`);
     expect(shell).not.toContain("footer={");
     expect(shell).not.toMatch(/<RailNav\.Item[^>]*PlusIcon/);
+    expect(shell).not.toMatch(/<RailNav\.Item[^>]*SettingsIcon/);
   });
-  it("« Check a document » is the header's primary cut button, at every width", () => {
-    expect(shell).toMatch(/<ButtonLink\b(?=[^>]*\bvariant="primary")(?=[^>]*\bshape="cut")[^>]*>[\s\S]*shell\.checkAction/);
-    expect(shell).not.toMatch(/(sm|md|lg):(inline|hidden|block)|className="hidden/);
+  it("the header names the product, carries the DEV chip, and « Vérifier un document » as its primary cut button", () => {
+    expect(shell).toContain('name="Yomizaka"');
+    expect(shell).not.toContain("titleOf(");
+    expect(shell).toMatch(/chips=\{[\s\S]*data-testid="app-version"/);
+    expect(shell).toMatch(/<ButtonLink\b(?=[^>]*\bvariant="primary")(?=[^>]*\bshape="cut")(?=[^>]*aria-label=\{say\("shell\.checkAction"\)\})[^>]*data-testid="header-check"/);
   });
-  it("the account menu has profile, settings, billing, language, theme and sign out; nothing sends the owner elsewhere", () => {
+  it("the account menu has profile, settings, billing, language, a labelled theme row and sign out; the name shows only when there is one; nothing sends the owner elsewhere", () => {
     for (const id of ["profile", "settings", "billing"]) expect(shell).toContain(`id: "${id}"`);
     expect(shell).toContain("language={{");
-    expect(shell).toContain("ThemeToggle");
+    expect(shell).toContain('data-testid="theme-row"');
     expect(shell).toContain("signOut={{");
+    expect(shell).toContain("showName={Boolean(name)}");
+    expect(shell).not.toContain("name ?? email}");
     for (const l of ["en", "fr"]) {
-      const m = JSON.parse(readFileSync(join(ROOT, `messages/${l}.json`), "utf8"));
+      const m = JSON.parse(read(`messages/${l}.json`));
       expect(JSON.stringify(m)).not.toMatch(/Ouvrir la plateforme|Open the platform/i);
     }
   });
   it("the type picker is a labelled choice with « auto » preselected and a hint each", () => {
-    const view = readFileSync(join(ROOT, "components/console/CheckView.tsx"), "utf8");
+    const view = read("components/console/CheckView.tsx");
     expect(view).toContain("library.kindPick");
     expect(view).toContain("RadioGroup.Button");
     expect(view).not.toContain("RadioGroup.Segment");
     expect(ROUTE_STATES.checkKind.state.fallback).toBe("auto");
   });
+  it("every signed-in page draws its h1 with PageHeader (the header names the product, never the page)", () => {
+    for (const file of ["components/console/LibraryView.tsx", "components/console/CheckView.tsx", "components/console/ChecksView.tsx", "components/console/SearchView.tsx", "components/console/DocumentView.tsx", "components/console/PlaceView.tsx", "components/console/BatchProgress.tsx", "app/[locale]/(app)/app/settings/[section]/page.tsx", "app/[locale]/(app)/app/bienvenue/page.tsx"]) {
+      expect(read(file), file).toContain('from "@krizaka/ui/page-header"');
+      expect(read(file), file).toMatch(/<PageHeader\b/);
+      expect(read(file), file).not.toMatch(/<h1\b/);
+    }
+    expect(read("components/screening/LandlordScreening.tsx")).toMatch(/<h1\b/);
+  });
 });
-
-import { ROUTE_STATES } from "./route-state";

@@ -5,6 +5,7 @@ import { krizakaFetch, useMutation } from "@krizaka/query";
 import { YomizakaLogo } from "@krizaka/ui";
 import { AccountMenu } from "@krizaka/ui/account-menu";
 import { AppHeader } from "@krizaka/ui/app-header";
+import { Badge } from "@krizaka/ui/badge";
 import { languagesFor } from "@krizaka/ui/language-switch";
 import { RailNav } from "@krizaka/ui/rail-nav";
 import { ThemeToggle } from "@krizaka/ui/theme";
@@ -12,16 +13,18 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 import { ButtonLink } from "@/components/ButtonLink";
-import { activeNav, CONSOLE_ROUTES, titleOf, withoutLocale } from "@/lib/console-nav";
+import { activeNav, CONSOLE_ROUTES, withoutLocale } from "@/lib/console-nav";
 import { useSay } from "@/lib/i18n-client";
 
 const BUILD = process.env.NEXT_PUBLIC_APP_VERSION ?? "";
 const ADMIN_URL = "https://admin.yomizaka.com";
 
 /**
- * The frame of the signed-in space, on the Krizaka family's model (Orochia): `RailNav` — a column of icons on a desktop that
- * widens to words, the bottom tab bar on a phone — with `AppHeader` (the page's title and its actions) and the `AccountMenu`.
- * The active entry comes from the route (lib/console-nav.ts), never from local state; each destination exists once.
+ * The frame of the signed-in space, on Orazaka's pattern (krizaka/yomizaka#278, the UX review of October 2026): where you work
+ * on the rail — Bibliothèque · Vérifications · Recherche, destinations only, the collapse control alone at its foot —; the
+ * product's name in the header (`AppHeader`) with the DEV chip and the one action of every screen, « Vérifier un document »;
+ * who you are under the avatar: profile, settings, billing, language, theme, sign out (Administration for an administrator).
+ * The active entry comes from the route (lib/console-nav.ts), never from local state; each page draws its own `h1` (`PageHeader`).
  */
 export function ConsoleShell({ locale, email, name, avatarSeed, role, children }: { locale: "en" | "fr"; email: string; name?: string; avatarSeed?: string; role: "USER" | "ADMIN"; children: React.ReactNode }) {
   const { say } = useSay();
@@ -37,16 +40,16 @@ export function ConsoleShell({ locale, email, name, avatarSeed, role, children }
       router.refresh();
     },
   });
-  // The signed-in person is always visible (yomizaka#243): the header's account menu, on every width — avatar, name and e-mail,
-  // settings, theme, language, sign out. (The rail's footer would add an empty column to the phone's tab bar: see the PR.)
+  // The signed-in person is always visible (yomizaka#243): the header's account menu, on every width. The trigger shows the
+  // name only when there is one — never the raw e-mail address (the review's A4); the menu's identity header carries both.
   const languages = languagesFor(`/${locale}${rest}`);
   const account = () => (
     <span className="flex">
       <AccountMenu
         label={say("shell.account")}
-        name={name ?? email}
+        name={name}
         email={email}
-        showName
+        showName={Boolean(name)}
         avatar={{ defaultAvatar: { brand: "yomizaka", seed: avatarSeed ?? email }, fallback: (name ?? email).charAt(0).toUpperCase() }}
         linkAs={Link}
         links={[
@@ -58,14 +61,11 @@ export function ConsoleShell({ locale, email, name, avatarSeed, role, children }
         language={{ label: say("shell.language"), value: locale, options: languages.map((l) => ({ value: l.code, label: l.name })), onChange: (to) => router.push(languages.find((l) => l.code === to)?.href ?? `/${to}${rest}`) }}
         signOut={{ label: say("shell.signOut"), onSelect: () => signOut.mutate(), icon: <LogoutIcon size={16} /> }}
       >
-        <div className="px-3 py-1">
+        {/* A theme row with its visible word (the review's A5): krizaka-ui K3 asks AccountMenu for a `theme` prop; this stands until it ships. */}
+        <div className="flex items-center justify-between gap-3 px-3 py-1 text-sm text-fg" data-testid="theme-row">
+          <span>{say("shell.theme")}</span>
           <ThemeToggle label={say("shell.theme")} variant="ghost" />
         </div>
-        {BUILD ? (
-          <p className="px-3 py-1 text-xs text-fg-muted" data-testid="app-version">
-            {say("shell.devBuild", { version: BUILD })}
-          </p>
-        ) : null}
       </AccountMenu>
     </span>
   );
@@ -80,7 +80,7 @@ export function ConsoleShell({ locale, email, name, avatarSeed, role, children }
         expandable
         expandLabels={[say("shell.expand"), say("shell.collapse")]}
         mark={
-          <Link href={href(CONSOLE_ROUTES.library)} aria-label="Yomizaka" title={BUILD ? `Yomizaka · ${say("shell.devBuild", { version: BUILD })}` : "Yomizaka"}>
+          <Link href={href(CONSOLE_ROUTES.library)} aria-label="Yomizaka" title="Yomizaka">
             <YomizakaLogo size={28} animated={false} />
           </Link>
         }
@@ -88,8 +88,8 @@ export function ConsoleShell({ locale, email, name, avatarSeed, role, children }
         <RailNav.Item asChild icon={<HomeIcon size={22} />} label={say("shell.library")} current={active === "library"}>
           <Link href={href(CONSOLE_ROUTES.library)} />
         </RailNav.Item>
-        <RailNav.Item asChild icon={<CheckIcon size={22} />} label={say("shell.checks")} current={active === "check"}>
-          <Link href={href(CONSOLE_ROUTES.check)} />
+        <RailNav.Item asChild icon={<CheckIcon size={22} />} label={say("shell.checks")} current={active === "checks"}>
+          <Link href={href(CONSOLE_ROUTES.checks)} />
         </RailNav.Item>
         <RailNav.Item asChild icon={<SearchIcon size={22} />} label={say("shell.search")} current={active === "search"}>
           <Link href={href(CONSOLE_ROUTES.search)} />
@@ -97,14 +97,22 @@ export function ConsoleShell({ locale, email, name, avatarSeed, role, children }
       </RailNav.Root>
       <RailNav.Body className="min-w-0 flex-1">
         <AppHeader
-          name={say(`shell.titles.${titleOf(path)}`)}
+          name="Yomizaka"
           mark={<YomizakaLogo size={26} animated={false} />}
           homeLink={<Link href={href(CONSOLE_ROUTES.library)} aria-label="Yomizaka" />}
+          chips={
+            BUILD ? (
+              <Badge tone="neutral" size="sm" data-testid="app-version">
+                {say("shell.devBuild", { version: BUILD })}
+              </Badge>
+            ) : undefined
+          }
           actions={
             <>
-              <ButtonLink href={href(CONSOLE_ROUTES.check)} variant="primary" size="sm" shape="cut" data-testid="header-check">
+              {/* The one action of every signed-in screen: its word from `sm`, its icon and accessible name below (krizaka-ui K2 asks AppHeader for a `primary` slot). */}
+              <ButtonLink href={href(CONSOLE_ROUTES.check)} variant="primary" size="sm" shape="cut" aria-label={say("shell.checkAction")} title={say("shell.checkAction")} data-testid="header-check">
                 <PlusIcon size={16} aria-hidden />
-                {say("shell.checkAction")}
+                <span className="hidden sm:inline">{say("shell.checkAction")}</span>
               </ButtonLink>
               {account()}
             </>

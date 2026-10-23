@@ -27,7 +27,8 @@
     "version": "v{version}",
     "terms": "Terms",
     "download": "Download",
-    "openApp": "Open the app",
+    "openApp": "Open my documents",
+    "myDocuments": "My documents",
     "tryIt": "Try Yomizaka",
     "account": "Account",
     "settings": "Settings",
@@ -48,6 +49,7 @@
       "findingCaption": "What Yomizaka returns, with its source"
     },
     "signIn": "Sign in",
+    "openApp": "Open my documents",
     "what": {
       "title": "What it does",
       "lead": "Three things, with nothing hidden behind them.",
@@ -166,6 +168,7 @@
       "billing": "Billing",
       "titles": {
         "library": "Library",
+        "checks": "Checks",
         "check": "Check a document",
         "search": "Search",
         "document": "Document",
@@ -191,6 +194,8 @@
         "other": "Any other document"
       },
       "kindLabel": "Kind of the next documents",
+      "lead": "Your documents, by collection — and every report.",
+      "checkLead": "One file at a time; many at once? Import a batch.",
       "caption": "Your documents",
       "columns": {
         "title": "Document",
@@ -419,6 +424,7 @@
       }
     },
     "search": {
+      "lead": "One word, and every document and every finding comes back.",
       "title": "Search",
       "label": "Search your documents and their findings",
       "placeholder": "dépôt de garantie, invoice 2026, “solidarité”…",
@@ -1369,6 +1375,29 @@
         "current": "In progress",
         "upcoming": "Upcoming",
         "error": "Failed"
+      }
+    },
+    "checks": {
+      "title": "Checks",
+      "lead": "Every check, its result and its run — newest first.",
+      "tabsLabel": "Checks sections",
+      "tabs": {
+        "checks": "Checks",
+        "lots": "Batches"
+      },
+      "import": "Import a batch",
+      "empty": {
+        "title": "No check yet",
+        "text": "Drop a lease, a pay stub or an invoice: Yomizaka reads it against Québec's rules and the result lands here."
+      },
+      "caption": "Your checks",
+      "columns": {
+        "document": "Document",
+        "kind": "Kind",
+        "check": "Check",
+        "result": "Result",
+        "when": "When",
+        "run": "Run"
       }
     },
     "batch": {

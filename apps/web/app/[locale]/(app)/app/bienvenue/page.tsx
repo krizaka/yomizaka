@@ -1,3 +1,4 @@
+import { PageHeader } from "@krizaka/ui/page-header";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
@@ -19,7 +20,8 @@ export default async function WelcomePage({ params }: { params: Promise<{ locale
   const done = welcomeTarget(session?.account.perspective ?? null);
   if (done) redirect(`/${locale}${done}`);
   return (
-    <div className="mx-auto max-w-xl">
+    <div className="mx-auto flex max-w-xl flex-col gap-4">
+      <PageHeader title={getDictionary(locale).console.shell.titles.welcome} />
       <PerspectiveChooser current={null} audiences={audiencesOf(await availableFlows(appEnvironment()))} onboarding next={`/${locale}/app`} />
     </div>
   );

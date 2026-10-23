@@ -1,7 +1,7 @@
 "use client";
 
 import { Badge } from "@krizaka/ui/badge";
-import { DataTable, type DataTableColumn, DataTableFilters, type DataTableFilterState, type DataTableLabels, type DataTableSort } from "@krizaka/ui/data-table";
+import { DataTable, type DataTableColumn, DataTableFilters, type DataTableFilterState, type DataTableSort } from "@krizaka/ui/data-table";
 import { useRouteState as useUrlState } from "@krizaka/ui/router";
 import { DOCUMENT_KINDS, DOCUMENT_STATUSES, type DocumentSummary } from "@yomizaka/core";
 import Link from "next/link";
@@ -13,6 +13,7 @@ import { PAGE_SIZES, pageOf, pageSizeOf, parseList, sortOf, sortParam, TABLE_DEF
 
 import { formatBytes, formatDate } from "./format";
 import { ItemMenu, type Option, type TagOption } from "./OrganisationActions";
+import { tableLabels } from "./table-labels";
 import { TagChips } from "./TagChips";
 
 /** What the row menu needs to move and tag a document: the destinations, the owner's tags and each document's own. */
@@ -98,19 +99,7 @@ export function DocumentTable({ rows, caption, organise }: { rows: DocumentSumma
     setStatus(Array.isArray(next.status) ? next.status.join(",") : "");
     setPage(TABLE_DEFAULTS.page);
   };
-  const labels = useMemo<Partial<DataTableLabels>>(
-    () => ({
-      empty: say("library.table.empty"),
-      results: (count) => say("library.table.results", { count }),
-      filters: say("library.table.filters"),
-      clearFilters: say("library.table.clear"),
-      removeFilter: (label) => say("library.table.remove", { label }),
-      activeFilter: (header, value) => `${header} : ${value}`,
-      search: (header) => say("library.table.search", { header }),
-      pagination: { nav: say("library.table.pagination"), previous: say("library.table.previous"), next: say("library.table.next"), page: (n) => say("library.table.page", { page: n }), compact: (n, count) => say("library.table.compact", { page: n, count }), pageSize: say("library.table.pageSize") },
-    }),
-    [say],
-  );
+  const labels = useMemo(() => tableLabels(say), [say]);
   const sort = sortOf(sortRaw, SORTABLE);
   return (
     <DataTable
