@@ -70,6 +70,8 @@ export const SETTINGS = {
   "limits.webhookMaxAttempts": integer(GROUP.limits, 6, { min: 1, max: 12, unit: "tries" }),
   /** Credits one translation of a report costs (0 = included), from the pricebook. */
   "limits.reportTranslationCredits": integer(GROUP.limits, 0, { min: 0, max: 100, unit: "credits" }, WORKSPACE),
+  /** The heaviest ZIP of a batch's reports the server will build (yomizaka#242). */
+  "limits.batchExportMaxMb": integer(GROUP.limits, 50, { min: 1, max: 200, unit: "MB" }),
   "limits.avatarMaxKb": integer(GROUP.limits, 512, { min: 16, max: 2048, unit: "KB" }),
   "limits.bonusAuditsPerMonth": integer(GROUP.limits, 0, { min: 0, max: 10000, unit: "audits" }, [SCOPE.user]),
   // Plans: what each plan includes (prices stay in Stripe).

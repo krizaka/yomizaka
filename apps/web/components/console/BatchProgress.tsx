@@ -80,11 +80,20 @@ export function BatchProgress({ initial }: { initial: Batch }) {
       <Card.Root className="flex flex-col gap-4 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="font-display text-lg font-bold text-fg">{batch.name}</h2>
-          <Button asChild variant="secondary" size="sm">
-            <a href={`/api/batches/${batch.id}/export`} download>
-              {say("batch.export")}
-            </a>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="secondary" size="sm">
+              <a href={`/api/batches/${batch.id}/export`} download>
+                {say("batch.export")}
+              </a>
+            </Button>
+            {batch.counts.done + batch.counts.reused > 0 ? (
+              <Button asChild variant="secondary" size="sm">
+                <a href={`/api/batches/${batch.id}/export?format=zip&lang=${locale}`} download>
+                  {say("batch.exportZip")}
+                </a>
+              </Button>
+            ) : null}
+          </div>
         </div>
         <Progress value={settled} max={Math.max(total, 1)} label={say("batch.progressLabel")} valueText={say("batch.progress", { settled, total })} showLabel status={waitsForAccount(batch.pausedBy) ? "paused" : undefined} />
         {waitsForAccount(batch.pausedBy) ? (
