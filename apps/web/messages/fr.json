@@ -98,10 +98,10 @@
     },
     "closing": {
       "title": "Un document, une réponse.",
-      "body": "Connectez-vous pour vérifier un document. Vos documents restent au Canada, visibles par votre seul compte."
+      "body": "Connectez-vous pour vérifier un document. Vos documents restent au Canada, visibles par votre seul compte.",
+      "bodyIn": "Vos documents sont dans votre bibliothèque, vérifiés et gardés au Canada."
     },
     "visual": {
-      "window": "www.yomizaka.com",
       "caption": "Une vraie vérification, enregistrée telle qu'elle est revenue"
     }
   },

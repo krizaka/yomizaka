@@ -2,11 +2,10 @@ import { CheckIcon, EyeIcon, SearchIcon } from "@krizaka/icons";
 import { LandingPage } from "@krizaka/ui/landing-page";
 import { MascotQuote } from "@krizaka/ui/mascot-quote";
 import { Facts, Section } from "@krizaka/ui/page";
-import { DeviceFrame } from "@krizaka/ui/step-showcase";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { BarQueryRoot, HeroActions } from "@/components/BarSession";
+import { BarQueryRoot, ClosingActions, ClosingBody, HeroActions } from "@/components/BarSession";
 import { ButtonLink } from "@/components/ButtonLink";
 import { BeforeAfter } from "@/components/home/BeforeAfter";
 import { SiteHeader } from "@/components/SiteChrome";
@@ -45,7 +44,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
       <BarQueryRoot>
         <SiteHeader locale={locale} current="home" provider={false} />
-        {/* The bar is fixed: the page starts 24 px under it (`--kz-hero-top`, F6, `main[data-landing]` in globals.css) — no void above the hero. */}
+        {/* The bar is fixed: the hero's frame starts 24 px under it (`--kz-hero-top`, F6) — no void above the hero, nothing added on main. */}
         <main id="content" data-landing>
           <LandingPage
             eyebrow={d.eyebrow}
@@ -56,13 +55,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <HeroActions locale={locale} status={d.status[productStatus(preview)]} />
             }
             visual={
-              /* The product's answer, real (the recorded run), in a browser frame — the recorded steps take this place once the final design is captured. */
-              <div data-testid="home-visual">
-                <DeviceFrame kind="browser" title={d.visual.window}>
-                  <div className="p-1 sm:p-2" data-testid="proof-run">
-                    <BeforeAfter locale={locale} />
-                  </div>
-                </DeviceFrame>
+              /* The product's answer, real (the recorded run), in a panel that grows with its text — the recorded steps take this place once the final design is captured. */
+              <div className="rounded-lg border border-border-default bg-surface-1" data-testid="home-visual">
+                <div data-testid="proof-run">
+                  <BeforeAfter locale={locale} />
+                </div>
               </div>
             }
             visualLabel={d.visual.caption}
@@ -83,12 +80,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             })}
             closing={{
               title: d.closing.title,
-              body: d.closing.body,
+              /* The closing call follows the same session answer as the hero (F0): signed in, the way to the documents; signed out, the way in. */
+              body: <ClosingBody signedOut={d.closing.body} signedIn={d.closing.bodyIn} />,
               actions: (
                 <>
-                  <ButtonLink href={`/${locale}/sign-in`} variant="secondary" size="lg" shape="cut">
-                    {d.signIn}
-                  </ButtonLink>
+                  <ClosingActions locale={locale} />
                   <ButtonLink href={pagePath(locale, "privacy")} variant="ghost" size="lg">
                     {d.what.privacy}
                   </ButtonLink>

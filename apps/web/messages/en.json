@@ -98,10 +98,10 @@
     },
     "closing": {
       "title": "One document, one answer.",
-      "body": "Sign in to check a document. Your documents stay in Canada, visible to your account only."
+      "body": "Sign in to check a document. Your documents stay in Canada, visible to your account only.",
+      "bodyIn": "Your documents are in your library, checked and kept in Canada."
     },
     "visual": {
-      "window": "www.yomizaka.com",
       "caption": "A real check, recorded as it came back"
     }
   },

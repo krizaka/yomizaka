@@ -29,11 +29,8 @@ body {
 :root {
   --kz-hero-top: 5.75rem;
 }
-/* The landing (LandingPage draws its own hero, without the PageHero's offset): the page starts under the bar, and the menu's
-   anchor inside the features' heading clears the bar when followed. */
-main[data-landing] {
-  padding-top: var(--kz-hero-top);
-}
+/* The landing's hero frame (`.kz-hero > .kz-frame`, from the blocks) pads itself with --kz-hero-top — nothing added on main.
+   The menu's anchor inside the features' heading clears the bar when followed. */
 main[data-landing] [id="what"] {
   scroll-margin-top: var(--kz-anchor-offset, 96px);
 }

@@ -17,24 +17,25 @@ export const VIEWPORTS = [
 export const PAGES = ["/fr", "/en"];
 export const THEMES = ["dark", "light"];
 
-/** Runs in the page: the bar's bottom, where the page's content starts (its padding box), and the visual's top. */
+/** Runs in the page: the bar's bottom, where the hero's frame starts drawing (its padding box), the visual's top and whether it clips its text. */
 export const MEASURE = `(() => {
   const rect = (el) => (el ? el.getBoundingClientRect() : null);
-  const bar = rect(document.querySelector("nav"));
-  const main = document.querySelector("main");
-  const mainTop = main ? main.getBoundingClientRect().top + parseFloat(getComputedStyle(main).paddingTop) : null;
-  const showcase = rect(document.querySelector('[data-testid="home-visual"]'));
-  return { barBottom: bar ? bar.bottom : null, contentTop: mainTop, showcaseTop: showcase ? showcase.top : null };
+  const bar = rect(document.querySelector("[data-site-bar] > *") ?? document.querySelector("nav"));
+  const frame = document.querySelector("main .kz-hero > .kz-frame") ?? document.querySelector("main");
+  const contentTop = frame ? frame.getBoundingClientRect().top + parseFloat(getComputedStyle(frame).paddingTop) : null;
+  const visual = document.querySelector('[data-testid="home-visual"]');
+  return { barBottom: bar ? bar.bottom : null, contentTop, showcaseTop: visual ? visual.getBoundingClientRect().top : null, visualClipped: visual ? visual.scrollHeight > visual.clientHeight + 1 : null };
 })()`;
 
 /** The problems of one measure, in words. */
 export function problemsOf(m) {
   const where = `${m.path} @${m.width} ${m.theme}`;
-  if (m.barBottom === null || m.contentTop === null) return [`${where}: no bar or no main`];
+  if (m.barBottom === null || m.contentTop === null) return [`${where}: no bar or no hero frame`];
   const out = [];
   const gap = m.contentTop - m.barBottom;
   if (Math.abs(gap - GAP_PX) > TOLERANCE_PX) out.push(`${where}: the page starts ${Math.round(gap)} px under the bar, not ${GAP_PX}`);
   if (m.width < 600 && (m.showcaseTop === null || m.showcaseTop >= m.height)) out.push(`${where}: the product's visual is not on the first screen (top ${m.showcaseTop === null ? "none" : Math.round(m.showcaseTop)} of ${m.height})`);
+  if (m.visualClipped) out.push(`${where}: the product's visual clips its text (the finding and its article must stay readable)`);
   return out;
 }
 
