@@ -37,7 +37,7 @@ function ChecksTable({ rows }: { rows: CheckSummary[] }) {
         card: "title",
         value: (c) => c.title,
         cell: (c) => (
-          <Link href={`/${locale}/app/documents/${c.documentId}/verifications`} className="font-semibold text-fg hover:text-fg-accent hover:underline" aria-label={say("library.open", { title: c.title })}>
+          <Link href={`/${locale}/app/documents/${c.documentId}/rapport`} className="font-semibold text-fg hover:text-fg-accent hover:underline" aria-label={say("library.open", { title: c.title })}>
             {c.title}
           </Link>
         ),

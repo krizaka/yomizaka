@@ -42,7 +42,7 @@ export async function discover(page, base, locale) {
   const document = hrefs.find((h) => /\/app\/documents\/[^/]+(\/|$)/.test(h ?? ""));
   if (document) {
     const id = document.match(/\/app\/documents\/([^/?#]+)/)[1];
-    found.push(`/app/documents/${id}/verifications`, `/app/documents/${id}/infos`);
+    found.push(`/app/documents/${id}/rapport`, `/app/documents/${id}/document`);
   }
   return [...PAGES, ...found];
 }

@@ -39,8 +39,8 @@
     "title": "Document",
     "tabs": {
       "label": "Sections du document",
-      "infos": "Infos",
-      "verifications": "Vérifications"
+      "rapport": "Rapport",
+      "document": "Document"
     },
     "pages": "{count} p.",
     "noChecks": "Aucune vérification pour ce document.",
