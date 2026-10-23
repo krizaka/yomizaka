@@ -83,6 +83,14 @@ default avatars:  @krizaka/ui `Avatar defaultAvatar={{ brand, seed }}` — a gen
 home:  a greeting, one primary action (« New chat »), the figures, the recent work — skeletons while it loads
 ```
 
+Pictures of the reference, signed out (the same tooling, `pr-assets/yomizaka/ux-review-2026-10-reference-orazaka/`):
+[the home's first screen](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/ux-review-2026-10-reference-orazaka/signed-out/home-en-desktop-dark-first.png)
+(the real app in a browser frame beside the promise, three measured figures under it),
+[the full home](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/ux-review-2026-10-reference-orazaka/signed-out/home-en-desktop-dark.png),
+[the sign-in](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/ux-review-2026-10-reference-orazaka/signed-out/login-desktop-dark.png)
+(the mark large, the promise, three pillars, « Forgot password? », the language as a labelled pair),
+[the phone home](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/ux-review-2026-10-reference-orazaka/signed-out/home-en-phone-dark-first.png).
+
 The rules it follows, which Yomizaka will follow too:
 
 1. **Where you work on the rail, who you are under the avatar** — nothing in both; no action on the rail.
