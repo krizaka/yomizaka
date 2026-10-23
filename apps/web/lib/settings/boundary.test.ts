@@ -41,7 +41,7 @@ describe("the audit caps of a plan", () => {
 describe("what the browser may know", () => {
   it("is the limits, the features it shows and the payment display — nothing else", () => {
     const c = clientConfigOf(snapshot({ "features.keepDocuments": false, "payments.display": "live" }));
-    expect(c).toEqual({ maxFileBytes: 10 * 1024 * 1024, allowedTypes: ["pdf", "text", "image", "word"], features: { keepDocuments: false, ownStorage: true, documentInsight: true, assistant: false }, payments: { enabled: true, display: "live" }, avatars: { enabled: true, maxBytes: 512 * 1024, seeds: ["v1", "v2", "v3", "v4", "v5", "v6"] } });
+    expect(c).toEqual({ maxFileBytes: 10 * 1024 * 1024, allowedTypes: ["pdf", "text", "image", "word"], features: { keepDocuments: false, ownStorage: true, documentInsight: true, assistant: false, batches: true }, payments: { enabled: true, display: "live" }, avatars: { enabled: true, maxBytes: 512 * 1024, seeds: ["v1", "v2", "v3", "v4", "v5", "v6"] } });
   });
 
   it("says which avatars the administrator allows, how heavy an uploaded one may be, and whether avatars are on", () => {
