@@ -201,6 +201,24 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
 - **Signal we are wrong**: people look for « Vérifier » on the rail; the Vérifications list is opened less than the
   library's « Dernières vérifications ».
 
+## 12. The library home answers « what did I check » before « what do I have », and takes a file anywhere
+
+- **Decision** (2026-10-23, the UX review's Y3, krizaka/yomizaka#275, #281): under the page's `h1`, the five latest checks
+  come first (from the same list as Vérifications, each a link to its report, « Tout voir » to the destination); the
+  collections are link cards — a place mark, the name in the language being read, the count, the last check's result —
+  with their menu beside the card, never inside the link; the recent documents keep the table, and on a phone its card
+  shows the title and the result only. A file dragged anywhere on the page is checked (`DropOverlay`), and a tray follows
+  the queue while the person keeps browsing. With nothing yet: the owl, one sentence, the only drop zone, two examples.
+- **Problem**: the collection wore the account's person picture (a folder of leases looked like a contact), the home
+  said what Éric had but not what he had checked, the drop zone and its two checkboxes sat on three screens, and a phone
+  printed four label/value rows per document.
+- **Principle**: the answer first; one drop zone per screen, the window itself elsewhere; a card is one link.
+- **Refused**: the latest checks as « the first five recent documents » (a document is not a check); guessing a mark from a
+  collection's name; a dev-only « Charger la démo » button (no endpoint does it; the seed is a script).
+- **Cost**: one neutral place mark for every collection until krizaka-ui #590 ships the set; the checking options (keep,
+  photos as pages) are the owner's defaults when a file is dropped on the page — Y4 asks them once the files are known.
+- **Signal we are wrong**: people open a collection to find the report instead of the latest checks; files dropped on the
+  page land in the default collection when a collection was meant.
 ## 13. The settings on SettingsLayout: routes as sections, flat rows, one save per section, who is signed in on top
 
 - **Decision** (2026-10-23, the UX review's Y2, #281): the five sections stay routes (`/app/settings/<section>`) and are

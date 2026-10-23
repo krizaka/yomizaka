@@ -21,6 +21,55 @@ describe.runIf(enabled)("organisation (ADR-0007)", () => {
     expect(a.id).toBe(b.id);
   });
 
+  it("shows each collection's latest finished check by completion time, isolated by collection and owner", async () => {
+    const owner = await account();
+    const stranger = await account();
+    const library = await org.ensureLibrary(query, owner, "Checks");
+    const otherLibrary = await org.ensureLibrary(query, stranger, "Other checks");
+    const empty = await org.createCollection(query, owner, library.id, "Empty");
+    const checked = await org.createCollection(query, owner, library.id, "Checked");
+    const attention = await org.createCollection(query, owner, library.id, "Attention");
+    const failed = await org.createCollection(query, owner, library.id, "Failed");
+    const outOfOrder = await org.createCollection(query, owner, library.id, "Out of order");
+    const other = await org.createCollection(query, stranger, otherLibrary.id, "Other owner");
+    const documentIn = async (accountId: string, collectionId: string) => {
+      const id = await doc(accountId);
+      await org.placeDocument(query, accountId, id, { collectionId, folderId: null });
+      return id;
+    };
+    const addAnalysis = (documentId: string, status: "running" | "succeeded" | "failed", createdAt: string, finishedAt: string | null, report: object | null = null) =>
+      query(
+        "INSERT INTO analyses (document_id, studio, status, run_id, report, created_at, finished_at) VALUES ($1, 'compliance-check', $2, $3, $4::jsonb, $5::timestamptz, $6::timestamptz)",
+        [documentId, status, `run-${Math.random().toString(36).slice(2)}`, report === null ? null : JSON.stringify(report), createdAt, finishedAt],
+      );
+
+    const checkedDocument = await documentIn(owner, checked.id);
+    await addAnalysis(checkedDocument, "succeeded", "2026-10-01T10:00:00Z", "2026-10-02T10:00:00Z", { attention: false });
+    await addAnalysis(checkedDocument, "running", "2026-10-03T10:00:00Z", null);
+
+    const attentionDocument = await documentIn(owner, attention.id);
+    await addAnalysis(attentionDocument, "succeeded", "2026-10-01T10:00:00Z", "2026-10-04T10:00:00Z", { attention: true });
+
+    const failedDocument = await documentIn(owner, failed.id);
+    await addAnalysis(failedDocument, "failed", "2026-10-05T10:00:00Z", null);
+
+    const outOfOrderDocument = await documentIn(owner, outOfOrder.id);
+    await addAnalysis(outOfOrderDocument, "failed", "2026-10-10T10:00:00Z", "2026-10-20T10:00:00Z");
+    await addAnalysis(outOfOrderDocument, "succeeded", "2026-10-11T10:00:00Z", "2026-10-15T10:00:00Z", { attention: false });
+
+    const otherDocument = await documentIn(stranger, other.id);
+    await addAnalysis(otherDocument, "succeeded", "2026-10-01T10:00:00Z", "2026-10-30T10:00:00Z", { attention: true });
+
+    const ownerCollections = (await org.overview(query, owner))[0]!.collections;
+    const lastCheck = (id: string) => ownerCollections.find((collection) => collection.id === id)!.lastCheck;
+    expect(lastCheck(empty.id)).toBeNull();
+    expect(lastCheck(checked.id)).toEqual({ at: "2026-10-02T10:00:00.000Z", status: "checked" });
+    expect(lastCheck(attention.id)).toEqual({ at: "2026-10-04T10:00:00.000Z", status: "attention" });
+    expect(lastCheck(failed.id)).toEqual({ at: "2026-10-05T10:00:00.000Z", status: "failed" });
+    expect(lastCheck(outOfOrder.id)).toEqual({ at: "2026-10-20T10:00:00.000Z", status: "failed" });
+    expect(ownerCollections.some((collection) => collection.id === other.id)).toBe(false);
+  });
+
   it("places a document in a collection or a folder of the same collection, never a foreign one", async () => {
     const owner = await account();
     const lib = await org.ensureLibrary(query, owner, "L");

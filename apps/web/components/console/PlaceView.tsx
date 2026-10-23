@@ -3,7 +3,7 @@ import { PageHeader } from "@krizaka/ui/page-header";
 import { type CollectionAvatar as CollectionAvatarData, type DocumentSummary } from "@yomizaka/core";
 import Link from "next/link";
 
-import { CollectionAvatar } from "@/components/console/CollectionAvatar";
+import { CollectionMark } from "@/components/console/CollectionMark";
 import { DocumentTable } from "@/components/console/DocumentTable";
 import { DocumentUploader } from "@/components/console/DocumentUploader";
 import { CreateButton, ItemMenu } from "@/components/console/OrganisationActions";
@@ -37,7 +37,7 @@ export function PlaceView({ locale, t, library, collection, folder, folders, doc
 }) {
   const crumbs = [
     { href: `/${locale}/app`, label: t.library },
-    { href: libraryPath(locale, library.id, collection.id), label: collection.name, avatar: <CollectionAvatar key="crumb-avatar" id={collection.id} name={collection.name} avatar={collection.avatar} size="sm" /> },
+    { href: libraryPath(locale, library.id, collection.id), label: collection.name, avatar: <CollectionMark key="crumb-avatar" id={collection.id} name={collection.name} avatar={collection.avatar} size="sm" /> },
     ...(folder ? [{ href: libraryPath(locale, library.id, collection.id, folder.id), label: folder.name }] : []),
   ];
   return (
@@ -56,7 +56,7 @@ export function PlaceView({ locale, t, library, collection, folder, folders, doc
         }
         title={
           <span className="flex items-center gap-3">
-            <CollectionAvatar id={collection.id} name={collection.name} avatar={collection.avatar} />
+            <CollectionMark id={collection.id} name={collection.name} avatar={collection.avatar} />
             {folder?.name ?? collection.name}
           </span>
         }

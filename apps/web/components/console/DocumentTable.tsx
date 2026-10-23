@@ -30,6 +30,9 @@ const SORTABLE = ["title", "kind", "size", "added"] as const;
 
 export const STATUS_TONE = { stored: "neutral", analysing: "accent", checked: "success", attention: "warning", failed: "danger" } as const;
 
+/** Which columns stay in a narrow row: 1 always; 3 leaves a phone's card (title and result only, the review's B5) for the row's detail. */
+export const DOCUMENT_COLUMN_PRIORITY = { title: 1, kind: 3, status: 1, size: 3, added: 3 } as const;
+
 /** The documents of a view (rows come from the server; a run in progress refreshes them every 4 s). */
 export function DocumentTable({ rows, caption, organise }: { rows: DocumentSummary[]; caption?: string; organise?: Organise }) {
   const { say, locale } = useSay();
@@ -62,10 +65,10 @@ export function DocumentTable({ rows, caption, organise }: { rows: DocumentSumma
           </span>
         ),
       },
-      { id: "kind", header: say("library.columns.kind"), sortable: true, filter: "facet", options: DOCUMENT_KINDS.map((k) => ({ value: k, label: say(`kinds.${k}`) })), value: (d) => d.kind, cell: (d) => say(`kinds.${d.kind}`) },
-      { id: "status", header: say("library.columns.status"), filter: "facet", options: DOCUMENT_STATUSES.map((k) => ({ value: k, label: say(`statuses.${k}`) })), value: (d) => d.status, cell: (d) => <Badge tone={STATUS_TONE[d.status]}>{say(`statuses.${d.status}`)}</Badge> },
-      { id: "size", header: say("library.columns.size"), sortable: true, align: "end", value: (d) => d.sizeBytes, cell: (d) => formatBytes(d.sizeBytes, locale) },
-      { id: "added", header: say("library.columns.added"), sortable: true, align: "end", value: (d) => d.createdAt, cell: (d) => formatDate(d.createdAt, locale) },
+      { id: "kind", header: say("library.columns.kind"), priority: DOCUMENT_COLUMN_PRIORITY.kind, sortable: true, filter: "facet", options: DOCUMENT_KINDS.map((k) => ({ value: k, label: say(`kinds.${k}`) })), value: (d) => d.kind, cell: (d) => say(`kinds.${d.kind}`) },
+      { id: "status", header: say("library.columns.status"), type: "status", filter: "facet", options: DOCUMENT_STATUSES.map((k) => ({ value: k, label: say(`statuses.${k}`) })), value: (d) => d.status, cell: (d) => <Badge tone={STATUS_TONE[d.status]}>{say(`statuses.${d.status}`)}</Badge> },
+      { id: "size", header: say("library.columns.size"), priority: DOCUMENT_COLUMN_PRIORITY.size, sortable: true, align: "end", value: (d) => d.sizeBytes, cell: (d) => formatBytes(d.sizeBytes, locale) },
+      { id: "added", header: say("library.columns.added"), priority: DOCUMENT_COLUMN_PRIORITY.added, sortable: true, align: "end", value: (d) => d.createdAt, cell: (d) => formatDate(d.createdAt, locale) },
       ...(organise
         ? [
             {
