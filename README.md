@@ -43,6 +43,11 @@ and a real run. The Dev preview is **web only** (phone-first); the phone app (`a
 The administration is **admin.yomizaka.com** (the same app, routed by host): people, documents, Orazaka runs, flows, operations
 and an audit log of every operator action. It answers only addresses of `AUTH_ALLOWED_IPS` and an administrator's session, and is never indexed.
 
+## API
+
+A Pro account can run checks and batches from its own tools with an API key: `POST /api/v1/checks`, `GET /api/v1/checks/{id}`,
+`POST /api/v1/batches`, `GET /api/v1/batches/{id}`, described by `GET /api/v1/openapi.json` — see [docs/API.md](docs/API.md).
+
 ## Next
 
 Yomizaka will also check **identity documents** (photos and scans as well as PDFs) for other Krizaka products that need a
