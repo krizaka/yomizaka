@@ -1504,6 +1504,12 @@
       "engineBusy": "Orazaka is busy with other checks: the remaining rows wait their turn and start by themselves. Nothing to do.",
       "exportReadme": "Yomizaka — reports of a batch of checks.\n\nlot.csv lists every row: its state, the reason when it did not run, and its file here.\nrapports/ holds the signed PDF of each compliance check.\nsignaux/ holds the signals of each authenticity check, as Orazaka returned them.\n\nThese are informative checks, not legal advice. To verify a signed report, sign in to Yomizaka and open https://www.yomizaka.com/verify (only the people the report's owner gave access to can).\nThe Québec rules are still to be reviewed by a lawyer.\n",
       "exportZip": "Reports (ZIP)"
+    },
+    "notFound": {
+      "title": "This page does not exist.",
+      "text": "It may have moved, or it is not yours.",
+      "library": "Back to the library",
+      "home": "Home"
     }
   },
   "report": {

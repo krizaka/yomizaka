@@ -1504,6 +1504,12 @@
       "engineBusy": "Orazaka est occupé par d'autres vérifications : les lignes restantes attendent leur tour et démarrent toutes seules. Rien à faire.",
       "exportReadme": "Yomizaka — rapports d'un lot de vérifications.\n\nlot.csv liste chaque ligne : son état, la raison quand elle n'a pas été vérifiée, et son fichier ici.\nrapports/ contient le PDF signé de chaque vérification de conformité.\nsignaux/ contient les signaux de chaque vérification d'authenticité, tels qu'Orazaka les a rendus.\n\nCe sont des vérifications informatives, pas un avis juridique. Pour vérifier un rapport signé, connectez-vous à Yomizaka et ouvrez https://www.yomizaka.com/verify (seules les personnes à qui le propriétaire du rapport a donné accès le peuvent).\nLes règles du Québec restent à faire relire par un avocat.\n",
       "exportZip": "Rapports (ZIP)"
+    },
+    "notFound": {
+      "title": "Cette page n'existe pas.",
+      "text": "Elle a peut-être changé d'adresse, ou elle n'est pas à vous.",
+      "library": "Retour à la bibliothèque",
+      "home": "Accueil"
     }
   },
   "report": {

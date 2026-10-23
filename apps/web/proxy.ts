@@ -34,6 +34,10 @@ export function proxy(request: NextRequest) {
   let response: NextResponse;
   if (!admin && closed && request.nextUrl.pathname === "/robots.txt") return seal(new NextResponse(CLOSED_ROBOTS, { headers: { "content-type": "text/plain" } }));
   if (!admin && closed && request.nextUrl.pathname === "/sitemap.xml") return seal(new NextResponse("Not found", { status: 404 }));
+  // The language of the address, carried to the page as `x-locale`: the 404 (no route, no params) answers in it (the UX review's Y10).
+  const segment = request.nextUrl.pathname.split("/")[1];
+  const forwarded = new Headers(request.headers);
+  forwarded.set("x-locale", segment === "en" || segment === "fr" ? segment : chosen);
   switch (route.kind) {
     case "robotsClosed":
       return seal(new NextResponse(CLOSED_ROBOTS, { headers: { "content-type": "text/plain" } }));
@@ -45,12 +49,11 @@ export function proxy(request: NextRequest) {
       return seal(NextResponse.redirect(new URL(route.path, host ? `${proto}://${host}` : request.url)));
     }
     case "rewrite":
-      response = NextResponse.rewrite(new URL(route.path, request.url));
+      response = NextResponse.rewrite(new URL(route.path, request.url), { request: { headers: forwarded } });
       break;
     default:
-      response = NextResponse.next();
+      response = NextResponse.next({ request: { headers: forwarded } });
   }
-  const segment = request.nextUrl.pathname.split("/")[1];
   if ((segment === "en" || segment === "fr") && request.cookies.get("NEXT_LOCALE")?.value !== segment) {
     response.cookies.set("NEXT_LOCALE", segment, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
   }

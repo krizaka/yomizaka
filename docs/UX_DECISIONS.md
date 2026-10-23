@@ -256,3 +256,16 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
 - **Cost**: a drop of several photos is grouped by the default (one document) before the option is visible; the option
   rules the next drop.
 - **Signal we are wrong**: people cancel runs started on the drop; « Autre » is chosen to avoid the automatic start.
+## 18. The 404: the owl's page, in the language of the address
+
+- **Decision** (2026-10-23, the UX review's Y10, #281): a page that does not exist (or is not this person's) is `ErrorPage` —
+  the code drawn, the owl, « Cette page n'existe pas. », one line, and the ways back: « Retour à la bibliothèque » (primary)
+  then « Accueil » — in the language of the address. The proxy carries that language to the page as `x-locale` (a 404 has no
+  route and no params); every language segment is routed to this one page, which is the site's 404. CI asks the container
+  for `/fr/nope` and `/en/nope`: a 404 status and the words of the language.
+- **Problem**: the 404 said « Not found · Introuvable » in both languages at once, with one bare link.
+- **Principle**: one language per page, the one the address says; the way back is the place the person uses.
+- **Refused**: a search on the 404 (the console has one; the public site does not need one yet); a « lost » owl (the mood does
+  not exist in Krizaka UI yet — krizaka-ui is asked; `empty` until then).
+- **Cost**: a request header to carry (`x-locale`), set by the proxy for every page.
+- **Signal we are wrong**: people land on the 404 from an old address we could have redirected (then the redirect, not the page).
