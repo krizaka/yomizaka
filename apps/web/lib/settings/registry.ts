@@ -45,6 +45,8 @@ export const SETTINGS = {
   "features.collectionAvatars": flag(GROUP.features, true, WORKSPACE),
   /** A batch of checks from a CSV and its files (yomizaka#232). */
   "features.batches": flag(GROUP.features, true, WORKSPACE),
+  /** Signed webhooks when a batch or a check finishes (yomizaka#241): the global switch; what a plan holds is below. */
+  "features.webhooks": flag(GROUP.features, true, WORKSPACE),
   "features.avatarSet": subset(GROUP.features, AVATAR_SEED_CHOICES, [...AVATAR_SEED_CHOICES]),
   // Limits: what one document and one account may do.
   "limits.maxFileMb": integer(GROUP.limits, PLATFORM_MAX_FILE_MB, { min: 1, max: PLATFORM_MAX_FILE_MB, unit: "MB" }, WORKSPACE),
@@ -59,6 +61,8 @@ export const SETTINGS = {
   "limits.batchTickSeconds": integer(GROUP.limits, 20, { min: 0, max: 3600, unit: "seconds" }),
   "limits.batchTickMaxAgeHours": integer(GROUP.limits, 48, { min: 1, max: 720, unit: "hours" }),
   "limits.batchTickBatches": integer(GROUP.limits, 10, { min: 1, max: 100, unit: "batches" }),
+  /** Tries before a webhook delivery is given up (the first included); the waits grow from 30 s to 12 h. */
+  "limits.webhookMaxAttempts": integer(GROUP.limits, 6, { min: 1, max: 12, unit: "tries" }),
   "limits.avatarMaxKb": integer(GROUP.limits, 512, { min: 16, max: 2048, unit: "KB" }),
   "limits.bonusAuditsPerMonth": integer(GROUP.limits, 0, { min: 0, max: 10000, unit: "audits" }, [SCOPE.user]),
   // Plans: what each plan includes (prices stay in Stripe).
@@ -66,6 +70,8 @@ export const SETTINGS = {
   "plans.pro.auditsPerMonth": integer(GROUP.plans, 100, { min: 1, max: 100000, unit: "audits" }, WORKSPACE),
   "plans.free.apiKeys": integer(GROUP.plans, 0, { min: 0, max: 100, unit: "keys" }, WORKSPACE),
   "plans.pro.apiKeys": integer(GROUP.plans, 10, { min: 0, max: 100, unit: "keys" }, WORKSPACE),
+  "plans.free.webhookEndpoints": integer(GROUP.plans, 0, { min: 0, max: 100, unit: "endpoints" }, WORKSPACE),
+  "plans.pro.webhookEndpoints": integer(GROUP.plans, 3, { min: 0, max: 100, unit: "endpoints" }, WORKSPACE),
   "plans.pro.auditsPerDay": integer(GROUP.plans, 0, { min: 0, max: 5000, unit: "audits" }, WORKSPACE),
 } as const satisfies Registry;
 

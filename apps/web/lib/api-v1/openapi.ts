@@ -12,6 +12,17 @@ const [WRITE, READ] = YOMIZAKA_API_KEY_RULES.scopes;
 const ref = (name: string) => ({ $ref: `#/components/schemas/${name}` });
 const json = (schema: unknown) => ({ "application/json": { schema } });
 const failure = (description: string) => ({ description, content: json(ref("Error")) });
+/** A webhook as OpenAPI 3.1 describes it: what we send. Signed with the endpoint's secret (`x-krizaka-signature`), never a document or a report. */
+const webhook = (summary: string, schema: unknown) => ({
+  summary,
+  parameters: [
+    { name: "x-krizaka-signature", in: "header", required: true, schema: { type: "string" }, description: "`t=<unix seconds>,v1=<hex HMAC-SHA256 of \"<t>.<raw body>\">` with the endpoint's secret; refuse it when `t` is older than a few minutes." },
+    { name: "x-krizaka-event", in: "header", required: true, schema: { type: "string" } },
+    { name: "x-krizaka-event-id", in: "header", required: true, schema: { type: "string" }, description: "Stable: a retry carries the same id; apply an event once." },
+  ],
+  requestBody: { required: true, content: json(schema) },
+  responses: { "2XX": { description: "Received. Any other answer is retried after 30 s, 5 min, 30 min, 2 h, 12 h." } },
+});
 const id = { name: "id", in: "path", required: true, schema: { type: "string", format: "uuid" } };
 const secured = (scope: string | undefined) => [{ apiKey: [scope] }];
 
@@ -107,12 +118,42 @@ export function openApiDocument(serverUrl: string) {
         get: { operationId: "getOpenApi", summary: "This document", security: [], responses: { "200": { description: "The OpenAPI 3.1 document.", content: json({ type: "object" }) } } },
       },
     },
+    webhooks: {
+      "batch.finished": { post: webhook("A batch (or a check) has finished: every row is done, failed or refused.", ref("BatchFinished")) },
+      "check.finished": { post: webhook("A check (a batch of one row, started with `POST /api/v1/checks`) has finished.", ref("CheckFinished")) },
+    },
     components: {
       securitySchemes: { apiKey: { type: "http", scheme: "bearer", description: `\`Authorization: Bearer ${YOMIZAKA_API_KEY_RULES.prefix}_…\`, created in the account (Pro). Scopes: ${YOMIZAKA_API_KEY_RULES.scopes.join(", ")}.` } },
       schemas: {
         Error: { type: "object", required: ["code", "error"], properties: { code: { type: "string", description: "A stable code; the message is for logs." }, error: { type: "string" } } },
         State: { type: "string", enum: ["pending", "reused", "running", "done", "failed", "refused"] },
         RowError: { type: "string", description: `Why a row did not run: ${Object.values(BATCH_ROW_ERROR).join(", ")} (several, comma-separated, for a refused row), \`PAYWALL\`, \`DAILY_LIMIT\`, \`FAIR_USE\` (the batch waits), \`FAILED\` or \`CANCELLED\` (the run), or the code of the single check that refused it (\`NO_TEXT\`, \`NOT_A_PDF\`…).` },
+        BatchFinished: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            type: { const: "batch.finished" },
+            payload: {
+              type: "object",
+              properties: {
+                id: { type: "string", format: "uuid" },
+                name: { type: "string" },
+                createdAt: { type: "string", format: "date-time" },
+                finishedAt: { type: "string", format: "date-time" },
+                counts: { type: "object", additionalProperties: { type: "integer" } },
+                rows: { type: "array", items: { type: "object", properties: { line: { type: "integer" }, file: { type: "string" }, reference: { type: ["string", "null"] }, state: ref("State"), error: { type: ["string", "null"] } } } },
+              },
+            },
+          },
+        },
+        CheckFinished: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            type: { const: "check.finished" },
+            payload: { type: "object", properties: { id: { type: "string", format: "uuid" }, state: ref("State"), reference: { type: ["string", "null"] }, error: { type: ["string", "null"] }, finishedAt: { type: "string", format: "date-time" } } },
+          },
+        },
         Check: {
           type: "object",
           required: ["id", "state", "file", "reference", "error", "documentId", "analysisId", "report", "createdAt", "finishedAt"],

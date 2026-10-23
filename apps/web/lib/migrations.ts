@@ -4,6 +4,7 @@
  * deployed: a change is a new entry.
  */
 import { accountsMigration } from "@krizaka/auth";
+import { webhooksMigration } from "@krizaka/webhooks";
 
 import { DEFAULT_COLLECTION_MIGRATION } from "./organisation/default-collection";
 
@@ -504,5 +505,10 @@ ALTER TABLE documents ADD CONSTRAINT documents_mime_type_check CHECK (mime_type 
 ALTER TABLE batches ADD COLUMN tick_after timestamptz;
 CREATE INDEX batches_open ON batches(created_at) WHERE finished_at IS NULL;
 `,
+  },
+  {
+    version: "0029_webhooks",
+    // yomizaka#241: signed outgoing webhooks (endpoints, one queued delivery per endpoint and event, the log).
+    sql: webhooksMigration("accounts"),
   },
 ];
