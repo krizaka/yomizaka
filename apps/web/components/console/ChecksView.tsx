@@ -3,18 +3,23 @@
 import { Badge } from "@krizaka/ui/badge";
 import { DataTable, type DataTableColumn } from "@krizaka/ui/data-table";
 import { EmptyState } from "@krizaka/ui/empty-state";
+import { type ActiveFilter, FilterBar, FilterMenu } from "@krizaka/ui/filter-bar";
 import { Mascot } from "@krizaka/ui/mascots";
 import { PageHeader } from "@krizaka/ui/page-header";
+import { SearchField } from "@krizaka/ui/search-field";
 import { Tabs } from "@krizaka/ui/tabs";
+import { DOCUMENT_KINDS, type DocumentKind, type DocumentStatus } from "@yomizaka/core";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { ButtonLink } from "@/components/ButtonLink";
+import { applyCheckFilters, CHECK_PERIODS, CHECK_RESULTS, type CheckFilters, type CheckPeriod, countByPeriod, countByValue, type DraftState, FILTER_HISTORY, type FilterHistory, NO_CHECK_FILTERS, readCheckFilters, reconcileDraft, writeCheckFilters } from "@/lib/check-filters";
 import type { CheckSummary } from "@/lib/checks";
 import { runningChecks } from "@/lib/checks-live";
 import { CHECKS_TAB_KEY, CHECKS_TABS, checksTabHref, checksTabOf, CONSOLE_ROUTES } from "@/lib/console-nav";
 import { useSay } from "@/lib/i18n-client";
+import { pluralKey } from "@/lib/plural";
 
 import { BatchImport } from "./BatchImport";
 import { STATUS_TONE } from "./DocumentTable";
@@ -30,7 +35,6 @@ function ChecksTable({ rows }: { rows: CheckSummary[] }) {
         id: "title",
         header: say("checks.columns.document"),
         card: "title",
-        filter: "text",
         value: (c) => c.title,
         cell: (c) => (
           <Link href={`/${locale}/app/documents/${c.documentId}/rapport`} className="font-semibold text-fg hover:text-fg-accent hover:underline" aria-label={say("library.open", { title: c.title })}>
@@ -51,15 +55,62 @@ function ChecksTable({ rows }: { rows: CheckSummary[] }) {
 }
 
 /**
- * The Vérifications destination (the UX review's § 4.1): the list of every check, « Lots » as a second tab in the address
- * (`?tab=lots`, where the batches live), and — with nothing checked yet — the owl and the one action, « Vérifier un document ».
+ * The filters of the list (the UX review's Y6): the search, the result, the kind and the period as menus with their counts, the ones
+ * in force as removable chips, the count of results — every one in the address, so a filtered list is a link and back undoes a filter.
  */
-export function ChecksView({ checks, batches }: { checks: CheckSummary[]; batches: boolean }) {
+function ChecksFilters({ filters, counts, periods, results, onChange }: { filters: CheckFilters; counts: { result: Record<string, number>; kind: Record<string, number> }; periods: Record<CheckPeriod, number>; results: number; onChange: (next: CheckFilters, history: FilterHistory) => void }) {
+  const { say } = useSay();
+  // What is typed, until the address carries it: the field never jumps back while the words travel, and follows the address when it changes elsewhere.
+  const [state, setState] = useState<DraftState>({ draft: null, pending: filters.q, seen: filters.q });
+  const reconciled = reconcileDraft(state, filters.q);
+  if (reconciled !== state) setState(reconciled);
+  const q = reconciled.draft ?? filters.q;
+  const set = (patch: Partial<CheckFilters>) => onChange({ ...filters, ...patch }, FILTER_HISTORY.chosen);
+  const commit = (value: string, history: FilterHistory) => {
+    setState((s) => ({ ...s, pending: value }));
+    onChange({ ...filters, q: value }, history);
+  };
+  const clear = () => {
+    setState((s) => ({ ...s, draft: null, pending: "" }));
+    onChange(NO_CHECK_FILTERS, FILTER_HISTORY.chosen);
+  };
+  const active: ActiveFilter[] = [
+    ...(filters.q ? [{ id: "q", label: `${say("checks.filters.search")} : ${filters.q}`, onRemove: () => commit("", FILTER_HISTORY.chosen) }] : []),
+    ...filters.result.map((v) => ({ id: `result:${v}`, label: `${say("checks.filters.result")} : ${say(`statuses.${v}`)}`, onRemove: () => set({ result: filters.result.filter((r) => r !== v) }) })),
+    ...filters.kind.map((v) => ({ id: `kind:${v}`, label: `${say("checks.filters.kind")} : ${say(`kinds.${v}`)}`, onRemove: () => set({ kind: filters.kind.filter((k) => k !== v) }) })),
+    ...(filters.period ? [{ id: "period", label: `${say("checks.filters.period")} : ${say(`checks.filters.periods.${filters.period}`)}`, onRemove: () => set({ period: null }) }] : []),
+  ];
+  return (
+    <FilterBar label={say("checks.filters.label")} active={active} onClearAll={clear} clearLabel={say("checks.filters.clear")} removeLabel={(label) => say("checks.filters.remove", { label })} results={say(pluralKey("checks.results", results), { count: results })} data-testid="checks-filters">
+      <SearchField size="sm" label={say("checks.filters.search")} placeholder={say("checks.filters.search")} clearLabel={say("checks.filters.clearSearch")} value={q} onValueChange={(v) => setState((s) => ({ ...s, draft: v }))} onSearch={(v) => commit(v, FILTER_HISTORY.typed)} onSubmit={(v) => commit(v, FILTER_HISTORY.chosen)} landmark={false} />
+      <FilterMenu label={say("checks.filters.result")} options={CHECK_RESULTS.map((v) => ({ value: v, label: say(`statuses.${v}`), count: counts.result[v] ?? 0 }))} value={filters.result} onValueChange={(v) => set({ result: v as DocumentStatus[] })} />
+      <FilterMenu label={say("checks.filters.kind")} options={DOCUMENT_KINDS.map((v) => ({ value: v, label: say(`kinds.${v}`), count: counts.kind[v] ?? 0 }))} value={filters.kind} onValueChange={(v) => set({ kind: v as DocumentKind[] })} />
+      <FilterMenu label={say("checks.filters.period")} multiple={false} options={CHECK_PERIODS.map((p) => ({ value: p, label: say(`checks.filters.periods.${p}`), count: periods[p] }))} value={filters.period ?? ""} onValueChange={(v) => set({ period: CHECK_PERIODS.find((p) => p === v) ?? null })} />
+    </FilterBar>
+  );
+}
+
+/**
+ * The Vérifications destination (the UX review's § 4.1): the list of every check under its filters, « Lots » as a second tab in the
+ * address (`?tab=lots`, where the batches live), and — with nothing checked yet — the owl and the one action, « Vérifier un document ».
+ * `now` comes from the server, so the periods read the same on both sides.
+ */
+export function ChecksView({ checks, batches, now }: { checks: CheckSummary[]; batches: boolean; now: string }) {
   const { say, locale } = useSay();
   const path = usePathname() ?? `/${locale}${CONSOLE_ROUTES.checks}`;
   const search = useSearchParams();
   const router = useRouter();
-  const tab = batches ? checksTabOf(search?.get(CHECKS_TAB_KEY)) : CHECKS_TABS[0];
+  const params = useMemo(() => new URLSearchParams(search?.toString() ?? ""), [search]);
+  const tab = batches ? checksTabOf(params.get(CHECKS_TAB_KEY)) : CHECKS_TABS[0];
+  const filters = useMemo(() => readCheckFilters(params), [params]);
+  const at = useMemo(() => new Date(now), [now]);
+  const rows = useMemo(() => applyCheckFilters(checks, filters, at), [checks, filters, at]);
+  const counts = useMemo(() => ({ result: countByValue(checks, filters, "result", at), kind: countByValue(checks, filters, "kind", at) }), [checks, filters, at]);
+  const periods = useMemo(() => countByPeriod(checks, filters, at), [checks, filters, at]);
+  const hrefWith = (next: CheckFilters) => {
+    const qs = writeCheckFilters(params, next).toString();
+    return qs ? `${path}?${qs}` : path;
+  };
   // While a check runs the list asks again every 4 s (the page refreshes it from Orazaka), as the documents table does.
   const live = runningChecks(checks).length > 0;
   useEffect(() => {
@@ -96,7 +147,23 @@ export function ChecksView({ checks, batches }: { checks: CheckSummary[]; batche
       {tab === "lots" ? (
         <BatchImport />
       ) : checks.length ? (
-        <ChecksTable rows={checks} />
+        <>
+          <ChecksFilters filters={filters} counts={counts} periods={periods} results={rows.length} onChange={(next, history) => router[history](hrefWith(next), { scroll: false })} />
+          {rows.length ? (
+            <ChecksTable rows={rows} />
+          ) : (
+            <EmptyState
+              title={say("checks.noMatch.title")}
+              description={say("checks.noMatch.text")}
+              action={
+                <ButtonLink href={hrefWith(NO_CHECK_FILTERS)} variant="secondary" size="md">
+                  {say("checks.filters.clear")}
+                </ButtonLink>
+              }
+              data-testid="checks-no-match"
+            />
+          )}
+        </>
       ) : (
         <EmptyState
           icon={<Mascot bird="owl" mood="empty" size={120} />}

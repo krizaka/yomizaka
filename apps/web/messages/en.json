@@ -1458,6 +1458,27 @@
         "result": "Result",
         "when": "When",
         "run": "Run"
+      },
+      "filters": {
+        "label": "Filter the checks",
+        "search": "Search a document",
+        "clearSearch": "Clear the search",
+        "result": "Result",
+        "kind": "Kind",
+        "period": "Period",
+        "periods": {
+          "7d": "Last 7 days",
+          "30d": "Last 30 days",
+          "year": "This year"
+        },
+        "clear": "Clear filters",
+        "remove": "Remove {label}"
+      },
+      "resultsOne": "{count} check",
+      "resultsMany": "{count} checks",
+      "noMatch": {
+        "title": "No check matches",
+        "text": "Loosen a filter, or clear them all."
       }
     },
     "reportFace": {
