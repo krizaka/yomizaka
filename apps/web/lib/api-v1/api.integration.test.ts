@@ -145,6 +145,10 @@ describe.runIf(enabled)("the public API v1 (yomizaka#202)", () => {
     const actions = new Set(rows.map((r) => r.action));
     for (const action of ["api.check.created", "api.check.read", "api.batch.created", "api.batch.read"]) expect(actions, action).toContain(action);
     expect(rows.every((r) => /^api-key:[0-9a-f-]{36}$/.test(r.actor_label))).toBe(true);
-    expect(JSON.stringify(rows)).not.toContain(bearer.split("_")[2]);
+    // The key's secret is everything after its two prefixes: it is base64url, so it may hold « _ » itself (taking only the
+    // third piece made the test fail at random, on an empty string, when the secret started with one).
+    const secret = bearer.split("_").slice(2).join("_");
+    expect(secret.length).toBeGreaterThan(8);
+    expect(JSON.stringify(rows)).not.toContain(secret);
   });
 });
