@@ -25,6 +25,9 @@ export const envSchema = z.object({
   APP_ENVIRONMENT: z.enum(["dev", "prod"]).default("dev"),
   /** The public origin of the site (canonical URLs, sitemap, llms.txt). */
   APP_PUBLIC_URL: z.string().url().default("https://www.yomizaka.com"),
+  /** Optional credentials for the dev/local demo persona seed. */
+  APP_DEMO_ACCOUNT_EMAIL: z.string().optional(),
+  APP_DEMO_ACCOUNT_PASSWORD: z.string().optional(),
   /** The development address (`dev.yomizaka.com`): every page goes to www (308); only the API, auth callbacks, webhooks, /.well-known and /healthz keep serving there, all noindex (lib/indexing.ts). Unset: no dev host. */
   APP_DEV_HOST: z.string().optional(),
   /** PostgreSQL (the cluster krizaka-dev-pg in dev: database yomizaka_db, role yomizaka_db). */

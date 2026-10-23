@@ -1,0 +1,77 @@
+import { beforeAll, describe, expect, it } from "vitest";
+
+import { PERSONA_ERIC } from "../../../scripts/demo-documents/index.mjs";
+import { seedPersona } from "../../../scripts/demo-seed/seed.mjs";
+import en from "../messages/en.json";
+import fr from "../messages/fr.json";
+import { migrate, query } from "./db";
+import * as org from "./organisation/store";
+
+/** The persona's seed against a real PostgreSQL: idempotent, resettable, and the library shows the three collections with their counts. */
+const enabled = process.env.YOMIZAKA_DB_IT === "1" && !!process.env.DATABASE_URL;
+const messagesByLocale = { fr, en };
+const run = (email: string, options: { reset?: boolean; locale?: string } = {}) => seedPersona((sql: string, values?: unknown[]) => query(sql, values), { persona: "eric", email, messagesByLocale, ...options });
+const expected = { "Immeuble Rosemont": 6, "Candidats — 4½ Villeray": 6, "Factures 2026": 4 };
+
+describe.runIf(enabled)("the demo seed (Éric)", () => {
+  beforeAll(async () => {
+    await migrate();
+  });
+  const fresh = () => `eric-${Math.random().toString(36).slice(2)}@demo.yomizaka.test`;
+  const snapshot = async (owner: string) => ({
+    documents: (await query<{ n: number }>("SELECT count(*)::int AS n FROM documents WHERE owner_id = $1", [owner]))[0]!.n,
+    analyses: (await query<{ n: number }>("SELECT count(*)::int AS n FROM analyses a JOIN documents d ON d.id = a.document_id WHERE d.owner_id = $1", [owner]))[0]!.n,
+    collections: (await query<{ n: number }>("SELECT count(*)::int AS n FROM collections WHERE owner_id = $1", [owner]))[0]!.n,
+  });
+
+  it("shows the three collections with their counts in the persona's library", async () => {
+    const email = fresh();
+    const { owner } = await run(email);
+    const overview = await org.overview(query, owner);
+    const counts = Object.fromEntries(overview.flatMap((l) => l.collections.map((c) => [c.name, c.files])));
+    for (const [name, n] of Object.entries(expected)) expect(counts[name], name).toBe(n);
+    expect(PERSONA_ERIC.collections).toHaveLength(3);
+    const checks = await query<{ run_id: string; blueprint_version: string | null; inputs: Record<string, string> }>("SELECT a.run_id, a.blueprint_version, a.inputs FROM analyses a JOIN documents d ON d.id = a.document_id WHERE d.owner_id = $1", [owner]);
+    expect(checks).toHaveLength(PERSONA_ERIC.checked.length);
+    for (const c of checks) {
+      expect(c.run_id).toMatch(/^seeded-/);
+      expect(c.blueprint_version).toBeNull();
+      expect(c.inputs.seeded).toBe("true");
+    }
+    const [account] = await query<{ perspective: string | null; name: string | null }>("SELECT perspective, name FROM accounts WHERE id = $1", [owner]);
+    expect(account?.perspective).toBe("landlord");
+    expect(account?.name).toBe(PERSONA_ERIC.name);
+  });
+
+  it("keeps a name the person chose, and fills a missing one", async () => {
+    const email = fresh();
+    const { owner } = await run(email);
+    await query("UPDATE accounts SET name = 'Éric R.' WHERE id = $1", [owner]);
+    await run(email);
+    expect((await query<{ name: string | null }>("SELECT name FROM accounts WHERE id = $1", [owner]))[0]?.name).toBe("Éric R.");
+    await query("UPDATE accounts SET name = NULL WHERE id = $1", [owner]);
+    await run(email);
+    expect((await query<{ name: string | null }>("SELECT name FROM accounts WHERE id = $1", [owner]))[0]?.name).toBe(PERSONA_ERIC.name);
+  });
+
+  it("changes nothing on a re-run, and starts over with reset", async () => {
+    const email = fresh();
+    const first = await run(email);
+    const before = await snapshot(first.owner);
+    await query("UPDATE accounts SET perspective = 'tenant' WHERE id = $1", [first.owner]);
+    const again = await run(email);
+    expect(again.owner).toBe(first.owner);
+    expect(again.name).toBe(PERSONA_ERIC.name);
+    expect(again.collections).toEqual(expected);
+    expect(await snapshot(first.owner)).toEqual(before);
+    expect((await query<{ perspective: string | null }>("SELECT perspective FROM accounts WHERE id = $1", [first.owner]))[0]?.perspective).toBe("tenant");
+    const reset = await run(email, { reset: true });
+    expect(reset.collections).toEqual(expected);
+    expect(await snapshot(first.owner)).toEqual(before);
+  });
+
+  it("takes the account's language for the collections' names", async () => {
+    const { collections } = await run(fresh(), { locale: "en" });
+    expect(Object.keys(collections).sort()).toEqual(["Candidates — 4½ Villeray", "Invoices 2026", "Rosemont building"]);
+  });
+});

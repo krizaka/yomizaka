@@ -59,6 +59,7 @@ describe("the report's payload", () => {
     expect(() => buildPayload(DOC, { ...ANALYSIS, studio: "document-authenticity" }, "en")).toThrow(ReportError);
     expect(() => buildPayload(DOC, { ...ANALYSIS, runId: null }, "en")).toThrow(ReportError);
     expect(() => buildPayload(DOC, { ...ANALYSIS, report: null }, "en")).toThrow(ReportError);
+    expect(() => buildPayload(DOC, { ...ANALYSIS, inputs: { seeded: "true" } }, "en")).toThrow(ReportError);
   });
 });
 
