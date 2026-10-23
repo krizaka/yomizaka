@@ -4,9 +4,10 @@
 //! one for the check that needs it, write the signed report next to it — each path through the kit's one gate.
 
 mod documents;
+mod store;
 
 use std::path::Path;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager, State};
 use tauri_plugin_krizaka::kit::files::{self, Listing};
 use tauri_plugin_krizaka::KitExt;
 
@@ -37,6 +38,25 @@ fn save_report(app: AppHandle, document: String, name: String, data: String) -> 
     documents::save_report(&file, &name, &data).map(|p| p.display().to_string())
 }
 
+/// The Mac's DocumentStore (ADR-0007): documents kept on this Mac, in the app's own folder. Errors start with the status
+/// the page's adapter maps (`400:` a key that is not the port's).
+#[tauri::command]
+fn store_put(store: State<'_, store::FolderStore>, key: String, data: String, content_type: String) -> Result<(), String> {
+    use base64::{engine::general_purpose::STANDARD, Engine};
+    let bytes = STANDARD.decode(data).map_err(|_| "400: not base64".to_string())?;
+    store.put(&key, &bytes, &content_type).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn store_get(store: State<'_, store::FolderStore>, key: String) -> Result<Option<store::StoredDocument>, String> {
+    store.get(&key).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn store_delete(store: State<'_, store::FolderStore>, key: String) -> Result<(), String> {
+    store.delete(&key).map_err(|e| e.to_string())
+}
+
 pub fn run() {
     tauri::Builder::default()
         // The API calls go through Rust's HTTP client (no CORS), to Yomizaka's own addresses (the capability).
@@ -49,7 +69,12 @@ pub fn run() {
                 .link_prefixes(["/app"])
                 .build(),
         )
-        .invoke_handler(tauri::generate_handler![list_documents, read_document, save_report])
+        .setup(|app| {
+            let root = app.path().app_data_dir()?.join("documents");
+            app.manage(store::FolderStore::new(root));
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![list_documents, read_document, save_report, store_put, store_get, store_delete])
         .run(tauri::generate_context!())
         .expect("error while running Yomizaka");
 }

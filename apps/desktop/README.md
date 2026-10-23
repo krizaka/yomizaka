@@ -12,6 +12,7 @@ signed PDF as the web and the phone.
 | Drag and drop | Files dropped from Finder are allowed for this session only (one file, never its neighbours): one file is a check, several are a batch |
 | Batches | « Check the whole folder », several files dropped, or a **watched folder** (« Vérifier automatiquement les nouveaux documents », per folder, off by default: what is already there is never sent, only what arrives after); each row followed, its report next to its file |
 | Reports | The documents checked and their checks; the files stayed on the Mac |
+| Store | The Mac's `DocumentStore` (ADR-0007): what Yomizaka keeps for the person on this Mac lives in the app's own folder (`Application Support/…/documents`); keys checked twice (the port's rule, then Rust: no `..`, no absolute path, no link planted in the folder); it passes the same contract test as the web's adapters (`@yomizaka/core/document-store/contract`) |
 | Account | The header's account menu at every width: name, e-mail, settings, theme, language, sign out. The bearer session is in the Keychain (`@krizaka/app-client`'s session store over `keychainStorage`) |
 | Menu bar | File · Go (⌘O, ⌘1 Library, ⌘2 Batches, ⌘3 Reports, ⌘, Settings), in the app's language |
 | Links | `yomizaka://app/…` and `https://www.yomizaka.com/app/…` open the same place (`/app/documents/<id>`, `/app/verifier/lots/<id>`, `/app/settings`) |

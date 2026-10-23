@@ -439,3 +439,5 @@ export * from "./organisation";
 export * from "./closing-note";
 export * from "./steps";
 export * from "./batch";
+export * from "./document-store";
+export { memoryStore } from "./document-store-memory";
