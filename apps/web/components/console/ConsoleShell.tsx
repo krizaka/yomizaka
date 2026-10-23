@@ -102,7 +102,7 @@ export function ConsoleShell({ locale, email, name, avatarSeed, role, children }
           homeLink={<Link href={href(CONSOLE_ROUTES.library)} aria-label="Yomizaka" />}
           actions={
             <>
-              <ButtonLink href={href(CONSOLE_ROUTES.check)} size="sm" shape="cut" data-testid="header-check">
+              <ButtonLink href={href(CONSOLE_ROUTES.check)} variant="primary" size="sm" shape="cut" data-testid="header-check">
                 <PlusIcon size={16} aria-hidden />
                 {say("shell.checkAction")}
               </ButtonLink>
