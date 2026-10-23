@@ -100,3 +100,18 @@ async function withLock<T>(lock: string, unlock: string, key: number | string, w
     conn.release();
   }
 }
+
+/** The same lock, but waits its turn instead of giving up: for work that must happen once and that every caller needs done (seeding). */
+export async function withBlockingLock<T>(name: string, work: () => Promise<T>): Promise<T> {
+  const conn = await lockPool().connect();
+  try {
+    await conn.query("SELECT pg_advisory_lock(hashtextextended($1, 0))", [name]);
+    try {
+      return await work();
+    } finally {
+      await conn.query("SELECT pg_advisory_unlock(hashtextextended($1, 0))", [name]).catch(() => undefined);
+    }
+  } finally {
+    conn.release();
+  }
+}
