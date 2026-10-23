@@ -200,3 +200,22 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
   (krizaka-ui#588); the theme row is composed by hand until `AccountMenu` takes a `theme` prop (krizaka-ui#589).
 - **Signal we are wrong**: people look for « Vérifier » on the rail; the Vérifications list is opened less than the
   library's « Dernières vérifications ».
+
+## 13. The settings on SettingsLayout: routes as sections, flat rows, one save per section, who is signed in on top
+
+- **Decision** (2026-10-23, the UX review's Y2, #281): the five sections stay routes (`/app/settings/<section>`) and are
+  `SettingsLayout`'s navigation (chips that wrap on a phone, variant `flat`: one calm column, hairline rows); the
+  identity card (`AccountProfileCard`: picture, name, verified address, member since) sits on top; the profile is one
+  section with one save — name, picture (`AvatarPicker`), language (`LanguagePicker`), which side of the lease
+  (`ChoiceCards`) — dirty → saving → saved, with an undo; billing is flat rows (plan, free audit, paid audits left,
+  renewal) and one primary (« Passer à Pro »), the audit beside it, the portal as a quiet action; storage offers only
+  the choices this installation can honour (the person's own S3 is absent where credentials cannot be kept — no
+  operator's sentence) and keeps the default as a switch row; « Mes données » is two rows with their action.
+- **Problem**: five tabs in a row pushed the page 167 px past a 390 px phone (197 px at 360 px); the profile was
+  hand-made against the documented blocks (a save above the pictures, six loose radios, an unlabelled segmented bar, a
+  second disabled save for the perspective); billing had two equal buttons; storage spoke to an operator.
+- **Principle**: the documented block over a composition; one save per section; say only what the person can do.
+- **Refused**: one long page with anchors (the sections are routes, the URL is the state, § 7); a save per field.
+- **Cost**: the address and the password keep their own forms (two sections on the Security route: each needs the
+  password, a different act from the profile's save).
+- **Signal we are wrong**: people change the language and do not expect the page to move to it; the undo is never used.

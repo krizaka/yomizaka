@@ -2,34 +2,19 @@
 
 import { krizakaFetch, useMutation, useQuery } from "@krizaka/query";
 import { Alert } from "@krizaka/ui/alert";
-import { Avatar } from "@krizaka/ui/avatar";
 import { Button } from "@krizaka/ui/button";
 import { Dialog } from "@krizaka/ui/dialog";
 import { createKrizakaForm } from "@krizaka/ui/form";
-import { RadioGroup } from "@krizaka/ui/radio-group";
-import { AVATAR_SEEDS } from "@yomizaka/core";
+import { SettingsRow, SettingsSection } from "@krizaka/ui/settings-layout";
 import { useRouter } from "next/navigation";
-import { type ReactNode, useState } from "react";
+import { useState } from "react";
 import { z } from "zod";
 
-import { RouteTabs } from "@/components/RouteTabs";
-import { useAppConfig } from "@/lib/app-config-client";
 import { errorKey } from "@/lib/client";
-import { SETTINGS_SECTIONS } from "@/lib/console-nav";
 import { formI18n } from "@/lib/form-i18n";
 import { useSay } from "@/lib/i18n-client";
 
-/** The sections of the settings: the tab is the route (/app/settings/<section>). */
-export function SettingsTabs({ children }: { children: ReactNode }) {
-  const { say, locale } = useSay();
-  const app = useAppConfig();
-  const items = SETTINGS_SECTIONS.filter((s) => s !== "stockage" || app?.features.ownStorage !== false).map((s) => ({ value: s, label: say(`settings.tabs.${s}`) }));
-  return (
-    <RouteTabs base={`/${locale}/app/settings`} label={say("settings.label")} items={items}>
-      {children}
-    </RouteTabs>
-  );
-}
+type Say = (key: string, vars?: Record<string, string | number>) => string;
 
 function useCall<T>(run: (input: T) => Promise<unknown>) {
   const { say } = useSay();
@@ -56,64 +41,12 @@ function useCall<T>(run: (input: T) => Promise<unknown>) {
   };
 }
 
-
-// ── profile ───────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-const nameForm = createKrizakaForm({ schema: z.object({ name: z.string().trim().max(80) }), defaultValues: { name: "" } });
-
-/** Name, avatar and language: each saved on its own, the language also moves to the other language's URL. */
-export function ProfileSection({ email, name, avatarSeed, locale: current, children }: { email: string; name: string | null; avatarSeed: string | null; locale: "en" | "fr"; children?: ReactNode }) {
-  const { say, locale } = useSay();
-  const router = useRouter();
-  const patch = useCall<Record<string, unknown>>((body) => krizakaFetch("/api/me/profile", { method: "PATCH", json: body }));
-  const form = nameForm.useForm({ ...formI18n(say, locale), defaultValues: { name: name ?? "" }, onSubmit: (v) => patch.go({ name: v.name === "" ? null : v.name }) });
-  const [seed, setSeed] = useState<string>(avatarSeed ?? "");
-  return (
-    <div className="flex max-w-2xl flex-col gap-8" data-testid="settings-profil">
-      <section className="flex flex-col gap-3" aria-label={say("settings.profile.nameLabel")}>
-        <form.Form aria-label={say("settings.profile.nameLabel")} className="flex flex-col gap-3">
-          <form.TextField name="name" label={say("settings.profile.nameLabel")} hint={say("settings.profile.nameHint")} maxLength={80} autoComplete="name" />
-          <div className="flex items-center gap-3">
-            <form.Submit size="md">{say("settings.profile.save")}</form.Submit>
-            {patch.done ? <span role="status" className="text-sm text-fg-secondary">{say("settings.profile.saved")}</span> : null}
-          </div>
-        </form.Form>
-        {patch.problem ? <Alert tone="danger">{patch.problem}</Alert> : null}
-      </section>
-
-      <section className="flex flex-col gap-3" aria-label={say("settings.profile.avatarLabel")}>
-        <RadioGroup.Root label={say("settings.profile.avatarLabel")} value={seed} onValueChange={(v: string) => { setSeed(v); void patch.go({ avatarSeed: v }); }}>
-          <div className="flex flex-wrap gap-3">
-            {AVATAR_SEEDS.map((s) => (
-              <RadioGroup.Item key={s} value={s} aria-label={`${say("settings.profile.avatarLabel")} ${s}`}>
-                <Avatar size="lg" defaultAvatar={{ brand: "yomizaka", seed: s }} alt="" fallback={email.charAt(0).toUpperCase()} />
-              </RadioGroup.Item>
-            ))}
-          </div>
-        </RadioGroup.Root>
-        <p className="m-0 text-sm text-fg-secondary">{say("settings.profile.avatarHint")}</p>
-      </section>
-
-      <section className="flex flex-col gap-3" aria-label={say("settings.profile.languageLabel")}>
-        {/* @ephemeral: a saved account setting (PATCH /me), not a view selection */}
-        <RadioGroup.Root variant="segmented" label={say("settings.profile.languageLabel")} value={current} onValueChange={async (v: string) => { await patch.go({ locale: v }, () => router.replace(`/${v}/app/settings/profil`)); }}>
-          {(["fr", "en"] as const).map((l) => (
-            <RadioGroup.Segment key={l} value={l}>
-              {say(`settings.profile.languages.${l}`)}
-            </RadioGroup.Segment>
-          ))}
-        </RadioGroup.Root>
-      </section>
-      {children}
-    </div>
-  );
-}
-
 // ── security ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 const emailForm = createKrizakaForm({ schema: z.object({ newEmail: z.string().trim().min(1).email(), password: z.string().min(1) }), defaultValues: { newEmail: "", password: "" } });
 const passwordForm = createKrizakaForm({ schema: z.object({ current: z.string().min(1), next: z.string().min(12).max(256) }), defaultValues: { current: "", next: "" } });
 
+/** The address (changed by a link mailed to the new one) and the password: two sections, each with its own save. */
 export function SecuritySection({ email, pendingEmail, notice }: { email: string; pendingEmail: string | null; notice: "changed" | "invalid" | null }) {
   const { say, locale } = useSay();
   const mail = useCall<{ newEmail: string; password: string }>((body) => krizakaFetch("/api/me/email", { method: "POST", json: body }));
@@ -121,11 +54,9 @@ export function SecuritySection({ email, pendingEmail, notice }: { email: string
   const emailF = emailForm.useForm({ ...formI18n(say, locale), onSubmit: (v) => mail.go(v) });
   const passF = passwordForm.useForm({ ...formI18n(say, locale), onSubmit: (v) => pass.go(v) });
   return (
-    <div className="flex max-w-2xl flex-col gap-8" data-testid="settings-securite">
+    <div className="flex flex-col gap-10" data-testid="settings-securite">
       {notice ? <Alert tone={notice === "changed" ? "success" : "danger"}>{say(notice === "changed" ? "settings.security.emailChanged" : "settings.security.emailInvalid")}</Alert> : null}
-      <section className="flex flex-col gap-3" aria-label={say("settings.security.emailTitle")}>
-        <h2 className="m-0 font-display text-lg font-bold text-fg">{say("settings.security.emailTitle")}</h2>
-        <p className="m-0 text-sm text-fg-secondary">{say("settings.security.emailCurrent", { email })}</p>
+      <SettingsSection variant="flat" title={say("settings.security.emailTitle")} description={say("settings.security.emailCurrent", { email })}>
         {pendingEmail ? <Alert tone="info">{say("settings.security.emailPending", { email: pendingEmail })}</Alert> : null}
         <emailF.Form aria-label={say("settings.security.emailTitle")} className="flex flex-col gap-3">
           <emailF.TextField name="newEmail" label={say("settings.security.newEmail")} type="email" autoComplete="email" />
@@ -136,9 +67,8 @@ export function SecuritySection({ email, pendingEmail, notice }: { email: string
             <emailF.Submit size="md">{say("settings.security.emailSend")}</emailF.Submit>
           </div>
         </emailF.Form>
-      </section>
-      <section className="flex flex-col gap-3" aria-label={say("settings.security.passwordTitle")}>
-        <h2 className="m-0 font-display text-lg font-bold text-fg">{say("settings.security.passwordTitle")}</h2>
+      </SettingsSection>
+      <SettingsSection variant="flat" title={say("settings.security.passwordTitle")}>
         <passF.Form aria-label={say("settings.security.passwordTitle")} className="flex flex-col gap-3">
           <passF.TextField name="current" label={say("settings.security.current")} type="password" autoComplete="current-password" />
           <passF.TextField name="next" label={say("settings.security.next")} type="password" autoComplete="new-password" />
@@ -148,7 +78,7 @@ export function SecuritySection({ email, pendingEmail, notice }: { email: string
             <passF.Submit size="md">{say("settings.security.passwordSave")}</passF.Submit>
           </div>
         </passF.Form>
-      </section>
+      </SettingsSection>
     </div>
   );
 }
@@ -161,8 +91,19 @@ const billing = z.object({
   paymentsDisplay: z.string().optional(),
 });
 const redirect = z.object({ url: z.string().url() });
+export type Entitlement = z.infer<typeof billing>["entitlement"];
 
-/** The plan and its billing: what the account has, and the Stripe portal (subscription, payment method, invoices). */
+/** The plan as flat rows (the review's E3): the plan, the free audit, the paid audits left, the renewal — each a label and a value. */
+export function billingRows(e: Entitlement, say: Say, date: (iso: string) => string): { id: string; label: string; value: string }[] {
+  return [
+    { id: "plan", label: say("settings.billing.plan"), value: say(e.pro ? "settings.billing.planPro" : "settings.billing.planFree") },
+    ...(e.selfServe ? [{ id: "free", label: say("settings.billing.freeAudit"), value: say(e.freeAuditUsed ? "settings.billing.freeUsed" : "settings.billing.freeAvailable") }] : []),
+    { id: "credits", label: say("settings.billing.creditsLabel"), value: String(e.credits) },
+    ...(e.pro && e.proUntil ? [{ id: "until", label: say("settings.billing.renewal"), value: date(e.proUntil) }] : []),
+  ];
+}
+
+/** The plan and its billing: the rows, then one primary (« Passer à Pro »), the audit, and the portal (subscription, payment method, invoices). */
 export function BillingSection() {
   const { say, locale } = useSay();
   const info = useQuery({ queryKey: ["billing-settings"], queryFn: () => krizakaFetch("/api/billing", { schema: billing }) });
@@ -171,45 +112,46 @@ export function BillingSection() {
   const e = info.data?.entitlement;
   const date = (iso: string) => new Intl.DateTimeFormat(locale, { dateStyle: "long" }).format(new Date(iso));
   return (
-    <div className="flex max-w-2xl flex-col gap-4" data-testid="settings-facturation">
-      <h2 className="m-0 font-display text-lg font-bold text-fg">{say("settings.billing.title")}</h2>
-      {e ? (
-        <dl className="m-0 grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
-          <dt className="text-fg-secondary">{say("settings.billing.plan")}</dt>
-          <dd className="m-0 font-semibold" data-testid="plan-name">{say(e.pro ? "settings.billing.planPro" : "settings.billing.planFree")}</dd>
-        </dl>
-      ) : null}
-      {e ? (
-        <ul className="m-0 flex list-none flex-col gap-1 p-0 text-sm text-fg-secondary">
-          {e.selfServe ? <li>{say(e.freeAuditUsed ? "settings.billing.freeUsed" : "settings.billing.freeAvailable")}</li> : null}
-          <li>{say("settings.billing.credits", { count: e.credits })}</li>
-          {e.pro && e.proUntil ? <li>{say("settings.billing.until", { date: date(e.proUntil) })}</li> : null}
-        </ul>
-      ) : null}
-      {info.data && !info.data.paymentsOn ? <Alert tone="info">{say("settings.billing.off")}</Alert> : null}
-      {info.data?.paymentsOn && info.data.paymentsDisplay === "test" ? <Alert tone="warning">{say("settings.billing.testMode")}</Alert> : null}
-      {info.data?.paymentsOn ? (
-        <div className="flex flex-wrap gap-3">
-          {e?.hasCustomer ? (
-            <Button size="md" variant="secondary" loading={portal.pending} onClick={() => portal.go(null, () => undefined)}>
-              {say("settings.billing.portal")}
-            </Button>
-          ) : null}
-          {e && !e.pro ? (
-            <>
+    <SettingsSection
+      variant="flat"
+      title={say("settings.billing.title")}
+      description={say("settings.billing.portalHint")}
+      data-testid="settings-facturation"
+      footer={
+        info.data?.paymentsOn ? (
+          <div className="flex flex-wrap items-center gap-3">
+            {e && !e.pro ? (
+              <Button size="md" variant="primary" shape="cut" loading={buy.pending} onClick={() => buy.go("pro", () => undefined)}>
+                {say("paywall.pro")}
+              </Button>
+            ) : null}
+            {e && !e.pro ? (
               <Button size="md" variant="secondary" loading={buy.pending} onClick={() => buy.go("audit", () => undefined)}>
                 {say("paywall.payOne")}
               </Button>
-              <Button size="md" loading={buy.pending} onClick={() => buy.go("pro", () => undefined)}>
-                {say("paywall.pro")}
+            ) : null}
+            {e?.hasCustomer ? (
+              <Button size="md" variant="ghost" loading={portal.pending} onClick={() => portal.go(null, () => undefined)}>
+                {say("settings.billing.portal")}
               </Button>
-            </>
-          ) : null}
-        </div>
-      ) : null}
+            ) : null}
+          </div>
+        ) : null
+      }
+    >
+      {e
+        ? billingRows(e, say, date).map((row) => (
+            <SettingsRow key={row.id} label={row.label}>
+              <span className="text-sm font-semibold text-fg" data-testid={row.id === "plan" ? "plan-name" : undefined}>
+                {row.value}
+              </span>
+            </SettingsRow>
+          ))
+        : null}
+      {info.data && !info.data.paymentsOn ? <Alert tone="info">{say("settings.billing.off")}</Alert> : null}
+      {info.data?.paymentsOn && info.data.paymentsDisplay === "test" ? <Alert tone="warning">{say("settings.billing.testMode")}</Alert> : null}
       {portal.problem || buy.problem ? <Alert tone="danger">{portal.problem ?? buy.problem}</Alert> : null}
-      <p className="m-0 text-sm text-fg-secondary">{say("settings.billing.portalHint")}</p>
-    </div>
+    </SettingsSection>
   );
 }
 
@@ -217,7 +159,7 @@ export function BillingSection() {
 
 const deleteForm = createKrizakaForm({ schema: z.object({ email: z.string().trim().min(1), password: z.string().min(1) }), defaultValues: { email: "", password: "" } });
 
-/** Loi 25: access (export) and erasure. The erasure asks for the e-mail address and the password. */
+/** Loi 25: access (export) and erasure, two rows with their action. The erasure asks for the e-mail address and the password. */
 export function DataSection() {
   const { say, locale } = useSay();
   const router = useRouter();
@@ -225,45 +167,37 @@ export function DataSection() {
   const erase = useCall<{ email: string; password: string }>((body) => krizakaFetch("/api/me/delete", { method: "POST", json: body }));
   const form = deleteForm.useForm({ ...formI18n(say, locale), onSubmit: (v) => erase.go(v, () => router.replace(`/${locale}`)) });
   return (
-    <div className="flex max-w-2xl flex-col gap-8" data-testid="settings-donnees">
-      <section className="flex flex-col gap-3" aria-label={say("settings.data.exportTitle")}>
-        <h2 className="m-0 font-display text-lg font-bold text-fg">{say("settings.data.exportTitle")}</h2>
-        <p className="m-0 text-sm text-fg-secondary">{say("settings.data.exportText")}</p>
-        <div>
-          <Button asChild size="md" variant="secondary">
-            <a href="/api/me/export" download data-testid="export-link">
-              {say("settings.data.exportButton")}
-            </a>
-          </Button>
-        </div>
-      </section>
-      <section className="flex flex-col gap-3" aria-label={say("settings.data.deleteTitle")}>
-        <h2 className="m-0 font-display text-lg font-bold text-fg">{say("settings.data.deleteTitle")}</h2>
-        <p className="m-0 text-sm text-fg-secondary">{say("settings.data.deleteText")}</p>
-        <div>
-          <Button size="md" variant="danger" onClick={() => setOpen(true)}>
-            {say("settings.data.deleteOpen")}
-          </Button>
-        </div>
-        <Dialog.Root open={open} onOpenChange={setOpen}>
-          <Dialog.Content closeLabel={say("organisation.cancel")}>
-            <Dialog.Header>
-              <Dialog.Title>{say("settings.data.deleteTitle")}</Dialog.Title>
-              <Dialog.Description>{say("settings.data.deleteText")}</Dialog.Description>
-            </Dialog.Header>
-            <Dialog.Body>
-              <form.Form aria-label={say("settings.data.deleteTitle")} className="flex flex-col gap-3">
-                <form.TextField name="email" label={say("settings.data.deleteEmail")} type="email" autoComplete="off" />
-                <form.TextField name="password" label={say("settings.data.deletePassword")} type="password" autoComplete="current-password" />
-                {erase.problem ? <Alert tone="danger">{erase.problem}</Alert> : null}
-                <form.Submit size="md" variant="danger">
-                  {say("settings.data.deleteButton")}
-                </form.Submit>
-              </form.Form>
-            </Dialog.Body>
-          </Dialog.Content>
-        </Dialog.Root>
-      </section>
-    </div>
+    <SettingsSection variant="flat" title={say("settings.tabs.donnees")} data-testid="settings-donnees">
+      <SettingsRow label={say("settings.data.exportTitle")} description={say("settings.data.exportText")}>
+        <Button asChild size="md" variant="secondary">
+          <a href="/api/me/export" download data-testid="export-link">
+            {say("settings.data.exportButton")}
+          </a>
+        </Button>
+      </SettingsRow>
+      <SettingsRow label={say("settings.data.deleteTitle")} description={say("settings.data.deleteText")}>
+        <Button size="md" variant="danger" onClick={() => setOpen(true)}>
+          {say("settings.data.deleteOpen")}
+        </Button>
+      </SettingsRow>
+      <Dialog.Root open={open} onOpenChange={setOpen}>
+        <Dialog.Content closeLabel={say("organisation.cancel")}>
+          <Dialog.Header>
+            <Dialog.Title>{say("settings.data.deleteTitle")}</Dialog.Title>
+            <Dialog.Description>{say("settings.data.deleteText")}</Dialog.Description>
+          </Dialog.Header>
+          <Dialog.Body>
+            <form.Form aria-label={say("settings.data.deleteTitle")} className="flex flex-col gap-3">
+              <form.TextField name="email" label={say("settings.data.deleteEmail")} type="email" autoComplete="off" />
+              <form.TextField name="password" label={say("settings.data.deletePassword")} type="password" autoComplete="current-password" />
+              {erase.problem ? <Alert tone="danger">{erase.problem}</Alert> : null}
+              <form.Submit size="md" variant="danger">
+                {say("settings.data.deleteButton")}
+              </form.Submit>
+            </form.Form>
+          </Dialog.Body>
+        </Dialog.Content>
+      </Dialog.Root>
+    </SettingsSection>
   );
 }

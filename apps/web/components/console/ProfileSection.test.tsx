@@ -1,0 +1,64 @@
+import { KrizakaQueryProvider } from "@krizaka/query";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it, vi } from "vitest";
+
+import { I18nProvider } from "@/lib/i18n-client";
+import en from "@/messages/en.json";
+import fr from "@/messages/fr.json";
+
+import { profileDirty, profilePatch, ProfileSection, type ProfileValues } from "./ProfileSection";
+
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push() {}, replace() {}, refresh() {} }), usePathname: () => "/fr/app/settings/profil", useSearchParams: () => new URLSearchParams() }));
+
+const MESSAGES = { en: { console: en.console }, fr: { console: fr.console } } as const;
+const readable = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ");
+const SAVED: ProfileValues = { name: "Éric Tremblay", avatarSeed: "plain-2", locale: "fr", perspective: "landlord" };
+const AUDIENCES = [
+  { audience: "tenant", status: "available" },
+  { audience: "landlord", status: "available" },
+  { audience: "freelancer", status: "soon" },
+] as const;
+const render = (locale: "en" | "fr" = "fr") =>
+  renderToStaticMarkup(
+    <I18nProvider locale={locale} messages={MESSAGES[locale] as never}>
+      <KrizakaQueryProvider>
+        <ProfileSection initial={SAVED} audiences={AUDIENCES} />
+      </KrizakaQueryProvider>
+    </I18nProvider>,
+  );
+
+describe("the profile is one section with one save (the review's E2)", () => {
+  it("is dirty only when something differs from what is saved — spaces around the name do not count", () => {
+    expect(profileDirty(SAVED, { ...SAVED })).toBe(false);
+    expect(profileDirty(SAVED, { ...SAVED, name: "  Éric Tremblay " })).toBe(false);
+    expect(profileDirty(SAVED, { ...SAVED, name: "Éric" })).toBe(true);
+    expect(profileDirty(SAVED, { ...SAVED, avatarSeed: "plain-4" })).toBe(true);
+    expect(profileDirty(SAVED, { ...SAVED, locale: "en" })).toBe(true);
+    expect(profileDirty(SAVED, { ...SAVED, perspective: "tenant" })).toBe(true);
+  });
+
+  it("sends only what changed: the profile patch (a blank name clears it), the perspective when it moved", () => {
+    expect(profilePatch(SAVED, { ...SAVED })).toEqual({ profile: null, perspective: null });
+    expect(profilePatch(SAVED, { ...SAVED, name: "  " })).toEqual({ profile: { name: null, avatarSeed: "plain-2", locale: "fr" }, perspective: null });
+    expect(profilePatch(SAVED, { ...SAVED, locale: "en", perspective: "tenant" })).toEqual({ profile: { name: "Éric Tremblay", avatarSeed: "plain-2", locale: "en" }, perspective: "tenant" });
+    expect(profilePatch(SAVED, { ...SAVED, perspective: "tenant" })).toEqual({ profile: null, perspective: "tenant" });
+    expect(profilePatch({ ...SAVED, avatarSeed: "" }, { ...SAVED, avatarSeed: "" })).toEqual({ profile: null, perspective: null });
+  });
+
+  it("renders the four rows — name, picture, language, side of the lease — and exactly one save, in both languages", () => {
+    const html = render();
+    const text = readable(html);
+    for (const word of [fr.console.settings.profile.nameLabel, fr.console.settings.profile.avatarLabel, fr.console.settings.profile.languageLabel, fr.console.profile.legend]) expect(text).toContain(word);
+    expect(html).toMatch(/<input [^>]*id="profile-name"[^>]*value="Éric Tremblay"/);
+    expect(text).toContain("Français");
+    expect(text).toContain("English");
+    expect(text).toContain(fr.console.profile.landlord);
+    expect(text).toContain(`${fr.console.profile.freelancer} (${fr.console.profile.soon})`);
+    expect(html.match(/<button [^>]*type="submit"/g)).toHaveLength(1);
+    expect(text).toContain(fr.console.settings.save.save);
+    expect(html).toContain('data-testid="settings-profil"');
+    const english = readable(render("en"));
+    expect(english).toContain(en.console.settings.profile.nameLabel);
+    expect(english).toContain("Français");
+  });
+});

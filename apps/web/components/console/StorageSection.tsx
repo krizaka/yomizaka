@@ -1,11 +1,12 @@
 "use client";
 
 import { krizakaFetch, useMutation, useQuery } from "@krizaka/query";
+import { ChoiceCards } from "@krizaka/ui/account-settings";
 import { Alert } from "@krizaka/ui/alert";
 import { Button } from "@krizaka/ui/button";
-import { Checkbox } from "@krizaka/ui/checkbox";
 import { createKrizakaForm } from "@krizaka/ui/form";
-import { RadioGroup } from "@krizaka/ui/radio-group";
+import { SettingsRow, SettingsSection } from "@krizaka/ui/settings-layout";
+import { Switch } from "@krizaka/ui/switch";
 import { STORAGE_MODE, STORAGE_MODES, type StorageMode } from "@yomizaka/core";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -78,22 +79,18 @@ function StorageForm({ initial, canStoreCredentials, say, locale, onSaved }: { i
   const needsTest = mode === STORAGE_MODE.s3 && !verified?.ok;
   const step = (n: "write" | "read" | "delete") => ({ write: "stepWrite", read: "stepRead", delete: "stepDelete" })[n];
   return (
-    <div className="flex max-w-2xl flex-col gap-6" data-testid="settings-stockage">
-      <div>
-        <h2 className="m-0 font-display text-lg font-bold text-fg">{say("settings.storage.title")}</h2>
-        <p className="m-0 mt-1 text-sm text-fg-secondary">{say("settings.storage.lead")}</p>
-      </div>
-      <RadioGroup.Root label={say("settings.storage.modeLabel")} value={mode} onValueChange={(v: string) => { setMode(v as StorageMode); setSaved(false); setVerified(null); }}>
-        {STORAGE_MODES.map((m) => (
-          <RadioGroup.Item key={m} value={m} disabled={m === STORAGE_MODE.s3 && !canStoreCredentials}>
-            <span className="flex flex-col">
-              <span className="font-semibold">{say(`settings.storage.${m}`)}</span>
-              <span className="text-sm font-normal text-fg-secondary">{say(`settings.storage.${m}Hint`)}</span>
-            </span>
-          </RadioGroup.Item>
-        ))}
-      </RadioGroup.Root>
-      {!canStoreCredentials ? <Alert tone="info">{say("settings.storage.noKey")}</Alert> : null}
+    <SettingsSection variant="flat" title={say("settings.storage.title")} description={say("settings.storage.lead")} data-testid="settings-stockage">
+      {/* The person's own S3 is offered only where this installation can keep its credentials (the review's E4): never a choice that cannot be taken. */}
+      <ChoiceCards
+        label={say("settings.storage.modeLabel")}
+        options={STORAGE_MODES.filter((m) => m !== STORAGE_MODE.s3 || canStoreCredentials).map((m) => ({ id: m, title: say(`settings.storage.${m}`), description: say(`settings.storage.${m}Hint`) }))}
+        value={mode}
+        onValueChange={(v) => {
+          setMode(v as StorageMode);
+          setSaved(false);
+          setVerified(null);
+        }}
+      />
       <form.Form aria-label={say("settings.storage.title")} className="flex flex-col gap-4">
         {mode === STORAGE_MODE.s3 ? (
           <>
@@ -125,10 +122,9 @@ function StorageForm({ initial, canStoreCredentials, say, locale, onSaved }: { i
           </>
         ) : null}
         {mode === STORAGE_MODE.none ? null : (
-          <div className="flex items-center gap-3">
-            <Checkbox id="keep-default" checked={keepDefault} onCheckedChange={(v) => { setKeepDefault(v === true); setSaved(false); }} />
-            <label htmlFor="keep-default" className="cursor-pointer text-sm">{say("settings.storage.keepDefault")}</label>
-          </div>
+          <SettingsRow label={say("settings.storage.keepDefault")} htmlFor="keep-default">
+            <Switch id="keep-default" label={say("settings.storage.keepDefault")} checked={keepDefault} onCheckedChange={(v) => { setKeepDefault(v === true); setSaved(false); }} />
+          </SettingsRow>
         )}
         {problem ? <Alert tone="danger">{problem}</Alert> : null}
         {needsTest ? <p className="m-0 text-sm text-fg-secondary">{say("settings.storage.testRequired")}</p> : null}
@@ -137,6 +133,6 @@ function StorageForm({ initial, canStoreCredentials, say, locale, onSaved }: { i
           {saved ? <span role="status" className="text-sm text-fg-secondary">{say("settings.storage.saved")}</span> : null}
         </div>
       </form.Form>
-    </div>
+    </SettingsSection>
   );
 }

@@ -999,7 +999,21 @@
         "stockage": "Stockage"
       },
       "label": "Réglages du compte",
+      "verified": "Courriel vérifié",
+      "unverified": "Courriel non vérifié",
+      "memberSince": "Membre depuis {date}",
+      "save": {
+        "save": "Enregistrer",
+        "saving": "Enregistrement…",
+        "saved": "Enregistré",
+        "error": "Impossible d’enregistrer. Réessayez.",
+        "undo": "Annuler",
+        "discard": "Abandonner les modifications"
+      },
       "profile": {
+        "lead": "Votre nom, votre image, votre langue, votre côté du bail — enregistrés ensemble.",
+        "languageHint": "La langue de l’application et de vos courriels.",
+        "avatarOption": "Image {n}",
         "nameLabel": "Nom",
         "nameHint": "Affiché dans le menu du compte.",
         "save": "Enregistrer",
@@ -1031,6 +1045,9 @@
       "billing": {
         "title": "Abonnement et facturation",
         "plan": "Forfait",
+        "freeAudit": "Audit gratuit",
+        "creditsLabel": "Audits payés restants",
+        "renewal": "Renouvellement",
         "planFree": "Gratuit",
         "planPro": "Pro",
         "credits": "Audits payés restants : {count}",

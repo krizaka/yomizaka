@@ -1,0 +1,62 @@
+"use client";
+
+import { BillingIcon, LockIcon, ServerIcon, ShieldIcon, UserIcon } from "@krizaka/icons";
+import { AccountProfileCard } from "@krizaka/ui/account-settings";
+import { SettingsLayout } from "@krizaka/ui/settings-layout";
+import Link from "next/link";
+import type { ReactNode } from "react";
+
+import { useAppConfig } from "@/lib/app-config-client";
+import { SETTINGS_SECTIONS, type SettingsSection } from "@/lib/console-nav";
+import { useSay } from "@/lib/i18n-client";
+
+import { formatDate } from "./format";
+
+/** Who is signed in, for the identity card on top of the settings (the review's E5). */
+export interface SettingsAccount {
+  email: string;
+  name: string | null;
+  avatarSeed: string | null;
+  verified: boolean;
+  /** When the account was created (ISO). */
+  memberSince: string;
+}
+
+const ICONS = { profil: UserIcon, securite: LockIcon, facturation: BillingIcon, stockage: ServerIcon, donnees: ShieldIcon } as const;
+
+/**
+ * The settings on `SettingsLayout` (flat: one calm column, rows divided by hairlines), the identity card on top, the five
+ * sections as routes in its navigation (chips that wrap on a phone — the review's E1), the current one from the route.
+ */
+export function SettingsShell({ section, account, children }: { section: SettingsSection; account: SettingsAccount; children: ReactNode }) {
+  const { say, locale } = useSay();
+  const app = useAppConfig();
+  const sections = SETTINGS_SECTIONS.filter((s) => s !== "stockage" || app?.features.ownStorage !== false);
+  const nav = sections.map((s) => {
+    const Icon = ICONS[s];
+    return { id: s, label: say(`settings.tabs.${s}`), href: `/${locale}/app/settings/${s}`, icon: <Icon size={16} />, current: s === section };
+  });
+  const title = account.name ?? account.email;
+  return (
+    <SettingsLayout
+      variant="flat"
+      navLabel={say("settings.label")}
+      nav={nav}
+      linkAs={Link}
+      header={
+        <AccountProfileCard
+          name={title}
+          email={account.email}
+          verified={account.verified}
+          verifiedLabel={say("settings.verified")}
+          unverifiedLabel={say("settings.unverified")}
+          memberSince={say("settings.memberSince", { date: formatDate(account.memberSince, locale) })}
+          avatar={{ defaultAvatar: { brand: "yomizaka", seed: account.avatarSeed ?? account.email }, fallback: title.charAt(0).toUpperCase() }}
+          data-testid="settings-identity"
+        />
+      }
+    >
+      {children}
+    </SettingsLayout>
+  );
+}
