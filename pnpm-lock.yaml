@@ -45,11 +45,11 @@ importers:
         specifier: ^0.2.1
         version: 0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1)
       '@krizaka/tokens':
-        specifier: ^3.45.0
-        version: 3.45.0
+        specifier: ^3.50.0
+        version: 3.50.0
       '@krizaka/ui':
-        specifier: ^3.45.0
-        version: 3.45.0(@krizaka/query@0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.45.0)(@shopify/flash-list@2.3.2(@babel/runtime@7.29.10)(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(expo-image-picker@58.0.10(expo@58.0.17))(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)
+        specifier: ^3.50.0
+        version: 3.50.0(@krizaka/query@0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.50.0)(@shopify/flash-list@2.3.2(@babel/runtime@7.29.10)(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(expo-image-picker@58.0.10(expo@58.0.17))(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)
       '@shopify/flash-list':
         specifier: 2.3.2
         version: 2.3.2(@babel/runtime@7.29.10)(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)
@@ -169,14 +169,14 @@ importers:
         specifier: 0.1.0
         version: 0.1.0(zod@4.6.7)
       '@krizaka/tailwind':
-        specifier: ^3.45.0
-        version: 3.45.0(@krizaka/tokens@3.45.0)(@krizaka/ui@3.45.0)(tailwindcss@4.3.3)
+        specifier: ^3.50.0
+        version: 3.50.0(@krizaka/tokens@3.50.0)(@krizaka/ui@3.50.0)(tailwindcss@4.3.3)
       '@krizaka/tokens':
-        specifier: ^3.45.0
-        version: 3.45.0
+        specifier: ^3.50.0
+        version: 3.50.0
       '@krizaka/ui':
-        specifier: ^3.45.0
-        version: 3.45.0(@krizaka/query@0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.45.0)(@shopify/flash-list@2.3.2(@babel/runtime@7.29.10)(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(expo-image-picker@58.0.10(expo@58.0.17))(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)
+        specifier: ^3.50.0
+        version: 3.50.0(@krizaka/query@0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.50.0)(@shopify/flash-list@2.3.2(@babel/runtime@7.29.10)(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(expo-image-picker@58.0.10(expo@58.0.17))(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)
       '@tesseract.js-data/eng':
         specifier: ^1.0.0
         version: 1.0.0
@@ -1604,24 +1604,24 @@ packages:
     peerDependencies:
       zod: '>=3.23'
 
-  '@krizaka/tailwind@3.45.0':
-    resolution: {integrity: sha512-pGjlEgwrnc4ydy/gwkc+Ulnxui4zLg4V2tuHpc87NiaQgcftwPtGDi2NWv7KdzvhXzQLGRrVg5rDDy6l3kjb4g==}
+  '@krizaka/tailwind@3.50.0':
+    resolution: {integrity: sha512-NV1GlS5EIXPEZrEfS+Un5PeLA4VNq//Dkf3mchssKhD4GVtgQvILygYUE8vdgEwuI2Oh99RDqhGTIwdMV2bNew==}
     engines: {node: '>=22'}
     peerDependencies:
-      '@krizaka/tokens': ^3.45.0
-      '@krizaka/ui': ^3.45.0
+      '@krizaka/tokens': ^3.50.0
+      '@krizaka/ui': ^3.50.0
       tailwindcss: ^4.1
 
-  '@krizaka/tokens@3.45.0':
-    resolution: {integrity: sha512-GsXRKP0ikY9rS6NBPE0amzJC7hxhfSsobOIc0oh5FU26ViUF+wNfZQ52RTg1b40+NYWqR8YdstDxs2Idh63ayQ==}
+  '@krizaka/tokens@3.50.0':
+    resolution: {integrity: sha512-5dLFPCJsraK7CywXTL13XHOmyaxcFa+55vOP5LikYdro+L9P0UJh02ZJnbPDw9NngMX04LjTbjaUFV8Dk11z9w==}
     engines: {node: '>=22'}
 
-  '@krizaka/ui@3.45.0':
-    resolution: {integrity: sha512-niqfF9YS8hdwaDrnYMHOoa+9X1tVT6Wn/aS9P3RfyshBNgwigfBfkFQTiIUf94f8PWFER7j78ElBJXytPutO3g==}
+  '@krizaka/ui@3.50.0':
+    resolution: {integrity: sha512-H0VpxcJMH66+zrWhEo/Oi22Q70kcV127mpws8FDLeZvzdztg89BOx6Tr+ds5kKhBd+ZK9KXFJ2f8QMN2B9vHfg==}
     engines: {node: '>=22'}
     peerDependencies:
       '@krizaka/query': '>=0.2.1'
-      '@krizaka/tailwind': '>=3.45.0'
+      '@krizaka/tailwind': '>=3.50.0'
       '@maplibre/maplibre-react-native': '>=11'
       '@shopify/flash-list': '>=2'
       expo-camera: '>=16'
@@ -8881,19 +8881,19 @@ snapshots:
     dependencies:
       zod: 4.6.7
 
-  '@krizaka/tailwind@3.45.0(@krizaka/tokens@3.45.0)(@krizaka/ui@3.45.0)(tailwindcss@4.3.3)':
+  '@krizaka/tailwind@3.50.0(@krizaka/tokens@3.50.0)(@krizaka/ui@3.50.0)(tailwindcss@4.3.3)':
     dependencies:
-      '@krizaka/tokens': 3.45.0
-      '@krizaka/ui': 3.45.0(@krizaka/query@0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.45.0)(@shopify/flash-list@2.3.2(@babel/runtime@7.29.10)(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(expo-image-picker@58.0.10(expo@58.0.17))(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)
+      '@krizaka/tokens': 3.50.0
+      '@krizaka/ui': 3.50.0(@krizaka/query@0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.50.0)(@shopify/flash-list@2.3.2(@babel/runtime@7.29.10)(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(expo-image-picker@58.0.10(expo@58.0.17))(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)
       tailwindcss: 4.3.3
 
-  '@krizaka/tokens@3.45.0': {}
+  '@krizaka/tokens@3.50.0': {}
 
-  '@krizaka/ui@3.45.0(@krizaka/query@0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.45.0)(@shopify/flash-list@2.3.2(@babel/runtime@7.29.10)(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(expo-image-picker@58.0.10(expo@58.0.17))(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)':
+  '@krizaka/ui@3.50.0(@krizaka/query@0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.50.0)(@shopify/flash-list@2.3.2(@babel/runtime@7.29.10)(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(expo-image-picker@58.0.10(expo@58.0.17))(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)':
     dependencies:
       '@krizaka/intl': 0.2.1
       '@krizaka/pacer': 0.1.0(react@19.3.1)
-      '@krizaka/tokens': 3.45.0
+      '@krizaka/tokens': 3.50.0
       '@protomaps/basemaps': 5.7.2
       '@tanstack/highlight': 1.1.0
       '@tanstack/markdown': 1.0.0(react@19.3.1)
@@ -8910,7 +8910,7 @@ snapshots:
       tailwind-variants: 3.3.1(tailwindcss@4.3.3)
     optionalDependencies:
       '@krizaka/query': 0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1)
-      '@krizaka/tailwind': 3.45.0(@krizaka/tokens@3.45.0)(@krizaka/ui@3.45.0)(tailwindcss@4.3.3)
+      '@krizaka/tailwind': 3.50.0(@krizaka/tokens@3.50.0)(@krizaka/ui@3.50.0)(tailwindcss@4.3.3)
       '@shopify/flash-list': 2.3.2(@babel/runtime@7.29.10)(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)
       expo-image-picker: 58.0.10(expo@58.0.17)
       pdfjs-dist: 6.4.299

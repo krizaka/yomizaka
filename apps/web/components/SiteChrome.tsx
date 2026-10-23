@@ -1,19 +1,21 @@
 "use client";
 
 import { YomizakaLogo } from "@krizaka/ui";
-import { Button } from "@krizaka/ui/button";
 import { languagesFor } from "@krizaka/ui/language-switch";
 import { NavBar } from "@krizaka/ui/nav-bar";
 import { ThemeToggle } from "@krizaka/ui/theme";
 import Link from "next/link";
 
+import { BarActions, BarQueryRoot } from "@/components/BarSession";
 import { type Locale, translator } from "@/lib/i18n";
-import { MENU, menuHref, signInPath } from "@/lib/nav";
-import { contactHref, type PageId, pagePath, REPO_URL } from "@/lib/site";
+import { MENU, menuHref } from "@/lib/nav";
+import { type PageId, pagePath, REPO_URL } from "@/lib/site";
 
 /**
  * The bar of a Krizaka product (products independent): the animated mark, the three places of the site (lib/nav.ts),
- * then the repository, the theme, the language, sign-in and the one action. No dropdown: the menu is short enough to
+ * then the repository, the theme, the language and the one action: using the app (« Sign in », « Try Yomizaka » once sign-up is
+ * open, « Open the app » and the avatar when signed in — `BarSession`, a client island: the pages stay static). No « Talk to us »:
+ * Contact lives in the footer. No dropdown: the menu is short enough to
  * show. No version chip (the version is in the footer), no family switcher, no link to another product.
  */
 export function SiteHeader({ locale, current }: { locale: Locale; current: PageId }) {
@@ -23,6 +25,7 @@ export function SiteHeader({ locale, current }: { locale: Locale; current: PageI
   const items = MENU.map((m) => ({ ...m, href: menuHref(locale, m), label: t(`chrome.nav.${m.id}`), active: m.page === current && !m.hash }));
   return (
     <div className="pointer-events-none fixed inset-x-0 top-3 z-50 px-3">
+      <BarQueryRoot>
       <NavBar.Root label={t("chrome.navLabel")} className="pointer-events-auto mx-auto max-w-(--kz-page-max,72rem)">
         <NavBar.Brand asChild>
           <Link href={home} aria-label={t("chrome.brandHome")}>
@@ -46,12 +49,7 @@ export function SiteHeader({ locale, current }: { locale: Locale; current: PageI
           <span className="hidden md:inline-flex">
             <NavBar.Language label={t("chrome.languageLabel")} current={locale} languages={languages} linkAs={Link} />
           </span>
-          <Button asChild variant="ghost" size="sm" className="hidden md:inline-flex">
-            <Link href={signInPath(locale)}>{t("chrome.signIn")}</Link>
-          </Button>
-          <Button asChild variant="primary" size="sm" className="ml-1 hidden font-bold md:inline-flex">
-            <a href={contactHref("dev-yomizaka-bar")}>{t("chrome.talk")}</a>
-          </Button>
+          <BarActions locale={locale} placement="bar" />
 
           <NavBar.Mobile openLabel={t("chrome.menu.label")} closeLabel={t("chrome.menu.label")} className="max-h-[calc(100dvh-6rem)] gap-1 overflow-y-auto overscroll-contain p-3">
             {items.map((i) => (
@@ -59,19 +57,15 @@ export function SiteHeader({ locale, current }: { locale: Locale; current: PageI
                 <Link href={i.href}>{i.label}</Link>
               </NavBar.MobileLink>
             ))}
-            <NavBar.MobileLink asChild>
-              <Link href={signInPath(locale)}>{t("chrome.signIn")}</Link>
-            </NavBar.MobileLink>
             <NavBar.MobilePreferences label={t("chrome.preferences")}>
               <ThemeToggle label={t("chrome.themeToggle")} variant="ghost" />
               <NavBar.Language label={t("chrome.languageLabel")} current={locale} languages={languages} linkAs={Link} />
             </NavBar.MobilePreferences>
-            <Button asChild variant="primary" size="md" className="mt-2 font-bold">
-              <a href={contactHref("dev-yomizaka-bar")}>{t("chrome.talk")}</a>
-            </Button>
+            <BarActions locale={locale} placement="panel" />
           </NavBar.Mobile>
         </NavBar.Actions>
       </NavBar.Root>
+      </BarQueryRoot>
     </div>
   );
 }
