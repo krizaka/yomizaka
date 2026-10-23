@@ -38,7 +38,20 @@ describe.runIf(enabled)("the demo seed (Éric)", () => {
       expect(c.blueprint_version).toBeNull();
       expect(c.inputs.seeded).toBe("true");
     }
-    expect((await query<{ perspective: string | null }>("SELECT perspective FROM accounts WHERE id = $1", [owner]))[0]?.perspective).toBe("landlord");
+    const [account] = await query<{ perspective: string | null; name: string | null }>("SELECT perspective, name FROM accounts WHERE id = $1", [owner]);
+    expect(account?.perspective).toBe("landlord");
+    expect(account?.name).toBe(PERSONA_ERIC.name);
+  });
+
+  it("keeps a name the person chose, and fills a missing one", async () => {
+    const email = fresh();
+    const { owner } = await run(email);
+    await query("UPDATE accounts SET name = 'Éric R.' WHERE id = $1", [owner]);
+    await run(email);
+    expect((await query<{ name: string | null }>("SELECT name FROM accounts WHERE id = $1", [owner]))[0]?.name).toBe("Éric R.");
+    await query("UPDATE accounts SET name = NULL WHERE id = $1", [owner]);
+    await run(email);
+    expect((await query<{ name: string | null }>("SELECT name FROM accounts WHERE id = $1", [owner]))[0]?.name).toBe(PERSONA_ERIC.name);
   });
 
   it("changes nothing on a re-run, and starts over with reset", async () => {
@@ -48,6 +61,7 @@ describe.runIf(enabled)("the demo seed (Éric)", () => {
     await query("UPDATE accounts SET perspective = 'tenant' WHERE id = $1", [first.owner]);
     const again = await run(email);
     expect(again.owner).toBe(first.owner);
+    expect(again.name).toBe(PERSONA_ERIC.name);
     expect(again.collections).toEqual(expected);
     expect(await snapshot(first.owner)).toEqual(before);
     expect((await query<{ perspective: string | null }>("SELECT perspective FROM accounts WHERE id = $1", [first.owner]))[0]?.perspective).toBe("tenant");

@@ -49,11 +49,13 @@ export async function seedPersona(q, { persona = "eric", email, locale = "fr", m
   const def = PERSONAS[persona];
   if (!def) throw new Error(`unknown persona "${persona}" (known: ${Object.keys(PERSONAS).join(", ")})`);
   const address = (email ?? DEFAULT_EMAILS[persona]).trim().toLowerCase();
+  // An existing account keeps what the person chose (language, password, perspective, name); the seed only fills what is missing.
   const [account] = await q(
-    `INSERT INTO accounts (email, locale, email_verified_at, password_hash, perspective) VALUES ($1, $2, now(), $3, 'landlord')
-     ON CONFLICT (email) DO UPDATE SET locale = accounts.locale, password_hash = coalesce(EXCLUDED.password_hash, accounts.password_hash), perspective = coalesce(accounts.perspective, EXCLUDED.perspective)
-     RETURNING id, locale`,
-    [address, locale, passwordHash],
+    `INSERT INTO accounts (email, locale, email_verified_at, password_hash, perspective, name) VALUES ($1, $2, now(), $3, 'landlord', $4)
+     ON CONFLICT (email) DO UPDATE SET locale = accounts.locale, password_hash = coalesce(EXCLUDED.password_hash, accounts.password_hash),
+       perspective = coalesce(accounts.perspective, EXCLUDED.perspective), name = coalesce(accounts.name, EXCLUDED.name)
+     RETURNING id, locale, name`,
+    [address, locale, passwordHash, def.name],
   );
   const owner = account.id;
   const words = (key) => collectionWords(messagesByLocale[account.locale] ?? messagesByLocale.fr, persona, key);
@@ -96,5 +98,5 @@ export async function seedPersona(q, { persona = "eric", email, locale = "fr", m
     const [count] = await q("SELECT count(*)::int AS n FROM documents WHERE collection_id = $1", [row.id]);
     counts[name] = count.n;
   }
-  return { owner, email: address, collections: counts };
+  return { owner, email: address, name: account.name, collections: counts };
 }

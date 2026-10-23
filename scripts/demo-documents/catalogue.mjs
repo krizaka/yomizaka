@@ -254,9 +254,11 @@ export function buildDocument(spec, seed = DEFAULT_SEED) {
   return { ...spec, filename: `${spec.id}.pdf`, lines, findings };
 }
 
-/** The three collections of the persona Éric (property manager) and the documents each one holds. */
+/** The persona Éric (property manager): his display name, his three collections and the documents each one holds. */
 export const PERSONA_ERIC = {
   key: "eric",
+  /** Shown by the app's header instead of the e-mail address (the review's A4); the account keeps a name the person chose. */
+  name: "Éric Tremblay",
   collections: [
     { key: "rosemont", documents: SPECS.filter((s) => /rosemont/.test(s.id)).map((s) => s.id) },
     { key: "villeray", documents: SPECS.filter((s) => /villeray/.test(s.id)).map((s) => s.id) },

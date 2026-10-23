@@ -40,7 +40,7 @@ async function main() {
       reset: process.argv.includes("--reset"),
       passwordHash,
     });
-    console.log(`demo:seed (${persona}): ${result.email}`);
+    console.log(`demo:seed (${persona}): ${result.email} — ${result.name ?? "(no name)"}`);
     for (const [name, n] of Object.entries(result.collections)) console.log(`  ${name}: ${n} documents`);
   } finally {
     await client.end();

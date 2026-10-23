@@ -17,6 +17,11 @@ describe("the demo seed", () => {
     expect(() => assertNotProduction({})).not.toThrow();
   });
 
+  it("gives the persona a display name the header can show instead of the address (A4), within the column's limit", () => {
+    expect(PERSONA_ERIC.name).toBe("Éric Tremblay");
+    expect(PERSONA_ERIC.name.length).toBeLessThanOrEqual(80);
+  });
+
   it("names the three collections in French and in English, through the messages", () => {
     for (const messages of [fr, en]) {
       for (const c of PERSONA_ERIC.collections as { key: string }[]) {
