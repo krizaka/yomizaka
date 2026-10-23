@@ -15,7 +15,7 @@ const PROTECTED: RegExp[] = [
   /\b(?:art\.|articles?|section)\s*\d+(?:\.\d+)?(?:\s*(?:al\.|par\.)\s*\d+)?(?:\s*(?:et|à|and|to|-)\s*\d+(?:\.\d+)?)?/gi,
   // amounts and percentages: 1 234,56 $, $1,234.56, 12 %, 12 CAD
   /\d[\d\s\u00a0\u202f.,]*\d?\s?(?:\$|CAD|\$ CA|%)/g,
-  /\$\s?\d[\d,. ]*\d/g,
+  /\$\s?\d(?:[\d,. ]*\d)?/g,
   // dates: 2026-10-23, 23 octobre 2026, October 23, 2026, 23/10/2026
   /\b\d{4}-\d{2}-\d{2}\b/g,
   /\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/g,
@@ -45,9 +45,14 @@ export function protect(text: string): Protected {
       found.push({ start: m.index, end: m.index + m[0].length });
     }
   }
+  // Overlapping matches are merged into one span — dropping one could leave part of a protected value exposed.
   found.sort((a, b) => a.start - b.start || b.end - a.end);
   const chosen: { start: number; end: number }[] = [];
-  for (const f of found) if (!chosen.length || f.start >= chosen[chosen.length - 1]!.end) chosen.push(f);
+  for (const f of found) {
+    const last = chosen[chosen.length - 1];
+    if (last && f.start < last.end) last.end = Math.max(last.end, f.end);
+    else chosen.push({ ...f });
+  }
   let masked = "";
   let at = 0;
   const spans: string[] = [];

@@ -91,7 +91,7 @@ export function buildPayload(doc: Pick<DocumentDetail, "sha256" | "filename" | "
     throw new ReportError("Only a finished compliance check can be certified");
   }
   const source: ComplianceReport = analysis.report;
-  // The closing note and the verdict counts come from the original; only the generated texts are read through the translation.
+  // The generated texts — the findings' and, through them, the closing note's titles and explanations — are read through the translation.
   const report: TranslatedCompliance = translation ? applyToCompliance(source, translation.texts) : source;
   const byVerdict: Record<string, number> = {};
   for (const f of report.findings) byVerdict[f.verdict] = (byVerdict[f.verdict] ?? 0) + 1;
@@ -114,7 +114,7 @@ export function buildPayload(doc: Pick<DocumentDetail, "sha256" | "filename" | "
       finishedAt: analysis.finishedAt,
     },
     summary: { rulesEvaluated: report.summary?.rulesEvaluated ?? report.findings.length, blockingFailures: report.summary?.blockingFailures ?? report.findings.filter((f) => f.verdict === "FAIL" && f.severity === "BLOCKING").length, byVerdict },
-    note: buildNote(noteInputOf(source, noteSourceOf(doc.textSource)), lang),
+    note: buildNote(noteInputOf(report, noteSourceOf(doc.textSource)), lang),
     ...(translation ? { translation: translation.trace } : {}),
     findings: report.findings.map((f) => ({
       ruleId: f.ruleId,

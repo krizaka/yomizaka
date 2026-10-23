@@ -5,7 +5,7 @@ import { applyToAuthenticity, applyToCompliance } from "./apply";
 import { fieldsOf, sourceVersionOf } from "./fields";
 import type { TranslationOutcome, TranslationPort, TranslationRequest } from "./port";
 import { protect, restore } from "./protect";
-import { type StoredTranslation, translate, type TranslationDeps, type TranslationStore } from "./service";
+import { type StoredTranslation, translate, type TranslationDeps, type TranslationKey, type TranslationStore } from "./service";
 
 const REPORT: ComplianceReport = {
   rulesetId: "qc-residential-lease",
@@ -39,6 +39,17 @@ describe("what is never translated", () => {
     }
     expect(masked).toContain("Le bail exige un dépôt de");
     expect(restore(masked, spans)).toBe(text);
+  });
+
+  it("masks a one-digit amount ($5) and every overlapping match as one span — nothing of a protected value is left to translate (review of #247)", () => {
+    expect(protect("Des frais de $5 sont exigés.").spans).toEqual(["$5"]);
+    expect(protect("Des frais de 5 $ sont exigés.").spans).toEqual(["5 $"]);
+    const both = protect("Un paiement le 1er juillet 2026, 1 450 $.");
+    const text = both.spans.join("|");
+    expect(text).toContain("1er juillet 2026");
+    expect(text).toContain("1 450 $");
+    expect(both.masked).not.toMatch(/juillet|1 450|2026/);
+    expect(restore(both.masked, both.spans)).toBe("Un paiement le 1er juillet 2026, 1 450 $.");
   });
 
   it("refuses a translation that lost, doubled or invented a protected span — the original stays", () => {
@@ -111,19 +122,33 @@ function fakePort(script: (request: TranslationRequest) => Record<string, string
   return { port, calls, finish: (to: "done" | "failed") => void (phase = to) };
 }
 
-function memoryStore(): TranslationStore & { rows: StoredTranslation[] } {
-  const rows: StoredTranslation[] = [];
+function memoryStore(): TranslationStore & { rows: (StoredTranslation & { analysisId: string; language: string })[] } {
+  const rows: (StoredTranslation & { analysisId: string; language: string })[] = [];
+  const same = (r: (typeof rows)[number], k: TranslationKey) => r.analysisId === k.analysisId && r.language === k.language && r.sourceVersion === k.sourceVersion && r.glossaryVersion === k.glossaryVersion;
   return {
     rows,
-    async find(_a, _l, sourceVersion, glossaryVersion) {
-      return [...rows].reverse().find((r) => r.sourceVersion === sourceVersion && r.glossaryVersion === glossaryVersion) ?? null;
+    async find(key) {
+      const mine = rows.filter((r) => same(r, key));
+      return [...mine].reverse().find((r) => r.status !== "failed") ?? mine.at(-1) ?? null;
     },
-    async save(_a, _l, stored) {
-      rows.push(stored);
+    async claim(key, spans, sent) {
+      if (rows.some((r) => same(r, key) && r.status !== "failed")) return false;
+      rows.push({ analysisId: key.analysisId, language: key.language, status: "running", runId: "", studioVersion: null, glossaryVersion: key.glossaryVersion, sourceVersion: key.sourceVersion, spans, texts: null, sent, error: null, charged: 0 });
+      return true;
     },
-    async update(_a, _l, runId, patch) {
-      const row = rows.find((r) => r.runId === runId)!;
-      Object.assign(row, patch);
+    async attach(key, runId, charged) {
+      const row = rows.find((r) => same(r, key) && r.status === "running" && r.runId === "");
+      if (row) Object.assign(row, { runId, charged });
+    },
+    async release(key) {
+      const at = rows.findIndex((r) => same(r, key) && r.status === "running" && r.runId === "");
+      if (at >= 0) rows.splice(at, 1);
+    },
+    async finish(key, runId, patch) {
+      const row = rows.find((r) => same(r, key) && r.runId === runId && r.status === "running");
+      if (!row) return null;
+      Object.assign(row, { status: patch.status, studioVersion: patch.studioVersion ?? row.studioVersion, texts: patch.texts ?? null, error: patch.error ?? null });
+      return { charged: row.charged };
     },
   };
 }
@@ -229,5 +254,42 @@ describe("translating a report through the port (mocked until the Studio ships)"
     const { deps, ledger } = depsOf({ start: async () => Promise.reject(new Error("down")), read: async () => ({ state: "running", runId: "x" }) }, memoryStore(), { credits: 1 });
     await expect(translate(analysis, "en", deps)).rejects.toThrow("down");
     expect([ledger.spent, ledger.refunded]).toEqual([1, 1]);
+  });
+
+  it("two requests that ask at once start one run and spend once (review of #247)", async () => {
+    const fake = fakePort(translateWords);
+    const { deps, ledger } = depsOf(fake.port, memoryStore(), { credits: 2 });
+    const views = await Promise.all([translate(analysis, "en", deps), translate(analysis, "en", deps), translate(analysis, "en", deps)]);
+    expect(fake.calls.start).toHaveLength(1);
+    expect(ledger.spent).toBe(2);
+    expect(views.every((v) => v.status === "running")).toBe(true);
+  });
+
+  it("two polls that both see the run fail refund once (review of #247)", async () => {
+    const fake = fakePort(translateWords);
+    const { deps, ledger } = depsOf(fake.port, memoryStore(), { credits: 2 });
+    await translate(analysis, "en", deps);
+    fake.finish("failed");
+    const polls = await Promise.all([translate(analysis, "en", deps), translate(analysis, "en", deps)]);
+    expect(polls.every((v) => v.status === "failed")).toBe(true);
+    expect(ledger.refunded).toBe(2);
+  });
+
+  it("a claim whose start could not happen is given back: the credits are returned and the next ask can start", async () => {
+    const store = memoryStore();
+    const fake = fakePort(translateWords);
+    const { deps, ledger } = depsOf({ start: async () => Promise.reject(new Error("down")), read: fake.port.read }, store, { credits: 1 });
+    await expect(translate(analysis, "en", deps)).rejects.toThrow("down");
+    expect(store.rows).toHaveLength(0);
+    expect([ledger.spent, ledger.refunded]).toEqual([1, 1]);
+    const { deps: again } = depsOf(fake.port, store, { credits: 1 });
+    expect((await translate(analysis, "en", again)).status).toBe("running");
+  });
+
+  it("not enough credits releases the claim too", async () => {
+    const store = memoryStore();
+    const { deps } = depsOf(fakePort(translateWords).port, store, { credits: 1, spend: async () => Promise.reject(new Error("PAYWALL")) });
+    await expect(translate(analysis, "en", deps)).rejects.toThrow("PAYWALL");
+    expect(store.rows).toHaveLength(0);
   });
 });

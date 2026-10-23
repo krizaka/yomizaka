@@ -20,7 +20,7 @@ PDF, in English as well. The interface words already come from the catalogues; w
 - **Traceability**: a translation keeps its Orazaka run id, the Studio version, the glossary version and the version (hash) of the
   source text. The signed payload carries `translation { original, language, runId, studioVersion, glossaryVersion, sourceVersion }`
   and the report prints which language is the original. The legal-review banner and the disclaimer exist in both languages.
-- **Cached and charged once**: `report_translations` (migration 0027) per analysis, language, source version and glossary version. A
+- **Cached and charged once**: `report_translations` (migration 0030) per analysis, language, source version and glossary version. A
   report is translated once; changing the glossary or the text is a new translation. A failed run gives its credits back.
 - **Admin**: `features.reportTranslation` (off until the Studio is live), `features.reportLanguages`, `limits.reportTranslationCredits`
   (0 = included), and the glossary (`translation_glossary`, versioned) by `GET/PUT /api/admin/translation-glossary`.

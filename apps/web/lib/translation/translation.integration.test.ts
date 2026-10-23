@@ -87,8 +87,9 @@ describe.runIf(enabled)("the report in English (yomizaka#246)", () => {
     await appSettings().set(actor, GLOBAL, "features.reportTranslation", true, new Date());
     await appSettings().set(actor, GLOBAL, "limits.reportTranslationCredits", 2, new Date());
     resetAppSettings();
-    await expect(reportFor(owner, documentId, analysisId, "en")).rejects.toMatchObject({ status: 409, body: { code: "TRANSLATION_PENDING" } });
-    await expect(reportPdfFor(owner, documentId, analysisId, "en")).rejects.toMatchObject({ status: 409, body: { code: "TRANSLATION_PENDING" } });
+    // Four requests at once (the HTML, the PDF, the page's two queries): one run, one charge.
+    const asked = await Promise.allSettled([reportFor(owner, documentId, analysisId, "en"), reportPdfFor(owner, documentId, analysisId, "en"), reportFor(owner, documentId, analysisId, "en"), reportPdfFor(owner, documentId, analysisId, "en")]);
+    for (const r of asked) expect(r).toMatchObject({ status: "rejected", reason: { status: 409, body: { code: "TRANSLATION_PENDING" } } });
     expect(starts).toHaveLength(1);
     expect(starts[0]).toMatchObject({ sourceLocale: "fr" });
     expect(JSON.parse(starts[0]!.targetLocales!)).toEqual(["en"]);
@@ -120,6 +121,20 @@ describe.runIf(enabled)("the report in English (yomizaka#246)", () => {
     await expect(reportFor(owner, documentId, analysisId, "en")).rejects.toMatchObject({ body: { code: "TRANSLATION_PENDING" } });
     expect(starts).toHaveLength(2);
     expect(JSON.parse(starts[1]!.glossary!)).toContainEqual({ source: "résiliation", target: "termination" });
+    await saveGlossary(before.terms);
+  });
+
+  it("two simultaneous glossary saves never mix their terms, and the version goes up once each (review of #247)", async () => {
+    const before = await readGlossary();
+    const a = Array.from({ length: 6 }, (_, n) => ({ source: `a-terme-${n}`, target: `a-term-${n}` }));
+    const b = Array.from({ length: 6 }, (_, n) => ({ source: `b-terme-${n}`, target: `b-term-${n}` }));
+    const [va, vb] = await Promise.all([saveGlossary(a), saveGlossary(b)]);
+    expect(Math.abs(va - vb)).toBe(1);
+    const after = await readGlossary();
+    expect(after.version).toBe(before.version + 2);
+    const sources = after.terms.map((t) => t.source);
+    expect(sources.every((x) => x.startsWith("a-")) || sources.every((x) => x.startsWith("b-"))).toBe(true);
+    expect(sources).toHaveLength(6);
     await saveGlossary(before.terms);
   });
 

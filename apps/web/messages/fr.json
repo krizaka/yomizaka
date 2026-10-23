@@ -358,10 +358,7 @@
       },
       "where": "Où",
       "mayIndicate": "Peut indiquer",
-      "language": {
-        "fr": "français",
-        "en": "anglais"
-      },
+      "language": "Les rapports sont rédigés en français, la langue de leurs règles.",
       "history": "Runs précédents",
       "noPdf": "Seuls les fichiers PDF, Word (.docx) et OpenDocument (.odt) s'examinent en tant que fichiers.",
       "tooLarge": "Yomizaka examine les fichiers jusqu'à 5 Mo.",
@@ -410,7 +407,11 @@
       "translating": "Traduction de ce rapport en français par Orazaka… l’original reste disponible.",
       "translationFailed": "La traduction n’est pas disponible pour le moment : le rapport s’affiche tel qu’Orazaka l’a écrit.",
       "translatedNote": "Langue d’origine : {original}. Ces explications sont une traduction produite par Orazaka (exécution {runId}). Les passages cités, les références d’articles, les montants et les dates sont ceux de l’original et ne sont pas traduits.",
-      "quoteAid": "Traduction indicative"
+      "quoteAid": "Traduction indicative",
+      "languageNames": {
+        "fr": "français",
+        "en": "anglais"
+      }
     },
     "search": {
       "title": "Recherche",
@@ -1127,7 +1128,9 @@
         "test": "Test",
         "live": "Réel",
         "pdf": "PDF",
-        "text": "Texte"
+        "text": "Texte",
+        "fr": "Français",
+        "en": "English"
       },
       "settings": {
         "app": {
@@ -1202,6 +1205,14 @@
           "webhooks": {
             "label": "Webhooks",
             "hint": "Désactivé : aucun webhook n'est envoyé ni enregistré, quel que soit le forfait."
+          },
+          "reportTranslation": {
+            "label": "Traduction des rapports",
+            "hint": "Désactivée tant que le Studio de traduction n'est pas en service : un rapport se lit et se signe dans la langue où Orazaka l'a écrit. Activée : les explications sont traduites par Orazaka ; les passages cités, les références d'articles, les montants et les dates ne le sont jamais."
+          },
+          "reportLanguages": {
+            "label": "Langues des rapports proposées",
+            "hint": "Les langues dans lesquelles un rapport peut être lu et signé. Le français, l'original, est toujours disponible."
           }
         },
         "limits": {
@@ -1260,6 +1271,10 @@
           "webhookMaxAttempts": {
             "label": "Essais par envoi de webhook",
             "hint": "Le premier compris ; après le dernier l'envoi est abandonné et reste dans le journal. Les attentes passent de 30 secondes à 12 heures."
+          },
+          "reportTranslationCredits": {
+            "label": "Crédits par traduction de rapport",
+            "hint": "Pris à la première traduction d'un rapport dans une autre langue (et rendus si elle échoue) ; un rapport déjà traduit n'est jamais facturé de nouveau. 0 : inclus."
           }
         },
         "plans": {

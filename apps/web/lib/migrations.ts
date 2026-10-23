@@ -540,7 +540,7 @@ CREATE TABLE report_translations (
   source_version   text NOT NULL,
   glossary_version integer NOT NULL,
   status           text NOT NULL CHECK (status IN ('running', 'done', 'failed')),
-  run_id           text NOT NULL,
+  run_id           text NOT NULL DEFAULT '',
   studio_version   text,
   spans            jsonb NOT NULL DEFAULT '{}',
   texts            jsonb,
@@ -550,6 +550,8 @@ CREATE TABLE report_translations (
   finished_at      timestamptz
 );
 CREATE INDEX report_translations_analysis ON report_translations(analysis_id, language, created_at DESC);
+-- One active translation per key: two requests that ask at once start one run (a failed one may be replaced).
+CREATE UNIQUE INDEX report_translations_active ON report_translations(analysis_id, language, source_version, glossary_version) WHERE status <> 'failed';
 `,
   },
 ];

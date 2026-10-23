@@ -92,20 +92,23 @@ type TranslationView = z.infer<typeof translationSchema>["translation"];
 
 function useReportTranslation(documentId: string, analysisId: string, enabled: boolean): TranslationView | undefined {
   const { locale } = useSay();
-  return useQuery({
+  const query = useQuery({
     queryKey: [...queryKeys.document(documentId), "translation", analysisId, locale],
     queryFn: () => krizakaFetch(`/api/documents/${documentId}/analyses/${analysisId}/translation?lang=${locale}`, { schema: translationSchema }).then((r) => r.translation),
     enabled,
     retry: false,
     throwOnError: false,
-    refetchInterval: (query) => (query.state.data?.status === "running" ? 3000 : false),
-  }).data;
+    refetchInterval: (q) => (q.state.data?.status === "running" ? 3000 : false),
+  });
+  // A refusal of the request itself (not enough credits, the language not offered, Orazaka down) is shown like a failed translation:
+  // the reader keeps the original and is told why it is not translated (review of #247).
+  return query.isError ? { status: "failed", texts: null, trace: null } : query.data;
 }
 
 export function ComplianceFindings({ report, runId, selection, translation }: { report: ComplianceReport; runId: string | null; selection?: Selection; translation?: TranslationView }) {
   const { say } = useSay();
   const texts = translation?.status === "done" ? translation.texts : null;
-  const originalLanguage = say(`analysis.language.${translation?.trace?.original ?? "fr"}`);
+  const originalLanguage = say(`analysis.languageNames.${translation?.trace?.original ?? "fr"}`);
   const failures = report.summary?.blockingFailures ?? report.findings.filter((f) => f.verdict === "FAIL" && f.severity === "BLOCKING").length;
   return (
     <div className="flex flex-col gap-3">

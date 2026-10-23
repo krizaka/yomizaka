@@ -358,10 +358,7 @@
       },
       "where": "Where",
       "mayIndicate": "May indicate",
-      "language": {
-        "fr": "French",
-        "en": "English"
-      },
+      "language": "Reports are written in French, the language of their rules.",
       "history": "Earlier runs",
       "noPdf": "Only PDF, Word (.docx) and OpenDocument (.odt) files are examined as files.",
       "tooLarge": "Yomizaka examines files up to 5 MB.",
@@ -410,7 +407,11 @@
       "translating": "Translating this report into English through Orazaka… the original French stays available.",
       "translationFailed": "The translation is not available right now: the report is shown as Orazaka wrote it (in French).",
       "translatedNote": "Original language: {original}. These explanations are a translation produced through Orazaka (run {runId}). Quoted passages, article references, amounts and dates are the original’s and are not translated.",
-      "quoteAid": "Indicative translation"
+      "quoteAid": "Indicative translation",
+      "languageNames": {
+        "fr": "French",
+        "en": "English"
+      }
     },
     "search": {
       "title": "Search",
@@ -1127,7 +1128,9 @@
         "test": "Test",
         "live": "Live",
         "pdf": "PDF",
-        "text": "Text"
+        "text": "Text",
+        "fr": "French",
+        "en": "English"
       },
       "settings": {
         "app": {
@@ -1202,6 +1205,14 @@
           "webhooks": {
             "label": "Webhooks",
             "hint": "Off: no webhook is sent and none can be registered, whatever the plan."
+          },
+          "reportTranslation": {
+            "label": "Report translation",
+            "hint": "Off until the translation Studio is live: a report is read and signed in the language Orazaka wrote it in. On: the explanations are translated through Orazaka; quoted passages, article references, amounts and dates never are."
+          },
+          "reportLanguages": {
+            "label": "Report languages offered",
+            "hint": "The languages a report may be read and signed in. French, the original, is always available."
           }
         },
         "limits": {
@@ -1260,6 +1271,10 @@
           "webhookMaxAttempts": {
             "label": "Tries per webhook delivery",
             "hint": "The first one included; after the last the delivery is given up and stays in the log. The waits grow from 30 seconds to 12 hours."
+          },
+          "reportTranslationCredits": {
+            "label": "Credits per report translation",
+            "hint": "Taken when a report is first translated into another language (and given back if the translation fails); a report already translated is never charged again. 0: included."
           }
         },
         "plans": {
