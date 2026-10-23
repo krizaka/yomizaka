@@ -76,8 +76,18 @@ export async function withNamedLock<T>(name: string, work: () => Promise<T>): Pr
   return withLock("SELECT pg_try_advisory_lock(hashtextextended($1, 0)) AS ok", "SELECT pg_advisory_unlock(hashtextextended($1, 0))", name, work);
 }
 
+/**
+ * Locks live on their own small pool: a holder keeps its connection for the whole of its work, and that work runs its queries on the
+ * main pool — if both came from one pool, as many concurrent holders as it has connections would wait forever for a connection to
+ * read with (yomizaka#266, review). Holders beyond the pool simply wait their turn for a lock connection.
+ */
+const lockHolder = globalThis as unknown as { __yomizakaLockPool?: pg.Pool };
+// @fixed: connections kept for locks — a technical bound; the main pool is never touched by it
+const LOCK_CONNECTIONS = 4;
+const lockPool = (): pg.Pool => (lockHolder.__yomizakaLockPool ??= new pg.Pool({ ...poolConfig(), max: LOCK_CONNECTIONS, allowExitOnIdle: true }));
+
 async function withLock<T>(lock: string, unlock: string, key: number | string, work: () => Promise<T>): Promise<T | null> {
-  const conn = await pool().connect();
+  const conn = await lockPool().connect();
   try {
     const [row] = (await conn.query<{ ok: boolean }>(lock, [key])).rows;
     if (!row?.ok) return null;
