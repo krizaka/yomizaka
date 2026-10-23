@@ -1,7 +1,7 @@
 # Yomizaka for iOS and Android
 
 Expo (SDK 58, Expo Router) on the Krizaka native kit (`@krizaka/ui/native`) in Yomizaka's indigo, light and dark, French first.
-The same account and the same API as the web; the logic every Krizaka Expo app shares (session, discovery, API client) is
+The same account and the same API as the web; the logic every Krizaka Expo app shares (session, discovery, API client, the auth context `createAuth`) is
 [`@krizaka/app-client`](https://ui.krizaka.com/packages/app-client) (ADR-004).
 
 | Screen | URL (the web's path, under the language) |
@@ -17,9 +17,11 @@ The same account and the same API as the web; the logic every Krizaka Expo app s
 ```bash
 pnpm install            # at the repository root
 cd apps/mobile
-pnpm test               # jest-expo: the pure rules (pre-flight, checks, stages, links, the device store)
+pnpm test               # jest-expo: the pure rules (pre-flight, checks, stages, links, the device store) and screens (jest.resolver.js loads the ESM-only @krizaka packages)
 pnpm exec expo start    # a development build; EXPO_PUBLIC_APP_URL points it at another backend
 ```
 
 Not in this app yet, tracked in krizaka/yomizaka#155: universal links (the AASA and `assetlinks.json` routes of the web),
 the update and maintenance gates, push, the Android build in CI.
+
+Every tab's header carries the signed-in account (`GET /api/me`); its avatar opens the account and settings.
