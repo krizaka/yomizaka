@@ -1509,7 +1509,8 @@
       "title": "This page does not exist.",
       "text": "It may have moved, or it is not yours.",
       "library": "Back to the library",
-      "home": "Home"
+      "home": "Home",
+      "console": "Back to the console"
     }
   },
   "report": {

@@ -267,5 +267,7 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
 - **Principle**: one language per page, the one the address says; the way back is the place the person uses.
 - **Refused**: a search on the 404 (the console has one; the public site does not need one yet); a « lost » owl (the mood does
   not exist in Krizaka UI yet — krizaka-ui is asked; `empty` until then).
-- **Cost**: a request header to carry (`x-locale`), set by the proxy for every page.
+- **Cost**: a request header to carry (`x-locale`), set by the proxy for every page — the proxy now walks every localised
+  address, even one with a dot in a segment; a catch-all route (`[...rest]`) under the language, since a segment's own
+  `not-found` answers only `notFound()` from a matched route; on the admin host the way back is the console.
 - **Signal we are wrong**: people land on the 404 from an old address we could have redirected (then the redirect, not the page).

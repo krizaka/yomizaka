@@ -1509,7 +1509,8 @@
       "title": "Cette page n'existe pas.",
       "text": "Elle a peut-être changé d'adresse, ou elle n'est pas à vous.",
       "library": "Retour à la bibliothèque",
-      "home": "Accueil"
+      "home": "Accueil",
+      "console": "Retour à la console"
     }
   },
   "report": {

@@ -61,5 +61,6 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/:path*", "/((?!api|_next/static|_next/image|og.png|favicon.ico|icon.svg|.*\\..*).*)", "/robots.txt", "/sitemap.xml", "/llms.txt", "/.well-known/:path*"],
+  // Every localised address too, even with a dot in a segment (`/fr/screening/missing.pdf`): its 404 needs the language (Y10).
+  matcher: ["/api/:path*", "/((?!api|_next/static|_next/image|og.png|favicon.ico|icon.svg|.*\\..*).*)", "/(en|fr)/:path*", "/robots.txt", "/sitemap.xml", "/llms.txt", "/.well-known/:path*"],
 };
