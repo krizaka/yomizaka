@@ -12,6 +12,7 @@ export const FEATURE = {
   assistant: "features.assistant",
   apiKeys: "features.apiKeys",
   collectionAvatars: "features.collectionAvatars",
+  batches: "features.batches",
 } as const satisfies Record<string, SettingKey>;
 export type Feature = keyof typeof FEATURE;
 

@@ -43,6 +43,8 @@ export const SETTINGS = {
   "features.apiKeys": flag(GROUP.features, true, WORKSPACE),
   // Collection avatars (krizaka/yomizaka#206): on or off, which of the set are offered, how heavy an uploaded image may be.
   "features.collectionAvatars": flag(GROUP.features, true, WORKSPACE),
+  /** A batch of checks from a CSV and its files (yomizaka#232). */
+  "features.batches": flag(GROUP.features, true, WORKSPACE),
   "features.avatarSet": subset(GROUP.features, AVATAR_SEED_CHOICES, [...AVATAR_SEED_CHOICES]),
   // Limits: what one document and one account may do.
   "limits.maxFileMb": integer(GROUP.limits, PLATFORM_MAX_FILE_MB, { min: 1, max: PLATFORM_MAX_FILE_MB, unit: "MB" }, WORKSPACE),
@@ -51,6 +53,8 @@ export const SETTINGS = {
   "limits.reuseDays": integer(GROUP.limits, 365, { min: 0, max: 3650, unit: "days" }),
   "limits.purgeAfterHours": integer(GROUP.limits, 24, { min: 1, max: 720, unit: "hours" }),
   "limits.apiRequestsPerMinute": integer(GROUP.limits, 60, { min: 1, max: 6000, unit: "requests" }, WORKSPACE),
+  "limits.batchMaxRows": integer(GROUP.limits, 200, { min: 1, max: 1000, unit: "rows" }, WORKSPACE),
+  "limits.batchConcurrency": integer(GROUP.limits, 3, { min: 1, max: 10, unit: "checks" }),
   "limits.avatarMaxKb": integer(GROUP.limits, 512, { min: 16, max: 2048, unit: "KB" }),
   "limits.bonusAuditsPerMonth": integer(GROUP.limits, 0, { min: 0, max: 10000, unit: "audits" }, [SCOPE.user]),
   // Plans: what each plan includes (prices stay in Stripe).
