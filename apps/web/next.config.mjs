@@ -46,6 +46,8 @@ const nextConfig = {
   // The monorepo root: the standalone server then carries @yomizaka/core and the hoisted dependencies.
   outputFileTracingRoot: fileURLToPath(new URL("../..", import.meta.url)),
   reactStrictMode: true,
+  // The 404 of an address that matches no route is app/global-not-found.tsx: there is no root layout to compose it from.
+  experimental: { globalNotFound: true },
   poweredByHeader: false,
   env: { NEXT_PUBLIC_APP_VERSION: appVersion },
   transpilePackages: ["@yomizaka/core"],

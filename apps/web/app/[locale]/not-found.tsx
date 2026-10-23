@@ -1,20 +1,9 @@
-import { ErrorPage } from "@krizaka/ui/error-page";
-import { Mascot } from "@krizaka/ui/mascots";
-import Link from "next/link";
+import { headers } from "next/headers";
 
-/** A page that does not exist (or that this person may not see): the same answer, in both languages. */
-export default function NotFound() {
-  return (
-    <ErrorPage
-      code="404"
-      mascot={<Mascot bird="owl" mood="empty" size={96} />}
-      title="Not found · Introuvable"
-      text="This page does not exist, or is not yours. · Cette page n'existe pas, ou n'est pas à vous."
-      actions={
-        <Link href="/" className="font-semibold text-fg-accent underline">
-          Yomizaka
-        </Link>
-      }
-    />
-  );
+import { NotFoundView } from "@/components/not-found/NotFoundView";
+import { localeFromHeader, NOT_FOUND_LOCALE_HEADER } from "@/lib/not-found-locale";
+
+/** A page inside a language that does not exist (or that calls notFound()): the same page as the global one. */
+export default async function NotFound() {
+  return <NotFoundView locale={localeFromHeader((await headers()).get(NOT_FOUND_LOCALE_HEADER))} />;
 }

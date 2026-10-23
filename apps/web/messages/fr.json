@@ -1761,5 +1761,10 @@
         }
       }
     }
+  },
+  "notFound": {
+    "title": "Cette page n'existe pas.",
+    "text": "L'adresse n'est peut-être plus la bonne, ou la page a changé de place. Repartez de l'accueil.",
+    "home": "Accueil"
   }
 }

@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 
 import { isAdminHost, routeFor } from "./lib/host";
 import { CLOSED_ROBOTS, devRedirect, indexableOn, isDevHost, NOINDEX_HEADER } from "./lib/indexing";
+import { localeForAddress, NOT_FOUND_LOCALE_HEADER } from "./lib/not-found-locale";
 import { SITE_URL } from "./lib/site";
 
 /**
@@ -47,8 +48,12 @@ export function proxy(request: NextRequest) {
     case "rewrite":
       response = NextResponse.rewrite(new URL(route.path, request.url));
       break;
-    default:
-      response = NextResponse.next();
+    default: {
+      // The language of the address travels to the 404 page (a global not-found has no params): lib/not-found-locale.ts.
+      const headersWithLocale = new Headers(request.headers);
+      headersWithLocale.set(NOT_FOUND_LOCALE_HEADER, localeForAddress(request.nextUrl.pathname, chosen));
+      response = NextResponse.next({ request: { headers: headersWithLocale } });
+    }
   }
   const segment = request.nextUrl.pathname.split("/")[1];
   if ((segment === "en" || segment === "fr") && request.cookies.get("NEXT_LOCALE")?.value !== segment) {

@@ -1761,5 +1761,10 @@
         }
       }
     }
+  },
+  "notFound": {
+    "title": "This page does not exist.",
+    "text": "The address may be out of date, or the page has moved. Start again from the home.",
+    "home": "Home"
   }
 }
