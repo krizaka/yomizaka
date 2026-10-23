@@ -31,7 +31,8 @@ export function BatchesView({ go: _go }: { go: (route: Route) => void }) {
   return (
     <div className="flex max-w-3xl flex-col gap-4">
       <p className="text-fg-secondary">{t("batch.lead")}</p>
-      {list.data?.length === 0 ? (
+      {/* Query keeps the last answer beside an error: an empty list reads as « no batch » only when the last read succeeded. */}
+      {list.data?.length === 0 && !list.isError ? (
         <EmptyState icon={<BatchIcon size={28} />} title={t("batch.title")} description={t("batch.empty")} />
       ) : (
         <List

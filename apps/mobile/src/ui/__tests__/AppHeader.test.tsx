@@ -7,7 +7,7 @@ import { AppHeader } from "@/ui/AppHeader";
 
 const mockNavigate = jest.fn();
 jest.mock("expo-router", () => ({ useRouter: () => ({ navigate: mockNavigate, replace: jest.fn() }), usePathname: () => "/fr/app" }));
-jest.mock("@/config", () => ({ queries: { me: () => ({ queryKey: ["akinaza", "me"] }) } }));
+jest.mock("@/config", () => ({ queries: { me: () => ({ queryKey: ["yomizaka", "me"] }) } }));
 // The server state is @krizaka/query's (tested there); here, the account it answers.
 jest.mock("@krizaka/query", () => ({ useQuery: () => ({ data: { name: "Éric Gagnon", email: "eric@example.test", avatarSeed: null } }) }), { virtual: true });
 

@@ -1,6 +1,5 @@
 import { DiscoveryProvider } from "@krizaka/discovery/react";
-import { KrizakaQueryProvider, useQueryClient } from "@krizaka/query";
-import { bindNativeLifecycle } from "@krizaka/query/native";
+import { KrizakaQueryProvider } from "@krizaka/query";
 import { brands } from "@krizaka/tokens/native";
 import { ThemeProvider } from "@krizaka/ui/native";
 import { Stack } from "expo-router";
@@ -11,6 +10,7 @@ import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-cont
 import { AuthProvider } from "@/auth";
 import { discovery, session } from "@/config";
 import { I18nProvider } from "@/i18n";
+import { SessionBoundary } from "@/session-boundary";
 import { useLocale } from "@/use-locale";
 
 /** A refresh of the signed manifest each time the app comes back to the foreground. */
@@ -19,25 +19,6 @@ const onForeground = (callback: () => void) => {
   return () => subscription.remove();
 };
 
-/**
- * One account's data never shows to the next: when a session starts or ends (a sign-out, a sign-in, a 401), the queries in
- * flight are cancelled and the cache is emptied before another account's screens render. Query's focus follows the app
- * state, so the screens refresh when the app comes back to the foreground.
- */
-function SessionBoundary({ children }: { children: React.ReactNode }) {
-  const queryClient = useQueryClient();
-  React.useEffect(
-    () =>
-      session.onChange(() => {
-        void queryClient.cancelQueries();
-        queryClient.clear();
-      }),
-    [queryClient],
-  );
-  React.useEffect(() => bindNativeLifecycle({ appState: AppState }), []);
-  return <>{children}</>;
-}
-
 /** The app's root: Yomizaka's indigo on the Krizaka native theme (dark and light), the backend found by discovery, the session. */
 export default function RootLayout() {
   return (
@@ -45,7 +26,7 @@ export default function RootLayout() {
       <Themed>
         <DiscoveryProvider discovery={discovery} subscribeForeground={onForeground}>
           <KrizakaQueryProvider throwOnError={false}>
-            <SessionBoundary>
+            <SessionBoundary session={session}>
               <Localised />
             </SessionBoundary>
           </KrizakaQueryProvider>
