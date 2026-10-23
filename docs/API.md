@@ -39,6 +39,18 @@ The CSV (`file`, `check`, and optionally `documentType`, `jurisdiction`, `rulese
 separator may be `,` `;` or a tab) is the one of the web page, with its template. Each row has its own state and `error`;
 a failed row never stops the others. Reading a check or a batch advances it (up to the workspace's concurrency).
 
+## The reports in one archive
+
+```sh
+curl "https://www.yomizaka.com/api/v1/batches/<id>/export?lang=fr" -H "Authorization: Bearer $YOMIZAKA_KEY" -o rapports.zip
+```
+
+`lot.csv` (every row: state, the reason when it did not run, its file), `rapports/` (the **signed PDF** of each compliance row, in `lang`
+`fr` or `en`: the same file the page offers, verifiable on the verification page), `signaux/` (the signals of each authenticity row, as
+Orazaka returned them) and `LISEZ-MOI.txt`. A row whose report cannot be issued (not ready, translation pending) is listed with its reason, never
+silently missing. An archive past `limits.batchExportMaxMb` (50 MB by default) is refused with 413 `EXPORT_TOO_LARGE`. On the batch page it is the
+« Rapports (ZIP) » button.
+
 ## Audit
 
 Every call that starts or reads a check or a batch is recorded in the audit log as `api.check.created`, `api.check.read`,
