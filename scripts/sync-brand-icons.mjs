@@ -3,7 +3,9 @@
 // They are generated from @krizaka/ui by krizaka-ui `tools/export-brand.mjs`; `brand/manifest.json` lists each file's SHA-256.
 //   node scripts/sync-brand-icons.mjs          # download and write
 //   node scripts/sync-brand-icons.mjs --check  # only compare with the CDN manifest (exit 1 on drift)
-// Dependency-free. Guarded by the brand-icons test (committed icon sha256 = CDN manifest entry).
+// Dependency-free. Two guards: the brand-icons test (offline: committed icon sha256 = scripts/brand-icons.lock.json) and CI's
+// `--check` after the build (online: the lock and the icons = the CDN manifest). The test needs no network, so a sandbox
+// without access to the CDN (a coding agent's) can still run the whole check.
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -20,6 +22,8 @@ export const ICONS = {
   "icon-512.png": "apps/web/app/icon3.png",
 };
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+/** The CDN manifest's entries for this brand, as of the last sync: what the offline test checks the icons against. */
+export const LOCK = path.join(ROOT, "scripts/brand-icons.lock.json");
 
 export const sha256 = (buf) => createHash("sha256").update(buf).digest("hex");
 
@@ -46,6 +50,7 @@ export async function cdnHashes() {
 
 export async function main(check = process.argv.includes("--check")) {
   const hashes = await cdnHashes();
+  const locked = JSON.parse(await readFile(LOCK, "utf8").catch(() => "{}"));
   let drift = 0;
   for (const [file, dest] of Object.entries(ICONS)) {
     const key = `brand/${BRAND}/${file}`;
@@ -57,6 +62,10 @@ export async function main(check = process.argv.includes("--check")) {
         drift++;
         console.error(`drift: ${dest}`);
       }
+      if (locked[key] !== hashes[key]) {
+        drift++;
+        console.error(`drift: ${key} in scripts/brand-icons.lock.json`);
+      }
       continue;
     }
     const buf = await fetchRetry(`${CDN}/${key}`);
@@ -64,6 +73,10 @@ export async function main(check = process.argv.includes("--check")) {
     await mkdir(path.dirname(target), { recursive: true });
     await writeFile(target, buf);
     console.log(`${dest}  <-  ${key}`);
+  }
+  if (!check) {
+    const lock = Object.fromEntries(Object.keys(ICONS).map((file) => [`brand/${BRAND}/${file}`, hashes[`brand/${BRAND}/${file}`]]));
+    await writeFile(LOCK, `${JSON.stringify(lock, null, 2)}\n`);
   }
   if (drift) process.exit(1);
 }
