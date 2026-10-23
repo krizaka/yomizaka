@@ -43,7 +43,7 @@ describe("the profile is one section with one save (the review's E2)", () => {
     expect(profilePatch(SAVED, { ...SAVED, avatarSeed: "plain-4" })).toEqual({ profile: { avatarSeed: "plain-4" }, perspective: null });
     expect(profilePatch(SAVED, { ...SAVED, avatarSeed: "" })).toEqual({ profile: { avatarSeed: null }, perspective: null });
     expect(profilePatch(SAVED, { ...SAVED, locale: "en", perspective: "tenant" })).toEqual({ profile: { locale: "en" }, perspective: "tenant" });
-    expect(profilePatch(SAVED, { ...SAVED, name: " Éric ", perspective: "tenant" })).toEqual({ profile: null, perspective: "tenant" });
+    expect(profilePatch(SAVED, { ...SAVED, name: " Éric Tremblay ", perspective: "tenant" })).toEqual({ profile: null, perspective: "tenant" });
   });
 
   it("undo puts the previous values back, except a first perspective the server cannot unset", () => {
