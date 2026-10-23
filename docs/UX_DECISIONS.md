@@ -256,3 +256,17 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
 - **Cost**: a drop of several photos is grouped by the default (one document) before the option is visible; the option
   rules the next drop.
 - **Signal we are wrong**: people cancel runs started on the drop; « Autre » is chosen to avoid the automatic start.
+
+## 15. Vérifications: one list of every check, filtered in the address, batches under a second tab
+
+- **Decision**: the Vérifications destination keeps one table of every check (document, kind, check, result, when, run).
+  Its filters are a `FilterBar` above the table — a search by document title, a Résultat menu and a Type menu, each with
+  its count — and they live in the address (`?result=attention&kind=lease&q=bail`), so a filtered view can be shared and
+  reloaded. Chips show what is in force, « Effacer les filtres » clears them, and the count reads « N résultats ». The
+  batches stay on the second tab (`?tab=lots`) and show no filters.
+- **Problem**: a list of checks with no way to find the one to look at; filters that vanished on reload.
+- **Principle**: the URL is the state; the list answers « what needs looking at » in one click.
+- **Refused**: a date range (Période) in this slice: it needs a date picker over the check's time and is not in the review's
+  acceptance; a second copy of the list for the filters (the rows are filtered in place).
+- **Cost**: the filters are applied to the list already loaded (the 500 most recent checks), not to the whole history.
+- **Signal we are wrong**: people clear the filters on every visit, or ask for the date range in the first week.

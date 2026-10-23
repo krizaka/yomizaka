@@ -65,6 +65,56 @@ describe("the Vérifications destination (the UX review's § 4.1)", () => {
   });
 });
 
+describe("the list's filters, in the address (the UX review's § 4.4, Y6)", () => {
+  it("shows a FilterBar with the result and kind menus and the count of results, not on the batches tab", () => {
+    nav.search = "";
+    const html = render({ checks: [check(1, "attention"), check(2, "checked")], batches: true });
+    expect(html).toContain('aria-label="Filtrer les vérifications"');
+    expect(readable(html)).toContain("2 résultats");
+    expect(readable(html)).toContain("Résultat");
+    nav.search = "tab=lots";
+    expect(render({ checks: [check(1, "attention")], batches: true })).not.toContain("Filtrer les vérifications");
+  });
+
+  it("filters the rows from the address: the result, the kind and the words", () => {
+    nav.search = "result=attention";
+    const byResult = readable(render({ checks: [check(1, "attention"), check(2, "checked")], batches: false }));
+    expect(byResult).toContain("Bail — Rosemont, logement 1");
+    expect(byResult).not.toContain("Bail — Rosemont, logement 2");
+    expect(byResult).toContain("1 résultat");
+
+    nav.search = "kind=invoice";
+    const byKind = readable(render({ checks: [check(1, "attention"), check(2, "checked", { kind: "invoice", title: "Facture Plomberie Roy" })], batches: false }));
+    expect(byKind).toContain("Facture Plomberie Roy");
+    expect(byKind).not.toContain("Bail — Rosemont, logement 1");
+
+    nav.search = "q=logement%202";
+    const byWords = readable(render({ checks: [check(1, "attention"), check(2, "checked")], batches: false }));
+    expect(byWords).toContain("logement 2");
+    expect(byWords).not.toContain("logement 1");
+    expect(byWords).toContain("Chercher un document: logement 2");
+  });
+
+  it("with filters that match nothing: the owl says so, and offers to clear them", () => {
+    nav.search = "result=failed";
+    const html = render({ checks: [check(1, "attention")], batches: false });
+    expect(html).toContain('data-testid="checks-nomatch"');
+    expect(html).not.toContain('data-testid="checks-empty"');
+    expect(readable(html)).toContain(fr.console.checks.noMatch.title);
+    expect(readable(html)).toContain("Effacer les filtres");
+    expect(html.match(/<h1\b/g)).toHaveLength(1);
+    nav.search = "";
+  });
+
+  it("with no check at all, the first-run empty state stays, with or without filters in the address", () => {
+    nav.search = "result=failed";
+    const html = render({ checks: [], batches: false });
+    expect(html).toContain('data-testid="checks-empty"');
+    expect(html).not.toContain('data-testid="checks-nomatch"');
+    nav.search = "";
+  });
+});
+
 describe("a running check keeps the list live", () => {
   it("marks the view live while a row is analysing, so it asks again until the run ends", () => {
     nav.search = "";

@@ -1447,6 +1447,19 @@
         "result": "Result",
         "when": "When",
         "run": "Run"
+      },
+      "filters": {
+        "label": "Filter the checks",
+        "search": "Search a document",
+        "searchPlaceholder": "Document title",
+        "result": "Result",
+        "kind": "Kind"
+      },
+      "resultsOne": "{count} result",
+      "resultsMany": "{count} results",
+      "noMatch": {
+        "title": "No check matches these filters",
+        "text": "Change or clear the filters to see the other checks."
       }
     },
     "batch": {
