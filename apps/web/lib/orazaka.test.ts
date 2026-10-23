@@ -57,6 +57,16 @@ describe("the Orazaka client", () => {
     await expect(createOrazakaClient({ baseUrl: "https://x/edge", apiKey: undefined, fetch: locked.fetch }).getRun(RUN.id)).rejects.toMatchObject({ body: { code: "ORAZAKA_NOT_CONFIGURED" } });
   });
 
+  it("a busy engine (429, « too many concurrent runs ») is ORAZAKA_BUSY with the wait it asked for — not a failure (yomizaka#248)", async () => {
+    expect(orazakaRefusal(429)).toEqual({ status: 429, code: "ORAZAKA_BUSY" });
+    const busy = fakeEdge({
+      "GET /edge/api/v1/studios/installations": () => ({ status: 200, body: [{ studioKey: "compliance-check" }] }),
+      "POST /edge/api/v1/studios/compliance-check/runs": () => ({ status: 429, body: { status: "too_many_concurrent_runs", limit: 2, active: 2, retryAfterSeconds: 15 } }),
+    });
+    const error = await createOrazakaClient({ baseUrl: "https://x/edge", apiKey: "oz_t", fetch: busy.fetch }).startRun("compliance-check", {}).catch((e: unknown) => e as { status: number; body: Record<string, unknown>; headers: Record<string, string> });
+    expect(error).toMatchObject({ status: 429, body: { code: "ORAZAKA_BUSY", retryAfter: 15 }, headers: { "Retry-After": "15" } });
+  });
+
   it("refuses a run id that is not one before calling anyone", async () => {
     const edge = fakeEdge({});
     expect(() => createOrazakaClient({ baseUrl: "https://x/edge", apiKey: "oz_t", fetch: edge.fetch }).getRun("../admin")).toThrow();

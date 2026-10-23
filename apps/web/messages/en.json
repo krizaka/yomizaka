@@ -546,7 +546,8 @@
       "BATCH_EMPTY": "The CSV has no row.",
       "FAILED": "The check did not complete.",
       "CANCELLED": "The check was cancelled.",
-      "REFUSED": "Row refused."
+      "REFUSED": "Row refused.",
+      "ORAZAKA_BUSY": "Orazaka is busy right now. The batch goes on by itself as soon as it has room."
     },
     "adminConsole": {
       "shell": {
@@ -1231,7 +1232,7 @@
           },
           "batchConcurrency": {
             "label": "A batch's checks run at once",
-            "hint": "The others wait their turn; a failed row never stops the batch."
+            "hint": "The others wait their turn (Orazaka runs a few checks at once for the whole product); a failed row never stops the batch."
           }
         },
         "plans": {
@@ -1375,7 +1376,8 @@
         "done": "Checked",
         "failed": "Failed",
         "refused": "Refused"
-      }
+      },
+      "engineBusy": "Orazaka is busy with other checks: the remaining rows wait their turn and start by themselves. Nothing to do."
     }
   },
   "report": {

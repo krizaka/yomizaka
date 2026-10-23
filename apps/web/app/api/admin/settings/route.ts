@@ -1,11 +1,12 @@
 import { z } from "zod";
 
 import { requireAdmin } from "@/lib/access";
-import { handle, readJson, refuse } from "@/lib/http";
+import { handle, readJson } from "@/lib/http";
 import { describeSettings } from "@/lib/settings/describe";
 import { appSettings } from "@/lib/settings/instance";
+import { settingsRefusal } from "@/lib/settings/refusal";
 import { SCOPE } from "@/lib/settings/registry";
-import { type ScopeRef, SettingsError } from "@/lib/settings/service";
+import { type ScopeRef } from "@/lib/settings/service";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,8 @@ async function run(fn: () => Promise<Response>) {
     try {
       return await fn();
     } catch (error) {
-      if (error instanceof SettingsError) throw refuse(error.status, error.code, error.message);
+      const refusal = settingsRefusal(error);
+      if (refusal) throw refusal;
       throw error;
     }
   });

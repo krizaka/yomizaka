@@ -10,6 +10,7 @@ import { Progress } from "@krizaka/ui/progress";
 import Link from "next/link";
 import { useMemo } from "react";
 
+import { waitsForAccount, waitsForEngine } from "@/lib/batch/pausing";
 import { useSay } from "@/lib/i18n-client";
 
 type ItemState = "pending" | "reused" | "running" | "done" | "failed" | "refused";
@@ -42,7 +43,7 @@ export function BatchProgress({ initial }: { initial: Batch }) {
     queryKey: ["batch", initial.id],
     queryFn: async () => ((await krizakaFetch(`/api/batches/${initial.id}`)) as { batch: Batch }).batch,
     initialData: initial,
-    refetchInterval: (q) => (q.state.data && !q.state.data.finishedAt && !q.state.data.pausedBy ? POLL_MS : false),
+    refetchInterval: (q) => (q.state.data && !q.state.data.finishedAt && !waitsForAccount(q.state.data.pausedBy) ? POLL_MS : false),
   });
   const batch = live.data ?? initial;
   const total = batch.items.length - batch.counts.refused;
@@ -85,12 +86,13 @@ export function BatchProgress({ initial }: { initial: Batch }) {
             </a>
           </Button>
         </div>
-        <Progress value={settled} max={Math.max(total, 1)} label={say("batch.progressLabel")} valueText={say("batch.progress", { settled, total })} showLabel status={batch.pausedBy ? "paused" : undefined} />
-        {batch.pausedBy ? (
+        <Progress value={settled} max={Math.max(total, 1)} label={say("batch.progressLabel")} valueText={say("batch.progress", { settled, total })} showLabel status={waitsForAccount(batch.pausedBy) ? "paused" : undefined} />
+        {waitsForAccount(batch.pausedBy) ? (
           <Alert tone="warning">
             {say(`errors.${batch.pausedBy}`)} <Link className="font-semibold underline" href={`/${locale}/app/settings/facturation`}>{say("batch.paused")}</Link>
           </Alert>
         ) : null}
+        {waitsForEngine(batch.pausedBy) && !batch.finishedAt ? <Alert tone="info">{say("batch.engineBusy")}</Alert> : null}
         {batch.finishedAt ? <Alert tone="success">{say("batch.finished", { done: batch.counts.done + batch.counts.reused, failed: batch.counts.failed, refused: batch.counts.refused })}</Alert> : null}
       </Card.Root>
       <DataTable caption={say("batch.rowsCaption")} rows={batch.items} columns={columns} getRowId={(i) => i.id} rowLabel={(i) => i.file} pageSize={12} />
