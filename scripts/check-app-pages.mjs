@@ -16,8 +16,7 @@ import { auditPage, problemsOf } from "./lib/page-audit.mjs";
 
 export const WIDTHS = [360, 390, 1440];
 export const THEMES = ["dark", "light"];
-// The settings pages join the list with Y2 (they overflow at 360 px until they move to SettingsLayout, the review's E1).
-export const PAGES = ["/app", "/app/verifier", "/app/verifications", "/app/verifications?tab=lots", "/app/recherche"];
+export const PAGES = ["/app", "/app/verifier", "/app/verifications", "/app/verifications?tab=lots", "/app/recherche", "/app/settings/profil", "/app/settings/securite", "/app/settings/facturation", "/app/settings/stockage", "/app/settings/donnees"];
 
 const arg = (name, fallback) => {
   const i = process.argv.indexOf(`--${name}`);

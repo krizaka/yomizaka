@@ -999,7 +999,21 @@
         "stockage": "Storage"
       },
       "label": "Account settings",
+      "verified": "E-mail verified",
+      "unverified": "E-mail not verified",
+      "memberSince": "Member since {date}",
+      "save": {
+        "save": "Save",
+        "saving": "Saving…",
+        "saved": "Saved",
+        "error": "Could not save. Try again.",
+        "undo": "Undo",
+        "discard": "Discard changes"
+      },
       "profile": {
+        "lead": "Your name, your picture, your language, which side of the lease you are on — saved together.",
+        "languageHint": "The language of the app and of your e-mails.",
+        "avatarOption": "Picture {n}",
         "nameLabel": "Name",
         "nameHint": "Shown in the account menu.",
         "save": "Save",
@@ -1031,6 +1045,9 @@
       "billing": {
         "title": "Plan and billing",
         "plan": "Plan",
+        "freeAudit": "Free audit",
+        "creditsLabel": "Paid audits left",
+        "renewal": "Renewal",
         "planFree": "Free",
         "planPro": "Pro",
         "credits": "Paid audits left: {count}",

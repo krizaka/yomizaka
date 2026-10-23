@@ -14,8 +14,11 @@ describe("the side is chosen at onboarding and changeable in settings", () => {
     expect(welcome).toContain("<PerspectiveChooser");
     expect(welcome).toContain("welcomeTarget(");
   });
-  it("settings change it, the document page follows it", () => {
-    expect(read("app/[locale]/(app)/app/settings/[section]/page.tsx")).toContain("<PerspectiveChooser current=");
+  it("settings change it — the profile section's choice cards, saved with the rest of the profile (Y2) — and the document page follows it", () => {
+    expect(read("app/[locale]/(app)/app/settings/[section]/page.tsx")).toContain("perspective: session.account.perspective");
+    const profile = read("components/console/ProfileSection.tsx");
+    expect(profile).toContain("<ChoiceCards");
+    expect(profile).toContain('"/api/me/perspective"');
     expect(read("components/console/DocumentView.tsx")).toContain("firstCheck(perspective, doc.kind)");
     expect(read("app/[locale]/(app)/app/documents/[id]/[tab]/page.tsx")).toContain("perspective={session.account.perspective}");
   });
