@@ -1,5 +1,6 @@
+import { OLD_DOCUMENT_TABS } from "@yomizaka/core";
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 
 import { storesOf } from "@/app/active-store";
 import { DocumentView } from "@/components/console/DocumentView";
@@ -17,9 +18,11 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return { title: getDictionary(asLocale((await params).locale)).console.shell.document };
 }
 
-/** One document, one tab per route — another person's document is a 404, never a 403; an unknown tab is a 404. */
+/** One document, one tab per route — another person's document is a 404, never a 403; an old tab address answers 308 to its tab; an unknown tab is a 404. */
 export default async function DocumentTabPage({ params }: { params: Promise<{ locale: string; id: string; tab: string }> }) {
   const { locale, id, tab } = await params;
+  const moved = OLD_DOCUMENT_TABS[tab];
+  if (moved) permanentRedirect(`/${asLocale(locale)}/app/documents/${id}/${moved}`);
   if (!isDocumentTab(tab)) notFound();
   const session = await pageSession();
   if (!session) notFound();
@@ -28,7 +31,5 @@ export default async function DocumentTabPage({ params }: { params: Promise<{ lo
     throw error;
   });
   if (!document) notFound();
-  // A text file has no file view: its « fichier » is the text.
-  if (tab === "fichier" && document.mimeType !== "application/pdf") redirect(`/${asLocale(locale)}/app/documents/${id}/texte`);
   return <DocumentView initial={document} tab={tab} perspective={session.account.perspective} offer={offerFor(await availableFlows(appEnvironment()), session.account.perspective)} />;
 }

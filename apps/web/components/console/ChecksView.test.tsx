@@ -31,7 +31,7 @@ describe("the Vérifications destination (the UX review's § 4.1)", () => {
     expect(html.match(/<h1\b/g)).toHaveLength(1);
     const text = readable(html);
     expect(text).toContain("Vérifications");
-    expect(html).toContain('href="/fr/app/documents/d1/verifications"');
+    expect(html).toContain('href="/fr/app/documents/d1/rapport"');
     expect(text).toContain("Bail — Rosemont, logement 1");
     expect(text).toContain("À regarder");
     expect(text).toContain("Vérifié");

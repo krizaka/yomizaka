@@ -40,7 +40,7 @@ describe("a batch's page (yomizaka#232)", () => {
 
   it("links each stored row to its document, and offers the export", () => {
     const html = render(batch());
-    expect(html).toContain('href="/fr/app/documents/d2/verifications"');
+    expect(html).toContain('href="/fr/app/documents/d2/rapport"');
     expect(html).toContain('href="/api/batches/b1/export"');
   });
 

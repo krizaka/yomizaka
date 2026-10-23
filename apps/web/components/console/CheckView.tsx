@@ -46,7 +46,7 @@ export function CheckView() {
           ))}
         </RadioGroup.Root>
       </div>
-      <DocumentUploader kindRef={kindRef} onUploaded={(d) => router.push(`/${locale}/app/documents/${d.id}/infos`)} />
+      <DocumentUploader kindRef={kindRef} onUploaded={(d) => router.push(`/${locale}/app/documents/${d.id}/rapport`)} />
       {app?.features.batches ? (
         <p className="text-sm text-fg-secondary">
           {say("batch.fromCheck")}{" "}

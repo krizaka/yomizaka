@@ -106,7 +106,7 @@ export function LibraryView({ libraries, recents, latest = [], tags, perspective
           <ul className="m-0 flex list-none flex-col divide-y divide-border-default rounded-lg border border-border-default p-0">
             {latest.map((c) => (
               <li key={c.id}>
-                <Link href={`/${locale}/app/documents/${c.documentId}/verifications`} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 hover:bg-surface-1">
+                <Link href={`/${locale}/app/documents/${c.documentId}/rapport`} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 hover:bg-surface-1">
                   <span className="flex min-w-0 items-center gap-2">
                     <Badge tone={STATUS_TONE[c.result]} dot size="sm">
                       {say(`statuses.${c.result}`)}
