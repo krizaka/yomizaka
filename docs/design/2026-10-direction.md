@@ -22,6 +22,9 @@ Captures, mockups and the prototype are on Bunny, never committed. They live und
 
 ## 0. The six decisions
 
+These hold for both directions. **A** (§ 5.1 to § 5.4) is calm; **B** (§ 5.5) is bolder, with the same screens and the
+same words. Oussama chooses A or B on the images.
+
 1. **The line between the Cahier and the product is the paper, not the grammar.** Yomizaka keeps the Cahier's
    *grammar*, which the primitives already carry: matt surfaces, 2 px and 0 radii, a solid offset instead of blur, the
    pen-stroke icons, no tracked capitals, and the ink ease. It adds three habits of a notebook: **numbering**
@@ -348,6 +351,50 @@ The flow is three numbered steps on one page, ≤ 48 rem:
 3. **La vérification**: an `UploadQueue` row per file, saying the stage in words with its progress. A confident kind
    starts on the drop (the review's question 2). An uncertain one asks « Quel document ? » with `ChoiceCards`, for that
    file only. A finished row ends in its result chip and opens the report.
+
+### 5.5 Direction B: bolder, for the same four screens
+
+The CTO's review found A to read as a clean generic admin: the brand barely shows, « À traiter » is three boxes of one
+number each, and the type scale is flat. **B** draws the same four screens from the same components, tokens and words,
+and changes only the expression. **Oussama chooses A or B on the images**; § 3 holds for both, except where the table
+below says otherwise.
+
+- **Home**: [desktop dark](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b/home-desktop-dark.png) · [desktop light](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b/home-desktop-light.png) · [phone dark](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b/home-phone-dark.png) · [phone light](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b/home-phone-light.png)
+- **Files, with a selection**: [desktop dark](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b/files-desktop-dark.png) · [desktop light](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b/files-desktop-light.png) · [phone dark](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b/files-phone-dark.png) · [phone light](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b/files-phone-light.png)
+- **The report**: [desktop dark](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b/report-desktop-dark.png) · [desktop light](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b/report-desktop-light.png) · [phone dark](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b/report-phone-dark.png) · [phone light](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b/report-phone-light.png). The verdict, written in ink (`data-reveal="ink"` with `MotionObserver`, 0.7 s, once): [dark](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b/report-verdict-motion-dark.webm) · [light](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b/report-verdict-motion-light.webm)
+- **The check flow**: [desktop dark](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b/check-desktop-dark.png) · [desktop light](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b/check-desktop-light.png) · [phone dark](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b/check-phone-dark.png) · [phone light](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b/check-phone-light.png)
+- **The empty state**, with the owl at 120 px: [desktop dark](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b/empty-desktop-dark.png) · [desktop light](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b/empty-desktop-light.png) · [phone dark](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b/empty-phone-dark.png) · [phone light](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b/empty-phone-light.png)
+
+Prototype source: `…/314/prototype/b.tsx` (rendered by `mock-b.mjs`).
+
+What B does:
+
+- **The indigo with intent**: it marks only what to act on. That is the phrases of the summary (accent, underlined),
+  the one primary button of the screen, the selection bar (`accent-soft` with a 4 px accent rule), the verdict band, the
+  numbers of the findings and steps, and the rail's badge (« 2 dossiers à décider »). Surfaces stay matt.
+- **A confident type scale**: `h1` at 4xl/5xl (« Bonjour Éric. »), the summary at xl/2xl, the verdict figure at 6xl, the
+  section `h2` at xl, and the body at base, with the meta smaller. A uses 2xl, lg, base and sm.
+- **« À traiter » as one sentence**: « Aujourd'hui, **6 vérifications** attendent votre regard, **2 dossiers** une
+  décision, et **1 lien de dépôt** reste ouvert jusqu'au 7 novembre. » Each figure is a link to its view, and the
+  screen's one primary action follows: « Décider des 2 dossiers ».
+- **The owl where it means something**: in the verdict (`thinking`, « la chouette a lu le bail »), in the running check
+  (« Lecture de bail-saint-denis.pdf, étape 2 sur 3 »), and in the empty state at 120 px. Never on a list, a table or a
+  form.
+- **The Cahier's order made visible**: large numbers (3xl, accent, tabular) in a left margin for the findings and steps,
+  and a **right margin of notes** on a desktop (the article cited and « Voir dans le document » beside each finding; the
+  closing rule beside the files). On a phone the notes go under their paragraph, above a hairline. There is still no
+  paper, serif or `§`.
+- **A bar of the ten rules** under the verdict: one segment per rule, in the severity's tone, with the counts written
+  under it and the whole bar given a text alternative.
+- **Motion on the verdict**: the band is written left to right once when the run ends (still under reduced motion). The
+  views use the ink underline of `Tabs.Nav` instead of a chip row.
+
+| | A (calm) | B (bolder) |
+| :-- | :-- | :-- |
+| What changes | `PageHeader` on every page; « À traiter » as three `Stat`s; findings numbered small; the article inline under the explanation; the facts and other checks in the aside; views as chips | A greeting and a summary sentence on the home; the numbers large in an accent margin; the law in a right margin of notes; a rules bar; the owl in the verdict and the running check; views as underlined tabs; the selection bar in accent |
+| Phase 2 cost | The cut of § 8 as written | **+2 slices, about 1 to 2 days**: a `Margin` layout (numbers and notes), to file in krizaka-ui as part of #210 / #635 rather than build here; the summary sentence (built from the same queries as P8, with plurals in the messages, both languages). The rules bar is a small presentational piece (also krizaka-ui #210). The rest is classes on existing blocks. |
+| Risk | Reads generic: the brand barely shows, and Oussama asked to « moderniser » | **The sentence** must stay true at every count (zero, one, many) in FR and EN, with tests per plural. **The owl** in the verdict must not read as the one judging; its title says it read the lease, and the band's words stay Orazaka's figures. **Accent use** can creep: the rule is « only what to act on », and a test can count accent surfaces per page. **Right margin notes** need ≥ 64 rem of content width; under that they fold under the paragraph, as the phone shows. |
+| Accessibility | as § 3 | Same contrast (the accent text is 4.5:1 in both themes); the underlined phrases are links with full names; the bar has a text alternative and the counts written; the ink reveal is off under reduced motion |
 
 ---
 
