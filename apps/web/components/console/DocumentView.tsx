@@ -1,18 +1,18 @@
 "use client";
 
+import { MoreIcon } from "@krizaka/icons";
 import { krizakaFetch, useMutation, useQuery, useQueryClient } from "@krizaka/query";
 import { Alert } from "@krizaka/ui/alert";
 import { Badge } from "@krizaka/ui/badge";
 import { Button } from "@krizaka/ui/button";
 import { Card } from "@krizaka/ui/card";
 import { DescriptionList } from "@krizaka/ui/description-list";
+import { DetailLayout } from "@krizaka/ui/detail-layout";
 import { DocumentViewer, type Located } from "@krizaka/ui/document-viewer";
+import { DropdownMenu } from "@krizaka/ui/dropdown-menu";
 import { createKrizakaForm } from "@krizaka/ui/form";
-import { PageHeader } from "@krizaka/ui/page-header";
-import { Spinner } from "@krizaka/ui/spinner";
-import { StepProgress } from "@krizaka/ui/step-progress";
 import { Tabs } from "@krizaka/ui/tabs";
-import { type Analysis, analysis as analysisSchema, type Audience, AUTHENTICITY_MAX_BYTES, type AuthenticityReport, checkSteps,type ComplianceReport, type DocumentView as DocumentViewData, documentView, DOCX_MIME, isSeededCheck, type Jurisdiction, JURISDICTIONS, ODT_MIME, passages, queryKeys, STEP_STATE, type Studio, type TextSource } from "@yomizaka/core";
+import { type Analysis, analysis as analysisSchema, ANALYSIS_STATUS, type Audience, AUTHENTICITY_MAX_BYTES, type AuthenticityReport, checkSteps, type ComplianceReport, DOCUMENT_TABS, type DocumentView as DocumentViewData, documentView, DOCX_MIME, isSeededCheck, type Jurisdiction, JURISDICTIONS, ODT_MIME, passages, queryKeys, type Studio, type TextSource } from "@yomizaka/core";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type ComponentProps, useEffect, useMemo, useRef, useState } from "react";
@@ -25,16 +25,17 @@ import { Paywall } from "@/components/console/Paywall";
 import { errorKey } from "@/lib/client";
 import { buildNote, noteInputOf, noteSourceOf } from "@/lib/closing-note/build";
 import { type DocumentTab } from "@/lib/console-nav";
+import { displayTitle } from "@/lib/document-face";
 import { useSay } from "@/lib/i18n-client";
 import { firstCheck, wordingOf } from "@/lib/perspective-defaults";
 import { photoOriginSignals } from "@/lib/photo-origin";
 
 import { STATUS_TONE } from "./DocumentTable";
 import { formatBytes, formatDate } from "./format";
+import { FindingList, type FindingSelection, TechnicalDetails, VerdictBand } from "./ReportFace";
 import { ReportShare } from "./ReportShare";
 import { StorageNotice } from "./StorageNotice";
 
-const VERDICT_TONE: Record<string, "success" | "danger" | "warning" | "neutral"> = { PASS: "success", FAIL: "danger", INSUFFICIENT_EVIDENCE: "warning" };
 const LEVEL_TONE: Record<string, "neutral" | "warning" | "danger"> = { observé: "neutral", inhabituel: "warning", incohérent: "danger" };
 const RUN_TONE = { running: "accent", succeeded: "success", failed: "danger", cancelled: "neutral" } as const;
 
@@ -66,7 +67,7 @@ function DocumentText({ text, report }: { text: string; report: ComplianceReport
     [text, report],
   );
   return (
-    <div className="max-h-[70vh] overflow-auto whitespace-pre-wrap rounded-lg border border-border-default bg-surface-1 p-4 font-mono text-xs leading-relaxed text-fg-secondary">
+    <div className="max-h-[70vh] overflow-auto whitespace-pre-wrap rounded-lg border border-border-default bg-surface-1 p-4 font-mono text-xs leading-relaxed text-fg-secondary" data-testid="document-text">
       {parts.map((p, i) =>
         p.mark ? (
           <mark key={i} id={`passage-${p.mark}`} className="ym-passage text-fg" title={say("document.passageOf", { rule: p.mark })}>
@@ -76,130 +77,6 @@ function DocumentText({ text, report }: { text: string; report: ComplianceReport
           <span key={i}>{p.text}</span>
         ),
       )}
-    </div>
-  );
-}
-
-function ComplianceFindings({ report, runId, selection }: { report: ComplianceReport; runId: string | null; selection?: Selection }) {
-  const { say } = useSay();
-  const failures = report.summary?.blockingFailures ?? report.findings.filter((f) => f.verdict === "FAIL" && f.severity === "BLOCKING").length;
-  return (
-    <div className="flex flex-col gap-3">
-      {report.reviewStatus ? <Alert tone="warning">{say("analysis.toReview")}</Alert> : null}
-      <p className="text-sm text-fg-secondary">{say("analysis.summary", { failures, rules: report.summary?.rulesEvaluated ?? report.findings.length })}</p>
-      <ul className="flex flex-col gap-2">
-        {report.findings.map((f) => {
-          const active = selection?.activeId === f.ruleId;
-          const place = f.evidenceSpan?.quote ? placeOf(selection?.found[f.ruleId], say) : null;
-          return (
-            <li key={f.ruleId} id={`finding-${f.ruleId}`} data-active={active} className="rounded-lg border border-border-default bg-surface-1 p-3 text-sm data-[active=true]:border-accent data-[active=true]:bg-surface-2">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-semibold text-fg">{f.title ?? f.ruleId}</span>
-                <Badge tone={VERDICT_TONE[f.verdict] ?? "neutral"}>{say(`analysis.verdicts.${f.verdict}`)}</Badge>
-              </div>
-              <p className="mt-1 text-fg-secondary">{f.explanation}</p>
-              <dl className="mt-2 grid gap-1 text-xs text-fg-muted sm:grid-cols-[auto_1fr] sm:gap-x-3">
-                <dt>{say("analysis.severity")}</dt>
-                <dd className="font-mono">
-                  {f.ruleId} · {f.severity}
-                  {f.method ? ` · ${f.method}` : ""}
-                </dd>
-                {f.citation ? (
-                  <>
-                    <dt>{say("analysis.citation")}</dt>
-                    <dd data-testid="finding-citation">{f.citation}</dd>
-                  </>
-                ) : null}
-                <dt>{say("analysis.passage")}</dt>
-                <dd>
-                  {f.evidenceSpan?.quote ? (
-                    <>
-                      <a href={`#passage-${f.ruleId}`} className="italic text-fg-accent hover:underline">
-                        « {f.evidenceSpan.quote} »
-                      </a>
-                      {place ? <span className="ml-2 whitespace-nowrap" data-testid="finding-place">· {place}</span> : null}
-                    </>
-                  ) : (
-                    say("analysis.noPassage")
-                  )}
-                </dd>
-                {runId ? (
-                  <>
-                    <dt>{say("analysis.orazakaRun")}</dt>
-                    <dd className="break-all font-mono">{runId}</dd>
-                  </>
-                ) : null}
-              </dl>
-              {selection && f.evidenceSpan?.quote ? (
-                <Button className="mt-2" size="sm" variant={active ? "primary" : "secondary"} aria-pressed={active} onClick={() => selection.onSelect(active ? null : f.ruleId)}>
-                  {say("analysis.showInFile")}
-                </Button>
-              ) : null}
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
-}
-
-/** What the document page shares with the findings of its latest compliance check: which finding is lit, and where each sits. */
-interface Selection {
-  activeId: string | null;
-  found: Record<string, Located | null>;
-  onSelect: (id: string | null) => void;
-}
-
-/** The signed audit report of a finished check: what it holds, its fingerprint, the download, and where anyone verifies it. */
-function ReportExport({ documentId, analysisId }: { documentId: string; analysisId: string }) {
-  const { say, locale } = useSay();
-  const base = `/api/documents/${documentId}/analyses/${analysisId}/report?lang=${locale}`;
-  // A report the server refuses (409 REPORT_NOT_READY) is said in place; it never takes the page down.
-  const meta = useQuery({
-    queryKey: [...queryKeys.document(documentId), "report", analysisId, locale],
-    queryFn: () => krizakaFetch(`${base}&meta=1`, { schema: z.object({ report: z.object({ fileSha256: z.string(), keyId: z.string(), filename: z.string() }) }) }).then((r) => r.report),
-    staleTime: Infinity,
-    retry: false,
-    throwOnError: false,
-  });
-  if (meta.isError) {
-    return (
-      <div className="flex flex-col gap-2 border-t border-border-default pt-3">
-        <h4 className="text-sm font-semibold text-fg">{say("analysis.exportReport")}</h4>
-        <Alert tone="info" data-testid="report-unavailable">{say("analysis.exportUnavailable")}</Alert>
-      </div>
-    );
-  }
-  return (
-    <div className="flex flex-col gap-2 border-t border-border-default pt-3">
-      <h4 className="text-sm font-semibold text-fg">{say("analysis.exportReport")}</h4>
-      <p className="text-xs text-fg-secondary">{say("analysis.exportHint")}</p>
-      {meta.data ? (
-        <DescriptionList
-          items={[
-            { term: say("analysis.exportSha"), details: <code className="break-all font-mono text-xs" data-testid="report-sha256">{meta.data.fileSha256}</code> },
-            { term: say("analysis.exportKey"), details: <code className="font-mono text-xs">{meta.data.keyId}</code> },
-          ]}
-        />
-      ) : null}
-      <div className="flex flex-wrap gap-2">
-        <Button asChild size="sm">
-          <a href={base} download={meta.data?.filename} data-testid="report-download">
-            {say("analysis.exportDownload")}
-          </a>
-        </Button>
-        <Button asChild size="sm" variant="secondary">
-          <a href={`${base}&format=pdf`} download data-testid="report-download-pdf">
-            {say("analysis.exportPdf")}
-          </a>
-        </Button>
-        <Button asChild size="sm" variant="ghost">
-          <Link href={`/${locale}/verify`} target="_blank">
-            {say("analysis.exportVerify")}
-          </Link>
-        </Button>
-      </div>
-      <ReportShare documentId={documentId} analysisId={analysisId} />
     </div>
   );
 }
@@ -239,58 +116,6 @@ function PhotoOriginSignals({ source }: { source: TextSource }) {
     return { signalId: s.signalId, level: s.level, observation: say(`analysis.photoOrigin.${s.case}.observation`, facts), mayIndicate: say(`analysis.photoOrigin.${s.case}.mayIndicate`), where: say("analysis.photoOrigin.where") };
   });
   return <AuthenticitySignals report={{ header: say("analysis.photoOrigin.header"), signals }} />;
-}
-
-/** One analysis: its Orazaka run (id, version, status), polled while it runs, then its report. */
-function AnalysisCard({ documentId, initial, selection, source, hasText }: { documentId: string; initial: Analysis; selection?: Selection; source?: TextSource; hasText: boolean }) {
-  const { say, locale } = useSay();
-  const client = useQueryClient();
-  const live = useQuery({
-    queryKey: [...queryKeys.document(documentId), "analysis", initial.id],
-    queryFn: () => krizakaFetch(`/api/documents/${documentId}/analyses/${initial.id}`, { schema: z.object({ analysis: analysisSchema }) }).then((r) => r.analysis),
-    initialData: initial,
-    enabled: initial.status === "running",
-    refetchInterval: (q) => (q.state.data?.status === "running" ? 3000 : false),
-  });
-  const a = live.data ?? initial;
-  useEffect(() => {
-    if (initial.status === "running" && a.status !== "running") void client.invalidateQueries({ queryKey: queryKeys.documents() });
-  }, [a.status, initial.status, client]);
-  const ruleset = a.report && "rulesetId" in a.report ? `${a.report.rulesetId} · ${a.report.rulesetVersion}` : null;
-  return (
-    <Card.Root className="flex flex-col gap-4 p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="font-display text-base font-bold text-fg">{say(a.studio === "compliance-check" ? "analysis.complianceTitle" : "analysis.authenticityTitle")}</h3>
-        <Badge tone={RUN_TONE[a.status]}>{a.status === "running" ? <Spinner size="sm" label={say("analysis.running")} /> : null} {say(`analysis.statuses.${a.status}`)}</Badge>
-      </div>
-      <CheckSteps steps={checkSteps({ hasText, analysis: { studio: a.studio, status: a.status } })} />
-      <DescriptionList
-        items={[
-          { term: say("analysis.runId"), details: <code className="break-all font-mono text-xs" data-testid="orazaka-run-id">{a.runId ?? "—"}</code> },
-          ...(a.blueprintVersion ? [{ term: say("analysis.blueprint"), details: `${a.studio} · ${a.blueprintVersion}` }] : []),
-          ...(ruleset ? [{ term: say("analysis.ruleset"), details: ruleset }] : []),
-          ...(a.inputs.jurisdiction ? [{ term: say("analysis.jurisdiction"), details: `${a.inputs.jurisdiction} · ${a.inputs.asOf ?? ""}` }] : []),
-          ...(a.inputs.expectedIssuer ? [{ term: say("analysis.expectedIssuer"), details: a.inputs.expectedIssuer }] : []),
-          { term: say("analysis.started"), details: formatDate(a.createdAt, locale, true) },
-          ...(a.finishedAt ? [{ term: say("analysis.finished"), details: formatDate(a.finishedAt, locale, true) }] : []),
-        ]}
-      />
-      {a.status === "running" ? <p className="text-sm text-fg-secondary">{say("analysis.running")}</p> : null}
-      {a.error ? <Alert tone="danger">{a.error}</Alert> : null}
-      {a.report && "findings" in a.report ? <ComplianceFindings report={a.report} runId={a.runId} selection={selection} /> : null}
-      {a.status === "succeeded" && a.studio === "compliance-check" && a.report && "findings" in a.report ? (
-        isSeededCheck(a) ? (
-          // The demo data set (krizaka/yomizaka#274): its checks were written, not run — shown, never certified.
-          <Alert tone="info" data-testid="seeded-note">{say("analysis.seededNote")}</Alert>
-        ) : (
-          <ReportExport documentId={documentId} analysisId={a.id} />
-        )
-      ) : null}
-      {a.report && "signals" in a.report ? <AuthenticitySignals report={a.report} /> : null}
-      {a.status === "succeeded" && a.report ? <ClosingNoteView note={buildNote(noteInputOf(a.report, noteSourceOf(source)), locale)} /> : null}
-      {a.report ? <p className="text-xs text-fg-muted">{say("analysis.language")}</p> : null}
-    </Card.Root>
-  );
 }
 
 function StartCompliance({ documentId, disabled, jurisdictions, types, initialType }: { documentId: string; disabled: boolean; initialType?: "lease" | "invoice" | "contract"; jurisdictions: readonly (typeof JURISDICTIONS)[number][]; types: readonly ("invoice" | "contract")[] }) {
@@ -397,11 +222,33 @@ function StartAuthenticity({ documentId, disabled }: { documentId: string; disab
   );
 }
 
-/** The document page: the file and its text on one side, Orazaka's checks on the other — each a traced run. */
+/** A running analysis, asked again every 3 s (the BFF fetches and keeps Orazaka's result); once it ends, the document and the lists are read again. */
+function LiveAnalysis({ documentId, analysis: initial }: { documentId: string; analysis: Analysis }) {
+  const client = useQueryClient();
+  const live = useQuery({
+    queryKey: [...queryKeys.document(documentId), "analysis", initial.id],
+    queryFn: () => krizakaFetch(`/api/documents/${documentId}/analyses/${initial.id}`, { schema: z.object({ analysis: analysisSchema }) }).then((r) => r.analysis),
+    initialData: initial,
+    refetchInterval: (q) => (q.state.data?.status === ANALYSIS_STATUS.running ? 3000 : false),
+  });
+  const status = live.data?.status ?? initial.status;
+  useEffect(() => {
+    if (status !== ANALYSIS_STATUS.running) void Promise.all([client.invalidateQueries({ queryKey: queryKeys.document(documentId) }), client.invalidateQueries({ queryKey: queryKeys.documents() })]);
+  }, [status, client, documentId]);
+  return null;
+}
+
+/**
+ * The document on `DetailLayout` (the UX review's Y5): the title the insight knows, the status, the one primary action by state,
+ * the rest in a menu; three tabs as routes — the report first (the verdict, the findings with what failed first, the engine's
+ * facts folded), the document (the file or its text, what Yomizaka read in it, where it lives), the history of its runs —; the
+ * sharing in the side panel. Every analysis is an Orazaka run, shown as it came back.
+ */
 export function DocumentView({ initial, tab, perspective = null, offer }: { initial: DocumentViewData; tab: DocumentTab; perspective?: Audience | null; offer: { studios: readonly Studio[]; jurisdictions: readonly Jurisdiction[]; rulesets: readonly string[] } }) {
   const { say, locale } = useSay();
   const router = useRouter();
   const client = useQueryClient();
+  const params = useSearchParams();
   const doc = useQuery({
     queryKey: queryKeys.document(initial.id),
     queryFn: () => krizakaFetch(`/api/documents/${initial.id}`, { schema: z.object({ document: documentView }) }).then((r) => r.document),
@@ -415,16 +262,47 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
     },
   });
   const [confirming, setConfirming] = useState(false);
-  // The tab is the route (/documents/[id]/infos|verifications|fichier|texte): back, forward, refresh and sharing all work.
-  const go = (next: DocumentTab) => router.push(`/${locale}/app/documents/${initial.id}/${next}`, { scroll: false });
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const path = `/${locale}/app/documents/${initial.id}`;
+  // The tab is the route (/documents/[id]/rapport|document|historique): back, forward, refresh and sharing all work.
+  const go = (next: DocumentTab, query = "") => router.push(`${path}/${next}${query}`, { scroll: false });
+  // The lit finding is in the address (`?finding=`): « Voir dans le fichier » opens the document tab on it; back returns to the report.
+  const [activeId, setActiveId] = useState<string | null>(params.get("finding"));
   const [found, setFound] = useState<Record<string, Located | null>>({});
   const viewerRef = useRef<HTMLElement>(null);
   const fileUrl = `/api/documents/${doc.id}/file`;
-  const latestCompliance = doc.analyses.find((a) => a.studio === "compliance-check" && a.report && "findings" in a.report);
-  const running = (studio: Analysis["studio"]) => doc.analyses.some((a) => a.studio === studio && a.status === "running");
+  const isComplianceReport = (a: Analysis) => a.studio === "compliance-check" && !!a.report && "findings" in a.report;
+  // The history can open an earlier run's report (`?run=`): its findings, its download and its sharing follow it.
+  const runParam = params.get("run");
+  const latestCompliance = (runParam ? doc.analyses.find((a) => a.id === runParam && isComplianceReport(a)) : undefined) ?? doc.analyses.find(isComplianceReport);
+  const latestAuthenticity = doc.analyses.find((a) => a.studio === "document-authenticity" && a.report && "signals" in a.report);
+  const running = (studio: Analysis["studio"]) => doc.analyses.some((a) => a.studio === studio && a.status === ANALYSIS_STATUS.running);
+  const failures = doc.analyses.filter((a) => a.error);
   const isPdf = doc.mimeType === "application/pdf";
   const examinable = isPdf || doc.mimeType === DOCX_MIME || doc.mimeType === ODT_MIME;
+  const certifiable = !!latestCompliance && !isSeededCheck(latestCompliance);
+  const reportHref = latestCompliance ? `/api/documents/${doc.id}/analyses/${latestCompliance.id}/report?lang=${locale}` : null;
+  const lang = locale === "fr" ? "fr" : "en";
+  const title = displayTitle(doc, lang);
+  const tabs = DOCUMENT_TABS.filter((t) => t !== "historique" || doc.analyses.length > 1);
+  const latestReport = latestCompliance?.report && "findings" in latestCompliance.report ? latestCompliance.report : null;
+  const highlights = useMemo(
+    () => (latestReport?.findings ?? []).filter((f) => f.evidenceSpan?.quote).map((f) => ({ id: f.ruleId, quote: f.evidenceSpan!.quote, label: f.title ?? f.ruleId })),
+    [latestReport],
+  );
+  // While a check runs, where it stands (Lecture › Contrôle › Règles › Rapport) at the top of the report: Krizaka UI's Stepper fed by the core's steps (#208).
+  const runningStudio = (["compliance-check", "document-authenticity"] as const).find((s) => running(s)) ?? null;
+  const selection: FindingSelection = {
+    activeId,
+    onSelect: (id) => {
+      setActiveId(id);
+      if (id) {
+        go("document", `?finding=${encodeURIComponent(id)}`);
+        // On a narrow screen the file sits above the findings: bring it into view; the viewer scrolls to the passage itself.
+        if (window.matchMedia?.("(max-width: 1279px)").matches) viewerRef.current?.scrollIntoView({ block: "start", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+        if (!isPdf || doc.textSource) document.getElementById(`passage-${id}`)?.scrollIntoView({ block: "center" });
+      }
+    },
+  };
   const complianceCard = (
     <Card.Root key="compliance-check" className="p-4">
       <h3 className="mb-2 font-display text-base font-bold text-fg">{say("analysis.complianceTitle")}</h3>
@@ -437,128 +315,200 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
       {doc.textSource ? <PhotoOriginSignals source={doc.textSource} /> : !examinable ? <Alert tone="info">{say("analysis.noPdf")}</Alert> : doc.sizeBytes > AUTHENTICITY_MAX_BYTES ? <Alert tone="info">{say("analysis.tooLarge")}</Alert> : <StartAuthenticity documentId={doc.id} disabled={running("document-authenticity")} />}
     </Card.Root>
   );
-  const latestReport = latestCompliance?.report && "findings" in latestCompliance.report ? latestCompliance.report : null;
-  const highlights = useMemo(
-    () => (latestReport?.findings ?? []).filter((f) => f.evidenceSpan?.quote).map((f) => ({ id: f.ruleId, quote: f.evidenceSpan!.quote, label: f.title ?? f.ruleId })),
-    [latestReport],
+  const startCards = (firstCheck(perspective, doc.kind) === "compliance-check" ? [complianceCard, authenticityCard] : [authenticityCard, complianceCard]).filter((c) => offer.studios.includes(c.key as Studio));
+
+  const activeFinding = activeId ? (latestReport?.findings.find((f) => f.ruleId === activeId) ?? null) : null;
+  const place = activeId ? placeOf(found[activeId], say) : null;
+
+  const report = (
+    <section aria-label={say("document.tabs.rapport")} className="flex min-w-0 flex-col gap-4" data-testid="tab-rapport">
+      {runningStudio ? <CheckSteps steps={checkSteps({ hasText: doc.hasText, analysis: { studio: runningStudio, status: "running" } })} /> : null}
+      {failures.map((a) => (
+        <Alert key={a.id} tone="danger">
+          {a.error}
+        </Alert>
+      ))}
+      {latestCompliance && latestReport ? (
+        <>
+          <VerdictBand report={latestReport} />
+          <FindingList report={latestReport} selection={selection} />
+          {latestAuthenticity?.report && "signals" in latestAuthenticity.report ? <AuthenticitySignals report={latestAuthenticity.report} /> : null}
+          <TechnicalDetails documentId={doc.id} analysis={latestCompliance} />
+          <details className="rounded-lg border border-border-default p-3">
+            <summary className="cursor-pointer text-sm font-semibold text-fg">{say("document.details")}</summary>
+            <div className="mt-3">
+              <ClosingNoteView note={buildNote(noteInputOf(latestReport, noteSourceOf(doc.textSource)), locale)} />
+            </div>
+          </details>
+          <details className="rounded-lg border border-border-default p-3" data-testid="more-checks">
+            <summary className="cursor-pointer text-sm font-semibold text-fg">{say("reportFace.otherChecks")}</summary>
+            <div className="mt-3 grid gap-4 md:grid-cols-2">{startCards}</div>
+          </details>
+        </>
+      ) : latestAuthenticity?.report && "signals" in latestAuthenticity.report ? (
+        <>
+          <AuthenticitySignals report={latestAuthenticity.report} />
+          <TechnicalDetails documentId={doc.id} analysis={latestAuthenticity} />
+          <div className="grid gap-4 md:grid-cols-2">{startCards}</div>
+        </>
+      ) : (
+        <>
+          <div>
+            <h2 className="font-display text-lg font-bold text-fg">{say("reportFace.notChecked")}</h2>
+            <p className="text-sm text-fg-secondary">{say(`document.checksLeadBy.${wordingOf(perspective)}`)}</p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">{startCards}</div>
+        </>
+      )}
+      <p className="m-0 text-xs text-fg-muted">{say("library.informative")}</p>
+    </section>
   );
-  // While a check runs, where it stands (Lecture › Contrôle › Règles › Rapport), at the top of the tab (the review's C4).
-  const runningStudio = (["compliance-check", "document-authenticity"] as const).find((s) => running(s)) ?? null;
-  const runningSteps = runningStudio ? checkSteps({ hasText: doc.hasText, analysis: { studio: runningStudio, status: "running" } }) : [];
-  const runningStep = Math.max(1, runningSteps.findIndex((s) => s.state === STEP_STATE.current) + 1);
-  const selection: Selection = {
-    activeId,
-    found,
-    onSelect: (id) => {
-      setActiveId(id);
-      if (id) {
-        go(isPdf ? "fichier" : "texte");
-        // On a narrow screen the file sits above the findings: bring it into view; the viewer scrolls to the passage itself.
-        if (window.matchMedia?.("(max-width: 1279px)").matches) viewerRef.current?.scrollIntoView({ block: "start", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
-        if (!isPdf) document.getElementById(`passage-${id}`)?.scrollIntoView({ block: "center" });
-      }
-    },
-  };
-  return (
-    <div className="flex flex-col gap-6">
-      <PageHeader
-        breadcrumb={
-          <Link href={`/${locale}/app`} className="text-sm text-fg-muted hover:text-fg">
-            ← {say("document.back")}
+
+  const document_ = (
+    <section aria-label={say("document.tabs.document")} className="flex min-w-0 flex-col gap-6" data-testid="tab-document">
+      {activeFinding ? (
+        <Alert tone="info" data-testid="finding-place">
+          <span className="font-semibold">{activeFinding.title ?? activeFinding.ruleId}</span>
+          {place ? ` — ${place}` : null}
+          {" · "}
+          <Link href={`${path}/rapport`} scroll={false} className="underline">
+            {say("reportFace.backToReport")}
           </Link>
-        }
-        title={<span className="break-words">{doc.title}</span>}
-        description={
-          <span className="flex flex-wrap items-center gap-2">
-            <Badge tone={STATUS_TONE[doc.status]}>{say(`statuses.${doc.status}`)}</Badge>
-            <Badge tone="neutral">{say(`kinds.${doc.kind}`)}</Badge>
-          </span>
-        }
-        actions={
-          <>
-            <Button asChild variant="secondary" size="sm">
-              <a href={fileUrl} target="_blank" rel="noreferrer">
-                {say("document.openFile")}
+        </Alert>
+      ) : null}
+      {isPdf && !doc.purged ? (
+        <section ref={viewerRef} aria-label={say("document.viewer")} className="min-w-0">
+          <DocumentViewer
+            src={fileUrl}
+            loadPdfjs={loadPdfjs}
+            workerSrc={WORKER_SRC}
+            highlights={highlights}
+            activeId={activeId}
+            onActiveChange={setActiveId}
+            onLocate={setFound}
+            className="[--kz-document-viewer-height:72vh]"
+            labels={{ region: say("document.viewerRegion"), loading: say("document.loadingPdf"), failed: say("document.pdfFailed"), page: say("document.pageLabel"), onPage: say("document.onPage"), notFound: say("document.notFound") }}
+          />
+        </section>
+      ) : doc.purged ? (
+        <Alert tone="info">{say("document.where.notKeptText")}</Alert>
+      ) : doc.hasText ? (
+        <DocumentText text={doc.text} report={latestReport} />
+      ) : (
+        <Alert tone="info">{say("document.noText")}</Alert>
+      )}
+      {/* A photo becomes an image-only PDF: its text (OCR or vision) is shown under the viewer, where a finding can be found. */}
+      {isPdf && !doc.purged && doc.textSource && doc.hasText ? <DocumentText text={doc.text} report={latestReport} /> : null}
+      {doc.insight ? <DocumentInsight insight={doc.insight} documentId={doc.id} source={doc.textSource} /> : null}
+      <StorageNotice storage={doc.storage} retainUntil={doc.retainUntil} purged={doc.purged} onDelete={() => remove.mutate()} deleting={remove.isPending} />
+      <DescriptionList
+        items={[
+          { term: say("document.file"), details: doc.filename },
+          ...(doc.pages ? [{ term: say("document.pages"), details: String(doc.pages) }] : []),
+          { term: say("document.size"), details: formatBytes(doc.sizeBytes, locale) },
+          { term: say("document.added"), details: formatDate(doc.createdAt, locale, true) },
+          { term: say("document.fingerprint"), details: <code className="break-all font-mono text-xs">{doc.sha256}</code> },
+        ]}
+      />
+    </section>
+  );
+
+  const history = (
+    <section aria-label={say("document.tabs.historique")} className="flex min-w-0 flex-col gap-3" data-testid="tab-historique">
+      <p className="m-0 text-sm text-fg-secondary">{doc.analyses.length > 1 ? say("reportFace.history") : say("reportFace.oneRun")}</p>
+      <ul className="m-0 flex list-none flex-col gap-2 p-0">
+        {doc.analyses.map((a) => (
+          <li key={a.id} className="flex flex-col gap-2 rounded-lg border border-border-default bg-surface-1 p-3 text-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="font-semibold text-fg">{say(a.studio === "compliance-check" ? "analysis.complianceTitle" : "analysis.authenticityTitle")}</span>
+              <Badge tone={RUN_TONE[a.status]}>{say(`analysis.statuses.${a.status}`)}</Badge>
+            </div>
+            <span className="text-xs text-fg-muted">{formatDate(a.createdAt, locale, true)}</span>
+            {isComplianceReport(a) ? (
+              <Link href={`${path}/rapport?run=${a.id}`} scroll={false} aria-current={latestCompliance?.id === a.id ? "true" : undefined} className="text-sm font-semibold text-fg-accent hover:underline" data-testid="open-run">
+                {say("reportFace.openRun")}
+              </Link>
+            ) : null}
+            <TechnicalDetails documentId={doc.id} analysis={a} />
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+
+  return (
+    <DetailLayout
+      back={<Link href={`/${locale}/app`}>{say("document.back")}</Link>}
+      eyebrow={`${say(`kinds.${doc.kind}`)} · ${doc.filename}`}
+      title={title}
+      status={<Badge tone={STATUS_TONE[doc.status]}>{say(`statuses.${doc.status}`)}</Badge>}
+      meta={[doc.pages ? say("library.pages", { count: doc.pages }) : null, formatBytes(doc.sizeBytes, locale), doc.retainUntil ? say("document.where.retentionUntil", { date: formatDate(doc.retainUntil, locale) }) : null].filter(Boolean).join(" · ")}
+      actions={
+        <>
+          {certifiable && reportHref ? (
+            <Button asChild variant="primary" size="sm" shape="cut">
+              <a href={reportHref} download data-testid="report-download">
+                {say("reportFace.downloadReport")}
               </a>
             </Button>
-            {confirming ? (
-              <Button variant="danger" size="sm" loading={remove.isPending} onClick={() => remove.mutate()}>
-                {say("document.deleteConfirm")}
+          ) : null}
+          {confirming ? (
+            <Button variant="danger" size="sm" loading={remove.isPending} onClick={() => remove.mutate()}>
+              {say("document.deleteConfirm")}
+            </Button>
+          ) : null}
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger asChild>
+              <Button variant="ghost" size="sm" aria-label={say("document.details")} data-testid="document-menu">
+                <MoreIcon size={16} aria-hidden />
               </Button>
-            ) : (
-              <Button variant="ghost" size="sm" onClick={() => setConfirming(true)}>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content align="end">
+              <DropdownMenu.Item asChild>
+                <a href={fileUrl} target="_blank" rel="noreferrer">
+                  {say("document.openFile")}
+                </a>
+              </DropdownMenu.Item>
+              {certifiable && reportHref ? (
+                <DropdownMenu.Item asChild>
+                  <a href={`${reportHref}&format=pdf`} download>
+                    {say("analysis.exportPdf")}
+                  </a>
+                </DropdownMenu.Item>
+              ) : null}
+              <DropdownMenu.Item tone="danger" onSelect={() => setConfirming(true)}>
                 {say("document.delete")}
-              </Button>
-            )}
-          </>
-        }
-      />
-
-      {/* @ephemeral: already the route (/documents/[id]/<tab>), pushed by go(); to move to Tabs.Nav */}
-      <Tabs.Root value={tab} onValueChange={(v: string) => go(v as DocumentTab)}>
-        {/* Four tabs do not fit a 360 px phone: the row scrolls sideways rather than widening the page (D6; Y5 brings them to three). */}
-        <Tabs.List aria-label={say("document.viewer")} className="max-w-full overflow-x-auto">
-          <Tabs.Trigger value="infos">{say("document.tabs.infos")}</Tabs.Trigger>
-          <Tabs.Trigger value="verifications">{say("document.tabs.verifications")}</Tabs.Trigger>
-          {isPdf && !doc.purged ? <Tabs.Trigger value="fichier">{say("document.file")}</Tabs.Trigger> : null}
-          <Tabs.Trigger value="texte">{say("document.text")}</Tabs.Trigger>
-        </Tabs.List>
-
-        <Tabs.Content value="infos">
-          <section aria-label={say("document.tabs.infos")} className="flex min-w-0 flex-col gap-4 pt-4">
-            {doc.insight ? <DocumentInsight insight={doc.insight} documentId={doc.id} source={doc.textSource} /> : null}
-            <StorageNotice storage={doc.storage} retainUntil={doc.retainUntil} purged={doc.purged} onDelete={() => remove.mutate()} deleting={remove.isPending} />
-            <DescriptionList
-              items={[
-                { term: say("document.file"), details: doc.filename },
-                ...(doc.pages ? [{ term: say("document.pages"), details: String(doc.pages) }] : []),
-                { term: say("document.size"), details: formatBytes(doc.sizeBytes, locale) },
-                { term: say("document.added"), details: formatDate(doc.createdAt, locale, true) },
-                { term: say("document.fingerprint"), details: <code className="break-all font-mono text-xs">{doc.sha256}</code> },
-              ]}
-            />
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
+        </>
+      }
+      tabs={
+        <Tabs.Nav label={say("document.viewer")} current={`${path}/${tab}`}>
+          {tabs.map((t) => (
+            <Tabs.NavLink key={t} href={`${path}/${t}`} exact asChild>
+              <Link href={`${path}/${t}`} scroll={false}>
+                {say(`document.tabs.${t}`)}
+              </Link>
+            </Tabs.NavLink>
+          ))}
+        </Tabs.Nav>
+      }
+      aside={
+        certifiable && latestCompliance ? (
+          <section aria-label={say("reportFace.whoSees")} className="flex flex-col gap-2" data-testid="report-aside">
+            <h2 className="m-0 font-display text-base font-bold text-fg">{say("reportFace.whoSees")}</h2>
+            <p className="m-0 text-sm text-fg-secondary">{say("reportFace.onlyYou")}</p>
+            <ReportShare documentId={doc.id} analysisId={latestCompliance.id} />
+            <p className="m-0 text-xs text-fg-muted">{say("analysis.language")}</p>
           </section>
-        </Tabs.Content>
-
-        <Tabs.Content value="verifications">
-          <section aria-labelledby="checks" className="flex min-w-0 flex-col gap-4 pt-4">
-            <div>
-              <h2 id="checks" className="font-display text-lg font-bold text-fg">
-                {say("document.checks")}
-              </h2>
-              <p className="text-sm text-fg-secondary">{say(`document.checksLeadBy.${wordingOf(perspective)}`)}</p>
-            </div>
-            {runningStudio ? <StepProgress step={runningStep} total={runningSteps.length} label={(step, total) => say("steps.progress", { step, total })} data-testid="run-progress" /> : null}
-            <div className="grid gap-4 md:grid-cols-2">
-              {(firstCheck(perspective, doc.kind) === "compliance-check" ? [complianceCard, authenticityCard] : [authenticityCard, complianceCard]).filter((c) => offer.studios.includes(c.key as Studio))}
-            </div>
-            {doc.analyses.map((a) => (
-              <AnalysisCard key={a.id} documentId={doc.id} hasText={doc.hasText} source={doc.textSource} initial={a} selection={a.id === latestCompliance?.id ? selection : undefined} />
-            ))}
-          </section>
-        </Tabs.Content>
-
-        {isPdf ? (
-          <Tabs.Content value="fichier">
-            <section ref={viewerRef} aria-label={say("document.viewer")} className="min-w-0 pt-4">
-              <DocumentViewer
-                src={fileUrl}
-                loadPdfjs={loadPdfjs}
-                workerSrc={WORKER_SRC}
-                highlights={highlights}
-                activeId={activeId}
-                onActiveChange={setActiveId}
-                onLocate={setFound}
-                className="[--kz-document-viewer-height:72vh]"
-                labels={{ region: say("document.viewerRegion"), loading: say("document.loadingPdf"), failed: say("document.pdfFailed"), page: say("document.pageLabel"), onPage: say("document.onPage"), notFound: say("document.notFound") }}
-              />
-            </section>
-          </Tabs.Content>
-        ) : null}
-        <Tabs.Content value="texte">
-          <div className="pt-4">{doc.purged ? <Alert tone="info">{say("document.where.notKeptText")}</Alert> : doc.hasText ? <DocumentText text={doc.text} report={latestReport} /> : <Alert tone="info">{say("document.noText")}</Alert>}</div>
-        </Tabs.Content>
-      </Tabs.Root>
-    </div>
+        ) : undefined
+      }
+    >
+      {doc.analyses.filter((a) => a.status === ANALYSIS_STATUS.running).map((a) => (
+        <LiveAnalysis key={a.id} documentId={doc.id} analysis={a} />
+      ))}
+      {tab === "rapport" ? report : tab === "document" ? document_ : history}
+    </DetailLayout>
   );
 }

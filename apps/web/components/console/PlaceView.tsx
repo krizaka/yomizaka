@@ -1,25 +1,29 @@
-import { Card } from "@krizaka/ui/card";
+import { ChipLink } from "@krizaka/ui/chip-link";
+import { EmptyState } from "@krizaka/ui/empty-state";
+import { Mascot } from "@krizaka/ui/mascots";
 import { PageHeader } from "@krizaka/ui/page-header";
-import { type CollectionAvatar as CollectionAvatarData, type DocumentSummary } from "@yomizaka/core";
+import { type CollectionAvatar as CollectionAvatarData, type DocumentSummary, type Jurisdiction } from "@yomizaka/core";
 import Link from "next/link";
 
 import { CollectionMark } from "@/components/console/CollectionMark";
 import { DocumentTable } from "@/components/console/DocumentTable";
-import { DocumentUploader } from "@/components/console/DocumentUploader";
+import { AddFilesButton, DropZone, LibraryDrop } from "@/components/console/LibraryDrop";
 import { CreateButton, ItemMenu } from "@/components/console/OrganisationActions";
-import { TagChips, TagFilter } from "@/components/console/TagChips";
+import { PlaceFilters } from "@/components/console/PlaceFilters";
 import type { Messages } from "@/lib/i18n";
-import { libraryPath, toggleTag, viewHref,type ViewState } from "@/lib/organisation/rules";
+import { libraryPath, movedFolderHrefs, type ViewState } from "@/lib/organisation/rules";
 import type { Folder, Tag } from "@/lib/organisation/store";
 import { countLabel } from "@/lib/plural";
 
 type Say = Messages["console"]["organisation"];
 
 /**
- * A collection or one of its folders: the breadcrumb, the tag filter (the URL's `?tags=`), the folders,
- * the files, and a drop zone that files into this place. Rendered on the server; the actions are client islands.
+ * A collection or one of its folders (the UX review's Y7): the breadcrumb, a header that says where this is (the place mark, the
+ * name), what is here (the counts) and what can be done (add documents, a folder, the ⋯ menu of the place — a folder's on the
+ * folder's page); the folders as a row of chips; the tags as a filter bar (`?tags=`); the files; and the whole page as a drop
+ * zone that files into this place (the only zone is the empty place's). Rendered on the server; the actions are client islands.
  */
-export function PlaceView({ locale, t, library, collection, folder, folders, documents, tags, view, tagsByDocument, folderTags, collections, collectionTags, path }: {
+export function PlaceView({ locale, t, library, collection, folder, folders, documents, tags, view, tagsByDocument, folderTags, collections, collectionTags, path, jurisdictions }: {
   locale: "en" | "fr";
   t: Say;
   library: { id: string; name: string };
@@ -31,75 +35,83 @@ export function PlaceView({ locale, t, library, collection, folder, folders, doc
   view: ViewState;
   tagsByDocument: Record<string, Tag[]>;
   folderTags?: Record<string, string[]>;
-  collections: { id: string; name: string; avatar: CollectionAvatarData | null }[];
+  collections: { id: string; name: string; avatar: CollectionAvatarData | null; libraryId?: string }[];
   collectionTags: string[];
   path: string;
+  /** The jurisdictions the account is offered: a dropped file is checked at once only when one is possible (Y4). */
+  jurisdictions?: readonly Jurisdiction[];
 }) {
   const crumbs = [
     { href: `/${locale}/app`, label: t.library },
     { href: libraryPath(locale, library.id, collection.id), label: collection.name, avatar: <CollectionMark key="crumb-avatar" id={collection.id} name={collection.name} avatar={collection.avatar} size="sm" /> },
     ...(folder ? [{ href: libraryPath(locale, library.id, collection.id, folder.id), label: folder.name }] : []),
   ];
+  const counts = [...(folder ? [] : [countLabel(t, "folders", folders.length)]), countLabel(t, "files", documents.length)].join(" · ");
+  const folderOptions = folders.map((f) => ({ id: f.id, name: f.name }));
   return (
-    <div className="flex flex-col gap-6">
-      <PageHeader
-        breadcrumb={
-          <nav aria-label="breadcrumb" className="flex flex-wrap items-center gap-2 text-sm text-fg-secondary">
-            {crumbs.map((c, i) => (
-              <span key={c.href} className="flex items-center gap-2">
-                {i > 0 ? <span aria-hidden>/</span> : null}
-                {"avatar" in c ? c.avatar : null}
-                {i === crumbs.length - 1 ? <span aria-current="page" className="font-semibold text-fg">{c.label}</span> : <Link href={c.href} className="hover:text-fg-accent hover:underline">{c.label}</Link>}
-              </span>
+    <LibraryDrop placement={{ collectionId: collection.id, folderId: folder?.id ?? null }} jurisdictions={jurisdictions}>
+      <div className="flex flex-col gap-6">
+        <PageHeader
+          breadcrumb={
+            <nav aria-label="breadcrumb" className="flex flex-wrap items-center gap-2 text-sm text-fg-secondary">
+              {crumbs.map((c, i) => (
+                <span key={c.href} className="flex items-center gap-2">
+                  {i > 0 ? <span aria-hidden>/</span> : null}
+                  {"avatar" in c ? c.avatar : null}
+                  {i === crumbs.length - 1 ? (
+                    <span aria-current="page" className="font-semibold text-fg">
+                      {c.label}
+                    </span>
+                  ) : (
+                    <Link href={c.href} className="hover:text-fg-accent hover:underline">
+                      {c.label}
+                    </Link>
+                  )}
+                </span>
+              ))}
+            </nav>
+          }
+          title={
+            <span className="flex items-center gap-3">
+              <CollectionMark id={collection.id} name={collection.name} avatar={collection.avatar} />
+              {folder?.name ?? collection.name}
+            </span>
+          }
+          description={counts}
+          actions={
+            <>
+              <AddFilesButton>{t.addDocuments}</AddFilesButton>
+              {folder ? (
+                <ItemMenu kind="folder" id={folder.id} name={folder.name} collections={collections} folders={folderOptions} tags={tags} current={folderTags?.[folder.id] ?? []} collectionId={collection.id} afterDelete={libraryPath(locale, library.id, collection.id)} afterMove={movedFolderHrefs(locale, collections, folder.id)} />
+              ) : (
+                <>
+                  <CreateButton kind="folder" parentId={collection.id} variant="ghost" />
+                  <ItemMenu kind="collection" id={collection.id} name={collection.name} avatar={collection.avatar} isDefault={collection.isDefault} collections={collections} tags={tags} current={collectionTags} />
+                </>
+              )}
+            </>
+          }
+        />
+        {!folder && folders.length > 0 ? (
+          <nav aria-label={t.foldersIn} className="flex flex-wrap items-center gap-2" data-testid="folder-chips">
+            {folders.map((f) => (
+              <ChipLink key={f.id} asChild size="sm" selected={false}>
+                <Link href={libraryPath(locale, library.id, collection.id, f.id)}>
+                  {f.name} · {countLabel(t, "files", f.files)}
+                </Link>
+              </ChipLink>
             ))}
           </nav>
-        }
-        title={
-          <span className="flex items-center gap-3">
-            <CollectionMark id={collection.id} name={collection.name} avatar={collection.avatar} />
-            {folder?.name ?? collection.name}
-          </span>
-        }
-        actions={
-          !folder ? (
-            <>
-              <CreateButton kind="folder" parentId={collection.id} />
-              <ItemMenu kind="collection" id={collection.id} name={collection.name} avatar={collection.avatar} isDefault={collection.isDefault} collections={collections} tags={tags} current={collectionTags} />
-            </>
-          ) : null
-        }
-      />
-      <TagFilter tags={tags} selected={view.tags} label={t.filterTags} clearLabel={t.clearTags} clearHref={viewHref(path, { ...view, tags: [] })} hrefFor={(id) => viewHref(path, { ...view, tags: toggleTag(view.tags, id) })} />
-      {collection && !folder && folders.length > 0 ? (
-        <section aria-label={t.foldersIn} className="flex flex-col gap-3">
-          <h3 className="m-0 text-sm font-semibold text-fg">{t.foldersIn}</h3>
-          <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3">
-            {folders.map((f) => (
-              <li key={f.id}>
-                <Card.Root className="flex h-full flex-col gap-2 p-4" data-testid="folder-card">
-                  <div className="flex items-start justify-between gap-2">
-                    <Link href={libraryPath(locale, library.id, collection.id, f.id)} className="font-semibold text-fg hover:text-fg-accent hover:underline">
-                      {f.name}
-                    </Link>
-                    <ItemMenu kind="folder" id={f.id} name={f.name} collections={collections} folders={folders.map((x) => ({ id: x.id, name: x.name }))} tags={tags} current={folderTags?.[f.id] ?? []} />
-                  </div>
-                  <p className="m-0 text-sm text-fg-secondary">{countLabel(t, "files", f.files)}</p>
-                  <TagChips tags={f.tags} />
-                </Card.Root>
-              </li>
-            ))}
-          </ul>
+        ) : null}
+        {tags.length > 0 ? <PlaceFilters tags={tags} selected={view.tags} path={path} view={view} count={documents.length} /> : null}
+        <section aria-label={t.filesIn} className="flex flex-col gap-3">
+          {documents.length > 0 ? (
+            <DocumentTable rows={documents} organise={{ collections, folders: folderOptions, collectionId: collection.id, tags, tagsByDocument }} />
+          ) : (
+            <EmptyState icon={<Mascot bird="owl" mood="empty" size={96} />} title={t.emptyCollection} action={<DropZone />} data-testid="place-empty" />
+          )}
         </section>
-      ) : null}
-      <section aria-label={t.filesIn} className="flex flex-col gap-3">
-        <h3 className="m-0 text-sm font-semibold text-fg">{t.filesIn}</h3>
-        {documents.length > 0 ? (
-          <DocumentTable rows={documents} organise={{ collections, folders: folders.map((f) => ({ id: f.id, name: f.name })), collectionId: collection?.id ?? null, tags, tagsByDocument }} />
-        ) : (
-          <p className="m-0 text-sm text-fg-secondary">{t.emptyCollection}</p>
-        )}
-        <DocumentUploader placement={{ collectionId: collection?.id ?? null, folderId: folder?.id ?? null }} />
-      </section>
-    </div>
+      </div>
+    </LibraryDrop>
   );
 }

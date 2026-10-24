@@ -234,7 +234,8 @@
         "failedOne": "{count} en échec",
         "failedMany": "{count} en échec",
         "collapse": "Replier",
-        "show": "Afficher"
+        "show": "Afficher",
+        "photos": "{name} et {count} autres photos, un seul document"
       },
       "checkLead": "Un fichier à la fois ; plusieurs d’un coup ? Importez un lot.",
       "caption": "Vos documents",
@@ -278,7 +279,7 @@
         "filters": "Filtrer les documents",
         "clear": "Effacer les filtres",
         "remove": "Retirer le filtre {label}",
-        "search": "Rechercher dans « {header} »",
+        "search": "Filtrer par titre",
         "pagination": "Pages des documents",
         "previous": "Page précédente",
         "next": "Page suivante",
@@ -345,8 +346,9 @@
         "business": "Choisissez ce que Yomizaka lit : une facture de fournisseur au regard des mentions obligatoires du Québec et du format des numéros de TPS et de TVQ, ou le fichier PDF lui-même. Les règles des contrats arrivent bientôt."
       },
       "tabs": {
-        "infos": "Informations",
-        "verifications": "Vérifications"
+        "rapport": "Rapport",
+        "document": "Document",
+        "historique": "Historique"
       },
       "where": {
         "title": "Où vit ce document",
@@ -384,6 +386,11 @@
         "invoice": "Une facture de fournisseur (Québec : numéros de TPS et de TVQ, mentions obligatoires)",
         "contract": "Un contrat de service (Québec : intérêt de retard, droit d'auteur et droits moraux)"
       },
+      "jurisdictionNames": {
+        "QC": "du Québec",
+        "FR": "de France",
+        "BE-WAL": "de Wallonie"
+      },
       "jurisdictions": {
         "QC": "Québec — bail de logement (C.c.Q., art. 1851 et suiv.)",
         "FR": "France — bail d'habitation",
@@ -412,6 +419,11 @@
         "INSUFFICIENT_EVIDENCE": "Éléments insuffisants"
       },
       "severity": "Gravité",
+      "severities": {
+        "blocking": "bloquant",
+        "major": "majeur",
+        "advice": "conseil"
+      },
       "citation": "Source",
       "passage": "Passage",
       "noPassage": "Aucun passage : le document ne dit rien sur ce point.",
@@ -477,13 +489,14 @@
       "label": "Chercher dans vos documents et leurs constats",
       "placeholder": "dépôt de garantie, facture 2026, « solidarité »…",
       "hint": "Deux caractères au moins. Des guillemets pour une expression exacte, un signe moins pour exclure un mot.",
-      "results": "{count} résultat(s)",
       "none": "Rien ne correspond à « {q} ».",
       "sources": {
         "title": "Titre",
         "text": "Texte",
         "finding": "Constat"
-      }
+      },
+      "resultsOne": "{count} résultat",
+      "resultsMany": "{count} résultats"
     },
     "admin": {
       "title": "Personnes",
@@ -1041,7 +1054,8 @@
       "lastCheck": "Dernière vérification : {date}",
       "neverChecked": "Pas encore vérifié",
       "seeAll": "Tout voir",
-      "report": "Rapport"
+      "report": "Rapport",
+      "removeTag": "Retirer {label}"
     },
     "settings": {
       "tabs": {
@@ -1471,7 +1485,54 @@
         "result": "Résultat",
         "when": "Quand",
         "run": "Exécution"
+      },
+      "filters": {
+        "label": "Filtrer les vérifications",
+        "search": "Chercher un document",
+        "clearSearch": "Effacer la recherche",
+        "result": "Résultat",
+        "kind": "Type",
+        "period": "Période",
+        "periods": {
+          "7d": "7 derniers jours",
+          "30d": "30 derniers jours",
+          "year": "Cette année"
+        },
+        "clear": "Effacer les filtres",
+        "remove": "Retirer {label}"
+      },
+      "resultsOne": "{count} vérification",
+      "resultsMany": "{count} vérifications",
+      "noMatch": {
+        "title": "Aucune vérification ne correspond",
+        "text": "Élargissez un filtre, ou effacez-les tous."
       }
+    },
+    "reportFace": {
+      "label": "Le résultat",
+      "attentionOne": "{count} point à regarder",
+      "attentionMany": "{count} points à regarder",
+      "attentionNone": "Rien à regarder",
+      "onRules": "sur {rules} règles",
+      "rulesOf": "Règles {jurisdiction} · {ruleset} · en vigueur le {date}",
+      "passedOne": "{count} règle respectée",
+      "passedMany": "{count} règles respectées",
+      "unsureOne": "{count} règle n’a pu être vérifiée",
+      "unsureMany": "{count} règles n’ont pu être vérifiées",
+      "technical": "Détails techniques (exécution, version, empreintes)",
+      "whoSees": "Qui peut voir ce rapport",
+      "onlyYou": "Vous seul, sauf si vous le partagez.",
+      "history": "Chaque exécution de ce document, la plus récente d’abord.",
+      "oneRun": "Une seule exécution pour l’instant.",
+      "notChecked": "Pas encore vérifié",
+      "notCheckedText": "Lancez une vérification : le verdict d’abord, puis chaque constat avec sa ligne.",
+      "fileAndText": "Le fichier, son texte, et ce que Yomizaka y a lu.",
+      "seeInFile": "Voir dans le fichier",
+      "more": "Détails",
+      "downloadReport": "Télécharger le rapport",
+      "backToReport": "Retour au rapport",
+      "otherChecks": "Autres vérifications : une autre juridiction, l'authenticité",
+      "openRun": "Ouvrir ce rapport"
     },
     "batch": {
       "title": "Vérifier un lot de documents",
@@ -1528,6 +1589,13 @@
       "engineBusy": "Orazaka est occupé par d'autres vérifications : les lignes restantes attendent leur tour et démarrent toutes seules. Rien à faire.",
       "exportReadme": "Yomizaka — rapports d'un lot de vérifications.\n\nlot.csv liste chaque ligne : son état, la raison quand elle n'a pas été vérifiée, et son fichier ici.\nrapports/ contient le PDF signé de chaque vérification de conformité.\nsignaux/ contient les signaux de chaque vérification d'authenticité, tels qu'Orazaka les a rendus.\n\nCe sont des vérifications informatives, pas un avis juridique. Pour vérifier un rapport signé, connectez-vous à Yomizaka et ouvrez https://www.yomizaka.com/verify (seules les personnes à qui le propriétaire du rapport a donné accès le peuvent).\nLes règles du Québec restent à faire relire par un avocat.\n",
       "exportZip": "Rapports (ZIP)"
+    },
+    "notFound": {
+      "title": "Cette page n'existe pas.",
+      "text": "Elle a peut-être changé d'adresse, ou elle n'est pas à vous.",
+      "library": "Retour à la bibliothèque",
+      "home": "Accueil",
+      "console": "Retour à la console"
     }
   },
   "report": {

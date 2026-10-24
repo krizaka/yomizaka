@@ -30,3 +30,7 @@ export function deleteChoice(input: unknown): DeleteChoice {
   return { files: "move", to };
 }
 
+/** Where a folder is once moved to each collection the person may choose: its new address (a collection whose library is unknown gives none). */
+export function movedFolderHrefs(locale: string, collections: readonly { id: string; libraryId?: string }[], folderId: string): Record<string, string> {
+  return Object.fromEntries(collections.flatMap((c) => (c.libraryId ? [[c.id, libraryPath(locale, c.libraryId, c.id, folderId)] as const] : [])));
+}

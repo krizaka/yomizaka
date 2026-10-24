@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 
 import { storesOf } from "@/app/active-store";
 import { DocumentView } from "@/components/console/DocumentView";
 import { pageSession } from "@/lib/access";
-import { isDocumentTab } from "@/lib/console-nav";
+import { isDocumentTab, movedDocumentHref, searchOf } from "@/lib/console-nav";
 import { documentStorage, getDocument } from "@/lib/documents";
 import { appEnvironment } from "@/lib/env";
 import { availableFlows, offerFor } from "@/lib/flows";
@@ -17,9 +17,12 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return { title: getDictionary(asLocale((await params).locale)).console.shell.document };
 }
 
-/** One document, one tab per route — another person's document is a 404, never a 403; an unknown tab is a 404. */
-export default async function DocumentTabPage({ params }: { params: Promise<{ locale: string; id: string; tab: string }> }) {
+/** One document, one tab per route — another person's document is a 404, never a 403; an old tab address answers 308 to its tab; an unknown tab is a 404. */
+export default async function DocumentTabPage({ params, searchParams }: { params: Promise<{ locale: string; id: string; tab: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const { locale, id, tab } = await params;
+  // An old tab address answers 308 to its tab with its query kept (`?refused=`, `?analysis=`), by the map's own keys only.
+  const moved = movedDocumentHref(asLocale(locale), id, tab, searchOf(await searchParams));
+  if (moved) permanentRedirect(moved);
   if (!isDocumentTab(tab)) notFound();
   const session = await pageSession();
   if (!session) notFound();
@@ -28,7 +31,5 @@ export default async function DocumentTabPage({ params }: { params: Promise<{ lo
     throw error;
   });
   if (!document) notFound();
-  // A text file has no file view: its « fichier » is the text.
-  if (tab === "fichier" && document.mimeType !== "application/pdf") redirect(`/${asLocale(locale)}/app/documents/${id}/texte`);
   return <DocumentView initial={document} tab={tab} perspective={session.account.perspective} offer={offerFor(await availableFlows(appEnvironment()), session.account.perspective)} />;
 }

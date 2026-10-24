@@ -24,5 +24,5 @@ export default async function ChecksPage({ params }: { params: Promise<{ locale:
   const running = runningChecks(listed);
   if (running.length) await Promise.all(running.map((c) => getAnalysis(session.account.id, c.documentId, c.id).catch(() => null)));
   const checks = running.length ? await listChecks(query, session.account.id) : listed;
-  return <ChecksView checks={checks} batches={batches} />;
+  return <ChecksView checks={checks} batches={batches} now={new Date().toISOString()} />;
 }
