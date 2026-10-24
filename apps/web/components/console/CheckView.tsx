@@ -1,5 +1,8 @@
 "use client";
 
+// ChoiceGrid draws `kzs-*` classes that only @krizaka/ui/story.css styles (yomizaka#316; lib/ui-stylesheets.test.ts).
+import "@krizaka/ui/story.css";
+
 import { AiIcon, BillingIcon, EditIcon, HomeIcon, MoreIcon } from "@krizaka/icons";
 import { ChoiceGrid } from "@krizaka/ui/choice-grid";
 import { PageHeader } from "@krizaka/ui/page-header";
