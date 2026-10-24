@@ -23,7 +23,7 @@ Captures, mockups and the prototype are on Bunny, never committed. They live und
 ## 0. The six decisions
 
 These hold for both directions. **A** (§ 5.1 to § 5.4) is calm; **B** (§ 5.5) is bolder, with the same screens and the
-same words. Oussama chooses A or B on the images.
+same words. Oussama chose **B**, refined as **B2** (§ 5.6, 2026-10-24).
 
 1. **The line between the Cahier and the product is the paper, not the grammar.** Yomizaka keeps the Cahier's
    *grammar*, which the primitives already carry: matt surfaces, 2 px and 0 radii, a solid offset instead of blur, the
@@ -396,6 +396,40 @@ What B does:
 | Risk | Reads generic: the brand barely shows, and Oussama asked to « moderniser » | **The sentence** must stay true at every count (zero, one, many) in FR and EN, with tests per plural. **The owl** in the verdict must not read as the one judging; its title says it read the lease, and the band's words stay Orazaka's figures. **Accent use** can creep: the rule is « only what to act on », and a test can count accent surfaces per page. **Right margin notes** need ≥ 64 rem of content width; under that they fold under the paragraph, as the phone shows. |
 | Accessibility | as § 3 | Same contrast (the accent text is 4.5:1 in both themes); the underlined phrases are links with full names; the bar has a text alternative and the counts written; the ink reveal is off under reduced motion |
 
+### 5.6 B2: the chosen direction (Oussama, 2026-10-24)
+
+Oussama chose **B**, with refinements ([the decision on #315](https://github.com/krizaka/yomizaka/pull/315)). **B2**
+applies them to the same four screens. This is the direction to implement once it is « validé ». A and B stay above as
+the record.
+
+- **Home (dashboard)**: [desktop dark](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b2/home-desktop-dark.png) · [desktop light](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b2/home-desktop-light.png) · [phone dark](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b2/home-phone-dark.png) · [phone light](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b2/home-phone-light.png)
+- **Files**: [desktop dark](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b2/files-desktop-dark.png) · [desktop light](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b2/files-desktop-light.png) · [phone dark](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b2/files-phone-dark.png) · [phone light](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b2/files-phone-light.png)
+- **The report**: [desktop dark](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b2/report-desktop-dark.png) · [desktop light](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b2/report-desktop-light.png) · [phone dark](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b2/report-phone-dark.png) · [phone light](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b2/report-phone-light.png)
+- **The check flow**: [desktop dark](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b2/check-desktop-dark.png) · [desktop light](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b2/check-desktop-light.png) · [phone dark](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b2/check-phone-dark.png) · [phone light](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/mockups-b2/check-phone-light.png)
+
+Prototype source: `…/314/prototype/b2.tsx` (@krizaka/ui 3.50 and @krizaka/charts, rendered by `mock-b2.mjs`). The figures
+on the home are demo data and are labelled as such.
+
+| Refinement | In B2 | Built on |
+| :-- | :-- | :-- |
+| More content, charts, quick access | The home has the summary sentence, four quick accesses (« Vérifier un bail », « Demander des documents », « Importer un lot », « Rapports signés »), the activity with a 7 · 30 · 90 d switch, four tiles with sparklines (checks, points to look at, files decided, credits left with the meter), a stacked chart of checks per week, the latest checks, and the binder. The report adds the run's figures (10 rules, 11 articles, 11.5 s, from the recorded run). | `DashboardLayout` + `Widget`, `StatGrid`/`Stat` `chart`, `Sparkline` and `BarChart` (@krizaka/charts), `Meter`, `RadioGroup` segmented |
+| No date strip; today's date on the right | Each heading has the `h1` on the left and `<time>` on the right (under it on a phone) | proposed `DashboardLayout` `date`, [krizaka-ui#644](https://github.com/krizaka/krizaka-ui/issues/644) |
+| ⌘K search in the top bar; navigation revisited | Top bar: search field with `⌘K` · FR · notifications with a count · « Vérifier un document » (gradient, cut) · the avatar with the name. Rail: **Accueil · Dossiers (count) · Documents · Vérifications**; Recherche leaves the rail for ⌘K; « Crédits et usage » is under the avatar and on the home. Phone: the same four tabs, and search as an icon in the header. | proposed `AppHeader` slots, [krizaka-ui#640](https://github.com/krizaka/krizaka-ui/issues/640); `CommandDialog` |
+| Binder tab dividers | « Le classeur » on the home (collections as coloured tabs with counts); on Dossiers, the decision states as tabs (À décider · Documents attendus · Approuvés · Refusés · Tous), the tags as chips with counts | proposed `BinderTabs`, [krizaka-ui#643](https://github.com/krizaka/krizaka-ui/issues/643), marker palette [krizaka-ui#635](https://github.com/krizaka/krizaka-ui/issues/635) |
+| Orochia's top bar | as above. **Messages are not shown**: Yomizaka has no messaging, and the slot stays empty until a product feature exists (no invented feature). Notifications need `@krizaka/notifications` (krizaka-ts#60): « vérification terminée », « dossier reçu ». | [krizaka-ui#640](https://github.com/krizaka/krizaka-ui/issues/640) |
+| The org avatar set and banner | The avatar comes from the family set (#598). The banner belongs to the account page and to an applicant file's header; it is not on these four screens. | krizaka-ui#598, [krizaka-ui#646](https://github.com/krizaka/krizaka-ui/issues/646) |
+| Orazaka's Studios catalogue | The check flow lists the checks Yomizaka runs (bail, facture, contrat de service, authenticité), with a plan strip (plan, meter, « Crédits et usage »), search, chips with counts, and rows with « Disponible » and « Vérifier » | proposed catalogue template, [krizaka-ui#642](https://github.com/krizaka/krizaka-ui/issues/642) |
+| Orazaka's Credits & usage | The balance meter, the period switch and the tiles with sparklines on the home; the full page « Crédits et usage » follows the same blocks | proposed usage blocks, [krizaka-ui#641](https://github.com/krizaka/krizaka-ui/issues/641) |
+| The nicer primary buttons | `Button variant="gradient" shape="cut"` (accent → accent-2) for the one action of a screen: « Vérifier un document », « Demander des documents », « Approuver », « Rapport signé (PDF) ». It already exists in @krizaka/ui. | `Button` |
+| The Cahier's grammar | B's numbered findings and margin of notes stay | proposed `MarginLayout`, [krizaka-ui#645](https://github.com/krizaka/krizaka-ui/issues/645) |
+| Templates | Home → dashboard (« Operate »); Dossiers → admin console (« Operate », bulk actions); report → detail (« Show »); check → catalogue plus a task (« Act ») | the #622 audit and the issues above |
+
+**What B2 drops from B**: the « Bibliothèque · vendredi… » line above the title (the date strip), and the separate
+« Collections » list (now the binder).
+
+**Known gaps in the mockups**: the fixed header and tab bar appear mid-page in the full-page phone captures (a capture
+artefact of sticky bars). The DataTable phone rows are still the card form until [krizaka-ui#636](https://github.com/krizaka/krizaka-ui/issues/636) ships.
+
 ---
 
 ## 6. What we stop or change
@@ -442,6 +476,13 @@ Each need is filed upstream, never copied here (« Krizaka first »).
 | U6 | [krizaka-ui#637](https://github.com/krizaka/krizaka-ui/issues/637) | Document kinds and places (finding 9) |
 | — | [krizaka-ui#210](https://github.com/krizaka/krizaka-ui/issues/210#issuecomment-6388393343) `AnalysisReport` | Commented: the report shape of § 5.3 (numbered findings, severity word, no code on the face, the passed ones folded, the run id once) |
 | — | [krizaka-ts#89](https://github.com/krizaka/krizaka-ts/issues/89#issuecomment-6388393483) | Commented: the pilot's needs (§ 4: the two axes, deciding closes and purges, no score, no free-text reason, documents without a user status) |
+| U7 | [krizaka-ui#640](https://github.com/krizaka/krizaka-ui/issues/640) | The family's top bar: ⌘K search, language, messages, notifications with a count, the account (from Orochia, #515) |
+| U8 | [krizaka-ui#641](https://github.com/krizaka/krizaka-ui/issues/641) | Credits & usage blocks: meter, period switch, tiles with sparklines, charts (from Orazaka, #515) |
+| U9 | [krizaka-ui#642](https://github.com/krizaka/krizaka-ui/issues/642) | Catalogue template: plan strip, search, chips with counts, rows with a status and an action (#622) |
+| U10 | [krizaka-ui#643](https://github.com/krizaka/krizaka-ui/issues/643) | `BinderTabs`, the coloured tab dividers |
+| U11 | [krizaka-ui#644](https://github.com/krizaka/krizaka-ui/issues/644) | Dashboard heading: the date on the right, a lead sentence, quick access (#622) |
+| U12 | [krizaka-ui#645](https://github.com/krizaka/krizaka-ui/issues/645) | `MarginLayout`: numbers and margin notes |
+| U13 | [krizaka-ui#646](https://github.com/krizaka/krizaka-ui/issues/646) | `ProfileBanner` with the org avatar set (#598, from Orochia, #515) |
 | — | already filed | krizaka-ui#588 (header primary at 360 px), #589 (theme row), #590 (place marks), #599 (owl « lost »), #623 (mascot in `EmptyState`), #487 (`Tabs.Nav`) |
 
 **Krizaka Motion: no new primitive is needed.** Everything in § 3.3 exists (`MotionObserver`, `data-reveal="ink"`,
@@ -469,7 +510,15 @@ One pull request each, in order, test-first, with before and after captures at 3
 | P10 | **The public site, plain**: no red mono eyebrow, no figures row, no mono captions, the grid without orphans; the leftovers of Y9 | A test over the public components (no `font-mono` and no margin-red text outside code); first-screen captures |
 | P11 | **The states pass**: a `loading.tsx` skeleton per app segment in the page's shape, errors in place with recovery, the `NO_TEXT` partial state, the demo note at the foot | Tests: each segment has a loading and an error boundary; the `NO_TEXT` copy; no spinner outside buttons |
 | P12 | **Phone lists** (after U5): Vérifications, Dossiers and collections as list rows at 360 px | A 360 px test: one line of facts per row, no `dl` per row |
+| P14 | **B2 shell**: the rail Accueil · Dossiers · Documents · Vérifications, the top bar on [krizaka-ui#640](https://github.com/krizaka/krizaka-ui/issues/640) (⌘K, FR, notifications, gradient primary, the avatar with the name), the phone's four tabs | Tests: the one section map (P2) feeds the rail, tabs and Mac menu; ⌘K opens the palette; the bar at 360 px is not clipped; the messages slot is absent |
+| P15 | **B2 home** on [krizaka-ui#644](https://github.com/krizaka/krizaka-ui/issues/644) and [krizaka-ui#641](https://github.com/krizaka/krizaka-ui/issues/641): the date on the right, the summary sentence, quick access, the activity (7 · 30 · 90 d), the tiles with sparklines, the weekly chart, the binder ([krizaka-ui#643](https://github.com/krizaka/krizaka-ui/issues/643)) | Tests: every figure from a query over the chosen period, the sentence's plurals FR/EN at 0, 1 and many, the period in the address, the chart's table alternative |
+| P16 | **B2 check flow** on [krizaka-ui#642](https://github.com/krizaka/krizaka-ui/issues/642): the plan strip, the catalogue of checks, the drop and the run | Tests: the catalogue lists only the rulesets that run (from the registry), the counts per chip, the plan strip's numbers from the billing state |
+| P17 | **B2 Dossiers**: decision states as binder tabs, the tags as chips with counts, the gradient bulk action (with P7) | #89's tests, plus the tabs' counts match the views |
 | P13 | **The signed PDF** (if § 3.2's move is accepted): folios, findings numbered as on screen, footnotes | Tests on the renderer: folio on each page, the numbering matches the screen order |
+
+**With B2**, P14 to P17 replace the A-styled parts of P2, P5, P8 and P9 (same logic, the B2 presentation). P4 takes B's
+verdict and margin ([krizaka-ui#645](https://github.com/krizaka/krizaka-ui/issues/645)). P1 is shipped in #317. Every proposed piece waits on its krizaka-ui issue and is never
+copied here.
 
 The order: P1 is a live bug. P2 decides the map every later screen hangs on. P3 and P4 are the core loop. P5 is cheap
 and visible. P6 and P7 are the new object, P7 waiting on #89. P8 to P13 finish the picture, and can run in parallel
