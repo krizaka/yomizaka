@@ -1,4 +1,4 @@
-import { CheckIcon, EyeIcon, SearchIcon } from "@krizaka/icons";
+import { CheckIcon, EyeIcon, WalletIcon } from "@krizaka/icons";
 import { LandingPage } from "@krizaka/ui/landing-page";
 import { MascotQuote } from "@krizaka/ui/mascot-quote";
 import { Facts, Section } from "@krizaka/ui/page";
@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 const DATE = { en: "en-CA", fr: "fr-CA" } as const;
-const ICONS = { line: CheckIcon, file: EyeIcon, find: SearchIcon } as const;
+const ICONS = { line: CheckIcon, file: EyeIcon, find: WalletIcon } as const;
 const WHO = ["tenant", "landlord", "freelancer", "business"] as const;
 
 /**

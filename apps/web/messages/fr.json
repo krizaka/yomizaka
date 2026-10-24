@@ -10,7 +10,8 @@
     "nav": {
       "what": "Ce que ça fait",
       "proof": "Une vraie vérification",
-      "privacy": "Confidentialité"
+      "privacy": "Confidentialité",
+      "pricing": "Tarifs"
     },
     "signIn": "Se connecter",
     "themeToggle": "Thème",
@@ -35,8 +36,8 @@
     "signOut": "Se déconnecter"
   },
   "landing": {
-    "title": "Lisez avant de signer.",
-    "lead": "Déposez un bail, un contrat ou une facture. Yomizaka le lit selon les règles en vigueur et vous montre la ligne exacte derrière chaque constat.",
+    "title": "Le faux talon de paie, signalé avant de payer l'enquête.",
+    "lead": "Votre bail est lu contre le Code civil du Québec. Votre talon de paie en PDF est examiné comme fichier. Chaque constat cite sa règle et la phrase exacte sur laquelle il repose. Les signaux restent des signaux : pas de tampon « faux ».",
     "status": {
       "label": "Statut",
       "development": "En développement : les inscriptions sont fermées pendant nos essais sur de vrais baux québécois.",
@@ -54,20 +55,20 @@
       "title": "Ce que ça fait",
       "lead": "Trois choses, sans rien de caché derrière.",
       "who": "Pour les locataires et les propriétaires qui vérifient un bail québécois. Les travailleurs autonomes et les petites entreprises peuvent aussi vérifier un contrat ou une facture.",
-      "trust": "Vos documents sont gardés au Canada et visibles par votre seul compte. Rien n'est vendu, partagé ni utilisé pour entraîner un modèle.",
+      "trust": "Vos pièces passent par un sas. Elles sont purgées dès la vérification terminée, sauf si vous choisissez de les conserver. Seul le rapport reste. Un fichier jamais vérifié est purgé après un délai fixe.",
       "privacy": "Lire l'avis de confidentialité",
       "items": {
         "line": {
-          "title": "La ligne exacte derrière chaque constat",
+          "title": "Votre bail lu contre le C.c.Q.",
           "text": "Chaque constat nomme la règle, cite l'article de loi et surligne la phrase du bail sur laquelle il repose."
         },
         "file": {
-          "title": "L'examen du PDF lui-même",
+          "title": "Le talon de paie examiné comme fichier",
           "text": "Producteur, dates, enregistrements successifs : trois niveaux (observé, inhabituel, incohérent), jamais un tampon « faux »."
         },
         "find": {
-          "title": "Tout retrouver en une seconde",
-          "text": "Un mot, et tous vos documents et tous leurs constats reviennent, le passage en gras."
+          "title": "Sans abonnement annuel",
+          "text": "Vous payez une vérification à la fois. Les vérifications achetées n'expirent pas. Les prix sont sur la page Tarifs."
         }
       }
     },
@@ -81,7 +82,7 @@
       "powered": "Propulsé par Orazaka.",
       "owlLabel": "Ce que la chouette promet"
     },
-    "eyebrow": "Québec · baux, contrats, factures",
+    "eyebrow": "Québec · baux, talons de paie, factures, contrats",
     "proofs": {
       "rules": "règles vérifiées",
       "articles": "articles de loi cités",
@@ -98,8 +99,8 @@
     },
     "closing": {
       "title": "Un document, une réponse.",
-      "body": "Connectez-vous pour vérifier un document. Vos documents restent au Canada, visibles par votre seul compte.",
-      "bodyIn": "Vos documents sont dans votre bibliothèque, vérifiés et gardés au Canada."
+      "body": "Connectez-vous pour vérifier un document. Vos pièces sont purgées après la vérification, sauf si vous les conservez.",
+      "bodyIn": "Vos documents sont dans votre bibliothèque. Ceux que vous avez choisi de conserver y restent."
     },
     "visual": {
       "caption": "Une vraie vérification, enregistrée telle qu'elle est revenue"
@@ -115,7 +116,7 @@
   "privacy": {
     "title": "Confidentialité",
     "updated": "Mis à jour le {date}",
-    "body": "Un document que vous déposez est gardé dans la base de données de Yomizaka (Toronto, Canada), visible de votre seul compte. Quand vous demandez une vérification, le document, son texte, ou le fichier PDF, est envoyé à Orazaka, le moteur d'analyse de Krizaka, en HTTPS, et le résultat est gardé avec l'identifiant du run. Rien n'est vendu, partagé ni utilisé pour entraîner un modèle. Supprimer un document supprime son fichier, son texte et ses analyses. Pour une question ou pour faire effacer vos données, utilisez le formulaire de contact.",
+    "body": "Un document que vous déposez est gardé dans la base de données de Yomizaka, visible de votre seul compte. Sauf si vous choisissez de le conserver, il est purgé dès que sa vérification est terminée. Quand vous demandez une vérification, le document, son texte, ou le fichier PDF, est envoyé à Orazaka, le moteur d'analyse de Krizaka, en HTTPS, et le résultat est gardé avec l'identifiant du run. Rien n'est vendu, partagé ni utilisé pour entraîner un modèle. Supprimer un document supprime son fichier, son texte et ses analyses. Pour une question ou pour faire effacer vos données, utilisez le formulaire de contact.",
     "sections": [
       {
         "h": "Qui est responsable",
@@ -127,7 +128,7 @@
       },
       {
         "h": "Où ils sont conservés",
-        "p": "Dans une base de données au Canada. Les documents sont envoyés à Orazaka, le moteur d’analyse de Krizaka, par HTTPS pour être vérifiés. [À FAIRE RELIRE PAR L’AVOCAT : mention de tout transfert hors Québec et évaluation des facteurs relatifs à la vie privée.]"
+        "p": "Dans la base de données de Yomizaka. [À FAIRE RELIRE PAR L'AVOCAT : le lieu d'hébergement (province, pays), que l'infrastructure ne prouve pas encore (yomizaka#299), tout transfert hors Québec et l'évaluation des facteurs relatifs à la vie privée.] Les documents sont envoyés à Orazaka, le moteur d'analyse de Krizaka, par HTTPS pour être vérifiés."
       },
       {
         "h": "Vos droits",
@@ -1851,6 +1852,55 @@
           "name": "Factures 2026",
           "description": "Les factures d'entretien de 2026 — documents spécimens fictifs, dont une avec un total inexact."
         }
+      }
+    }
+  },
+  "pricing": {
+    "title": "Tarifs",
+    "lead": "Sans abonnement annuel. Vous payez une vérification à la fois, et les vérifications achetées n'expirent pas. Prix en dollars canadiens ; la TPS et la TVQ s'ajoutent sur la facture.",
+    "offer": {
+      "title": "Ce qui s'achète aujourd'hui",
+      "lead": "Les prix facturés par le processeur de paiement, lus dans le même catalogue."
+    },
+    "preparing": {
+      "title": "En préparation",
+      "lead": "Pas encore offert. Aucun prix n'est promis pour ces options."
+    },
+    "rows": {
+      "check": {
+        "title": "Une vérification de document",
+        "text": "Un bail, un talon de paie, une facture ou un contrat : lecture contre les règles du Québec, fichier PDF examiné.",
+        "value": "{price} par vérification"
+      },
+      "first": {
+        "title": "Votre première vérification",
+        "text": "Elle ne coûte rien.",
+        "value": "Offerte"
+      },
+      "pro": {
+        "title": "Pro, mensuel",
+        "text": "Jusqu'à {limit} vérifications par mois. Résiliable à tout moment depuis le portail de facturation.",
+        "value": "{price} par mois"
+      },
+      "lot": {
+        "title": "Un lot de 25 vérifications et plus",
+        "text": "Un prix de volume pour un lot de fichiers.",
+        "status": "En préparation"
+      },
+      "filter": {
+        "title": "Le filtre des pièces seul",
+        "text": "Le premier palier d'un dossier, facturé seulement quand il tourne.",
+        "status": "En préparation"
+      },
+      "full": {
+        "title": "Le dossier complet Québec",
+        "text": "Les vérifications au registre : le TAL et le plumitif auprès de SOQUIJ, après les pièces.",
+        "status": "En préparation"
+      },
+      "income": {
+        "title": "Vérification du revenu (Open Banking)",
+        "text": "Une vérification optionnelle du revenu, avec votre consentement.",
+        "status": "En préparation"
       }
     }
   }

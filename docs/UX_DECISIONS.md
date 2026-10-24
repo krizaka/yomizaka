@@ -359,3 +359,20 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
   cards under « Pas encore vérifié »; « Voir dans le fichier » moves to the document tab, where the passage is lit.
 - **Signal we are wrong**: people open the technical details on every report to find the run id; the switch to the
   document tab on « Voir dans le fichier » loses them.
+
+## 20. Prices on their own page: what is sold today first, what is not built listed « In preparation » with no figure
+
+- **Decision** (2026-10-23, launch positioning): `/pricing` (« Tarifs ») reads `lib/pricing.ts`, the processor's catalogue
+  (`deploy/payments-catalogue.json`, a test keeps them equal): one document check, the first check offered, Pro monthly.
+  Then the « En préparation » group: the lot price, the document filter alone, the full Québec file (the TAL and the
+  plumitif through SOQUIJ), the income check (Open Banking). Each is a row with its status, no figure. The home's trust line
+  says what the file does (the holding area, the purge after the check, the report that stays); the closing call and the
+  trust line no longer claim where the servers are; the menu gains « Tarifs ».
+- **Problem**: the public copy said « kept in Canada » and « Toronto » while dev files are in New York (yomizaka#299); it
+  named a « purge after your decision » that runs after the check; no page said what a check costs.
+- **Principle**: a price only from the data the processor charges; a feature that is not built is said so, once, with its status.
+- **Refused**: a lot price, a filter price and a full-file price in public (no processor price exists for them); the words
+  « credit check » and the registry names outside an « In preparation » row; a residency claim until the infrastructure proves it;
+  « a subscription » without « annual », since Pro is monthly.
+- **Cost**: the page is two blocks of rows, no table, no new block (the existing `Section`, `PageHero`); the sitemap lists `/pricing` in both languages.
+- **Signal we are wrong**: visitors read « In preparation » as a broken page, or ask for the lot price in the first week.
