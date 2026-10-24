@@ -1,0 +1,68 @@
+"use client";
+
+import { Alert } from "@krizaka/ui/alert";
+import { type Audience, checkSteps, type DocumentView } from "@yomizaka/core";
+import type { ReactNode } from "react";
+
+import { ClosingNoteView } from "@/components/ClosingNoteView";
+import { CheckSteps } from "@/components/console/CheckSteps";
+import { buildNote, noteInputOf, noteSourceOf } from "@/lib/closing-note/build";
+import { useSay } from "@/lib/i18n-client";
+import { wordingOf } from "@/lib/perspective-defaults";
+
+import { AuthenticitySignals } from "./AuthenticitySignals";
+import type { DocumentFacts } from "./document-view-model";
+import { FindingList, type FindingSelection, TechnicalDetails, VerdictBand } from "./ReportFace";
+
+/**
+ * The report tab: where a running check stands, the runs that failed, then the verdict and the findings (what failed first),
+ * the authenticity signals, the engine's facts folded, the closing note and the other checks; or the authenticity report
+ * alone; or « Pas encore vérifié » with the checks to start.
+ */
+export function DocumentReportTab({ doc, facts, selection, perspective, startCards }: { doc: DocumentView; facts: DocumentFacts; selection: FindingSelection; perspective: Audience | null; startCards: ReactNode }) {
+  const { say, locale } = useSay();
+  const { latestCompliance, latestReport, latestAuthenticity, runningStudio, failures } = facts;
+  return (
+    <section aria-label={say("document.tabs.rapport")} className="flex min-w-0 flex-col gap-4" data-testid="tab-rapport">
+      {runningStudio ? <CheckSteps steps={checkSteps({ hasText: doc.hasText, analysis: { studio: runningStudio, status: "running" } })} /> : null}
+      {failures.map((a) => (
+        <Alert key={a.id} tone="danger">
+          {a.error}
+        </Alert>
+      ))}
+      {latestCompliance && latestReport ? (
+        <>
+          <VerdictBand report={latestReport} />
+          <FindingList report={latestReport} selection={selection} />
+          {latestAuthenticity?.report && "signals" in latestAuthenticity.report ? <AuthenticitySignals report={latestAuthenticity.report} /> : null}
+          <TechnicalDetails documentId={doc.id} analysis={latestCompliance} />
+          <details className="rounded-lg border border-border-default p-3">
+            <summary className="cursor-pointer text-sm font-semibold text-fg">{say("document.details")}</summary>
+            <div className="mt-3">
+              <ClosingNoteView note={buildNote(noteInputOf(latestReport, noteSourceOf(doc.textSource)), locale)} />
+            </div>
+          </details>
+          <details className="rounded-lg border border-border-default p-3" data-testid="more-checks">
+            <summary className="cursor-pointer text-sm font-semibold text-fg">{say("reportFace.otherChecks")}</summary>
+            <div className="mt-3 grid gap-4 md:grid-cols-2">{startCards}</div>
+          </details>
+        </>
+      ) : latestAuthenticity?.report && "signals" in latestAuthenticity.report ? (
+        <>
+          <AuthenticitySignals report={latestAuthenticity.report} />
+          <TechnicalDetails documentId={doc.id} analysis={latestAuthenticity} />
+          <div className="grid gap-4 md:grid-cols-2">{startCards}</div>
+        </>
+      ) : (
+        <>
+          <div>
+            <h2 className="font-display text-lg font-bold text-fg">{say("reportFace.notChecked")}</h2>
+            <p className="text-sm text-fg-secondary">{say(`document.checksLeadBy.${wordingOf(perspective)}`)}</p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">{startCards}</div>
+        </>
+      )}
+      <p className="m-0 text-xs text-fg-muted">{say("library.informative")}</p>
+    </section>
+  );
+}

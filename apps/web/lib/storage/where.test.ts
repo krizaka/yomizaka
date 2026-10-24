@@ -35,7 +35,7 @@ import { join } from "node:path";
 
 describe("the info panel", () => {
   it("is on the document's information tab and offers « Supprimer maintenant »", () => {
-    const view = readFileSync(join(__dirname, "../../components/console/DocumentView.tsx"), "utf8");
+    const view = readFileSync(join(__dirname, "../../components/console/DocumentFileTab.tsx"), "utf8");
     expect(view).toContain("<StorageNotice storage={doc.storage}");
     expect(readFileSync(join(__dirname, "../../components/console/StorageNotice.tsx"), "utf8")).toContain("document.where.deleteNow");
   });

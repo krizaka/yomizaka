@@ -15,7 +15,7 @@ describe("the check's steps on the document page", () => {
     expect(steps).toContain('from "@krizaka/ui/stepper"');
     expect(steps).toContain("@yomizaka/core");
     expect(steps).not.toMatch(/<ol\b/);
-    const view = read("components/console/DocumentView.tsx");
+    const view = read("components/console/DocumentReportTab.tsx");
     expect(view).toContain("<CheckSteps steps={checkSteps(");
   });
 
