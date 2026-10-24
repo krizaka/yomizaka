@@ -54,7 +54,7 @@
       "title": "Ce que ça fait",
       "lead": "Trois choses, sans rien de caché derrière.",
       "who": "Pour les locataires et les propriétaires qui vérifient un bail québécois. Les travailleurs autonomes et les petites entreprises peuvent aussi vérifier un contrat ou une facture.",
-      "trust": "Vos documents sont gardés au Canada et visibles par votre seul compte. Rien n'est vendu, partagé ni utilisé pour entraîner un modèle.",
+      "trust": "Votre compte et vos vérifications sont gardés dans une base de données à Toronto, au Canada, et visibles par votre seul compte. Rien n'est vendu, partagé ni utilisé pour entraîner un modèle.",
       "privacy": "Lire l'avis de confidentialité",
       "items": {
         "line": {
@@ -98,8 +98,8 @@
     },
     "closing": {
       "title": "Un document, une réponse.",
-      "body": "Connectez-vous pour vérifier un document. Vos documents restent au Canada, visibles par votre seul compte.",
-      "bodyIn": "Vos documents sont dans votre bibliothèque, vérifiés et gardés au Canada."
+      "body": "Connectez-vous pour vérifier un document. Visible de votre seul compte.",
+      "bodyIn": "Vos documents sont dans votre bibliothèque, vérifiés et visibles par votre seul compte."
     },
     "visual": {
       "caption": "Une vraie vérification, enregistrée telle qu'elle est revenue"
@@ -115,7 +115,7 @@
   "privacy": {
     "title": "Confidentialité",
     "updated": "Mis à jour le {date}",
-    "body": "Un document que vous déposez est gardé dans la base de données de Yomizaka (Toronto, Canada), visible de votre seul compte. Quand vous demandez une vérification, le document, son texte, ou le fichier PDF, est envoyé à Orazaka, le moteur d'analyse de Krizaka, en HTTPS, et le résultat est gardé avec l'identifiant du run. Rien n'est vendu, partagé ni utilisé pour entraîner un modèle. Supprimer un document supprime son fichier, son texte et ses analyses. Pour une question ou pour faire effacer vos données, utilisez le formulaire de contact.",
+    "body": "Votre compte et vos vérifications sont gardés dans la base de données de Yomizaka à Toronto, au Canada, visibles de votre seul compte. Un document n'est gardé que si vous le choisissez, et son panneau d'information dit où. Quand vous demandez une vérification, le document, son texte, ou le fichier PDF, est envoyé à Orazaka, le moteur d'analyse de Krizaka, en HTTPS, et le résultat est gardé avec l'identifiant du run. Rien n'est vendu, partagé ni utilisé pour entraîner un modèle. Supprimer un document supprime son fichier, son texte et ses analyses. Pour une question ou pour faire effacer vos données, utilisez le formulaire de contact.",
     "sections": [
       {
         "h": "Qui est responsable",
@@ -127,7 +127,7 @@
       },
       {
         "h": "Où ils sont conservés",
-        "p": "Dans une base de données au Canada. Les documents sont envoyés à Orazaka, le moteur d’analyse de Krizaka, par HTTPS pour être vérifiés. [À FAIRE RELIRE PAR L’AVOCAT : mention de tout transfert hors Québec et évaluation des facteurs relatifs à la vie privée.]"
+        "p": "Votre compte et vos vérifications sont dans une base de données à Toronto, au Canada, hors Québec. Les documents sont envoyés à Orazaka, le moteur d’analyse de Krizaka, par HTTPS pour être vérifiés. Un document gardé est stocké là où son panneau d’information le dit : aujourd’hui, à New York (États-Unis)."
       },
       {
         "h": "Vos droits",
@@ -1148,7 +1148,7 @@
         "none": "Ne rien conserver",
         "noneHint": "« Conserver » est désactivé : tout est supprimé après la vérification.",
         "krizaka": "Le stockage de Krizaka",
-        "krizakaHint": "Chiffré, au Canada en production.",
+        "krizakaHint": "Gardés par Krizaka, sur le stockage que ce service exploite.",
         "s3": "Mon propre stockage (S3)",
         "s3Hint": "Un stockage compatible S3 que vous administrez : vos documents conservés y vont, pas chez nous.",
         "endpoint": "Adresse du service (https)",
@@ -1790,7 +1790,7 @@
   },
   "terms": {
     "title": "Conditions d’utilisation",
-    "status": "Ébauche : la politique de remboursement et les clauses marquées [À FAIRE RELIRE PAR L’AVOCAT] sont des espaces réservés jusqu’à la relecture de ce texte par un membre du Barreau du Québec.",
+    "status": "Ébauche : la politique de remboursement et la limitation de responsabilité ne sont pas définitives tant qu’un membre du Barreau du Québec n’a pas relu ce texte.",
     "sections": [
       {
         "h": "Ce qu’est Yomizaka",
@@ -1806,7 +1806,7 @@
       },
       {
         "h": "Remboursements et annulation",
-        "p": "[À FAIRE RELIRE PAR L’AVOCAT] Politique de remboursement : espace réservé. Vous pouvez annuler le forfait Pro en tout temps depuis le portail client; il se termine alors à la fin de la période déjà payée. Modalités de remboursement d’un audit à l’unité : à rédiger."
+        "p": "Politique de remboursement (ébauche). Vous pouvez annuler le forfait Pro en tout temps depuis le portail client; il se termine alors à la fin de la période déjà payée. Les modalités de remboursement d’un audit à l’unité ne sont pas encore rédigées."
       },
       {
         "h": "Vos documents",
@@ -1814,7 +1814,7 @@
       },
       {
         "h": "Limites de responsabilité et droit applicable",
-        "p": "[À FAIRE RELIRE PAR L’AVOCAT] Limitation de responsabilité, droit applicable et for (Québec) : espace réservé."
+        "p": "Limitation de responsabilité, droit applicable et for (Québec) : ébauche, pas encore rédigée."
       }
     ]
   },
