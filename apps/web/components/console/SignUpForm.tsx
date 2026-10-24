@@ -9,7 +9,7 @@ import { z } from "zod";
 
 import { errorKey } from "@/lib/client";
 import { useSay } from "@/lib/i18n-client";
-import { PASSWORD_MIN_LENGTH } from "@/lib/password";
+import { PASSWORD_MIN_LENGTH } from "@/lib/password-policy";
 
 const signUp = createKrizakaForm({
   schema: z.object({

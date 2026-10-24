@@ -10,8 +10,8 @@ const P = 1;
 const KEYLEN = 32;
 const OPTIONS = { N, r: R, p: P, maxmem: 64 * 1024 * 1024 };
 
-export const PASSWORD_MIN_LENGTH = 12;
-export const PASSWORD_MAX_LENGTH = 256;
+export { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "./password-policy";
+import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "./password-policy";
 
 export function passwordProblem(password: string): "TOO_SHORT" | "TOO_LONG" | null {
   if (password.length < PASSWORD_MIN_LENGTH) return "TOO_SHORT";

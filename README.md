@@ -39,6 +39,7 @@ and a real run. The Dev preview is **web only** (phone-first); the phone app (`a
 - **Checking a tenant's application** — a consent-first flow with a provider-agnostic seam; only a demo provider answers, on dev,
   with fictitious data. No real provider is contracted yet.
 - **A short public site** — the home (who it is for, one real check recorded, sign-in), sign-in and the privacy notice; nothing else is public (`docs/UX_DECISIONS.md` § 9).
+- **« Forgot your password? »** — from the sign-in page: a link mailed through the mail port (the same answer whether or not the address has an account, 3 requests an hour per address), used once, valid for the `auth.passwordResetMinutes` setting (30 by default, 5 to 1440, in the administration's General group); it sets the new password and signs every session out. Needs the `MAIL_` variables; without them the link is not offered. The audit trail records each request and each reset, never an address, a link or a password.
 
 The administration is **admin.yomizaka.com** (the same app, routed by host): people, documents, Orazaka runs, flows, operations
 and an audit log of every operator action. It answers only addresses of `AUTH_ALLOWED_IPS` and an administrator's session, and is never indexed.

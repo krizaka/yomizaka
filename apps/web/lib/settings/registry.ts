@@ -30,6 +30,8 @@ export const SETTINGS = {
   "app.maintenance": flag(GROUP.general, false),
   "app.maintenanceMessage": bilingual(GROUP.general, { fr: "Yomizaka est en maintenance. Revenez dans quelques minutes.", en: "Yomizaka is down for maintenance. Please come back in a few minutes." }),
   "signup.open": flag(GROUP.general, false),
+  /** How long a « Forgot your password? » link works (once): @krizaka/auth's bounds are 5 to 1440. */
+  "auth.passwordResetMinutes": integer(GROUP.general, 30, { min: 5, max: 1440, unit: "minutes" }),
   "payments.enabled": flag(GROUP.general, true, WORKSPACE),
   "payments.display": choice(GROUP.general, [PAYMENT_DISPLAY.test, PAYMENT_DISPLAY.live], PAYMENT_DISPLAY.test),
   "audit.freeFirst": flag(GROUP.general, true, WORKSPACE),

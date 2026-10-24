@@ -34,6 +34,24 @@ export async function query<T extends pg.QueryResultRow = pg.QueryResultRow>(tex
   return result.rows;
 }
 
+/** Runs `work` on one connection between BEGIN and COMMIT. A failure rolls back and is rethrown: the rollback never masks it. */
+export async function transaction<T>(work: (run: <R extends pg.QueryResultRow = pg.QueryResultRow>(text: string, values?: unknown[]) => Promise<R[]>) => Promise<T>): Promise<T> {
+  const conn = await pool().connect();
+  try {
+    await conn.query("BEGIN");
+    const value = await work(async (text, values = []) => (await conn.query(text, values)).rows as never);
+    await conn.query("COMMIT");
+    return value;
+  } catch (error) {
+    await conn.query("ROLLBACK").catch((rollback: unknown) => {
+      throw new AggregateError([error, rollback], "transaction failed and its rollback failed");
+    });
+    throw error;
+  } finally {
+    conn.release();
+  }
+}
+
 /** Applies the migrations not applied yet, one transaction each, under an advisory lock (two instances never race). */
 export async function migrate(client?: pg.Pool): Promise<string[]> {
   const db = client ?? pool();
