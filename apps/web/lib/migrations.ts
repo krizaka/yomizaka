@@ -511,4 +511,30 @@ CREATE INDEX batches_open ON batches(created_at) WHERE finished_at IS NULL;
     // yomizaka#241: signed outgoing webhooks (endpoints, one queued delivery per endpoint and event, the log).
     sql: webhooksMigration("accounts"),
   },
+  {
+    version: "0030_application_consents",
+    // yomizaka#131 (Loi 25): consent is recorded per application (a screening) and per purpose, with the notice version shown,
+    // the date and the means. A withdrawal sets withdrawn_at (the row stays as the record). A document uploaded for an
+    // application is linked to it, so its checks are gated by the application's consent. Erasure of an application
+    // is its own status: its personal fields are blanked, its documents and result deleted.
+    sql: `
+CREATE TABLE application_consents (
+  id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  screening_id   uuid NOT NULL REFERENCES screenings(id) ON DELETE CASCADE,
+  purpose        text NOT NULL CHECK (purpose IN ('DOCUMENT_CHECK', 'COURT_RECORDS', 'CREDIT')),
+  notice_version text NOT NULL CHECK (length(notice_version) BETWEEN 1 AND 40),
+  means          text NOT NULL CHECK (means IN ('web-form')),
+  granted_at     timestamptz NOT NULL DEFAULT now(),
+  withdrawn_at   timestamptz
+);
+-- At most one active consent per application and purpose; a withdrawn one is kept as the record.
+CREATE UNIQUE INDEX application_consents_active ON application_consents(screening_id, purpose) WHERE withdrawn_at IS NULL;
+
+ALTER TABLE documents ADD COLUMN screening_id uuid REFERENCES screenings(id) ON DELETE SET NULL;
+CREATE INDEX documents_screening ON documents(screening_id) WHERE screening_id IS NOT NULL;
+
+ALTER TABLE screenings DROP CONSTRAINT IF EXISTS screenings_status_check;
+ALTER TABLE screenings ADD CONSTRAINT screenings_status_check CHECK (status IN ('requested', 'consented', 'shared', 'declined', 'contested', 'expired', 'erased'));
+`,
+  },
 ];

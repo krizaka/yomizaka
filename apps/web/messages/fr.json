@@ -1710,6 +1710,50 @@
       "requested": "Le propriétaire a été prévenu. Vous pourrez vérifier le rapport dès qu’il vous aura donné l’accès."
     }
   },
+    "applicant": {
+      "notice": {
+        "title": "Comment vos documents et vos renseignements sont utilisés",
+        "version": "Avis {version}",
+        "intro": "Votre propriétaire demande la vérification de votre demande de logement. Rien n'est vérifié et aucun document n'est analysé sans votre consentement. Vous décidez pour chaque finalité ci-dessous, et vous pouvez retirer un consentement en tout temps.",
+        "collectedTitle": "Ce qui est recueilli",
+        "collected": "Les documents que vous transmettez (par exemple un talon de paie ou un relevé bancaire), le nom et le courriel de la demande et, seulement pour les finalités que vous acceptez, les résultats de ces vérifications.",
+        "whyTitle": "Pourquoi",
+        "why": "Pour vérifier que les documents correspondent à la demande et sont cohérents entre eux. Le rapport est seulement informatif : ce n'est pas un avis juridique, et une personne chez le propriétaire décide.",
+        "whoTitle": "Qui le voit",
+        "who": "Le propriétaire qui demande la vérification voit le rapport. Yomizaka et son sous-traitant pour l'analyse (Orazaka) traitent le fichier pour l'exécuter. Personne d'autre. [À RÉVISER PAR L'AVOCAT]",
+        "howLongTitle": "Combien de temps c'est conservé",
+        "howLong": "Par défaut, un document est supprimé dès que sa vérification est terminée. Un résultat est supprimé {days} jours après avoir été donné. Le propriétaire peut choisir de conserver un document, et vous pouvez toujours en demander la suppression. [À RÉVISER PAR L'AVOCAT]",
+        "askTitle": "Comment demander la suppression",
+        "ask": "Utilisez l'action « Supprimer mes documents » du lien que vous avez reçu. Elle supprime immédiatement vos documents et le résultat, et ne garde qu'une trace sans renseignement personnel. Vous pouvez aussi retirer un consentement ici, et demander l'accès à vos renseignements ou leur rectification.",
+        "notAsked": "Jamais demandés : votre numéro d'assurance sociale (NAS), les renseignements de votre carte ou de votre compte bancaire, vos renseignements de santé ou familiaux.",
+        "law": "Le présent avis suit la Loi sur la protection des renseignements personnels dans le secteur privé (Québec, telle que modifiée par la Loi 25). Ce n'est pas un avis juridique."
+      },
+      "purpose": {
+        "DOCUMENT_CHECK": {
+          "label": "Vérifier les documents que j'envoie",
+          "what": "Recherche des signes de modification et d'incohérence dans les documents, au regard de la demande."
+        },
+        "COURT_RECORDS": {
+          "label": "Vérifier l'historique locatif québécois",
+          "what": "Consulte, avec votre consentement, les décisions publiées du Tribunal administratif du logement et des tribunaux sur votre historique de paiement."
+        },
+        "CREDIT": {
+          "label": "Vérifier mon dossier de crédit",
+          "what": "Lit, avec votre consentement, un rapport de crédit lorsqu'il est demandé."
+        }
+      },
+      "consent": "J'ai lu l'avis (version {version}) et je consens à cette vérification",
+      "granted": "Consenti",
+      "notGranted": "Pas consenti",
+      "withdraw": "Retirer ce consentement",
+      "erase": "Supprimer mes documents",
+      "erased": "Vos documents et le résultat ont été supprimés. Seule une trace sans renseignement personnel est conservée.",
+      "error": {
+        "CONSENT_REQUIRED": "Aucun document n'est vérifié sans votre consentement pour cette finalité.",
+        "NOTICE_CHANGED": "L'avis a changé depuis votre lecture. Relisez-le, puis consentez.",
+        "APPLICATION_ERASED": "Cette demande a été supprimée."
+      }
+    },
   "screening": {
     "tenant": {
       "title": "Une demande de vérification de votre dossier",
