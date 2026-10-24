@@ -1,0 +1,15 @@
+id: no-utc-day-slice
+valid:
+  - |
+    const asOf = localDay(new Date(), LAW_TIME_ZONE);
+  - |
+    const iso = today.toISOString();
+  - |
+    const head = today.toISOString().slice(0, 16);
+invalid:
+  - |
+    const asOf = new Date().toISOString().slice(0, 10);
+  - |
+    const asOf = today.toISOString().slice(0, 10);
+  - |
+    const day = new Date(instant).toISOString().slice(0, 10);

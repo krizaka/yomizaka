@@ -238,6 +238,9 @@ importers:
       '@krizaka/icons':
         specifier: ^0.7.0
         version: 0.7.0(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react@19.3.1)
+      '@krizaka/intl':
+        specifier: ^0.3.0
+        version: 0.3.0
       '@krizaka/organize':
         specifier: 0.3.0
         version: 0.3.0
@@ -1711,6 +1714,10 @@ packages:
 
   '@krizaka/intl@0.2.1':
     resolution: {integrity: sha512-vZWoRmptN0/Ac1rUZ3BiOdXXGOkxBAq2yYDe9tMOpPNhi8kKP/L8NCptokshBjKPmEZxq9lJ55MoAabTL+WbBw==}
+    engines: {node: '>=22'}
+
+  '@krizaka/intl@0.3.0':
+    resolution: {integrity: sha512-O6WO2KcsErEcBHk3tSIdlyA700+UOt4jlQRRHgKKVzJ+OlQvsaPKC4wKJmskWfCzV/OhmYxFJbRvOUhzxDRbqg==}
     engines: {node: '>=22'}
 
   '@krizaka/organize@0.1.0':
@@ -9509,6 +9516,8 @@ snapshots:
       react-native-svg: 15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)
 
   '@krizaka/intl@0.2.1': {}
+
+  '@krizaka/intl@0.3.0': {}
 
   '@krizaka/organize@0.1.0': {}
 

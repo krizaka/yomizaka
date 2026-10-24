@@ -1,6 +1,7 @@
 "use client";
 
 import { MoreIcon } from "@krizaka/icons";
+import { localDay } from "@krizaka/intl";
 import { krizakaFetch, useMutation, useQuery, useQueryClient } from "@krizaka/query";
 import { Alert } from "@krizaka/ui/alert";
 import { Badge } from "@krizaka/ui/badge";
@@ -30,7 +31,7 @@ import { displayTitle } from "@/lib/document-face";
 import { useSay } from "@/lib/i18n-client";
 import { firstCheck, wordingOf } from "@/lib/perspective-defaults";
 import { photoOriginSignals } from "@/lib/photo-origin";
-import { CHECK_KINDS, type CheckKind, isCheckKind } from "@/lib/rulesets";
+import { CHECK_KINDS, type CheckKind, isCheckKind, LAW_TIME_ZONE } from "@/lib/rulesets";
 
 import { STATUS_TONE } from "./DocumentTable";
 import { formatBytes, formatDate } from "./format";
@@ -43,7 +44,7 @@ const RUN_TONE = { running: "accent", succeeded: "success", failed: "danger", ca
 
 const compliance = createKrizakaForm({
   schema: z.object({ documentType: z.enum(CHECK_KINDS), jurisdiction: z.enum(JURISDICTIONS), asOf: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }),
-  defaultValues: { documentType: "lease" as CheckKind, jurisdiction: "QC" as (typeof JURISDICTIONS)[number], asOf: new Date().toISOString().slice(0, 10) },
+  defaultValues: { documentType: "lease" as CheckKind, jurisdiction: "QC" as (typeof JURISDICTIONS)[number], asOf: localDay(new Date(), LAW_TIME_ZONE) },
 });
 const authenticity = createKrizakaForm({
   schema: z.object({ expectedIssuer: z.string().trim().max(120) }),
@@ -142,7 +143,7 @@ function StartCompliance({ documentId, disabled, jurisdictions, options, initial
     },
   });
   const form = compliance.useForm({
-    defaultValues: { documentType: initialType, jurisdiction: "QC", asOf: new Date().toISOString().slice(0, 10) },
+    defaultValues: { documentType: initialType, jurisdiction: "QC", asOf: localDay(new Date(), LAW_TIME_ZONE) },
     i18n: { t: (key, vars) => say(key, vars as Record<string, string | number> | undefined), locale },
     onSubmit: async (values) => {
       setProblem(null);
@@ -309,7 +310,7 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
   };
   // The kind the person declared (« Quel document ? ») and the one Yomizaka read select the ruleset (ADR-089): a mismatch is shown and confirmed in the form.
   const detectedKind = doc.insight?.understanding.check?.documentType ?? null;
-  const compliancePlan = planCheck({ declared: doc.kind, detected: detectedKind, asOf: new Date().toISOString().slice(0, 10) });
+  const compliancePlan = planCheck({ declared: doc.kind, detected: detectedKind, asOf: localDay(new Date(), LAW_TIME_ZONE) });
   const offeredKinds: readonly CheckKind[] = ["lease", ...(offer.rulesets.includes("qc-invoice") ? (["invoice"] as const) : []), ...(offer.rulesets.includes("qc-service-contract") ? (["contract"] as const) : []), ...(offer.rulesets.includes("qc-visit-notice") ? (["visit-notice"] as const) : []), ...(offer.rulesets.includes("qc-premises-condition") ? (["premises-condition"] as const) : [])];
   const complianceOptions: readonly CheckKind[] = compliancePlan.mismatch ? [...new Set<CheckKind>([...offeredKinds, compliancePlan.mismatch.detected, ...(isCheckKind(doc.kind) ? [doc.kind] : [])])] : offeredKinds;
   const complianceCard = (

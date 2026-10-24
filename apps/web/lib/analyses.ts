@@ -1,3 +1,4 @@
+import { localDay } from "@krizaka/intl";
 import { type Analysis, AUTHENTICITY_MAX_BYTES, COMPLIANCE_MAX_CHARS, DOCX_MIME, fromRunStatus, isTerminal, ODT_MIME, type OrazakaRun, reportOf, type StartAnalysis,type StorageKind } from "@yomizaka/core";
 
 import { assertAnalysisAllowed } from "./applicant-consent";
@@ -7,6 +8,7 @@ import { type AnalysisRow, declaredKindOf, isUuid, needsAttention, readBytes, to
 import { refuse } from "./http";
 import { orazaka } from "./orazaka";
 import { purgeIfDone } from "./retention";
+import { LAW_TIME_ZONE } from "./rulesets";
 import type { DocumentStore } from "./storage/port";
 
 /**
@@ -22,7 +24,7 @@ export function runInputs(request: StartAnalysis, doc: { mimeType: string; text:
   if (request.studio === "compliance-check") {
     if (!doc.text.trim()) throw refuse(422, "NO_TEXT", "This document has no text layer to check");
     if (doc.text.length > COMPLIANCE_MAX_CHARS) throw refuse(422, "TEXT_TOO_LONG", "This document is longer than the compliance check reads");
-    return { document: doc.text, jurisdiction: request.jurisdiction, asOf: request.asOf ?? today.toISOString().slice(0, 10), ...(request.ruleset ? { ruleset: request.ruleset } : {}) };
+    return { document: doc.text, jurisdiction: request.jurisdiction, asOf: request.asOf ?? localDay(today, LAW_TIME_ZONE),...(request.ruleset ? { ruleset: request.ruleset } : {}) };
   }
   if (!AUTHENTICITY_TYPES.has(doc.mimeType)) throw refuse(422, "NOT_A_PDF", "The authenticity check reads PDF and Word files");
   if (doc.content.length > AUTHENTICITY_MAX_BYTES) throw refuse(422, "PDF_TOO_LARGE", "The authenticity check reads files up to 5 MB");

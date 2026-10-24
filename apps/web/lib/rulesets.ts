@@ -8,6 +8,9 @@ export const CHECK_KINDS = ["lease", "invoice", "contract", "visit-notice", "pre
 export type CheckKind = (typeof CHECK_KINDS)[number];
 export const isCheckKind = (value: string): value is CheckKind => (CHECK_KINDS as readonly string[]).includes(value);
 
+/** The calendar of the law: a check is dated on the day in Québec (Montréal), never on the UTC day (yomizaka#309). */
+export const LAW_TIME_ZONE = "America/Toronto";
+
 /** A version of a ruleset: in force from `effectiveFrom` (null: from the start), and the reference the Studio is asked for. */
 export interface RulesetVersion {
   effectiveFrom: string | null;

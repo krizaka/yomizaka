@@ -1,8 +1,10 @@
+import { localDay } from "@krizaka/intl";
 import { krizakaFetch } from "@krizaka/query";
 import { type DocumentKind, documentView, type Jurisdiction } from "@yomizaka/core";
 import { z } from "zod";
 
 import { afterUpload } from "@/lib/check-flow";
+import { LAW_TIME_ZONE } from "@/lib/rulesets";
 
 import { refusalCode } from "./upload";
 
@@ -15,12 +17,13 @@ export interface StartOutcome {
 /**
  * Once a file landed: reads what Yomizaka understood of it, starts the check when the kind is sure (`afterUpload`), and keeps
  * the refusal's code for the report tab instead of dropping it. One path for the task page and the library's drop-anywhere.
+ * `now` is the moment of the drop: the check is dated on its day in Québec (yomizaka#309).
  */
-export async function startIfSure(id: string, requested: DocumentKind | "auto", jurisdictions: readonly Jurisdiction[], fetcher: typeof krizakaFetch = krizakaFetch): Promise<StartOutcome> {
+export async function startIfSure(id: string, requested: DocumentKind | "auto", jurisdictions: readonly Jurisdiction[], now: Date, fetcher: typeof krizakaFetch = krizakaFetch): Promise<StartOutcome> {
   let start = null;
   try {
     const { document } = await fetcher(`/api/documents/${id}`, { schema: z.object({ document: documentView }) });
-    start = afterUpload({ requested, insight: document.insight?.understanding ?? null, jurisdictions, asOf: new Date().toISOString().slice(0, 10) }).start;
+    start = afterUpload({ requested, insight: document.insight?.understanding ?? null, jurisdictions, asOf: localDay(now, LAW_TIME_ZONE) }).start;
   } catch {
     // Nothing sure: the report tab asks for the kind itself.
   }
