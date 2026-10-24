@@ -5,7 +5,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const krizakaFetch = vi.fn();
 vi.mock("@krizaka/query", async (original) => ({ ...(await original<typeof import("@krizaka/query")>()), krizakaFetch: (...args: unknown[]) => krizakaFetch(...args) }));
 
-import { BarActionsView, fetchMe, HeroActionsView, type Me, ME_KEY, signOutAndForget } from "./BarSession";
+import fr from "@/messages/fr.json";
+
+import { BarActionsView, ClosingActionsView, ClosingBodyView, fetchMe, HeroActionsView, type Me, ME_KEY, signOutAndForget } from "./BarSession";
 import { SiteHeader } from "./SiteChrome";
 
 const text = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/\s+/g, " ");
@@ -120,5 +122,23 @@ describe("the hint comes from the server, never from the browser's memory", () =
     cache.set("me", ME);
     await expect(signOutAndForget(client, async () => Promise.reject(new Error("offline")))).rejects.toThrow("offline");
     expect(cache.get("me")).toBeNull();
+  });
+});
+
+describe("the closing call follows the session like the hero (the UX review's Y9)", () => {
+  const me = { id: "a1", email: "eric@example.test", name: "Éric" } as unknown as Me;
+  it("signed out: the way in, secondary, and the sentence that invites; signed in: the documents and the sentence that says where they are", () => {
+    const out = renderToStaticMarkup(<ClosingActionsView locale="fr" me={null} />);
+    expect(out).toContain('data-session="out"');
+    expect(out).toContain('href="/fr/sign-in"');
+    expect(out).toContain(fr.landing.signIn);
+    expect(out).not.toContain("primary");
+    const inn = renderToStaticMarkup(<ClosingActionsView locale="fr" me={me} />);
+    expect(inn).toContain('data-session="in"');
+    expect(inn).toContain('href="/fr/app"');
+    expect(inn).toContain(fr.landing.openApp);
+    expect(inn).not.toContain("eric@");
+    expect(renderToStaticMarkup(<ClosingBodyView me={null} signedOut="Out." signedIn="In." />)).toContain("Out.");
+    expect(renderToStaticMarkup(<ClosingBodyView me={me} signedOut="Out." signedIn="In." />)).toContain("In.");
   });
 });

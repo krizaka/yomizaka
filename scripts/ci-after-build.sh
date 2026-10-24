@@ -17,6 +17,7 @@ pnpm run seo:check
 node scripts/sync-brand-icons.mjs --check
 # Responsive guard: no horizontal overflow at 360-1440 px in both themes, chips of at least 44 px.
 pnpm run check:overflow -- --base http://localhost:3000
+node scripts/check-home-first-screen.mjs --base http://localhost:3000
 # The 404 is a page in the language of the address (the UX review's Y10): its status and its words.
 test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/fr/nope)" = "404"
 curl -s http://localhost:3000/fr/nope | grep -q "Retour à la bibliothèque"

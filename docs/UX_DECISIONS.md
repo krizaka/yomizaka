@@ -255,6 +255,30 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
 - **Cost**: a drop of several photos is grouped by the default (one document) before the option is visible; the option
   rules the next drop.
 - **Signal we are wrong**: people cancel runs started on the drop; « Autre » is chosen to avoid the automatic start.
+## 19. The public home: the product's answer on screen, the session answered once, no void above the hero
+
+- **Decision** (2026-10-23, the UX review's Y9, #281): the home is `LandingPage` — the promise beside the product's answer
+  itself: the recorded check in a panel that grows with its text (the lease line lit, the finding Yomizaka returned, its
+  article — the `BeforeAfter` block, read from the recorded run, nothing drawn by hand; a fixed-aspect device frame
+  clipped the finding on a phone), the figures of that run under it
+  (rules checked, articles cited, findings), the three things as a bento (signature icons), the run's facts with the owl
+  once (`MascotQuote` callout), who it is for (`Facts`), one closing call whose sentence and action follow the same session answer as the hero
+  (signed in: the documents; signed out: the way in — never « sign in » to someone who is). The hero's action and status
+  line read the same `/api/me` answer as the bar (F0, Y1); the landing's hero frame pads itself with `--kz-hero-top`
+  (nothing added on `main`, or the offset doubles); the page starts 24 px under the fixed bar (`--kz-hero-top` = 92 px, no `pt-20`, on
+  every public page); at 390 × 844 the visual sits in the first screen. Captures are taken once, on the final design: the
+  recorded steps of the real app (`StepShowcase`) take the panel's place then, never a screenshot of a design in progress.
+- **Problem**: a 236 px void above the hero (F6); the product never shown — a text hero with an empty right half, three
+  `h3`s, one mono block (F7); a phone's first screen without product or proof (F8); flat sections (F9).
+- **Principle**: show the product's answer, not a description of it; every figure from a recorded run; one answer per screen.
+- **Refused**: « no mascot quote » and « no backdrop » from the earlier home (#120, § 2): the review, validated, puts the owl
+  once and the brand's dome behind the hero — no grid, no counter, no glow; screenshots of screens still being redesigned;
+  a second primary action (the closing call is secondary — the hero's island holds the one primary).
+- **Cost**: the proof block appears once (in the hero's panel), so the « Une vraie vérification » section keeps only the
+  figures, the run's facts and the owl; CI measures the rendered hero frame against the real bar and refuses a panel that
+  clips its text; the recording is a follow-up once the design is final.
+- **Signal we are wrong**: the frame is scrolled past without a pause; people look for the figures' source and do not find
+  the run's facts under them.
 ## 18. The 404: the owl's page, in the language of the address
 
 - **Decision** (2026-10-23, the UX review's Y10, #281): a page that does not exist (or is not this person's) is `ErrorPage` —

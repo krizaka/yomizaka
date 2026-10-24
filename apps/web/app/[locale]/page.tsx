@@ -1,9 +1,12 @@
-import { Page, Section } from "@krizaka/ui/page";
-import { PageHero } from "@krizaka/ui/page-hero";
+import { CheckIcon, EyeIcon, SearchIcon } from "@krizaka/icons";
+import { LandingPage } from "@krizaka/ui/landing-page";
+import { MascotQuote } from "@krizaka/ui/mascot-quote";
+import { Facts, Section } from "@krizaka/ui/page";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { BarQueryRoot, HeroActions } from "@/components/BarSession";
+import { BarQueryRoot, ClosingActions, ClosingBody, HeroActions } from "@/components/BarSession";
+import { ButtonLink } from "@/components/ButtonLink";
 import { BeforeAfter } from "@/components/home/BeforeAfter";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -20,15 +23,20 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 const DATE = { en: "en-CA", fr: "fr-CA" } as const;
+const ICONS = { line: CheckIcon, file: EyeIcon, find: SearchIcon } as const;
+const WHO = ["tenant", "landlord", "freelancer", "business"] as const;
 
 /**
- * The home is the whole public site (Simplify Yomizaka, krizaka/yomizaka#120): who Yomizaka is for and what it does, one
- * real check recorded as it came back (the lease line, the finding, the run id), one way in (sign-in). Orazaka, the
- * engine, is named once, in a quiet line under the proof. Static: built from the recording.
+ * The home is the whole public site (Simplify Yomizaka, krizaka/yomizaka#120), on `LandingPage` since the UX review's Y9: the
+ * promise beside the product's answer itself — the recorded check in a browser frame (the lease line, the finding, its article:
+ * nothing drawn by hand, no screenshot until the final design is captured), the figures of that run under it —, the three
+ * things as a bento, the run's facts and the owl once, who it is for, one way in (sign-in). Orazaka, the engine, is named
+ * once, in a quiet line under the proof. Static: built from the recording.
  */
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const locale = asLocale((await params).locale);
-  const d = getDictionary(locale).landing;
+  const dict = getDictionary(locale);
+  const d = dict.landing;
   const run = recordedRun("tenant");
   const figures = HERO_FIGURES(run.report);
   return (
@@ -36,42 +44,76 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
       <BarQueryRoot>
         <SiteHeader locale={locale} current="home" provider={false} />
-        <main id="content" className="pt-20">
-          <PageHero title={d.title} lead={d.lead} backdrop="plain">
-            {/* Signed in, « Ouvrir mes documents »; otherwise « Se connecter » and the status line — the same answer as the bar (F0). */}
-            <HeroActions locale={locale} status={d.status[productStatus(preview)]} />
-          </PageHero>
-        <Page>
-          <Section id="what" title={d.what.title} lead={d.what.lead} spacing="sm">
-            <ul className="m-0 grid list-none gap-6 p-0 md:grid-cols-3">
-              {(["line", "file", "find"] as const).map((id) => (
-                <li key={id} className="flex flex-col gap-1">
-                  <h3 className="m-0 text-base font-semibold text-fg">{d.what.items[id].title}</h3>
-                  <p className="m-0 text-sm leading-relaxed text-fg-secondary">{d.what.items[id].text}</p>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-6 max-w-[70ch] text-sm text-fg-secondary">{d.what.who}</p>
-          </Section>
-          <Section id="proof" title={d.proof.title} lead={d.proof.lead} spacing="sm" divider>
-            <div className="max-w-3xl rounded-lg border border-border-default" data-testid="proof-run">
-              <BeforeAfter locale={locale} />
-            </div>
-            <p className="mt-4 text-sm text-fg-secondary">{format(d.proof.figures, { rules: figures.rules, found: figures.found })}</p>
-            <p className="mt-1 font-mono text-xs text-fg-muted" data-testid="proof-meta">
-              {d.proof.runLabel} {run.runId} · {d.proof.dateLabel} {new Date(run.recordedAt).toLocaleDateString(DATE[locale], { dateStyle: "long", timeZone: "America/Toronto" })} · {d.proof.rulesetLabel} {run.report.rulesetId} {run.report.rulesetVersion}
-            </p>
-            <p className="mt-6 max-w-[70ch] text-sm text-fg-secondary">{d.what.trust}</p>
-            <p className="mt-1 text-sm">
-              <Link href={pagePath(locale, "privacy")} className="text-fg-accent underline underline-offset-4">
-                {d.what.privacy}
-              </Link>
-            </p>
-            <p className="mt-6 text-xs text-fg-muted" data-testid="powered-by">
-              {d.proof.powered}
-            </p>
-          </Section>
-        </Page>
+        {/* The bar is fixed: the hero's frame starts 24 px under it (`--kz-hero-top`, F6) — no void above the hero, nothing added on main. */}
+        <main id="content" data-landing>
+          <LandingPage
+            eyebrow={d.eyebrow}
+            title={d.title}
+            lead={d.lead}
+            actions={
+              /* Signed in, « Ouvrir mes documents »; otherwise « Se connecter » and the status line — the same answer as the bar (F0). */
+              <HeroActions locale={locale} status={d.status[productStatus(preview)]} />
+            }
+            visual={
+              /* The product's answer, real (the recorded run), in a panel that grows with its text — the recorded steps take this place once the final design is captured. */
+              <div className="rounded-lg border border-border-default bg-surface-1" data-testid="home-visual">
+                <div data-testid="proof-run">
+                  <BeforeAfter locale={locale} />
+                </div>
+              </div>
+            }
+            visualLabel={d.visual.caption}
+            proofs={[
+              { value: figures.rules, label: d.proofs.rules },
+              { value: figures.articles, label: d.proofs.articles },
+              { value: figures.found, label: d.proofs.findings },
+            ]}
+            featuresHeading={{
+              title: (
+                <span id="what">{d.what.title}</span>
+              ),
+              lead: d.what.lead,
+            }}
+            features={(["line", "file", "find"] as const).map((id, i) => {
+              const Icon = ICONS[id];
+              return { id, title: d.what.items[id].title, text: d.what.items[id].text, icon: <Icon size={24} aria-hidden />, size: i === 0 ? ("md" as const) : ("sm" as const) };
+            })}
+            closing={{
+              title: d.closing.title,
+              /* The closing call follows the same session answer as the hero (F0): signed in, the way to the documents; signed out, the way in. */
+              body: <ClosingBody signedOut={d.closing.body} signedIn={d.closing.bodyIn} />,
+              actions: (
+                <>
+                  <ClosingActions locale={locale} />
+                  <ButtonLink href={pagePath(locale, "privacy")} variant="ghost" size="lg">
+                    {d.what.privacy}
+                  </ButtonLink>
+                </>
+              ),
+            }}
+          >
+            <Section id="proof" title={d.proof.title} lead={d.proof.lead} spacing="sm" divider>
+              <p className="text-sm text-fg-secondary">{format(d.proof.figures, { rules: figures.rules, found: figures.found })}</p>
+              <p className="mt-1 font-mono text-xs text-fg-muted" data-testid="proof-meta">
+                {d.proof.runLabel} {run.runId} · {d.proof.dateLabel} {new Date(run.recordedAt).toLocaleDateString(DATE[locale], { dateStyle: "long", timeZone: "America/Toronto" })} · {d.proof.rulesetLabel} {run.report.rulesetId} {run.report.rulesetVersion}
+              </p>
+              <MascotQuote bird="owl" variant="callout" label={d.proof.owlLabel} className="mt-8">
+                {d.what.items.line.text}
+              </MascotQuote>
+              <p className="mt-6 text-xs text-fg-muted" data-testid="powered-by">
+                {d.proof.powered}
+              </p>
+            </Section>
+            <Section id="who" title={d.who.title} lead={d.what.who} spacing="sm" divider>
+              <Facts items={WHO.map((k) => ({ label: d.who.items[k] }))} />
+              <p className="mt-6 max-w-[70ch] text-sm text-fg-secondary">{d.what.trust}</p>
+              <p className="mt-1 text-sm">
+                <Link href={pagePath(locale, "privacy")} className="text-fg-accent underline underline-offset-4">
+                  {d.what.privacy}
+                </Link>
+              </p>
+            </Section>
+          </LandingPage>
         </main>
       </BarQueryRoot>
       <SiteFooter locale={locale} />

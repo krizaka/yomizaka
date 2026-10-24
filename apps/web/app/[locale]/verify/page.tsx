@@ -50,7 +50,7 @@ export default async function Verify({ params }: { params: Promise<{ locale: str
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
       <SiteHeader locale={locale} current="verify" />
-      <main id="content" className="pt-20">
+      <main id="content">
         <PageHero back={{ href: pagePath(locale, "home"), label: t.meta.siteName }} linkAs={Link} title={v.title} lead={v.lead} />
         <Page>
           <Section>

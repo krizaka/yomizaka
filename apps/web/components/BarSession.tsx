@@ -138,3 +138,28 @@ export function HeroActions({ locale, status }: { locale: Locale; status: string
   const me = useMe();
   return <HeroActionsView locale={locale} me={me.data ?? null} status={status} />;
 }
+
+/** The closing call's action — secondary, the hero's island keeps the one primary: signed in, the documents; signed out, the way in. */
+export function ClosingActionsView({ locale, me }: { locale: Locale; me: Me | null }) {
+  const t = translator(locale);
+  return (
+    <Button asChild variant="secondary" size="lg" shape="cut" data-testid="closing-action" data-session={me ? "in" : "out"}>
+      <Link href={me ? `/${locale}/app` : signInPath(locale)}>{me ? t("landing.openApp") : t("landing.signIn")}</Link>
+    </Button>
+  );
+}
+
+export function ClosingActions({ locale }: { locale: Locale }) {
+  const me = useMe();
+  return <ClosingActionsView locale={locale} me={me.data ?? null} />;
+}
+
+/** The closing call's sentence, by session: never « sign in » to someone who is. */
+export function ClosingBodyView({ me, signedOut, signedIn }: { me: Me | null; signedOut: string; signedIn: string }) {
+  return <span data-testid="closing-body">{me ? signedIn : signedOut}</span>;
+}
+
+export function ClosingBody({ signedOut, signedIn }: { signedOut: string; signedIn: string }) {
+  const me = useMe();
+  return <ClosingBodyView me={me.data ?? null} signedOut={signedOut} signedIn={signedIn} />;
+}

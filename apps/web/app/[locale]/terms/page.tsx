@@ -23,7 +23,7 @@ export default async function Terms({ params }: { params: Promise<{ locale: stri
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
       <SiteHeader locale={locale} current="terms" />
-      <main id="content" className="pt-20">
+      <main id="content">
         <PageHero back={{ href: pagePath(locale, "home"), label: t.meta.siteName }} linkAs={Link} title={t.terms.title} backdrop="plain" lead={TERMS_VERSION} />
         <Page>
           <Alert tone="warning">{t.terms.status}</Alert>

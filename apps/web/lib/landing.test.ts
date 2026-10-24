@@ -27,9 +27,25 @@ describe("the home is one short page: who it is for, one real check, one way in"
     expect(island).toContain('t("landing.openApp")');
   });
 
-  it("carries no template tell: no glow, no gradient backdrop, no sparkle, no figure counter, no mascot quote", () => {
-    expect(home).toContain('backdrop="plain"');
-    expect(home).not.toMatch(/NumberTicker|MascotQuote|LandingPage|GlowCard|Sparkle|shimmer/);
+  it("is the landing block with the product's answer beside the words (Y9): the recorded check in a browser frame, the run's figures, the three things as a bento, the owl once; no counter, no glow, no grid, no void above the hero", () => {
+    expect(home).toMatch(/<LandingPage\b/);
+    expect(home).toContain('data-testid="home-visual"');
+    expect(home).not.toMatch(/DeviceFrame/);
+    expect((home.match(/<BeforeAfter\b/g) ?? []).length).toBe(1);
+    // The closing call follows the session like the hero (F0): its islands, no sign-in link typed on the page.
+    expect(home).toContain("<ClosingActions locale={locale} />");
+    expect(home).toContain("<ClosingBody signedOut=");
+    expect(home).not.toContain("/sign-in`");
+    expect(home).toContain("proofs={[");
+    expect((home.match(/<MascotQuote\b/g) ?? []).length).toBe(1);
+    expect(home).not.toMatch(/NumberTicker|GlowCard|Sparkle|shimmer|grid\b/);
+    expect(home).not.toContain("pt-20");
+    expect(home).toContain("<main id=\"content\" data-landing>");
+    // LandingPage's hero frame pads itself with --kz-hero-top: nothing added on main (the offset would double).
+    expect(read("app/globals.css")).not.toMatch(/main\[data-landing\] \{\s*padding-top/);
+    expect(read("components/SiteChrome.tsx")).toContain("data-site-bar");
+    for (const page of ["privacy", "verify", "terms", "download"]) expect(read(`app/[locale]/${page}/page.tsx`), page).not.toContain("pt-20");
+    expect(read("app/globals.css")).toContain("--kz-hero-top: 5.75rem");
   });
 
   it("says its honest status, read from dev-preview.json: in development while a criterion still has a gap", () => {
