@@ -47,8 +47,8 @@
   created unverified; a mailed single-use link (24 h, keyed hash) confirms the address (a button, a POST, so a mail scanner
   cannot spend it); sign-in is refused (`EMAIL_NOT_VERIFIED`) until then. The terms and the privacy notice (Loi 25) must be
   accepted; their version and date are kept (`terms_version`). Abuse limits: per client address and per e-mail, one free
-  audit per account. `/terms` and the privacy notice carry placeholders marked « [TO BE REVIEWED BY THE LAWYER] » (refunds,
-  liability, transfers) until a member of the Barreau du Québec has read them. Every report and page says
+  audit per account. `/terms` and the privacy notice are drafts until a member of the Barreau du Québec has read them; the points
+  for that reading (refunds, liability, transfers outside Québec) are listed in the `lawyer-review` issues, not in the copy. Every report and page says
   « Vérification informative, ce n'est pas un avis juridique » and never uses « conforme » as a guarantee. The QA accounts of
   `company/QA.md` still exist (`apps/web/scripts/qa-accounts.mjs`, passwords from the environment, never printed).
 - The administration lives on **admin.yomizaka.com** (same app, host-routed by `proxy.ts`/`lib/host.ts` to `app/[locale]/(admin)/console`, never indexed; 404 on dev.yomizaka.com) and `/api/admin/*`; it needs a session, the ADMIN role **and** an address of
