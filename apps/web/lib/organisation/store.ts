@@ -216,12 +216,14 @@ export const tagsOf = (q: Query, owner: string, kind: TagTarget, ids: string[]):
 
 // ── reading a place ───────────────────────────────────────────────────────────────────────────────────────────────────
 
-const ALL_TAGS = `AND NOT EXISTS (SELECT 1 FROM unnest($TAGS::uuid[]) want(id) WHERE NOT EXISTS (SELECT 1 FROM document_tags dt WHERE dt.document_id = d.id AND dt.tag_id = want.id))`;
+/** The ALL-tags condition, its array bound to the placeholder `param` (e.g. `$4`): built, never `String.replace` with a `$` replacement. */
+export const allTagsClause = (param: `$${number}`): string =>
+  `AND NOT EXISTS (SELECT 1 FROM unnest(${param}::uuid[]) want(id) WHERE NOT EXISTS (SELECT 1 FROM document_tags dt WHERE dt.document_id = d.id AND dt.tag_id = want.id))`;
 
 /** The files of a collection (its root, or one of its folders), newest first, matching ALL the selected tags. */
 export async function browse(q: Query, owner: string, where: { collectionId: string; folderId?: string; tagIds: string[] }): Promise<{ documentIds: string[] }> {
   const rows = await q<{ id: string }>(
-    `SELECT d.id FROM documents d WHERE d.owner_id = $1 AND d.collection_id = $2 AND d.folder_id IS NOT DISTINCT FROM $3 ${ALL_TAGS.replace("$TAGS", "$4")} ORDER BY d.created_at DESC LIMIT 500`,
+    `SELECT d.id FROM documents d WHERE d.owner_id = $1 AND d.collection_id = $2 AND d.folder_id IS NOT DISTINCT FROM $3 ${allTagsClause("$4")} ORDER BY d.created_at DESC LIMIT 500`,
     [owner, where.collectionId, where.folderId ?? null, where.tagIds],
   );
   return { documentIds: rows.map((r) => r.id) };
