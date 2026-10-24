@@ -2,7 +2,7 @@ import { AUDIENCES, flowDefinition } from "@yomizaka/core";
 import { describe, expect, it } from "vitest";
 
 import { definitionFromForm, emptyForm, formFromDefinition } from "./flow-form";
-import { audiencesOf, type AvailableFlow, decideStart, flowsFor, offerFor, seedFlows } from "./flows";
+import { applicantFilesOffered, audiencesOf, type AvailableFlow, decideStart, flowsFor, offerFor, seedFlows } from "./flows";
 import { SEED_FLOWS } from "./flows-seed";
 
 /** ADR-0003: flows are data. These are the pure rules; the SQL is in flows.integration.test.ts. */
@@ -117,5 +117,18 @@ describe("the service contract is a second named ruleset of the same step", () =
     const def = SEED_FLOWS.find((f) => f.key === "file-check-freelancer")!.definition;
     expect(formFromDefinition(def).rulesets.QC).toBe("qc-invoice, qc-service-contract");
     expect(definitionFromForm(formFromDefinition(def)).steps[0]!.jurisdictions.map((j) => j.ruleset)).toEqual(["qc-invoice", "qc-service-contract"]);
+  });
+});
+
+describe("« Dossiers » is gated by the flow (yomizaka#319)", () => {
+  const screening = flow("tenant-screening", { audiences: ["landlord"] });
+  it("is offered to the audience of the applicant-file flow, and to whoever has not chosen a side yet", () => {
+    expect(applicantFilesOffered([screening], "landlord")).toBe(true);
+    expect(applicantFilesOffered([screening], null)).toBe(true);
+  });
+  it("is not offered to another audience, nor when the flow is not enabled", () => {
+    expect(applicantFilesOffered([screening], "tenant")).toBe(false);
+    expect(applicantFilesOffered([flow("lease-check", { audiences: ["landlord"] })], "landlord")).toBe(false);
+    expect(applicantFilesOffered([], "landlord")).toBe(false);
   });
 });

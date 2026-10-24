@@ -1,4 +1,15 @@
 {
+  "sections": {
+    "library": "Bibliothèque",
+    "files": "Dossiers",
+    "checks": "Vérifications",
+    "search": "Recherche"
+  },
+  "checksTabs": {
+    "label": "Sections des vérifications",
+    "checks": "Vérifications",
+    "lots": "Lots"
+  },
   "disclaimer": "Vérification informative, pas un avis juridique.",
   "preflight": {
     "empty": "Le fichier est vide.",

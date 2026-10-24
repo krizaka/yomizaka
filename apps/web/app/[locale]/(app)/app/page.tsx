@@ -8,7 +8,7 @@ import { listChecks } from "@/lib/checks";
 import { query } from "@/lib/db";
 import { documentsByIds } from "@/lib/documents";
 import { appEnvironment } from "@/lib/env";
-import { availableFlows, flowsFor, offerFor } from "@/lib/flows";
+import { applicantFilesOffered, availableFlows, offerFor } from "@/lib/flows";
 import { asLocale, getDictionary } from "@/lib/i18n";
 import { onboardingTarget } from "@/lib/library-screen";
 import * as org from "@/lib/organisation/store";
@@ -26,7 +26,7 @@ export default async function LibraryPage({ params }: { params: Promise<{ locale
   if (onboarding) redirect(`/${locale}${onboarding}`);
   const perspective = session?.account.perspective ?? null;
   const flows = await availableFlows(appEnvironment());
-  const screeningOffered = !!session && flows.some((f) => f.key === "tenant-screening" && flowsFor([f], perspective).length > 0);
+  const screeningOffered = !!session && applicantFilesOffered(flows, perspective);
   const owner = session?.account.id;
   if (!owner) return null;
   // The sweep: documents that were not kept and never checked are purged once their window has passed.

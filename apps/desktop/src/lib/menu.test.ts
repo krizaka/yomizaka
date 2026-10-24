@@ -1,21 +1,29 @@
 import { describe, expect, it } from "vitest";
 
-import en from "../i18n/own.en.json";
-import fr from "../i18n/own.fr.json";
-import { MENU_IDS, menuSpec } from "./menu";
+import sharedEn from "@yomizaka/client/messages/en.json";
+import sharedFr from "@yomizaka/client/messages/fr.json";
+import { sectionsFor } from "@yomizaka/core";
+import { describe as group } from "vitest";
+
+import ownEn from "../i18n/own.en.json";
+import ownFr from "../i18n/own.fr.json";
+import { MENU_IDS, macSections, menuSpec } from "./menu";
+import { sectionOf } from "./route";
+
+const fr = { ...ownFr, ...sharedFr };
+const en = { ...ownEn, ...sharedEn };
 
 describe("the native menu bar", () => {
-  it("is built in the app's words with the sidebar's shortcuts", () => {
+  it("is built in the app's words, its « Aller » menu from the section map with ⌘1 to ⌘4 (yomizaka#319)", () => {
     const spec = menuSpec(fr);
     expect(spec.labels.quit).toBe("Quitter Yomizaka");
     expect(spec.menus.map((m) => m.title)).toEqual(["Fichier", "Aller"]);
-    expect(spec.menus.flatMap((m) => m.items.map((i) => [i.id, i.accelerator]))).toEqual([
-      [MENU_IDS.addFolder, "CmdOrCtrl+O"],
-      [MENU_IDS.library, "CmdOrCtrl+1"],
-      [MENU_IDS.batches, "CmdOrCtrl+2"],
-      [MENU_IDS.reports, "CmdOrCtrl+3"],
-      [MENU_IDS.settings, "CmdOrCtrl+,"],
+    expect(spec.menus.flatMap((m) => m.items.map((i) => [i.id, i.label, i.accelerator]))).toEqual([
+      [MENU_IDS.addFolder, fr.menu.addFolder, "CmdOrCtrl+O"],
+      ...sectionsFor("mac").map((section, i) => [`go.${section.id}`, fr.sections[section.id], `CmdOrCtrl+${i + 1}`]),
+      [MENU_IDS.settings, fr.menu.settings, "CmdOrCtrl+,"],
     ]);
+    expect(spec.menus[1]?.items.slice(0, 2).map((i) => i.label)).toEqual(["Bibliothèque", "Vérifications"]);
     expect(Object.keys(spec.labels).sort()).toEqual(Object.keys(menuSpec(en).labels).sort());
   });
 
@@ -29,5 +37,18 @@ describe("the native menu bar", () => {
       }
       for (const label of Object.values(spec.labels)) expect(label.length).toBeLessThanOrEqual(60);
     }
+  });
+});
+
+group("the Mac's sidebar (yomizaka#319)", () => {
+  it("is the section map: Bibliothèque then Vérifications, numbered in the order shown", () => {
+    expect(macSections().map((s) => [s.id, s.shortcut])).toEqual(sectionsFor("mac").map((s, i) => [s.id, `mod+${i + 1}`]));
+  });
+  it("holds the batches (« Lots ») inside Vérifications, never as a destination of their own", () => {
+    expect(macSections().map((s) => s.id)).not.toContain("batches");
+    expect(macSections().find((s) => s.id === "checks")?.tabs).toEqual(["checks", "lots"]);
+    expect(sectionOf({ screen: "batches" })).toBe("checks");
+    expect(sectionOf({ screen: "batch", batchId: "b" })).toBe("checks");
+    expect(sectionOf({ screen: "reports" })).toBe("checks");
   });
 });

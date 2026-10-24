@@ -448,3 +448,5 @@ export * from "./steps";
 export * from "./batch";
 export * from "./document-store";
 export { memoryStore } from "./document-store-memory";
+
+export { CHECKS_TABS, type ChecksTab, PLATFORMS, type Platform, type Section, SECTION_IDS, type SectionId, SECTIONS, sectionShortcut, sectionsFor } from "./sections";
