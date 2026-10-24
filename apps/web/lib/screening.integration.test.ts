@@ -45,7 +45,11 @@ describe.runIf(enabled)("tenant screening (database)", () => {
     expect((await listForLandlord(landlord.id, NOW)).find((s) => s.id === id)).toMatchObject({ status: "consented", result: null });
     await share(token, NOW);
     expect((await listForLandlord(landlord.id, NOW)).find((s) => s.id === id)).toMatchObject({ status: "shared", result: { band: "no-concern" } });
-    expect(await actions(id)).toEqual(["screening.requested", "screening.consented", "screening.shared"]);
+    // The consent for the purpose is recorded before the provider runs (yomizaka#131): one active row, with the notice version.
+    expect(await actions(id)).toEqual(["screening.requested", "consent.granted", "screening.consented", "screening.shared"]);
+    const [consentRow] = await query<{ purpose: string; notice_version: string; withdrawn_at: Date | null }>("SELECT purpose, notice_version, withdrawn_at FROM application_consents WHERE screening_id = $1", [id]);
+    expect(consentRow).toMatchObject({ purpose: "COURT_RECORDS", withdrawn_at: null });
+    expect(consentRow!.notice_version).toMatch(/^\d{4}-\d{2}-\d{2}\.\d+$/);
   });
 
   it("stores a minimal result: no raw report, no score, no identity beyond the request", async () => {
