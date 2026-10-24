@@ -23,6 +23,7 @@ const PUBLIC: Record<string, string> = {
   healthz: "the platform's health probe",
   "screenings/respond": "the applicant's own link (a token), not a member",
   "applicant": "the applicant's own link (a token), not a member: the notice, consent per purpose, erasure (yomizaka#131)",
+  "applicant/documents": "the applicant's own link (a token, open and consented): one document of the file, checked and purged (yomizaka#127)",
   "showcase": "the home's recorded sample, nothing personal",
   "showcase/file": "the home's recorded sample, nothing personal",
   "webhooks/payments": "signed by the payment vendor, refused without its signature",

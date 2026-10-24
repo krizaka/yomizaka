@@ -8,15 +8,16 @@ import type { DocumentStore } from "./storage/port";
  * The applicant's consent (yomizaka#131, Loi 25). The subject is the APPLICATION (a screening row, one per applicant and
  * landlord request); consent is recorded per purpose, with the notice version the applicant was shown, the date and the
  * means. Withdrawal stops further checks; erasure deletes what was kept. The purposes are the engine's external-check
- * purposes (orazaka-ai-engine `CheckPurpose`: COURT_RECORDS, CREDIT) plus DOCUMENT_CHECK, the analysis of the document itself.
+ * purposes (orazaka-ai-engine `CheckPurpose`: COURT_RECORDS, CREDIT) plus DOCUMENT_CHECK, the analysis of the document itself,
+ * and DOCUMENT_KEEP, the keeping of the applicant file's documents until the manager's decision (yomizaka#127).
  */
 
-export const CONSENT_PURPOSE = { DOCUMENT_CHECK: "DOCUMENT_CHECK", COURT_RECORDS: "COURT_RECORDS", CREDIT: "CREDIT" } as const;
+export const CONSENT_PURPOSE = { DOCUMENT_CHECK: "DOCUMENT_CHECK", COURT_RECORDS: "COURT_RECORDS", CREDIT: "CREDIT", DOCUMENT_KEEP: "DOCUMENT_KEEP" } as const;
 export type ConsentPurpose = (typeof CONSENT_PURPOSE)[keyof typeof CONSENT_PURPOSE];
 export const CONSENT_PURPOSES = Object.values(CONSENT_PURPOSE) as ConsentPurpose[];
 
 /** The version of the notice (messages `applicant.notice`). Changing the text changes this, and a consent to an old one is refused. */
-export const NOTICE_VERSION = "2026-10-24.1";
+export const NOTICE_VERSION = "2026-10-24.2";
 /** The application status once erased (its personal fields are gone). */
 export const APPLICATION_ERASED = "erased" as const;
 /** How consent was given: the applicant's own form, on the link they received. */
@@ -59,7 +60,8 @@ export async function grantConsent(screeningId: string, purpose: ConsentPurpose,
 export async function withdrawConsent(screeningId: string, purpose: ConsentPurpose, now: Date, headers?: Headers): Promise<boolean> {
   const rows = await query<{ id: string }>("UPDATE application_consents SET withdrawn_at = $3 WHERE screening_id = $1 AND purpose = $2 AND withdrawn_at IS NULL RETURNING id", [screeningId, purpose, now]);
   if (!rows.length) return false;
-  if (purpose !== CONSENT_PURPOSE.DOCUMENT_CHECK) {
+  // Only the check purposes decline a pending request or delete a held result; the document purposes stop their analyses only.
+  if (purpose === CONSENT_PURPOSE.COURT_RECORDS || purpose === CONSENT_PURPOSE.CREDIT) {
     await query("UPDATE screenings SET status = 'declined' WHERE id = $1 AND status = 'requested'", [screeningId]);
     await query("UPDATE screenings SET result = NULL, result_expires_at = NULL, contest_comment = NULL, purged_at = $2 WHERE id = $1 AND result IS NOT NULL", [screeningId, now]);
   }

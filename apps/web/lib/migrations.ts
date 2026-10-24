@@ -534,7 +534,49 @@ ALTER TABLE documents ADD COLUMN screening_id uuid REFERENCES screenings(id) ON 
 CREATE INDEX documents_screening ON documents(screening_id) WHERE screening_id IS NOT NULL;
 
 ALTER TABLE screenings DROP CONSTRAINT IF EXISTS screenings_status_check;
-ALTER TABLE screenings ADD CONSTRAINT screenings_status_check CHECK (status IN ('requested', 'consented', 'shared', 'declined', 'contested', 'expired', 'erased'));
+ALTER TABLE screenings ADD CONSTRAINT screenings_status_check CHECK (status IN ('requested', 'consented', 'shared', 'declined', 'contested', 'expired', 'erased'));`,
+  },
+  {
+    version: "0031_applicant_file",
+    // yomizaka#127: the applicant file. A manager asks for a file (a screening row with flow 'file', its link and the document
+    // types asked for); the applicant consents per purpose, then uploads. Document types and retention policies are rows: a
+    // new type needs no deploy. The link is revoked, used (submitted) or closed (the manager's decision); its files are purged
+    // after the check, or after the decision when the applicant consented to keep them (DOCUMENT_KEEP).
+    sql: `
+CREATE TABLE retention_policies (
+  id       text PRIMARY KEY CHECK (id ~ '^[a-z0-9-]{2,40}$'),
+  purge_on text NOT NULL CHECK (purge_on IN ('after-check', 'after-decision'))
+);
+INSERT INTO retention_policies (id, purge_on) VALUES ('after-check', 'after-check'), ('after-decision', 'after-decision');
+
+CREATE TABLE document_types (
+  id               text PRIMARY KEY CHECK (id ~ '^[a-z0-9-]{2,40}$'),
+  accepted_kinds   text[] NOT NULL DEFAULT '{pdf}' CHECK (accepted_kinds <@ ARRAY['pdf']::text[]),
+  studios          text[] NOT NULL DEFAULT '{document-authenticity,compliance-check}' CHECK (studios <@ ARRAY['document-authenticity', 'compliance-check']::text[]),
+  fields           text[] NOT NULL DEFAULT '{}',
+  retention_policy text NOT NULL DEFAULT 'after-check' REFERENCES retention_policies(id),
+  active           boolean NOT NULL DEFAULT true,
+  position         integer NOT NULL DEFAULT 0
+);
+INSERT INTO document_types (id, fields, retention_policy, position) VALUES
+  ('pay-stub', '{employer,pay-period}', 'after-decision', 1),
+  ('bank-statement', '{statement-period}', 'after-decision', 2),
+  ('employment-letter', '{employer,position,start-date}', 'after-decision', 3),
+  ('identity-document', '{full-name}', 'after-check', 4);
+
+-- The applicant may keep a document until the manager's decision (a consent, with the notice version, like the others).
+ALTER TABLE application_consents DROP CONSTRAINT IF EXISTS application_consents_purpose_check;
+ALTER TABLE application_consents ADD CONSTRAINT application_consents_purpose_check CHECK (purpose IN ('DOCUMENT_CHECK', 'COURT_RECORDS', 'CREDIT', 'DOCUMENT_KEEP'));
+
+ALTER TABLE screenings ADD COLUMN flow text NOT NULL DEFAULT 'screening' CHECK (flow IN ('screening', 'file'));
+ALTER TABLE screenings ADD COLUMN requested_types text[] NOT NULL DEFAULT '{}';
+ALTER TABLE screenings ADD COLUMN revoked_at timestamptz;
+ALTER TABLE screenings ADD COLUMN submitted_at timestamptz;
+ALTER TABLE screenings ADD COLUMN closed_at timestamptz;
+
+ALTER TABLE documents ADD COLUMN document_type text REFERENCES document_types(id);
+ALTER TABLE documents ADD COLUMN retention_policy text REFERENCES retention_policies(id);
+ALTER TABLE documents ADD COLUMN checks_skipped jsonb NOT NULL DEFAULT '[]';
 `,
   },
 ];

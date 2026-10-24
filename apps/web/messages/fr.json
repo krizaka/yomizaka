@@ -1722,7 +1722,7 @@
         "whoTitle": "Qui le voit",
         "who": "Le propriétaire qui demande la vérification voit le rapport. Yomizaka et son sous-traitant pour l'analyse (Orazaka) traitent le fichier pour l'exécuter. Personne d'autre. [À RÉVISER PAR L'AVOCAT]",
         "howLongTitle": "Combien de temps c'est conservé",
-        "howLong": "Par défaut, un document est supprimé dès que sa vérification est terminée. Un résultat est supprimé {days} jours après avoir été donné. Le propriétaire peut choisir de conserver un document, et vous pouvez toujours en demander la suppression. [À RÉVISER PAR L'AVOCAT]",
+        "howLong": "Par défaut, un document est supprimé dès que sa vérification est terminée. Si vous consentez à le garder (« Garder mes documents jusqu'à la décision du propriétaire »), il est gardé jusqu'à la décision du propriétaire, puis supprimé. Un résultat est supprimé {days} jours après avoir été donné. Vous pouvez toujours en demander la suppression. [À RÉVISER PAR L'AVOCAT]",
         "askTitle": "Comment demander la suppression",
         "ask": "Utilisez l'action « Supprimer mes documents » du lien que vous avez reçu. Elle supprime immédiatement vos documents et le résultat, et ne garde qu'une trace sans renseignement personnel. Vous pouvez aussi retirer un consentement ici, et demander l'accès à vos renseignements ou leur rectification.",
         "notAsked": "Jamais demandés : votre numéro d'assurance sociale (NAS), les renseignements de votre carte ou de votre compte bancaire, vos renseignements de santé ou familiaux.",
@@ -1740,6 +1740,10 @@
         "CREDIT": {
           "label": "Vérifier mon dossier de crédit",
           "what": "Lit, avec votre consentement, un rapport de crédit lorsqu'il est demandé."
+        },
+        "DOCUMENT_KEEP": {
+          "label": "Garder mes documents jusqu'à la décision du propriétaire",
+          "what": "Sans cela, chaque document est supprimé dès que sa vérification est terminée. Avec cela, les documents sont gardés jusqu'à la décision du propriétaire."
         }
       },
       "consent": "J'ai lu l'avis (version {version}) et je consens à cette vérification",
@@ -1754,6 +1758,86 @@
         "APPLICATION_ERASED": "Cette demande a été supprimée."
       }
     },
+  "applicantFile": {
+    "title": "Vos documents",
+    "intro": "Le propriétaire demande les documents ci-dessous. Envoyez chacun en PDF. Chaque document est vérifié pour des signes de modification et d'incohérence. Le rapport est informatif, ce n'est pas un avis juridique, et une personne décide.",
+    "upload": "Envoyer un document",
+    "uploaded": "Document reçu.",
+    "none": "Aucun document envoyé pour l'instant.",
+    "submit": "Envoyer mon dossier",
+    "submitted": "Votre dossier a été envoyé. Vous pouvez toujours retirer un consentement ou demander la suppression de vos documents.",
+    "expires": "Ce lien expire le {date}.",
+    "limits": "Ce que le rapport ne montre pas : il ne décide rien, ne note jamais la personne et ne remplace pas une vérification humaine.",
+    "refusal": "Ce document n'est pas nécessaire à la vérification et n'est pas demandé.",
+    "types": {
+      "pay-stub": {
+        "label": "Talon de paie",
+        "what": "Votre plus récent talon de paie, en PDF."
+      },
+      "bank-statement": {
+        "label": "Relevé bancaire",
+        "what": "Un relevé récent du compte où vos revenus sont déposés, en PDF."
+      },
+      "employment-letter": {
+        "label": "Lettre d'emploi",
+        "what": "Une lettre de votre employeur confirmant votre poste et votre date d'entrée, en PDF."
+      },
+      "identity-document": {
+        "label": "Pièce d'identité",
+        "what": "Un document qui montre votre nom complet, en PDF. Seul ce qui est nécessaire est lu."
+      }
+    },
+    "fields": {
+      "employer": "Employeur",
+      "pay-period": "Période de paie",
+      "statement-period": "Période du relevé",
+      "position": "Poste",
+      "start-date": "Date d'entrée",
+      "full-name": "Nom complet"
+    },
+    "checks": {
+      "document-authenticity": {
+        "label": "Authenticité du fichier",
+        "what": "Examine le fichier lui-même : son producteur, ses dates et ses enregistrements. Il décrit le fichier, pas la personne."
+      },
+      "compliance-check": {
+        "label": "Cohérence du texte",
+        "what": "Lit le texte du document et le compare aux règles du Québec."
+      }
+    },
+    "skipped": {
+      "NO_TEXT": "Aucun texte n'a pu être lu dans ce document : cette vérification n'a pas été faite.",
+      "PAYWALL": "Vérification non faite : il ne reste plus de vérification pour le propriétaire.",
+      "UNAVAILABLE": "La vérification n'a pas pu être faite pour l'instant.",
+      "REFUSED": "La vérification n'a pas été faite pour ce document."
+    },
+    "status": {
+      "open": "Ouvert",
+      "revoked": "Révoqué",
+      "expired": "Expiré",
+      "used": "Envoyé",
+      "closed": "Clos",
+      "erased": "Supprimé"
+    },
+    "error": {
+      "LINK_REVOKED": "Ce lien a été révoqué.",
+      "LINK_EXPIRED": "Ce lien a expiré.",
+      "LINK_USED": "Ce dossier a déjà été envoyé.",
+      "FILE_CLOSED": "Ce dossier a été clos.",
+      "APPLICATION_ERASED": "Cette demande a été supprimée.",
+      "TYPE_NOT_REQUESTED": "Ce document n'a pas été demandé.",
+      "TOO_MANY_DOCUMENTS": "Ce dossier contient déjà le nombre maximal de documents.",
+      "FILE_NOT_ACCEPTED": "Ce document doit être envoyé en PDF.",
+      "DUPLICATE_DOCUMENT": "Ce fichier a déjà été envoyé.",
+      "NO_DOCUMENT": "Envoyez au moins un document avant de soumettre le dossier.",
+      "TYPE_NOT_NECESSARY": "Ce document n'est pas nécessaire et ne peut pas être demandé.",
+      "TYPE_UNKNOWN": "Type de document inconnu.",
+      "STORAGE_UNAVAILABLE": "Le stockage qui contient ces documents n'est pas disponible.",
+      "PURPOSE_NOT_IN_FILE": "Cette finalité ne concerne pas un dossier de documents.",
+      "CONSENT_REQUIRED": "Aucun document n'est vérifié sans votre consentement pour cette finalité.",
+      "NOT_FOUND": "Introuvable."
+    }
+  },
   "screening": {
     "tenant": {
       "title": "Une demande de vérification de votre dossier",
