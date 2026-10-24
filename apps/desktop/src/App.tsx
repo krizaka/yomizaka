@@ -1,9 +1,11 @@
-import { BatchIcon, DebriefIcon, HomeIcon, LogoutIcon, SettingsIcon } from "@krizaka/icons";
+import { CheckIcon, HomeIcon, LogoutIcon, SearchIcon, SettingsIcon, UsersIcon } from "@krizaka/icons";
 import { useQuery } from "@krizaka/query";
 import { YomizakaLogo } from "@krizaka/ui";
 import { AccountMenu } from "@krizaka/ui/account-menu";
 import { AppShell } from "@krizaka/ui/app-shell";
+import { Tabs } from "@krizaka/ui/tabs";
 import { ThemeToggle } from "@krizaka/ui/theme";
+import { CHECKS_TABS, type ChecksTab, type SectionId } from "@yomizaka/core";
 import { useCallback, useEffect, useState } from "react";
 
 import { BatchesView, BatchView } from "./components/Batches";
@@ -15,7 +17,7 @@ import { SignIn } from "./components/SignIn";
 import { I18nProvider, type Locale, LOCALES, currentLocale, rememberLocale, useI18n } from "./i18n";
 import { APP_VERSION, queries, yomizaka } from "./lib/config";
 import { bridge, folders, followLinks, setNativeMenu } from "./lib/desktop";
-import { MENU_IDS, menuSpec, SHORTCUTS } from "./lib/menu";
+import { macSections, MENU_IDS, menuSpec } from "./lib/menu";
 import { hashOf, type Route, routeOfLink, sectionOf } from "./lib/route";
 import { AUTH, useAuth } from "./lib/use-auth";
 import { useRoute } from "./lib/use-route";
@@ -34,6 +36,10 @@ export function App() {
 }
 
 const LANGUAGE_NAMES: Record<Locale, string> = { fr: "Français", en: "English" };
+const SECTION_ICONS: Record<SectionId, typeof HomeIcon> = { library: HomeIcon, files: UsersIcon, checks: CheckIcon, search: SearchIcon };
+/** Where a destination of the section map opens: Vérifications opens on its first tab, the checked documents. */
+const SECTION_ROUTES: Partial<Record<SectionId, Route>> = { library: { screen: "library", folder: null }, checks: { screen: "reports" } };
+const TAB_ROUTES: Record<ChecksTab, Route> = { checks: { screen: "reports" }, lots: { screen: "batches" } };
 
 /**
  * Signed out, the sign-in; signed in, the window (krizaka-ui ADR-002: `AppShell desktop`, its header and sidebar are the
@@ -54,11 +60,9 @@ function Gate({ onLocale }: { onLocale: (locale: Locale) => void }) {
   );
   useEffect(() => {
     if (status !== AUTH.signedIn) return;
-    const handlers = {
+    const handlers: Record<string, () => void> = {
       [MENU_IDS.addFolder]: addFolder,
-      [MENU_IDS.library]: () => go({ screen: "library", folder: null }),
-      [MENU_IDS.batches]: () => go({ screen: "batches" }),
-      [MENU_IDS.reports]: () => go({ screen: "reports" }),
+      ...Object.fromEntries(macSections().flatMap((s) => (SECTION_ROUTES[s.id] ? [[s.menuId, () => go(SECTION_ROUTES[s.id]!)]] : []))),
       [MENU_IDS.settings]: () => go({ screen: "settings" }),
     };
     const stops = [setNativeMenu(bridge, menuSpec(messages), handlers), followLinks(bridge, (link) => go(routeOfLink(link)))];
@@ -82,13 +86,18 @@ function Gate({ onLocale }: { onLocale: (locale: Locale) => void }) {
         closeLabel={t("shell.close")}
         footer={<AppShell.Item icon={<SettingsIcon size={16} />} label={t("nav.settings")} {...item({ screen: "settings" }, section === "settings")} />}
       >
-        <AppShell.Item icon={<HomeIcon size={16} />} label={t("nav.library")} shortcut={SHORTCUTS.library} {...item({ screen: "library", folder: null }, section === "library")} />
-        <AppShell.Item icon={<BatchIcon size={16} />} label={t("nav.batches")} shortcut={SHORTCUTS.batches} {...item({ screen: "batches" }, section === "batches")} />
-        <AppShell.Item icon={<DebriefIcon size={16} />} label={t("nav.reports")} shortcut={SHORTCUTS.reports} {...item({ screen: "reports" }, section === "reports")} />
+        {/* The section map of @yomizaka/core, the same as the web's rail and the phone's tabs (yomizaka#319). */}
+        {macSections().flatMap((s) => {
+          const to = SECTION_ROUTES[s.id];
+          if (!to) return [];
+          const Icon = SECTION_ICONS[s.id];
+          return [<AppShell.Item key={s.id} icon={<Icon size={16} />} label={t(`sections.${s.id}`)} shortcut={s.shortcut} {...item(to, section === s.id)} />];
+        })}
       </AppShell.Sidebar>
       <AppShell.Body>
-        <AppShell.Header title={t(`nav.${section}`)} menuLabel={t("shell.menu")} actions={<Account locale={locale} onLocale={onLocale} go={go} />} />
+        <AppShell.Header title={section === "settings" ? t("nav.settings") : t(`sections.${section}`)} menuLabel={t("shell.menu")} actions={<Account locale={locale} onLocale={onLocale} go={go} />} />
         <AppShell.Main className="min-h-0">
+          {route.screen === "reports" || route.screen === "batches" ? <ChecksTabs current={hashOf(route)} /> : null}
           {route.screen === "library" ? <Library folder={route.folder} go={go} onAddFolder={addFolder} /> : null}
           {route.screen === "check" ? <CheckView documentId={route.documentId} analysisId={route.analysisId} go={go} /> : null}
           {route.screen === "document" ? <DocumentView documentId={route.documentId} go={go} /> : null}
@@ -99,6 +108,20 @@ function Gate({ onLocale }: { onLocale: (locale: Locale) => void }) {
         </AppShell.Main>
       </AppShell.Body>
     </AppShell.Root>
+  );
+}
+
+/** Vérifications holds the batches as its second tab (« Lots »), as on the web and the phone: each tab is its own hash. */
+function ChecksTabs({ current }: { current: string }) {
+  const { t } = useI18n();
+  return (
+    <Tabs.Nav label={t("checksTabs.label")} current={current} className="mb-4">
+      {CHECKS_TABS.map((tab) => (
+        <Tabs.NavLink key={tab} href={hashOf(TAB_ROUTES[tab])} exact>
+          {t(`checksTabs.${tab}`)}
+        </Tabs.NavLink>
+      ))}
+    </Tabs.Nav>
   );
 }
 

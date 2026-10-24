@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { movedDocumentTab,OLD_DOCUMENT_TABS } from "@yomizaka/core";
+import { movedDocumentTab, OLD_DOCUMENT_TABS, SECTIONS } from "@yomizaka/core";
 import { describe, expect, it } from "vitest";
 
 import { activeNav, CHECKS_TABS, checksTabHref, checksTabOf, CONSOLE_ROUTES, DOCUMENT_TABS, isDocumentTab, isSettingsSection, movedDocumentHref, searchOf,SETTINGS_SECTIONS, withoutLocale } from "./console-nav";
@@ -17,7 +17,7 @@ describe("the rail's active entry comes from the route", () => {
     ["/en/app/documents/abc/verifications", "library"],
     ["/fr/app/bibliotheque/lib/coll", "library"],
     ["/fr/app/bibliotheque/lib/coll/folder", "library"],
-    ["/fr/app/screening", "library"],
+    ["/fr/app/screening", "files"],
     ["/fr/app/verifications", "checks"],
     ["/fr/app/verifications/", "checks"],
     ["/fr/app/verifier", "checks"],
@@ -27,6 +27,9 @@ describe("the rail's active entry comes from the route", () => {
     ["/fr/app/settings", "account"],
     ["/fr/app/settings/profil", "account"],
   ])("%s → %s", (path, nav) => expect(activeNav(path)).toBe(nav));
+  it("its routes are the section map's addresses (yomizaka#319)", () => {
+    for (const section of SECTIONS) expect(CONSOLE_ROUTES[section.id], section.id).toBe(section.path);
+  });
   it("an unknown path belongs to no entry", () => {
     expect(activeNav("/fr/elsewhere")).toBeNull();
   });
@@ -127,9 +130,10 @@ describe("the settings' sections are routes", () => {
 describe("the shell follows Orazaka's pattern (krizaka/yomizaka#278, the UX review's Y1)", () => {
   const shell = read("components/console/ConsoleShell.tsx");
   const railItems = shell.match(/<RailNav\.Item\b/g) ?? [];
-  it("the rail holds the three destinations only — no footer, no « + » action, no settings cog", () => {
-    expect(railItems).toHaveLength(3);
-    for (const route of [CONSOLE_ROUTES.library, CONSOLE_ROUTES.checks, CONSOLE_ROUTES.search]) expect(shell).toContain(`href(CONSOLE_ROUTES.${Object.entries(CONSOLE_ROUTES).find(([, v]) => v === route)![0]})`);
+  it("the rail holds the section map's destinations only (yomizaka#319) — no footer, no « + » action, no settings cog", () => {
+    expect(railItems).toHaveLength(1);
+    expect(shell).toContain('sectionsFor("web", { applicantFiles })');
+    expect(shell).toContain("<Link href={href(section.path)} />");
     expect(shell).not.toContain("footer={");
     expect(shell).not.toMatch(/<RailNav\.Item[^>]*PlusIcon/);
     expect(shell).not.toMatch(/<RailNav\.Item[^>]*SettingsIcon/);

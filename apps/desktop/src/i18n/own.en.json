@@ -5,9 +5,6 @@
   },
   "nav": {
     "label": "Main navigation",
-    "library": "Library",
-    "batches": "Batches",
-    "reports": "Reports",
     "settings": "Settings",
     "signOut": "Sign out"
   },

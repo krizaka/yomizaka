@@ -1,4 +1,15 @@
 {
+  "sections": {
+    "library": "Library",
+    "files": "Applicant files",
+    "checks": "Checks",
+    "search": "Search"
+  },
+  "checksTabs": {
+    "label": "Checks sections",
+    "checks": "Checks",
+    "lots": "Batches"
+  },
   "disclaimer": "Informational check, not legal advice.",
   "preflight": {
     "empty": "The file is empty.",

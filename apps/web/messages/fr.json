@@ -169,6 +169,12 @@
       "forgotLink": "Mot de passe oublié ?",
       "resetNotice": "Votre mot de passe est changé. Connectez-vous avec le nouveau."
     },
+    "sections": {
+      "library": "Bibliothèque",
+      "files": "Dossiers",
+      "checks": "Vérifications",
+      "search": "Recherche"
+    },
     "shell": {
       "skip": "Aller au contenu",
       "sidebarLabel": "Yomizaka",

@@ -34,14 +34,17 @@ describe("a web link opens the same place in the Mac app", () => {
 
   it("opens the library for any other path", () => {
     for (const link of ["/app", "/app/recherche", "/tarifs", "/", ""]) expect(routeOfLink(link)).toEqual(HOME);
+    // Vérifications and its « Lots » tab, at the web's address (yomizaka#319).
+    expect(routeOfLink("/app/verifications")).toEqual({ screen: "reports" });
+    expect(routeOfLink("/app/verifications?tab=lots")).toEqual({ screen: "batches" });
   });
 });
 
 describe("the sidebar", () => {
   it("lights the entry each screen belongs to", () => {
     expect(sectionOf({ screen: "check", documentId: "d", analysisId: "a" })).toBe("library");
-    expect(sectionOf({ screen: "batch", batchId: "b" })).toBe("batches");
-    expect(sectionOf({ screen: "document", documentId: "d" })).toBe("reports");
+    expect(sectionOf({ screen: "batch", batchId: "b" })).toBe("checks");
+    expect(sectionOf({ screen: "document", documentId: "d" })).toBe("checks");
     expect(sectionOf({ screen: "settings" })).toBe("settings");
   });
 });

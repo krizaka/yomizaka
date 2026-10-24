@@ -69,6 +69,12 @@ export function audiencesOf(flows: readonly AvailableFlow[]): { audience: Audien
 /** What a person is offered on a document: the flows of their audience (all of them until they chose a side). */
 export const flowsFor = (flows: readonly AvailableFlow[], audience: Audience | null): AvailableFlow[] => (audience ? flows.filter((f) => f.definition.audiences.includes(audience)) : [...flows]);
 
+/** The flow that carries the applicant files (yomizaka#127: a screening row of flow « file »). */
+export const APPLICANT_FILE_FLOW = "tenant-screening";
+
+/** Whether « Dossiers » is offered: the applicant-file flow is enabled and offered to this person's audience (yomizaka#319). */
+export const applicantFilesOffered = (flows: readonly AvailableFlow[], audience: Audience | null): boolean => flowsFor(flows, audience).some((f) => f.key === APPLICANT_FILE_FLOW);
+
 export const offerFor = (flows: readonly AvailableFlow[], audience: Audience | null) => offerOf(flowsFor(flows, audience).map((f) => f.definition));
 
 /** Without any enabled flow the status words fall back to the vocabulary's own (`AUDIENCE_STATUS`) — used only by tests of the fallback. */
