@@ -37,8 +37,8 @@ function lease(rng, flaw) {
     ...banner("bail de logement"),
     "BAIL DE LOGEMENT",
     `Logement : ${address(rng)}`,
-    `Locateur : ${landlord} (fictif), ${address(rng)}`,
-    `Locataire : ${tenant} (fictif)`,
+    `Locateur : ${landlord} (fictif), domicilié au ${address(rng)}`,
+    `Locataire : ${tenant} (fictif), domicilié à Montréal.`,
     "Durée : 12 mois, du 1er juillet 2026 au 30 juin 2027.",
     `Loyer mensuel : ${money(rent * 100)}, payable le premier jour du mois.`,
     // The mandatory notice of the lowest rent of the last twelve months (the form's section G): a lease without it is not clean.
