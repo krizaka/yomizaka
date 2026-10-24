@@ -57,14 +57,14 @@ report. What remains is ranked by its effect on Éric.
 | # | Finding | Evidence | Direction |
 | :-- | :-- | :-- | :-- |
 | 1 | **The kind picker of « Vérifier un document » is unstyled**: icons, names and hints are glued together (« AutomatiqueYomizaka le reconnaît »), with bare check marks. `ChoiceGrid`'s styles ship only in `story.css`, which a product does not import. | [desktop](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/audit/check-desktop-dark.png) · [phone](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/audit/check-phone-light.png) | `ChoiceCards` (a form control, not a story block), asked only when the kind is uncertain (§ 5.4) |
-| 2 | **The Mac app wears the Cahier's faces.** `apps/desktop` imports the tokens but not `blocks.css`, where the plain product faces live, so its headings fall back to `"Young Serif", Georgia` and its codes to Courier New. The prototype showed the same thing until `blocks.css` was added. | `apps/desktop/src/styles.css`; `--kz-font-display` in `@krizaka/tokens` 3.50 | The plain faces move into the brand tokens (upstream U1) |
-| 3 | **Mono labels on the face**: the report's eyebrow (`Facture · facture-2026-04-total-faux.pdf` in accent mono), finding codes (`INVOICE-TOTAL-MISMATCH`, `DOCUMENT-EXPIRED`), « Ce que la chouette promet » on the home, and run ids as a whole table column on Vérifications. In a pro app, mono reads as raw data. | [report](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/audit/report-1-desktop-light.png) · [checks](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/audit/verifications-desktop-dark.png) | Mono only for code, inside « Détails techniques » (upstream U2) |
+| 2 | **The Mac app wears the Cahier's faces.** `apps/desktop` imports the tokens but not `blocks.css`, where the plain product faces live, so its headings fall back to `"Young Serif", Georgia` and its codes to Courier New. The prototype showed the same thing until `blocks.css` was added. | `apps/desktop/src/styles.css`; `--kz-font-display` in `@krizaka/tokens` 3.50 | The plain faces move into the brand tokens (upstream U1, krizaka-ui#632) |
+| 3 | **Mono labels on the face**: the report's eyebrow (`Facture · facture-2026-04-total-faux.pdf` in accent mono), finding codes (`INVOICE-TOTAL-MISMATCH`, `DOCUMENT-EXPIRED`), « Ce que la chouette promet » on the home, and run ids as a whole table column on Vérifications. In a pro app, mono reads as raw data. | [report](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/audit/report-1-desktop-light.png) · [checks](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/audit/verifications-desktop-dark.png) | Mono only for code, inside « Détails techniques » (upstream U2, krizaka-ui#633) |
 | 4 | **The report ends in two forms**: « Traces de modification » (an issuer field and a button) and « Au regard de la loi » (kind, date and a second button) sit under the findings, with two « Lancer la vérification » buttons, one primary. The header's « À regarder » chip and the finding's « Incohérent » chip disagree in tone. | [invoice report](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/audit/report-1-desktop-light.png) · [phone](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/audit/report-2-phone-dark.png) · [lease](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/audit/report-lease-desktop-dark.png) | The other checks become actions in the aside, and one tone vocabulary is used (§ 3.4) |
 | 5 | **Applicant files exist only as a collection.** The API of #307 is complete (link, consent, uploads, close), but « the screens are not built ». The demo fakes a file with the collection « Candidats — 4½ Villeray », whose pay stubs and letters are typed « Autre », and `/app/screening` is a 404 for Éric. | [collection](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/audit/collection-desktop-dark.png) · [library](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/audit/library-desktop-dark.png) | The « Dossiers » destination (§ 4) |
-| 6 | **Phone lists are boxes in a box**: Vérifications prints four label/value rows per check, so four checks fill a 360 px screen. | [phone](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/audit/verifications-phone-light.png) | List rows on a phone (upstream U5) |
+| 6 | **Phone lists are boxes in a box**: Vérifications prints four label/value rows per check, so four checks fill a 360 px screen. | [phone](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/audit/verifications-phone-light.png) | List rows on a phone (upstream U5, krizaka-ui#636) |
 | 7 | **The library home is three lists stacked**: the latest checks, four collection cards whose descriptions repeat « Dernière vérification », then a 20-row « Récents » table with paging, 2 206 px tall. Nothing says what needs Éric today. | [desktop](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/audit/library-desktop-dark.png) · [phone](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/audit/library-phone-light-first.png) | « À traiter » first; the full table goes to the collections and search (§ 5.1) |
 | 8 | **Three section maps.** Web: Bibliothèque · Vérifications · Recherche. Phone (`apps/mobile`): Vérifier · Bibliothèque · Réglages, with the settings as a tab. Mac (`apps/desktop`): Library · Batches · Reports. | `ConsoleShell.tsx`, `apps/mobile/app/[locale]/app/_layout.tsx`, `apps/desktop/src/App.tsx` | One map in `packages/core` (§ 3.6) |
-| 9 | **One glyph, two meanings**: the lease is `HomeIcon` (the library's icon too), « Autre » is `MoreIcon` (also « more actions »), the contract is a pencil, and the collections wear a bookmark. | [check](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/audit/check-desktop-dark.png) | Document and place icons (upstream U6) |
+| 9 | **One glyph, two meanings**: the lease is `HomeIcon` (the library's icon too), « Autre » is `MoreIcon` (also « more actions »), the contract is a pencil, and the collections wear a bookmark. | [check](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/audit/check-desktop-dark.png) | Document and place icons (upstream U6, krizaka-ui#637) |
 | 10 | **The public home still carries Cahier tells**: a red mono eyebrow (« Québec · baux, contrats, factures »), the figures row under the hero (a tell ADR-004 retired), a 2 + 1 orphan card grid, and a mono bird caption. Its blocks are hidden until they are scrolled to (`data-reveal`, opacity 0), so a full-page capture shows a 700 px void. | [first screen](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/audit/home-desktop-light-first.png) · [scrolled](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/audit/home-desktop-light-scrolled.png) | Plain, as a product (§ 3.2) |
 | 11 | **Sign-up says closed** on the deployed site (« L'inscription est fermée »), while `AGENTS.md` § 4 records it open since 2026-10-21. This is configuration, not design; it is noted again because both pages promise something. | [sign-in](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/audit/sign-in-phone-light-first.png) · [sign-up](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/audit/sign-up-desktop-dark.png) | Not in this direction |
 | 12 | **Billing is correct and bare**: plan, paid audits left, a test-mode alert, « Passer à Pro » and « Payer cet audit ». It needs no redesign, only the shared figures style (tabular). | [billing](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/314/audit/billing-desktop-dark.png) | Unchanged |
@@ -306,7 +306,7 @@ with a selection: [desktop](https://krizaka-assets.b-cdn.net/pr-assets/yomizaka/
   signaux » / « Aucun signal »), Logement et lien, Documents (« 4 sur 4 »), Étiquettes and Mis à jour, with priorities so
   nothing scrolls sideways.
 - The BulkBar is sticky under the header and says how many are selected.
-- The phone mockup shows today's card form (boxes in a box). The target is a list row (upstream U5).
+- The phone mockup shows today's card form (boxes in a box). The target is a list row (upstream U5, krizaka-ui#636).
 
 ### 5.3 A detail: the report
 
@@ -383,19 +383,18 @@ This is the anti-rework part. Each line says what happens to a current or planne
 
 ## 7. Upstream needs
 
-Each need is filed upstream, never copied here (« Krizaka first »). The issue numbers are listed in the pull request and
-in the comment on #314.
+Each need is filed upstream, never copied here (« Krizaka first »).
 
-| # | Repository | Need |
+| # | Issue | Need |
 | :-- | :-- | :-- |
-| U1 | krizaka-ui (`@krizaka/tokens`) | The plain product faces in the brand files, not in `blocks.css` (finding 2) |
-| U2 | krizaka-ui | Product surfaces: eyebrows, `DataTable` subtitles and `MascotQuote` captions in sans; mono only for ids (finding 3) |
-| U3 | krizaka-ui | `ChoiceGrid` needs `story.css`, so say it (meta, docs, test) (finding 1) |
-| U4 | krizaka-ui | Organisation surfaces for #89: `StatusChip`, `TagChip` with a closed marker palette, `SavedViews`, `BulkBar`, the admin editors, on web and native |
-| U5 | krizaka-ui | `DataTable` phone rows as list rows, not cards in a box (finding 6) |
-| U6 | krizaka-ui (`@krizaka/icons`) | Document kinds and places (finding 9) |
-| — | krizaka-ui#210 `AnalysisReport` | Commented: the report shape of § 5.3 (numbered findings, severity word, no code on the face, the passed ones folded, the run id once) |
-| — | krizaka-ts#89 | Commented: the pilot's needs (§ 4: the two axes, deciding closes and purges, no score, no free-text reason, documents without a user status) |
+| U1 | [krizaka-ui#632](https://github.com/krizaka/krizaka-ui/issues/632) | The plain product faces in the brand files, not in `blocks.css` (finding 2) |
+| U2 | [krizaka-ui#633](https://github.com/krizaka/krizaka-ui/issues/633) | Product surfaces: eyebrows, `DataTable` subtitles and `MascotQuote` captions in sans; mono only for ids (finding 3) |
+| U3 | [krizaka-ui#634](https://github.com/krizaka/krizaka-ui/issues/634) | `ChoiceGrid` needs `story.css`, so say it (meta, docs, test) (finding 1) |
+| U4 | [krizaka-ui#635](https://github.com/krizaka/krizaka-ui/issues/635) | Organisation surfaces for #89: `StatusChip`, `TagChip` with a closed marker palette, `SavedViews`, `BulkBar`, the admin editors, on web and native |
+| U5 | [krizaka-ui#636](https://github.com/krizaka/krizaka-ui/issues/636) | `DataTable` phone rows as list rows, not cards in a box (finding 6) |
+| U6 | [krizaka-ui#637](https://github.com/krizaka/krizaka-ui/issues/637) | Document kinds and places (finding 9) |
+| — | [krizaka-ui#210](https://github.com/krizaka/krizaka-ui/issues/210#issuecomment-6388393343) `AnalysisReport` | Commented: the report shape of § 5.3 (numbered findings, severity word, no code on the face, the passed ones folded, the run id once) |
+| — | [krizaka-ts#89](https://github.com/krizaka/krizaka-ts/issues/89#issuecomment-6388393483) | Commented: the pilot's needs (§ 4: the two axes, deciding closes and purges, no score, no free-text reason, documents without a user status) |
 | — | already filed | krizaka-ui#588 (header primary at 360 px), #589 (theme row), #590 (place marks), #599 (owl « lost »), #623 (mascot in `EmptyState`), #487 (`Tabs.Nav`) |
 
 **Krizaka Motion: no new primitive is needed.** Everything in § 3.3 exists (`MotionObserver`, `data-reveal="ink"`,
