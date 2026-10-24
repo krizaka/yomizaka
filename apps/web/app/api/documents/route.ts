@@ -1,8 +1,9 @@
 import { documentKind, STORAGE_MODE } from "@yomizaka/core";
 import { z } from "zod";
 
-import { storesOf } from "@/app/active-store";
+import { storeForDocument, storesOf } from "@/app/active-store";
 import { requireSession } from "@/lib/access";
+import { assertUploadForApplication, attachToApplication } from "@/lib/applicant-consent";
 import { audit } from "@/lib/audit";
 import { query } from "@/lib/db";
 import { listDocuments, storeDocument } from "@/lib/documents";
@@ -35,6 +36,9 @@ export function POST(req: Request) {
     const file = files[0];
     if (!file) throw refuse(400, "BAD_REQUEST", "A file is expected in the field `file`");
     const kind = documentKind.or(z.literal("auto")).catch("auto").parse(form?.get("kind") ?? "auto");
+    // A document for an application (« screeningId ») is accepted only with the applicant's consent to the document check (yomizaka#131), before any byte is stored.
+    const screeningId = form?.get("screeningId");
+    if (typeof screeningId === "string") await assertUploadForApplication(session.account.id, screeningId);
     const bytes = new Uint8Array(await file.arrayBuffer());
     // Photos (by their bytes, not their names) are cleaned and read locally, and several make ONE document (ADR-0010).
     const photos = isPhoto(bytes);
@@ -58,6 +62,7 @@ export function POST(req: Request) {
       throw error;
     }
     const { summary, duplicate } = stored;
+    if (typeof screeningId === "string") await attachToApplication(session.account.id, summary.id, screeningId, await storeForDocument(session.account.id, summary.id));
     // Uploaded from a collection or a folder: it lands there (ADR-0007).
     const collectionId = form?.get("collectionId");
     const folderId = form?.get("folderId");

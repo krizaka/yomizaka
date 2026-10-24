@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 
 import { z } from "zod";
 
+import { CONSENT_MEANS, grantConsent, NOTICE_VERSION, purposesOfScope, requireConsent } from "./applicant-consent";
 import { audit } from "./audit";
 import { query } from "./db";
 import { refuse } from "./http";
@@ -12,7 +13,7 @@ import { refuse } from "./http";
  * shares it or contests it. Minimal data: a short summary, never a provider's raw report, deleted after the retention window.
  * There is no criminal-record scope, and none can be added without a new flow version and a lawyer's opinion.
  */
-export const SCREENING_STATUS = { requested: "requested", consented: "consented", shared: "shared", declined: "declined", contested: "contested", expired: "expired" } as const;
+export const SCREENING_STATUS = { requested: "requested", consented: "consented", shared: "shared", declined: "declined", contested: "contested", expired: "expired", erased: "erased" } as const;
 export type ScreeningStatus = (typeof SCREENING_STATUS)[keyof typeof SCREENING_STATUS];
 
 /** What a request may ask. Payment history only today; the list is the law's limit, not a roadmap. */
@@ -160,7 +161,7 @@ export async function listForLandlord(landlordId: string, now: Date): Promise<La
   return rows.map((r) => landlordView(r, now));
 }
 
-async function byToken(token: string): Promise<Row> {
+export async function byToken(token: string): Promise<Row> {
   const [row] = await query<Row>("SELECT s.*, a.email AS landlord_email FROM screenings s JOIN accounts a ON a.id = s.landlord_id WHERE s.token_hash = $1", [hash(token)]);
   if (!row) throw refuse(404, "NOT_FOUND", "No such request");
   return row;
@@ -178,6 +179,9 @@ export async function consent(token: string, now: Date, headers?: Headers): Prom
   const row = await byToken(token);
   const state = effectiveState(row, now);
   if (state.status !== SCREENING_STATUS.requested) throw refuse(409, "NOT_PENDING", "This request is no longer waiting for an answer");
+  // The consent per purpose is recorded first (notice version, date, means); the check then runs only while each stands (yomizaka#131).
+  for (const purpose of purposesOfScope(row.scope)) await grantConsent(row.id, purpose, { noticeVersion: NOTICE_VERSION, means: CONSENT_MEANS.WEB_FORM }, now, headers);
+  for (const purpose of purposesOfScope(row.scope)) await requireConsent(row.id, purpose);
   const result = await providerById(row.provider).check({ name: row.tenant_name, email: row.tenant_email }, row.scope, now);
   const [updated] = await query<Row>(
     "UPDATE screenings SET status = 'consented', consented_at = $2, result = $3, result_expires_at = $4 WHERE id = $1 AND status = 'requested' RETURNING *",

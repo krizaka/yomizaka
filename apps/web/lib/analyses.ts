@@ -1,5 +1,6 @@
 import { type Analysis, AUTHENTICITY_MAX_BYTES, COMPLIANCE_MAX_CHARS, DOCX_MIME, fromRunStatus, isTerminal, ODT_MIME, type OrazakaRun, reportOf, type StartAnalysis,type StorageKind } from "@yomizaka/core";
 
+import { assertAnalysisAllowed } from "./applicant-consent";
 import { refundFailedAudit } from "./billing";
 import { query } from "./db";
 import { type AnalysisRow, isUuid, needsAttention, readBytes, toAnalysis } from "./documents";
@@ -37,8 +38,10 @@ export function searchText(report: ReturnType<typeof reportOf>): string {
 
 export async function startAnalysis(ownerId: string, documentId: string, request: StartAnalysis, flowVersionId: string | null = null, billedVia: string | null = null, store?: DocumentStore): Promise<Analysis> {
   if (!isUuid(documentId)) throw refuse(404, "NOT_FOUND", "No such document");
-  const [doc] = await query<{ mime_type: string; text: string; content: Buffer; storage: StorageKind }>("SELECT mime_type, text, content, storage FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, documentId]);
+  const [doc] = await query<{ mime_type: string; text: string; content: Buffer; storage: StorageKind; screening_id: string | null }>("SELECT mime_type, text, content, storage, screening_id FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, documentId]);
   if (!doc) throw refuse(404, "NOT_FOUND", "No such document");
+  // A document of an application is checked only while the applicant's consent to the document check stands (yomizaka#131).
+  await assertAnalysisAllowed(doc.screening_id);
   // The file comes from where the document lives (a purged one has none: 409 NOT_KEPT); the compliance check reads the text, which a purge also removes.
   const content = request.studio === "compliance-check" ? doc.content : await readBytes(doc, { ownerId, id: documentId }, store);
   if (request.studio === "compliance-check" && doc.storage === "none" && doc.text === "" && doc.content.length === 0) throw refuse(409, "NOT_KEPT", "This document is not kept: only its report stays");
