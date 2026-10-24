@@ -165,7 +165,9 @@
       "invalidNotice": "Ce lien de confirmation est invalide ou a expiré.",
       "proofOne": "Chaque constat cite sa règle et la ligne sur laquelle il repose.",
       "proofTwo": "Par défaut, le document est supprimé après sa vérification : seul le rapport reste.",
-      "proofThree": "Les rapports sont rédigés en français, la langue de leurs règles."
+      "proofThree": "Les rapports sont rédigés en français, la langue de leurs règles.",
+      "forgotLink": "Mot de passe oublié ?",
+      "resetNotice": "Votre mot de passe est changé. Connectez-vous avec le nouveau."
     },
     "shell": {
       "skip": "Aller au contenu",
@@ -590,6 +592,7 @@
       "WRONG_PASSWORD": "Le mot de passe n'est pas le bon.",
       "PASSWORD_TOO_SHORT": "Le mot de passe doit faire au moins 12 caractères.",
       "PASSWORD_TOO_LONG": "Le mot de passe est trop long.",
+      "RESET_INVALID": "Ce lien est invalide ou a expiré. Demandez-en un nouveau.",
       "MAIL_OFF": "L'envoi de courriels n'est pas encore disponible.",
       "CANCEL_SUBSCRIPTION_FIRST": "Annulez d'abord votre abonnement dans le portail de facturation.",
       "EMAIL_MISMATCH": "L'adresse tapée n'est pas celle du compte.",
@@ -1189,6 +1192,31 @@
       "button": "Confirmer la nouvelle adresse",
       "invalid": "Ce lien est invalide ou a expiré."
     },
+    "forgotPassword": {
+      "promise": "Vos documents, lus et vérifiés par Yomizaka.",
+      "title": "Mot de passe oublié ?",
+      "description": "Saisissez votre adresse courriel. Si elle a un compte, nous envoyons un lien pour choisir un nouveau mot de passe.",
+      "email": "Courriel",
+      "submit": "Envoyer le lien",
+      "sentTitle": "Vérifiez votre boîte de réception",
+      "sent": "Si cette adresse a un compte, un lien est en route. Il fonctionne une seule fois, pendant {minutes} minutes.",
+      "back": "Retour à la connexion",
+      "mailOff": "L'envoi de courriels n'est pas encore disponible : un lien ne peut pas être envoyé. Parlez à notre équipe."
+    },
+    "resetPassword": {
+      "promise": "Vos documents, lus et vérifiés par Yomizaka.",
+      "title": "Choisir un nouveau mot de passe",
+      "description": "Au moins 12 caractères. Vos autres sessions seront déconnectées.",
+      "password": "Nouveau mot de passe",
+      "confirm": "Répétez le nouveau mot de passe",
+      "submit": "Changer le mot de passe",
+      "mismatch": "Les deux mots de passe ne sont pas identiques.",
+      "tooShort": "Au moins 12 caractères.",
+      "invalidTitle": "Ce lien ne fonctionne plus",
+      "invalid": "Il est invalide, déjà utilisé ou expiré. Demandez-en un nouveau.",
+      "again": "Envoyer un nouveau lien",
+      "back": "Retour à la connexion"
+    },
     "maintenance": {
       "title": "En maintenance"
     },
@@ -1254,6 +1282,12 @@
           "open": {
             "label": "Inscription ouverte",
             "hint": "Permet de créer un compte. Il faut aussi que l'envoi de courriels soit configuré."
+          }
+        },
+        "auth": {
+          "passwordResetMinutes": {
+            "label": "Durée du lien de réinitialisation",
+            "hint": "Minutes pendant lesquelles un lien « Mot de passe oublié ? » fonctionne, une seule fois. De 5 à 1440. Le courriel l'indique."
           }
         },
         "payments": {

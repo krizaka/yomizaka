@@ -165,7 +165,9 @@
       "invalidNotice": "This confirmation link is invalid or has expired.",
       "proofOne": "Every finding cites its rule and the line it rests on.",
       "proofTwo": "By default, a document is deleted once checked: only the report stays.",
-      "proofThree": "Reports are written in French, the language of their rules."
+      "proofThree": "Reports are written in French, the language of their rules.",
+      "forgotLink": "Forgot your password?",
+      "resetNotice": "Your password is changed. Sign in with the new one."
     },
     "shell": {
       "skip": "Skip to content",
@@ -590,6 +592,7 @@
       "WRONG_PASSWORD": "The password is not right.",
       "PASSWORD_TOO_SHORT": "The password must be at least 12 characters.",
       "PASSWORD_TOO_LONG": "The password is too long.",
+      "RESET_INVALID": "This link is invalid or has expired. Ask for a new one.",
       "MAIL_OFF": "E-mail sending is not available yet.",
       "CANCEL_SUBSCRIPTION_FIRST": "Cancel your subscription in the billing portal first.",
       "EMAIL_MISMATCH": "The address you typed is not the account's.",
@@ -1189,6 +1192,31 @@
       "button": "Confirm the new address",
       "invalid": "This link is invalid or has expired."
     },
+    "forgotPassword": {
+      "promise": "Your documents, read and checked by Yomizaka.",
+      "title": "Forgot your password?",
+      "description": "Type your e-mail address. If it has an account, we send a link to choose a new password.",
+      "email": "E-mail",
+      "submit": "Send the link",
+      "sentTitle": "Check your mailbox",
+      "sent": "If this address has an account, a link is on its way. It works once, for {minutes} minutes.",
+      "back": "Back to sign in",
+      "mailOff": "E-mail sending is not available yet, so a link cannot be sent. Talk to our team."
+    },
+    "resetPassword": {
+      "promise": "Your documents, read and checked by Yomizaka.",
+      "title": "Choose a new password",
+      "description": "At least 12 characters. Your other sessions will be signed out.",
+      "password": "New password",
+      "confirm": "Repeat the new password",
+      "submit": "Change the password",
+      "mismatch": "The two passwords are not the same.",
+      "tooShort": "At least 12 characters.",
+      "invalidTitle": "This link no longer works",
+      "invalid": "It is invalid, already used, or has expired. Ask for a new one.",
+      "again": "Send a new link",
+      "back": "Back to sign in"
+    },
     "maintenance": {
       "title": "Under maintenance"
     },
@@ -1254,6 +1282,12 @@
           "open": {
             "label": "Sign-up open",
             "hint": "Lets people create an account. E-mail sending must also be configured."
+          }
+        },
+        "auth": {
+          "passwordResetMinutes": {
+            "label": "Password reset link lifetime",
+            "hint": "Minutes a « Forgot your password? » link works, once. From 5 to 1440. The e-mail says it."
           }
         },
         "payments": {

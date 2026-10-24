@@ -15,6 +15,8 @@ const ID = "5c0e3f3e-0000-4000-8000-000000000001";
 /** The routes that answer without a session, and why. Everything else must answer 401 (or 403 for the API-key and administration locks). */
 const PUBLIC: Record<string, string> = {
   "auth/confirm-email": "the link mailed to the person (a single-use token)",
+  "auth/forgot-password": "asks for a reset link by e-mail: the same answer for every address, limited (yomizaka#288)",
+  "auth/reset-password": "sets the new password from the mailed link (single use, time-limited), limited (yomizaka#288)",
   "auth/sign-in": "it opens the session",
   "auth/sign-out": "it ends the session; harmless without one",
   "auth/sign-up": "it creates the account (closed by its own switch)",

@@ -15,7 +15,7 @@ import { auditPage, problemsOf } from "./lib/page-audit.mjs";
 
 export const WIDTHS = [360, 390, 430, 768, 1024, 1440];
 export const THEMES = ["dark", "light"];
-export const PAGES = ["/en", "/fr", "/en/privacy", "/fr/privacy", "/en/sign-in", "/fr/verify", "/fr/nope", "/en/nope"];
+export const PAGES = ["/en", "/fr", "/en/privacy", "/fr/privacy", "/en/sign-in", "/fr/sign-in", "/en/forgot-password", "/fr/forgot-password", `/en/reset-password?token=ye1.${"A".repeat(43)}`, "/fr/reset-password", "/fr/verify", "/fr/nope", "/en/nope"];
 
 const arg = (name, fallback) => {
   const i = process.argv.indexOf(`--${name}`);

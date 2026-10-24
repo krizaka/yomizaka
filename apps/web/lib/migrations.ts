@@ -579,4 +579,9 @@ ALTER TABLE documents ADD COLUMN retention_policy text REFERENCES retention_poli
 ALTER TABLE documents ADD COLUMN checks_skipped jsonb NOT NULL DEFAULT '[]';
 `,
   },
+  {
+    version: "0032_password_resets",
+    // @krizaka/auth 0.5: the table of password reset links (a link mailed to the account's address, used once, time-limited). Idempotent.
+    sql: accountsMigration(),
+  },
 ];

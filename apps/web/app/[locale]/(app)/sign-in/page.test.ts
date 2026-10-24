@@ -4,10 +4,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import en from "@/messages/en.json";
 import fr from "@/messages/fr.json";
 
-const state = vi.hoisted(() => ({ open: false }));
+const state = vi.hoisted(() => ({ open: false, mail: true }));
 
 vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
 vi.mock("@/lib/access", () => ({ pageSession: async () => null }));
+vi.mock("@/app/accounts-edge", () => ({ mailConfigured: () => state.mail }));
 vi.mock("@/lib/env", () => ({ env: () => ({}) }));
 vi.mock("@/lib/settings/signup", () => ({ signupOpenNow: async () => state.open }));
 vi.mock("@/components/console/SignInForm", () => ({ SignInForm: () => null }));
@@ -17,7 +18,7 @@ import SignInPage from "./page";
 const MESSAGES = { en, fr } as const;
 type Locale = keyof typeof MESSAGES;
 
-const render = async (locale: Locale, query: { verified?: string; verify?: string } = {}) =>
+const render = async (locale: Locale, query: { verified?: string; verify?: string; reset?: string } = {}) =>
   renderToStaticMarkup(await SignInPage({ params: Promise.resolve({ locale }), searchParams: Promise.resolve(query) }));
 
 const readable = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ");
@@ -25,6 +26,7 @@ const readable = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/&#x27;
 describe("sign-in (the UX review's Y8)", () => {
   beforeEach(() => {
     state.open = false;
+    state.mail = true;
   });
 
   it("draws the owl large (160 px) and the three proofs in the brand panel, in each language", async () => {
@@ -68,5 +70,21 @@ describe("sign-in (the UX review's Y8)", () => {
     const bad = readable(await render("en", { verify: "1" }));
     expect(bad).toContain(en.console.signIn.invalidNotice);
     expect(bad).not.toContain(en.console.signIn.verifiedNotice);
+  });
+
+  it("offers « Forgot your password? » to the page that asks for it, in each language — and only while e-mail can be sent", async () => {
+    for (const locale of ["fr", "en"] as const) {
+      const html = await render(locale);
+      expect(html).toContain(`href="/${locale}/forgot-password"`);
+      expect(readable(html)).toContain(MESSAGES[locale].console.signIn.forgotLink);
+    }
+    state.mail = false;
+    expect(await render("en")).not.toContain("/forgot-password");
+  });
+
+  it("tells the person their password is changed when they come back from the reset", async () => {
+    expect(readable(await render("en", { reset: "1" }))).toContain(en.console.signIn.resetNotice);
+    expect(readable(await render("fr", { reset: "1" }))).toContain(fr.console.signIn.resetNotice);
+    expect(readable(await render("en"))).not.toContain(en.console.signIn.resetNotice);
   });
 });
