@@ -131,7 +131,7 @@ export function LibraryDrop({ zone = false, examples, jurisdictions = ["QC"], pl
         throw translated(error, say);
       }
       // A file dropped on the library is checked like one dropped on the task page: at once when its kind is sure (the review's Y4).
-      if (!stored.duplicate) await startIfSure(stored.document.id, "auto", jurisdictions);
+      if (!stored.duplicate) await startIfSure(stored.document.id, "auto", jurisdictions, new Date());
       router.refresh();
     },
   });

@@ -35,7 +35,7 @@ export function CheckView({ jurisdictions = ["QC"] }: { jurisdictions?: readonly
     kindRef.current = kind;
   }, [kind]);
   const open = async (id: string, requested: DocumentKind | "auto") => {
-    const outcome = await startIfSure(id, requested, jurisdictions);
+    const outcome = await startIfSure(id, requested, jurisdictions, new Date());
     // A refusal (an entitlement, a rule) travels to the report tab, which says it above its own form.
     router.push(`/${locale}/app/documents/${id}/rapport${outcome.refused ? `?refused=${encodeURIComponent(outcome.refused)}` : ""}`);
   };

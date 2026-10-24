@@ -21,6 +21,11 @@ describe("what Yomizaka sends to Orazaka", () => {
     const inputs = runInputs({ studio: "compliance-check", jurisdiction: "FR" }, { mimeType: "application/pdf", text: LEASE, content: pdf(10) }, new Date("2026-10-14T12:00:00Z"));
     expect(inputs).toEqual({ document: LEASE, jurisdiction: "FR", asOf: "2026-10-14" });
   });
+  it("dates the check on the Québec day: 01:30 UTC on the 24th is still the 23rd in Montréal", () => {
+    const doc = { mimeType: "application/pdf", text: LEASE, content: pdf(10) };
+    expect(runInputs({ studio: "compliance-check", jurisdiction: "QC" }, doc, new Date("2026-10-24T01:30:00Z"))).toMatchObject({ asOf: "2026-10-23" });
+    expect(runInputs({ studio: "compliance-check", jurisdiction: "QC" }, doc, new Date("2026-10-24T12:00:00Z"))).toMatchObject({ asOf: "2026-10-24" });
+  });
   it("sends the PDF itself, in base64, to the authenticity Studio — and the expected issuer when given", () => {
     const content = pdf(4);
     expect(runInputs({ studio: "document-authenticity", expectedIssuer: "Agence Dupont" }, { mimeType: "application/pdf", text: "", content })).toEqual({ documentBase64: content.toString("base64"), expectedIssuer: "Agence Dupont" });
