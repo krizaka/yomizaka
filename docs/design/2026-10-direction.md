@@ -1,7 +1,7 @@
 # Yomizaka: design direction (October 2026)
 
-Status: **proposal, Phase 1 of [#314](https://github.com/krizaka/yomizaka/issues/314) (docs only)**. Nothing is
-implemented and no Phase 2 issue is filed before Oussama's « validé ». The CTO reviews.
+Status: **validé (CTO, delegated by Oussama, 2026-10-24)**: direction **B2**, the defaults of § 9, and « Retenu · Non retenu » as the decision words. Phase 1 of [#314](https://github.com/krizaka/yomizaka/issues/314) (docs only). The Phase 2 cut (§ 8) is filed as
+issues, linked from #314.
 
 The October UX review ([`docs/ux/2026-10-full-review.md`](../ux/2026-10-full-review.md) and its Errata) fixed the flows,
 and slices Y0 to Y10 shipped most of it. This document sets the **direction of the whole product**: what Yomizaka looks
@@ -239,7 +239,7 @@ Yomizaka is #89's pilot (confirmed 2026-10-24). This is the product side; the sh
 | Axis | Who sets it | Values | Shown as |
 | :-- | :-- | :-- | :-- |
 | The link's state | the system (`linkState`, `lib/applicant-file-rules.ts`) | open (until a date), expired, used (sent), closed, erased | a line of facts: « 4½ Villeray · lien utilisé le 22 oct. » |
-| **Your decision** | the manager, through #89's status set (data, admin-configured) | **À décider → Approuvé \| Refusé** | `StatusChip`, column « Votre décision » |
+| **Your decision** | the manager, through #89's status set (data, admin-configured) | **À décider → Retenu \| Non retenu** | `StatusChip`, column « Votre décision » |
 
 - **« Documents attendus » is a view, not a status**: the link is open and fewer documents are in than asked.
 - **Deciding closes the file.** Today's API (`close`) already purges every document and keeps the reports. So « Refuser
@@ -412,7 +412,7 @@ on the home are demo data and are labelled as such.
 
 | Refinement | In B2 | Built on |
 | :-- | :-- | :-- |
-| More content, charts, quick access | The home has the summary sentence, four quick accesses (« Vérifier un bail », « Demander des documents », « Importer un lot », « Rapports signés »), the activity with a 7 · 30 · 90 d switch, four tiles with sparklines (checks, points to look at, files decided, credits left with the meter), a stacked chart of checks per week, the latest checks, and the binder. The report adds the run's figures (10 rules, 11 articles, 11.5 s, from the recorded run). | `DashboardLayout` + `Widget`, `StatGrid`/`Stat` `chart`, `Sparkline` and `BarChart` (@krizaka/charts), `Meter`, `RadioGroup` segmented |
+| More content, charts, quick access | **Home layout (Oussama's last adjustment):** the heading and its sentence, then **two columns on a desktop**. The **main** column holds **« Le classeur »** (the binder, right under the heading) and then the latest checks. The **side** column (26 rem) holds the quick access (2 × 2), the **activity as one discreet strip** (four compact figures in one row with sparklines and the 7 · 30 · 90 d switch), the weekly chart in that column, and the credits meter. On a phone it is one column, in that order. The report adds the run's figures (10 rules, 11 articles, 11.5 s, from the recorded run). | `DashboardLayout` + `Widget`, proposed `StatStrip` [krizaka-ui#651](https://github.com/krizaka/krizaka-ui/issues/651), `Sparkline` and `BarChart` (@krizaka/charts), `Meter`, `RadioGroup` segmented |
 | No date strip; today's date on the right | Each heading has the `h1` on the left and `<time>` on the right (under it on a phone) | proposed `DashboardLayout` `date`, [krizaka-ui#644](https://github.com/krizaka/krizaka-ui/issues/644) |
 | ⌘K search in the top bar; navigation revisited | Top bar: search field with `⌘K` · FR · notifications with a count · « Vérifier un document » (gradient, cut) · the avatar with the name. Rail: **Accueil · Dossiers (count) · Documents · Vérifications**; Recherche leaves the rail for ⌘K; « Crédits et usage » is under the avatar and on the home. Phone: the same four tabs, and search as an icon in the header. | proposed `AppHeader` slots, [krizaka-ui#640](https://github.com/krizaka/krizaka-ui/issues/640); `CommandDialog` |
 | Binder tab dividers | « Le classeur » on the home (collections as coloured tabs with counts); on Dossiers, the decision states as tabs (À décider · Documents attendus · Approuvés · Refusés · Tous), the tags as chips with counts | proposed `BinderTabs`, [krizaka-ui#643](https://github.com/krizaka/krizaka-ui/issues/643), marker palette [krizaka-ui#635](https://github.com/krizaka/krizaka-ui/issues/635) |
@@ -482,6 +482,7 @@ Each need is filed upstream, never copied here (« Krizaka first »).
 | U10 | [krizaka-ui#643](https://github.com/krizaka/krizaka-ui/issues/643) | `BinderTabs`, the coloured tab dividers |
 | U11 | [krizaka-ui#644](https://github.com/krizaka/krizaka-ui/issues/644) | Dashboard heading: the date on the right, a lead sentence, quick access (#622) |
 | U12 | [krizaka-ui#645](https://github.com/krizaka/krizaka-ui/issues/645) | `MarginLayout`: numbers and margin notes |
+| U14 | [krizaka-ui#651](https://github.com/krizaka/krizaka-ui/issues/651) | `StatStrip`: four compact figures in one row with sparklines |
 | U13 | [krizaka-ui#646](https://github.com/krizaka/krizaka-ui/issues/646) | `ProfileBanner` with the org avatar set (#598, from Orochia, #515) |
 | — | already filed | krizaka-ui#588 (header primary at 360 px), #589 (theme row), #590 (place marks), #599 (owl « lost »), #623 (mascot in `EmptyState`), #487 (`Tabs.Nav`) |
 
@@ -498,20 +499,20 @@ One pull request each, in order, test-first, with before and after captures at 3
 
 | # | Slice | Acceptance |
 | :-- | :-- | :-- |
-| P1 | **The kind picker**: `ChoiceGrid` → `ChoiceCards` on `/app/verifier` | Render test: each kind has its title and hint as separate text, `role="radiogroup"` labelled; captures show no glued text |
+| P1 | **The kind picker**: `ChoiceGrid` → `ChoiceCards` on `/app/verifier`, asked only for an uncertain kind (the styling bug is fixed by #317) | Render test: each kind has its title and hint as separate text, `role="radiogroup"` labelled; captures show no glued text |
 | P2 | **One section map** in `packages/core`, read by the web, the phone and the Mac; « Dossiers » gated by the flow; the phone's settings under the avatar; the Mac's ⌘1 to ⌘4 | A unit test that the three apps import the same list; phone tabs = the map; Mac menu built from it; Vérifications ⊃ Lots on all three |
 | P3 | **Decompose `DocumentView`** (#110), with no visible change | The existing tests stay green and the captures match the « before » |
 | P4 | **The report** (§ 5.3): numbered findings, severity as a word, codes and the method off the face, the passed rules folded, the run id once, the other checks as aside actions (dialog), the review note as a footnote, the breadcrumb to the collection | Tests: finding order (failed by severity, then passed folded), numbering, exactly one run id outside the details, no `form` in the main column, the 360 px capture |
 | P5 | **Plain typography** in the app: no mono outside « Détails techniques »; the Mac app on the plain faces (U1, or `blocks.css` imported until it ships) | A test over `components/console`: `font-mono` only under the technical details; a Mac capture with sans headings |
 | P6 | **« Dossiers »: list and detail** on the existing API (#307): link states, documents asked and received, their checks, « Demander des documents »; empty state; no decision yet | Tests: rows from `listForLandlord`, the link label from `linkState`, the request flow refuses SIN-like types (existing rule), and the empty state |
 | P7 | **Organisation pilot** (after #89's ADR is validated and U4 ships): the decision set, tags with markers, saved views and bulk actions on « Dossiers »; deciding closes the file | #89's tests; two presses to refuse, one audit line per file, the address holds the view, no sort by check result |
-| P8 | **The home « À traiter »** (§ 5.1): three figure-doors, the latest checks and collections as lists, and « Récents » off the home | Tests: each figure from its query and its link carries the view's filter; the zero state is one line |
-| P9 | **The check flow** (§ 5.4): the defaults before the drop, the queue rows with stages (#208 when orazaka#189 lands, the request's stages until then), and an uncertain kind asked per file | Tests: defaults named before upload (Errata 6), confident kind starts on drop, uncertain kind asks, reduced motion keeps words |
+| P8 | **The home's data**: the queries behind « À traiter » (checks to look at, files to decide, open links), the latest checks, and the per-period activity; « Récents » off the home (B2's presentation is P15) | Tests: each figure from its query and its link carries the view's filter; the zero state is one line |
+| P9 | **The check flow's logic** (§ 5.4; B2's presentation is P16): the defaults before the drop, the queue rows with stages (#208 when orazaka#189 lands, the request's stages until then), and an uncertain kind asked per file | Tests: defaults named before upload (Errata 6), confident kind starts on drop, uncertain kind asks, reduced motion keeps words |
 | P10 | **The public site, plain**: no red mono eyebrow, no figures row, no mono captions, the grid without orphans; the leftovers of Y9 | A test over the public components (no `font-mono` and no margin-red text outside code); first-screen captures |
 | P11 | **The states pass**: a `loading.tsx` skeleton per app segment in the page's shape, errors in place with recovery, the `NO_TEXT` partial state, the demo note at the foot | Tests: each segment has a loading and an error boundary; the `NO_TEXT` copy; no spinner outside buttons |
 | P12 | **Phone lists** (after U5): Vérifications, Dossiers and collections as list rows at 360 px | A 360 px test: one line of facts per row, no `dl` per row |
 | P14 | **B2 shell**: the rail Accueil · Dossiers · Documents · Vérifications, the top bar on [krizaka-ui#640](https://github.com/krizaka/krizaka-ui/issues/640) (⌘K, FR, notifications, gradient primary, the avatar with the name), the phone's four tabs | Tests: the one section map (P2) feeds the rail, tabs and Mac menu; ⌘K opens the palette; the bar at 360 px is not clipped; the messages slot is absent |
-| P15 | **B2 home** on [krizaka-ui#644](https://github.com/krizaka/krizaka-ui/issues/644) and [krizaka-ui#641](https://github.com/krizaka/krizaka-ui/issues/641): the date on the right, the summary sentence, quick access, the activity (7 · 30 · 90 d), the tiles with sparklines, the weekly chart, the binder ([krizaka-ui#643](https://github.com/krizaka/krizaka-ui/issues/643)) | Tests: every figure from a query over the chosen period, the sentence's plurals FR/EN at 0, 1 and many, the period in the address, the chart's table alternative |
+| P15 | **B2 home** (§ 5.6) on [krizaka-ui#644](https://github.com/krizaka/krizaka-ui/issues/644), [krizaka-ui#651](https://github.com/krizaka/krizaka-ui/issues/651) and [krizaka-ui#643](https://github.com/krizaka/krizaka-ui/issues/643): the heading with the date on the right and the summary sentence, then two columns. Main: « Le classeur » (binder tabs), then the latest checks. Side: quick access, the activity strip (7 · 30 · 90 d), the weekly chart, the credits. One column on a phone. | Tests: every figure comes from a query over the chosen period; the sentence's plurals in FR and EN at 0, 1 and many; the period in the address; the chart's table alternative; the column order at 360 px (binder first) |
 | P16 | **B2 check flow** on [krizaka-ui#642](https://github.com/krizaka/krizaka-ui/issues/642): the plan strip, the catalogue of checks, the drop and the run | Tests: the catalogue lists only the rulesets that run (from the registry), the counts per chip, the plan strip's numbers from the billing state |
 | P17 | **B2 Dossiers**: decision states as binder tabs, the tags as chips with counts, the gradient bulk action (with P7) | #89's tests, plus the tabs' counts match the views |
 | P13 | **The signed PDF** (if § 3.2's move is accepted): folios, findings numbered as on screen, footnotes | Tests on the renderer: folio on each page, the numbering matches the screen order |
@@ -530,6 +531,7 @@ where files do not overlap (P10 with P6).
 
 1. **« Dossiers » as a fourth destination** for the perspectives offered the applicant-file flow. Default: yes.
 2. **The decision words**: « À décider · Approuvé · Refusé » (#89's words) or « Retenu · Non retenu » (softer, less
-   weight on a person). Default: #89's words, under the column « Votre décision ».
+   weight on a person). **Decided (CTO, delegated): « À décider · Retenu · Non retenu »**, under « Votre décision ». The
+   status ids stay `pending · approved · rejected` (#89); only the words change.
 3. **Deciding closes the file and purges its documents** (today's `close`). Default: yes, said on the action.
 4. **The line's one move**: folios, numbering and footnotes on the signed PDF only (§ 3.2). Default: yes.
