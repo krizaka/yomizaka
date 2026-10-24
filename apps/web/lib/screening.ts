@@ -59,10 +59,10 @@ export const providerById = (id: string): ScreeningProvider => {
 };
 
 /** The token is 256 random bits: a plain SHA-256 is enough to keep only its hash (nothing to guess, nothing to key). */
-const hash = (token: string) => crypto.createHash("sha256").update(token).digest("hex");
+export const hash = (token: string) => crypto.createHash("sha256").update(token).digest("hex");
 
 /** `n` days after `from`, in UTC (calendar days, no millisecond arithmetic). */
-const addDays = (from: Date, n: number): Date => {
+export const addDays = (from: Date, n: number): Date => {
   const d = new Date(from);
   d.setUTCDate(d.getUTCDate() + n);
   return d;
@@ -71,6 +71,7 @@ export const newToken = () => `sc1.${crypto.randomBytes(32).toString("base64url"
 
 interface Row {
   id: string;
+  flow: string;
   landlord_id: string;
   tenant_name: string;
   tenant_email: string;
@@ -87,6 +88,10 @@ interface Row {
   result: unknown;
   result_expires_at: Date | null;
   purged_at: Date | null;
+  /** The applicant file's link (yomizaka#127); null for a screening. */
+  revoked_at: Date | null;
+  submitted_at: Date | null;
+  closed_at: Date | null;
 }
 
 /** What the landlord sees: the result only once the tenant has shared it. A contested result is never shown. */
@@ -157,7 +162,7 @@ export async function requestScreening(landlord: Landlord, input: { tenantName: 
 
 export async function listForLandlord(landlordId: string, now: Date): Promise<LandlordView[]> {
   await purgeExpired(now);
-  const rows = await query<Row>("SELECT * FROM screenings WHERE landlord_id = $1 ORDER BY created_at DESC LIMIT 100", [landlordId]);
+  const rows = await query<Row>("SELECT * FROM screenings WHERE landlord_id = $1 AND flow = 'screening' ORDER BY created_at DESC LIMIT 100", [landlordId]);
   return rows.map((r) => landlordView(r, now));
 }
 
@@ -169,14 +174,21 @@ export async function byToken(token: string): Promise<Row> {
 
 export async function viewForTenant(token: string, now: Date): Promise<TenantView> {
   await purgeExpired(now);
-  return tenantView(await byToken(token), now);
+  return tenantView(await screeningRow(token), now);
 }
+
+/** The answer to a screening request by its token: an applicant file (yomizaka#127) has its own routes, never this one. */
+const screeningRow = async (token: string): Promise<Row> => {
+  const row = await byToken(token);
+  if (row.flow !== "screening") throw refuse(404, "NOT_FOUND", "No such request");
+  return row;
+};
 
 const actor = (row: Row) => ({ actorId: null, actorLabel: `tenant:${row.tenant_email}` });
 
 /** The tenant consents: the provider is called, a minimal result is kept for the retention window, and the tenant sees it first. */
 export async function consent(token: string, now: Date, headers?: Headers): Promise<TenantView> {
-  const row = await byToken(token);
+  const row = await screeningRow(token);
   const state = effectiveState(row, now);
   if (state.status !== SCREENING_STATUS.requested) throw refuse(409, "NOT_PENDING", "This request is no longer waiting for an answer");
   // The consent per purpose is recorded first (notice version, date, means); the check then runs only while each stands (yomizaka#131).
@@ -193,7 +205,7 @@ export async function consent(token: string, now: Date, headers?: Headers): Prom
 }
 
 export async function decline(token: string, now: Date, headers?: Headers): Promise<TenantView> {
-  const row = await byToken(token);
+  const row = await screeningRow(token);
   if (effectiveState(row, now).status !== SCREENING_STATUS.requested) throw refuse(409, "NOT_PENDING", "This request is no longer waiting for an answer");
   const [updated] = await query<Row>("UPDATE screenings SET status = 'declined' WHERE id = $1 AND status = 'requested' RETURNING *", [row.id]);
   await audit({ ...actor(row), action: "screening.declined", targetId: row.id, headers });
@@ -202,7 +214,7 @@ export async function decline(token: string, now: Date, headers?: Headers): Prom
 
 /** The tenant releases their result to the landlord. */
 export async function share(token: string, now: Date, headers?: Headers): Promise<TenantView> {
-  const row = await byToken(token);
+  const row = await screeningRow(token);
   const state = effectiveState(row, now);
   if (state.status !== SCREENING_STATUS.consented || !state.resultAlive) throw refuse(409, "NOT_SHAREABLE", "There is no result to share");
   const [updated] = await query<Row>("UPDATE screenings SET status = 'shared', shared_at = $2 WHERE id = $1 AND status = 'consented' RETURNING *", [row.id, now]);
@@ -212,7 +224,7 @@ export async function share(token: string, now: Date, headers?: Headers): Promis
 
 /** The tenant contests the result: the landlord never sees it, only « contested ». */
 export async function contest(token: string, comment: string, now: Date, headers?: Headers): Promise<TenantView> {
-  const row = await byToken(token);
+  const row = await screeningRow(token);
   const state = effectiveState(row, now);
   if ((state.status !== SCREENING_STATUS.consented && state.status !== SCREENING_STATUS.shared) || !state.resultAlive) throw refuse(409, "NOT_CONTESTABLE", "There is no result to contest");
   const [updated] = await query<Row>("UPDATE screenings SET status = 'contested', contested_at = $2, contest_comment = $3 WHERE id = $1 AND status IN ('consented', 'shared') RETURNING *", [row.id, now, comment.trim().slice(0, 500)]);

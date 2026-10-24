@@ -28,7 +28,7 @@ const BANNED = /certificat de conformit|\bconforme\b|authentiqu|\bfaux\b|certifi
 
 describe("the purposes are the engine's names (orazaka-ai-engine CheckPurpose) plus the document check", () => {
   it("names them as the engine does, so ExternalCheckService reads the same record", () => {
-    expect([...CONSENT_PURPOSES].sort()).toEqual(["COURT_RECORDS", "CREDIT", "DOCUMENT_CHECK"]);
+    expect([...CONSENT_PURPOSES].sort()).toEqual(["COURT_RECORDS", "CREDIT", "DOCUMENT_CHECK", "DOCUMENT_KEEP"]);
     expect(CONSENT_PURPOSE.COURT_RECORDS).toBe("COURT_RECORDS");
     expect(CONSENT_PURPOSE.CREDIT).toBe("CREDIT");
   });

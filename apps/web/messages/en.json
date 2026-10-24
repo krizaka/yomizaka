@@ -1722,7 +1722,7 @@
         "whoTitle": "Who sees it",
         "who": "The owner who asked for the check sees the report. Yomizaka and its processor for the analysis (Orazaka) handle the file to run it. Nobody else. [TO BE REVIEWED BY THE LAWYER]",
         "howLongTitle": "How long it is kept",
-        "howLong": "By default, a document is deleted as soon as its check is done. A result is deleted {days} days after it was given. The owner can choose to keep a document, and you can still ask for its deletion. [TO BE REVIEWED BY THE LAWYER]",
+        "howLong": "By default, a document is deleted as soon as its check is done. If you consent to keep it (\"Keep my documents until the owner decides\"), it is kept until the owner's decision, then deleted. A result is deleted {days} days after it was given. You can still ask for its deletion. [TO BE REVIEWED BY THE LAWYER]",
         "askTitle": "How to ask for deletion",
         "ask": "Use the « Delete my documents » action on the link you received. It deletes your documents and the result at once, and keeps only a record with no personal information. You can also withdraw any consent here, and ask for access to or correction of your information.",
         "notAsked": "Never asked: your social insurance number (SIN), your bank card or account details, your health or family information.",
@@ -1740,6 +1740,10 @@
         "CREDIT": {
           "label": "Check my credit report",
           "what": "Reads a credit report, with your consent, when one is requested."
+        },
+        "DOCUMENT_KEEP": {
+          "label": "Keep my documents until the owner decides",
+          "what": "Without it, each document is deleted once its check is done. With it, the documents are kept until the owner's decision."
         }
       },
       "consent": "I have read the notice (version {version}) and I consent to this check",
@@ -1754,6 +1758,86 @@
         "APPLICATION_ERASED": "This application was erased."
       }
     },
+  "applicantFile": {
+    "title": "Your documents",
+    "intro": "The owner asked for the documents below. Send each one as a PDF. Each document is checked for signs of alteration and inconsistency. The report is informative, not a legal opinion, and a person decides.",
+    "upload": "Send a document",
+    "uploaded": "Document received.",
+    "none": "No document sent yet.",
+    "submit": "Send my file",
+    "submitted": "Your file was sent. You can still withdraw a consent or ask for the deletion of your documents.",
+    "expires": "This link expires on {date}.",
+    "limits": "What the report does not show: it decides nothing, never scores the person, and does not replace a human check.",
+    "refusal": "This document is not necessary for the check and is not asked for.",
+    "types": {
+      "pay-stub": {
+        "label": "Pay stub",
+        "what": "Your most recent pay stub, as a PDF."
+      },
+      "bank-statement": {
+        "label": "Bank statement",
+        "what": "A recent statement of the account where your income is paid, as a PDF."
+      },
+      "employment-letter": {
+        "label": "Employment letter",
+        "what": "A letter from your employer confirming your position and start date, as a PDF."
+      },
+      "identity-document": {
+        "label": "Identity document",
+        "what": "A document that shows your full name, as a PDF. Only what is needed is read."
+      }
+    },
+    "fields": {
+      "employer": "Employer",
+      "pay-period": "Pay period",
+      "statement-period": "Statement period",
+      "position": "Position",
+      "start-date": "Start date",
+      "full-name": "Full name"
+    },
+    "checks": {
+      "document-authenticity": {
+        "label": "Authenticity of the file",
+        "what": "Examines the file itself: its producer, its dates and its saves. It describes the file, not the person."
+      },
+      "compliance-check": {
+        "label": "Consistency of the text",
+        "what": "Reads the text of the document and compares it with the Québec rules."
+      }
+    },
+    "skipped": {
+      "NO_TEXT": "No text could be read in this document, so this check did not run.",
+      "PAYWALL": "The check did not run: the owner has no check left.",
+      "UNAVAILABLE": "The check could not run right now.",
+      "REFUSED": "The check did not run for this document."
+    },
+    "status": {
+      "open": "Open",
+      "revoked": "Revoked",
+      "expired": "Expired",
+      "used": "Sent",
+      "closed": "Closed",
+      "erased": "Erased"
+    },
+    "error": {
+      "LINK_REVOKED": "This link was revoked.",
+      "LINK_EXPIRED": "This link expired.",
+      "LINK_USED": "This file was already sent.",
+      "FILE_CLOSED": "This file was closed.",
+      "APPLICATION_ERASED": "This application was erased.",
+      "TYPE_NOT_REQUESTED": "This document was not asked for.",
+      "TOO_MANY_DOCUMENTS": "This file already holds the most documents it can.",
+      "FILE_NOT_ACCEPTED": "This document must be sent as a PDF.",
+      "DUPLICATE_DOCUMENT": "This file was already sent.",
+      "NO_DOCUMENT": "Send at least one document before submitting.",
+      "TYPE_NOT_NECESSARY": "This document is not necessary and cannot be asked for.",
+      "TYPE_UNKNOWN": "Unknown document type.",
+      "STORAGE_UNAVAILABLE": "The storage that holds these documents is not available.",
+      "PURPOSE_NOT_IN_FILE": "This purpose does not belong to a file of documents.",
+      "CONSENT_REQUIRED": "No document is checked without your consent for this purpose.",
+      "NOT_FOUND": "Not found."
+    }
+  },
   "screening": {
     "tenant": {
       "title": "A request to check your application",
