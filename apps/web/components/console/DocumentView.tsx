@@ -22,6 +22,7 @@ import { ClosingNoteView } from "@/components/ClosingNoteView";
 import { CheckSteps } from "@/components/console/CheckSteps";
 import { DocumentInsight } from "@/components/console/DocumentInsight";
 import { Paywall } from "@/components/console/Paywall";
+import { planCheck, rulesFor } from "@/lib/check-flow";
 import { errorKey } from "@/lib/client";
 import { buildNote, noteInputOf, noteSourceOf } from "@/lib/closing-note/build";
 import { type DocumentTab } from "@/lib/console-nav";
@@ -29,6 +30,7 @@ import { displayTitle } from "@/lib/document-face";
 import { useSay } from "@/lib/i18n-client";
 import { firstCheck, wordingOf } from "@/lib/perspective-defaults";
 import { photoOriginSignals } from "@/lib/photo-origin";
+import { CHECK_KINDS, type CheckKind, isCheckKind } from "@/lib/rulesets";
 
 import { STATUS_TONE } from "./DocumentTable";
 import { formatBytes, formatDate } from "./format";
@@ -40,8 +42,8 @@ const LEVEL_TONE: Record<string, "neutral" | "warning" | "danger"> = { observé:
 const RUN_TONE = { running: "accent", succeeded: "success", failed: "danger", cancelled: "neutral" } as const;
 
 const compliance = createKrizakaForm({
-  schema: z.object({ documentType: z.enum(["lease", "invoice", "contract"]), jurisdiction: z.enum(JURISDICTIONS), asOf: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }),
-  defaultValues: { documentType: "lease" as "lease" | "invoice" | "contract", jurisdiction: "QC" as (typeof JURISDICTIONS)[number], asOf: new Date().toISOString().slice(0, 10) },
+  schema: z.object({ documentType: z.enum(CHECK_KINDS), jurisdiction: z.enum(JURISDICTIONS), asOf: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }),
+  defaultValues: { documentType: "lease" as CheckKind, jurisdiction: "QC" as (typeof JURISDICTIONS)[number], asOf: new Date().toISOString().slice(0, 10) },
 });
 const authenticity = createKrizakaForm({
   schema: z.object({ expectedIssuer: z.string().trim().max(120) }),
@@ -118,7 +120,8 @@ function PhotoOriginSignals({ source }: { source: TextSource }) {
   return <AuthenticitySignals report={{ header: say("analysis.photoOrigin.header"), signals }} />;
 }
 
-function StartCompliance({ documentId, disabled, jurisdictions, types, initialType }: { documentId: string; disabled: boolean; initialType?: "lease" | "invoice" | "contract"; jurisdictions: readonly (typeof JURISDICTIONS)[number][]; types: readonly ("invoice" | "contract")[] }) {
+/** The compliance form: the kinds offered (a lease always), the one preselected, and the request built by the kind's ruleset in force (`rulesFor`). */
+function StartCompliance({ documentId, disabled, jurisdictions, options, initialType }: { documentId: string; disabled: boolean; initialType: CheckKind; jurisdictions: readonly (typeof JURISDICTIONS)[number][]; options: readonly CheckKind[] }) {
   const { say, locale } = useSay();
   const client = useQueryClient();
   const [reused, setReused] = useState(false);
@@ -127,22 +130,23 @@ function StartCompliance({ documentId, disabled, jurisdictions, types, initialTy
   const [problem, setProblem] = useState<string | null>(refused && refused !== "PAYWALL" && refused !== "FAIR_USE" ? say(`errors.${refused}`) : null);
   const [paywall, setPaywall] = useState<"PAYWALL" | "FAIR_USE" | null>(refused === "PAYWALL" || refused === "FAIR_USE" ? refused : null);
   const start = useMutation({
-    // The Québec invoice is a named ruleset of the Studio (and Québec's alone); a lease keeps the jurisdiction's own.
-    mutationFn: (body: { documentType: "lease" | "invoice" | "contract"; jurisdiction: string; asOf: string }) =>
-      krizakaFetch(`/api/documents/${documentId}`, {
-        method: "POST",
-        json: { studio: "compliance-check", asOf: body.asOf, ...(body.documentType === "invoice" ? { jurisdiction: "QC", ruleset: "qc-invoice" } : body.documentType === "contract" ? { jurisdiction: "QC", ruleset: "qc-service-contract" } : { jurisdiction: body.jurisdiction }) },
-      }),
+    // The request is the kind's ruleset in force on the check's date (lib/check-flow `rulesFor`): never a lease's rules for another kind.
+    mutationFn: (body: { documentType: CheckKind; jurisdiction: string; asOf: string }) => {
+      const request = rulesFor(body.documentType, body.jurisdiction as (typeof JURISDICTIONS)[number], body.asOf);
+      if (!request) throw new Error("KIND_NOT_VERIFIED");
+      return krizakaFetch(`/api/documents/${documentId}`, { method: "POST", json: request });
+    },
     onSuccess: (data) => {
       setReused(Boolean((data as { reused?: boolean } | null)?.reused));
       return client.invalidateQueries({ queryKey: queryKeys.document(documentId) });
     },
   });
   const form = compliance.useForm({
-    defaultValues: { documentType: initialType ?? "lease", jurisdiction: "QC", asOf: new Date().toISOString().slice(0, 10) },
+    defaultValues: { documentType: initialType, jurisdiction: "QC", asOf: new Date().toISOString().slice(0, 10) },
     i18n: { t: (key, vars) => say(key, vars as Record<string, string | number> | undefined), locale },
     onSubmit: async (values) => {
       setProblem(null);
+      if (!rulesFor(values.documentType, values.jurisdiction, values.asOf)) return setProblem(say("analysis.notVerified"));
       try {
         await start.mutateAsync(values);
       } catch (error) {
@@ -155,8 +159,8 @@ function StartCompliance({ documentId, disabled, jurisdictions, types, initialTy
   return (
     <form.Form aria-label={say("analysis.complianceTitle")} className="flex flex-col gap-3">
       <p className="text-sm text-fg-secondary">{say("analysis.complianceText")}</p>
-      {types.length ? (
-        <form.Select name="documentType" label={say("analysis.documentType")} options={(["lease", ...types] as const).map((k) => ({ value: k, label: say(`analysis.documentTypes.${k}`) }))} />
+      {options.length > 1 ? (
+        <form.Select name="documentType" label={say("analysis.documentType")} options={options.map((k) => ({ value: k, label: say(`analysis.documentTypes.${k}`) }))} />
       ) : null}
       {/* The rules derive from the kind chosen now (the review's C5): Québec's named rulesets for an invoice or a contract, said in one line; a lease keeps its jurisdiction menu. */}
       <form.Field name="documentType">
@@ -303,10 +307,20 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
       }
     },
   };
+  // The kind the person declared (« Quel document ? ») and the one Yomizaka read select the ruleset (ADR-089): a mismatch is shown and confirmed in the form.
+  const detectedKind = doc.insight?.understanding.check?.documentType ?? null;
+  const compliancePlan = planCheck({ declared: doc.kind, detected: detectedKind, asOf: new Date().toISOString().slice(0, 10) });
+  const offeredKinds: readonly CheckKind[] = ["lease", ...(offer.rulesets.includes("qc-invoice") ? (["invoice"] as const) : []), ...(offer.rulesets.includes("qc-service-contract") ? (["contract"] as const) : []), ...(offer.rulesets.includes("qc-visit-notice") ? (["visit-notice"] as const) : []), ...(offer.rulesets.includes("qc-premises-condition") ? (["premises-condition"] as const) : [])];
+  const complianceOptions: readonly CheckKind[] = compliancePlan.mismatch ? [...new Set<CheckKind>([...offeredKinds, compliancePlan.mismatch.detected, ...(isCheckKind(doc.kind) ? [doc.kind] : [])])] : offeredKinds;
   const complianceCard = (
     <Card.Root key="compliance-check" className="p-4">
       <h3 className="mb-2 font-display text-base font-bold text-fg">{say("analysis.complianceTitle")}</h3>
-      {doc.insight && doc.insight.understanding.nature && !doc.insight.understanding.check ? <Alert tone="info">{say("insight.noCheck")}</Alert> : doc.hasText ? <StartCompliance documentId={doc.id} initialType={doc.insight?.understanding.check?.documentType} disabled={running("compliance-check")} jurisdictions={offer.jurisdictions} types={[...(offer.rulesets.includes("qc-invoice") ? (["invoice"] as const) : []), ...(offer.rulesets.includes("qc-service-contract") ? (["contract"] as const) : [])]} /> : <Alert tone="info">{say("document.noText")}</Alert>}
+      {doc.insight && doc.insight.understanding.nature && !doc.insight.understanding.check ? <Alert tone="info">{say("insight.noCheck")}</Alert> : !doc.hasText ? <Alert tone="info">{say("document.noText")}</Alert> : compliancePlan.unsupported ? <Alert tone="info">{say("analysis.notVerified")}</Alert> : (
+        <>
+          {compliancePlan.mismatch ? <Alert tone="warning">{say("analysis.mismatch", { declared: say(`kinds.${compliancePlan.mismatch.declared}`), detected: say(`analysis.kindWords.${compliancePlan.mismatch.detected}`) })}</Alert> : null}
+          <StartCompliance documentId={doc.id} initialType={isCheckKind(doc.kind) ? doc.kind : (detectedKind ?? "lease")} disabled={running("compliance-check")} jurisdictions={offer.jurisdictions} options={complianceOptions} />
+        </>
+      )}
     </Card.Root>
   );
   const authenticityCard = (

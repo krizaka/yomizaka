@@ -2,38 +2,58 @@ import type { DocumentInsight, DocumentKind, Jurisdiction, StartAnalysis } from 
 
 import { isPhotoFile } from "@/components/console/upload";
 
-/* Pure (no database, no clock): the client reads it too. The check flow of the UX review's Y4. */
+import { type CheckKind, isCheckKind, rulesetFor } from "./rulesets";
 
-/** The kinds a compliance check reads. */
-export type CheckableKind = "lease" | "invoice" | "contract";
-const CHECKABLE: readonly CheckableKind[] = ["lease", "invoice", "contract"];
-const checkable = (kind: string): kind is CheckableKind => (CHECKABLE as readonly string[]).includes(kind);
+/* Pure (no database, no clock): the client reads it too. The check flow of the UX review's Y4 and the identify stage of ADR-089:
+ * the declared kind and the detected one select the ruleset; a mismatch is shown and never starts a run by itself. */
 
-/** Québec's named rulesets: an invoice and a contract are checked by name, in Québec only (the Studio takes them so). */
-const NAMED: Partial<Record<CheckableKind, "qc-invoice" | "qc-service-contract">> = { invoice: "qc-invoice", contract: "qc-service-contract" };
+export type CheckableKind = CheckKind;
 
-/** The rules a kind is checked against: a lease by its jurisdiction, an invoice and a contract by Québec's named rulesets — never a jurisdiction left over from another kind (the review's C5). */
-export function rulesFor(kind: CheckableKind, jurisdiction: Jurisdiction = "QC", asOf?: string): StartAnalysis {
-  const ruleset = NAMED[kind];
-  return { studio: "compliance-check", jurisdiction: ruleset ? "QC" : jurisdiction, ...(ruleset ? { ruleset } : {}), ...(asOf ? { asOf } : {}) };
+/** The request that starts a check of `kind` on `asOf`, or null when no ruleset is in force for it: never another kind's rules. */
+export function rulesFor(kind: CheckKind, jurisdiction: Jurisdiction = "QC", asOf: string): StartAnalysis | null {
+  const choice = rulesetFor(kind, jurisdiction, asOf);
+  if (!choice.verified) return null;
+  return { studio: "compliance-check", jurisdiction: kind === "lease" ? jurisdiction : "QC", ...(choice.ruleset ? { ruleset: choice.ruleset } : {}), asOf };
 }
 
 type Understanding = Pick<DocumentInsight["understanding"], "nature" | "check">;
 
+export interface CheckPlan {
+  /** The request to start, or null: nothing runs until the person confirms. */
+  start: StartAnalysis | null;
+  confirm: boolean;
+  tab: "verifications";
+  /** The declared kind and the detected one differ: shown; the declared one is the default until the person confirms. */
+  mismatch: { declared: DocumentKind; detected: CheckKind } | null;
+  /** No ruleset is in force for the kind: said plainly (« pas encore vérifié contre la loi »), never judged as a lease. */
+  unsupported: boolean;
+}
+
+/**
+ * The plan of a check. The declared kind (« Quel document ? », or `auto`) and the detected kind select the ruleset; a mismatch
+ * never starts a run by itself (the declared kind is the default until the person confirms); an unsupported kind says so.
+ */
+export function planCheck({ declared, detected, jurisdictions = ["QC"], asOf }: { declared: DocumentKind | "auto"; detected: CheckKind | null; jurisdictions?: readonly Jurisdiction[]; asOf: string }): CheckPlan {
+  const tab = "verifications" as const;
+  if (declared !== "auto" && detected && detected !== declared) return { start: null, confirm: true, tab, mismatch: { declared, detected }, unsupported: false };
+  const kind: string | null = declared === "auto" ? detected : declared;
+  if (!kind) return { start: null, confirm: true, tab, mismatch: null, unsupported: false };
+  if (!isCheckKind(kind)) return { start: null, confirm: true, tab, mismatch: null, unsupported: true };
+  // A lease's rules are its jurisdiction's: established only when the person is offered one; several, and the report tab asks.
+  if (kind === "lease" && jurisdictions.length !== 1) return { start: null, confirm: true, tab, mismatch: null, unsupported: false };
+  const start = rulesFor(kind, jurisdictions[0], asOf);
+  return start ? { start, confirm: false, tab, mismatch: null, unsupported: false } : { start: null, confirm: true, tab, mismatch: null, unsupported: true };
+}
+
 /**
  * What happens once a file landed (the review's C4, decided by the CTO): the check starts at once when the kind is sure — the
  * person named it, or Yomizaka recognised it with high confidence — and the page opens on the report; otherwise the report
- * tab opens with one confirmation to give (the kind, its rules). Another kind of document has no compliance rules: confirm.
+ * tab opens with one confirmation to give (the kind, its rules).
  */
-export function afterUpload({ requested, insight, jurisdictions = ["QC"] }: { requested: DocumentKind | "auto"; insight: Understanding | null; jurisdictions?: readonly Jurisdiction[] }): { start: StartAnalysis | null; confirm: boolean; tab: "verifications" } {
-  const tab = "verifications" as const;
-  const recognised = insight?.check ?? null;
+export function afterUpload({ requested, insight, jurisdictions = ["QC"], asOf }: { requested: DocumentKind | "auto"; insight: Understanding | null; jurisdictions?: readonly Jurisdiction[]; asOf: string }): CheckPlan {
+  const recognised = insight?.check?.documentType ?? null;
   const sure = insight?.nature?.confidence === "high";
-  const kind = checkable(requested) ? requested : requested === "auto" && recognised && sure ? recognised.documentType : null;
-  if (!kind) return { start: null, confirm: true, tab };
-  // A lease's rules are its jurisdiction's: established only when the person is offered one; several, and the report tab asks.
-  if (kind === "lease" && jurisdictions.length !== 1) return { start: null, confirm: true, tab };
-  return { start: rulesFor(kind, jurisdictions[0]), confirm: false, tab };
+  return planCheck({ declared: requested, detected: requested === "auto" ? (sure ? recognised : null) : recognised, jurisdictions, asOf });
 }
 
 /** The checking options (keep the document, photos as pages) are asked once the files are known, never before (the review's B4). */

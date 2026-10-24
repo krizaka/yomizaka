@@ -376,9 +376,14 @@
       "complianceTitle": "Au regard de la loi",
       "complianceText": "Le texte, règle par règle, au regard des règles d'une juridiction à une date.",
       "rulesLine": "Vérifiée selon les règles du Québec pour {kind}.",
+      "mismatch": "Vous avez indiqué « {declared} », mais le document se lit comme {detected}. Confirmez le type ci-dessous avant la vérification : rien n’est vérifié tant que vous ne l’avez pas fait.",
+      "notVerified": "Ce type de document n'est pas encore vérifié contre la loi.",
       "kindWords": {
         "invoice": "une facture de fournisseur",
-        "contract": "un contrat de service"
+        "contract": "un contrat de service",
+        "lease": "un bail de logement",
+        "visit-notice": "un avis de visite du logement",
+        "premises-condition": "un état des lieux"
       },
       "authenticityTitle": "Traces de modification",
       "authenticityText": "Le fichier PDF lui-même : producteur, dates, enregistrements successifs, polices.",
@@ -387,7 +392,9 @@
       "documentTypes": {
         "lease": "Un bail de logement",
         "invoice": "Une facture de fournisseur (Québec : numéros de TPS et de TVQ, mentions obligatoires)",
-        "contract": "Un contrat de service (Québec : intérêt de retard, droit d'auteur et droits moraux)"
+        "contract": "Un contrat de service (Québec : intérêt de retard, droit d'auteur et droits moraux)",
+        "visit-notice": "Un avis de visite du logement (Québec : préavis de 24 heures)",
+        "premises-condition": "Un état des lieux (Québec : l’état du logement à l’entrée)"
       },
       "jurisdictionNames": {
         "QC": "du Québec",
@@ -564,6 +571,7 @@
       "EXPIRY_IN_THE_PAST": "La date de fin doit être dans le futur.",
       "EMAIL_NOT_VERIFIED": "Confirmez d’abord votre adresse courriel : le lien a été envoyé à l’inscription.",
       "PAYWALL": "Votre audit gratuit est utilisé : payez cet audit ou passez à Pro.",
+        "KIND_NOT_VERIFIED": "Ce type de document n'est pas encore vérifié contre la loi.",
       "FAIR_USE": "Limite d’utilisation mensuelle atteinte.",
       "PAYMENTS_OFF": "Le paiement n’est pas encore disponible.",
       "NO_CUSTOMER": "Rien n’a encore été acheté.",

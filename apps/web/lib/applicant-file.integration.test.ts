@@ -112,10 +112,12 @@ describe.runIf(enabled)("the applicant file (yomizaka#127)", () => {
     expect(await codeOf(uploadApplicantDocument(made.token, "bank-statement", await pdf("BANK NA"), ctx(), NOW))).toBe("422 TYPE_NOT_REQUESTED");
   });
 
-  it("each document runs both checks, and the purge runs once they end: a file not kept leaves its bytes and keeps its reports", async () => {
+  it("a pay stub runs its authenticity check; its compliance check is skipped as KIND_NOT_VERIFIED (no lease ruleset), and the purge runs once the check ends", async () => {
     const made = await askWithConsent(["pay-stub"]);
     const sent = await uploadApplicantDocument(made.token, "pay-stub", await pdf("PAY CHECKED"), ctx(), NOW);
-    expect(sent.checks.started.sort()).toEqual(["compliance-check", "document-authenticity"]);
+    // A pay stub has no compliance ruleset (ADR-089): the lease's rules are never its fallback, so that skip is visible, and the authenticity check runs.
+    expect(sent.checks.started).toEqual(["document-authenticity"]);
+    expect(sent.checks.skipped).toEqual([{ studio: "compliance-check", code: "KIND_NOT_VERIFIED" }]);
     const [doc] = await documentsOf(made.id);
     expect(doc).toMatchObject({ document_type: "pay-stub", retention_policy: "after-check", storage: "none" });
     expect(doc!.content_len).toBeGreaterThan(0);
@@ -123,11 +125,11 @@ describe.runIf(enabled)("the applicant file (yomizaka#127)", () => {
     for (const id of runs.keys()) runs.set(id, "FAILED");
     const view = await applicantFileOf(landlordA.id, made.id, NOW);
     expect(view.documents[0]).toMatchObject({ purged: true, retention: "after-check" });
-    expect(view.documents[0]!.checks.map((c) => c.status).sort()).toEqual(["failed", "failed"]);
+    expect(view.documents[0]!.checks.map((c) => c.status)).toEqual(["failed"]);
     const [after] = await documentsOf(made.id);
     expect(after).toMatchObject({ content_len: 0, text: "" });
     const reports = await query("SELECT id FROM analyses WHERE document_id = $1", [doc!.id]);
-    expect(reports).toHaveLength(2);
+    expect(reports).toHaveLength(1);
   });
 
   it("a kept file stays until the manager closes it; the close purges it and closes the link with it", async () => {

@@ -20,7 +20,7 @@ export async function startIfSure(id: string, requested: DocumentKind | "auto", 
   let start = null;
   try {
     const { document } = await fetcher(`/api/documents/${id}`, { schema: z.object({ document: documentView }) });
-    start = afterUpload({ requested, insight: document.insight?.understanding ?? null, jurisdictions }).start;
+    start = afterUpload({ requested, insight: document.insight?.understanding ?? null, jurisdictions, asOf: new Date().toISOString().slice(0, 10) }).start;
   } catch {
     // Nothing sure: the report tab asks for the kind itself.
   }

@@ -24,6 +24,10 @@ describe("what a document can be checked for", () => {
     expect(availableChecks({ ...doc, mimeType: "text/plain" })).toEqual([{ studio: "compliance-check", jurisdiction: "QC" }]);
   });
 
+  it("offers no compliance check for another kind: no ruleset is in force for it, and the lease's rules are never its fallback", () => {
+    expect(availableChecks({ ...doc, kind: "other" })).toEqual([{ studio: "document-authenticity" }]);
+  });
+
   it("offers nothing for a text file without text", () => {
     expect(availableChecks({ ...doc, hasText: false, mimeType: "text/plain" })).toEqual([]);
   });

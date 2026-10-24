@@ -3,7 +3,7 @@ import { type Analysis, AUTHENTICITY_MAX_BYTES, COMPLIANCE_MAX_CHARS, DOCX_MIME,
 import { assertAnalysisAllowed } from "./applicant-consent";
 import { refundFailedAudit } from "./billing";
 import { query } from "./db";
-import { type AnalysisRow, isUuid, needsAttention, readBytes, toAnalysis } from "./documents";
+import { type AnalysisRow, declaredKindOf, isUuid, needsAttention, readBytes, toAnalysis } from "./documents";
 import { refuse } from "./http";
 import { orazaka } from "./orazaka";
 import { purgeIfDone } from "./retention";
@@ -47,7 +47,10 @@ export async function startAnalysis(ownerId: string, documentId: string, request
   if (request.studio === "compliance-check" && doc.storage === "none" && doc.text === "" && doc.content.length === 0) throw refuse(409, "NOT_KEPT", "This document is not kept: only its report stays");
   const [running] = await query("SELECT id FROM analyses WHERE document_id = $1 AND studio = $2 AND status = 'running'", [documentId, request.studio]);
   if (running) throw refuse(409, "ALREADY_RUNNING", "This check is already running");
+  // The text is validated first (NO_TEXT, TEXT_TOO_LONG); only then the kind: a kind with no ruleset in force is said so, and the
+  // lease's rules are never the fallback for it (ADR-089).
   const inputs = runInputs(request, { mimeType: doc.mime_type, text: doc.text, content });
+  if (request.studio === "compliance-check" && !request.ruleset && (await declaredKindOf(ownerId, documentId)) === "other") throw refuse(422, "KIND_NOT_VERIFIED", "This kind of document is not checked against the law yet");
   const run = await orazaka().startRun(request.studio, inputs);
   const kept = Object.fromEntries(Object.entries(inputs).filter(([k]) => k !== "document" && k !== "documentBase64"));
   const [row] = await query<AnalysisRow>(

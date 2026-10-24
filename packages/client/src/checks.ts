@@ -8,6 +8,9 @@ const RULESET_OF_KIND: Record<DocumentKind, "qc-invoice" | "qc-service-contract"
   other: undefined,
 };
 
+/** The declared kind with no ruleset in force (« Autre »): no compliance check is offered for it. */
+const UNVERIFIED_KIND: DocumentKind = "other";
+
 export const CHECK = { compliance: "compliance-check", authenticity: "document-authenticity" } as const;
 
 /**
@@ -18,5 +21,7 @@ export function availableChecks(doc: Pick<DocumentSummary, "kind" | "hasText" | 
   const ruleset = RULESET_OF_KIND[doc.kind];
   const compliance: StartAnalysis = { studio: CHECK.compliance, jurisdiction: "QC", ...(ruleset ? { ruleset } : {}) };
   const authenticity: StartAnalysis = { studio: CHECK.authenticity };
-  return [...(doc.hasText ? [compliance] : []), ...(doc.mimeType === "application/pdf" ? [authenticity] : [])];
+  // Another kind has no ruleset in force: the lease's rules are never its fallback (ADR-089), so no compliance check is offered.
+  const verifiable = doc.kind !== UNVERIFIED_KIND;
+  return [...(doc.hasText && verifiable ? [compliance] : []), ...(doc.mimeType === "application/pdf" ? [authenticity] : [])];
 }

@@ -17,7 +17,7 @@ export interface Labelled {
 export interface CheckTarget {
   studio: "compliance-check";
   /** The document type of the compliance form, and the named ruleset when it is not the jurisdiction's lease. */
-  documentType: "lease" | "invoice" | "contract";
+  documentType: "lease" | "invoice" | "contract" | "visit-notice" | "premises-condition";
   ruleset: string | null;
 }
 

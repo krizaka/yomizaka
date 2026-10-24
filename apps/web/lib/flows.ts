@@ -95,10 +95,13 @@ export async function revokeConsent(account: { id: string; email: string }, key:
  * Pure: may this person start a Studio now? The flow must be enabled and offered to them, and every consent it requires must
  * be granted. Returns the flow to run under, or the refusal (the route turns it into a 403 with a stable code).
  */
+/** A dated ruleset (`qc-residential-lease/2026-10-24`) runs under the flow that names its ruleset (`qc-residential-lease`). */
+export const rulesetId = (ruleset: string): string => ruleset.split("/")[0] ?? ruleset;
+
 export function decideStart(flows: readonly AvailableFlow[], audience: Audience | null, studio: Studio, granted: readonly string[], ruleset?: string): { ok: true; flow: AvailableFlow } | { ok: false; code: "FLOW_NOT_OFFERED" | "CONSENT_REQUIRED"; missing: string[] } {
   // A named ruleset (the invoice) is run only under a flow whose step carries it — never because the request asked.
   const candidates = flowsFor(flows, audience).filter((f) =>
-    f.definition.steps.some((s) => s.kind === STEP_KIND.studio && s.studio === studio && (!ruleset || s.jurisdictions.some((j) => j.ruleset === ruleset))),
+    f.definition.steps.some((s) => s.kind === STEP_KIND.studio && s.studio === studio && (!ruleset || s.jurisdictions.some((j) => j.ruleset === rulesetId(ruleset)))),
   );
   if (candidates.length === 0) return { ok: false, code: "FLOW_NOT_OFFERED", missing: [] };
   // The first flow whose consents the person has given; else the first flow's missing consents are reported.

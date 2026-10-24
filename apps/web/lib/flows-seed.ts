@@ -13,6 +13,8 @@ const COMPLIANCE = {
   pack: "document-validation",
   jurisdictions: [
     { code: "QC" as const, ruleset: "qc-residential-lease" },
+    { code: "QC" as const, ruleset: "qc-visit-notice" },
+    { code: "QC" as const, ruleset: "qc-premises-condition" },
     { code: "FR" as const, ruleset: "fr-residential-lease" },
     { code: "BE-WAL" as const, ruleset: "be-residential-lease" },
   ],

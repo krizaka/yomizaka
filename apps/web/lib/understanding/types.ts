@@ -93,6 +93,29 @@ export const DOCUMENT_TYPES: readonly DocumentTypeDef[] = [
     check: null,
     authenticity: true,
   },
+  {
+    id: "visit-notice",
+    label: { fr: "Avis de visite du logement", en: "Notice of a visit to the dwelling" },
+    signals: [
+      { pattern: "avis\\s+de\\s+visite|visit\\s+notice|notice\\s+of\\s+(?:a\\s+)?visit", weight: 5 },
+      { pattern: "visite\\s+du\\s+logement|visite\\s+des\\s+lieux|dwelling\\s+visit", weight: 2 },
+      { pattern: "pr[ée]avis\\s+de\\s+(?:24|vingt-quatre)\\s+heures|24\\s+hours?\\s+notice", weight: 2 },
+      { pattern: "locateur|locatrice|landlord", weight: 1 },
+      { pattern: "locataire|\\btenant\\b", weight: 1 },
+    ],
+    check: { studio: "compliance-check", documentType: "visit-notice", ruleset: "qc-visit-notice" },
+  },
+  {
+    id: "premises-condition",
+    label: { fr: "État des lieux", en: "Condition report of the premises" },
+    signals: [
+      { pattern: "[ée]tat\\s+des\\s+lieux|condition\\s+report|move[- ]in\\s+inspection", weight: 5 },
+      { pattern: "constat\\s+d['’][ée]tat|[ée]tat\\s+du\\s+logement|condition\\s+of\\s+the\\s+(?:dwelling|premises)", weight: 3 },
+      { pattern: "entr[ée]e\\s+en\\s+jouissance|move[- ]in", weight: 2 },
+      { pattern: "bon\\s+[ée]tat|mauvais\\s+[ée]tat|good\\s+condition|damaged", weight: 1 },
+    ],
+    check: { studio: "compliance-check", documentType: "premises-condition", ruleset: "qc-premises-condition" },
+  },
 ];
 
 /** Identifiers read from the text (group 1 is the value). */
