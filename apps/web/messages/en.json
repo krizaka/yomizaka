@@ -162,7 +162,10 @@
       "privacy": "privacy notice",
       "signUpLink": "Create an account",
       "verifiedNotice": "Your address is confirmed. You can sign in.",
-      "invalidNotice": "This confirmation link is invalid or has expired."
+      "invalidNotice": "This confirmation link is invalid or has expired.",
+      "proofOne": "Every finding cites its rule and the line it rests on.",
+      "proofTwo": "By default, a document is deleted once checked: only the report stays.",
+      "proofThree": "Reports are written in French, the language of their rules."
     },
     "shell": {
       "skip": "Skip to content",

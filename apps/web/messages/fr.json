@@ -162,7 +162,10 @@
       "privacy": "avis de confidentialité",
       "signUpLink": "Créer un compte",
       "verifiedNotice": "Votre adresse est confirmée. Vous pouvez vous connecter.",
-      "invalidNotice": "Ce lien de confirmation est invalide ou a expiré."
+      "invalidNotice": "Ce lien de confirmation est invalide ou a expiré.",
+      "proofOne": "Chaque constat cite sa règle et la ligne sur laquelle il repose.",
+      "proofTwo": "Par défaut, le document est supprimé après sa vérification : seul le rapport reste.",
+      "proofThree": "Les rapports sont rédigés en français, la langue de leurs règles."
     },
     "shell": {
       "skip": "Aller au contenu",
