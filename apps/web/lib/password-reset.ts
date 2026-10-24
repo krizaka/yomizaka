@@ -24,7 +24,8 @@ export async function requestReset(deps: ResetDeps, input: { email: string }, re
   try {
     await deps.accounts.requestPasswordReset(input.email, now);
   } catch (error) {
-    console.error("password reset: the link could not be issued or mailed", error instanceof Error ? error.message : "unknown");
+    // Never the message: a mail provider's error often names its recipient.
+    console.error("password reset: the link could not be issued or mailed", error instanceof Error ? error.name : "unknown");
   }
   await deps.audit({ action: "auth.password_reset_requested", actorId: null, actorLabel: "password reset form", headers: req.headers });
   return { ok: true };

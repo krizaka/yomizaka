@@ -45,11 +45,12 @@ describe("asking for a reset link", () => {
     const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
     const { deps, audits } = world();
     deps.accounts.requestPasswordReset = async () => {
-      throw new Error("Mail provider answered 500");
+      throw new Error("Mail provider refused: invalid recipient known@example.test");
     };
     await expect(requestReset(deps, { email: "known@example.test" }, request(), NOW)).resolves.toEqual({ ok: true });
     expect(audits).toHaveLength(1);
-    expect(JSON.stringify(error.mock.calls)).not.toContain("known@example.test");
+    expect(error).toHaveBeenCalled();
+    expect(JSON.stringify(error.mock.calls)).not.toMatch(/known@example\.test|example\.test|recipient/);
     error.mockRestore();
   });
 
