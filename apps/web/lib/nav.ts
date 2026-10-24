@@ -7,6 +7,7 @@ import { type PageId, pagePath } from "./site";
 export const MENU = [
   { id: "what", page: "home", hash: "#what" },
   { id: "proof", page: "home", hash: "#proof" },
+  { id: "pricing", page: "pricing", hash: "" },
   { id: "privacy", page: "privacy", hash: "" },
 ] as const satisfies readonly { id: string; page: PageId; hash: string }[];
 

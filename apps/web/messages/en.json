@@ -10,7 +10,8 @@
     "nav": {
       "what": "What it does",
       "proof": "A real run",
-      "privacy": "Privacy"
+      "privacy": "Privacy",
+      "pricing": "Pricing"
     },
     "signIn": "Sign in",
     "themeToggle": "Theme",
@@ -35,8 +36,8 @@
     "signOut": "Sign out"
   },
   "landing": {
-    "title": "Read before you sign.",
-    "lead": "Drop a lease, a contract or an invoice. Yomizaka reads it against the rules in force and shows you the exact line behind every finding.",
+    "title": "The fake pay stub, flagged before you pay for the screening.",
+    "lead": "Your lease is read against the Civil Code of Québec. Your PDF pay stub is examined as a file. Every finding cites its rule and the exact sentence it rests on. Signals stay signals: no « fake » stamp.",
     "status": {
       "label": "Status",
       "development": "In development: sign-up is closed while we test it on real Québec leases.",
@@ -54,20 +55,20 @@
       "title": "What it does",
       "lead": "Three things, with nothing hidden behind them.",
       "who": "For tenants and landlords checking a Québec lease. Freelancers and small businesses can check a contract or an invoice too.",
-      "trust": "Your documents are kept in Canada and seen by your account alone. Nothing is sold, shared or used to train a model.",
+      "trust": "Your files pass through a holding area. They are purged once checked, unless you choose to keep them. Only the report stays. A file that is never checked is purged after a fixed delay.",
       "privacy": "Read the privacy notice",
       "items": {
         "line": {
-          "title": "The exact line behind every finding",
+          "title": "Your lease, read against the C.c.Q.",
           "text": "Each finding names the rule, quotes the article of law and lights the sentence of the lease it rests on."
         },
         "file": {
-          "title": "The PDF examined as a file",
+          "title": "The pay stub, examined as a file",
           "text": "Producer, dates, successive saves: three levels (observed, unusual, inconsistent), never a « fake » stamp."
         },
         "find": {
-          "title": "Find everything in a second",
-          "text": "One word, and every document and every finding comes back, the passage in bold."
+          "title": "No annual subscription",
+          "text": "Pay one check at a time. The checks you buy never expire. The prices are on the Prices page."
         }
       }
     },
@@ -81,7 +82,7 @@
       "powered": "Powered by Orazaka.",
       "owlLabel": "What the owl promises"
     },
-    "eyebrow": "Québec · leases, contracts, invoices",
+    "eyebrow": "Québec · leases, pay stubs, invoices, contracts",
     "proofs": {
       "rules": "rules checked",
       "articles": "articles of law cited",
@@ -98,8 +99,8 @@
     },
     "closing": {
       "title": "One document, one answer.",
-      "body": "Sign in to check a document. Your documents stay in Canada, visible to your account only.",
-      "bodyIn": "Your documents are in your library, checked and kept in Canada."
+      "body": "Sign in to check a document. Files are purged once checked, unless you keep them.",
+      "bodyIn": "Your documents are in your library. The ones you chose to keep stay there."
     },
     "visual": {
       "caption": "A real check, recorded as it came back"
@@ -115,7 +116,7 @@
   "privacy": {
     "title": "Privacy",
     "updated": "Updated {date}",
-    "body": "A document you upload is kept in Yomizaka's database (Toronto, Canada), visible to your account alone. When you ask for a check, the document, its text, or the PDF file, is sent to Orazaka, Krizaka's analysis engine, over HTTPS, and the result is kept with the run's id. Nothing is sold, shared or used to train a model. Deleting a document deletes its file, its text and its analyses. To ask a question or have your data removed, use the contact form.",
+    "body": "A document you upload is kept in Yomizaka's database, visible to your account alone. Unless you choose to keep it, it is purged once its check has run. When you ask for a check, the document, its text, or the PDF file, is sent to Orazaka, Krizaka's analysis engine, over HTTPS, and the result is kept with the run's id. Nothing is sold, shared or used to train a model. Deleting a document deletes its file, its text and its analyses. To ask a question or have your data removed, use the contact form.",
     "sections": [
       {
         "h": "Who is responsible",
@@ -127,7 +128,7 @@
       },
       {
         "h": "Where it is kept",
-        "p": "In a database in Canada. Documents are sent to Orazaka, Krizaka's analysis engine, over HTTPS to be checked. [TO BE REVIEWED BY THE LAWYER: mention of any transfer outside Québec and the privacy impact assessment.]"
+        "p": "In Yomizaka's database. [TO BE REVIEWED BY THE LAWYER: where the database is hosted (province and country), which the infrastructure does not prove yet (yomizaka#299), any transfer outside Québec, and the privacy impact assessment.] Documents are sent to Orazaka, Krizaka's analysis engine, over HTTPS to be checked."
       },
       {
         "h": "Your rights",
@@ -1851,6 +1852,55 @@
           "name": "Invoices 2026",
           "description": "The 2026 maintenance invoices — fictitious specimen documents, one with a wrong total."
         }
+      }
+    }
+  },
+  "pricing": {
+    "title": "Prices",
+    "lead": "No annual subscription. You pay one check at a time, and the checks you buy never expire. Prices in Canadian dollars; GST and QST are added on the invoice.",
+    "offer": {
+      "title": "What you can buy today",
+      "lead": "The prices the payment processor charges, read from the same catalogue."
+    },
+    "preparing": {
+      "title": "In preparation",
+      "lead": "Not offered yet. No price is promised for these."
+    },
+    "rows": {
+      "check": {
+        "title": "One document check",
+        "text": "A lease, a pay stub, an invoice or a contract: read against Québec's rules, the PDF examined as a file.",
+        "value": "{price} per check"
+      },
+      "first": {
+        "title": "Your first check",
+        "text": "Your first check costs nothing.",
+        "value": "Free"
+      },
+      "pro": {
+        "title": "Pro, monthly",
+        "text": "Up to {limit} checks a month. Cancel from the billing portal at any time.",
+        "value": "{price} a month"
+      },
+      "lot": {
+        "title": "A lot of 25 checks or more",
+        "text": "A volume price for a batch of files.",
+        "status": "In preparation"
+      },
+      "filter": {
+        "title": "The document filter alone",
+        "text": "The first stage of a file, charged only when it runs.",
+        "status": "In preparation"
+      },
+      "full": {
+        "title": "The full Québec file",
+        "text": "The registry checks: the TAL and the plumitif through SOQUIJ, after the documents.",
+        "status": "In preparation"
+      },
+      "income": {
+        "title": "Income check (Open Banking)",
+        "text": "An optional check of the income, with your consent.",
+        "status": "In preparation"
       }
     }
   }
