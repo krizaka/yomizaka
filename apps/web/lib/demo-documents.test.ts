@@ -65,6 +65,15 @@ describe("the demo documents generator", () => {
     expect(new Set(all.filter((d) => d.family === "lease").map((d) => d.flaw))).toEqual(new Set([null, "no-tal", "illegal-clause"]));
   });
 
+  it("gives every lease the lowest-rent notice, so a clean lease has the mandatory mentions and a flawed one differs only by its flaw", async () => {
+    for (const doc of all.filter((d) => d.family === "lease")) {
+      const text = await textOf(doc);
+      expect(text, doc.id).toContain("Le loyer le plus bas payé au cours des douze derniers mois précédant le début du bail était de");
+      if (doc.flaw !== "no-tal") expect(text, doc.id).toContain("Renseignements au nouveau locataire");
+      expect(text, doc.id).toContain("maintien dans les lieux");
+    }
+  });
+
   it("has totals that really do not add up in the flawed pay stub and invoice, and a balance that does not follow in the edited statement", async () => {
     const amount = (text: string, label: string) => {
       const m = text.match(new RegExp(`${label} : (-?[\\d ]+),(\\d\\d) \\$`));
