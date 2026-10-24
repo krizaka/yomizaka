@@ -376,9 +376,14 @@
       "complianceTitle": "Against the law",
       "complianceText": "The text, rule by rule, against the rules of a jurisdiction on a date.",
       "rulesLine": "Checked against Québec's rules for {kind}.",
+      "mismatch": "You declared « {declared} », but the document reads as {detected}. Confirm the kind below before the check runs: nothing is checked until you do.",
+      "notVerified": "This kind of document is not checked against the law yet.",
       "kindWords": {
         "invoice": "a supplier invoice",
-        "contract": "a service contract"
+        "contract": "a service contract",
+        "lease": "a residential lease",
+        "visit-notice": "a notice of a visit to the dwelling",
+        "premises-condition": "a condition report (état des lieux)"
       },
       "authenticityTitle": "Signs of editing",
       "authenticityText": "The PDF file itself: producer, dates, successive saves, fonts.",
@@ -387,7 +392,9 @@
       "documentTypes": {
         "lease": "A residential lease",
         "invoice": "A supplier's invoice (Québec: GST and QST numbers, mandatory mentions)",
-        "contract": "A service contract (Québec: late-payment interest, copyright and moral rights)"
+        "contract": "A service contract (Québec: late-payment interest, copyright and moral rights)",
+        "visit-notice": "A notice of a visit to the dwelling (Québec: 24-hour notice)",
+        "premises-condition": "A condition report, état des lieux (Québec: the state of the premises at move-in)"
       },
       "jurisdictionNames": {
         "QC": "Québec",
@@ -564,6 +571,7 @@
       "EXPIRY_IN_THE_PAST": "The end date must be in the future.",
       "EMAIL_NOT_VERIFIED": "Confirm your e-mail address first: the link was sent when you signed up.",
       "PAYWALL": "Your free audit is used: pay for this audit or go Pro.",
+        "KIND_NOT_VERIFIED": "This kind of document is not checked against the law yet.",
       "FAIR_USE": "Monthly fair-use limit reached.",
       "PAYMENTS_OFF": "Payment is not available yet.",
       "NO_CUSTOMER": "Nothing has been bought yet.",

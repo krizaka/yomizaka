@@ -119,6 +119,12 @@ export async function isPhotoDocument(ownerId: string, id: string): Promise<bool
   return row?.photo ?? false;
 }
 
+/** The kind declared on a document (« Quel document ? »): the compliance check never falls back to a lease's rules for `other`. */
+export async function declaredKindOf(ownerId: string, id: string): Promise<DocumentKind | null> {
+  const [row] = await query<{ kind: DocumentKind }>("SELECT kind FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, id]);
+  return row?.kind ?? null;
+}
+
 /** Where a document lives and until when (the info panel, ADR-0007), from its row and the store configured now. */
 export async function documentStorage(ownerId: string, id: string, describe: (owner: CloudOwner) => StoreDescriptor): Promise<{ storage: StoreDescriptor; retainUntil: string | null; purged: boolean }> {
   if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such document");

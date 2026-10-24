@@ -15,7 +15,7 @@ describe("the seeded flows", () => {
   });
   it("point the compliance Studio at the rulesets of the pack by jurisdiction (data, not code)", () => {
     const compliance = SEED_FLOWS[0]!.definition.steps.find((s) => s.studio === "compliance-check")!;
-    expect(compliance.jurisdictions.map((j) => [j.code, j.ruleset])).toEqual([["QC", "qc-residential-lease"], ["FR", "fr-residential-lease"], ["BE-WAL", "be-residential-lease"]]);
+    expect(compliance.jurisdictions.map((j) => [j.code, j.ruleset])).toEqual([["QC", "qc-residential-lease"], ["QC", "qc-visit-notice"], ["QC", "qc-premises-condition"], ["FR", "fr-residential-lease"], ["BE-WAL", "be-residential-lease"]]);
   });
   it("run the Québec invoice check for the freelancer and the business flows (dev only); only the screening stays « soon »", () => {
     expect(SEED_FLOWS.filter((s) => s.definition.status === "soon").map((s) => s.key)).toEqual(["tenant-screening"]);
@@ -45,7 +45,7 @@ describe("what the app derives from the flows — nothing hard-coded", () => {
 
   it("offers on a document the Studios and jurisdictions of the person's flows (all flows until they chose a side)", () => {
     const flows = seedFlows("dev");
-    expect(offerFor(flows, "tenant")).toEqual({ studios: ["compliance-check", "document-authenticity"], jurisdictions: ["QC", "FR", "BE-WAL"], rulesets: ["qc-residential-lease", "fr-residential-lease", "be-residential-lease"] });
+    expect(offerFor(flows, "tenant")).toEqual({ studios: ["compliance-check", "document-authenticity"], jurisdictions: ["QC", "FR", "BE-WAL"], rulesets: ["qc-residential-lease", "qc-visit-notice", "qc-premises-condition", "fr-residential-lease", "be-residential-lease"] });
     expect(offerFor(flows, "freelancer")).toEqual({ studios: ["compliance-check", "document-authenticity"], jurisdictions: ["QC"], rulesets: ["qc-invoice", "qc-service-contract"] });
     expect(flowsFor(flows, null)).toHaveLength(flows.length);
   });
@@ -63,6 +63,12 @@ describe("a required consent is enforced, not only hidden", () => {
   it("refuses a Studio no enabled flow offers to this person (FLOW_NOT_OFFERED)", () => {
     expect(decideStart([screening], "tenant", "compliance-check", ["tenant-screening"])).toMatchObject({ ok: false, code: "FLOW_NOT_OFFERED" });
     expect(decideStart([], null, "document-authenticity", [])).toMatchObject({ ok: false, code: "FLOW_NOT_OFFERED" });
+  });
+  it("runs a dated ruleset (qc-residential-lease/2026-10-24) under the flow that names its ruleset, and a new kind under the flow that names it", () => {
+    const seeded = seedFlows("dev");
+    expect(decideStart(seeded, "tenant", "compliance-check", [], "qc-residential-lease/2026-10-24")).toMatchObject({ ok: true });
+    expect(decideStart(seeded, "tenant", "compliance-check", [], "qc-visit-notice")).toMatchObject({ ok: true });
+    expect(decideStart(seeded, "tenant", "compliance-check", [], "qc-unknown-notice")).toMatchObject({ ok: false, code: "FLOW_NOT_OFFERED" });
   });
   it("runs under another flow of the audience when that one needs no consent", () => {
     const free = flow("lease-check-landlord", { audiences: ["landlord"] });

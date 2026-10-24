@@ -280,7 +280,7 @@ export const documentInsight = z.object({
     parties: z.array(z.object({ role: z.string(), name: z.string() })),
     references: z.array(z.object({ kind: z.string(), value: z.string() })),
     amounts: z.array(z.object({ kind: z.string(), cents: z.number(), text: z.string() })),
-    check: z.object({ studio: z.literal("compliance-check"), documentType: z.enum(["lease", "invoice", "contract"]), ruleset: z.string().nullable() }).nullable(),
+    check: z.object({ studio: z.literal("compliance-check"), documentType: z.enum(["lease", "invoice", "contract", "visit-notice", "premises-condition"]), ruleset: z.string().nullable() }).nullable(),
     authenticity: z.boolean(),
     needsModel: z.boolean(),
   }),
@@ -364,9 +364,11 @@ export const documentView = documentDetail.extend({
 });
 export type DocumentView = z.infer<typeof documentView>;
 
-/** The rulesets the Studio takes by name besides each jurisdiction's lease (orazaka-packs `document-validation` 1.3.0+): Québec's supplier invoice and service contract. */
-export const NAMED_RULESETS = ["qc-invoice", "qc-service-contract"] as const;
+/** The rulesets the Studio takes by name besides each jurisdiction's lease (orazaka-packs `document-validation`): Québec's supplier invoice, service contract, visit notice and état des lieux (orazaka-packs#128). */
+export const NAMED_RULESETS = ["qc-invoice", "qc-service-contract", "qc-visit-notice", "qc-premises-condition"] as const;
 export const namedRuleset = z.enum(NAMED_RULESETS);
+/** Québec's lease at a version in force (`qc-residential-lease/2026-10-24`, ADR-089): the date picks it, the check records it. */
+export const DATED_LEASE_RULESET = /^qc-residential-lease\/\d{4}-\d{2}-\d{2}$/;
 
 export const startAnalysis = z.discriminatedUnion("studio", [
   z.object({
@@ -374,8 +376,8 @@ export const startAnalysis = z.discriminatedUnion("studio", [
     jurisdiction,
     asOf: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
     /** Not the jurisdiction's lease but this document type's rules; the Québec invoice belongs to QC only. */
-    ruleset: namedRuleset.optional(),
-  }).refine((r) => !r.ruleset || r.jurisdiction === "QC", { message: "The invoice and contract rules are Québec's", path: ["ruleset"] }),
+    ruleset: z.union([namedRuleset, z.string().regex(DATED_LEASE_RULESET)]).optional(),
+  }).refine((r) => !r.ruleset || r.jurisdiction === "QC", { message: "The named rulesets are Québec's", path: ["ruleset"] }),
   z.object({
     studio: z.literal("document-authenticity"),
     expectedIssuer: z.string().trim().max(120).optional(),

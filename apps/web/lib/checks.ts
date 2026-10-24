@@ -5,7 +5,7 @@ import { storeForDocument } from "@/app/active-store";
 import { getAnalysis, startAnalysis } from "./analyses";
 import { type AuditVia, releaseAudit, reserveAudit } from "./billing";
 import { query } from "./db";
-import { documentStatus, isPhotoDocument } from "./documents";
+import { declaredKindOf, documentStatus, isPhotoDocument } from "./documents";
 import { resolveStart } from "./flows";
 import { refuse } from "./http";
 import type { Query } from "./organisation/store";
@@ -22,6 +22,8 @@ export type StartedCheck = { analysis: Analysis; reused: true } | { analysis: An
 
 export async function startCheck(account: { id: string; perspective: Audience | null }, documentId: string, request: StartAnalysis, now: Date, environment: FlowEnvironment): Promise<StartedCheck> {
   if (request.studio === "document-authenticity" && (await isPhotoDocument(account.id, documentId))) throw refuse(422, "PHOTO_AUTHENTICITY", "A document made from photos has no file of its own to examine");
+  // A kind with no ruleset in force is said so: the lease's rules are never the fallback for it (ADR-089).
+  if (request.studio === "compliance-check" && !request.ruleset && (await declaredKindOf(account.id, documentId)) === "other") throw refuse(422, "KIND_NOT_VERIFIED", "This kind of document is not checked against the law yet");
   const { flowVersionId } = await resolveStart(account, request.studio, environment, request.studio === "compliance-check" ? request.ruleset : undefined);
   const settings = await settingsFor(account.id);
   const reusable = await findReusableAnalysis(query, {

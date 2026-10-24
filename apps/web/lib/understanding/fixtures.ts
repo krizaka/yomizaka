@@ -62,6 +62,34 @@ Retrait 800,00 $
 Solde de clôture 2 500,00 $
 `;
 
+/** A fictitious notice of a visit (ADR-089's blank template, filled): a landlord's 24-hour notice, not a lease. */
+export const VISIT_NOTICE = `AVIS DE VISITE DU LOGEMENT
+Locateur : Madame Hélène Roy, 120, avenue du Parc
+Locataire : Monsieur Karim Haddad
+Date de l'avis : 2026-10-20
+Visite prévue le 2026-10-28, entre 9 h et 12 h.
+Préavis de 24 heures, conformément à l'article 1933 du Code civil du Québec.
+`;
+
+/** A fictitious état des lieux d'entrée (the move-in condition report), not a lease. */
+export const PREMISES_CONDITION = `ÉTAT DES LIEUX D'ENTRÉE
+Logement : 3½, avenue du Parc, Montréal
+Locateur : Madame Hélène Roy
+Locataire : Monsieur Karim Haddad
+Date de l'entrée en jouissance : 2026-09-01
+Salon : murs en bon état, plancher de bois franc sans égratignure.
+Cuisine : comptoir endommagé près de l'évier.
+`;
+
+/** The English move-in condition report of the same premises. */
+export const ENGLISH_CONDITION_REPORT = `CONDITION REPORT — MOVE-IN INSPECTION
+Landlord: Hélène Roy
+Tenant: Karim Haddad
+Date of move-in: 2026-09-01
+Living room: walls in good condition, no scratches on the hardwood floor.
+Kitchen: countertop damaged near the sink.
+`;
+
 export const ID_CARD = `PERMIS DE CONDUIRE
 Date de naissance : 1990-05-17
 `;

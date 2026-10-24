@@ -14,6 +14,9 @@ describe("understanding: the nature, with a confidence", () => {
     ["pay-stub", fx.PAY_STUB],
     ["bank-statement", fx.BANK_STATEMENT],
     ["identity-document", fx.ID_CARD],
+    ["visit-notice", fx.VISIT_NOTICE],
+    ["premises-condition", fx.PREMISES_CONDITION],
+    ["premises-condition", fx.ENGLISH_CONDITION_REPORT],
   ])("recognises %s", (id, text) => {
     const u = read(text);
     expect(u.nature?.id).toBe(id);
@@ -37,6 +40,11 @@ describe("understanding: the matching check (or none, said plainly)", () => {
     expect(read(fx.LEASE).check).toEqual({ studio: "compliance-check", documentType: "lease", ruleset: null });
     expect(read(fx.INVOICE).check).toEqual({ studio: "compliance-check", documentType: "invoice", ruleset: "qc-invoice" });
     expect(read(fx.CONTRACT).check).toEqual({ studio: "compliance-check", documentType: "contract", ruleset: "qc-service-contract" });
+  });
+  it("a visit notice and an état des lieux lead to their own rulesets, never to the lease", () => {
+    expect(read(fx.VISIT_NOTICE).check).toEqual({ studio: "compliance-check", documentType: "visit-notice", ruleset: "qc-visit-notice" });
+    expect(read(fx.PREMISES_CONDITION).check).toEqual({ studio: "compliance-check", documentType: "premises-condition", ruleset: "qc-premises-condition" });
+    expect(read(fx.ENGLISH_CONDITION_REPORT).check?.documentType).toBe("premises-condition");
   });
   it("a Revenu Québec receipt, a pay stub, a statement and an ID have no legal check — never a lease by default", () => {
     for (const text of [fx.RECEIPT, fx.PAY_STUB, fx.BANK_STATEMENT, fx.ID_CARD]) expect(read(text).check).toBeNull();
