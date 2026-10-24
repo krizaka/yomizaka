@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest";
  * A @krizaka/ui component is only as styled as the stylesheet the app imports for it (yomizaka#316). Most components are
  * Tailwind classes (`@krizaka/ui/tailwind.css`) or page blocks (`blocks.css`, imported by the locale layout); the story
  * blocks (`ChoiceGrid`, `ScrollStage`…) draw `kzs-*` classes that only `@krizaka/ui/story.css` styles. The kind picker of
- * /app/verifier shipped unstyled because nothing imported it. This test reads every @krizaka/ui module the app imports and
+ * /app/verifier shipped unstyled because nothing imported it (it is `ChoiceCards` since yomizaka#318). This test reads every @krizaka/ui module the app imports and
  * refuses one whose built code uses `kzs-` classes while no source file imports `@krizaka/ui/story.css`.
  */
 const WEB = join(import.meta.dirname, "..");
@@ -29,8 +29,9 @@ const imported = new Set(code.flatMap((src) => [...src.matchAll(/from "@krizaka\
 const storyImported = code.some((src) => /import "@krizaka\/ui\/story\.css"/.test(src));
 
 describe("@krizaka/ui stylesheets the app needs", () => {
-  it("reads the app's imports (the test sees ChoiceGrid)", () => {
-    expect(imported).toContain("choice-grid");
+  it("reads the app's imports (the test sees the page blocks and the account settings)", () => {
+    expect(imported).toContain("page-header");
+    expect(imported).toContain("account-settings");
   });
 
   it("imports story.css when an imported component draws kzs-* classes", () => {
