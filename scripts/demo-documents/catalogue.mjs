@@ -41,6 +41,8 @@ function lease(rng, flaw) {
     `Locataire : ${tenant} (fictif)`,
     "Durée : 12 mois, du 1er juillet 2026 au 30 juin 2027.",
     `Loyer mensuel : ${money(rent * 100)}, payable le premier jour du mois.`,
+    // The mandatory notice of the lowest rent of the last twelve months (the form's section G): a lease without it is not clean.
+    `Le loyer le plus bas payé au cours des douze derniers mois précédant le début du bail était de ${money((rent - 25) * 100)} par mois.`,
     "Le loyer comprend le chauffage et l'eau chaude.",
     "Le locataire a droit au maintien dans les lieux à la fin du bail.",
     "Le locateur peut proposer une hausse de loyer selon les règles du Tribunal administratif du logement.",
