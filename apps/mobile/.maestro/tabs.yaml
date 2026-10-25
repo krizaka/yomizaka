@@ -7,18 +7,18 @@ tags:
 - launchApp:
     clearState: true
 - runFlow: shared/sign-in.yaml
-- assertVisible: "Vérifier un document"
-- tapOn: "Accueil"
+- assertVisible: "Vérifier un document|Check a document"
+- tapOn: "Accueil|Home"
 - extendedWaitUntil:
     visible: "Immeuble Rosemont"
     timeout: 30000
 - assertVisible: "Factures 2026"
 - takeScreenshot: tab-accueil
-- tapOn: "Vérifications"
+- tapOn: "Vérifications|Checks"
 - extendedWaitUntil:
-    visible: "Lots"
+    visible: "Lots|Batches"
     timeout: 30000
 - takeScreenshot: tab-verifications
-- tapOn: "Lots"
+- tapOn: "Lots|Batches"
 - waitForAnimationToEnd
 - takeScreenshot: tab-lots

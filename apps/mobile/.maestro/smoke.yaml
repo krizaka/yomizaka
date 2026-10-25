@@ -7,5 +7,5 @@ tags:
 - launchApp:
     clearState: true
 - runFlow: shared/sign-in.yaml
-- assertVisible: "Vérifier un document"
+- assertVisible: "Vérifier un document|Check a document"
 - takeScreenshot: smoke-verify
