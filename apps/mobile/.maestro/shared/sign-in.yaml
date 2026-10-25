@@ -1,0 +1,23 @@
+# Shared step (in shared/, so `maestro test .maestro` does not run it as a flow): signs in when the sign-in screen is there. The Keychain survives a
+# reinstall, so a session may already exist.
+appId: com.krizaka.yomizaka
+---
+- runFlow:
+    when:
+      visible:
+        id: email
+    commands:
+      - tapOn:
+          id: email
+      - inputText: ${PERSONA_EMAIL}
+      - hideKeyboard
+      - tapOn:
+          id: password
+      - inputText: ${PERSONA_PASSWORD}
+      - hideKeyboard
+      - tapOn:
+          id: submit
+- extendedWaitUntil:
+    notVisible:
+      id: submit
+    timeout: 30000

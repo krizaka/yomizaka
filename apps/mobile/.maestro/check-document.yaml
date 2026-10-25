@@ -1,25 +1,13 @@
 # The core journey on a simulator: sign in, pick a PDF in Files, the check runs, the result and its closing note.
 # maestro test -e PERSONA_EMAIL=… -e PERSONA_PASSWORD=… .maestro/check-document.yaml   (the persona's, never a QA account)
 appId: com.krizaka.yomizaka
+# `manual`: it runs a paid engine check and picks the PDF by position in the iOS system picker, so mobile-e2e.yml leaves it out.
+tags:
+  - manual
 ---
 - launchApp:
     clearState: true
-# the Keychain survives a reinstall: sign in only when the sign-in screen is there
-- runFlow:
-    when:
-      visible:
-        id: email
-    commands:
-      - tapOn:
-          id: email
-      - inputText: ${PERSONA_EMAIL}
-      - hideKeyboard
-      - tapOn:
-          id: password
-      - inputText: ${PERSONA_PASSWORD}
-      - hideKeyboard
-      - tapOn:
-          id: submit
+- runFlow: shared/sign-in.yaml
 - assertVisible: "Vérifier un document"
 - tapOn: "Choisir un PDF"
 # the system picker is a remote view: Maestro taps it by position (the Browse tab)
