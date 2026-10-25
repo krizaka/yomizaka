@@ -1,4 +1,4 @@
-import { type DocumentTab, movedDocumentTab, parseTagsParam, tagsHref } from "@yomizaka/core";
+import { CHECKS_TABS, type ChecksTab, type DocumentTab, movedDocumentTab, parseTagsParam, tagsHref } from "@yomizaka/core";
 
 /**
  * The URL is the state (addendum 2026-10-17): every screen has the path the web has, under the language, so a link to the
@@ -17,6 +17,8 @@ export const routes = {
   library: (locale: Locale, library?: string, collection?: string, tags: readonly string[] = []) =>
     tagsHref(app(locale, "bibliotheque", ...[library, library ? collection : undefined].filter((p): p is string => !!p)), tags),
   document: (locale: Locale, id: string, tab: DocumentTab = "rapport") => app(locale, "documents", id, tab),
+  /** Vérifications, its first tab at a clean address and « Lots » in the address, as on the web. */
+  checks: (locale: Locale, tab: ChecksTab = CHECKS_TABS[0]) => `${app(locale, "verifications")}${tab === CHECKS_TABS[0] ? "" : `?tab=${tab}`}`,
   settings: (locale: Locale) => app(locale, "settings"),
 } as const;
 

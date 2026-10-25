@@ -1,18 +1,17 @@
-import { DOCUMENT_TABS, type DocumentTab, movedDocumentTab } from "@yomizaka/core";
+import { CHECKS_TABS, type ChecksTab, DOCUMENT_TABS, type DocumentTab, movedDocumentTab, type SectionId } from "@yomizaka/core";
 
 /**
  * The signed-in space's navigation, as data and pure functions (the active state comes from the route, never from local
- * state). Orazaka's pattern (krizaka/yomizaka#278, the UX review of October 2026): the rail holds destinations only —
- * Bibliothèque · Vérifications · Recherche —, the account owns the settings, and the header owns the one action of every
- * screen, « Vérifier un document », whose task page (`check`) lights Vérifications.
+ * state). The rail draws the one section map of `@yomizaka/core` (yomizaka#319) — Bibliothèque · Dossiers (offered with the
+ * applicant-file flow) · Vérifications · Recherche —, the account owns the settings, and the header owns the one action of
+ * every screen, « Vérifier un document », whose task page (`check`) lights Vérifications.
  */
-export type NavId = "library" | "checks" | "search" | "account";
+export type NavId = SectionId | "account";
 
-export const CONSOLE_ROUTES = { library: "/app", checks: "/app/verifications", check: "/app/verifier", search: "/app/recherche", account: "/app/settings" } as const;
+export const CONSOLE_ROUTES = { library: "/app", files: "/app/screening", checks: "/app/verifications", check: "/app/verifier", search: "/app/recherche", account: "/app/settings" } as const;
 
-/** The tabs of the Vérifications destination; the second lives in the address: `/app/verifications?tab=lots`. */
-export const CHECKS_TABS = ["checks", "lots"] as const;
-export type ChecksTab = (typeof CHECKS_TABS)[number];
+/** The tabs of the Vérifications destination (the map's, `@yomizaka/core`); the second lives in the address: `/app/verifications?tab=lots`. */
+export { CHECKS_TABS, type ChecksTab };
 export const CHECKS_TAB_KEY = "tab";
 /** The tab named by the address; an unknown or missing one is the list of checks (a stale link never breaks the page). */
 export const checksTabOf = (raw: string | null | undefined): ChecksTab => CHECKS_TABS.find((t) => t === raw) ?? "checks";
@@ -24,13 +23,14 @@ export const withoutLocale = (path: string) => path.replace(/^\/(en|fr)(?=\/|$)/
 
 const under = (path: string, base: string) => path === base || path.startsWith(`${base}/`);
 
-/** Which rail entry a path belongs to. A document and a collection belong to the library, the task page to the checks; an unknown path to none. */
+/** Which rail entry a path belongs to. A document and a collection belong to the library, the task page to the checks, the applicant files to « Dossiers »; an unknown path to none. */
 export function activeNav(path: string): NavId | null {
   const p = withoutLocale(path).replace(/\/$/, "") || "/";
   if (under(p, CONSOLE_ROUTES.checks) || under(p, CONSOLE_ROUTES.check)) return "checks";
   if (under(p, CONSOLE_ROUTES.search) || under(p, "/app/search")) return "search";
   if (under(p, CONSOLE_ROUTES.account)) return "account";
-  if (p === CONSOLE_ROUTES.library || under(p, "/app/documents") || under(p, "/app/bibliotheque") || under(p, "/app/screening")) return "library";
+  if (under(p, CONSOLE_ROUTES.files)) return "files";
+  if (p === CONSOLE_ROUTES.library || under(p, "/app/documents") || under(p, "/app/bibliotheque")) return "library";
   return null;
 }
 

@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 
 import { ConsoleShell } from "@/components/console/ConsoleShell";
 import { pageSession } from "@/lib/access";
+import { appEnvironment } from "@/lib/env";
+import { applicantFilesOffered, availableFlows } from "@/lib/flows";
 import { asLocale } from "@/lib/i18n";
 
 // The signed-in space is never indexed and never cached: it reads the session on every request.
@@ -14,8 +16,10 @@ export default async function ConsoleLayout({ children, params }: { children: Re
   const locale = asLocale((await params).locale);
   const session = await pageSession();
   if (!session) redirect(`/${locale}/sign-in`);
+  // « Dossiers » joins the rail only for the people offered the applicant-file flow (the section map, yomizaka#319).
+  const applicantFiles = applicantFilesOffered(await availableFlows(appEnvironment()), session.account.perspective ?? null);
   return (
-    <ConsoleShell locale={locale} email={session.account.email} name={session.account.name ?? undefined} avatarSeed={session.account.avatarSeed ?? undefined} role={session.account.role}>
+    <ConsoleShell applicantFiles={applicantFiles} locale={locale} email={session.account.email} name={session.account.name ?? undefined} avatarSeed={session.account.avatarSeed ?? undefined} role={session.account.role}>
       {children}
     </ConsoleShell>
   );

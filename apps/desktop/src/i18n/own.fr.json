@@ -5,9 +5,6 @@
   },
   "nav": {
     "label": "Navigation principale",
-    "library": "Bibliothèque",
-    "batches": "Lots",
-    "reports": "Rapports",
     "settings": "Réglages",
     "signOut": "Se déconnecter"
   },

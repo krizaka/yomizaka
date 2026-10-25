@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckIcon, HomeIcon, LogoutIcon, PlusIcon, SearchIcon, SettingsIcon, ShieldIcon, UserIcon, WalletIcon } from "@krizaka/icons";
+import { CheckIcon, HomeIcon, LogoutIcon, PlusIcon, SearchIcon, SettingsIcon, ShieldIcon, UserIcon, UsersIcon, WalletIcon } from "@krizaka/icons";
 import { krizakaFetch, useMutation } from "@krizaka/query";
 import { YomizakaLogo } from "@krizaka/ui";
 import { AccountMenu } from "@krizaka/ui/account-menu";
@@ -9,6 +9,7 @@ import { Badge } from "@krizaka/ui/badge";
 import { languagesFor } from "@krizaka/ui/language-switch";
 import { RailNav } from "@krizaka/ui/rail-nav";
 import { ThemeToggle } from "@krizaka/ui/theme";
+import { type SectionId, sectionsFor } from "@yomizaka/core";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -18,15 +19,17 @@ import { useSay } from "@/lib/i18n-client";
 
 const BUILD = process.env.NEXT_PUBLIC_APP_VERSION ?? "";
 const ADMIN_URL = "https://admin.yomizaka.com";
+const SECTION_ICONS: Record<SectionId, typeof HomeIcon> = { library: HomeIcon, files: UsersIcon, checks: CheckIcon, search: SearchIcon };
 
 /**
  * The frame of the signed-in space, on Orazaka's pattern (krizaka/yomizaka#278, the UX review of October 2026): where you work
- * on the rail — Bibliothèque · Vérifications · Recherche, destinations only, the collapse control alone at its foot —; the
+ * on the rail — the section map of `@yomizaka/core`, the same on the phone and the Mac (yomizaka#319): Bibliothèque ·
+ * Dossiers (offered with the applicant-file flow) · Vérifications · Recherche, the collapse control alone at its foot —; the
  * product's name in the header (`AppHeader`) with the DEV chip and the one action of every screen, « Vérifier un document »;
  * who you are under the avatar: profile, settings, billing, language, theme, sign out (Administration for an administrator).
  * The active entry comes from the route (lib/console-nav.ts), never from local state; each page draws its own `h1` (`PageHeader`).
  */
-export function ConsoleShell({ locale, email, name, avatarSeed, role, children }: { locale: "en" | "fr"; email: string; name?: string; avatarSeed?: string; role: "USER" | "ADMIN"; children: React.ReactNode }) {
+export function ConsoleShell({ locale, email, name, avatarSeed, role, applicantFiles = false, children }: { locale: "en" | "fr"; email: string; name?: string; avatarSeed?: string; role: "USER" | "ADMIN"; applicantFiles?: boolean; children: React.ReactNode }) {
   const { say } = useSay();
   const router = useRouter();
   const path = usePathname() ?? "";
@@ -85,15 +88,14 @@ export function ConsoleShell({ locale, email, name, avatarSeed, role, children }
           </Link>
         }
       >
-        <RailNav.Item asChild icon={<HomeIcon size={22} />} label={say("shell.library")} current={active === "library"}>
-          <Link href={href(CONSOLE_ROUTES.library)} />
-        </RailNav.Item>
-        <RailNav.Item asChild icon={<CheckIcon size={22} />} label={say("shell.checks")} current={active === "checks"}>
-          <Link href={href(CONSOLE_ROUTES.checks)} />
-        </RailNav.Item>
-        <RailNav.Item asChild icon={<SearchIcon size={22} />} label={say("shell.search")} current={active === "search"}>
-          <Link href={href(CONSOLE_ROUTES.search)} />
-        </RailNav.Item>
+        {sectionsFor("web", { applicantFiles }).map((section) => {
+          const Icon = SECTION_ICONS[section.id];
+          return (
+            <RailNav.Item key={section.id} asChild icon={<Icon size={22} />} label={say(`sections.${section.id}`)} current={active === section.id}>
+              <Link href={href(section.path)} />
+            </RailNav.Item>
+          );
+        })}
       </RailNav.Root>
       <RailNav.Body className="min-w-0 flex-1">
         <AppHeader

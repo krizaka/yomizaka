@@ -3,10 +3,15 @@
     "name": "Yomizaka"
   },
   "tabs": {
-    "verify": "Check",
-    "library": "Library",
-    "settings": "Settings",
     "label": "Main navigation"
+  },
+  "header": {
+    "verify": "Check a document"
+  },
+  "checks": {
+    "empty": "No document checked yet.",
+    "lotsEmpty": "No batch yet. A batch is imported from the web or the Mac.",
+    "batchProgress": "{done} of {items} checked"
   },
   "common": {
     "back": "Back"

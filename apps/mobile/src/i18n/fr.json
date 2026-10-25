@@ -3,10 +3,15 @@
     "name": "Yomizaka"
   },
   "tabs": {
-    "verify": "Vérifier",
-    "library": "Bibliothèque",
-    "settings": "Réglages",
     "label": "Navigation principale"
+  },
+  "header": {
+    "verify": "Vérifier un document"
+  },
+  "checks": {
+    "empty": "Aucun document vérifié pour l’instant.",
+    "lotsEmpty": "Aucun lot pour l’instant. Un lot s’importe depuis le web ou le Mac.",
+    "batchProgress": "{done} sur {items} vérifiés"
   },
   "common": {
     "back": "Retour"

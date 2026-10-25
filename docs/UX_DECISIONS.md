@@ -256,6 +256,21 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
   rules the next drop.
 - **Signal we are wrong**: people cancel runs started on the drop; « Autre » is chosen to avoid the automatic start.
 
+## 21. One section map on the web, the phone and the Mac (yomizaka#319, P2 of the design direction)
+
+- **Problem**: three apps, three maps: the web's rail (Bibliothèque · Vérifications · Recherche), the phone's tabs
+  (Vérifier · Bibliothèque · Réglages) and the Mac's sidebar (Library · Batches · Reports, ⌘1 to ⌘3).
+- **Principle**: one list in `packages/core` (`SECTIONS`, `sectionsFor(platform)`), labelled `sections.<id>` in every
+  catalogue: Bibliothèque · Dossiers · Vérifications · Recherche. « Dossiers » is shown only to the people offered the
+  applicant-file flow. « Lots » is a tab of Vérifications everywhere. « Vérifier un document » is the header's one
+  action (the phone's « + »), and the settings live under the avatar. The Mac numbers what it shows, ⌘1 to ⌘4, and builds
+  its « Aller » menu from the same list.
+- **Refused**: a different map per platform. A platform that lacks a screen says why in the map (`pending`): Dossiers on
+  the phone and the Mac (P6), and Recherche there (no search call in `@yomizaka/client` yet, and ⌘K with P14).
+- **Cost**: the phone no longer opens a « Réglages » tab (the avatar does); the Mac's « Rapports » is now « Vérifications ».
+- **Signal we are wrong**: people look for the settings in the phone's tab bar.
+
+
 ## 20. « Quel document ? » only when the kind is uncertain (yomizaka#318, P1 of the design direction)
 
 - **Problem**: `/app/verifier` asked the kind of every file before the drop, as a five-tile story grid (`ChoiceGrid`)

@@ -1,3 +1,5 @@
+import type { SectionId } from "@yomizaka/core";
+
 /**
  * The URL is the state, in the window too: the screen is the hash, so a refresh, the back button and a link kept in the
  * notes all come back to the same place.
@@ -66,19 +68,19 @@ export function routeOfLink(link: string): Route {
   const [, section, id] = parts;
   if (section === "documents" && id) return { screen: "document", documentId: id };
   if (section === "verifier" && id === "lots") return parts[3] ? { screen: "batch", batchId: parts[3] } : { screen: "batches" };
+  if (section === "verifications") return new URLSearchParams(link.split("?")[1]?.split("#")[0] ?? "").get("tab") === "lots" ? { screen: "batches" } : { screen: "reports" };
   if (section === "settings") return { screen: "settings" };
   return HOME;
 }
 
-/** The sidebar entry a screen belongs to. */
-export function sectionOf(route: Route): "library" | "batches" | "reports" | "settings" {
+/** The sidebar entry a screen belongs to: a destination of the section map (the batches are a tab of Vérifications), or the settings. */
+export function sectionOf(route: Route): Extract<SectionId, "library" | "checks"> | "settings" {
   switch (route.screen) {
     case "batches":
     case "batch":
-      return "batches";
     case "reports":
     case "document":
-      return "reports";
+      return "checks";
     case "settings":
       return "settings";
     default:

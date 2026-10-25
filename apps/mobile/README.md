@@ -24,4 +24,4 @@ pnpm exec expo start    # a development build; EXPO_PUBLIC_APP_URL points it at 
 Not in this app yet, tracked in krizaka/yomizaka#155: universal links (the AASA and `assetlinks.json` routes of the web),
 the update and maintenance gates, push, the Android build in CI.
 
-Every tab's header carries the signed-in account (`GET /api/me`); its avatar opens the account and settings.
+The tabs are the section map of `@yomizaka/core` (Bibliothèque, Vérifications with its « Lots » tab), the same as the web's rail and the Mac's sidebar. Every tab's header carries « Vérifier un document » as its « + » and the signed-in account (`GET /api/me`); its avatar opens the account and settings.
