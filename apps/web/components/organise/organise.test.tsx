@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 import { KrizakaQueryProvider } from "@krizaka/query";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -61,8 +61,9 @@ describe("« Dossiers » organised (yomizaka#324)", () => {
   });
 
   it("keeps the other system views as links that carry their filters in the address, and a menu on a phone", () => {
-    expect(html).toContain('data-testid="saved-views"');
-    expect(html).toContain('data-testid="views-menu"');
+    expect(html).toContain(`aria-label="${fr.console.dossiers.views.label}"`);
+    expect(html).toContain(`aria-label="${fr.console.dossiers.views.groups.system}"`);
+    expect(html).toContain("Vue : ");
     expect(html).toMatch(/href="\/fr\/app\/dossiers\?view=decided&amp;status=retenu,non_retenu"|href="\/fr\/app\/dossiers\?view=decided&amp;status=retenu%2Cnon_retenu"/);
   });
 
@@ -75,7 +76,8 @@ describe("« Dossiers » organised (yomizaka#324)", () => {
 
   it("says in the address's view which one is active", () => {
     const active = wrap(<FilesView files={[files[0]!]} types={TYPES} origin="" workspace={workspace("view=decided")} />);
-    expect(active).toMatch(/aria-current="page"[^>]*>Décidés/);
+    expect(active).toMatch(/aria-current="page"[^>]*href="[^"]*view=decided[^"]*"[^>]*>Décidés/);
+    expect(active).toContain("Vue : Décidés");
   });
 
   it("without the workspace, behaves as before: no decision column, no selection", () => {
@@ -110,14 +112,26 @@ describe("one file's decision (yomizaka#324)", () => {
   });
 
   it("never suggests a decision from a check", () => {
-    for (const source of ["../organise/DecisionActions.tsx", "../organise/SelectionBar.tsx", "../console/FilesView.tsx"]) {
+    for (const source of ["../organise/DecisionActions.tsx", "../organise/BulkActions.tsx", "../console/FilesView.tsx"]) {
       expect(readFileSync(new URL(source, import.meta.url), "utf8"), source).not.toMatch(/recommend|suggest|score|attention/i);
     }
   });
 });
 
-describe("the local wrappers name the issue that deletes them", () => {
-  it.each(["StatusChip", "SavedViews", "SelectionBar"])("%s", (name) => {
-    expect(readFileSync(new URL(`./${name}.tsx`, import.meta.url), "utf8")).toContain("TODO(krizaka-ui#627)");
+describe("no local copy of a block Krizaka UI ships (ADR-006 § 6)", () => {
+  it.each(["StatusChip", "SavedViews", "SelectionBar"])("%s is gone", (name) => {
+    expect(existsSync(new URL(`./${name}.tsx`, import.meta.url)), name).toBe(false);
+  });
+
+  it("names no issue that was waiting for the pieces", () => {
+    for (const name of ["BulkActions.tsx", "useSavedViews.ts", "DecisionActions.tsx", "FileTags.tsx"]) {
+      expect(readFileSync(new URL(`./${name}`, import.meta.url), "utf8"), name).not.toMatch(/krizaka-ui#(627|690|657)/);
+    }
+  });
+
+  it("the selection bar is the table's (bulkActions), the views are the filter bar's", () => {
+    const view = readFileSync(new URL("../console/FilesView.tsx", import.meta.url), "utf8");
+    expect(view).toContain("bulkActions");
+    expect(view).toContain("views={views}");
   });
 });

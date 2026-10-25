@@ -119,7 +119,7 @@ describe("tabs are routes: the URL is the state", () => {
 
 describe("the settings' sections are routes", () => {
   it("lists them in order and knows only them", () => {
-    expect(SETTINGS_SECTIONS).toEqual(["profil", "securite", "facturation", "stockage", "donnees"]);
+    expect(SETTINGS_SECTIONS).toEqual(["profil", "apparence", "securite", "facturation", "stockage", "donnees"]);
     expect(isSettingsSection("securite")).toBe(true);
     expect(isSettingsSection("admin")).toBe(false);
   });

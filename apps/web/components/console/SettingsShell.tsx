@@ -1,6 +1,6 @@
 "use client";
 
-import { BillingIcon, LockIcon, ServerIcon, ShieldIcon, UserIcon } from "@krizaka/icons";
+import { BillingIcon, LockIcon, ServerIcon, ShieldIcon, SunIcon, UserIcon } from "@krizaka/icons";
 import { AccountProfileCard } from "@krizaka/ui/account-settings";
 import { SettingsLayout } from "@krizaka/ui/settings-layout";
 import Link from "next/link";
@@ -22,10 +22,10 @@ export interface SettingsAccount {
   memberSince: string;
 }
 
-const ICONS = { profil: UserIcon, securite: LockIcon, facturation: BillingIcon, stockage: ServerIcon, donnees: ShieldIcon } as const;
+const ICONS = { profil: UserIcon, apparence: SunIcon, securite: LockIcon, facturation: BillingIcon, stockage: ServerIcon, donnees: ShieldIcon } as const;
 
 /**
- * The settings on `SettingsLayout` (flat: one calm column, rows divided by hairlines), the identity card on top, the five
+ * The settings on `SettingsLayout` (flat: one calm column, rows divided by hairlines), the identity card on top, the six
  * sections as routes in its navigation (chips that wrap on a phone — the review's E1), the current one from the route.
  */
 export function SettingsShell({ section, account, children }: { section: SettingsSection; account: SettingsAccount; children: ReactNode }) {

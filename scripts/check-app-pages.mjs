@@ -16,7 +16,7 @@ import { auditPage, problemsOf } from "./lib/page-audit.mjs";
 
 export const WIDTHS = [360, 390, 1440];
 export const THEMES = ["dark", "light"];
-export const PAGES = ["/app", "/app/documents", "/app/verifier", "/app/verifications", "/app/verifications?tab=lots", "/app/verifications?q=bail&result=attention,checked&kind=lease&period=year", "/app/recherche", "/app/settings/profil", "/app/settings/securite", "/app/settings/facturation", "/app/settings/stockage", "/app/settings/donnees"];
+export const PAGES = ["/app", "/app/documents", "/app/verifier", "/app/verifications", "/app/verifications?tab=lots", "/app/verifications?q=bail&result=attention,checked&kind=lease&period=year", "/app/recherche", "/app/settings/profil", "/app/settings/apparence", "/app/settings/securite", "/app/settings/facturation", "/app/settings/stockage", "/app/settings/donnees"];
 
 const arg = (name, fallback) => {
   const i = process.argv.indexOf(`--${name}`);

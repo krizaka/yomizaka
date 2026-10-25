@@ -324,9 +324,13 @@ Krizaka-ts ADR-003, `@krizaka/organize` 0.4. Yomizaka is the pilot, on « Dossie
   filter, the count, and a selectable table whose bar tags, untags and decides. A file's page has « Votre décision » (the moves
   the set allows from its state, « Non retenu » armed by a first press and sent by the second, `expect` carrying the state seen)
   and its tags. After a decision nothing is offered. Pure rules: `press`, `resolveView`.
-- **Words, not UI yet**: the marker palette, the chips, the views bar and the selection bar are krizaka-ui#627's and the
-  administration's editors #690's. Until they ship, `components/organise/` composes `Chip`, `Badge`, `FilterBar` and
-  `DataTable`; each file names the issue that deletes it (ADR-006 § 6).
+- **Krizaka UI's pieces (@krizaka/ui 3.59, ADR-006 § 6)**: the local wrappers are gone. Tags are `TagChip` (name beside its marker),
+  the new-tag field is `TagSelector creatable` (with the colour choice), the decision chip is `StatusChip`, the views are the `views`
+  of `FilterBar` (`SavedViews`: a menu on a phone; `useSavedViews` only binds them to the API and the address), the selection bar is
+  `DataTable bulkActions` (`BulkActions` gives it the actions; the 200 ceiling is the bar's). The administration edits the
+  vocabulary on `TagSetEditor` and `StatusSetEditor` (`/config/organisation`, versioned, a stale editor is refused).
+- **Appearance** (`/app/settings/apparence`): `AppearanceSettings` with `useAppearance()` — System · Light · Dark (dark by default) and
+  the density, kept in the browser. The language stays in the profile; no accent (the product keeps its indigo), no surface set, no sound.
 - **No customer webhook yet**: the layer's event has no consumer and the webhooks' event list is public API; nothing is
   emitted until a customer asks.
 - Refused: a score or a « best first » order; pre-filling a decision; a free-text reason; a status on documents; a hex colour;

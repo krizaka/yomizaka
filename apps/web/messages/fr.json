@@ -1132,6 +1132,7 @@
     "settings": {
       "tabs": {
         "profil": "Profil",
+        "apparence": "Apparence",
         "securite": "Sécurité",
         "facturation": "Abonnement et facturation",
         "donnees": "Mes données",
@@ -1242,6 +1243,25 @@
         "save": "Enregistrer",
         "saved": "Enregistré.",
         "noKey": "Cette installation ne peut pas enregistrer d'identifiants : le stockage S3 personnel est indisponible."
+      },
+      "appearance": {
+        "lead": "L’allure de l’application sur cet appareil. Gardé dans ce navigateur.",
+        "theme": "Thème",
+        "themeHint": "Système suit votre appareil ; sombre est le thème par défaut.",
+        "density": "Densité",
+        "densityHint": "Compacte resserre les lignes et les espaces.",
+        "themes": {
+          "system": "Système",
+          "systemHint": "Suit votre appareil.",
+          "light": "Clair",
+          "lightHint": "Surfaces claires.",
+          "dark": "Sombre",
+          "darkHint": "Surfaces sombres, par défaut."
+        },
+        "densities": {
+          "standard": "Standard",
+          "compact": "Compacte"
+        }
       }
     },
     "confirmEmail": {
@@ -1287,7 +1307,8 @@
         "limits": "Limites",
         "plans": "Forfaits",
         "packs": "Ensembles de règles",
-        "orazaka": "Orazaka"
+        "orazaka": "Orazaka",
+        "organisation": "Organisation"
       },
       "scope": {
         "label": "Portée",
@@ -1547,6 +1568,75 @@
         "cost": "Coût estimé : {amount}",
         "notExposed": "Le forfait et l'usage vus par Orazaka ne sont pas encore exposés par son API : ils ne sont pas affichés plutôt que devinés.",
         "rotate": "La rotation de la clé se fait dans Orazaka, puis dans le secret de l'application : elle n'est pas faite d'ici."
+      },
+      "organisation": {
+        "owner": "Propriétaire",
+        "save": "Enregistrer",
+        "saved": "Enregistré (version {version}).",
+        "notSeeded": "Rien n’est encore semé pour ce type.",
+        "kinds": {
+          "applicant_file": "Dossiers de candidats",
+          "document": "Documents"
+        },
+        "moveUp": "Monter {name}",
+        "moveDown": "Descendre {name}",
+        "remove": "Retirer {name}",
+        "drag": "Glisser {name}",
+        "problems": "À corriger avant d’enregistrer",
+        "tags": {
+          "presets": "Étiquettes proposées",
+          "name": "Nom de l’étiquette {position}",
+          "marker": "Couleur de l’étiquette {name}",
+          "add": "Nouvelle étiquette",
+          "addButton": "Ajouter",
+          "duplicate": "Une autre étiquette porte ce nom",
+          "empty": "Aucune étiquette proposée pour l’instant",
+          "writers": "Qui gère les étiquettes",
+          "writersHint": "Les rôles qui créent, renomment, retirent et attribuent les étiquettes.",
+          "userTags": "Chacun peut ajouter ses étiquettes",
+          "userTagsHint": "En plus de celles proposées ici.",
+          "max": "Nombre maximal d’étiquettes",
+          "maxHint": "Par compte et par type."
+        },
+        "status": {
+          "languages": {
+            "fr": "Français",
+            "en": "Anglais"
+          },
+          "stateLabel": "Libellé en {language} de l’état {position}",
+          "tone": "Ton de l’état {position}",
+          "tones": {
+            "neutral": "Neutre",
+            "accent": "Accent",
+            "success": "Succès",
+            "warning": "Attention",
+            "danger": "Danger"
+          },
+          "final": "L’état {position} est final",
+          "finalHint": "Un état final n’a pas de sortie.",
+          "initial": "L’état {position} est l’état initial",
+          "initialNotFinal": "L’état initial n’est jamais final",
+          "states": "États, dans l’ordre de la colonne",
+          "addState": "Ajouter un état",
+          "newState": {
+            "fr": "Nouvel état",
+            "en": "New state"
+          },
+          "moves": "Transitions",
+          "movesHint": "Qui peut faire passer un dossier d’un état à un autre.",
+          "from": "Transitions depuis {name}",
+          "noWayOut": "Final : pas de sortie",
+          "move": "De {from} à {to} : {roles}",
+          "none": "personne",
+          "moveDetail": "Transition de {from} à {to}",
+          "roles": "Rôles qui peuvent faire cette transition",
+          "confirm": "Demander un second appui",
+          "reasons": "Motifs à choisir",
+          "addReason": "Ajouter un motif",
+          "reasonLabel": "Motif en {language}, numéro {position}",
+          "removeReason": "Retirer le motif {position}",
+          "derived": "Dérivé : le produit calcule ce statut ; personne ne le change"
+        }
       }
     },
     "steps": {
@@ -1809,7 +1899,16 @@
         "modified": "modifiée",
         "delete": "Supprimer la vue {name}",
         "menu": "Vues",
-        "empty": "Aucune vue enregistrée."
+        "empty": "Aucune vue enregistrée.",
+        "groups": {
+          "system": "Suggérées",
+          "workspace": "Partagées",
+          "mine": "Les miennes"
+        },
+        "menuCurrent": "Vue : {current}",
+        "rename": "Renommer",
+        "remove": "Supprimer",
+        "actions": "Actions de la vue {label}"
       },
       "binder": {
         "label": "Décisions",
@@ -1835,7 +1934,8 @@
         "noTags": "Aucune étiquette : créez-en une depuis un dossier.",
         "clear": "Tout désélectionner",
         "done": "Fait : {moved} décidé(s), {skipped} laissé(s) tel(s) quel(s).",
-        "tagged": "Étiquettes mises à jour : {count}."
+        "tagged": "Étiquettes mises à jour : {count}.",
+        "tooMany": "Au plus {max} dossiers à la fois"
       },
       "decide": {
         "title": "Votre décision",
@@ -1851,7 +1951,21 @@
         "none": "Aucune étiquette",
         "save": "Enregistrer",
         "empty": "Vous n'avez pas encore d'étiquette.",
-        "new": "Nouvelle étiquette"
+        "new": "Nouvelle étiquette",
+        "inputLabel": "Ajouter une étiquette",
+        "placeholder": "Nom de l’étiquette",
+        "createLabel": "Créer « {name} »",
+        "markerLabel": "Couleur de la nouvelle étiquette",
+        "emptyLabel": "Aucune étiquette de ce nom",
+        "count": "{count} sur {max}",
+        "markers": {
+          "blue": "Bleu",
+          "green": "Vert",
+          "amber": "Ambre",
+          "red": "Rouge",
+          "violet": "Violet",
+          "gray": "Gris"
+        }
       }
     },
     "states": {

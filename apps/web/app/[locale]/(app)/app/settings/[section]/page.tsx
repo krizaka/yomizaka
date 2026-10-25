@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 
 import { accountService } from "@/app/accounts-edge";
 import { BillingSection, DataSection, SecuritySection } from "@/components/console/AccountSettings";
+import { AppearanceSection } from "@/components/console/AppearanceSection";
 import { ProfileSection } from "@/components/console/ProfileSection";
 import { SettingsShell } from "@/components/console/SettingsShell";
 import { StorageSection } from "@/components/console/StorageSection";
@@ -35,6 +36,7 @@ export default async function SettingsSectionPage({ params, searchParams }: { pa
   const audiences = audiencesOf(await availableFlows(appEnvironment()));
   const views: Record<SettingsSection, () => ReactNode> = {
     profil: () => <ProfileSection initial={{ name: profile.name ?? "", avatarSeed: profile.avatarSeed ?? "", locale: profile.locale, perspective: session.account.perspective }} audiences={audiences} />,
+    apparence: () => <AppearanceSection />,
     securite: () => <SecuritySection email={profile.email} pendingEmail={profile.pendingEmail} notice={email === "changed" || email === "invalid" ? email : null} />,
     facturation: () => <BillingSection />,
     stockage: () => <StorageSection />,
