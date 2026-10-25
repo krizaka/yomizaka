@@ -11,6 +11,7 @@ import { z } from "zod";
 
 import { useAppConfig } from "@/lib/app-config-client";
 import { groupingOffered, optionsShown } from "@/lib/check-flow";
+import { checkDefaults } from "@/lib/check-queue";
 import { useSay } from "@/lib/i18n-client";
 import { ROUTE_STATES } from "@/lib/route-state";
 import { useRouteState } from "@/lib/use-route-state";
@@ -21,9 +22,11 @@ export type { Placement } from "./upload";
 
 /**
  * The drop zone and its queue (pause, resume, retry), shared by the library, a collection and « Check a document ». A file
- * dropped in a collection or a folder lands there (`placement`); `extra` draws what sits beside the zone (examples).
+ * dropped in a collection or a folder lands there (`placement`); `extra` draws what sits beside the zone (examples). With
+ * `defaultsFirst` (« Vérifier un document », Errata 6) the defaults are said before the drop, with « Modifier »; elsewhere
+ * the options are asked once the files are known (the review's B4).
  */
-export function DocumentUploader({ kindRef, placement, onUploaded, extra }: { kindRef?: MutableRefObject<DocumentKind | "auto">; placement?: Placement; onUploaded?: (document: DocumentSummary, requested: DocumentKind | "auto") => void; extra?: (add: (files: File[]) => void) => ReactNode }) {
+export function DocumentUploader({ kindRef, placement, onUploaded, onDrop, defaultsFirst = false, extra }: { kindRef?: MutableRefObject<DocumentKind | "auto">; placement?: Placement; onUploaded?: (document: DocumentSummary, requested: DocumentKind | "auto") => void; onDrop?: (files: readonly File[]) => void; defaultsFirst?: boolean; extra?: (add: (files: File[]) => void) => ReactNode }) {
   const { say, locale } = useSay();
   const router = useRouter();
   const [notices, setNotices] = useState<string[]>([]);
@@ -62,6 +65,7 @@ export function DocumentUploader({ kindRef, placement, onUploaded, extra }: { ki
   // What was dropped, kept apart from the queue: a drop of photos sent as one document never enters the queue.
   const [dropped, setDropped] = useState<{ name: string; type: string }[]>([]);
   const onFiles = (files: File[]) => {
+    onDrop?.(files);
     setDropped((d) => [...d, ...files.map((f) => ({ name: f.name, type: f.type }))]);
     const photos = files.filter(isPhotoFile);
     if (grouping !== "1" || photos.length < 2) return queue.add(files);
@@ -81,13 +85,8 @@ export function DocumentUploader({ kindRef, placement, onUploaded, extra }: { ki
   const refusal = (r: FileRejection) => say(r.reason === "size" ? "library.refusedSize" : r.reason === "type" ? "library.refusedType" : "library.refusedCount", { name: r.file.name });
   // The options are asked once the files are known (the review's B4): keeping, and « these photos are one document » only with two photos or more (C3).
   const known = dropped;
-  return (
+  const keepControl = (
     <>
-      <Dropzone title={say("library.dropTitle")} browseLabel={say("library.browse")} hint={say("library.hint")} accept={ACCEPT} maxSize={app?.maxFileBytes ?? MAX_FILE_BYTES} maxFiles={20} multiple onFiles={onFiles} refusalLabel={refusal} disabled={grouped} />
-      {optionsShown(known) || grouped ? (
-        <details className="rounded-lg border border-border-default p-3" data-testid="check-options">
-          <summary className="cursor-pointer text-sm font-semibold text-fg">{say("library.options")}</summary>
-          <div className="mt-3 flex flex-col gap-3">
             {keepOff ? (
               <p className="m-0 text-sm text-fg-secondary" data-testid="keep-disabled">{say("library.keepDisabled")}</p>
             ) : (
@@ -103,6 +102,10 @@ export function DocumentUploader({ kindRef, placement, onUploaded, extra }: { ki
               </label>
             </div>
             )}
+    </>
+  );
+  const groupControl = (
+    <>
             {groupingOffered(known) ? (
               <div className="flex items-start gap-3" data-testid="group-photos">
                 <Checkbox id="group-photos" checked={grouping === "1"} onCheckedChange={(v) => setGrouping(v === true ? "1" : "0")} />
@@ -112,6 +115,36 @@ export function DocumentUploader({ kindRef, placement, onUploaded, extra }: { ki
                 </label>
               </div>
             ) : null}
+    </>
+  );
+  const dropzone = (
+    <Dropzone title={say("library.dropTitle")} browseLabel={say("library.browse")} hint={say("library.hint")} accept={ACCEPT} maxSize={app?.maxFileBytes ?? MAX_FILE_BYTES} maxFiles={20} multiple onFiles={onFiles} refusalLabel={refusal} disabled={grouped} />
+  );
+  return (
+    <>
+      {defaultsFirst ? (
+        <>
+          <details className="rounded-lg border border-border-default p-3" data-testid="check-defaults">
+            <summary className="cursor-pointer text-sm text-fg">
+              <span className="font-semibold">{say("check.defaults.label")}</span> · {checkDefaults({ keep, keepOff }).map((key) => say(key)).join(" · ")} · <span className="font-semibold text-fg-accent underline underline-offset-2">{say("check.defaults.modify")}</span>
+            </summary>
+            <div className="mt-3 flex flex-col gap-3">
+              {keepControl}
+              <p className="m-0 text-xs text-fg-secondary">{say("library.photoNotice")}</p>
+            </div>
+          </details>
+          {dropzone}
+          {groupingOffered(known) ? <div className="rounded-lg border border-border-default p-3" data-testid="check-options">{groupControl}</div> : null}
+        </>
+      ) : (
+        dropzone
+      )}
+      {!defaultsFirst && (optionsShown(known) || grouped) ? (
+        <details className="rounded-lg border border-border-default p-3" data-testid="check-options">
+          <summary className="cursor-pointer text-sm font-semibold text-fg">{say("library.options")}</summary>
+          <div className="mt-3 flex flex-col gap-3">
+            {keepControl}
+            {groupControl}
             <p className="m-0 text-xs text-fg-secondary">{say("library.photoNotice")}</p>
           </div>
         </details>

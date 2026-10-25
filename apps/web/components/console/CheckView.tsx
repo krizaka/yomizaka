@@ -2,13 +2,15 @@
 
 import { BillingIcon, EditIcon, HomeIcon, MoreIcon } from "@krizaka/icons";
 import { ChoiceCards } from "@krizaka/ui/account-settings";
+import { List } from "@krizaka/ui/list";
 import { PageHeader } from "@krizaka/ui/page-header";
-import { DOCUMENT_KINDS, type DocumentKind, type DocumentSummary, type Jurisdiction } from "@yomizaka/core";
+import { DOCUMENT_KINDS, type DocumentKind, type Jurisdiction } from "@yomizaka/core";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useReducer, useRef } from "react";
 
 import { useAppConfig } from "@/lib/app-config-client";
+import { type CheckRow, checkRows, opensAtOnce, reportHref } from "@/lib/check-queue";
 import { checksTabHref, CONSOLE_ROUTES } from "@/lib/console-nav";
 import { useSay } from "@/lib/i18n-client";
 import { ROUTE_STATES } from "@/lib/route-state";
@@ -40,11 +42,39 @@ export function KindQuestion({ filename, onPick, disabled = false }: { filename:
   );
 }
 
+/** One row per file that landed, its stage in words (yomizaka#326): « Quel document ? » under each uncertain one; a row under way links to its report. */
+export function CheckQueue({ rows, onPick }: { rows: readonly CheckRow[]; onPick: (row: CheckRow, kind: DocumentKind) => void }) {
+  const { say, locale } = useSay();
+  if (!rows.length) return null;
+  const linked = (r: CheckRow) => r.stage === "started" || r.stage === "refused";
+  return (
+    <div className="flex flex-col gap-4" data-testid="check-queue">
+      <List
+        aria-label={say("check.queueLabel")}
+        items={rows}
+        getId={(r) => r.id}
+        chevrons
+        row={(r) => ({
+          title: r.filename,
+          description: say(`check.stages.${r.stage}`, r.refused ? { reason: say(`errors.${r.refused}`) } : undefined),
+          ...(linked(r) ? { href: reportHref(locale, r) } : {}),
+        })}
+      />
+      {rows
+        .filter((r) => r.stage === "asking")
+        .map((r) => (
+          <KindQuestion key={r.id} filename={r.filename} onPick={(kind) => onPick(r, kind)} />
+        ))}
+    </div>
+  );
+}
+
 /**
- * « Vérifier un document », the task page the header's action opens (the UX review's Y4): the drop zone, the options folded
- * once files are known. The kind is never asked before the drop (`?type=` may still name it): a file whose kind is sure
- * starts its check at once and opens on its report (`lib/check-flow.ts`); an uncertain one is asked « Quel document ? »
- * here, for that file only (yomizaka#318).
+ * « Vérifier un document », the task page the header's action opens (the UX review's Y4, § 5.4 of the design direction):
+ * the defaults said before the drop with « Modifier » (Errata 6), the drop zone, then one row per file in words. The kind is
+ * never asked before the drop (`?type=` may still name it): a file whose kind is sure starts at once, an uncertain one is
+ * asked « Quel document ? » for that file only. A single file opens its report as soon as it is under way; with several,
+ * each row links to its own (yomizaka#318, #326).
  */
 export function CheckView({ jurisdictions = ["QC"] }: { jurisdictions?: readonly Jurisdiction[] }) {
   const { say, locale } = useSay();
@@ -55,20 +85,22 @@ export function CheckView({ jurisdictions = ["QC"] }: { jurisdictions?: readonly
   useEffect(() => {
     kindRef.current = kind;
   }, [kind]);
-  const [unsure, setUnsure] = useState<DocumentSummary | null>(null);
-  const [starting, setStarting] = useState(false);
-  // A refusal (an entitlement, a rule) travels to the report tab, which says it above its own form.
-  const report = (id: string, refused: string | null) => router.push(`/${locale}/app/documents/${id}/rapport${refused ? `?refused=${encodeURIComponent(refused)}` : ""}`);
-  const open = async (document: DocumentSummary, requested: DocumentKind | "auto") => {
-    const outcome = await startIfSure(document.id, requested, jurisdictions, new Date());
-    if (!outcome.started && !outcome.refused && requested === "auto") setUnsure(document);
-    else report(document.id, outcome.refused);
+  const [rows, dispatch] = useReducer(checkRows, []);
+  const dropped = useRef(0);
+  const follow = async (id: string, requested: DocumentKind | "auto") => {
+    const outcome = await startIfSure(id, requested, jurisdictions, new Date());
+    dispatch({ type: "outcome", id, outcome, requested });
+    // A refusal (an entitlement, a rule) travels to the report tab, which says it above its own form.
+    if (opensAtOnce(dropped.current) && (outcome.started || outcome.refused || requested !== "auto")) router.push(reportHref(locale, { id, refused: outcome.refused }));
   };
-  const pick = async (document: DocumentSummary, chosen: DocumentKind) => {
-    setStarting(true);
+  const landed = (document: { id: string; filename: string }, requested: DocumentKind | "auto") => {
+    dispatch({ type: "landed", document });
+    void follow(document.id, requested);
+  };
+  const pick = (row: CheckRow, chosen: DocumentKind) => {
+    dispatch({ type: "picked", id: row.id });
     // Named by the person, the kind is sure; a mismatch with what Yomizaka read is still confirmed on the report tab.
-    const outcome = await startIfSure(document.id, chosen, jurisdictions, new Date());
-    report(document.id, outcome.refused);
+    void follow(row.id, chosen);
   };
   return (
     <section className="flex max-w-3xl flex-col gap-5" aria-label={say("library.dropTitle")}>
@@ -81,8 +113,8 @@ export function CheckView({ jurisdictions = ["QC"] }: { jurisdictions?: readonly
         title={say("shell.titles.check")}
         description={say("library.checkLead")}
       />
-      <DocumentUploader kindRef={kindRef} onUploaded={(d, requested) => void open(d, requested)} />
-      {unsure ? <KindQuestion filename={unsure.filename} disabled={starting} onPick={(chosen) => void pick(unsure, chosen)} /> : null}
+      <DocumentUploader defaultsFirst kindRef={kindRef} onDrop={(files) => (dropped.current += files.length)} onUploaded={landed} />
+      <CheckQueue rows={rows} onPick={pick} />
       {app?.features.batches ? (
         <p className="m-0 text-sm text-fg-secondary">
           {say("batch.fromCheck")}{" "}

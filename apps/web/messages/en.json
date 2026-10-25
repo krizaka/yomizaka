@@ -169,6 +169,25 @@
       "forgotLink": "Forgot your password?",
       "resetNotice": "Your password is changed. Sign in with the new one."
     },
+    "check": {
+      "defaults": {
+        "label": "Before the drop",
+        "erased": "Erased after the check",
+        "kept": "Kept in your library",
+        "rules": "Québec's rules in force today",
+        "place": "in « My documents »",
+        "modify": "Change"
+      },
+      "queueLabel": "The files dropped",
+      "stages": {
+        "reading": "Reading the document…",
+        "starting": "Starting the check…",
+        "asking": "Which document? Say it below.",
+        "started": "Check started",
+        "refused": "Not started: {reason}"
+      },
+      "openReport": "Open the report"
+    },
     "sections": {
       "library": "Library",
       "files": "Applicant files",

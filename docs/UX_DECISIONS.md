@@ -256,6 +256,19 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
   rules the next drop.
 - **Signal we are wrong**: people cancel runs started on the drop; « Autre » is chosen to avoid the automatic start.
 
+## 23. The check flow: the defaults before the drop, one row per file in words, an uncertain kind asked per file (P9, #326)
+
+- **Before the drop** (Errata 6), « Vérifier un document » says its defaults in one line: « Effacé après la vérification ·
+  Règles du Québec en vigueur aujourd'hui · dans « Mes documents » », with « Modifier » to unfold the choice of keeping.
+  This reverses the review's B4 (options only once files are known) on this page only; « Ces photos sont les pages d'un
+  document » still comes once photos are known (C3), and the library's drop keeps B4.
+- **One row per file** once it landed (`lib/check-queue.ts`): « Lecture du document… », « Lancement de la
+  vérification… », « Vérification lancée », « Non lancée : … ». Every stage is a word, so reduced motion loses nothing.
+  The run's own stages come with #208 when orazaka#189 lands.
+- **A confident kind starts on the drop; an uncertain one is asked « Quel document ? » for that file only**, its own
+  question under the list. A single file opens its report as soon as it is under way; with several, each row links to its
+  report, and nothing navigates away from the others.
+
 ## 21. One section map on the web, the phone and the Mac (yomizaka#319, P2 of the design direction)
 
 - **Problem**: three apps, three maps: the web's rail (Bibliothèque · Vérifications · Recherche), the phone's tabs
