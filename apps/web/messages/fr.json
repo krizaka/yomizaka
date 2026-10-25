@@ -215,6 +215,7 @@
       "refusedType": "{name} : seulement des PDF, des fichiers texte et des photos",
       "refusedCount": "{name} : trop de fichiers à la fois",
       "kindPick": "Quel document ?",
+      "kindUnsure": "Yomizaka n’a pas reconnu « {name} » avec certitude : dites quel document c’est, et la vérification démarre.",
       "options": "Options",
       "informative": "Vérification informative, pas un avis juridique.",
       "kindHints": {
