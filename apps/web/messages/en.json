@@ -363,7 +363,7 @@
       "fingerprint": "SHA-256",
       "viewer": "The document",
       "text": "Its text",
-      "noText": "This PDF has no text layer (a scan): it can be examined as a file, not checked against rules.",
+      "noText": "This PDF has no text layer: the check against the law could not read its clauses. The file itself is still examined.",
       "openFile": "Open the file",
       "delete": "Delete",
       "deleteConfirm": "Delete for good",
@@ -1775,6 +1775,14 @@
       "studios": {
         "compliance-check": "Against the law",
         "document-authenticity": "Authenticity"
+      }
+    },
+    "states": {
+      "loading": "Loading the page…",
+      "error": {
+        "title": "This page could not be shown",
+        "text": "The server did not answer as expected. Your documents are kept; try again in a moment.",
+        "retry": "Try again"
       }
     }
   },

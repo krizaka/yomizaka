@@ -124,6 +124,16 @@ describe("the document on DetailLayout (the UX review's Y5)", () => {
     expect(readable(seeded)).toContain(fr.console.analysis.seededNote);
   });
 
+  it("says a demo check at the foot, as a note under the report, never inside the technical details or as a box above it (P11)", () => {
+    const seeded = render(document([check({ ...SEEDED_INPUTS })]));
+    const details = seeded.slice(seeded.indexOf('data-testid="technical-details"'), seeded.indexOf("</details>", seeded.indexOf('data-testid="technical-details"')));
+    expect(readable(details)).not.toContain(fr.console.analysis.seededNote);
+    const text = readable(seeded);
+    expect(text.indexOf(fr.console.analysis.seededNote)).toBeGreaterThan(text.indexOf(fr.console.library.informative));
+    expect(seeded.indexOf(fr.console.analysis.seededNote.slice(0, 20))).toBeGreaterThan(seeded.indexOf('data-testid="verdict-band"'));
+    expect(readable(render(document([check({ jurisdiction: "QC" })])))).not.toContain(fr.console.analysis.seededNote);
+  });
+
   it("the tabs are routes — Rapport · Document, and Historique only once a second run exists", () => {
     const one = render(document([check({ jurisdiction: "QC" })]));
     expect(one).toContain('href="/fr/app/documents/d1/rapport"');

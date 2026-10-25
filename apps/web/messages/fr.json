@@ -363,7 +363,7 @@
       "fingerprint": "SHA-256",
       "viewer": "Le document",
       "text": "Son texte",
-      "noText": "Ce PDF n'a pas de couche texte (un scan) : il peut être examiné en tant que fichier, pas vérifié au regard de règles.",
+      "noText": "Ce PDF n'a pas de couche texte : la vérification au regard de la loi n'a pas pu lire ses clauses. L'examen du fichier, lui, a lieu.",
       "openFile": "Ouvrir le fichier",
       "delete": "Supprimer",
       "deleteConfirm": "Supprimer définitivement",
@@ -1775,6 +1775,14 @@
       "studios": {
         "compliance-check": "Au regard de la loi",
         "document-authenticity": "Authenticité"
+      }
+    },
+    "states": {
+      "loading": "Chargement de la page…",
+      "error": {
+        "title": "Cette page n'a pas pu s'afficher",
+        "text": "Le serveur n'a pas répondu comme prévu. Vos documents sont gardés ; réessayez dans un instant.",
+        "retry": "Réessayer"
       }
     }
   },

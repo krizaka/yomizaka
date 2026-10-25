@@ -161,7 +161,6 @@ export function TechnicalDetails({ documentId, analysis }: { documentId: string;
             { term: say("analysis.started"), details: formatDate(analysis.createdAt, locale, true) },
             ...(analysis.finishedAt ? [{ term: say("analysis.finished"), details: formatDate(analysis.finishedAt, locale, true) }] : []),
             ...(meta.data ? [{ term: say("analysis.exportSha"), details: <code className="break-all font-mono text-xs" data-testid="report-sha256">{meta.data.fileSha256}</code> }, { term: say("analysis.exportKey"), details: <code className="font-mono text-xs">{meta.data.keyId}</code> }] : []),
-            ...(isSeededCheck(analysis) ? [{ term: say("analysis.exportReport"), details: say("analysis.seededNote") }] : []),
           ]}
         />
       </div>
