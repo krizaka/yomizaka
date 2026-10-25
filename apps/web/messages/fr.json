@@ -54,7 +54,7 @@
       "title": "Ce que ça fait",
       "lead": "Trois choses, sans rien de caché derrière.",
       "who": "Pour les locataires et les propriétaires qui vérifient un bail québécois. Les travailleurs autonomes et les petites entreprises peuvent aussi vérifier un contrat ou une facture.",
-      "trust": "Votre compte et vos vérifications sont gardés dans une base de données à Toronto, au Canada, et visibles par votre seul compte. Rien n'est vendu, partagé ni utilisé pour entraîner un modèle.",
+      "trust": "Par défaut, votre compte et vos vérifications sont gardés dans une base de données à Toronto, au Canada, et visibles par votre seul compte ; vos fichiers peuvent aller dans votre propre stockage, si vous le choisissez. Rien n'est vendu, partagé ni utilisé pour entraîner un modèle.",
       "privacy": "Lire l'avis de confidentialité",
       "items": {
         "line": {
@@ -81,20 +81,8 @@
       "powered": "Propulsé par Orazaka.",
       "owlLabel": "Ce que la chouette promet"
     },
-    "eyebrow": "Québec · baux, contrats, factures",
-    "proofs": {
-      "rules": "règles vérifiées",
-      "articles": "articles de loi cités",
-      "findings": "constats sur ce bail d'exemple"
-    },
     "who": {
-      "title": "Pour qui",
-      "items": {
-        "tenant": "Locataires",
-        "landlord": "Propriétaires",
-        "freelancer": "Travailleurs autonomes",
-        "business": "Petites entreprises"
-      }
+      "title": "Pour qui"
     },
     "closing": {
       "title": "Un document, une réponse.",

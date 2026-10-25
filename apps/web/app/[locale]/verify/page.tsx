@@ -80,8 +80,8 @@ export default async function Verify({ params }: { params: Promise<{ locale: str
           </Section>
           <Section divider>
             <SectionHeading title={v.keyTitle} lead={v.keyLead} />
-            <p className="mt-3 font-mono text-xs text-fg-secondary" data-testid="key-id">
-              {key.keyId}
+            <p className="mt-3 text-xs text-fg-secondary" data-testid="key-id">
+              <code className="font-mono">{key.keyId}</code>
             </p>
             <pre className="mt-2 max-w-3xl overflow-x-auto whitespace-pre-wrap break-all rounded-lg border border-border-default bg-surface-1 p-3 font-mono text-xs text-fg-secondary" data-testid="public-key">
               {publicKeyBase64(key)}

@@ -54,7 +54,7 @@
       "title": "What it does",
       "lead": "Three things, with nothing hidden behind them.",
       "who": "For tenants and landlords checking a Québec lease. Freelancers and small businesses can check a contract or an invoice too.",
-      "trust": "Your account and your checks are kept in a database in Toronto, Canada, and seen by your account alone. Nothing is sold, shared or used to train a model.",
+      "trust": "By default, your account and your checks are kept in a database in Toronto, Canada, and seen by your account alone; your files can go to your own storage instead, when you choose it. Nothing is sold, shared or used to train a model.",
       "privacy": "Read the privacy notice",
       "items": {
         "line": {
@@ -81,20 +81,8 @@
       "powered": "Powered by Orazaka.",
       "owlLabel": "What the owl promises"
     },
-    "eyebrow": "Québec · leases, contracts, invoices",
-    "proofs": {
-      "rules": "rules checked",
-      "articles": "articles of law cited",
-      "findings": "findings on this sample lease"
-    },
     "who": {
-      "title": "For whom",
-      "items": {
-        "tenant": "Tenants",
-        "landlord": "Landlords",
-        "freelancer": "Self-employed workers",
-        "business": "Small businesses"
-      }
+      "title": "For whom"
     },
     "closing": {
       "title": "One document, one answer.",
