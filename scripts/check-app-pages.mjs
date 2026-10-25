@@ -23,6 +23,16 @@ const arg = (name, fallback) => {
   return i >= 0 ? process.argv[i + 1] : fallback;
 };
 
+/**
+ * The browser context of the check. View Transitions race the measure (« Viewport size changed », 0 of 2 h1, yomizaka#354):
+ * the check runs with reduced motion emulated, which the app honours (the page change is instant, motion.css of @krizaka/ui).
+ */
+export const contextOptions = (theme) => ({ colorScheme: theme, reducedMotion: "reduce" });
+
+/** Resolves once no view transition is running (none starts under reduced motion; this makes the wait explicit). */
+export const settled = (page) =>
+  page.waitForFunction(() => !document.activeViewTransition && !document.documentElement.matches(":active-view-transition"), null, { timeout: 10_000 });
+
 /** Signs in through the form, as a person would; the session cookie then carries the context. */
 export async function signIn(page, base, locale, email, password) {
   await page.goto(`${base}/${locale}/sign-in`, { waitUntil: "load" });
@@ -52,7 +62,7 @@ export async function check({ base, locale = "fr", email, password, shots }) {
   const browser = await chromium.launch();
   const problems = [];
   try {
-    const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" });
     const probe = await context.newPage();
     await signIn(probe, base, locale, email, password);
     const pages = await discover(probe, base, locale);
@@ -60,7 +70,7 @@ export async function check({ base, locale = "fr", email, password, shots }) {
     const cookies = await context.cookies();
     await context.close();
     for (const theme of THEMES) {
-      const ctx = await browser.newContext({ colorScheme: theme });
+      const ctx = await browser.newContext(contextOptions(theme));
       await ctx.addCookies(cookies);
       await ctx.addInitScript((t) => {
         try {
@@ -78,6 +88,7 @@ export async function check({ base, locale = "fr", email, password, shots }) {
           await page.setViewportSize({ width, height: width < 600 ? 844 : 900 });
           await page.goto(`${base}/${locale}${path}`, { waitUntil: "load" });
           await page.evaluate(() => document.fonts.ready);
+          await settled(page);
           await page.waitForTimeout(300);
           const result = await page.evaluate(auditPage);
           const where = `${path} @${width} ${theme}`;
