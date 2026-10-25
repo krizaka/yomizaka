@@ -159,7 +159,7 @@ export function Credits({ figure }: { figure: CreditsFigure }) {
       {figure.kind === "credits" ? <p className="m-0 text-sm text-fg">{say(pluralKey("home.credits.left", figure.left), { count: figure.left })}</p> : null}
       {figure.kind === "pro" ? (
         <>
-          <Meter label={say("home.credits.title")} value={figure.used} min={0} max={figure.cap} valueText={say("home.credits.pro", { used: figure.used, cap: figure.cap })} thresholds={{ low: figure.cap * 0.8, high: figure.cap * 0.95 }} optimum="low" />
+          <Meter label={say("home.credits.title")} value={figure.used} min={0} max={figure.cap} valueText={say("home.credits.pro", { used: figure.used, cap: figure.cap })} thresholds={{ low: 0.8, high: 0.95 }} optimum="low" />
           <p className="m-0 text-sm text-fg-secondary">{say("home.credits.pro", { used: figure.used, cap: figure.cap })}</p>
           {figure.renewsAt ? <p className="m-0 text-xs text-fg-muted">{say("home.credits.renews", { date: formatDate(figure.renewsAt, locale) })}</p> : null}
         </>
