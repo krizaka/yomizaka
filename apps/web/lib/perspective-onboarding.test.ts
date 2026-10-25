@@ -19,7 +19,7 @@ describe("the side is chosen at onboarding and changeable in settings", () => {
     const profile = read("components/console/ProfileSection.tsx");
     expect(profile).toContain("<ChoiceCards");
     expect(profile).toContain('"/api/me/perspective"');
-    expect(read("components/console/DocumentView.tsx")).toContain("firstCheck(perspective, doc.kind)");
+    expect(read("components/console/StartChecks.tsx")).toContain("firstCheck(perspective, doc.kind)");
     expect(read("app/[locale]/(app)/app/documents/[id]/[tab]/page.tsx")).toContain("perspective={session.account.perspective}");
   });
 });

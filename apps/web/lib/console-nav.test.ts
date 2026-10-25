@@ -83,7 +83,8 @@ describe("tabs are routes: the URL is the state", () => {
     expect(OLD_DOCUMENT_TABS).toEqual({ infos: "document", fichier: "document", texte: "document", verifications: "rapport" });
   });
   it("the view takes its tab from the route and a click navigates (no local tab state)", () => {
-    const view = read("components/console/DocumentView.tsx");
+    // The view and the run it follows (yomizaka#320: the polling is its own component, LiveAnalysis).
+    const view = read("components/console/DocumentView.tsx") + read("components/console/LiveAnalysis.tsx");
     // Y5: the tabs are `Tabs.Nav` links to the tab routes, lit by the current path; the view never holds a tab in state.
     expect(view).toContain("<Tabs.Nav");
     expect(view).toContain("current={`${path}/${tab}`}");
