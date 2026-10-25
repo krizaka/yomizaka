@@ -2,6 +2,7 @@
   "counters": {
     "no-ambient-clock": 4,
     "no-db-in-service-or-rules": 0,
+    "no-direct-organize-write": 0,
     "no-enum-string-compare": 11,
     "no-env-in-domain": 5,
     "no-get-time-arithmetic": 0,
@@ -14,7 +15,7 @@
     "no-hand-ms-one-hour": 0,
     "no-ts-enum": 0,
     "no-types-at-package-root": 0,
-    "no-unjustified-numeric-export": 8,
+    "no-unjustified-numeric-export": 6,
     "no-utc-day-slice": 0
   }
 }

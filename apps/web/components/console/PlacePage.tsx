@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 
+import { systemClock } from "@/app/system-clock";
 import { PlaceView } from "@/components/console/PlaceView";
 import { pageSession } from "@/lib/access";
 import { query } from "@/lib/db";
@@ -9,6 +10,9 @@ import { availableFlows, offerFor } from "@/lib/flows";
 import { asLocale, getDictionary } from "@/lib/i18n";
 import { isId, libraryPath, parseView } from "@/lib/organisation/rules";
 import * as org from "@/lib/organisation/store";
+import { KIND } from "@/lib/workspace/decl";
+import { workspaceFor } from "@/lib/workspace/service";
+import { asTag, asTags } from "@/lib/workspace/tags";
 
 type Props = { params: Promise<{ locale: string; library?: string; collection?: string; folder?: string }>; searchParams: Promise<{ tags?: string | string[]; kind?: string; status?: string }> };
 
@@ -24,6 +28,9 @@ export async function PlacePage({ params, searchParams }: Props) {
   const dict = getDictionary(locale).console;
   const t = dict.organisation;
   const tags = await org.listTags(query, owner);
+  // A document's tags are the workspace's (yomizaka#324): markers, the ALL-tags filter. A collection's and a folder's stay the first layer's.
+  const workspace = workspaceFor({ clock: systemClock });
+  const documentTags = (await workspace.tags.list(owner, KIND.document)).map(asTag);
   const overview = await org.overview(query, owner);
   const collections = overview.flatMap((l) => l.collections.map((c) => ({ id: c.id, name: c.name, avatar: c.avatar, libraryId: l.id })));
   // The account's offer: a dropped file is checked at once only when one jurisdiction is possible (Y4), as on the library's home.
@@ -37,7 +44,7 @@ export async function PlacePage({ params, searchParams }: Props) {
   const folders = await org.foldersOf(query, owner, collection.id);
   const ids = (await org.browse(query, owner, { collectionId: collection.id, folderId: folder?.id, tagIds: selected })).documentIds;
   const documents = await documentsByIds(owner, ids);
-  const byDoc = await org.tagsOf(query, owner, "document", ids);
+  const byDoc = asTags(await workspace.tags.of(owner, KIND.document, ids));
   const collTags = await org.tagsOf(query, owner, "collection", [collection.id]);
   const lib = overview.find((l) => l.id === collection.library_id);
   if (!lib) notFound();
@@ -51,10 +58,10 @@ export async function PlacePage({ params, searchParams }: Props) {
       folders={folders}
       documents={documents}
       tags={tags}
+      documentTags={documentTags}
       view={view}
       jurisdictions={jurisdictions}
-     
-      tagsByDocument={Object.fromEntries(byDoc)}
+      tagsByDocument={byDoc}
       folderTags={Object.fromEntries(folders.map((f) => [f.id, f.tags.map((x) => x.id)]))}
       collections={collections}
       collectionTags={(collTags.get(collection.id) ?? []).map((x) => x.id)}

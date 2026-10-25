@@ -242,8 +242,8 @@ importers:
         specifier: ^0.3.0
         version: 0.3.0
       '@krizaka/organize':
-        specifier: 0.3.0
-        version: 0.3.0
+        specifier: 0.4.0
+        version: 0.4.0(vitest@4.1.11(@types/node@24.19.2)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.4(@types/node@24.19.2)(jiti@2.7.0)(terser@5.51.2)))
       '@krizaka/payments':
         specifier: 0.1.0
         version: 0.1.0
@@ -1724,9 +1724,14 @@ packages:
     resolution: {integrity: sha512-wvCyY1d2RKWcvuv5A0CBOBifyZoPkI9nZWD/jSA1rq7+8Tg/ltCqIcXBQnWr1gZXtDLt+YNyOkD+L4s1qVEJbg==}
     engines: {node: '>=22'}
 
-  '@krizaka/organize@0.3.0':
-    resolution: {integrity: sha512-Gd2CUGtAVMR8WuPqcjoA+wgblPxNvvNMA0hv3GPbv0+dna8D59gQPrxM9UV8+olw9lVh1sxhStW9Yn2qDZCDUg==}
+  '@krizaka/organize@0.4.0':
+    resolution: {integrity: sha512-6b9tjOfsCsiawp4mMSNKK3N2UvOdg90PRyYUXJuD2bZccGSsnYWzvaSuJHSiK+4mKR81iu6ioEf4YWtR1Hg1pg==}
     engines: {node: '>=22'}
+    peerDependencies:
+      vitest: '>=4'
+    peerDependenciesMeta:
+      vitest:
+        optional: true
 
   '@krizaka/pacer@0.1.0':
     resolution: {integrity: sha512-MLl1rYubhRJeIOkBOOc1YPJrJTQX89YxxrnXuw/wmqs8os+/YCZ8srCvWrVre9M7AkZ3SBLLpYgnIDXeA8rO7g==}
@@ -9521,7 +9526,9 @@ snapshots:
 
   '@krizaka/organize@0.1.0': {}
 
-  '@krizaka/organize@0.3.0': {}
+  '@krizaka/organize@0.4.0(vitest@4.1.11(@types/node@24.19.2)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.4(@types/node@24.19.2)(jiti@2.7.0)(terser@5.51.2)))':
+    optionalDependencies:
+      vitest: 4.1.11(@types/node@24.19.2)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.4(@types/node@24.19.2)(jiti@2.7.0)(terser@5.51.2))
 
   '@krizaka/pacer@0.1.0(react@19.3.1)':
     dependencies:

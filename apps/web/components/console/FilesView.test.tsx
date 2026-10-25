@@ -26,7 +26,7 @@ const TYPES = [
   { id: "employment-letter", label: "Lettre d'emploi" },
 ];
 /** Rows as `listApplicantFiles` returns them. */
-const summary = (id: string, name: string, extra: Partial<FileSummary> = {}): FileSummary => ({ id, candidateName: name, status: "open", createdAt: "2026-10-20T14:00:00.000Z", expiresAt: "2026-11-07T15:00:00.000Z", submittedAt: null, closedAt: null, documents: 0, requested: 3, ...extra });
+const summary = (id: string, name: string, extra: Partial<FileSummary> = {}): FileSummary => ({ id, candidateName: name, status: "open", createdAt: "2026-10-20T14:00:00.000Z", expiresAt: "2026-11-07T15:00:00.000Z", submittedAt: null, closedAt: null, documents: 0, requested: 3, decision: "a_decider", tagIds: [], ...extra });
 
 describe("« Dossiers »: the list (P6, yomizaka#323)", () => {
   it("draws a row per file of listApplicantFiles — the applicant, the link in words, the documents in against those asked — each leading to its file", () => {

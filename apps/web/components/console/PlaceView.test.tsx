@@ -32,6 +32,7 @@ const render = (props: Props = {}, locale: "en" | "fr" = "fr") =>
           folders={[folder("f1", "Baux", 3), folder("f2", "Factures", 1)]}
           documents={[doc(1), doc(2)]}
           tags={[]}
+          documentTags={[]}
           view={parseView({})}
           tagsByDocument={{}}
           collections={[{ id: "c1", name: "Rosemont", avatar: null }]}
@@ -84,12 +85,12 @@ describe("a collection (the UX review's Y7)", () => {
     expect(text).toContain("Factures · 1 fichier");
   });
 
-  it("the tags are a filter bar with the ones in force as chips; absent when the account has no tag", () => {
+  it("the documents' tags are a filter bar with the ones in force as chips; absent when the account has no document tag", () => {
     expect(render()).not.toContain('data-testid="place-filters"');
     const T1 = "11111111-1111-4111-8111-111111111111";
     const T2 = "22222222-2222-4222-8222-222222222222";
     const tags = [{ id: T1, name: "Urgent", color: "red" }, { id: T2, name: "2026", color: "blue" }] as never;
-    const html = render({ tags, view: parseView({ tags: T1 }) });
+    const html = render({ documentTags: tags, view: parseView({ tags: T1 }) });
     expect(html).toContain('data-testid="place-filters"');
     const text = readable(html);
     expect(text).toContain("Urgent");

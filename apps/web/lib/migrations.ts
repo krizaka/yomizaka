@@ -7,6 +7,7 @@ import { accountsMigration } from "@krizaka/auth";
 import { webhooksMigration } from "@krizaka/webhooks";
 
 import { DEFAULT_COLLECTION_MIGRATION } from "./organisation/default-collection";
+import { WORKSPACE_MIGRATION } from "./workspace/migration";
 
 export interface Migration {
   version: string;
@@ -583,5 +584,10 @@ ALTER TABLE documents ADD COLUMN checks_skipped jsonb NOT NULL DEFAULT '[]';
     version: "0032_password_resets",
     // @krizaka/auth 0.5: the table of password reset links (a link mailed to the account's address, used once, time-limited). Idempotent.
     sql: accountsMigration(),
+  },
+  {
+    version: "0033_workspace_organised",
+    // krizaka-ts ADR-003, @krizaka/organize 0.4 (yomizaka#324): tags with markers, the decision set, saved views; the documents' tags move in.
+    sql: WORKSPACE_MIGRATION,
   },
 ];

@@ -256,6 +256,41 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
   rules the next drop.
 - **Signal we are wrong**: people cancel runs started on the drop; « Autre » is chosen to avoid the automatic start.
 
+## 26. The organised workspace: your decision, tags with markers, saved views, bulk actions (P7, #324)
+
+Krizaka-ts ADR-003, `@krizaka/organize` 0.4. Yomizaka is the pilot, on « Dossiers » and on the documents' tags.
+
+- **Decision**: a manager decides an applicant file with a status set kept as data in the database (`organize.kind_config`,
+  seeded once, edited by the administration through `PUT /api/admin/organize/<kind>/config`, versioned). The set is
+  **À décider → Retenu | Non retenu**; both targets are final and « Non retenu » asks a second press (`confirm`). No reason is
+  accepted: there is no free-text note about a person, and no list of reasons yet. « Non retenu » is `neutral`, never `danger`.
+- **Deciding closes the file, in the same transaction**: the link is revoked and closed, every document is purged from the
+  database and the store (Loi 25), the reports stay, and one audit line per file is written (`organize.status_changed`, then
+  `applicant-file.closed` with the purge count). If a kept file's store is not there, nothing is decided. A decision cannot be
+  undone, because the documents are gone: no undo is offered after a final state (`undoOf`).
+- **Two people deciding the same file at once** give one decision and one refusal: the layer locks the row (`FOR UPDATE`), the
+  second sees a final state (`MOVE_NOT_ALLOWED`, or `STALE` when it passed the state it had seen). Tested on PostgreSQL.
+- **Two axes, never one chip**: the link's state stays the system's line of facts; the decision is its own column, « Votre
+  décision », sorted by the set's order (`lib/workspace/order.ts`), never by a check's result.
+- **Tags** have a colour **marker** from the closed palette (blue · green · amber · red · violet · gray) and always a written
+  name. Files and documents have their own tags per kind. A document's tags moved from the first layer to the workspace
+  (migration 0033 copies names and markers, then drops `document_tags`); a collection's and a folder's stay as they were.
+  Documents have **no status** in v1: they already carry Orazaka's fact.
+- **Saved views**: the address holds the state (`?view=&tags=&status=&q=`), the database keeps the name. The system views
+  (« À décider », « Décidés ») come first, then the account's, then the person's. On a phone the views are a menu.
+- **Bulk**: at most 200 files, one transaction, one audit line per file; a foreign id is 404 for the whole call; what cannot
+  move is named in `skipped`.
+- **Words, not UI yet**: the marker palette, the chips, the views bar and the selection bar are krizaka-ui#627's and the
+  administration's editors #690's. Until they ship, `components/organise/` composes `Chip`, `Badge`, `FilterBar` and
+  `DataTable`; each file names the issue that deletes it (ADR-006 § 6).
+- **No customer webhook yet**: the layer's event has no consumer and the webhooks' event list is public API; nothing is
+  emitted until a customer asks.
+- Refused: a score or a « best first » order; pre-filling a decision; a free-text reason; a status on documents; a hex colour;
+  two sources of truth for the documents' tags.
+- Cost: a decision is irreversible (the documents are purged), so the refusal asks twice and the page says so.
+- We are wrong if managers keep a decided file open by hand to keep its documents, or ask to change a decision: then a
+  « reopen » with a new request to the applicant, never an undo.
+
 ## 25. The states pass: a skeleton per page in its shape, errors in place, NO_TEXT said, the demo note at the foot (P11, #328)
 
 - **Decision** (design § 3.5): every page of the signed-in space has its own `loading.tsx` and `error.tsx`, both on

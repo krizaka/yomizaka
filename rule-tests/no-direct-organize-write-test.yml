@@ -1,0 +1,15 @@
+id: no-direct-organize-write
+valid:
+  - |
+    await q("SELECT state FROM organize.applicant_file_status WHERE entity_id = $1", [id]);
+  - |
+    await workspace.status.move(scope, actor, "applicant_file", { ids, to: "retenu" });
+  - |
+    await q("UPDATE screenings SET closed_at = $2 WHERE id = $1", [id, at]);
+invalid:
+  - |
+    await q("UPDATE organize.applicant_file_status SET state = 'retenu' WHERE entity_id = $1", [id]);
+  - |
+    await q(`INSERT INTO organize.document_tag (entity_id, tag_id) VALUES ($1, $2)`, [d, t]);
+  - |
+    await q("DELETE FROM organize.tag WHERE id = $1", [t]);
