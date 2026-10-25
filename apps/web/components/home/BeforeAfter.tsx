@@ -25,7 +25,7 @@ export function BeforeAfter({ locale }: { locale: Locale }) {
     <div className="flex w-full flex-col gap-3 p-4 sm:p-5" data-testid="before-after">
       <figure className="m-0 flex min-w-0 flex-col gap-2" aria-label={t.leaseCaption}>
         <figcaption className="text-xs font-semibold text-fg-muted">{t.before}</figcaption>
-        <div className="whitespace-pre-wrap break-words rounded-lg border border-border-default bg-surface-1 p-3 font-mono text-[13px] leading-relaxed text-fg-secondary sm:text-sm">
+        <div className="whitespace-pre-wrap break-words rounded-lg border border-border-default bg-surface-1 p-3 text-sm leading-relaxed text-fg-secondary">
           {parts.map((p, i) =>
             p.mark ? (
               <mark key={i} className="ym-passage text-fg" title={p.mark}>
@@ -49,7 +49,7 @@ export function BeforeAfter({ locale }: { locale: Locale }) {
           </div>
           {quote ? <p className="m-0 border-l-2 border-accent pl-3 text-sm italic text-fg-secondary">« {quote} »</p> : null}
           <p className="m-0 text-sm leading-relaxed text-fg-secondary">{finding.explanation}</p>
-          <p className="m-0 font-mono text-sm font-semibold text-fg-accent" data-testid="hero-article">
+          <p className="m-0 text-sm font-semibold text-fg-accent" data-testid="hero-article">
             {finding.citation}
           </p>
         </div>

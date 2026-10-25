@@ -256,6 +256,23 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
   rules the next drop.
 - **Signal we are wrong**: people cancel runs started on the drop; « Autre » is chosen to avoid the automatic start.
 
+## 24. The public site, plain: no eyebrow, no figures row, no mono captions, a bento without an orphan (P10, #327)
+
+- **Decision**: the home is the product's site, not a Cahier site (design § 3.2, finding 10). `LandingPage` gets no
+  `eyebrow` (the blocks draw it in the margin's red and the typewriter face), no `proofs` (the figures band under the
+  hero, a tell ADR-004 retired: the figures stay as one plain line in « La preuve »), no `visualLabel` (the window bar's
+  mono caption; the frame keeps the caption as its accessible name). The owl stays once; its caption is read by a screen reader, not shown in the mono. The
+  three things are of the same weight: one row of the bento, no 2 + 1 orphan. « Pour qui » drops its `Facts` chips (the blocks draw them as mono words): its lead already names who it is for. The lease excerpt, the cited article and
+  the run's line are in the sans; the mono is for code only (`<code>`, `<pre>`: the key id, the public key, the hashes).
+- **Y9's leftover**: the trust line says where the data lives as the storage choice has it (ADR-0007): Toronto by
+  default, the customer's own storage when chosen.
+- **Guard**: `components/home/plain.test.tsx` reads every public component (every `font-mono` on a `<code>`/`<pre>`, no
+  margin red, no eyebrow) and renders the home (no eyebrow, no band, no caption, every bento row full).
+- **Refused**: overriding the blocks' faces in `globals.css` (a copy of krizaka-ui's decisions); the visual and the words
+  stay its own.
+- **Cost**: the hero says less at a glance (no figures); the proof's line carries them.
+- **Signal we are wrong**: visitors stop scrolling to « La preuve » and miss the run's figures.
+
 ## 23. The check flow: the defaults before the drop, one row per file in words, an uncertain kind asked per file (P9, #326)
 
 - **Before the drop** (Errata 6), « Vérifier un document » says its defaults in one line: « Effacé après la vérification ·

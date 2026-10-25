@@ -27,7 +27,7 @@ describe("the home is one short page: who it is for, one real check, one way in"
     expect(island).toContain('t("landing.openApp")');
   });
 
-  it("is the landing block with the product's answer beside the words (Y9): the recorded check in a browser frame, the run's figures, the three things as a bento, the owl once; no counter, no glow, no grid, no void above the hero", () => {
+  it("is the landing block with the product's answer beside the words (Y9): the recorded check in a browser frame, the three things as a bento, the owl once; no figures row under the hero (P10); no counter, no glow, no grid, no void above the hero", () => {
     expect(home).toMatch(/<LandingPage\b/);
     expect(home).toContain('data-testid="home-visual"');
     expect(home).not.toMatch(/DeviceFrame/);
@@ -36,7 +36,7 @@ describe("the home is one short page: who it is for, one real check, one way in"
     expect(home).toContain("<ClosingActions locale={locale} />");
     expect(home).toContain("<ClosingBody signedOut=");
     expect(home).not.toContain("/sign-in`");
-    expect(home).toContain("proofs={[");
+    expect(home).not.toContain("proofs=");
     expect((home.match(/<MascotQuote\b/g) ?? []).length).toBe(1);
     expect(home).not.toMatch(/NumberTicker|GlowCard|Sparkle|shimmer|grid\b/);
     expect(home).not.toContain("pt-20");

@@ -1,7 +1,7 @@
 import { CheckIcon, EyeIcon, SearchIcon } from "@krizaka/icons";
 import { LandingPage } from "@krizaka/ui/landing-page";
 import { MascotQuote } from "@krizaka/ui/mascot-quote";
-import { Facts, Section } from "@krizaka/ui/page";
+import { Section } from "@krizaka/ui/page";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -24,7 +24,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 const DATE = { en: "en-CA", fr: "fr-CA" } as const;
 const ICONS = { line: CheckIcon, file: EyeIcon, find: SearchIcon } as const;
-const WHO = ["tenant", "landlord", "freelancer", "business"] as const;
 
 /**
  * The home is the whole public site (Simplify Yomizaka, krizaka/yomizaka#120), on `LandingPage` since the UX review's Y9: the
@@ -47,7 +46,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         {/* The bar is fixed: the hero's frame starts 24 px under it (`--kz-hero-top`, F6) — no void above the hero, nothing added on main. */}
         <main id="content" data-landing>
           <LandingPage
-            eyebrow={d.eyebrow}
             title={d.title}
             lead={d.lead}
             actions={
@@ -56,27 +54,22 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             }
             visual={
               /* The product's answer, real (the recorded run), in a panel that grows with its text — the recorded steps take this place once the final design is captured. */
-              <div className="rounded-lg border border-border-default bg-surface-1" data-testid="home-visual">
+              <div className="rounded-lg border border-border-default bg-surface-1" data-testid="home-visual" role="group" aria-label={d.visual.caption}>
                 <div data-testid="proof-run">
                   <BeforeAfter locale={locale} />
                 </div>
               </div>
             }
-            visualLabel={d.visual.caption}
-            proofs={[
-              { value: figures.rules, label: d.proofs.rules },
-              { value: figures.articles, label: d.proofs.articles },
-              { value: figures.found, label: d.proofs.findings },
-            ]}
             featuresHeading={{
               title: (
                 <span id="what">{d.what.title}</span>
               ),
               lead: d.what.lead,
             }}
-            features={(["line", "file", "find"] as const).map((id, i) => {
+            /* Three things of the same weight: one row of the bento, no orphan card (P10). */
+            features={(["line", "file", "find"] as const).map((id) => {
               const Icon = ICONS[id];
-              return { id, title: d.what.items[id].title, text: d.what.items[id].text, icon: <Icon size={24} aria-hidden />, size: i === 0 ? ("md" as const) : ("sm" as const) };
+              return { id, title: d.what.items[id].title, text: d.what.items[id].text, icon: <Icon size={24} aria-hidden /> };
             })}
             closing={{
               title: d.closing.title,
@@ -94,10 +87,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           >
             <Section id="proof" title={d.proof.title} lead={d.proof.lead} spacing="sm" divider>
               <p className="text-sm text-fg-secondary">{format(d.proof.figures, { rules: figures.rules, found: figures.found })}</p>
-              <p className="mt-1 font-mono text-xs text-fg-muted" data-testid="proof-meta">
+              <p className="mt-1 text-xs text-fg-muted" data-testid="proof-meta">
                 {d.proof.runLabel} {run.runId} · {d.proof.dateLabel} {new Date(run.recordedAt).toLocaleDateString(DATE[locale], { dateStyle: "long", timeZone: "America/Toronto" })} · {d.proof.rulesetLabel} {run.report.rulesetId} {run.report.rulesetVersion}
               </p>
-              <MascotQuote bird="owl" variant="callout" label={d.proof.owlLabel} className="mt-8">
+              {/* The owl's caption is read, not shown: the blocks draw it in the mono (P10). */}
+              <MascotQuote bird="owl" variant="callout" label={<span className="sr-only">{d.proof.owlLabel}</span>} className="mt-8">
                 {d.what.items.line.text}
               </MascotQuote>
               <p className="mt-6 text-xs text-fg-muted" data-testid="powered-by">
@@ -105,8 +99,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               </p>
             </Section>
             <Section id="who" title={d.who.title} lead={d.what.who} spacing="sm" divider>
-              <Facts items={WHO.map((k) => ({ label: d.who.items[k] }))} />
-              <p className="mt-6 max-w-[70ch] text-sm text-fg-secondary">{d.what.trust}</p>
+              <p className="max-w-[70ch] text-sm text-fg-secondary">{d.what.trust}</p>
               <p className="mt-1 text-sm">
                 <Link href={pagePath(locale, "privacy")} className="text-fg-accent underline underline-offset-4">
                   {d.what.privacy}
