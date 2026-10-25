@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 
 import { CheckView } from "@/components/console/CheckView";
 import { pageSession } from "@/lib/access";
+import { catalogueOf } from "@/lib/check-catalogue";
+import { creditsOf } from "@/lib/credits";
 import { appEnvironment } from "@/lib/env";
 import { availableFlows, offerFor } from "@/lib/flows";
 import { asLocale, getDictionary } from "@/lib/i18n";
@@ -14,5 +16,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function CheckPage() {
   const session = await pageSession();
   const offer = offerFor(await availableFlows(appEnvironment()), session?.account.perspective ?? null);
-  return <CheckView jurisdictions={offer.jurisdictions} />;
+  const now = new Date();
+  return <CheckView jurisdictions={offer.jurisdictions} catalogue={catalogueOf(offer)} credits={session ? await creditsOf(session.account.id, now) : null} now={now.toISOString()} />;
 }

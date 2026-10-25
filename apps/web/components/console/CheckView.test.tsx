@@ -1,8 +1,10 @@
 import { KrizakaQueryProvider } from "@krizaka/query";
-import { DOCUMENT_KINDS } from "@yomizaka/core";
+import { DOCUMENT_KINDS, offerOf } from "@yomizaka/core";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
+import { catalogueOf } from "@/lib/check-catalogue";
+import { SEED_FLOWS } from "@/lib/flows-seed";
 import { I18nProvider } from "@/lib/i18n-client";
 import en from "@/messages/en.json";
 import fr from "@/messages/fr.json";
@@ -98,5 +100,71 @@ describe("the queue: one row per file, its stage in words (yomizaka#326, P9)", (
     expect(html).toContain('href="/fr/app/documents/a/rapport"');
     expect(html).toContain('href="/fr/app/documents/b/rapport?refused=PAYWALL"');
     expect(html).not.toContain('href="/fr/app/documents/c/rapport"');
+  });
+});
+
+const tenant = catalogueOf(offerOf(SEED_FLOWS.filter((f) => f.definition.audiences.includes("tenant")).map((f) => f.definition)));
+const withCatalogue = (props: Partial<Parameters<typeof CheckView>[0]> = {}, locale: "en" | "fr" = "fr") => wrap(<CheckView catalogue={tenant} credits={{ kind: "pro", used: 18, cap: 100, renewsAt: null }} now="2026-10-25T16:00:00.000Z" {...props} />, locale);
+
+describe("« Vérifier un document », B2: the plan strip, the catalogue, the drop and the run (yomizaka#333)", () => {
+  it("shows where the account stands: its plan and its audits from the billing state, with the meter", () => {
+    const html = withCatalogue();
+    const strip = html.slice(html.indexOf('data-testid="plan-strip"'), html.indexOf('data-testid="check-drop"'));
+    const text = readable(strip);
+    expect(html).toContain(`aria-label="${fr.console.check.plan.label}"`);
+    expect(text).toContain(fr.console.check.plan.names.pro);
+    expect(text).toContain("18 sur 100");
+    expect(strip).toContain('role="meter"');
+    expect(strip).toContain('href="/fr/app/settings/facturation"');
+  });
+
+  it("credits: the audits left and no meter; an account an operator made says its audits are included", () => {
+    const credits = withCatalogue({ credits: { kind: "credits", left: 3 } });
+    const strip = credits.slice(credits.indexOf('data-testid="plan-strip"'), credits.indexOf('data-testid="check-drop"'));
+    expect(readable(strip)).toMatch(/\b3\b/);
+    expect(strip).not.toContain('role="meter"');
+    expect(readable(withCatalogue({ credits: { kind: "included" } }))).toContain(fr.console.check.plan.included);
+  });
+
+  it("lists the checks that run, each with « Disponible » and one action that names its kind and leads to the drop", () => {
+    const html = withCatalogue();
+    const list = html.slice(html.indexOf('data-testid="check-catalogue"'));
+    expect(list.match(/<li\b/g)).toHaveLength(6);
+    expect(readable(list)).toContain(fr.console.check.catalogue.items["qc-residential-lease"].title);
+    expect(readable(list)).not.toContain("qc-made-up");
+    expect(list.match(new RegExp(escape(fr.console.check.catalogue.available), "g"))).toHaveLength(6);
+    expect(list).toContain('href="/fr/app/verifier?type=lease#depot"');
+    expect(list).toContain('href="/fr/app/verifier#depot"');
+  });
+
+  it("the chips carry the counts of each group, « Toutes » first", () => {
+    const html = withCatalogue();
+    const chips = html.slice(html.indexOf('data-testid="catalogue-chips"'), html.indexOf("</div>", html.indexOf('data-testid="catalogue-chips"')));
+    expect(readable(chips)).toMatch(/Toutes · 6\s+Baux · 3\s+Avis et états · 2\s+Authenticité · 1/);
+  });
+
+  it("the drop comes before the catalogue in the page (a phone reads one column: drop first), and the plan strip before both", () => {
+    const html = withCatalogue();
+    expect(html.indexOf('data-testid="plan-strip"')).toBeLessThan(html.indexOf('data-testid="check-drop"'));
+    expect(html.indexOf('data-testid="check-drop"')).toBeLessThan(html.indexOf('data-testid="check-catalogue"'));
+    expect(html).toContain('id="depot"');
+    expect(html.match(/<h1\b/g)).toHaveLength(1);
+  });
+
+  it("puts today's date on the right of the heading", () => {
+    expect(readable(withCatalogue())).toContain("dimanche 25 octobre 2026");
+  });
+
+  it("without a catalogue or a billing state the page is the drop alone, as before", () => {
+    const html = wrap(<CheckView />);
+    expect(html).not.toContain('data-testid="check-catalogue"');
+    expect(html).not.toContain('data-testid="plan-strip"');
+    expect(html).toContain('data-testid="check-defaults"');
+  });
+
+  it("speaks English from the English dictionary", () => {
+    const text = readable(withCatalogue({}, "en"));
+    expect(text).toContain(en.console.check.catalogue.items["qc-residential-lease"].title);
+    expect(text).toContain(en.console.check.plan.names.pro);
   });
 });

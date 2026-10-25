@@ -175,7 +175,80 @@
         "started": "Check started",
         "refused": "Not started: {reason}"
       },
-      "openReport": "Open the report"
+      "openReport": "Open the report",
+      "catalogue": {
+        "title": "The checks",
+        "searchLabel": "Search a check",
+        "searchPlaceholder": "Search a check",
+        "groupsLabel": "Kind of check",
+        "all": "All",
+        "groups": {
+          "lease": "Leases",
+          "invoice": "Invoices",
+          "contract": "Contracts",
+          "notice": "Notices and condition",
+          "authenticity": "Authenticity"
+        },
+        "available": "Available",
+        "action": "Check",
+        "actionFor": "Check: {title}",
+        "none": "No check matches this search.",
+        "chosen": "Check chosen: {kind}",
+        "change": "Change",
+        "listLabel": "The checks Yomizaka runs",
+        "items": {
+          "qc-residential-lease": {
+            "title": "Residential lease, Québec",
+            "line": "Your lease against Québec’s rules, line by line."
+          },
+          "fr-residential-lease": {
+            "title": "Residential lease, France",
+            "line": "France · residential lease"
+          },
+          "be-residential-lease": {
+            "title": "Residential lease, Wallonia",
+            "line": "Wallonia · residential lease"
+          },
+          "qc-invoice": {
+            "title": "Supplier’s invoice, Québec",
+            "line": "Québec · GST and QST numbers, mandatory mentions"
+          },
+          "qc-service-contract": {
+            "title": "Service contract, Québec",
+            "line": "Québec · late-payment interest, copyright and moral rights"
+          },
+          "qc-visit-notice": {
+            "title": "Notice of a visit, Québec",
+            "line": "Québec · 24-hour notice"
+          },
+          "qc-premises-condition": {
+            "title": "Condition report, Québec",
+            "line": "Québec · the state of the premises at move-in"
+          },
+          "authenticity": {
+            "title": "Authenticity of the file",
+            "line": "The PDF file itself: producer, dates, successive saves, fonts."
+          }
+        }
+      },
+      "dropTitle": "Drop",
+      "plan": {
+        "label": "Your plan",
+        "plan": "Plan",
+        "names": {
+          "pro": "Pro",
+          "credits": "Credits",
+          "included": "Included"
+        },
+        "used": "This month",
+        "cap": "Fair-use cap",
+        "left": "Audits left",
+        "meterLabel": "Audits this month",
+        "meterText": "{used} of {cap}",
+        "included": "Your audits are included.",
+        "manage": "Credits and usage",
+        "open": "Open"
+      }
     },
     "home": {
       "todo": {
