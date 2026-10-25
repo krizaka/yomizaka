@@ -1,5 +1,4 @@
-import { CONSENT_PURPOSE, type ConsentPurpose } from "./applicant-consent";
-import { LINK, type LinkState } from "./applicant-file-rules";
+import { CONSENT_PURPOSE, type ConsentPurpose, LINK, type LinkState } from "./applicant-file-rules";
 import { HttpError } from "./http";
 
 /*

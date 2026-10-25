@@ -1,4 +1,4 @@
-import { APPLICATION_ERASED } from "./applicant-file-rules";
+import { APPLICATION_ERASED, CONSENT_PURPOSE, type ConsentPurpose } from "./applicant-file-rules";
 import { audit } from "./audit";
 import { query } from "./db";
 import { deleteDocument, isUuid } from "./documents";
@@ -13,8 +13,7 @@ import type { DocumentStore } from "./storage/port";
  * and DOCUMENT_KEEP, the keeping of the applicant file's documents until the manager's decision (yomizaka#127).
  */
 
-export const CONSENT_PURPOSE = { DOCUMENT_CHECK: "DOCUMENT_CHECK", COURT_RECORDS: "COURT_RECORDS", CREDIT: "CREDIT", DOCUMENT_KEEP: "DOCUMENT_KEEP" } as const;
-export type ConsentPurpose = (typeof CONSENT_PURPOSE)[keyof typeof CONSENT_PURPOSE];
+export { CONSENT_PURPOSE, type ConsentPurpose };
 export const CONSENT_PURPOSES = Object.values(CONSENT_PURPOSE) as ConsentPurpose[];
 
 /** The version of the notice (messages `applicant.notice`). Changing the text changes this, and a consent to an old one is refused. */

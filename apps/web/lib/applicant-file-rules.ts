@@ -6,6 +6,10 @@ import { refuse } from "./http";
  * decides on them without touching the database.
  */
 
+/** The purposes a consent is given for. Here, with the pure rules, so the applicant's page (a client component) reads them without the database. */
+export const CONSENT_PURPOSE = { DOCUMENT_CHECK: "DOCUMENT_CHECK", COURT_RECORDS: "COURT_RECORDS", CREDIT: "CREDIT", DOCUMENT_KEEP: "DOCUMENT_KEEP" } as const;
+export type ConsentPurpose = (typeof CONSENT_PURPOSE)[keyof typeof CONSENT_PURPOSE];
+
 /** The application status once erased (its personal fields are gone). Here, not in applicant-consent (which reads the database), so the browser can read the rules. */
 export const APPLICATION_ERASED = "erased" as const;
 
