@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# The backend of the phone's Maestro flows (krizaka/.github#241, mobile-e2e.yml's `setup-command`; krizaka/yomizaka#346):
+# a throwaway PostgreSQL and the built web app on localhost:3000, with the persona Éric seeded for DEMO_ACCOUNT_EMAIL /
+# DEMO_ACCOUNT_PASSWORD (made by the workflow, masked, for this run only). A fresh database every run, so the demo data is
+# always reset. The emulator reaches it through `adb reverse`. Dev only: the seed refuses anything but APP_ENVIRONMENT=dev,
+# and nothing here is a real secret or a real account.
+set -euo pipefail
+: "${DEMO_ACCOUNT_EMAIL:?DEMO_ACCOUNT_EMAIL is required}"
+: "${DEMO_ACCOUNT_PASSWORD:?DEMO_ACCOUNT_PASSWORD is required}"
+
+DB_PASS="$(openssl rand -hex 16)"
+echo "::add-mask::$DB_PASS"
+docker run -d --name e2e-pg -p 5432:5432 -e POSTGRES_USER=yomizaka_db -e POSTGRES_PASSWORD="$DB_PASS" -e POSTGRES_DB=yomizaka_db postgres:16 >/dev/null
+for _ in $(seq 1 60); do docker exec e2e-pg pg_isready -U yomizaka_db >/dev/null 2>&1 && break; sleep 1; done
+
+export APP_ENVIRONMENT=dev
+export APP_SEARCH_INDEXING=off
+export DATABASE_URL="postgresql://yomizaka_db:${DB_PASS}@localhost:5432/yomizaka_db"
+export AUTH_SESSION_SECRET="$(openssl rand -hex 32)"
+export AI_API_KEY=oz_ci_only_not_a_key
+export PORT=3000
+APP_REPORT_SIGNING_KEY="$(node -e 'process.stdout.write(require("crypto").generateKeyPairSync("ed25519").privateKey.export({type:"pkcs8",format:"der"}).toString("base64"))')"
+export APP_REPORT_SIGNING_KEY
+
+pnpm --filter @yomizaka/web build
+export NODE_ENV=production
+trap 'tail -100 web-mobile-e2e.log || true' ERR
+(cd apps/web && nohup npx next start -p 3000 > ../../web-mobile-e2e.log 2>&1 &)
+for _ in $(seq 1 90); do curl -sf http://localhost:3000/api/healthz >/dev/null && break; sleep 1; done
+curl -sf http://localhost:3000/api/healthz >/dev/null
+
+# The migrations ran at the server's start; now the persona (idempotent, refused outside dev).
+APP_DEMO_ACCOUNT_EMAIL="$DEMO_ACCOUNT_EMAIL" APP_DEMO_ACCOUNT_PASSWORD="$DEMO_ACCOUNT_PASSWORD" node scripts/demo-seed/cli.mjs --persona eric --reset
+echo "backend ready: http://localhost:3000 (dev, persona Éric)"

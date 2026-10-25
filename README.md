@@ -77,6 +77,13 @@ pnpm run check                             # lint · typecheck · tests (what th
 | `scripts/check-admin-live.mjs` | the walk of the live administration from an allowed address (`pnpm run check:admin-live`) |
 | `deploy/` | the Docker image and the DigitalOcean App Platform spec (`dev.yomizaka.com`) |
 
+## Demo (the persona Éric) and the phone's Maestro flows
+
+- `pnpm run demo:seed -- --persona eric [--reset]` seeds Éric Tremblay (landlord) with his collections, documents and seeded checks, on **dev and local only**: it refuses any `APP_ENVIRONMENT` but `dev` before it opens a connection (tested). Its login is `APP_DEMO_ACCOUNT_EMAIL` / `APP_DEMO_ACCOUNT_PASSWORD`, never typed in the repository; see `docs/demo-data.md`.
+- `apps/mobile/.maestro/` holds the flows, which sign in through `shared/sign-in.yaml` with `PERSONA_EMAIL` / `PERSONA_PASSWORD`. `smoke` and `tabs` (a capture per tab: Accueil, Vérifications, Lots) are tagged `ci`; `check-document` runs a paid engine check through the system picker and is tagged `manual`.
+- **In CI**, every pull request runs them on an Android emulator (`mobile-ci.yml` → the org's `mobile-e2e.yml`, krizaka/.github#241): `scripts/ci-mobile-backend.sh` starts a throwaway PostgreSQL and the built web app and seeds Éric with a password made for the run, so the demo data is reset each time and no shared account is used. The check is **`mobile-e2e / gate`**; the screenshots, the screen recording and the JUnit report are the `maestro-e2e` artifact of the run, which is where a PR's phone captures come from.
+- Locally: `maestro test -e PERSONA_EMAIL=… -e PERSONA_PASSWORD=… --exclude-tags manual apps/mobile/.maestro` against a simulator signed into a dev backend.
+
 ## Environment
 
 Every variable is declared once in `apps/web/lib/env.ts` (see `.env.example`); a test keeps this table in sync.
