@@ -1856,7 +1856,6 @@
       "made": {
         "title": "Le lien pour {name}",
         "text": "Valable jusqu'au {date}. Il n'est montré qu'une fois : copiez-le et remettez-le au candidat. Aucun document ne passe par courriel.",
-        "notYet": "La page où le candidat envoie ses documents n'est pas encore en ligne : ce lien l'ouvrira dès qu'elle le sera.",
         "copy": "Copier le lien",
         "copied": "Copié"
       },
@@ -2218,6 +2217,32 @@
       "PURPOSE_NOT_IN_FILE": "Cette finalité ne concerne pas un dossier de documents.",
       "CONSENT_REQUIRED": "Aucun document n'est vérifié sans votre consentement pour cette finalité.",
       "NOT_FOUND": "Introuvable."
+    },
+    "page": {
+      "metaTitle": "Vos documents",
+      "noticeSummary": "Lire l'avis : comment vos documents et vos renseignements sont utilisés",
+      "consentTitle": "Votre consentement",
+      "consentLead": "Rien n'est lu ni vérifié avant votre consentement. Vous pouvez le retirer à tout moment.",
+      "askedTitle": "Documents demandés",
+      "consentFirst": "Consentez à la vérification ci-dessus pour envoyer vos documents.",
+      "dropTitle": "Déposez le PDF ici",
+      "browse": "Choisir un PDF",
+      "hint": "PDF seulement, jusqu'à 10 Mo.",
+      "received": "Reçu",
+      "sending": "Envoi",
+      "sent": "Envoyé",
+      "notSent": "Non envoyé",
+      "pause": "Pause",
+      "resume": "Reprendre",
+      "retry": "Réessayer",
+      "cancel": "Annuler",
+      "remove": "Retirer",
+      "submitHint": "Vous pourrez envoyer votre dossier dès qu'un document est reçu.",
+      "eraseConfirm": "Appuyez encore pour tout supprimer",
+      "eraseLead": "Vous pouvez demander à tout moment la suppression de vos documents et du résultat.",
+      "withdrawLead": "Retirer un consentement arrête les vérifications qui en dépendent.",
+      "closedTitle": "Ce lien est fermé",
+      "howLong": "Par défaut, un document est supprimé dès que sa vérification est terminée. Si vous consentez à le garder (« Garder mes documents jusqu'à la décision du propriétaire »), il est gardé jusqu'à la décision du propriétaire, puis supprimé. Vous pouvez demander à tout moment la suppression de vos documents et du résultat. [À RÉVISER PAR L'AVOCAT]"
     }
   },
   "screening": {

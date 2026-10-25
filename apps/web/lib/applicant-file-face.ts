@@ -73,7 +73,7 @@ export function checkFact(check: Pick<Analysis, "studio" | "status" | "report">)
   return { key: "dossiers.check.failed", count: 0, tone: "neutral" };
 }
 
-/** The address the applicant opens (the token is returned once by the request; only its hash is kept). Its page is yomizaka#341. */
+/** The address the applicant opens (the token is returned once by the request; only its hash is kept). Its page: app/[locale]/dossier/[token] (yomizaka#341). */
 export const applicantLink = (origin: string, locale: "en" | "fr", token: string): string => `${origin}/${locale}/dossier/${token}`;
 
 /** The requestable types with their words, from the applicant's catalogue (`applicantFile.types`); a type without words keeps its id. */

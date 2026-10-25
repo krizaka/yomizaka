@@ -570,8 +570,23 @@ Krizaka-ts ADR-003, `@krizaka/organize` 0.4. Yomizaka is the pilot, on « Dossie
   Orazaka returned them. It leads to the document's report, where the run ids are.
 - « Demander des documents » is a dialog on `createKrizakaForm`. It offers only the requestable types: the minimisation
   list (SIN, health card, passport, licence, bank details) is never offered, the form's schema refuses it, and the service
-  keeps its 422 `TYPE_NOT_NECESSARY`. The link comes back once and is shown once, to copy. The page where the applicant
-  sends the documents is not built yet (#341), and the dialog says so.
+  keeps its 422 `TYPE_NOT_NECESSARY`. The link comes back once and is shown once, to copy. The applicant's page is `/[locale]/dossier/[token]` (#341).
 - The empty state has the owl (`empty`), one sentence and the one action.
 - The provider screening (`/app/screening`) stays where it is and still belongs to « Dossiers » in the rail, until it
   becomes a section of the file (design § 6).
+
+## The applicant's page for an applicant file (#341)
+
+- `/{locale}/dossier/{token}` answers the link `applicantLink` hands over. Public by token, never indexed, never cached,
+  `referrer: no-referrer`, like `/screening/[token]`. `loadApplicantPage` reads it by `fileByToken`, which only knows the
+  files: a screening's token (or an unknown one) is a 404, a closed, expired, revoked or erased link opens the page and says so
+  (`linkState`, the codes of `applicantFile.error`).
+- From top to bottom: the title and the expiry; the notice (folded, its version said); **the consent per purpose** — the
+  check, and keeping until the decision — then **the documents asked**, in the request's order, each with « what » and a
+  PDF drop (`FileUpload`: `Dropzone`, `UploadList` with its pause and retry); « Envoyer mon dossier »; the erasure on a
+  two-press `ConfirmButton`.
+- Nothing is offered that the API would refuse: **no drop before the consent to the check** (it says so in place of the
+  drop's silence), no « Envoyer » without one document received, no new consent on a closed link. A consent already given
+  can be withdrawn, and the file erased, until it is erased. The routes keep their own rules.
+- The notice's « {days} days » sentence belongs to the provider screening; the file's notice says only what is proven
+  (a document is deleted after its checks unless kept with consent; deletion on request). It is the lawyer's to review.
