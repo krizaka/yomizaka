@@ -1,6 +1,8 @@
+import { parseView } from "@krizaka/organize/contract";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { systemClock } from "@/app/system-clock";
 import { FilesView } from "@/components/console/FilesView";
 import { pageSession } from "@/lib/access";
 import { documentTypes, listApplicantFiles } from "@/lib/applicant-file";
@@ -11,6 +13,10 @@ import { applicantFilesOffered, availableFlows } from "@/lib/flows";
 import { readFileStates } from "@/lib/home-figures";
 import { asLocale, getDictionary } from "@/lib/i18n";
 import { SITE_URL } from "@/lib/site";
+import { KIND } from "@/lib/workspace/decl";
+import { workspaceFor } from "@/lib/workspace/service";
+import { asTag } from "@/lib/workspace/tags";
+import { resolveView } from "@/lib/workspace/view";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +30,21 @@ export default async function FilesPage({ params, searchParams }: { params: Prom
   const session = await pageSession();
   if (!session) notFound();
   if (!applicantFilesOffered(await availableFlows(appEnvironment()), session.account.perspective ?? null)) notFound();
-  const [files, types] = await Promise.all([listApplicantFiles(session.account.id, new Date()), documentTypes()]);
-  return <FilesView files={files} states={readFileStates(searchOf(await searchParams))} types={askableTypes(getDictionary(locale).applicantFile.types, types)} origin={SITE_URL} />;
+  // The organised workspace (yomizaka#324): the decision set and the views are data; the address holds the filters (`?view=&tags=&status=`).
+  const workspace = workspaceFor({ clock: systemClock });
+  const owner = session.account.id;
+  const search = await searchParams;
+  const [configuration, tags, views] = await Promise.all([workspace.config.get(KIND.applicantFile), workspace.tags.list(owner, KIND.applicantFile), workspace.views.list(owner, { id: owner, label: session.account.email, role: "owner" }, KIND.applicantFile)]);
+  const set = configuration?.config.status ?? null;
+  const resolved = resolveView(parseView(search as Record<string, string | string[] | undefined>), views.system, [...views.workspace, ...views.mine], locale);
+  const [files, types] = await Promise.all([listApplicantFiles(owner, new Date(), { filters: resolved.filters, set }), documentTypes()]);
+  return (
+    <FilesView
+      files={files}
+      states={readFileStates(searchOf(search))}
+      types={askableTypes(getDictionary(locale).applicantFile.types, types)}
+      origin={SITE_URL}
+      workspace={set ? { set, tags: tags.map(asTag), system: views.system, saved: [...views.workspace, ...views.mine], resolved } : undefined}
+    />
+  );
 }

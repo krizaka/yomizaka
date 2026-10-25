@@ -105,15 +105,15 @@ const CREATE = {
 type CreateKind = keyof typeof CREATE;
 
 /** « New collection », « New folder », « New tag »: a button and its dialog. */
-export function CreateButton({ kind, parentId, variant = "secondary", tagsOf }: { kind: CreateKind; parentId?: string; variant?: "secondary" | "ghost"; tagsOf?: "document" }) {
+export function CreateButton({ kind, parentId, variant = "secondary", tagsOf }: { kind: CreateKind; parentId?: string; variant?: "secondary" | "ghost"; tagsOf?: "document" | "applicant_file" }) {
   const { say } = useSay();
   const [open, setOpen] = useState(false);
   const { url, parentField, label: key } = CREATE[kind];
   const label = say(key);
   // A new tag for documents is the workspace's, with a marker; otherwise the first layer's, with a colour.
   const submit = (name: string, color: TagColor | null) =>
-    tagsOf === "document"
-      ? krizakaFetch("/api/organize/document/tags", { method: "POST", json: { name, marker: color ?? "blue" } })
+    tagsOf
+      ? krizakaFetch(`/api/organize/${tagsOf}/tags`, { method: "POST", json: { name, marker: color ?? "blue" } })
       : krizakaFetch(url, { method: "POST", json: { name, ...(parentField ? { [parentField]: parentId } : { color: color ?? "blue" }) } });
   return (
     <>

@@ -280,6 +280,11 @@ Krizaka-ts ADR-003, `@krizaka/organize` 0.4. Yomizaka is the pilot, on « Dossie
   (« À décider », « Décidés ») come first, then the account's, then the person's. On a phone the views are a menu.
 - **Bulk**: at most 200 files, one transaction, one audit line per file; a foreign id is 404 for the whole call; what cannot
   move is named in `skipped`.
+- **The screens**: « Dossiers » gains the column « Votre décision » (the set's chip, sorted by the set's order), the tags with
+  their marker, the views (a bar from `sm`, one menu on a phone), a filter bar (Étiquette, Décision) whose chips remove one
+  filter, the count, and a selectable table whose bar tags, untags and decides. A file's page has « Votre décision » (the moves
+  the set allows from its state, « Non retenu » armed by a first press and sent by the second, `expect` carrying the state seen)
+  and its tags. After a decision nothing is offered. Pure rules: `press`, `resolveView`.
 - **Words, not UI yet**: the marker palette, the chips, the views bar and the selection bar are krizaka-ui#627's and the
   administration's editors #690's. Until they ship, `components/organise/` composes `Chip`, `Badge`, `FilterBar` and
   `DataTable`; each file names the issue that deletes it (ADR-006 § 6).

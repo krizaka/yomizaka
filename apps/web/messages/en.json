@@ -1708,7 +1708,9 @@
         "candidate": "Applicant",
         "link": "Link",
         "documents": "Documents",
-        "asked": "Asked on"
+        "asked": "Asked on",
+        "decision": "Your decision",
+        "tags": "Tags"
       },
       "open": "Open the file of {name}",
       "filter": {
@@ -1783,6 +1785,57 @@
       "studios": {
         "compliance-check": "Against the law",
         "document-authenticity": "Authenticity"
+      },
+      "views": {
+        "label": "File views",
+        "all": "All",
+        "mine": "My views",
+        "save": "Save view",
+        "saveTitle": "Save this view",
+        "name": "View name",
+        "saveHint": "The view keeps the filters of the address: the link stays the same on another device.",
+        "create": "Save",
+        "modified": "modified",
+        "delete": "Delete the view {name}",
+        "menu": "Views",
+        "empty": "No saved view."
+      },
+      "filters": {
+        "bar": "Filter the files",
+        "tags": "Tag",
+        "decision": "Decision",
+        "remove": "Remove the filter {label}",
+        "clear": "Clear filters",
+        "resultsOne": "{count} file",
+        "resultsMany": "{count} files",
+        "nothing": "No file matches these filters."
+      },
+      "bulk": {
+        "label": "Actions on the selection",
+        "selectedOne": "{count} file selected",
+        "selectedMany": "{count} files selected",
+        "tag": "Tag",
+        "untag": "Remove the tag",
+        "noTags": "No tag yet: create one from a file.",
+        "clear": "Clear selection",
+        "done": "Done: {moved} decided, {skipped} left as they were.",
+        "tagged": "Tags updated: {count}."
+      },
+      "decide": {
+        "title": "Your decision",
+        "mark": "Mark « {state} »",
+        "confirm": "Confirm « {state} »",
+        "final": "A decision is final: the file closes and its documents are erased; its reports stay.",
+        "decided": "Decision made: {state}",
+        "none": "No action possible."
+      },
+      "tagsEdit": {
+        "title": "Tags",
+        "edit": "Edit tags",
+        "none": "No tag",
+        "save": "Save",
+        "empty": "You have no tag yet.",
+        "new": "New tag"
       }
     },
     "states": {

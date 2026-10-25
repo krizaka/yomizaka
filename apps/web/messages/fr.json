@@ -1708,7 +1708,9 @@
         "candidate": "Candidat",
         "link": "Lien",
         "documents": "Documents",
-        "asked": "Demandé le"
+        "asked": "Demandé le",
+        "decision": "Votre décision",
+        "tags": "Étiquettes"
       },
       "open": "Ouvrir le dossier de {name}",
       "filter": {
@@ -1783,6 +1785,57 @@
       "studios": {
         "compliance-check": "Au regard de la loi",
         "document-authenticity": "Authenticité"
+      },
+      "views": {
+        "label": "Vues des dossiers",
+        "all": "Tous",
+        "mine": "Mes vues",
+        "save": "Enregistrer la vue",
+        "saveTitle": "Enregistrer cette vue",
+        "name": "Nom de la vue",
+        "saveHint": "La vue garde les filtres de l'adresse : le lien reste le même sur un autre appareil.",
+        "create": "Enregistrer",
+        "modified": "modifiée",
+        "delete": "Supprimer la vue {name}",
+        "menu": "Vues",
+        "empty": "Aucune vue enregistrée."
+      },
+      "filters": {
+        "bar": "Filtrer les dossiers",
+        "tags": "Étiquette",
+        "decision": "Décision",
+        "remove": "Retirer le filtre {label}",
+        "clear": "Effacer les filtres",
+        "resultsOne": "{count} dossier",
+        "resultsMany": "{count} dossiers",
+        "nothing": "Aucun dossier ne correspond à ces filtres."
+      },
+      "bulk": {
+        "label": "Actions sur la sélection",
+        "selectedOne": "{count} dossier sélectionné",
+        "selectedMany": "{count} dossiers sélectionnés",
+        "tag": "Étiqueter",
+        "untag": "Retirer l'étiquette",
+        "noTags": "Aucune étiquette : créez-en une depuis un dossier.",
+        "clear": "Tout désélectionner",
+        "done": "Fait : {moved} décidé(s), {skipped} laissé(s) tel(s) quel(s).",
+        "tagged": "Étiquettes mises à jour : {count}."
+      },
+      "decide": {
+        "title": "Votre décision",
+        "mark": "Marquer « {state} »",
+        "confirm": "Confirmer « {state} »",
+        "final": "Une décision est définitive : le dossier se ferme et ses documents sont effacés ; ses rapports restent.",
+        "decided": "Décision prise : {state}",
+        "none": "Aucune action possible."
+      },
+      "tagsEdit": {
+        "title": "Étiquettes",
+        "edit": "Modifier les étiquettes",
+        "none": "Aucune étiquette",
+        "save": "Enregistrer",
+        "empty": "Vous n'avez pas encore d'étiquette.",
+        "new": "Nouvelle étiquette"
       }
     },
     "states": {

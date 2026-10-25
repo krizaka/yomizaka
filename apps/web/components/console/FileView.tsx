@@ -1,5 +1,6 @@
 "use client";
 
+import type { StatusSet } from "@krizaka/organize/contract";
 import { Badge } from "@krizaka/ui/badge";
 import { DetailLayout } from "@krizaka/ui/detail-layout";
 import { List } from "@krizaka/ui/list";
@@ -11,6 +12,8 @@ import { CONSOLE_ROUTES } from "@/lib/console-nav";
 import { useSay } from "@/lib/i18n-client";
 import { pluralKey } from "@/lib/plural";
 
+import { DecisionActions } from "../organise/DecisionActions";
+import { FileTags } from "../organise/FileTags";
 import { useFileFacts } from "./FilesView";
 import type { AskableType } from "./RequestDocuments";
 
@@ -36,14 +39,16 @@ export function askedRows(
 /**
  * One applicant file (design § 4, yomizaka#323): the applicant, the link's state, the day it was asked, then the documents
  * asked — each with the one received, what becomes of it, and its checks as Orazaka returned them, leading to its report (the
- * run ids are there). No decision yet (P7).
+ * run ids are there). With the organised workspace (yomizaka#324): your decision and its actions, then the tags.
  */
 export function FileView({
   file,
   types,
+  workspace,
 }: {
   file: ApplicantFileView;
   types: readonly AskableType[];
+  workspace?: { set: StatusSet; decision: string; tags: readonly { id: string; name: string; color: "blue" | "green" | "amber" | "red" | "violet" | "gray" }[]; tagIds: readonly string[] };
 }) {
   const { say, locale } = useSay();
   const facts = useFileFacts();
@@ -84,6 +89,8 @@ export function FileView({
       title={file.candidateName}
       meta={`${facts.link(file)} · ${facts.documents(file.documents.length, file.requestedTypes.length)} · ${say("dossiers.detail.requestedOn", { date: facts.date(file.createdAt) })}`}
     >
+      {workspace ? <DecisionActions fileId={file.id} state={workspace.decision} set={workspace.set} /> : null}
+      {workspace ? <FileTags fileId={file.id} tags={workspace.tags} current={workspace.tagIds} /> : null}
       <section
         aria-labelledby="asked-title"
         className="flex flex-col gap-3"

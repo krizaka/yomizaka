@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { systemClock } from "@/app/system-clock";
 import { FileView } from "@/components/console/FileView";
 import { pageSession } from "@/lib/access";
 import { applicantFileOf, documentTypes } from "@/lib/applicant-file";
@@ -9,6 +10,9 @@ import { appEnvironment } from "@/lib/env";
 import { applicantFilesOffered, availableFlows } from "@/lib/flows";
 import { HttpError } from "@/lib/http";
 import { asLocale, getDictionary } from "@/lib/i18n";
+import { KIND } from "@/lib/workspace/decl";
+import { workspaceFor } from "@/lib/workspace/service";
+import { asTag } from "@/lib/workspace/tags";
 
 export const dynamic = "force-dynamic";
 
@@ -28,5 +32,15 @@ export default async function FilePage({ params }: { params: Promise<{ locale: s
     throw error;
   });
   if (!file) notFound();
-  return <FileView file={file} types={askableTypes(getDictionary(locale).applicantFile.types, await documentTypes())} />;
+  const workspace = workspaceFor({ clock: systemClock });
+  const owner = session.account.id;
+  const [configuration, state, worn, tags] = await Promise.all([workspace.config.get(KIND.applicantFile), workspace.status.of(owner, KIND.applicantFile, [id]), workspace.tags.of(owner, KIND.applicantFile, [id]), workspace.tags.list(owner, KIND.applicantFile)]);
+  const set = configuration?.config.status ?? null;
+  return (
+    <FileView
+      file={file}
+      types={askableTypes(getDictionary(locale).applicantFile.types, await documentTypes())}
+      workspace={set ? { set, decision: state.get(id)?.state ?? set.initial ?? "", tags: tags.map(asTag), tagIds: (worn.get(id) ?? []).map((t) => t.id) } : undefined}
+    />
+  );
 }
