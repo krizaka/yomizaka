@@ -22,7 +22,18 @@ const file = (id: string, name: string): FileSummary => ({ id, candidateName: na
 
 /** The phone's list rows, as the table draws them under 36 rem: the checkbox, the title (the row's link) with ONE line of facts, the status at the end. */
 const rowsOf = (html: string) => html.split("<tr ").slice(2);
-const factsIn = (row: string) => [...row.matchAll(/<span data-facts="[^"]*"[^>]*>(.*?)<\/span><\/span>/g)].map((m) => m[1]!.replace(/<[^>]*>/g, ""));
+/** The text of some markup, tags dropped by a scan (no regular expression: a replace can leave a tag behind). */
+const textOf = (markup: string) => {
+  let out = "";
+  let inTag = false;
+  for (const ch of markup) {
+    if (ch === "<") inTag = true;
+    else if (ch === ">" && inTag) inTag = false;
+    else if (!inTag) out += ch;
+  }
+  return out;
+};
+const factsIn = (row: string) => [...row.matchAll(/<span data-facts="[^"]*"[^>]*>(.*?)<\/span><\/span>/g)].map((m) => textOf(m[1]!));
 
 describe("phone lists as list rows (P12, #329)", () => {
   it("Documents: a title linking to its page, one line of facts « Bail · 20 oct. 2026 », the result at the end, no dl per row", () => {
