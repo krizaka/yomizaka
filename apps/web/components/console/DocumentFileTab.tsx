@@ -26,7 +26,7 @@ function DocumentText({ text, report }: { text: string; report: ComplianceReport
     [text, report],
   );
   return (
-    <div className="max-h-[70vh] overflow-auto whitespace-pre-wrap rounded-lg border border-border-default bg-surface-1 p-4 font-mono text-xs leading-relaxed text-fg-secondary" data-testid="document-text">
+    <div className="max-h-[70vh] overflow-auto whitespace-pre-wrap rounded-lg border border-border-default bg-surface-1 p-4 text-sm leading-relaxed text-fg-secondary" data-testid="document-text">
       {parts.map((p, i) =>
         p.mark ? (
           <mark key={i} id={`passage-${p.mark}`} className="ym-passage text-fg" title={say("document.passageOf", { rule: p.mark })}>
@@ -64,6 +64,19 @@ const PdfViewer = memo(function PdfViewer({ fileUrl, highlights, activeId, onAct
  * The document tab: the lit finding and where it sits (« Retour au rapport »), the file (the PDF viewer, or its text), what
  * Yomizaka read in it, where it lives (with « Supprimer maintenant »), and the file's facts.
  */
+/** The file's identifiers, folded: its fingerprint, in the mono — the only place a code is drawn on this tab (design § 3.4). */
+function FileTechnicalDetails({ sha256 }: { sha256: string }) {
+  const { say } = useSay();
+  return (
+    <details className="rounded-lg border border-border-default p-3" data-testid="file-technical-details">
+      <summary className="cursor-pointer text-sm font-semibold text-fg">{say("document.technical")}</summary>
+      <div className="mt-3">
+        <DescriptionList items={[{ term: say("document.fingerprint"), details: <code className="break-all font-mono text-xs">{sha256}</code> }]} />
+      </div>
+    </details>
+  );
+}
+
 export function DocumentFileTab({ doc, path, isPdf, report, viewer, viewerRef, found, onDelete, deleting }: { doc: DocumentView; path: string; isPdf: boolean; report: ComplianceReport | null; viewer: ViewerProps; viewerRef: RefObject<HTMLElement | null>; found: Record<string, Located | null>; onDelete: () => void; deleting: boolean }) {
   const { say, locale } = useSay();
   const activeFinding = viewer.activeId ? (report?.findings.find((f) => f.ruleId === viewer.activeId) ?? null) : null;
@@ -101,9 +114,9 @@ export function DocumentFileTab({ doc, path, isPdf, report, viewer, viewerRef, f
           ...(doc.pages ? [{ term: say("document.pages"), details: String(doc.pages) }] : []),
           { term: say("document.size"), details: formatBytes(doc.sizeBytes, locale) },
           { term: say("document.added"), details: formatDate(doc.createdAt, locale, true) },
-          { term: say("document.fingerprint"), details: <code className="break-all font-mono text-xs">{doc.sha256}</code> },
         ]}
       />
+      <FileTechnicalDetails sha256={doc.sha256} />
     </section>
   );
 }

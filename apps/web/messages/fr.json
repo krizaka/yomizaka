@@ -383,7 +383,8 @@
       "facts": {
         "title": "Le document",
         "collection": "Collection"
-      }
+      },
+      "technical": "Détails techniques (empreinte)"
     },
     "analysis": {
       "complianceTitle": "Au regard de la loi",

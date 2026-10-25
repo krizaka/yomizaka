@@ -383,7 +383,8 @@
       "facts": {
         "title": "The document",
         "collection": "Collection"
-      }
+      },
+      "technical": "Technical details (fingerprint)"
     },
     "analysis": {
       "complianceTitle": "Against the law",

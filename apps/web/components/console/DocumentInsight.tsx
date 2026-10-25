@@ -21,7 +21,7 @@ export function DocumentInsight({ insight, documentId, source }: { insight: Insi
   if (u.issuer) rows.push([say("insight.issuer"), u.issuer]);
   for (const d of u.dates.filter((x) => x.kind !== "other").concat(u.dates.filter((x) => x.kind === "other").slice(0, 3))) rows.push([say(`insight.dateKinds.${d.kind}`), date(d.value, locale)]);
   for (const p of u.parties) rows.push([say(`insight.roles.${p.role}`), p.name]);
-  for (const r of u.references) rows.push([say(`insight.refKinds.${r.kind}`), <span key={r.kind} className="font-mono">{r.value}</span>]);
+  for (const r of u.references) rows.push([say(`insight.refKinds.${r.kind}`), <span key={r.kind} className="break-all tabular-nums">{r.value}</span>]);
   // One amount per kind (the review's D3): « Loyer » never twice.
   for (const a of amountsOnce(u.amounts).slice(0, 8)) rows.push([say(`insight.amountKinds.${a.kind}`), money(a.cents, locale)]);
   if (u.language !== "unknown") rows.push([say("insight.language"), say(`insight.languages.${u.language}`)]);

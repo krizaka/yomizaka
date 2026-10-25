@@ -88,7 +88,7 @@ export function BatchImport() {
   const columns = useMemo<DataTableColumn<PreviewRow>[]>(
     () => [
       { id: "line", header: say("batch.columns.line"), type: "number", value: (r) => r.line },
-      { id: "file", header: say("batch.columns.file"), type: "title", card: "title", filter: "text", value: (r) => r.file, cell: (r) => <span className="font-mono text-sm">{r.file || "—"}</span> },
+      { id: "file", header: say("batch.columns.file"), type: "title", card: "title", filter: "text", value: (r) => r.file, cell: (r) => <span className="break-all text-sm">{r.file || "—"}</span> },
       { id: "check", header: say("batch.columns.check"), value: (r) => r.studio ?? "", cell: (r) => (r.studio ? say(`batch.studios.${r.studio}`) : "—") },
       { id: "state", header: say("batch.columns.state"), type: "status", filter: "facet", options: (["check", "reuse", "refused"] as const).map((s) => ({ value: s, label: say(`batch.preview.${s}`) })), value: (r) => r.state, cell: (r) => <Badge tone={STATE_TONE[r.state]}>{say(`batch.preview.${r.state}`)}</Badge> },
       { id: "reason", header: say("batch.columns.reason"), value: (r) => r.errors.join(" "), cell: (r) => (r.errors.length ? r.errors.map((e) => say(`errors.${e}`)).join(" · ") : "—") },

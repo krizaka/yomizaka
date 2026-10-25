@@ -43,7 +43,7 @@ export function CheckView({ documentId, analysisId, go }: { documentId: string; 
         labels={{ done: t("steps.state.done"), current: t("steps.state.current"), upcoming: t("steps.state.upcoming"), error: t("steps.state.error") }}
       />
       {working ? <p className="text-fg-secondary">{t("result.runningHint")}</p> : null}
-      {found?.runId ? <p className="font-mono text-xs text-fg-muted">{t("check.run", { runId: found.runId })}</p> : null}
+      {found?.runId ? <p className="break-all text-xs tabular-nums text-fg-muted">{t("check.run", { runId: found.runId })}</p> : null}
       {found && found.status !== ANALYSIS_STATUS.running && found.status !== ANALYSIS_STATUS.succeeded ? <Alert tone="danger">{found.error ?? t("result.failedHint")}</Alert> : null}
       {run.data?.closingNote ? (
         <>

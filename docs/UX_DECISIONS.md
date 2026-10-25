@@ -404,3 +404,12 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
 - **The other checks are actions of the aside** (« Revérifier à une autre date », « Examiner le fichier (authenticité) »),
   each opening its form in a `Dialog`: the report no longer ends in forms. A refusal carried in the address opens the
   dialog at once. The aside also holds the facts (collection, file, retention); the way back leads to the collection.
+
+## Plain typography in the app (P5, #322)
+
+- The sans for everything, the mono only for codes and identifiers inside « Détails techniques »: the run id, the
+  report's fingerprint and key, each finding's rule id (the report), and the file's SHA-256 (the document tab, now in its
+  own folded « Détails techniques »). Filenames, references, a signal's name, the document's text and the run column of
+  Vérifications are in the sans (tabular figures where they are numbers).
+- `components/console/typography.test.ts` holds the line for the console and the Mac app's components. The Mac app's
+  faces come from `blocks.css` under `data-surface="product"` (#317) until krizaka-ui#632 moves them into the brand files.
