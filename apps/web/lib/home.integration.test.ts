@@ -80,6 +80,7 @@ describe.runIf(enabled)("the home's figures", () => {
   it("the strip's four figures are queries over the chosen period, the owner's own rows only (yomizaka#332)", async () => {
     const owner = await account();
     const doc = await document(owner);
+    await query("UPDATE documents SET created_at = $2 WHERE id = $1", [doc, "2026-10-23T12:00:00Z"]);
     await analysis(doc, "succeeded", true, "2026-10-24T12:00:00Z"); // to look at, in the 7 days
     await analysis(doc, "succeeded", false, "2026-10-23T12:00:00Z");
     await analysis(doc, "failed", null, "2026-10-10T12:00:00Z"); // in the 30 days, not the 7
@@ -91,7 +92,7 @@ describe.runIf(enabled)("the home's figures", () => {
     expect([sum(week.checks), sum(week.toReview), sum(week.files)]).toEqual([2, 1, 1]);
     const month = await activityStrip(query, owner, "30d", NOW, { applicantFiles: true });
     expect([sum(month.checks), sum(month.toReview)]).toEqual([3, 2]);
-    expect(sum(month.documents)).toBeGreaterThanOrEqual(1);
+    expect(sum(month.documents)).toBe(1);
     expect((await activityStrip(query, owner, "7d", NOW, { applicantFiles: false })).files).toBeNull();
   });
 });
