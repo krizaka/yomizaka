@@ -28,7 +28,8 @@ export async function toDo(q: Query, owner: string, now: Date, { applicantFiles 
     toReview: review?.n ?? 0,
     toDecide: files.filter((f) => f.status === LINK.used).length,
     openLinks: open.length,
-    nextExpiry: open.map((f) => f.expiresAt).sort()[0] ?? null,
+    // ISO instants in UTC compare as text: the earliest is the first to expire.
+    nextExpiry: open.reduce<string | null>((first, f) => (first === null || f.expiresAt < first ? f.expiresAt : first), null),
   };
 }
 
