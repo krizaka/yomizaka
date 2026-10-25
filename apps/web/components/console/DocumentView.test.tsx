@@ -59,11 +59,11 @@ const document = (analyses: unknown[], extra: Record<string, unknown> = {}) => (
   insight,
   ...extra,
 });
-const render = (doc: ReturnType<typeof document>, tab: "rapport" | "document" | "historique" = "rapport", locale: "en" | "fr" = "fr") =>
+const render = (doc: ReturnType<typeof document>, tab: "rapport" | "document" | "historique" = "rapport", locale: "en" | "fr" = "fr", place: { libraryId: string; collectionId: string; name: string; isDefault: boolean } | null = null) =>
   renderToStaticMarkup(
     <I18nProvider locale={locale} messages={MESSAGES[locale] as never}>
       <KrizakaQueryProvider>
-        <DocumentView initial={doc as never} tab={tab} perspective="landlord" offer={{ studios: ["compliance-check", "document-authenticity"], jurisdictions: ["QC"], rulesets: [] }} />
+        <DocumentView initial={doc as never} tab={tab} place={place} perspective="landlord" offer={{ studios: ["compliance-check", "document-authenticity"], jurisdictions: ["QC"], rulesets: [] }} />
       </KrizakaQueryProvider>
     </I18nProvider>,
   );
@@ -89,10 +89,29 @@ describe("the document on DetailLayout (the UX review's Y5)", () => {
     expect(findings).toBeGreaterThan(band);
     expect(technical).toBeGreaterThan(findings);
     const text = readable(html);
-    expect(text).toContain("1 point à regarder");
+    expect(text).toContain("1 règle sur 2 demande votre attention");
     expect(text.indexOf("Dépôt de garantie interdit")).toBeLessThan(text.indexOf("Durée du bail"));
     expect(html.match(/run_8f3a2c/g)).toHaveLength(1);
+    expect(html.indexOf("run_8f3a2c")).toBeGreaterThan(technical);
     expect(text).not.toContain("BLOCKING");
+  });
+
+  it("leads back to the document's collection (its name), or to the library when it has none", () => {
+    const placed = render(document([check({ jurisdiction: "QC" })]), "rapport", "fr", { libraryId: "l1", collectionId: "c1", name: "4½ Villeray", isDefault: false });
+    expect(placed).toContain('href="/fr/app/bibliotheque/l1/c1"');
+    expect(readable(placed)).toContain("4½ Villeray");
+    const mine = render(document([check({ jurisdiction: "QC" })]), "rapport", "fr", { libraryId: "l1", collectionId: "c0", name: "My documents", isDefault: true });
+    expect(readable(mine)).toContain(fr.console.organisation.defaultName);
+    expect(render(document([check({ jurisdiction: "QC" })]))).toContain('href="/fr/app"');
+  });
+
+  it("puts the review note at the foot of the report, as a footnote the verdict points to", () => {
+    const html = render(document([check({ jurisdiction: "QC" })], {}), "rapport");
+    const reviewed = { ...check({ jurisdiction: "QC" }), report: { ...check({ jurisdiction: "QC" }).report, reviewStatus: "TO_REVIEW_BY_LAWYER" } };
+    const noted = render(document([reviewed]));
+    expect(noted).toContain('href="#fn-1"');
+    expect(noted.indexOf(fr.console.analysis.toReview.slice(0, 20))).toBeGreaterThan(noted.indexOf('data-testid="technical-details"'));
+    expect(html).not.toContain('href="#fn-1"');
   });
 
   it("offers the signed report as the one primary action and the sharing in the side panel for a real check; neither for a seeded one, which says so", () => {
@@ -125,13 +144,20 @@ describe("the document on DetailLayout (the UX review's Y5)", () => {
     expect(readable(html)).toContain("bail-rosemont-5.pdf");
   });
 
-  it("once a report exists, the other checks (another jurisdiction, the authenticity) stay reachable, folded under the verdict", () => {
+  it("once a report exists, the other checks are actions in the aside, each opening its form in a dialog — no form in the main column", () => {
     nav.search = "";
-    const html = render(document([check({ jurisdiction: "QC" })]));
-    const more = html.indexOf('data-testid="more-checks"');
-    expect(more).toBeGreaterThan(html.indexOf('data-testid="technical-details"'));
-    expect(readable(html.slice(more))).toContain(fr.console.analysis.complianceTitle);
-    expect(readable(html.slice(more))).toContain(fr.console.analysis.authenticityTitle);
+    const html = render(document([check({ jurisdiction: "QC" })]), "rapport", "fr", { libraryId: "l1", collectionId: "c1", name: "4½ Villeray", isDefault: false });
+    const main = html.indexOf('data-testid="tab-rapport"');
+    const column = html.indexOf('data-testid="report-aside-column"');
+    expect(main).toBeGreaterThan(0);
+    expect(column).toBeGreaterThan(main);
+    expect(html.slice(main, column)).not.toContain("<form");
+    const aside = html.slice(html.indexOf('data-testid="other-checks"'));
+    expect(html).toContain('data-testid="other-checks"');
+    expect(readable(aside)).toContain(fr.console.reportFace.recheck);
+    expect(readable(aside)).toContain(fr.console.reportFace.examine);
+    expect(aside).toContain('aria-haspopup="dialog"');
+    expect(readable(html)).toContain(fr.console.document.facts.collection);
   });
 
   it("the history opens an earlier run's report (`?run=`): its findings, its download and its sharing follow it", () => {

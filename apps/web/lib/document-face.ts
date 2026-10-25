@@ -42,6 +42,15 @@ export function orderFindings(findings: readonly Finding[]): { attention: Findin
   return { attention: sorted.filter((f) => f.verdict !== "PASS"), passed: sorted.filter((f) => f.verdict === "PASS") };
 }
 
+/** A finding with its number on the report: numbered in reading order, what needs a look from 1, what passed going on from there (the signed PDF numbers them the same way). */
+export interface NumberedFinding { n: number; finding: Finding }
+
+/** The findings of `orderFindings`, numbered (the Cahier's order: numbers only for a sequence, design § 3.2). */
+export function numberFindings(findings: readonly Finding[]): { attention: NumberedFinding[]; passed: NumberedFinding[] } {
+  const { attention, passed } = orderFindings(findings);
+  return { attention: attention.map((finding, i) => ({ n: i + 1, finding })), passed: passed.map((finding, i) => ({ n: attention.length + i + 1, finding })) };
+}
+
 export type SeverityWord = "blocking" | "major" | "advice";
 
 /** A severity in words and tone (the review's D2): bloquant · majeur · conseil — the code stays in the technical details. */

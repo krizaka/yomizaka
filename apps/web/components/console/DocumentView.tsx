@@ -2,6 +2,7 @@
 
 import { krizakaFetch, useMutation, useQuery, useQueryClient } from "@krizaka/query";
 import { Badge } from "@krizaka/ui/badge";
+import { DescriptionList } from "@krizaka/ui/description-list";
 import { DetailLayout } from "@krizaka/ui/detail-layout";
 import type { Located } from "@krizaka/ui/document-viewer";
 import { Tabs } from "@krizaka/ui/tabs";
@@ -14,6 +15,8 @@ import { z } from "zod";
 import { type DocumentTab } from "@/lib/console-nav";
 import { displayTitle } from "@/lib/document-face";
 import { useSay } from "@/lib/i18n-client";
+import { collectionLabel } from "@/lib/organisation/display";
+import { libraryPath } from "@/lib/organisation/rules";
 
 import { documentFacts, highlightsOf } from "./document-view-model";
 import { DocumentActions } from "./DocumentActions";
@@ -25,16 +28,20 @@ import { formatBytes, formatDate } from "./format";
 import { LiveAnalysis } from "./LiveAnalysis";
 import type { FindingSelection } from "./ReportFace";
 import { ReportShare } from "./ReportShare";
-import { StartCards } from "./StartChecks";
+import { StartCards, StartCheckActions } from "./StartChecks";
 
 /**
  * The document on `DetailLayout` (the UX review's Y5): the title the insight knows, the status, the one primary action by state,
  * the rest in a menu; three tabs as routes — the report first (the verdict, the findings with what failed first, the engine's
  * facts folded), the document (the file or its text, what Yomizaka read in it, where it lives), the history of its runs —; the
- * sharing in the side panel. Every analysis is an Orazaka run, shown as it came back. This component holds what the tabs share
+ * sharing in the side panel. The way back leads to the document's collection; once a report is shown, the aside holds the facts
+ * (collection, file, retention), the other checks as actions (each a dialog) and the sharing (design § 5.3). Every analysis is an Orazaka run, shown as it came back. This component holds what the tabs share
  * (the document, the lit finding, the deletion); each tab and the actions are their own component (yomizaka#320, #110).
  */
-export function DocumentView({ initial, tab, perspective = null, offer }: { initial: DocumentViewData; tab: DocumentTab; perspective?: Audience | null; offer: { studios: readonly Studio[]; jurisdictions: readonly Jurisdiction[]; rulesets: readonly string[] } }) {
+/** Where the document sits: its collection (the way back), or null when the page could not say. */
+export interface DocumentPlace { libraryId: string; collectionId: string; name: string; isDefault: boolean }
+
+export function DocumentView({ initial, tab, place = null, perspective = null, offer }: { initial: DocumentViewData; tab: DocumentTab; place?: DocumentPlace | null; perspective?: Audience | null; offer: { studios: readonly Studio[]; jurisdictions: readonly Jurisdiction[]; rulesets: readonly string[] } }) {
   const { say, locale } = useSay();
   const router = useRouter();
   const client = useQueryClient();
@@ -77,11 +84,14 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
       }
     },
   };
-  const startCards = <StartCards doc={doc} perspective={perspective} offer={offer} examinable={facts.examinable} running={facts.running} />;
+  const startProps = { doc, perspective, offer, examinable: facts.examinable, running: facts.running };
+  const startCards = <StartCards {...startProps} />;
+  const placeName = place ? collectionLabel(place.name, place.isDefault, say("organisation.defaultName")) : null;
+  const retention = doc.purged ? say("document.where.retentionNotKept") : doc.retainUntil ? say("document.where.retentionUntil", { date: formatDate(doc.retainUntil, locale) }) : say("document.where.retentionNone");
 
   return (
     <DetailLayout
-      back={<Link href={`/${locale}/app`}>{say("document.back")}</Link>}
+      back={place ? <Link href={libraryPath(locale, place.libraryId, place.collectionId)}>{placeName}</Link> : <Link href={`/${locale}/app`}>{say("document.back")}</Link>}
       eyebrow={`${say(`kinds.${doc.kind}`)} · ${doc.filename}`}
       title={title}
       status={<Badge tone={STATUS_TONE[doc.status]}>{say(`statuses.${doc.status}`)}</Badge>}
@@ -99,13 +109,24 @@ export function DocumentView({ initial, tab, perspective = null, offer }: { init
         </Tabs.Nav>
       }
       aside={
-        certifiable && latestCompliance ? (
-          <section aria-label={say("reportFace.whoSees")} className="flex flex-col gap-2" data-testid="report-aside">
-            <h2 className="m-0 font-display text-base font-bold text-fg">{say("reportFace.whoSees")}</h2>
-            <p className="m-0 text-sm text-fg-secondary">{say("reportFace.onlyYou")}</p>
-            <ReportShare documentId={doc.id} analysisId={latestCompliance.id} />
-            <p className="m-0 text-xs text-fg-muted">{say("analysis.language")}</p>
-          </section>
+        facts.reported ? (
+          <div className="flex flex-col gap-6" data-testid="report-aside-column">
+            <section aria-labelledby="document-facts-title" className="flex flex-col gap-2" data-testid="document-facts">
+              <h2 id="document-facts-title" className="m-0 text-base font-bold text-fg">
+                {say("document.facts.title")}
+              </h2>
+              <DescriptionList items={[...(placeName ? [{ term: say("document.facts.collection"), details: placeName }] : []), { term: say("document.file"), details: <span className="break-all">{doc.filename}</span> }, { term: say("document.where.title"), details: retention }]} />
+            </section>
+            <StartCheckActions {...startProps} done={facts.done} />
+            {certifiable && latestCompliance ? (
+              <section aria-label={say("reportFace.whoSees")} className="flex flex-col gap-2" data-testid="report-aside">
+                <h2 className="m-0 text-base font-bold text-fg">{say("reportFace.whoSees")}</h2>
+                <p className="m-0 text-sm text-fg-secondary">{say("reportFace.onlyYou")}</p>
+                <ReportShare documentId={doc.id} analysisId={latestCompliance.id} />
+                <p className="m-0 text-xs text-fg-muted">{say("analysis.language")}</p>
+              </section>
+            ) : null}
+          </div>
         ) : undefined
       }
     >

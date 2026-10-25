@@ -3,7 +3,9 @@
 import { localDay } from "@krizaka/intl";
 import { krizakaFetch, useMutation, useQueryClient } from "@krizaka/query";
 import { Alert } from "@krizaka/ui/alert";
+import { Button } from "@krizaka/ui/button";
 import { Card } from "@krizaka/ui/card";
+import { Dialog } from "@krizaka/ui/dialog";
 import { createKrizakaForm } from "@krizaka/ui/form";
 import { type Audience, AUTHENTICITY_MAX_BYTES, type DocumentView, type Jurisdiction, JURISDICTIONS, queryKeys, type Studio } from "@yomizaka/core";
 import { useSearchParams } from "next/navigation";
@@ -135,32 +137,82 @@ function StartAuthenticity({ documentId, disabled }: { documentId: string; disab
   );
 }
 
-/**
- * The checks a document can start, each a card: the compliance check (the kind declared and the one Yomizaka read select the
- * ruleset, ADR-089; a mismatch is shown and confirmed in the form) and the authenticity check, in the order the person's
- * perspective puts first, only the Studios their flows offer.
- */
-export function StartCards({ doc, perspective, offer, examinable, running }: { doc: DocumentView; perspective: Audience | null; offer: { studios: readonly Studio[]; jurisdictions: readonly Jurisdiction[]; rulesets: readonly string[] }; examinable: boolean; running: (studio: Studio) => boolean }) {
+type StartProps = { doc: DocumentView; perspective: Audience | null; offer: { studios: readonly Studio[]; jurisdictions: readonly Jurisdiction[]; rulesets: readonly string[] }; examinable: boolean; running: (studio: Studio) => boolean };
+
+/** The Studios a document can start, in the order the person's perspective puts first, only those their flows offer. */
+export function startableStudios(perspective: Audience | null, doc: Pick<DocumentView, "kind">, offered: readonly Studio[]): Studio[] {
+  const order: Studio[] = firstCheck(perspective, doc.kind) === "compliance-check" ? ["compliance-check", "document-authenticity"] : ["document-authenticity", "compliance-check"];
+  return order.filter((s) => offered.includes(s));
+}
+
+/** What starting one check holds: the compliance form (the kind declared and the one Yomizaka read select the ruleset, ADR-089; a mismatch is shown and confirmed in the form) or the authenticity form — or why it cannot run. */
+function StartBody({ studio, doc, offer, examinable, running }: StartProps & { studio: Studio }) {
   const { say } = useSay();
+  if (studio === "document-authenticity") {
+    return doc.textSource ? <PhotoOriginSignals source={doc.textSource} /> : !examinable ? <Alert tone="info">{say("analysis.noPdf")}</Alert> : doc.sizeBytes > AUTHENTICITY_MAX_BYTES ? <Alert tone="info">{say("analysis.tooLarge")}</Alert> : <StartAuthenticity documentId={doc.id} disabled={running("document-authenticity")} />;
+  }
   const detectedKind = doc.insight?.understanding.check?.documentType ?? null;
   const compliancePlan = planCheck({ declared: doc.kind, detected: detectedKind, asOf: localDay(new Date(), LAW_TIME_ZONE) });
   const options = complianceOptions(compliancePlan.mismatch, offeredKinds(offer.rulesets), doc.kind);
-  const complianceCard = (
-    <Card.Root key="compliance-check" className="p-4">
-      <h3 className="mb-2 font-display text-base font-bold text-fg">{say("analysis.complianceTitle")}</h3>
-      {doc.insight && doc.insight.understanding.nature && !doc.insight.understanding.check ? <Alert tone="info">{say("insight.noCheck")}</Alert> : !doc.hasText ? <Alert tone="info">{say("document.noText")}</Alert> : compliancePlan.unsupported ? <Alert tone="info">{say("analysis.notVerified")}</Alert> : (
-        <>
-          {compliancePlan.mismatch ? <Alert tone="warning">{say("analysis.mismatch", { declared: say(`kinds.${compliancePlan.mismatch.declared}`), detected: say(`analysis.kindWords.${compliancePlan.mismatch.detected}`) })}</Alert> : null}
-          <StartCompliance documentId={doc.id} initialType={isCheckKind(doc.kind) ? doc.kind : (detectedKind ?? "lease")} disabled={running("compliance-check")} jurisdictions={offer.jurisdictions} options={options} />
-        </>
-      )}
-    </Card.Root>
+  if (doc.insight && doc.insight.understanding.nature && !doc.insight.understanding.check) return <Alert tone="info">{say("insight.noCheck")}</Alert>;
+  if (!doc.hasText) return <Alert tone="info">{say("document.noText")}</Alert>;
+  if (compliancePlan.unsupported) return <Alert tone="info">{say("analysis.notVerified")}</Alert>;
+  return (
+    <>
+      {compliancePlan.mismatch ? <Alert tone="warning">{say("analysis.mismatch", { declared: say(`kinds.${compliancePlan.mismatch.declared}`), detected: say(`analysis.kindWords.${compliancePlan.mismatch.detected}`) })}</Alert> : null}
+      <StartCompliance documentId={doc.id} initialType={isCheckKind(doc.kind) ? doc.kind : (detectedKind ?? "lease")} disabled={running("compliance-check")} jurisdictions={offer.jurisdictions} options={options} />
+    </>
   );
-  const authenticityCard = (
-    <Card.Root key="document-authenticity" className="p-4">
-      <h3 className="mb-2 font-display text-base font-bold text-fg">{say("analysis.authenticityTitle")}</h3>
-      {doc.textSource ? <PhotoOriginSignals source={doc.textSource} /> : !examinable ? <Alert tone="info">{say("analysis.noPdf")}</Alert> : doc.sizeBytes > AUTHENTICITY_MAX_BYTES ? <Alert tone="info">{say("analysis.tooLarge")}</Alert> : <StartAuthenticity documentId={doc.id} disabled={running("document-authenticity")} />}
-    </Card.Root>
+}
+
+const TITLE: Record<Studio, string> = { "compliance-check": "analysis.complianceTitle", "document-authenticity": "analysis.authenticityTitle" };
+
+/** The checks a document can start, each a card, for a document not checked yet: the checks are what the page is for. */
+export function StartCards(props: StartProps) {
+  const { say } = useSay();
+  return (
+    <>
+      {startableStudios(props.perspective, props.doc, props.offer.studios).map((studio) => (
+        <Card.Root key={studio} className="p-4">
+          <h3 className="mb-2 font-display text-base font-bold text-fg">{say(TITLE[studio])}</h3>
+          <StartBody {...props} studio={studio} />
+        </Card.Root>
+      ))}
+    </>
   );
-  return <>{(firstCheck(perspective, doc.kind) === "compliance-check" ? [complianceCard, authenticityCard] : [authenticityCard, complianceCard]).filter((c) => offer.studios.includes(c.key as Studio))}</>;
+}
+
+/**
+ * Once a report exists, the other checks are actions of the aside (design § 5.3): « Revérifier à une autre date » and « Examiner
+ * le fichier (authenticité) », each opening its form in a dialog — the report no longer ends in forms. A check the task page could
+ * not start (`?refused=`) opens its dialog at once, so the refusal is read where it is answered.
+ */
+export function StartCheckActions({ done, ...props }: StartProps & { done: readonly Studio[] }) {
+  const { say } = useSay();
+  const refused = useSearchParams()?.get("refused") ?? null;
+  const label = (studio: Studio) => (studio === "document-authenticity" ? say("reportFace.examine") : done.includes(studio) ? say("reportFace.recheck") : say("reportFace.checkLaw"));
+  return (
+    <section aria-labelledby="other-checks-title" className="flex flex-col gap-2" data-testid="other-checks">
+      <h2 id="other-checks-title" className="m-0 text-base font-bold text-fg">
+        {say("reportFace.otherChecks")}
+      </h2>
+      {startableStudios(props.perspective, props.doc, props.offer.studios).map((studio) => (
+        <Dialog.Root key={studio} defaultOpen={studio === "compliance-check" && !!refused}>
+          <Dialog.Trigger asChild>
+            <Button variant="secondary" className="justify-start">
+              {label(studio)}
+            </Button>
+          </Dialog.Trigger>
+          <Dialog.Content closeLabel={say("reportFace.close")}>
+            <Dialog.Header>
+              <Dialog.Title>{label(studio)}</Dialog.Title>
+            </Dialog.Header>
+            <Dialog.Body>
+              <StartBody {...props} studio={studio} />
+            </Dialog.Body>
+          </Dialog.Content>
+        </Dialog.Root>
+      ))}
+    </section>
+  );
 }

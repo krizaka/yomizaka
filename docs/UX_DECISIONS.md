@@ -387,3 +387,20 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
   cards under « Pas encore vérifié »; « Voir dans le fichier » moves to the document tab, where the passage is lit.
 - **Signal we are wrong**: people open the technical details on every report to find the run id; the switch to the
   document tab on « Voir dans le fichier » loses them.
+
+## The report: numbered findings, the codes in the technical details, the other checks in the aside (P4, #321)
+
+- **Findings are numbered** in reading order (what needs a look from 1, blocking before important, then what passed,
+  folded and numbered on), in tabular figures in a 2 rem margin column. The signed PDF will number them the same way
+  (P13). The margin layout of B2 waits on krizaka-ui#645; until then the number sits in the finding's row.
+- **Severity is a word**: Bloquant · Important · À considérer. A failed finding no longer wears a second « Point non
+  respecté » chip; « Éléments insuffisants » is kept, because it says something the severity does not.
+- **Codes and the method are off the face**: the verdict says « Règles du Québec · en vigueur le … » (no ruleset id), an
+  untitled finding is « Règle 3 », and « Détails techniques » lists each finding's number, rule id and method, with the
+  run id once.
+- A failed finding without a quote says « Aucun passage du document cité » — not « Absent du document », which the engine
+  does not claim for every rule.
+- **The review note is a footnote** (`Footnotes` of @krizaka/ui) the verdict points to, never a line in the band.
+- **The other checks are actions of the aside** (« Revérifier à une autre date », « Examiner le fichier (authenticité) »),
+  each opening its form in a `Dialog`: the report no longer ends in forms. A refusal carried in the address opens the
+  dialog at once. The aside also holds the facts (collection, file, retention); the way back leads to the collection.

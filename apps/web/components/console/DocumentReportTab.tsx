@@ -1,6 +1,7 @@
 "use client";
 
 import { Alert } from "@krizaka/ui/alert";
+import { Footnotes } from "@krizaka/ui/footnote";
 import { type Audience, checkSteps, type DocumentView } from "@yomizaka/core";
 import type { ReactNode } from "react";
 
@@ -15,9 +16,10 @@ import type { DocumentFacts } from "./document-view-model";
 import { FindingList, type FindingSelection, TechnicalDetails, VerdictBand } from "./ReportFace";
 
 /**
- * The report tab: where a running check stands, the runs that failed, then the verdict and the findings (what failed first),
- * the authenticity signals, the engine's facts folded, the closing note and the other checks; or the authenticity report
- * alone; or « Pas encore vérifié » with the checks to start.
+ * The report tab: where a running check stands, the runs that failed, then the verdict and the numbered findings (what failed
+ * first), the authenticity signals, the engine's facts folded, the closing note, and the review note as a footnote; or the
+ * authenticity report alone; or « Pas encore vérifié » with the checks to start. Once a report is shown, the other checks are
+ * the aside's actions (design § 5.3): no form in this column.
  */
 export function DocumentReportTab({ doc, facts, selection, perspective, startCards }: { doc: DocumentView; facts: DocumentFacts; selection: FindingSelection; perspective: Audience | null; startCards: ReactNode }) {
   const { say, locale } = useSay();
@@ -42,16 +44,11 @@ export function DocumentReportTab({ doc, facts, selection, perspective, startCar
               <ClosingNoteView note={buildNote(noteInputOf(latestReport, noteSourceOf(doc.textSource)), locale)} />
             </div>
           </details>
-          <details className="rounded-lg border border-border-default p-3" data-testid="more-checks">
-            <summary className="cursor-pointer text-sm font-semibold text-fg">{say("reportFace.otherChecks")}</summary>
-            <div className="mt-3 grid gap-4 md:grid-cols-2">{startCards}</div>
-          </details>
         </>
       ) : latestAuthenticity?.report && "signals" in latestAuthenticity.report ? (
         <>
           <AuthenticitySignals report={latestAuthenticity.report} />
           <TechnicalDetails documentId={doc.id} analysis={latestAuthenticity} />
-          <div className="grid gap-4 md:grid-cols-2">{startCards}</div>
         </>
       ) : (
         <>
@@ -63,6 +60,7 @@ export function DocumentReportTab({ doc, facts, selection, perspective, startCar
         </>
       )}
       <p className="m-0 text-xs text-fg-muted">{say("library.informative")}</p>
+      {latestReport?.reviewStatus ? <Footnotes className="[&_ol]:list-decimal" notes={[say("analysis.toReview")]} label={say("reportFace.notes")} backLabel={say("reportFace.backToText")} /> : null}
     </section>
   );
 }

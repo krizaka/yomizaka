@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { amountsOnce, displayTitle, orderFindings, severityOf, verdictOf } from "./document-face";
+import { amountsOnce, displayTitle, numberFindings, orderFindings, severityOf, verdictOf } from "./document-face";
 
 const finding = (ruleId: string, verdict: "PASS" | "FAIL" | "INSUFFICIENT_EVIDENCE", severity = "BLOCKING") => ({ ruleId, severity, verdict, explanation: "", evidenceSpan: null });
 const insight = (confidence: "high" | "medium" | "low" | "unknown", parties: { role: string; name: string }[] = [], issuer: string | null = null) => ({
@@ -35,6 +35,13 @@ describe("the document's face (the UX review's Y5)", () => {
     const { attention, passed } = orderFindings([finding("P1", "PASS"), finding("U", "INSUFFICIENT_EVIDENCE", "INFO"), finding("M", "FAIL", "MAJOR"), finding("B", "FAIL", "BLOCKING"), finding("P2", "PASS"), finding("B2", "FAIL", "BLOCKING")]);
     expect(attention.map((f) => f.ruleId)).toEqual(["B", "B2", "M", "U"]);
     expect(passed.map((f) => f.ruleId)).toEqual(["P1", "P2"]);
+  });
+
+  it("numbers the findings in the order they are read — what needs a look first, then what passed, folded, going on from there", () => {
+    const { attention, passed } = numberFindings([finding("P1", "PASS"), finding("M", "FAIL", "MAJOR"), finding("B", "FAIL", "BLOCKING"), finding("P2", "PASS")]);
+    expect(attention.map(({ n, finding: f }) => `${n}:${f.ruleId}`)).toEqual(["1:B", "2:M"]);
+    expect(passed.map(({ n, finding: f }) => `${n}:${f.ruleId}`)).toEqual(["3:P1", "4:P2"]);
+    expect(numberFindings([]).attention).toEqual([]);
   });
 
   it("says a severity in words and tone, and shows each kind of amount once", () => {

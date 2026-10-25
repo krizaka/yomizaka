@@ -379,6 +379,10 @@
         "deleteNowHint": "The document and its checks are deleted at once. This cannot be undone.",
         "pendingPurge": "Not kept: deleted once its check has run (at the latest {date}). Only the report stays.",
         "notKeptText": "This document is not kept: its text and file were deleted after the check. Only the report stays."
+      },
+      "facts": {
+        "title": "The document",
+        "collection": "Collection"
       }
     },
     "analysis": {
@@ -439,9 +443,9 @@
       },
       "severity": "Severity",
       "severities": {
-        "blocking": "blocking",
-        "major": "major",
-        "advice": "advice"
+        "blocking": "Blocking",
+        "major": "Important",
+        "advice": "To consider"
       },
       "citation": "Source",
       "passage": "Passage",
@@ -580,7 +584,7 @@
       "EXPIRY_IN_THE_PAST": "The end date must be in the future.",
       "EMAIL_NOT_VERIFIED": "Confirm your e-mail address first: the link was sent when you signed up.",
       "PAYWALL": "Your free audit is used: pay for this audit or go Pro.",
-        "KIND_NOT_VERIFIED": "This kind of document is not checked against the law yet.",
+      "KIND_NOT_VERIFIED": "This kind of document is not checked against the law yet.",
       "FAIR_USE": "Monthly fair-use limit reached.",
       "PAYMENTS_OFF": "Payment is not available yet.",
       "NO_CUSTOMER": "Nothing has been bought yet.",
@@ -1562,11 +1566,10 @@
     },
     "reportFace": {
       "label": "The result",
-      "attentionOne": "{count} point to look at",
-      "attentionMany": "{count} points to look at",
-      "attentionNone": "Nothing to look at",
-      "onRules": "on {rules} rules",
-      "rulesOf": "Rules of {jurisdiction} · {ruleset} · in force on {date}",
+      "attentionOne": "{count} rule of {rules} needs your attention",
+      "attentionMany": "{count} rules of {rules} need your attention",
+      "attentionNone": "No problem found on the {rules} rules checked",
+      "rulesOf": "Rules of {jurisdiction} · in force on {date}",
       "passedOne": "{count} rule met",
       "passedMany": "{count} rules met",
       "unsureOne": "{count} rule could not be checked",
@@ -1583,8 +1586,19 @@
       "more": "Details",
       "downloadReport": "Download the report",
       "backToReport": "Back to the report",
-      "otherChecks": "Other checks: another jurisdiction, the authenticity",
-      "openRun": "Open this report"
+      "otherChecks": "Other checks",
+      "openRun": "Open this report",
+      "blockingOne": "of which {count} blocking",
+      "blockingMany": "of which {count} blocking",
+      "noQuote": "No passage of the document quoted",
+      "rule": "Rule {n}",
+      "rules": "Rules by finding",
+      "notes": "Notes",
+      "backToText": "Back to the text",
+      "recheck": "Check again at another date",
+      "examine": "Examine the file (authenticity)",
+      "checkLaw": "Check against the law",
+      "close": "Close"
     },
     "batch": {
       "title": "Check a batch of documents",
@@ -1759,54 +1773,54 @@
       "requested": "The owner has been notified. You can verify the report once they give you access."
     }
   },
-    "applicant": {
-      "notice": {
-        "title": "How your documents and information are used",
-        "version": "Notice {version}",
-        "intro": "Your landlord asked for your application to be checked. Nothing is checked, and no document is read, without your consent. You decide for each purpose below, and you can withdraw a consent at any time.",
-        "collectedTitle": "What is collected",
-        "collected": "The documents you send (for example a pay stub or a bank statement), the name and e-mail address in the request, and, only for the purposes you accept, the results of those checks.",
-        "whyTitle": "Why",
-        "why": "To check that the documents match the application and are consistent with each other. The report is informative only: it is not a legal opinion, and a person at the owner decides.",
-        "whoTitle": "Who sees it",
-        "who": "The owner who asked for the check sees the report. Yomizaka and its processor for the analysis (Orazaka) handle the file to run it. Nobody else. [TO BE REVIEWED BY THE LAWYER]",
-        "howLongTitle": "How long it is kept",
-        "howLong": "By default, a document is deleted as soon as its check is done. If you consent to keep it (\"Keep my documents until the owner decides\"), it is kept until the owner's decision, then deleted. A result is deleted {days} days after it was given. You can still ask for its deletion. [TO BE REVIEWED BY THE LAWYER]",
-        "askTitle": "How to ask for deletion",
-        "ask": "Use the « Delete my documents » action on the link you received. It deletes your documents and the result at once, and keeps only a record with no personal information. You can also withdraw any consent here, and ask for access to or correction of your information.",
-        "notAsked": "Never asked: your social insurance number (SIN), your bank card or account details, your health or family information.",
-        "law": "This notice follows the Act respecting the protection of personal information in the private sector (Quebec, as amended by the Act 25). It is not legal advice."
+  "applicant": {
+    "notice": {
+      "title": "How your documents and information are used",
+      "version": "Notice {version}",
+      "intro": "Your landlord asked for your application to be checked. Nothing is checked, and no document is read, without your consent. You decide for each purpose below, and you can withdraw a consent at any time.",
+      "collectedTitle": "What is collected",
+      "collected": "The documents you send (for example a pay stub or a bank statement), the name and e-mail address in the request, and, only for the purposes you accept, the results of those checks.",
+      "whyTitle": "Why",
+      "why": "To check that the documents match the application and are consistent with each other. The report is informative only: it is not a legal opinion, and a person at the owner decides.",
+      "whoTitle": "Who sees it",
+      "who": "The owner who asked for the check sees the report. Yomizaka and its processor for the analysis (Orazaka) handle the file to run it. Nobody else. [TO BE REVIEWED BY THE LAWYER]",
+      "howLongTitle": "How long it is kept",
+      "howLong": "By default, a document is deleted as soon as its check is done. If you consent to keep it (\"Keep my documents until the owner decides\"), it is kept until the owner's decision, then deleted. A result is deleted {days} days after it was given. You can still ask for its deletion. [TO BE REVIEWED BY THE LAWYER]",
+      "askTitle": "How to ask for deletion",
+      "ask": "Use the « Delete my documents » action on the link you received. It deletes your documents and the result at once, and keeps only a record with no personal information. You can also withdraw any consent here, and ask for access to or correction of your information.",
+      "notAsked": "Never asked: your social insurance number (SIN), your bank card or account details, your health or family information.",
+      "law": "This notice follows the Act respecting the protection of personal information in the private sector (Quebec, as amended by the Act 25). It is not legal advice."
+    },
+    "purpose": {
+      "DOCUMENT_CHECK": {
+        "label": "Check the documents I send",
+        "what": "Looks for signs of alteration and inconsistency in the documents, against the application."
       },
-      "purpose": {
-        "DOCUMENT_CHECK": {
-          "label": "Check the documents I send",
-          "what": "Looks for signs of alteration and inconsistency in the documents, against the application."
-        },
-        "COURT_RECORDS": {
-          "label": "Check the Quebec rental history",
-          "what": "Looks at published rental-tribunal and court records for your payment history, with your consent."
-        },
-        "CREDIT": {
-          "label": "Check my credit report",
-          "what": "Reads a credit report, with your consent, when one is requested."
-        },
-        "DOCUMENT_KEEP": {
-          "label": "Keep my documents until the owner decides",
-          "what": "Without it, each document is deleted once its check is done. With it, the documents are kept until the owner's decision."
-        }
+      "COURT_RECORDS": {
+        "label": "Check the Quebec rental history",
+        "what": "Looks at published rental-tribunal and court records for your payment history, with your consent."
       },
-      "consent": "I have read the notice (version {version}) and I consent to this check",
-      "granted": "Consented",
-      "notGranted": "Not consented",
-      "withdraw": "Withdraw this consent",
-      "erase": "Delete my documents",
-      "erased": "Your documents and the result were deleted. Only a record with no personal information is kept.",
-      "error": {
-        "CONSENT_REQUIRED": "No document is checked without your consent for this purpose.",
-        "NOTICE_CHANGED": "The notice changed since you read it. Read it again, then consent.",
-        "APPLICATION_ERASED": "This application was erased."
+      "CREDIT": {
+        "label": "Check my credit report",
+        "what": "Reads a credit report, with your consent, when one is requested."
+      },
+      "DOCUMENT_KEEP": {
+        "label": "Keep my documents until the owner decides",
+        "what": "Without it, each document is deleted once its check is done. With it, the documents are kept until the owner's decision."
       }
     },
+    "consent": "I have read the notice (version {version}) and I consent to this check",
+    "granted": "Consented",
+    "notGranted": "Not consented",
+    "withdraw": "Withdraw this consent",
+    "erase": "Delete my documents",
+    "erased": "Your documents and the result were deleted. Only a record with no personal information is kept.",
+    "error": {
+      "CONSENT_REQUIRED": "No document is checked without your consent for this purpose.",
+      "NOTICE_CHANGED": "The notice changed since you read it. Read it again, then consent.",
+      "APPLICATION_ERASED": "This application was erased."
+    }
+  },
   "applicantFile": {
     "title": "Your documents",
     "intro": "The owner asked for the documents below. Send each one as a PDF. Each document is checked for signs of alteration and inconsistency. The report is informative, not a legal opinion, and a person decides.",

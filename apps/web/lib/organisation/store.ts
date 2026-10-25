@@ -216,6 +216,15 @@ export const tagsOf = (q: Query, owner: string, kind: TagTarget, ids: string[]):
 
 // ── reading a place ───────────────────────────────────────────────────────────────────────────────────────────────────
 
+/** Where a document sits, for the way back from its page: its library and collection (the default one unless placed by hand) — null for another owner's document. */
+export async function placeOf(q: Query, owner: string, documentId: string): Promise<{ libraryId: string; collectionId: string; name: string; isDefault: boolean } | null> {
+  const [row] = await q<{ library_id: string; collection_id: string; name: string; is_default: boolean }>(
+    "SELECT c.library_id, c.id AS collection_id, c.name, c.is_default FROM documents d JOIN collections c ON c.id = d.collection_id WHERE d.owner_id = $1 AND d.id = $2",
+    [owner, documentId],
+  );
+  return row ? { libraryId: row.library_id, collectionId: row.collection_id, name: row.name, isDefault: row.is_default } : null;
+}
+
 /** The ALL-tags condition, its array bound to the placeholder `param` (e.g. `$4`): built, never `String.replace` with a `$` replacement. */
 export const allTagsClause = (param: `$${number}`): string =>
   `AND NOT EXISTS (SELECT 1 FROM unnest(${param}::uuid[]) want(id) WHERE NOT EXISTS (SELECT 1 FROM document_tags dt WHERE dt.document_id = d.id AND dt.tag_id = want.id))`;

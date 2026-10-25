@@ -379,6 +379,10 @@
         "deleteNowHint": "Le document et ses vérifications sont supprimés tout de suite. C'est irréversible.",
         "pendingPurge": "Non conservé : supprimé dès la fin de sa vérification (au plus tard le {date}). Seul le rapport reste.",
         "notKeptText": "Ce document n'est pas conservé : son texte et son fichier ont été supprimés après la vérification. Seul le rapport reste."
+      },
+      "facts": {
+        "title": "Le document",
+        "collection": "Collection"
       }
     },
     "analysis": {
@@ -439,9 +443,9 @@
       },
       "severity": "Gravité",
       "severities": {
-        "blocking": "bloquant",
-        "major": "majeur",
-        "advice": "conseil"
+        "blocking": "Bloquant",
+        "major": "Important",
+        "advice": "À considérer"
       },
       "citation": "Source",
       "passage": "Passage",
@@ -580,7 +584,7 @@
       "EXPIRY_IN_THE_PAST": "La date de fin doit être dans le futur.",
       "EMAIL_NOT_VERIFIED": "Confirmez d’abord votre adresse courriel : le lien a été envoyé à l’inscription.",
       "PAYWALL": "Votre audit gratuit est utilisé : payez cet audit ou passez à Pro.",
-        "KIND_NOT_VERIFIED": "Ce type de document n'est pas encore vérifié contre la loi.",
+      "KIND_NOT_VERIFIED": "Ce type de document n'est pas encore vérifié contre la loi.",
       "FAIR_USE": "Limite d’utilisation mensuelle atteinte.",
       "PAYMENTS_OFF": "Le paiement n’est pas encore disponible.",
       "NO_CUSTOMER": "Rien n’a encore été acheté.",
@@ -1562,11 +1566,10 @@
     },
     "reportFace": {
       "label": "Le résultat",
-      "attentionOne": "{count} point à regarder",
-      "attentionMany": "{count} points à regarder",
-      "attentionNone": "Rien à regarder",
-      "onRules": "sur {rules} règles",
-      "rulesOf": "Règles {jurisdiction} · {ruleset} · en vigueur le {date}",
+      "attentionOne": "{count} règle sur {rules} demande votre attention",
+      "attentionMany": "{count} règles sur {rules} demandent votre attention",
+      "attentionNone": "Aucun problème trouvé sur les {rules} règles vérifiées",
+      "rulesOf": "Règles {jurisdiction} · en vigueur le {date}",
       "passedOne": "{count} règle respectée",
       "passedMany": "{count} règles respectées",
       "unsureOne": "{count} règle n’a pu être vérifiée",
@@ -1583,8 +1586,19 @@
       "more": "Détails",
       "downloadReport": "Télécharger le rapport",
       "backToReport": "Retour au rapport",
-      "otherChecks": "Autres vérifications : une autre juridiction, l'authenticité",
-      "openRun": "Ouvrir ce rapport"
+      "otherChecks": "Autres vérifications",
+      "openRun": "Ouvrir ce rapport",
+      "blockingOne": "dont {count} bloquante",
+      "blockingMany": "dont {count} bloquantes",
+      "noQuote": "Aucun passage du document cité",
+      "rule": "Règle {n}",
+      "rules": "Règles par constat",
+      "notes": "Notes",
+      "backToText": "Retour au texte",
+      "recheck": "Revérifier à une autre date",
+      "examine": "Examiner le fichier (authenticité)",
+      "checkLaw": "Vérifier au regard de la loi",
+      "close": "Fermer"
     },
     "batch": {
       "title": "Vérifier un lot de documents",
@@ -1759,54 +1773,54 @@
       "requested": "Le propriétaire a été prévenu. Vous pourrez vérifier le rapport dès qu’il vous aura donné l’accès."
     }
   },
-    "applicant": {
-      "notice": {
-        "title": "Comment vos documents et vos renseignements sont utilisés",
-        "version": "Avis {version}",
-        "intro": "Votre propriétaire demande la vérification de votre demande de logement. Rien n'est vérifié et aucun document n'est analysé sans votre consentement. Vous décidez pour chaque finalité ci-dessous, et vous pouvez retirer un consentement en tout temps.",
-        "collectedTitle": "Ce qui est recueilli",
-        "collected": "Les documents que vous transmettez (par exemple un talon de paie ou un relevé bancaire), le nom et le courriel de la demande et, seulement pour les finalités que vous acceptez, les résultats de ces vérifications.",
-        "whyTitle": "Pourquoi",
-        "why": "Pour vérifier que les documents correspondent à la demande et sont cohérents entre eux. Le rapport est seulement informatif : ce n'est pas un avis juridique, et une personne chez le propriétaire décide.",
-        "whoTitle": "Qui le voit",
-        "who": "Le propriétaire qui demande la vérification voit le rapport. Yomizaka et son sous-traitant pour l'analyse (Orazaka) traitent le fichier pour l'exécuter. Personne d'autre. [À RÉVISER PAR L'AVOCAT]",
-        "howLongTitle": "Combien de temps c'est conservé",
-        "howLong": "Par défaut, un document est supprimé dès que sa vérification est terminée. Si vous consentez à le garder (« Garder mes documents jusqu'à la décision du propriétaire »), il est gardé jusqu'à la décision du propriétaire, puis supprimé. Un résultat est supprimé {days} jours après avoir été donné. Vous pouvez toujours en demander la suppression. [À RÉVISER PAR L'AVOCAT]",
-        "askTitle": "Comment demander la suppression",
-        "ask": "Utilisez l'action « Supprimer mes documents » du lien que vous avez reçu. Elle supprime immédiatement vos documents et le résultat, et ne garde qu'une trace sans renseignement personnel. Vous pouvez aussi retirer un consentement ici, et demander l'accès à vos renseignements ou leur rectification.",
-        "notAsked": "Jamais demandés : votre numéro d'assurance sociale (NAS), les renseignements de votre carte ou de votre compte bancaire, vos renseignements de santé ou familiaux.",
-        "law": "Le présent avis suit la Loi sur la protection des renseignements personnels dans le secteur privé (Québec, telle que modifiée par la Loi 25). Ce n'est pas un avis juridique."
+  "applicant": {
+    "notice": {
+      "title": "Comment vos documents et vos renseignements sont utilisés",
+      "version": "Avis {version}",
+      "intro": "Votre propriétaire demande la vérification de votre demande de logement. Rien n'est vérifié et aucun document n'est analysé sans votre consentement. Vous décidez pour chaque finalité ci-dessous, et vous pouvez retirer un consentement en tout temps.",
+      "collectedTitle": "Ce qui est recueilli",
+      "collected": "Les documents que vous transmettez (par exemple un talon de paie ou un relevé bancaire), le nom et le courriel de la demande et, seulement pour les finalités que vous acceptez, les résultats de ces vérifications.",
+      "whyTitle": "Pourquoi",
+      "why": "Pour vérifier que les documents correspondent à la demande et sont cohérents entre eux. Le rapport est seulement informatif : ce n'est pas un avis juridique, et une personne chez le propriétaire décide.",
+      "whoTitle": "Qui le voit",
+      "who": "Le propriétaire qui demande la vérification voit le rapport. Yomizaka et son sous-traitant pour l'analyse (Orazaka) traitent le fichier pour l'exécuter. Personne d'autre. [À RÉVISER PAR L'AVOCAT]",
+      "howLongTitle": "Combien de temps c'est conservé",
+      "howLong": "Par défaut, un document est supprimé dès que sa vérification est terminée. Si vous consentez à le garder (« Garder mes documents jusqu'à la décision du propriétaire »), il est gardé jusqu'à la décision du propriétaire, puis supprimé. Un résultat est supprimé {days} jours après avoir été donné. Vous pouvez toujours en demander la suppression. [À RÉVISER PAR L'AVOCAT]",
+      "askTitle": "Comment demander la suppression",
+      "ask": "Utilisez l'action « Supprimer mes documents » du lien que vous avez reçu. Elle supprime immédiatement vos documents et le résultat, et ne garde qu'une trace sans renseignement personnel. Vous pouvez aussi retirer un consentement ici, et demander l'accès à vos renseignements ou leur rectification.",
+      "notAsked": "Jamais demandés : votre numéro d'assurance sociale (NAS), les renseignements de votre carte ou de votre compte bancaire, vos renseignements de santé ou familiaux.",
+      "law": "Le présent avis suit la Loi sur la protection des renseignements personnels dans le secteur privé (Québec, telle que modifiée par la Loi 25). Ce n'est pas un avis juridique."
+    },
+    "purpose": {
+      "DOCUMENT_CHECK": {
+        "label": "Vérifier les documents que j'envoie",
+        "what": "Recherche des signes de modification et d'incohérence dans les documents, au regard de la demande."
       },
-      "purpose": {
-        "DOCUMENT_CHECK": {
-          "label": "Vérifier les documents que j'envoie",
-          "what": "Recherche des signes de modification et d'incohérence dans les documents, au regard de la demande."
-        },
-        "COURT_RECORDS": {
-          "label": "Vérifier l'historique locatif québécois",
-          "what": "Consulte, avec votre consentement, les décisions publiées du Tribunal administratif du logement et des tribunaux sur votre historique de paiement."
-        },
-        "CREDIT": {
-          "label": "Vérifier mon dossier de crédit",
-          "what": "Lit, avec votre consentement, un rapport de crédit lorsqu'il est demandé."
-        },
-        "DOCUMENT_KEEP": {
-          "label": "Garder mes documents jusqu'à la décision du propriétaire",
-          "what": "Sans cela, chaque document est supprimé dès que sa vérification est terminée. Avec cela, les documents sont gardés jusqu'à la décision du propriétaire."
-        }
+      "COURT_RECORDS": {
+        "label": "Vérifier l'historique locatif québécois",
+        "what": "Consulte, avec votre consentement, les décisions publiées du Tribunal administratif du logement et des tribunaux sur votre historique de paiement."
       },
-      "consent": "J'ai lu l'avis (version {version}) et je consens à cette vérification",
-      "granted": "Consenti",
-      "notGranted": "Pas consenti",
-      "withdraw": "Retirer ce consentement",
-      "erase": "Supprimer mes documents",
-      "erased": "Vos documents et le résultat ont été supprimés. Seule une trace sans renseignement personnel est conservée.",
-      "error": {
-        "CONSENT_REQUIRED": "Aucun document n'est vérifié sans votre consentement pour cette finalité.",
-        "NOTICE_CHANGED": "L'avis a changé depuis votre lecture. Relisez-le, puis consentez.",
-        "APPLICATION_ERASED": "Cette demande a été supprimée."
+      "CREDIT": {
+        "label": "Vérifier mon dossier de crédit",
+        "what": "Lit, avec votre consentement, un rapport de crédit lorsqu'il est demandé."
+      },
+      "DOCUMENT_KEEP": {
+        "label": "Garder mes documents jusqu'à la décision du propriétaire",
+        "what": "Sans cela, chaque document est supprimé dès que sa vérification est terminée. Avec cela, les documents sont gardés jusqu'à la décision du propriétaire."
       }
     },
+    "consent": "J'ai lu l'avis (version {version}) et je consens à cette vérification",
+    "granted": "Consenti",
+    "notGranted": "Pas consenti",
+    "withdraw": "Retirer ce consentement",
+    "erase": "Supprimer mes documents",
+    "erased": "Vos documents et le résultat ont été supprimés. Seule une trace sans renseignement personnel est conservée.",
+    "error": {
+      "CONSENT_REQUIRED": "Aucun document n'est vérifié sans votre consentement pour cette finalité.",
+      "NOTICE_CHANGED": "L'avis a changé depuis votre lecture. Relisez-le, puis consentez.",
+      "APPLICATION_ERASED": "Cette demande a été supprimée."
+    }
+  },
   "applicantFile": {
     "title": "Vos documents",
     "intro": "Le propriétaire demande les documents ci-dessous. Envoyez chacun en PDF. Chaque document est vérifié pour des signes de modification et d'incohérence. Le rapport est informatif, ce n'est pas un avis juridique, et une personne décide.",

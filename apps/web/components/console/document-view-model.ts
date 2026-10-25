@@ -26,6 +26,10 @@ export interface DocumentFacts {
   isPdf: boolean;
   /** A file the authenticity Studio reads: a PDF, a Word or an OpenDocument file. */
   examinable: boolean;
+  /** A report is on the face (a compliance report with findings, or the authenticity signals): the other checks move to the aside. */
+  reported: boolean;
+  /** The Studios that already answered on this document (« Revérifier » rather than « Vérifier »). */
+  done: Studio[];
   /** A real run (never the demo seed's) has a signed report. */
   certifiable: boolean;
   reportHref: string | null;
@@ -38,10 +42,13 @@ export function documentFacts(doc: Pick<DocumentView, "id" | "mimeType" | "analy
   const latestAuthenticity = doc.analyses.find((a) => a.studio === "document-authenticity" && a.report && "signals" in a.report);
   const running = (studio: Studio) => doc.analyses.some((a) => a.studio === studio && a.status === ANALYSIS_STATUS.running);
   const isPdf = doc.mimeType === "application/pdf";
+  const latestReport = latestCompliance?.report && "findings" in latestCompliance.report ? latestCompliance.report : null;
   return {
     latestCompliance,
     latestAuthenticity,
-    latestReport: latestCompliance?.report && "findings" in latestCompliance.report ? latestCompliance.report : null,
+    latestReport,
+    reported: !!(latestCompliance && latestReport) || !!latestAuthenticity,
+    done: [...(latestReport ? (["compliance-check"] as const) : []), ...(latestAuthenticity ? (["document-authenticity"] as const) : [])],
     failures: doc.analyses.filter((a) => a.error),
     running,
     runningStudio: STUDIOS_SHOWN_RUNNING.find((s) => running(s)) ?? null,

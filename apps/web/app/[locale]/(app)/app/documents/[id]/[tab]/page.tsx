@@ -5,11 +5,13 @@ import { storesOf } from "@/app/active-store";
 import { DocumentView } from "@/components/console/DocumentView";
 import { pageSession } from "@/lib/access";
 import { isDocumentTab, movedDocumentHref, searchOf } from "@/lib/console-nav";
+import { query } from "@/lib/db";
 import { documentStorage, getDocument } from "@/lib/documents";
 import { appEnvironment } from "@/lib/env";
 import { availableFlows, offerFor } from "@/lib/flows";
 import { HttpError } from "@/lib/http";
 import { asLocale, getDictionary } from "@/lib/i18n";
+import { placeOf } from "@/lib/organisation/store";
 import { withFeatures } from "@/lib/settings/boundary";
 import { insightFeatures } from "@/lib/settings/guards";
 
@@ -31,5 +33,5 @@ export default async function DocumentTabPage({ params, searchParams }: { params
     throw error;
   });
   if (!document) notFound();
-  return <DocumentView initial={document} tab={tab} perspective={session.account.perspective} offer={offerFor(await availableFlows(appEnvironment()), session.account.perspective)} />;
+  return <DocumentView initial={document} tab={tab} place={await placeOf(query, session.account.id, id)} perspective={session.account.perspective} offer={offerFor(await availableFlows(appEnvironment()), session.account.perspective)} />;
 }
