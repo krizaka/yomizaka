@@ -4,11 +4,13 @@ import { formatDate } from "@krizaka/intl";
 import type { SavedView, StatusSet, SystemView, ViewFilters } from "@krizaka/organize/contract";
 import { viewHref } from "@krizaka/organize/contract";
 import { Button } from "@krizaka/ui/button";
+import { ChipLink } from "@krizaka/ui/chip-link";
 import { DataTable, type DataTableColumn } from "@krizaka/ui/data-table";
 import { EmptyState } from "@krizaka/ui/empty-state";
 import { type ActiveFilter, FilterBar, FilterMenu } from "@krizaka/ui/filter-bar";
 import { Mascot } from "@krizaka/ui/mascots";
 import { PageHeader } from "@krizaka/ui/page-header";
+import { Tabs } from "@krizaka/ui/tabs";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -20,6 +22,7 @@ import { CONSOLE_ROUTES } from "@/lib/console-nav";
 import { filesInStates } from "@/lib/home-figures";
 import { useSay } from "@/lib/i18n-client";
 import { pluralKey } from "@/lib/plural";
+import type { binderPlan } from "@/lib/workspace/binder";
 import { KIND } from "@/lib/workspace/decl";
 import { decisionOrder } from "@/lib/workspace/order";
 import type { ResolvedView } from "@/lib/workspace/view";
@@ -41,6 +44,9 @@ export interface FilesWorkspace {
   system: readonly SystemView[];
   saved: readonly SavedView[];
   resolved: ResolvedView;
+  /** The binder: a tab per decision state and a chip per tag (`binderPlan`), and the number of files each view holds, in the plan's order. */
+  plan: ReturnType<typeof binderPlan>;
+  counts: { tabs: readonly number[]; chips: readonly number[] };
 }
 
 /** The words of a file's link and documents, shared by the list and the detail. */
@@ -134,7 +140,8 @@ export function FilesView({ files: all, states = [], types, origin, workspace }:
   return (
     <div className="flex flex-col gap-6" data-testid="files-view">
       <PageHeader title={say("dossiers.title")} description={say("dossiers.lead")} actions={all.length ? ask("secondary") : null} />
-      {workspace ? <SavedViews kind={KIND.applicantFile} path={base} system={workspace.system} mine={workspace.saved} resolved={workspace.resolved} /> : null}
+      {workspace ? <Binder workspace={workspace} base={base} /> : null}
+      {workspace ? <SavedViews kind={KIND.applicantFile} path={base} system={workspace.system.filter((v) => (v.filters.status?.length ?? 0) !== 1 || !!v.filters.tags?.length)} mine={workspace.saved} resolved={workspace.resolved} /> : null}
       {workspace ? (
         <FilterBar
           label={say("dossiers.filters.bar")}
@@ -175,6 +182,44 @@ export function FilesView({ files: all, states = [], types, origin, workspace }:
       ) : (
         <EmptyState icon={<Mascot bird="owl" mood="empty" size={120} />} title={say("dossiers.empty.title")} description={say("dossiers.empty.text")} action={ask("primary")} data-testid="files-empty" />
       )}
+    </div>
+  );
+}
+
+/**
+ * The binder (design B2, yomizaka#334): the decision states as binder tabs with their counts, the tags as chips with theirs. Every
+ * one is a link, the address is the state; each count is the length of the view it opens (`countApplicantFiles`, the list's filter).
+ */
+function Binder({ workspace, base }: { workspace: FilesWorkspace; base: string }) {
+  const { say, locale } = useSay();
+  const { plan, counts } = workspace;
+  // `Tabs.Nav` marks a tab active when the link's parameters are in the route: « Tous » is `status=` (none), a state `status=<key>`.
+  const current = `${base}?status=${plan.activeState === null ? "" : plan.activeState}`;
+  return (
+    <div className="flex flex-col gap-3" data-testid="binder">
+      <Tabs.Nav label={say("dossiers.binder.label")} current={current} variant="binder">
+        {plan.tabs.map((tab, i) => (
+          <Tabs.NavLink key={tab.state ?? "all"} href={`${base}?status=${tab.state ?? ""}`} hue={tab.hue} asChild>
+            <Link href={viewHref(base, tab.filters, null)} scroll={false}>
+              {tab.label ? tab.label[locale] : say("dossiers.binder.all")} <span className="tabular-nums" data-testid="binder-count">{counts.tabs[i] ?? 0}</span>
+            </Link>
+          </Tabs.NavLink>
+        ))}
+      </Tabs.Nav>
+      {plan.chips.length ? (
+        <nav aria-label={say("dossiers.binder.tags")} className="flex flex-wrap items-center gap-2">
+          {plan.chips.map((chip, i) => {
+            const tag = workspace.tags.find((t) => t.id === chip.id);
+            return tag ? (
+              <ChipLink key={chip.id} asChild size="sm" selected={chip.on}>
+                <Link href={viewHref(base, chip.filters, null)} scroll={false}>
+                  {tag.name} <span className="tabular-nums">{counts.chips[i] ?? 0}</span>
+                </Link>
+              </ChipLink>
+            ) : null;
+          })}
+        </nav>
+      ) : null}
     </div>
   );
 }

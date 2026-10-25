@@ -357,3 +357,13 @@ export async function listApplicantFiles(landlordId: string, now: Date, organise
   );
   return rows.map((r) => ({ id: r.id, candidateName: r.tenant_name, status: linkState(r, now), createdAt: r.created_at.toISOString(), expiresAt: r.expires_at.toISOString(), submittedAt: r.submitted_at?.toISOString() ?? null, closedAt: r.closed_at?.toISOString() ?? null, documents: r.documents, requested: r.requested_types.length, decision: r.decision, tagIds: r.tag_ids }));
 }
+
+/**
+ * How many files a view holds: the same `filterSql` as the list, so the binder's counts are the lengths of the views (yomizaka#334).
+ * The list is capped at 100 rows; the count is not, and the tabs say the true number.
+ */
+export async function countApplicantFiles(landlordId: string, organised: Organised = {}): Promise<number> {
+  const filter = filterSql(WORKSPACE, KIND.applicantFile, organised.filters ?? {}, { from: 2, status: organised.set ?? null });
+  const [row] = await query<{ n: number }>(`SELECT count(*)::int AS n FROM screenings e WHERE e.landlord_id = $1 AND e.flow = 'file'${filter.sql}`, [landlordId, ...filter.params]);
+  return row?.n ?? 0;
+}

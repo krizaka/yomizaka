@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { systemClock } from "@/app/system-clock";
 import { FilesView } from "@/components/console/FilesView";
 import { pageSession } from "@/lib/access";
-import { documentTypes, listApplicantFiles } from "@/lib/applicant-file";
+import { countApplicantFiles, documentTypes, listApplicantFiles } from "@/lib/applicant-file";
 import { askableTypes } from "@/lib/applicant-file-face";
 import { searchOf } from "@/lib/console-nav";
 import { appEnvironment } from "@/lib/env";
@@ -13,6 +13,7 @@ import { applicantFilesOffered, availableFlows } from "@/lib/flows";
 import { readFileStates } from "@/lib/home-figures";
 import { asLocale, getDictionary } from "@/lib/i18n";
 import { SITE_URL } from "@/lib/site";
+import { binderPlan } from "@/lib/workspace/binder";
 import { KIND } from "@/lib/workspace/decl";
 import { workspaceFor } from "@/lib/workspace/service";
 import { asTag } from "@/lib/workspace/tags";
@@ -38,13 +39,16 @@ export default async function FilesPage({ params, searchParams }: { params: Prom
   const set = configuration?.config.status ?? null;
   const resolved = resolveView(parseView(search as Record<string, string | string[] | undefined>), views.system, [...views.workspace, ...views.mine], locale);
   const [files, types] = await Promise.all([listApplicantFiles(owner, new Date(), { filters: resolved.filters, set }), documentTypes()]);
+  // The binder's counts are the lengths of the views: the same filter as the list (yomizaka#334).
+  const plan = set ? binderPlan(set, tags.map((t) => t.id), resolved.filters) : null;
+  const counts = plan ? { tabs: await Promise.all(plan.tabs.map((tab) => countApplicantFiles(owner, { filters: tab.filters, set }))), chips: await Promise.all(plan.chips.map((chip) => countApplicantFiles(owner, { filters: chip.countFilters, set }))) } : null;
   return (
     <FilesView
       files={files}
       states={readFileStates(searchOf(search))}
       types={askableTypes(getDictionary(locale).applicantFile.types, types)}
       origin={SITE_URL}
-      workspace={set ? { set, tags: tags.map(asTag), system: views.system, saved: [...views.workspace, ...views.mine], resolved } : undefined}
+      workspace={set && plan && counts ? { set, tags: tags.map(asTag), system: views.system, saved: [...views.workspace, ...views.mine], resolved, plan, counts } : undefined}
     />
   );
 }

@@ -1811,6 +1811,11 @@
         "menu": "Vues",
         "empty": "Aucune vue enregistrée."
       },
+      "binder": {
+        "label": "Décisions",
+        "all": "Tous",
+        "tags": "Étiquettes"
+      },
       "filters": {
         "bar": "Filtrer les dossiers",
         "tags": "Étiquette",
