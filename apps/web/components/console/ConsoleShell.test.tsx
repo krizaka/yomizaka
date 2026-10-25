@@ -1,5 +1,8 @@
+import { readFileSync } from "node:fs";
+
 import { KrizakaQueryProvider } from "@krizaka/query";
 import { ThemeProvider } from "@krizaka/ui/theme";
+import { sectionsFor } from "@yomizaka/core";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
@@ -14,12 +17,12 @@ const { ConsoleShell } = await import("./ConsoleShell");
 
 const MESSAGES = { en: { console: en.console }, fr: { console: fr.console } } as const;
 const EMAIL = "eric.persona@example.test";
-const render = (props: { name?: string; role?: "USER" | "ADMIN" } = {}, locale: "en" | "fr" = "fr") =>
+const render = (props: { name?: string; role?: "USER" | "ADMIN"; applicantFiles?: boolean; toDecide?: number } = {}, locale: "en" | "fr" = "fr") =>
   renderToStaticMarkup(
     <ThemeProvider>
       <I18nProvider locale={locale} messages={MESSAGES[locale] as never}>
         <KrizakaQueryProvider>
-          <ConsoleShell locale={locale} email={EMAIL} role={props.role ?? "USER"} name={props.name}>
+          <ConsoleShell locale={locale} email={EMAIL} role={props.role ?? "USER"} name={props.name} applicantFiles={props.applicantFiles} toDecide={props.toDecide}>
             <p>content</p>
           </ConsoleShell>
         </KrizakaQueryProvider>
@@ -29,29 +32,67 @@ const render = (props: { name?: string; role?: "USER" | "ADMIN" } = {}, locale: 
 const railLinks = (html: string) => [...html.matchAll(/<a [^>]*data-rail-item[^>]*>/g)].map((m) => m[0]);
 const headerOf = (html: string) => html.slice(html.indexOf("<header"), html.indexOf("</header>"));
 
-describe("the signed-in shell (Orazaka's pattern, the UX review's Y1)", () => {
-  it("the rail holds Bibliothèque · Vérifications · Recherche and nothing else, the active one from the route, the collapse control alone at its foot", () => {
+describe("the signed-in shell, B2 (P14)", () => {
+  it("the rail holds Accueil · Documents · Vérifications from the one section map, the active one from the route, the collapse control alone at its foot", () => {
     const html = render();
     const links = railLinks(html);
-    expect(links).toHaveLength(3);
-    expect(links.map((l) => l.match(/href="([^"]+)"/)![1])).toEqual(["/fr/app", "/fr/app/verifications", "/fr/app/recherche"]);
-    expect(links[1]).toContain('aria-current="page"');
+    expect(links.map((l) => l.match(/href="([^"]+)"/)![1])).toEqual(["/fr/app", "/fr/app/documents", "/fr/app/verifications"]);
+    expect(links[2]).toContain('aria-current="page"');
     expect(links[0]).not.toContain("aria-current");
-    expect(html).not.toMatch(/<a [^>]*data-rail-item[^>]*href="\/fr\/app\/(settings|verifier)"/);
-    const toggles = html.match(/<button [^>]*data-rail-item[^>]*>/g) ?? [];
-    expect(toggles).toHaveLength(1);
+    expect(html).not.toMatch(/<a [^>]*data-rail-item[^>]*href="\/fr\/app\/(settings|verifier|recherche)"/);
+    expect((html.match(/<button [^>]*data-rail-item[^>]*>/g) ?? [])).toHaveLength(1);
     expect(html).toContain(fr.console.shell.expand);
   });
 
-  it("the header names the product, carries the DEV chip and the one action, « Vérifier un document », to the task page", () => {
+  it("is the section map of core, in its order, for the people offered the applicant files: Accueil · Dossiers · Documents · Vérifications", () => {
+    const links = railLinks(render({ applicantFiles: true }));
+    expect(links.map((l) => l.match(/href="([^"]+)"/)![1])).toEqual(sectionsFor("web", { applicantFiles: true }).map((s) => `/fr${s.path}`));
+    expect(links).toHaveLength(4);
+  });
+
+  it("counts the files to decide on « Dossiers », in words for a screen reader, and shows nothing at zero", () => {
+    const withCount = railLinks(render({ applicantFiles: true, toDecide: 2 }))[1]!;
+    expect(withCount).toContain("2 dossiers à décider");
+    expect(railLinks(render({ applicantFiles: true, toDecide: 1 }))[1]).toContain("1 dossier à décider");
+    expect(railLinks(render({ applicantFiles: true, toDecide: 0 }))[1]).not.toContain("à décider");
+  });
+
+  it("the header names the product and carries the DEV chip", () => {
     const header = headerOf(render());
     expect(header).toContain(">Yomizaka<");
     expect(header).toMatch(/data-testid="app-version"[^>]*>DEV · v0\.1\.0\+abc1234</);
-    expect(header).toMatch(/<a [^>]*href="\/fr\/app\/verifier"[^>]*>/);
+  });
+
+  it("keeps the product's name whole on a phone: the DEV chip waits for `sm`, where there is room (the bar at 360 px is not clipped)", () => {
+    const chip = headerOf(render()).match(/<span [^>]*data-testid="app-version"[^>]*>/)![0];
+    expect(chip).toMatch(/class="[^"]*\bhidden\b[^"]*\bsm:inline-flex\b/);
+  });
+
+  it("the header has ⌘K search, the language, the one gradient action and the account — and no messages, no notifications", () => {
+    const header = headerOf(render({ name: "Éric Tremblay" }));
+    expect(header).toMatch(/data-slot="search"[^>]*><button[^>]*aria-keyshortcuts="Meta\+K Control\+K"/);
+    expect(header).toContain(`>${fr.console.shell.palette.label}<`);
+    expect(header).toContain(`aria-label="${fr.console.shell.language}: Français"`);
     const action = header.match(/<a [^>]*data-testid="header-check"[^>]*>/)![0];
     expect(action).toContain('aria-label="Vérifier un document"');
     expect(action).toContain('href="/fr/app/verifier"');
+    expect(action).toMatch(/gradient/);
+    expect(header).toContain('data-name="Éric Tremblay"');
+    expect(header).not.toMatch(/messag|notif/i);
     expect(headerOf(render({}, "en"))).toContain('aria-label="Check a document"');
+  });
+
+  it("orders the bar's slots: search, language, the action, the account", () => {
+    const header = headerOf(render({ name: "Éric Tremblay" }));
+    const at = (needle: string) => header.indexOf(needle);
+    expect(at('data-slot="search"')).toBeGreaterThan(-1);
+    expect(at('data-slot="search"')).toBeLessThan(at(`aria-label="${fr.console.shell.language}: `));
+    expect(at(`aria-label="${fr.console.shell.language}: `)).toBeLessThan(at('data-testid="header-check"'));
+    expect(at('data-testid="header-check"')).toBeLessThan(at("data-name="));
+  });
+
+  it("keeps the language out of the account menu now that the bar has it", () => {
+    expect(readFileSync(new URL("./ConsoleShell.tsx", import.meta.url), "utf8")).not.toMatch(/language=\{\{/);
   });
 
   it("shows the person's name beside the avatar when there is one, and never the raw e-mail address", () => {

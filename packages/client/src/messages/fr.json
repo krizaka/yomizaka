@@ -1,9 +1,9 @@
 {
   "sections": {
-    "library": "Bibliothèque",
+    "library": "Accueil",
     "files": "Dossiers",
-    "checks": "Vérifications",
-    "search": "Recherche"
+    "documents": "Documents",
+    "checks": "Vérifications"
   },
   "checksTabs": {
     "label": "Sections des vérifications",

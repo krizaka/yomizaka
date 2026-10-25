@@ -1,9 +1,9 @@
 {
   "sections": {
-    "library": "Library",
+    "library": "Home",
     "files": "Applicant files",
-    "checks": "Checks",
-    "search": "Search"
+    "documents": "Documents",
+    "checks": "Checks"
   },
   "checksTabs": {
     "label": "Checks sections",

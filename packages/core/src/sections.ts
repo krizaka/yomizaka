@@ -1,14 +1,15 @@
 /*
  * One section map for the web, the phone and the Mac (§ 3.6 of the design direction, yomizaka#319): the same destinations,
  * in the same order, with their labels under the same message key (`sections.<id>`). « Vérifier un document » is not a
- * destination (it is the header's one action), and the account lives under the avatar. Structure only: the words are the
+ * destination (it is the header's one action), the account lives under the avatar, and search is the top bar's ⌘K palette (B2, P14),
+ * not a destination. Structure only: the words are the
  * apps' messages.
  */
 
 export const PLATFORMS = ["web", "phone", "mac"] as const;
 export type Platform = (typeof PLATFORMS)[number];
 
-export const SECTION_IDS = ["library", "files", "checks", "search"] as const;
+export const SECTION_IDS = ["library", "files", "documents", "checks"] as const;
 export type SectionId = (typeof SECTION_IDS)[number];
 
 /** The tabs of Vérifications: the checks, then the batches (« Lots »), never a destination of their own. */
@@ -28,13 +29,13 @@ export interface Section {
 }
 
 const NO_APPLICANT_SCREEN = "the applicant files' list and detail are on the web first (P6); @yomizaka/client has no applications call yet";
-const NO_SEARCH_CLIENT = "@yomizaka/client has no search call yet; search moves to ⌘K with the B2 shell (P14 of the cut)";
+const NO_DOCUMENTS_LIST = "the list of all the documents is on the web first (P14, the B2 shell); the phone and the Mac reach them through the library";
 
 export const SECTIONS: readonly Section[] = [
   { id: "library", path: "/app", pending: {} },
   { id: "files", path: "/app/dossiers", gated: "applicantFiles", pending: { phone: NO_APPLICANT_SCREEN, mac: NO_APPLICANT_SCREEN } },
+  { id: "documents", path: "/app/documents", pending: { phone: NO_DOCUMENTS_LIST, mac: NO_DOCUMENTS_LIST } },
   { id: "checks", path: "/app/verifications", tabs: CHECKS_TABS, pending: {} },
-  { id: "search", path: "/app/recherche", pending: { phone: NO_SEARCH_CLIENT, mac: NO_SEARCH_CLIENT } },
 ];
 
 /** The destinations a platform draws, in the map's order: the gated ones only when offered, none a platform lacks. */

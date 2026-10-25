@@ -133,7 +133,8 @@
       "library": "Bibliothèque",
       "search": "Recherche",
       "users": "Personnes",
-      "admin": "Administration"
+      "admin": "Administration",
+      "documents": "Documents"
     },
     "signIn": {
       "promise": "Vos documents, lus et vérifiés par Yomizaka.",
@@ -197,10 +198,10 @@
       }
     },
     "sections": {
-      "library": "Bibliothèque",
+      "library": "Accueil",
       "files": "Dossiers",
-      "checks": "Vérifications",
-      "search": "Recherche"
+      "documents": "Documents",
+      "checks": "Vérifications"
     },
     "shell": {
       "skip": "Aller au contenu",
@@ -227,7 +228,7 @@
       "checkAction": "Vérifier un document",
       "profile": "Profil",
       "settings": "Réglages",
-      "billing": "Facturation",
+      "billing": "Crédits et usage",
       "titles": {
         "library": "Bibliothèque",
         "checks": "Vérifications",
@@ -237,7 +238,17 @@
         "account": "Compte",
         "screening": "Vérification de locataire",
         "welcome": "Bienvenue"
-      }
+      },
+      "palette": {
+        "label": "Rechercher dans vos documents",
+        "placeholder": "Un titre, un passage, un constat…",
+        "none": "Aucun résultat pour « {q} ».",
+        "type": "Tapez au moins deux lettres.",
+        "all": "Tous les résultats",
+        "hits": "Documents et constats"
+      },
+      "toDecideOne": "{count} dossier à décider",
+      "toDecideMany": "{count} dossiers à décider"
     },
     "library": {
       "title": "Bibliothèque",
@@ -1845,6 +1856,12 @@
         "text": "Le serveur n'a pas répondu comme prévu. Vos documents sont gardés ; réessayez dans un instant.",
         "retry": "Réessayer"
       }
+    },
+    "documentsPage": {
+      "title": "Tous les documents",
+      "lead": "Tous vos documents, du plus récent au plus ancien, dans toutes vos collections.",
+      "caption": "Tous vos documents, les plus récents d'abord",
+      "empty": "Aucun document pour l'instant"
     }
   },
   "report": {

@@ -14,7 +14,8 @@ const read = (p: string) => readFileSync(join(ROOT, p), "utf8");
 describe("the rail's active entry comes from the route", () => {
   it.each([
     ["/fr/app", "library"],
-    ["/en/app/documents/abc/verifications", "library"],
+    ["/fr/app/documents", "documents"],
+    ["/en/app/documents/abc/verifications", "documents"],
     ["/fr/app/bibliotheque/lib/coll", "library"],
     ["/fr/app/bibliotheque/lib/coll/folder", "library"],
     ["/fr/app/screening", "files"],
@@ -24,13 +25,15 @@ describe("the rail's active entry comes from the route", () => {
     ["/fr/app/verifications/", "checks"],
     ["/fr/app/verifier", "checks"],
     ["/fr/app/verifier/lots/abc", "checks"],
-    ["/fr/app/recherche?q=bail".split("?")[0]!, "search"],
-    ["/fr/app/search", "search"],
+    // Search is the top bar's ⌘K (B2, P14): its full page belongs to the documents it searches, and has no rail entry of its own.
+    ["/fr/app/recherche", "documents"],
+    ["/fr/app/search", "documents"],
     ["/fr/app/settings", "account"],
     ["/fr/app/settings/profil", "account"],
   ])("%s → %s", (path, nav) => expect(activeNav(path)).toBe(nav));
   it("its routes are the section map's addresses (yomizaka#319)", () => {
-    for (const section of SECTIONS) expect(CONSOLE_ROUTES[section.id], section.id).toBe(section.path);
+    const routes: Record<string, string> = CONSOLE_ROUTES;
+    for (const section of SECTIONS) expect(routes[section.id], section.id).toBe(section.path);
   });
   it("an unknown path belongs to no entry", () => {
     expect(activeNav("/fr/elsewhere")).toBeNull();
@@ -141,18 +144,20 @@ describe("the shell follows Orazaka's pattern (krizaka/yomizaka#278, the UX revi
     expect(shell).not.toMatch(/<RailNav\.Item[^>]*PlusIcon/);
     expect(shell).not.toMatch(/<RailNav\.Item[^>]*SettingsIcon/);
   });
-  it("the header names the product, carries the DEV chip, and « Vérifier un document » as its primary cut button", () => {
+  it("the header names the product, carries the DEV chip, and « Vérifier un document » as its gradient cut button, in the `primary` slot (B2, P14)", () => {
     expect(shell).toContain('name="Yomizaka"');
     expect(shell).not.toContain("titleOf(");
     expect(shell).toMatch(/chips=\{[\s\S]*data-testid="app-version"/);
-    expect(shell).toMatch(/<ButtonLink\b(?=[^>]*\bvariant="primary")(?=[^>]*\bshape="cut")(?=[^>]*aria-label=\{say\("shell\.checkAction"\)\})[^>]*data-testid="header-check"/);
+    expect(shell).toMatch(/<ButtonLink\b(?=[^>]*\bvariant="gradient")(?=[^>]*\bshape="cut")(?=[^>]*aria-label=\{say\("shell\.checkAction"\)\})[^>]*data-testid="header-check"/);
   });
-  it("the account menu has profile, settings, billing, language, a labelled theme row and sign out; the name shows only when there is one; nothing sends the owner elsewhere", () => {
+  it("the account menu has profile, settings, credits and usage, a labelled theme row and sign out; the name shows only when there is one; nothing sends the owner elsewhere", () => {
     for (const id of ["profile", "settings", "billing"]) expect(shell).toContain(`id: "${id}"`);
-    expect(shell).toContain("language={{");
+    // The language moved to the bar (`LanguageSwitch`, krizaka-ui#640): the account menu no longer carries it.
+    expect(shell).not.toContain("language={{");
+    expect(shell).toContain("<LanguageSwitch");
     expect(shell).toContain('data-testid="theme-row"');
     expect(shell).toContain("signOut={{");
-    expect(shell).toContain("showName={Boolean(name)}");
+    expect(shell).toContain('showName={name ? "lg" : false}');
     expect(shell).not.toContain("name ?? email}");
     for (const l of ["en", "fr"]) {
       const m = JSON.parse(read(`messages/${l}.json`));
@@ -169,7 +174,7 @@ describe("the shell follows Orazaka's pattern (krizaka/yomizaka#278, the UX revi
     expect(ROUTE_STATES.checkKind.state.fallback).toBe("auto");
   });
   it("every signed-in page draws its h1 with PageHeader — the document with DetailLayout's title (Y5) — (the header names the product, never the page)", () => {
-    for (const file of ["components/console/LibraryView.tsx", "components/console/CheckView.tsx", "components/console/ChecksView.tsx", "components/console/SearchView.tsx", "components/console/PlaceView.tsx", "components/console/BatchProgress.tsx", "app/[locale]/(app)/app/settings/[section]/page.tsx", "app/[locale]/(app)/app/bienvenue/page.tsx"]) {
+    for (const file of ["components/console/LibraryView.tsx", "components/console/CheckView.tsx", "components/console/ChecksView.tsx", "components/console/SearchView.tsx", "components/console/AllDocuments.tsx", "components/console/PlaceView.tsx", "components/console/BatchProgress.tsx", "app/[locale]/(app)/app/settings/[section]/page.tsx", "app/[locale]/(app)/app/bienvenue/page.tsx"]) {
       expect(read(file), file).toContain('from "@krizaka/ui/page-header"');
       expect(read(file), file).toMatch(/<PageHeader\b/);
       expect(read(file), file).not.toMatch(/<h1\b/);

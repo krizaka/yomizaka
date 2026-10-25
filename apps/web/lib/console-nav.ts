@@ -8,7 +8,7 @@ import { CHECKS_TABS, type ChecksTab, DOCUMENT_TABS, type DocumentTab, movedDocu
  */
 export type NavId = SectionId | "account";
 
-export const CONSOLE_ROUTES = { library: "/app", files: "/app/dossiers", checks: "/app/verifications", check: "/app/verifier", search: "/app/recherche", account: "/app/settings" } as const;
+export const CONSOLE_ROUTES = { library: "/app", files: "/app/dossiers", documents: "/app/documents", checks: "/app/verifications", check: "/app/verifier", search: "/app/recherche", account: "/app/settings" } as const;
 
 /** The tabs of the Vérifications destination (the map's, `@yomizaka/core`); the second lives in the address: `/app/verifications?tab=lots`. */
 export { CHECKS_TABS, type ChecksTab };
@@ -23,14 +23,16 @@ export const withoutLocale = (path: string) => path.replace(/^\/(en|fr)(?=\/|$)/
 
 const under = (path: string, base: string) => path === base || path.startsWith(`${base}/`);
 
-/** Which rail entry a path belongs to. A document and a collection belong to the library, the task page to the checks, the applicant files to « Dossiers »; an unknown path to none. */
+/** Which rail entry a path belongs to. The documents (the list and each document) and the search page belong to « Documents », a collection to the home, the task page to the checks, the applicant files to « Dossiers »; an unknown path to none. */
 export function activeNav(path: string): NavId | null {
   const p = withoutLocale(path).replace(/\/$/, "") || "/";
   if (under(p, CONSOLE_ROUTES.checks) || under(p, CONSOLE_ROUTES.check)) return "checks";
-  if (under(p, CONSOLE_ROUTES.search) || under(p, "/app/search")) return "search";
+  // Search is the top bar's ⌘K; its full page belongs to the documents it searches.
+  if (under(p, CONSOLE_ROUTES.search) || under(p, "/app/search")) return "documents";
   if (under(p, CONSOLE_ROUTES.account)) return "account";
   if (under(p, CONSOLE_ROUTES.files) || under(p, "/app/screening")) return "files";
-  if (p === CONSOLE_ROUTES.library || under(p, "/app/documents") || under(p, "/app/bibliotheque")) return "library";
+  if (under(p, CONSOLE_ROUTES.documents)) return "documents";
+  if (p === CONSOLE_ROUTES.library || under(p, "/app/bibliotheque")) return "library";
   return null;
 }
 

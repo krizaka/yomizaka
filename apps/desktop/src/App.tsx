@@ -1,4 +1,4 @@
-import { CheckIcon, HomeIcon, LogoutIcon, SearchIcon, SettingsIcon, UsersIcon } from "@krizaka/icons";
+import { CheckIcon, HomeIcon, KnowledgeIcon, LogoutIcon, SettingsIcon, UsersIcon } from "@krizaka/icons";
 import { useQuery } from "@krizaka/query";
 import { YomizakaLogo } from "@krizaka/ui";
 import { AccountMenu } from "@krizaka/ui/account-menu";
@@ -36,7 +36,7 @@ export function App() {
 }
 
 const LANGUAGE_NAMES: Record<Locale, string> = { fr: "Français", en: "English" };
-const SECTION_ICONS: Record<SectionId, typeof HomeIcon> = { library: HomeIcon, files: UsersIcon, checks: CheckIcon, search: SearchIcon };
+const SECTION_ICONS: Record<SectionId, typeof HomeIcon> = { library: HomeIcon, files: UsersIcon, documents: KnowledgeIcon, checks: CheckIcon };
 /** Where a destination of the section map opens: Vérifications opens on its first tab, the checked documents. */
 const SECTION_ROUTES: Partial<Record<SectionId, Route>> = { library: { screen: "library", folder: null }, checks: { screen: "reports" } };
 const TAB_ROUTES: Record<ChecksTab, Route> = { checks: { screen: "reports" }, lots: { screen: "batches" } };
