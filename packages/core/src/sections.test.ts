@@ -6,10 +6,11 @@ const ids = (sections: ReturnType<typeof sectionsFor>) => sections.map((s) => s.
 
 /** One section map on the web, the phone and the Mac (§ 3.6 of the design direction, yomizaka#319). */
 describe("the section map", () => {
-  it("is Bibliothèque · Dossiers · Vérifications · Recherche, in that order, each with its address", () => {
-    expect(SECTION_IDS).toEqual(["library", "files", "checks", "search"]);
+  it("is Accueil · Dossiers · Documents · Vérifications (B2, P14), in that order, each with its address; Recherche is ⌘K, not a destination", () => {
+    expect(SECTION_IDS).toEqual(["library", "files", "documents", "checks"]);
     expect(SECTIONS.map((s) => s.id)).toEqual(SECTION_IDS);
-    expect(Object.fromEntries(SECTIONS.map((s) => [s.id, s.path]))).toEqual({ library: "/app", files: "/app/dossiers", checks: "/app/verifications", search: "/app/recherche" });
+    expect(Object.fromEntries(SECTIONS.map((s) => [s.id, s.path]))).toEqual({ library: "/app", files: "/app/dossiers", documents: "/app/documents", checks: "/app/verifications" });
+    expect(SECTION_IDS as readonly string[]).not.toContain("search");
   });
 
   it("holds the batches as a tab of Vérifications (« Lots »), on all three platforms", () => {
@@ -22,8 +23,8 @@ describe("the section map", () => {
   });
 
   it("shows « Dossiers » only to the people offered the applicant-file flow", () => {
-    expect(ids(sectionsFor("web"))).toEqual(["library", "checks", "search"]);
-    expect(ids(sectionsFor("web", { applicantFiles: true }))).toEqual(["library", "files", "checks", "search"]);
+    expect(ids(sectionsFor("web"))).toEqual(["library", "documents", "checks"]);
+    expect(ids(sectionsFor("web", { applicantFiles: true }))).toEqual(["library", "files", "documents", "checks"]);
   });
 
   it("says why a platform lacks a section, instead of a different map (the parity field)", () => {
@@ -32,6 +33,7 @@ describe("the section map", () => {
     for (const section of SECTIONS) for (const reason of Object.values(section.pending)) expect(reason.length, section.id).toBeGreaterThan(20);
     expect(SECTIONS.find((s) => s.id === "library")?.pending).toEqual({});
     expect(SECTIONS.find((s) => s.id === "checks")?.pending).toEqual({});
+    expect(SECTIONS.find((s) => s.id === "documents")?.pending).toEqual({ phone: expect.any(String), mac: expect.any(String) });
   });
 
   it("numbers the shortcuts by the shown order: ⌘1 to ⌘4", () => {

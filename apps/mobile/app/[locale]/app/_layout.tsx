@@ -1,5 +1,5 @@
 import { TabBar } from "@krizaka/ui/native";
-import { CheckIcon, KnowledgeIcon, SearchIcon, UsersIcon } from "@krizaka/icons/native";
+import { CheckIcon, HomeIcon, KnowledgeIcon, UsersIcon } from "@krizaka/icons/native";
 import type { SectionId } from "@yomizaka/core";
 import { Redirect, Tabs, useRouter } from "expo-router";
 
@@ -8,7 +8,7 @@ import { phoneTabs } from "@/domain/tabs";
 import { useI18n } from "@/i18n";
 import { useLocale } from "@/use-locale";
 
-const ICONS: Record<SectionId, typeof KnowledgeIcon> = { library: KnowledgeIcon, files: UsersIcon, checks: CheckIcon, search: SearchIcon };
+const ICONS: Record<SectionId, typeof KnowledgeIcon> = { library: HomeIcon, files: UsersIcon, documents: KnowledgeIcon, checks: CheckIcon };
 
 /**
  * The signed-in space: the tabs are the one section map (`phoneTabs`, yomizaka#319), each a route (the URL is the state).

@@ -23,7 +23,7 @@ describe("the native menu bar", () => {
       ...sectionsFor("mac").map((section, i) => [`go.${section.id}`, fr.sections[section.id], `CmdOrCtrl+${i + 1}`]),
       [MENU_IDS.settings, fr.menu.settings, "CmdOrCtrl+,"],
     ]);
-    expect(spec.menus[1]?.items.slice(0, 2).map((i) => i.label)).toEqual(["Bibliothèque", "Vérifications"]);
+    expect(spec.menus[1]?.items.slice(0, 2).map((i) => i.label)).toEqual(["Accueil", "Vérifications"]);
     expect(Object.keys(spec.labels).sort()).toEqual(Object.keys(menuSpec(en).labels).sort());
   });
 

@@ -33,6 +33,19 @@ export async function toDo(q: Query, owner: string, now: Date, { applicantFiles 
   };
 }
 
+/**
+ * The files the candidate sent and nobody decided: the rail's badge on « Dossiers » (B2, P14). The same rows as « À traiter »'s
+ * « Dossiers à décider » (link state `used`: sent, not closed, not revoked, not expired, not erased — `linkState`), counted by one
+ * query, not by listing the files.
+ */
+export async function filesToDecide(q: Query, owner: string, now: Date): Promise<number> {
+  const [row] = await q<{ n: number }>(
+    "SELECT count(*)::int AS n FROM screenings e WHERE e.landlord_id = $1 AND e.flow = 'file' AND e.status <> 'erased' AND e.submitted_at IS NOT NULL AND e.closed_at IS NULL AND e.revoked_at IS NULL AND e.expires_at > $2",
+    [owner, now],
+  );
+  return row?.n ?? 0;
+}
+
 /** The checks of each day of the period, from the moments they ended (or started, while they run). */
 export async function activity(q: Query, owner: string, period: HomePeriod, now: Date): Promise<ActivityDay[]> {
   const rows = await q<{ at: Date }>(

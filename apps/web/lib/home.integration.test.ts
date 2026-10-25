@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { readCheckFilters } from "./check-filters";
 import { listChecks } from "./checks";
 import { migrate, query } from "./db";
-import { activity, toDo } from "./home";
+import { activity, filesToDecide, toDo } from "./home";
 import { toDoLinks } from "./home-figures";
 
 /** The home's figures against a real PostgreSQL (yomizaka#325): each one counted over the rows its view lists. */
@@ -47,6 +47,19 @@ describe.runIf(enabled)("the home's figures", () => {
     await file(owner, { expires: "2026-11-01T12:00:00Z", submitted: "2026-10-22T12:00:00Z", closed: "2026-10-23T12:00:00Z" });
     await file(owner, { expires: "2026-10-20T12:00:00Z" });
     expect(await toDo(query, owner, NOW, { applicantFiles: true })).toEqual({ toReview: 0, toDecide: 1, openLinks: 2, nextExpiry: "2026-11-02T12:00:00.000Z" });
+  });
+
+  it("counts the rail's badge by one query, as the home's « Dossiers à décider », and only the account's own files", async () => {
+    const owner = await account();
+    await file(owner, { expires: "2026-11-07T12:00:00Z" });
+    await file(owner, { expires: "2026-11-01T12:00:00Z", submitted: "2026-10-23T12:00:00Z" });
+    await file(owner, { expires: "2026-11-01T12:00:00Z", submitted: "2026-10-23T12:00:00Z" });
+    await file(owner, { expires: "2026-11-01T12:00:00Z", submitted: "2026-10-22T12:00:00Z", closed: "2026-10-23T12:00:00Z" });
+    await file(owner, { expires: "2026-10-20T12:00:00Z", submitted: "2026-10-19T12:00:00Z" });
+    await file(await account(), { expires: "2026-11-01T12:00:00Z", submitted: "2026-10-23T12:00:00Z" });
+    expect(await filesToDecide(query, owner, NOW)).toBe(2);
+    expect((await toDo(query, owner, NOW, { applicantFiles: true })).toDecide).toBe(2);
+    expect(await filesToDecide(query, await account(), NOW)).toBe(0);
   });
 
   it("counts the checks of each day of the period in Québec, none before it", async () => {

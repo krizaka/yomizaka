@@ -133,7 +133,8 @@
       "library": "Library",
       "search": "Search",
       "users": "People",
-      "admin": "Administration"
+      "admin": "Administration",
+      "documents": "Documents"
     },
     "signIn": {
       "promise": "Your documents, read and checked by Yomizaka.",
@@ -197,10 +198,10 @@
       }
     },
     "sections": {
-      "library": "Library",
+      "library": "Home",
       "files": "Applicant files",
-      "checks": "Checks",
-      "search": "Search"
+      "documents": "Documents",
+      "checks": "Checks"
     },
     "shell": {
       "skip": "Skip to content",
@@ -227,7 +228,7 @@
       "checkAction": "Check a document",
       "profile": "Profile",
       "settings": "Settings",
-      "billing": "Billing",
+      "billing": "Credits and usage",
       "titles": {
         "library": "Library",
         "checks": "Checks",
@@ -237,7 +238,17 @@
         "account": "Account",
         "screening": "Screening",
         "welcome": "Welcome"
-      }
+      },
+      "palette": {
+        "label": "Search your documents",
+        "placeholder": "A title, a passage, a finding…",
+        "none": "No result for “{q}”.",
+        "type": "Type at least two letters.",
+        "all": "All results",
+        "hits": "Documents and findings"
+      },
+      "toDecideOne": "{count} file to decide",
+      "toDecideMany": "{count} files to decide"
     },
     "library": {
       "title": "Library",
@@ -1845,6 +1856,12 @@
         "text": "The server did not answer as expected. Your documents are kept; try again in a moment.",
         "retry": "Try again"
       }
+    },
+    "documentsPage": {
+      "title": "All documents",
+      "lead": "All your documents, newest first, across all your collections.",
+      "caption": "All your documents, newest first",
+      "empty": "No document yet"
     }
   },
   "report": {

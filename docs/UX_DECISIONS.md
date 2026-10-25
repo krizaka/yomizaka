@@ -256,6 +256,27 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
   rules the next drop.
 - **Signal we are wrong**: people cancel runs started on the drop; « Autre » is chosen to avoid the automatic start.
 
+## 27. The B2 shell: Accueil · Dossiers · Documents · Vérifications, the family's top bar, ⌘K for search (P14, #331)
+
+- **One section map, four destinations**: `SECTION_IDS` is `library` (shown « Accueil » / « Home ») · `files` (« Dossiers », offered with
+  the applicant-file flow) · `documents` · `checks`. The rail, the phone's tabs and the Mac's « Aller » menu are drawn from it
+  (`sectionsFor`); « Recherche » leaves the map. « Documents » is new on the web (`/app/documents`, every document newest first in
+  the collections' table); the phone and the Mac say why they do not have it yet (`pending`) and reach the documents through the
+  library. A document's page, and the search page, light « Documents »; a collection lights « Accueil ».
+- **The bar is `AppHeader` (@krizaka/ui 3.55, krizaka-ui#640)**, slots in its fixed order: `search` · `language` · `primary` · `account`.
+  Search is `AppHeaderSearch` (a field from `md`, an icon below, ⌘K / Ctrl K) opening a `CommandDialog` that asks the same
+  `/api/search` as the search page; a hit opens its document, « Tous les résultats » leads to the page with the query in its
+  address. The language is `LanguageSwitch` (it left the account menu). The one action is a `gradient` cut button. The account
+  shows the name from 1024 px (`showName="lg"`) and holds « Crédits et usage », not « Facturation ».
+- **No messages and no notifications**: Yomizaka has no messaging, and notifications wait for `@krizaka/notifications`
+  (krizaka-ts#60). An empty slot is hidden, never filled with an invented feature; a test holds it.
+- **The rail's badge** on « Dossiers » counts the files the candidate sent and nobody decided (`filesToDecide`, one query that
+  equals the home's « Dossiers à décider »), said in words for a screen reader (« 2 dossiers à décider »).
+- Refused: a search destination in the rail (⌘K is faster, and the page stays for « Tous les résultats »); a notification bell
+  with nothing behind it; a second language control in the account menu.
+- Cost: the rail has no entry for the search page, which is reached from ⌘K or its address. We are wrong if people look for
+  « Recherche » in the rail: then the field in the bar is too quiet at 1024–1279 px.
+
 ## 26. The organised workspace: your decision, tags with markers, saved views, bulk actions (P7, #324)
 
 Krizaka-ts ADR-003, `@krizaka/organize` 0.4. Yomizaka is the pilot, on « Dossiers » and on the documents' tags.
