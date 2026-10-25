@@ -1,0 +1,24 @@
+# The tabs of the signed-in space, as the demo persona Éric: Accueil (his collections), Vérifications and its second tab Lots.
+# Each stop is a capture (the PR's phone captures come from CI: the `maestro-e2e` artifact). Runs in CI (mobile-e2e.yml).
+appId: com.krizaka.yomizaka
+tags:
+  - ci
+---
+- launchApp:
+    clearState: true
+- runFlow: shared/sign-in.yaml
+- assertVisible: "Vérifier un document|Check a document"
+- tapOn: "Accueil|Home"
+- extendedWaitUntil:
+    visible: "Immeuble Rosemont"
+    timeout: 30000
+- assertVisible: "Factures 2026"
+- takeScreenshot: tab-accueil
+- tapOn: "Vérifications|Checks"
+- extendedWaitUntil:
+    visible: "Lots|Batches"
+    timeout: 30000
+- takeScreenshot: tab-verifications
+- tapOn: "Lots|Batches"
+- waitForAnimationToEnd
+- takeScreenshot: tab-lots

@@ -1,15 +1,13 @@
-# The Yomizaka app (apps/mobile): the org's reusable Expo pipeline (krizaka/.github expo-ci.yml, ADR-004). Only when the app,
-# the contracts it reads or this workflow change; lint, types, tests and the iOS + Android bundle export run side by side.
+# The Yomizaka app (apps/mobile): the org's reusable Expo pipeline (krizaka/.github expo-ci.yml, ADR-004) and the Maestro flows
+# on an Android emulator (mobile-e2e.yml, krizaka/.github#241). On every pull request: the changes gate inside each skips the
+# heavy jobs when neither the app, the contracts it reads nor these workflows changed, and the gates always report (so
+# `mobile-e2e / gate` can be a required check). Lint, types, tests and the bundle export run side by side.
 name: Mobile CI
 
 on:
   push:
     branches: [main]
   pull_request:
-    paths:
-      - "apps/mobile/**"
-      - "packages/core/**"
-      - ".github/workflows/mobile-ci.yml"
 
 permissions:
   contents: read
@@ -28,5 +26,27 @@ jobs:
       working-directory: apps/mobile
       lockfile-directory: .
       install-command: pnpm install --frozen-lockfile
+      relevant: '^(apps/mobile/|packages/(core|client)/|pnpm-lock\.yaml$|\.github/workflows/mobile-ci\.yml$)'
       extra-scripts: |
         export
+
+  # The flows of apps/mobile/.maestro on an Android emulator, signed in as the seeded persona Éric against a throwaway
+  # backend (scripts/ci-mobile-backend.sh). The check is `mobile-e2e / gate`.
+  mobile-e2e:
+    permissions:
+      contents: read
+    uses: krizaka/.github/.github/workflows/mobile-e2e.yml@3909b54f6c23264ebdf33cf025ec5584d5ccc12c # main (krizaka/.github#241, #243)
+    with:
+      app-id: com.krizaka.yomizaka
+      app-directory: apps/mobile
+      package-manager: pnpm
+      lockfile-directory: .
+      install-command: pnpm install --frozen-lockfile
+      demo-email: eric@demo.yomizaka.test
+      setup-command: bash scripts/ci-mobile-backend.sh
+      reverse-ports: "3000"
+      allow-cleartext: true
+      relevant: '^(apps/(mobile|web)/|packages/|pnpm-lock\.yaml$|scripts/(ci-mobile-backend\.sh|demo-seed/|demo-documents/)|\.github/workflows/mobile-ci\.yml$)'
+      env: |
+        EXPO_PUBLIC_APP_URL=http://localhost:3000
+        EXPO_PUBLIC_APP_ENV=dev

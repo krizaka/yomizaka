@@ -1,0 +1,11 @@
+# The app opens, signs in as the demo persona Éric and lands on the check screen. Runs in CI (mobile-e2e.yml).
+# maestro test -e PERSONA_EMAIL=… -e PERSONA_PASSWORD=… .maestro/smoke.yaml   (the persona's, never a real or QA account)
+appId: com.krizaka.yomizaka
+tags:
+  - ci
+---
+- launchApp:
+    clearState: true
+- runFlow: shared/sign-in.yaml
+- assertVisible: "Vérifier un document|Check a document"
+- takeScreenshot: smoke-verify
