@@ -7,7 +7,7 @@ import { I18nProvider } from "@/lib/i18n-client";
 import en from "@/messages/en.json";
 import fr from "@/messages/fr.json";
 
-import { CheckView, KindQuestion } from "./CheckView";
+import { CheckQueue, CheckView, KindQuestion } from "./CheckView";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push() {}, replace() {}, refresh() {} }), usePathname: () => "/fr/app/verifier", useSearchParams: () => new URLSearchParams() }));
 
@@ -32,10 +32,16 @@ describe("« Vérifier un document » (the UX review's Y4)", () => {
     expect(readable(html)).not.toContain(fr.console.library.kindPick);
   });
 
-  it("asks the options only once files are known, and says the check is informative", () => {
+  it("names the defaults before the drop, with « Modifier » (Errata 6, yomizaka#326), and says the check is informative", () => {
     const html = render();
-    expect(html).not.toContain('data-testid="check-options"');
-    expect(html).not.toContain('data-testid="keep-choice"');
+    const defaults = html.indexOf('data-testid="check-defaults"');
+    expect(defaults).toBeGreaterThan(0);
+    // Before the drop zone (its title after the page's h1; the section's own label carries it too).
+    expect(defaults).toBeLessThan(html.indexOf(fr.console.library.dropTitle, html.indexOf("</h1>")));
+    const text = readable(html);
+    for (const key of ["erased", "rules", "place", "modify"] as const) expect(text).toContain(fr.console.check.defaults[key]);
+    expect(html).toContain('data-testid="keep-choice"');
+    // « Ces photos sont les pages d'un document » only once photos are known (the review's C3).
     expect(html).not.toContain('data-testid="group-photos"');
     expect(readable(html)).toContain(fr.console.library.informative);
     expect(readable(render("en"))).toContain(en.console.library.informative);
@@ -62,4 +68,35 @@ describe("the kind picker, asked only when the kind is uncertain (yomizaka#318, 
       expect(html).toContain('data-testid="kind-choice"');
     });
   }
+});
+
+describe("the queue: one row per file, its stage in words (yomizaka#326, P9)", () => {
+  const row = (id: string, stage: string, refused: string | null = null) => ({ id, filename: `${id}.pdf`, stage, refused }) as never;
+  const queue = (rows: never[], locale: "en" | "fr" = "fr") => wrap(<CheckQueue rows={rows} onPick={() => {}} />, locale);
+
+  it("says every stage in words — progress is never a bare bar, so reduced motion keeps it", () => {
+    for (const locale of ["fr", "en"] as const) {
+      const m = MESSAGES[locale].console.check.stages;
+      const text = readable(queue([row("a", "reading"), row("b", "starting"), row("c", "started"), row("d", "refused", "PAYWALL")], locale));
+      expect(text).toContain(m.reading);
+      expect(text).toContain(m.starting);
+      expect(text).toContain(m.started);
+      expect(text).toContain(m.refused.replace("{reason}", MESSAGES[locale].console.errors.PAYWALL));
+    }
+  });
+
+  it("asks « Quel document ? » for each uncertain file, its own labelled question, and no other", () => {
+    const html = queue([row("a", "asking"), row("b", "started"), row("c", "asking")]);
+    expect(html.match(/role="radiogroup"/g)).toHaveLength(2);
+    expect(readable(html)).toContain(fr.console.library.kindUnsure.replace("{name}", "a.pdf"));
+    expect(readable(html)).toContain(fr.console.library.kindUnsure.replace("{name}", "c.pdf"));
+    expect(readable(html)).not.toContain(fr.console.library.kindUnsure.replace("{name}", "b.pdf"));
+  });
+
+  it("links a row that is under way, or refused, to its report", () => {
+    const html = queue([row("a", "started"), row("b", "refused", "PAYWALL"), row("c", "reading")]);
+    expect(html).toContain('href="/fr/app/documents/a/rapport"');
+    expect(html).toContain('href="/fr/app/documents/b/rapport?refused=PAYWALL"');
+    expect(html).not.toContain('href="/fr/app/documents/c/rapport"');
+  });
 });

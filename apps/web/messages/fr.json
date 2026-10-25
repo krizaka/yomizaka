@@ -169,6 +169,25 @@
       "forgotLink": "Mot de passe oublié ?",
       "resetNotice": "Votre mot de passe est changé. Connectez-vous avec le nouveau."
     },
+    "check": {
+      "defaults": {
+        "label": "Avant le dépôt",
+        "erased": "Effacé après la vérification",
+        "kept": "Conservé dans votre bibliothèque",
+        "rules": "Règles du Québec en vigueur aujourd’hui",
+        "place": "dans « Mes documents »",
+        "modify": "Modifier"
+      },
+      "queueLabel": "Les fichiers déposés",
+      "stages": {
+        "reading": "Lecture du document…",
+        "starting": "Lancement de la vérification…",
+        "asking": "Quel document ? Dites-le ci-dessous.",
+        "started": "Vérification lancée",
+        "refused": "Non lancée : {reason}"
+      },
+      "openReport": "Ouvrir le rapport"
+    },
     "sections": {
       "library": "Bibliothèque",
       "files": "Dossiers",
