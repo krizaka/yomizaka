@@ -590,6 +590,7 @@ Krizaka-ts ADR-003, `@krizaka/organize` 0.4. Yomizaka is the pilot, on « Dossie
   can be withdrawn, and the file erased, until it is erased. The routes keep their own rules.
 - The notice's « {days} days » sentence belongs to the provider screening; the file's notice says only what is proven
   (a document is deleted after its checks unless kept with consent; deletion on request). It is the lawyer's to review.
+
 ## B2 home: the binder on top, two columns, the activity strip, the credits (P15, #332)
 
 - The home is `DashboardLayout` (« Operate »): the `h1` « Bibliothèque » on the left and **today's date on the right** (a `time`, under the
