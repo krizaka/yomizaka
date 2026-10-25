@@ -1856,7 +1856,6 @@
       "made": {
         "title": "The link for {name}",
         "text": "Valid until {date}. It is shown once: copy it and hand it to the applicant. No document travels by e-mail.",
-        "notYet": "The page where the applicant sends their documents is not online yet: this link will open it once it is.",
         "copy": "Copy the link",
         "copied": "Copied"
       },
@@ -2218,6 +2217,32 @@
       "PURPOSE_NOT_IN_FILE": "This purpose does not belong to a file of documents.",
       "CONSENT_REQUIRED": "No document is checked without your consent for this purpose.",
       "NOT_FOUND": "Not found."
+    },
+    "page": {
+      "metaTitle": "Your documents",
+      "noticeSummary": "Read the notice: how your documents and information are used",
+      "consentTitle": "Your consent",
+      "consentLead": "Nothing is read or checked before you consent. You can withdraw at any time.",
+      "askedTitle": "Documents asked",
+      "consentFirst": "Consent to the check above to send your documents.",
+      "dropTitle": "Drop the PDF here",
+      "browse": "Choose a PDF",
+      "hint": "PDF only, up to 10 MB.",
+      "received": "Received",
+      "sending": "Sending",
+      "sent": "Sent",
+      "notSent": "Not sent",
+      "pause": "Pause",
+      "resume": "Resume",
+      "retry": "Try again",
+      "cancel": "Cancel",
+      "remove": "Remove",
+      "submitHint": "You can send your file once at least one document is received.",
+      "eraseConfirm": "Press again to delete everything",
+      "eraseLead": "You can ask for your documents and the result to be deleted at any time.",
+      "withdrawLead": "Withdrawing a consent stops the checks that rest on it.",
+      "closedTitle": "This link is closed",
+      "howLong": "By default, a document is deleted as soon as its check is done. If you consent to keep it (\"Keep my documents until the owner decides\"), it is kept until the owner's decision, then deleted. You can ask for the deletion of your documents and of the result at any time. [TO BE REVIEWED BY THE LAWYER]"
     }
   },
   "screening": {

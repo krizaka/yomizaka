@@ -68,7 +68,6 @@ export function RequestDocuments({ types, origin, trigger }: { types: readonly A
           {result ? (
             <div className="flex flex-col gap-3" data-testid="request-made">
               <p className="m-0 break-all rounded-lg border border-border-default bg-surface-1 p-3 text-sm text-fg">{result.link}</p>
-              <Alert tone="info">{say("dossiers.made.notYet")}</Alert>
               <Button variant="secondary" onClick={() => void navigator.clipboard?.writeText(result.link).then(() => setCopied(true))}>
                 {copied ? say("dossiers.made.copied") : say("dossiers.made.copy")}
               </Button>

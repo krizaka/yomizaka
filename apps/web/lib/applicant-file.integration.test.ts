@@ -2,11 +2,15 @@ import { memoryStore, type OrazakaRun } from "@yomizaka/core";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { CONSENT_MEANS, CONSENT_PURPOSE, type ConsentPurpose, grantConsent, NOTICE_VERSION } from "./applicant-consent";
+import { activeConsents } from "./applicant-consent";
 import { applicantFileOf, closeApplicantFile, listApplicantFiles, requestApplicantFile, revokeApplicantFile, submitApplicantFile, uploadApplicantDocument,type UploadContext } from "./applicant-file";
+import { applicantFileState } from "./applicant-file";
+import { fileByToken } from "./applicant-file";
+import { loadApplicantPage } from "./applicant-page";
 import { migrate, query } from "./db";
 import { useOrazakaClient } from "./orazaka";
 import { cleanPdf } from "./preflight/fixtures";
-import { consent as screeningConsent } from "./screening";
+import { consent as screeningConsent, requestScreening } from "./screening";
 
 /** yomizaka#127 against the real database (CI's service; locally YOMIZAKA_DB_IT=1 DATABASE_URL=…). Orazaka is a fake that records the runs. */
 const enabled = process.env.YOMIZAKA_DB_IT === "1" && !!process.env.DATABASE_URL;
@@ -167,5 +171,15 @@ describe.runIf(enabled)("the applicant file (yomizaka#127)", () => {
   it("the screening answers refuse an applicant-file token: the two flows never cross", async () => {
     const made = await askWithConsent(["pay-stub"]);
     await refusal(screeningConsent(made.token, NOW));
+  });
+
+  it("the applicant's page opens for a file token and not for a screening's (yomizaka#341)", async () => {
+    const made = await askWithConsent(["pay-stub"]);
+    const deps = { fileByToken, applicantFileState, activeConsents };
+    const page = await loadApplicantPage(made.token, NOW, deps);
+    expect(page?.state.types.map((t) => t.id)).toEqual(["pay-stub"]);
+    expect(page?.consents).toContain(CONSENT_PURPOSE.DOCUMENT_CHECK);
+    const screening = await requestScreening(landlordA, { tenantName: "Camille Fictif", tenantEmail: `s-${stamp}@yomizaka.test`, scope: ["payment-history"] }, NOW);
+    expect(await loadApplicantPage(screening.token, NOW, deps)).toBeNull();
   });
 });
