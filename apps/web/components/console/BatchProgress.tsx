@@ -63,11 +63,11 @@ export function BatchProgress({ initial }: { initial: Batch }) {
         value: (i) => i.file,
         cell: (i) =>
           i.documentId ? (
-            <Link className="font-mono text-sm font-semibold text-fg-accent underline" href={`/${locale}/app/documents/${i.documentId}/rapport`}>
+            <Link className="break-all text-sm font-semibold text-fg-accent underline" href={`/${locale}/app/documents/${i.documentId}/rapport`}>
               {i.file}
             </Link>
           ) : (
-            <span className="font-mono text-sm">{i.file}</span>
+            <span className="break-all text-sm">{i.file}</span>
           ),
       },
       { id: "state", header: say("batch.columns.state"), type: "status", filter: "facet", options: (Object.keys(TONE) as ItemState[]).map((s) => ({ value: s, label: say(`batch.states.${s}`) })), value: (i) => i.state, cell: (i) => <Badge tone={TONE[i.state]}>{say(`batch.states.${i.state}`)}</Badge> },

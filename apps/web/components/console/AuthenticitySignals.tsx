@@ -21,7 +21,7 @@ export function AuthenticitySignals({ report }: { report: Pick<AuthenticityRepor
         {report.signals.map((s) => (
           <li key={s.signalId} className="rounded-lg border border-border-default bg-surface-1 p-3 text-sm">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="font-mono text-xs text-fg-muted">{s.signalId}</span>
+              <span className="text-xs text-fg-muted">{s.signalId}</span>
               <Badge tone={LEVEL_TONE[s.level] ?? "neutral"}>{say(`analysis.levels.${s.level}`)}</Badge>
             </div>
             <p className="mt-1 text-fg">{s.observation}</p>
