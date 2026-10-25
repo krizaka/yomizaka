@@ -178,4 +178,16 @@ describe.runIf(enabled)("organisation (ADR-0007)", () => {
     expect((await org.browse(query, owner, { collectionId: await org.defaultCollectionId(query, owner), tagIds: [] })).documentIds).toEqual([loose]);
     expect((await org.recentIds(query, owner, 10)).sort()).toEqual([root, inFolder, loose].sort());
   });
+
+  it("says where a document sits — its library and collection, for the way back — its default collection for a document not placed by hand, and nothing for another owner's document", async () => {
+    const owner = await account();
+    const stranger = await account();
+    const library = await org.ensureLibrary(query, owner, "Immeubles");
+    const c = await org.createCollection(query, owner, library.id, "4½ Villeray");
+    const placed = await doc(owner);
+    await org.placeDocument(query, owner, placed, { collectionId: c.id, folderId: null });
+    expect(await org.placeOf(query, owner, placed)).toEqual({ libraryId: library.id, collectionId: c.id, name: "4½ Villeray", isDefault: false });
+    expect(await org.placeOf(query, stranger, placed)).toBeNull();
+    expect(await org.placeOf(query, owner, await doc(owner))).toMatchObject({ isDefault: true });
+  });
 });
