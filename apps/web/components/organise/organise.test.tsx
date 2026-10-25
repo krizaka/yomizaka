@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { FileSummary } from "@/lib/applicant-file";
 import { I18nProvider } from "@/lib/i18n-client";
+import { binderPlan } from "@/lib/workspace/binder";
 import { DECISION, KIND } from "@/lib/workspace/decl";
 import { DECISION_SET,DEFAULT_CONFIGS } from "@/lib/workspace/defaults";
 import { resolveView } from "@/lib/workspace/view";
@@ -30,6 +31,8 @@ const workspace = (search = "", locale: "en" | "fr" = "fr") => ({
   system: views,
   saved: [],
   resolved: resolveView({ view: new URLSearchParams(search).get("view"), filters: {} }, views, [], locale),
+  plan: binderPlan(DECISION_SET, [T1], {}),
+  counts: { tabs: [2, 1, 0, 1], chips: [1] },
 });
 
 describe("« Dossiers » organised (yomizaka#324)", () => {
@@ -48,10 +51,18 @@ describe("« Dossiers » organised (yomizaka#324)", () => {
     expect(text).toContain("Garant");
   });
 
-  it("offers the system views as links that carry their filters in the address, and a menu on a phone", () => {
+  it("shows the decision states as binder tabs with their counts, apart from the saved views", () => {
+    expect(html).toContain('data-testid="binder"');
+    expect(html).toMatch(/href="\/fr\/app\/dossiers\?status=a_decider"/);
+    expect(html).toMatch(/href="\/fr\/app\/dossiers\?status=non_retenu"/);
+    expect(text).toMatch(/Tous 2 .*À décider 1 .*Retenu 0 .*Non retenu 1/);
+    expect(text).toMatch(/Garant 1/);
+    expect(html).not.toMatch(/href="\/fr\/app\/dossiers\?view=to_decide/);
+  });
+
+  it("keeps the other system views as links that carry their filters in the address, and a menu on a phone", () => {
     expect(html).toContain('data-testid="saved-views"');
     expect(html).toContain('data-testid="views-menu"');
-    expect(html).toMatch(/href="\/fr\/app\/dossiers\?view=to_decide&amp;status=a_decider"/);
     expect(html).toMatch(/href="\/fr\/app\/dossiers\?view=decided&amp;status=retenu,non_retenu"|href="\/fr\/app\/dossiers\?view=decided&amp;status=retenu%2Cnon_retenu"/);
   });
 
@@ -63,8 +74,8 @@ describe("« Dossiers » organised (yomizaka#324)", () => {
   });
 
   it("says in the address's view which one is active", () => {
-    const active = wrap(<FilesView files={[files[0]!]} types={TYPES} origin="" workspace={workspace("view=to_decide")} />);
-    expect(active).toMatch(/aria-current="page"[^>]*>À décider/);
+    const active = wrap(<FilesView files={[files[0]!]} types={TYPES} origin="" workspace={workspace("view=decided")} />);
+    expect(active).toMatch(/aria-current="page"[^>]*>Décidés/);
   });
 
   it("without the workspace, behaves as before: no decision column, no selection", () => {

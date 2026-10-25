@@ -1811,6 +1811,11 @@
         "menu": "Views",
         "empty": "No saved view."
       },
+      "binder": {
+        "label": "Decisions",
+        "all": "All",
+        "tags": "Tags"
+      },
       "filters": {
         "bar": "Filter the files",
         "tags": "Tag",

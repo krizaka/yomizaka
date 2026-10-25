@@ -256,6 +256,13 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
   rules the next drop.
 - **Signal we are wrong**: people cancel runs started on the drop; « Autre » is chosen to avoid the automatic start.
 
+## 29. « Dossiers » as a binder: the decision states as tabs with their counts, the tags as chips (P17, #334)
+
+- The decision set's states are **binder tabs** (`Tabs.Nav variant="binder"`, Krizaka UI 3.55): « Tous », then À décider · Retenu · Non retenu in the set's order, each in the tone of its state. The tabs are links; the address is the state (`?status=`).
+- The tags are chips under the tabs, each with its count; a chip toggles the tag in the address.
+- **A count is the length of its view.** Each tab and chip carries the filters it opens (`binderPlan`), and the page counts them with `countApplicantFiles`, which uses the same `filterSql` as the list. The test compares both. The count is not capped at the list's 100 rows.
+- The system views that a tab already shows are not repeated in the views bar; « Décidés » and the person's saved views stay there.
+
 ## 27. The B2 shell: Accueil · Dossiers · Documents · Vérifications, the family's top bar, ⌘K for search (P14, #331)
 
 - **One section map, four destinations**: `SECTION_IDS` is `library` (shown « Accueil » / « Home ») · `files` (« Dossiers », offered with

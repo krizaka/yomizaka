@@ -3,10 +3,11 @@ import { memoryStore } from "@yomizaka/core";
 import type pg from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { listApplicantFiles, requestApplicantFile } from "../applicant-file";
+import { countApplicantFiles, listApplicantFiles, requestApplicantFile } from "../applicant-file";
 import { migrate, pool, query } from "../db";
 import { MIGRATIONS } from "../migrations";
 import { browse } from "../organisation/store";
+import { binderPlan } from "./binder";
 import { DECISION, KIND, WORKSPACE } from "./decl";
 import { DECISION_SET } from "./defaults";
 import { actorOf, seedWorkspace, workspaceFor } from "./service";
@@ -177,6 +178,20 @@ describe.runIf(enabled)("the organised workspace (yomizaka#324)", () => {
     expect(await idsOf({ filters: { status: [DECISION.toDecide] }, set: DECISION_SET })).toContain(none);
     const listed = (await listApplicantFiles(eric.id, NOW, { set: DECISION_SET })).find((f) => f.id === both);
     expect(listed).toMatchObject({ decision: DECISION.toDecide, tagIds: expect.arrayContaining([x.id, y.id]) });
+  });
+
+  it("counts the binder's tabs and chips with the list's own filter: each count is the length of its view (yomizaka#334)", async () => {
+    const [a, b, c] = [await file(), await file(), await file()];
+    const w = ws();
+    const t = await w.tags.create(eric.id, actorOf(eric), KIND.applicantFile, { name: `Binder ${stamp}`, marker: "green" });
+    await w.tags.apply(eric.id, actorOf(eric), KIND.applicantFile, { ids: [a!, b!], add: [t.id] });
+    await w.status.move(eric.id, actorOf(eric), KIND.applicantFile, { ids: [b!], to: DECISION.selected });
+    expect(c).toBeTruthy();
+    const plan = binderPlan(DECISION_SET, [t.id], { tags: [t.id] });
+    for (const tab of plan.tabs) expect(await countApplicantFiles(eric.id, { filters: tab.filters, set: DECISION_SET })).toBe((await listApplicantFiles(eric.id, NOW, { filters: tab.filters, set: DECISION_SET })).length);
+    expect(await countApplicantFiles(eric.id, { filters: plan.tabs[0]!.filters, set: DECISION_SET })).toBe(2);
+    expect(await countApplicantFiles(eric.id, { filters: plan.tabs[2]!.filters, set: DECISION_SET })).toBe(1);
+    expect(await countApplicantFiles(eric.id, { filters: plan.chips[0]!.countFilters, set: DECISION_SET })).toBe(2);
   });
 
   it("filters the documents of a collection on ALL their tags, with the layer's filter (it replaces allTagsClause)", async () => {
