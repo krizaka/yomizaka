@@ -11,7 +11,9 @@ import { useMemo } from "react";
 
 import type { FileSummary } from "@/lib/applicant-file";
 import { documentsFact, linkFact } from "@/lib/applicant-file-face";
+import type { LinkState } from "@/lib/applicant-file-rules";
 import { CONSOLE_ROUTES } from "@/lib/console-nav";
+import { filesInStates } from "@/lib/home-figures";
 import { useSay } from "@/lib/i18n-client";
 
 import { DISPLAY_TIME_ZONE, INTL } from "./format";
@@ -40,7 +42,9 @@ export function useFileFacts() {
  * the applicant, the link's state as a line of facts, the documents in against those asked, the day it was asked — and
  * « Demander des documents ». No decision yet (P7): no status chip, no sort by a check's result.
  */
-export function FilesView({ files, types, origin }: { files: readonly FileSummary[]; types: readonly AskableType[]; origin: string }) {
+export function FilesView({ files: all, states = [], types, origin }: { files: readonly FileSummary[]; states?: readonly LinkState[]; types: readonly AskableType[]; origin: string }) {
+  // The link-state filter of the address (`?state=used`), the door of the home's « À traiter » (yomizaka#325).
+  const files = filesInStates(all, states);
   const { say, locale } = useSay();
   const facts = useFileFacts();
   const base = `/${locale}${CONSOLE_ROUTES.files}`;
@@ -77,8 +81,18 @@ export function FilesView({ files, types, origin }: { files: readonly FileSummar
   );
   return (
     <div className="flex flex-col gap-6" data-testid="files-view">
-      <PageHeader title={say("dossiers.title")} description={say("dossiers.lead")} actions={files.length ? ask("secondary") : null} />
-      {files.length ? (
+      <PageHeader title={say("dossiers.title")} description={say("dossiers.lead")} actions={all.length ? ask("secondary") : null} />
+      {states.length ? (
+        <p className="m-0 text-sm text-fg-secondary" data-testid="files-filter">
+          {say("dossiers.filter.label")} · {states.map((st) => say(`dossiers.filter.states.${st}`)).join(", ")} ·{" "}
+          <Link href={base} className="font-semibold text-fg-accent hover:underline">
+            {say("dossiers.filter.clear")}
+          </Link>
+        </p>
+      ) : null}
+      {states.length && !files.length ? (
+        <p className="m-0 text-sm text-fg-secondary">{say("dossiers.filter.none")}</p>
+      ) : files.length ? (
         <DataTable caption={say("dossiers.caption")} rows={[...files]} columns={columns} getRowId={(f) => f.id} rowLabel={(f) => f.candidateName} pageSize={12} labels={labels} />
       ) : (
         <EmptyState icon={<Mascot bird="owl" mood="empty" size={120} />} title={say("dossiers.empty.title")} description={say("dossiers.empty.text")} action={ask("primary")} data-testid="files-empty" />

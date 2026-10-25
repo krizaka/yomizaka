@@ -269,6 +269,18 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
   question under the list. A single file opens its report as soon as it is under way; with several, each row links to its
   report, and nothing navigates away from the others.
 
+## 22. The home's data: « À traiter » as doors, the activity of a period, « Récents » off the home (P8, #325)
+
+- **« À traiter »** comes first: the checks to look at (Orazaka flagged a point, or the run did not end), and with the
+  applicant-file flow the files to decide (documents sent, file not closed) and the open links (with the first expiry).
+  Each figure is a query over the rows its view lists, and a link to that view **with its filter in the address**
+  (`/app/verifications?result=attention,failed`, `/app/dossiers?state=used`, `?state=open`). At zero, one line:
+  « Rien à traiter ».
+- **The activity** of 7, 30 or 90 days (30 by default, `?period=` in the address): the checks of each day in Québec,
+  every day present. This slice shows the total; the strip, the sparklines and the weekly chart are B2's (P15).
+- **« Récents » leaves the home**: every document is in its collection and in Recherche.
+- « Dossiers » reads `?state=` and says the filter, with « Tout voir ».
+
 ## 21. One section map on the web, the phone and the Mac (yomizaka#319, P2 of the design direction)
 
 - **Problem**: three apps, three maps: the web's rail (Bibliothèque · Vérifications · Recherche), the phone's tabs

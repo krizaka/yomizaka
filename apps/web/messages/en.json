@@ -188,6 +188,26 @@
       },
       "openReport": "Open the report"
     },
+    "home": {
+      "todo": {
+        "title": "To do",
+        "toReview": "Checks to look at",
+        "toDecide": "Files to decide",
+        "openLinks": "Open upload links",
+        "expires": "expires on {date}",
+        "nothing": "Nothing to do."
+      },
+      "activity": {
+        "title": "Activity",
+        "label": "Checks",
+        "periodsLabel": "Period",
+        "periods": {
+          "7d": "7 d",
+          "30d": "30 d",
+          "90d": "90 d"
+        }
+      }
+    },
     "sections": {
       "library": "Library",
       "files": "Applicant files",
@@ -1695,6 +1715,19 @@
         "asked": "Asked on"
       },
       "open": "Open the file of {name}",
+      "filter": {
+        "label": "Filter",
+        "states": {
+          "open": "Open links",
+          "used": "Documents received, to decide",
+          "closed": "Closed files",
+          "expired": "Expired links",
+          "revoked": "Revoked links",
+          "erased": "Erased files"
+        },
+        "clear": "See all",
+        "none": "No file in this state."
+      },
       "link": {
         "open": "Link open until {date}",
         "used": "Documents sent on {date}",

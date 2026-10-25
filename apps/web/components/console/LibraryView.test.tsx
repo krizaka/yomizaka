@@ -14,14 +14,13 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh() {}, push() {},
 const MESSAGES = { en: { console: en.console }, fr: { console: fr.console } } as const;
 const readable = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ");
 const collection = (patch: Record<string, unknown> = {}) => ({ id: "c1", name: "My documents", files: 2, folders: 0, tags: [], isDefault: true, avatar: null, description: null, lastCheck: { at: "2026-10-20T15:00:00.000Z", status: "attention" }, ...patch });
-const doc = (n: number, status: string) => ({ id: `d${n}`, title: `Bail ${n}`, filename: `b${n}.pdf`, mimeType: "application/pdf", kind: "lease", sizeBytes: 10, pages: 1, hasText: true, status, createdAt: "2026-10-20T15:00:00.000Z" });
 const check = (n: number, result: CheckSummary["result"]): CheckSummary => ({ id: `a${n}`, documentId: `d${n}`, title: `Bail ${n}`, kind: "lease", studio: "compliance-check", result, runId: `run_${n}`, at: `2026-10-2${n}T12:00:00.000Z` });
 const EXAMPLES = { tenant: { title: "Bail locataire", filename: "bail-locataire.txt", text: "…" }, landlord: { title: "Bail propriétaire", filename: "bail-proprietaire.txt", text: "…" } };
 const render = (props: Record<string, unknown>, locale: "en" | "fr" = "fr") =>
   renderToStaticMarkup(
     <I18nProvider locale={locale} messages={MESSAGES[locale] as never}>
       <KrizakaQueryProvider>
-        <LibraryView libraries={[{ id: "l1", name: "Ma bibliothèque", collections: [collection()] }] as never} recents={[doc(1, "attention")] as never} tags={[]} examples={EXAMPLES} {...(props as object)} />
+        <LibraryView libraries={[{ id: "l1", name: "Ma bibliothèque", collections: [collection()] }] as never} documents={1} tags={[]} examples={EXAMPLES} {...(props as object)} />
       </KrizakaQueryProvider>
     </I18nProvider>,
   );
@@ -76,7 +75,7 @@ describe("the library home (yomizaka#275, the UX review's Y3)", () => {
   });
 
   it("with nothing yet: the owl, one sentence, the only drop zone and the two examples — no table, no checks list", () => {
-    const html = render({ recents: [], latest: [], libraries: [{ id: "l1", name: "L", collections: [collection({ files: 0, lastCheck: null })] }] });
+    const html = render({ documents: 0, latest: [], libraries: [{ id: "l1", name: "L", collections: [collection({ files: 0, lastCheck: null })] }] });
     expect(html).toContain('data-testid="library-empty"');
     expect(readable(html)).toContain(fr.console.library.emptyPitch);
     expect(html.match(/data-testid="library-dropzone"/g)).toHaveLength(1);
@@ -88,16 +87,51 @@ describe("the library home (yomizaka#275, the UX review's Y3)", () => {
   });
 
   it("keeps a collection the person made reachable even with no document yet (no empty state over it)", () => {
-    const html = render({ recents: [], latest: [], libraries: [{ id: "l1", name: "L", collections: [collection({ files: 0, lastCheck: null }), collection({ id: "c2", name: "Immeuble Rosemont", isDefault: false, files: 0, lastCheck: null })] }] });
+    const html = render({ documents: 0, latest: [], libraries: [{ id: "l1", name: "L", collections: [collection({ files: 0, lastCheck: null }), collection({ id: "c2", name: "Immeuble Rosemont", isDefault: false, files: 0, lastCheck: null })] }] });
     expect(html).not.toContain('data-testid="library-empty"');
     expect(html).toContain('href="/fr/app/bibliotheque/l1/c2"');
     expect(readable(html)).toContain("Immeuble Rosemont");
   });
 
-  it("shows the recent documents as the table once files exist", () => {
-    const html = render({ recents: [doc(1, "checked"), doc(2, "stored")] });
-    expect(html).toContain("<table");
-    expect(readable(html)).toContain("Récents");
+  it("no longer carries « Récents » (yomizaka#325): all documents are in their collections and in Recherche", () => {
+    const html = render({ documents: 2 });
+    expect(html).not.toContain("<table");
+    expect(readable(html)).not.toContain(fr.console.organisation.recents);
     expect(html).not.toContain('data-testid="library-dropzone"');
+  });
+
+  it("« À traiter » first: three figures, each a link to its view with the view's filter (yomizaka#325)", () => {
+    const html = render({ todo: { toReview: 6, toDecide: 2, openLinks: 1, nextExpiry: "2026-11-07T12:00:00.000Z" } });
+    const section = html.slice(html.indexOf('data-testid="todo"'), html.indexOf('data-testid="latest-checks"'));
+    expect(html.indexOf('data-testid="todo"')).toBeLessThan(html.indexOf('data-testid="latest-checks"'));
+    expect(section).toContain('href="/fr/app/verifications?result=attention%2Cfailed"');
+    expect(section).toContain('href="/fr/app/dossiers?state=used"');
+    expect(section).toContain('href="/fr/app/dossiers?state=open"');
+    const text = readable(section);
+    for (const key of ["toReview", "toDecide", "openLinks"] as const) expect(text).toContain(fr.console.home.todo[key]);
+    expect(text).toMatch(/\b6\b/);
+    expect(text).toContain(fr.console.home.todo.expires.replace("{date}", "7 nov. 2026"));
+  });
+
+  it("« À traiter » without the applicant-file flow counts the checks only", () => {
+    const section = render({ todo: { toReview: 3, toDecide: null, openLinks: null } });
+    expect(section).toContain('href="/fr/app/verifications?result=attention%2Cfailed"');
+    expect(section).not.toContain("/fr/app/dossiers?state=");
+  });
+
+  it("« À traiter » is one line when everything is at zero", () => {
+    const html = render({ todo: { toReview: 0, toDecide: 0, openLinks: 0 } });
+    const section = html.slice(html.indexOf('data-testid="todo"'), html.indexOf('data-testid="latest-checks"'));
+    expect(readable(section)).toContain(fr.console.home.todo.nothing);
+    expect(section).not.toContain("href=");
+  });
+
+  it("the activity of the period: its total from the days, and the 7 · 30 · 90 d switch in the address", () => {
+    const activity = [{ day: "2026-10-23", checks: 2 }, { day: "2026-10-24", checks: 3 }];
+    const html = render({ activity, period: "7d" });
+    const section = html.slice(html.indexOf('data-testid="activity"'));
+    expect(readable(section)).toMatch(/\b5\b/);
+    for (const p of ["7d", "30d", "90d"]) expect(section).toContain(`href="/fr/app?period=${p}"`);
+    expect(section).toMatch(/aria-current="page"[^>]*href="\/fr\/app\?period=7d"|href="\/fr\/app\?period=7d"[^>]*aria-current="page"/);
   });
 });

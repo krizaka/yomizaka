@@ -88,3 +88,21 @@ describe("« Dossiers »: one file (P6)", () => {
     expect(text).not.toContain("run_1");
   });
 });
+
+describe("« Dossiers » filtered by the link's state, from the home's figures (yomizaka#325)", () => {
+  const files = [summary("f1", "Camille Fictif"), summary("f2", "Noé Imaginaire", { status: "used", submittedAt: "2026-10-22T14:00:00.000Z" })];
+  it("lists the files in that state only, says the filter and offers « Tout voir »", () => {
+    const html = wrap(<FilesView files={files} states={["used"]} types={TYPES} origin="" />);
+    const text = readable(html);
+    expect(text).toContain("Noé Imaginaire");
+    expect(text).not.toContain("Camille Fictif");
+    expect(text).toContain(fr.console.dossiers.filter.states.used);
+    expect(html).toContain('href="/fr/app/dossiers"');
+    expect(text).toContain(fr.console.dossiers.filter.clear);
+  });
+  it("says so in one line when no file is in that state, never the first-time empty state", () => {
+    const html = wrap(<FilesView files={[files[0]!]} states={["used"]} types={TYPES} origin="" />);
+    expect(readable(html)).toContain(fr.console.dossiers.filter.none);
+    expect(html).not.toContain('data-testid="files-empty"');
+  });
+});
