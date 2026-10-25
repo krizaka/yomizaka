@@ -256,6 +256,26 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
   rules the next drop.
 - **Signal we are wrong**: people cancel runs started on the drop; « Autre » is chosen to avoid the automatic start.
 
+## 25. The states pass: a skeleton per page in its shape, errors in place, NO_TEXT said, the demo note at the foot (P11, #328)
+
+- **Decision** (design § 3.5): every page of the signed-in space has its own `loading.tsx` and `error.tsx`, both on
+  `components/console/SegmentStates.tsx`. The loading is the page's shape in @krizaka/ui `Skeleton`s (home: the doors,
+  the drop and rows; a list: filters and rows; a report: the verdict band, rows and the aside; the check: the defaults
+  line and the drop; the settings: sections; the search: the field and rows), announced once (`role="status"`,
+  `aria-busy`) and shown only after 300 ms (`ym-wait`), so a quick page never flashes one. The error is a danger `Alert`
+  in place, the cause in words and « Réessayer » (Next's `retry`); the rail and the bar stay usable; the raw message
+  stays in the logs.
+- **No spinner outside a button**: the only spinner is a `Button`'s `loading`; a test refuses `Spinner` and
+  `animate-spin` in the components and pages.
+- **NO_TEXT**: « Ce PDF n'a pas de couche texte : la vérification au regard de la loi n'a pas pu lire ses clauses.
+  L'examen du fichier, lui, a lieu. » (why, and what still runs).
+- **The demo note** of a seeded check moves from the folded technical details to the report's foot, as a footnote
+  after the review note (never a box above the report).
+- **Refused**: one `loading.tsx` at the root of the app (one shape for every page is the centred spinner by another
+  name); a toast for a failure the person must act on.
+- **Cost**: 38 small files (two per page); a new page must bring its two, or `states.test.tsx` fails.
+- **Signal we are wrong**: people retry a page that keeps failing (the cause is not theirs: the error needs a status
+  link), or a skeleton shows on most visits (the pages are too slow, not the states too visible).
 ## 24. The public site, plain: no eyebrow, no figures row, no mono captions, a bento without an orphan (P10, #327)
 
 - **Decision**: the home is the product's site, not a Cahier site (design § 3.2, finding 10). `LandingPage` gets no

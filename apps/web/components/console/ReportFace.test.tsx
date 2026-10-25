@@ -77,7 +77,7 @@ describe("the report's face (the UX review's Y5, the report of #321)", () => {
     expect(wrap(<FindingList report={REPORT as never} selection={{ activeId: null, onSelect: () => {} }} />)).toContain(fr.console.reportFace.seeInFile);
   });
 
-  it("keeps the engine's facts folded — the run id once, each finding's rule id and method by its number — and says a seeded check has no certified report", () => {
+  it("keeps the engine's facts folded — the run id once, each finding's rule id and method by its number; a seeded check's note is at the report's foot, not here (P11, DocumentView.test)", () => {
     const html = wrap(<TechnicalDetails documentId="d1" analysis={analysis({ jurisdiction: "QC" })} />);
     expect(html).toContain('data-testid="technical-details"');
     expect(html.match(/run_8f3a2c/g)).toHaveLength(1);
@@ -85,6 +85,6 @@ describe("the report's face (the UX review's Y5, the report of #321)", () => {
     expect(text).toContain("compliance-check · 1.4.0");
     expect(text).toContain("1 · R2 · DETERMINISTIC");
     expect(text).toContain("3 · R1 · DETERMINISTIC");
-    expect(readable(wrap(<TechnicalDetails documentId="d1" analysis={analysis({ ...SEEDED_INPUTS })} />))).toContain(fr.console.analysis.seededNote);
+    expect(readable(wrap(<TechnicalDetails documentId="d1" analysis={analysis({ ...SEEDED_INPUTS })} />))).not.toContain(fr.console.analysis.seededNote);
   });
 });

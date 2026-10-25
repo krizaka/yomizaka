@@ -34,3 +34,15 @@ body {
 main[data-landing] [id="what"] {
   scroll-margin-top: var(--kz-anchor-offset, 96px);
 }
+
+/* A page of the app on its way (P11, design § 3.5): its skeleton shows only once the wait passes 300 ms, so a quick page never
+   flashes one. A step, not a motion: the same under reduced motion. */
+.ym-wait {
+  opacity: 0;
+  animation: ym-wait-in 0s 300ms forwards;
+}
+@keyframes ym-wait-in {
+  to {
+    opacity: 1;
+  }
+}

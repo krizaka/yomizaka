@@ -2,7 +2,7 @@
 
 import { Alert } from "@krizaka/ui/alert";
 import { Footnotes } from "@krizaka/ui/footnote";
-import { type Audience, checkSteps, type DocumentView } from "@yomizaka/core";
+import { type Audience, checkSteps, type DocumentView, isSeededCheck } from "@yomizaka/core";
 import type { ReactNode } from "react";
 
 import { ClosingNoteView } from "@/components/ClosingNoteView";
@@ -17,13 +17,16 @@ import { FindingList, type FindingSelection, TechnicalDetails, VerdictBand } fro
 
 /**
  * The report tab: where a running check stands, the runs that failed, then the verdict and the numbered findings (what failed
- * first), the authenticity signals, the engine's facts folded, the closing note, and the review note as a footnote; or the
+ * first), the authenticity signals, the engine's facts folded, the closing note, and the review and demo notes as footnotes; or the
  * authenticity report alone; or « Pas encore vérifié » with the checks to start. Once a report is shown, the other checks are
  * the aside's actions (design § 5.3): no form in this column.
  */
 export function DocumentReportTab({ doc, facts, selection, perspective, startCards }: { doc: DocumentView; facts: DocumentFacts; selection: FindingSelection; perspective: Audience | null; startCards: ReactNode }) {
   const { say, locale } = useSay();
   const { latestCompliance, latestReport, latestAuthenticity, runningStudio, failures } = facts;
+  // The notes at the foot (design § 3.5): the review note first (the verdict points to it, REVIEW_NOTE), then a demo check's note — never a box above the report.
+  const shown = latestCompliance && latestReport ? latestCompliance : latestAuthenticity;
+  const notes = [...(latestReport?.reviewStatus ? [say("analysis.toReview")] : []), ...(shown && isSeededCheck(shown) ? [say("analysis.seededNote")] : [])];
   return (
     <section aria-label={say("document.tabs.rapport")} className="flex min-w-0 flex-col gap-4" data-testid="tab-rapport">
       {runningStudio ? <CheckSteps steps={checkSteps({ hasText: doc.hasText, analysis: { studio: runningStudio, status: "running" } })} /> : null}
@@ -60,7 +63,7 @@ export function DocumentReportTab({ doc, facts, selection, perspective, startCar
         </>
       )}
       <p className="m-0 text-xs text-fg-muted">{say("library.informative")}</p>
-      {latestReport?.reviewStatus ? <Footnotes className="[&_ol]:list-decimal" notes={[say("analysis.toReview")]} label={say("reportFace.notes")} backLabel={say("reportFace.backToText")} /> : null}
+      {notes.length ? <Footnotes className="[&_ol]:list-decimal" notes={notes} label={say("reportFace.notes")} backLabel={say("reportFace.backToText")} /> : null}
     </section>
   );
 }
