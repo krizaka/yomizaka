@@ -188,6 +188,26 @@
       },
       "openReport": "Ouvrir le rapport"
     },
+    "home": {
+      "todo": {
+        "title": "À traiter",
+        "toReview": "Vérifications à regarder",
+        "toDecide": "Dossiers à décider",
+        "openLinks": "Liens de dépôt ouverts",
+        "expires": "expire le {date}",
+        "nothing": "Rien à traiter."
+      },
+      "activity": {
+        "title": "Activité",
+        "label": "Vérifications",
+        "periodsLabel": "Période",
+        "periods": {
+          "7d": "7 j",
+          "30d": "30 j",
+          "90d": "90 j"
+        }
+      }
+    },
     "sections": {
       "library": "Bibliothèque",
       "files": "Dossiers",
@@ -1695,6 +1715,19 @@
         "asked": "Demandé le"
       },
       "open": "Ouvrir le dossier de {name}",
+      "filter": {
+        "label": "Filtre",
+        "states": {
+          "open": "Liens ouverts",
+          "used": "Documents reçus, à décider",
+          "closed": "Dossiers fermés",
+          "expired": "Liens expirés",
+          "revoked": "Liens révoqués",
+          "erased": "Dossiers effacés"
+        },
+        "clear": "Tout voir",
+        "none": "Aucun dossier dans cet état."
+      },
       "link": {
         "open": "Lien ouvert jusqu'au {date}",
         "used": "Documents envoyés le {date}",

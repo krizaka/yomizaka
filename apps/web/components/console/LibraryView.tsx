@@ -8,11 +8,14 @@ import { EmptyState } from "@krizaka/ui/empty-state";
 import { LinkCard } from "@krizaka/ui/link-card";
 import { Mascot } from "@krizaka/ui/mascots";
 import { PageHeader } from "@krizaka/ui/page-header";
-import { type Audience, type DocumentSummary, type Jurisdiction } from "@yomizaka/core";
+import { Stat, StatGrid } from "@krizaka/ui/stat";
+import { Tabs } from "@krizaka/ui/tabs";
+import { type Audience, type Jurisdiction } from "@yomizaka/core";
 import Link from "next/link";
 
 import type { CheckSummary } from "@/lib/checks";
 import { CONSOLE_ROUTES } from "@/lib/console-nav";
+import { type ActivityDay, HOME_PERIOD_KEY, HOME_PERIODS, type HomePeriod, nothingToDo, type ToDo, toDoLinks } from "@/lib/home-figures";
 import { useSay } from "@/lib/i18n-client";
 import { libraryScreen } from "@/lib/library-screen";
 import { collectionLabel } from "@/lib/organisation/display";
@@ -21,7 +24,7 @@ import type { LibraryOverview } from "@/lib/organisation/store";
 import { pluralKey } from "@/lib/plural";
 
 import { CollectionMark } from "./CollectionMark";
-import { DocumentTable, STATUS_TONE } from "./DocumentTable";
+import { STATUS_TONE } from "./DocumentTable";
 import { formatDate } from "./format";
 import { LibraryDrop } from "./LibraryDrop";
 import { CreateButton, ItemMenu, type TagOption } from "./OrganisationActions";
@@ -30,15 +33,16 @@ import { TagChips } from "./TagChips";
 export type ExampleDocuments = Record<"tenant" | "landlord", { title: string; filename: string; text: string }>;
 
 /**
- * The library's first screen (ADR-0007, the UX review's Y3): the page's `h1` with its secondary actions (the one primary,
- * « Vérifier un document », is the header's); what was checked last; the collections as cards with a place mark, their count
- * and their last check; the recent documents. A file dropped anywhere on the page is checked (`LibraryDrop`). With nothing
- * yet: the owl, one sentence, the only drop zone, and two examples.
+ * The library's first screen (ADR-0007, the UX review's Y3, § 5.1 of the design direction): the page's `h1` with its secondary
+ * actions (the one primary, « Vérifier un document », is the header's); « À traiter », each figure a door to its view; what
+ * was checked last; the activity of the period; the collections as cards with a place mark, their count and their last
+ * check. « Récents » left the home (yomizaka#325). A file dropped anywhere on the page is checked (`LibraryDrop`). With
+ * nothing yet: the owl, one sentence, the only drop zone, and two examples.
  */
-export function LibraryView({ libraries, recents, latest = [], tags, perspective = null, screening = false, examples, jurisdictions = ["QC"] }: { libraries: LibraryOverview[]; recents: DocumentSummary[]; latest?: CheckSummary[]; tags: TagOption[]; perspective?: Audience | null; screening?: boolean; examples?: ExampleDocuments; jurisdictions?: readonly Jurisdiction[] }) {
+export function LibraryView({ libraries, documents, latest = [], tags, perspective = null, screening = false, examples, jurisdictions = ["QC"], todo = null, activity = [], period = "30d" }: { libraries: LibraryOverview[]; documents: number; latest?: CheckSummary[]; tags: TagOption[]; perspective?: Audience | null; screening?: boolean; examples?: ExampleDocuments; jurisdictions?: readonly Jurisdiction[]; todo?: ToDo | null; activity?: readonly ActivityDay[]; period?: HomePeriod }) {
   const { say, locale } = useSay();
   const collections = libraries.flatMap((l) => l.collections);
-  const screen = libraryScreen({ documents: recents.length, screening });
+  const screen = libraryScreen({ documents, screening });
   // The teaching empty state only when there is nothing at all: a collection the person made stays reachable, documents or not.
   const nothingYet = screen.emptyDropzone && collections.every((c) => c.isDefault && c.files === 0);
   const order = (perspective === "landlord" ? ["landlord", "tenant"] : ["tenant", "landlord"]) as ("tenant" | "landlord")[];
@@ -93,6 +97,7 @@ export function LibraryView({ libraries, recents, latest = [], tags, perspective
     <div className="flex flex-col gap-8">
       {header}
       <LibraryDrop jurisdictions={jurisdictions} />
+      {todo ? <ToDoSection todo={todo} /> : null}
 
       <section className="flex flex-col gap-3" aria-label={say("organisation.latestChecks")} data-testid="latest-checks">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -125,6 +130,8 @@ export function LibraryView({ libraries, recents, latest = [], tags, perspective
           </ul>
         )}
       </section>
+
+      <ActivitySection activity={activity} period={period} />
 
       {libraries.map((lib) => (
         <section key={lib.id} className="flex flex-col gap-3" aria-label={lib.name} data-testid="library-section">
@@ -167,12 +174,58 @@ export function LibraryView({ libraries, recents, latest = [], tags, perspective
         </section>
       ))}
 
-      {recents.length > 0 ? (
-        <section className="flex flex-col gap-3" aria-label={say("organisation.recents")}>
-          <h2 className="m-0 font-display text-lg font-bold text-fg">{say("organisation.recents")}</h2>
-          <DocumentTable rows={recents} />
-        </section>
-      ) : null}
     </div>
+  );
+}
+
+/** « À traiter » (§ 5.1): each figure is a door to its view, its filter in the address; at zero, one line. */
+function ToDoSection({ todo }: { todo: ToDo }) {
+  const { say, locale } = useSay();
+  const links = toDoLinks(locale);
+  const figures = [
+    { id: "toReview", value: todo.toReview, hint: undefined },
+    { id: "toDecide", value: todo.toDecide, hint: undefined },
+    { id: "openLinks", value: todo.openLinks, hint: todo.openLinks && todo.nextExpiry ? say("home.todo.expires", { date: formatDate(todo.nextExpiry, locale) }) : undefined },
+  ] as const;
+  return (
+    <section className="flex flex-col gap-3" aria-label={say("home.todo.title")} data-testid="todo">
+      <h2 className="m-0 font-display text-lg font-bold text-fg">{say("home.todo.title")}</h2>
+      {nothingToDo(todo) ? (
+        <p className="m-0 text-sm text-fg-secondary">{say("home.todo.nothing")}</p>
+      ) : (
+        <StatGrid divided>
+          {figures.map((f) =>
+            f.value === null ? null : (
+              <Link key={f.id} href={links[f.id]} className="rounded-sm hover:bg-surface-1" data-testid={`todo-${f.id}`}>
+                <Stat label={say(`home.todo.${f.id}`)} value={f.value} hint={f.hint} />
+              </Link>
+            ),
+          )}
+        </StatGrid>
+      )}
+    </section>
+  );
+}
+
+/** The checks of the period, the period in the address (`?period=7d|30d|90d`); the chart comes with B2's home (P15). */
+function ActivitySection({ activity, period }: { activity: readonly ActivityDay[]; period: HomePeriod }) {
+  const { say, locale } = useSay();
+  const href = (p: HomePeriod) => `/${locale}${CONSOLE_ROUTES.library}?${HOME_PERIOD_KEY}=${p}`;
+  return (
+    <section className="flex flex-col gap-3" aria-label={say("home.activity.title")} data-testid="activity">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="m-0 font-display text-lg font-bold text-fg">{say("home.activity.title")}</h2>
+        <Tabs.Nav label={say("home.activity.periodsLabel")} current={href(period)} variant="segmented">
+          {HOME_PERIODS.map((p) => (
+            <Tabs.NavLink key={p} href={href(p)} exact asChild>
+              <Link href={href(p)} scroll={false}>
+                {say(`home.activity.periods.${p}`)}
+              </Link>
+            </Tabs.NavLink>
+          ))}
+        </Tabs.Nav>
+      </div>
+      <Stat label={`${say("home.activity.label")} · ${say(`home.activity.periods.${period}`)}`} value={activity.reduce((n, d) => n + d.checks, 0)} />
+    </section>
   );
 }

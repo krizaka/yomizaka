@@ -6,9 +6,10 @@ import { SAMPLES } from "@/content/recorded-runs/samples.mjs";
 import { pageSession } from "@/lib/access";
 import { listChecks } from "@/lib/checks";
 import { query } from "@/lib/db";
-import { documentsByIds } from "@/lib/documents";
 import { appEnvironment } from "@/lib/env";
 import { applicantFilesOffered, availableFlows, offerFor } from "@/lib/flows";
+import { activity, toDo } from "@/lib/home";
+import { HOME_PERIOD_KEY, homePeriodOf } from "@/lib/home-figures";
 import { asLocale, getDictionary } from "@/lib/i18n";
 import { onboardingTarget } from "@/lib/library-screen";
 import * as org from "@/lib/organisation/store";
@@ -18,9 +19,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return { title: getDictionary(asLocale((await params).locale)).console.meta.library };
 }
 
-/** The library's first screen: libraries and collections, « Récents » (ADR-0007); the first list is read on the server. */
-export default async function LibraryPage({ params }: { params: Promise<{ locale: string }> }) {
+/** The library's first screen (ADR-0007, § 5.1): « À traiter », the latest checks, the activity of the period, the collections; read on the server. */
+export default async function LibraryPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const locale = asLocale((await params).locale);
+  const search = await searchParams;
   const session = await pageSession();
   const onboarding = session ? onboardingTarget(session.account.perspective ?? null) : null;
   if (onboarding) redirect(`/${locale}${onboarding}`);
@@ -32,6 +34,9 @@ export default async function LibraryPage({ params }: { params: Promise<{ locale
   // The sweep: documents that were not kept and never checked are purged once their window has passed.
   await purgeExpired(query, new Date());
   await org.ensureLibrary(query, owner, getDictionary(locale).console.organisation.library);
-  const [libraries, recents, tags, latest] = await Promise.all([org.overview(query, owner), org.recentIds(query, owner, 20).then((ids) => documentsByIds(owner, ids)), org.listTags(query, owner), listChecks(query, owner, 5)]);
-  return <LibraryView libraries={libraries} recents={recents} latest={latest} tags={tags} perspective={perspective} screening={screeningOffered} examples={SAMPLES} jurisdictions={offerFor(flows, perspective).jurisdictions} />;
+  const period = homePeriodOf(typeof search[HOME_PERIOD_KEY] === "string" ? search[HOME_PERIOD_KEY] : null);
+  const now = new Date();
+  const [libraries, tags, latest, todo, days] = await Promise.all([org.overview(query, owner), org.listTags(query, owner), listChecks(query, owner, 5), toDo(query, owner, now, { applicantFiles: screeningOffered }), activity(query, owner, period, now)]);
+  const documents = libraries.reduce((n, l) => n + l.collections.reduce((m, c) => m + c.files, 0), 0);
+  return <LibraryView libraries={libraries} documents={documents} latest={latest} tags={tags} perspective={perspective} screening={screeningOffered} examples={SAMPLES} jurisdictions={offerFor(flows, perspective).jurisdictions} todo={todo} activity={days} period={period} />;
 }
