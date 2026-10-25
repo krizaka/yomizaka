@@ -255,6 +255,7 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
 - **Cost**: a drop of several photos is grouped by the default (one document) before the option is visible; the option
   rules the next drop.
 - **Signal we are wrong**: people cancel runs started on the drop; « Autre » is chosen to avoid the automatic start.
+
 ## 21. One section map on the web, the phone and the Mac (yomizaka#319, P2 of the design direction)
 
 - **Problem**: three apps, three maps: the web's rail (Bibliothèque · Vérifications · Recherche), the phone's tabs
@@ -268,6 +269,19 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
   the phone and the Mac (P6), and Recherche there (no search call in `@yomizaka/client` yet, and ⌘K with P14).
 - **Cost**: the phone no longer opens a « Réglages » tab (the avatar does); the Mac's « Rapports » is now « Vérifications ».
 - **Signal we are wrong**: people look for the settings in the phone's tab bar.
+
+
+## 20. « Quel document ? » only when the kind is uncertain (yomizaka#318, P1 of the design direction)
+
+- **Problem**: `/app/verifier` asked the kind of every file before the drop, as a five-tile story grid (`ChoiceGrid`)
+  whose name and hint read glued without its stylesheet (#316); most files are recognised, so the question was noise.
+- **Principle**: ask only what Yomizaka does not know (§ 5.4): the page opens on the drop zone; a file recognised with
+  high confidence starts its check and opens on its report; an uncertain one is asked « Quel document ? » with
+  `ChoiceCards` (the four kinds, a title and a hint each, a labelled radio group), for that file only.
+- **Refused**: keeping « Automatique » as a fifth card (it is what the drop already does); a local card grid.
+- **Cost**: choosing the kind before the drop is only `?type=` in the address now (links that name it keep working);
+  a mismatch between the named and the read kind is still confirmed on the report tab.
+- **Signal we are wrong**: people drop, then look for a way to say the kind before Yomizaka asks.
 
 ## 19. The public home: the product's answer on screen, the session answered once, no void above the hero
 
