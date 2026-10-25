@@ -2,6 +2,7 @@ import { subDays } from "date-fns";
 
 import { listApplicantFiles } from "./applicant-file";
 import { LINK } from "./applicant-file-rules";
+import type { StripId } from "./home-b2";
 import { type ActivityDay, activityOf, type HomePeriod, PERIOD_DAYS, type ToDo } from "./home-figures";
 import type { Query } from "./organisation/store";
 
@@ -11,10 +12,11 @@ import type { Query } from "./organisation/store";
  */
 
 // The checks « to look at »: the rows Vérifications shows under `result=attention,failed` (lib/documents `documentStatus`).
+const NEEDS_A_LOOK = "(a.status IN ('failed', 'cancelled') OR (a.status = 'succeeded' AND coalesce((a.report->>'attention')::boolean, false)))";
 const TO_REVIEW = `SELECT count(*)::int AS n
      FROM analyses a JOIN documents d ON d.id = a.document_id
     WHERE d.owner_id = $1
-      AND (a.status IN ('failed', 'cancelled') OR (a.status = 'succeeded' AND coalesce((a.report->>'attention')::boolean, false)))`;
+      AND ${NEEDS_A_LOOK}`;
 
 // A day more than the period, so the oldest day is whole in Québec; activityOf keeps the period's days only.
 const SLACK_DAYS = 1;
@@ -55,4 +57,21 @@ export async function activity(q: Query, owner: string, period: HomePeriod, now:
     [owner, subDays(now, PERIOD_DAYS[period] + SLACK_DAYS)],
   );
   return activityOf(rows.map((r) => r.at), period, now);
+}
+
+/**
+ * The activity strip's four series over the period (yomizaka#332), each a query over the rows it counts: the checks run, those to
+ * look at (the predicate of « À traiter »), the documents added and — with the applicant-file flow — the files received. Every
+ * one is bucketed by Québec day with `activityOf`; the figure is the sum of its days.
+ */
+export async function activityStrip(q: Query, owner: string, period: HomePeriod, now: Date, { applicantFiles }: { applicantFiles: boolean }): Promise<Record<Exclude<StripId, "files">, ActivityDay[]> & { files: ActivityDay[] | null }> {
+  const from = subDays(now, PERIOD_DAYS[period] + SLACK_DAYS);
+  const series = async (sql: string): Promise<ActivityDay[]> => activityOf((await q<{ at: Date }>(sql, [owner, from])).map((r) => r.at), period, now);
+  const [checks, toReview, documents, files] = await Promise.all([
+    series("SELECT coalesce(a.finished_at, a.created_at) AS at FROM analyses a JOIN documents d ON d.id = a.document_id WHERE d.owner_id = $1 AND coalesce(a.finished_at, a.created_at) >= $2"),
+    series(`SELECT coalesce(a.finished_at, a.created_at) AS at FROM analyses a JOIN documents d ON d.id = a.document_id WHERE d.owner_id = $1 AND coalesce(a.finished_at, a.created_at) >= $2 AND ${NEEDS_A_LOOK}`),
+    series("SELECT created_at AS at FROM documents WHERE owner_id = $1 AND created_at >= $2"),
+    applicantFiles ? series("SELECT submitted_at AS at FROM screenings WHERE landlord_id = $1 AND flow = 'file' AND submitted_at >= $2") : Promise.resolve(null),
+  ]);
+  return { checks, toReview, documents, files };
 }

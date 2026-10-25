@@ -36,6 +36,11 @@ export async function entitlementOf(query: Query, accountId: string, now: Date):
 
 export type Plan = "free" | "pro";
 
+/** The audits an account started this calendar month (what the fair-use cap counts): the home's meter reads the same number. */
+export async function auditsUsedThisMonth(query: Query, accountId: string, now: Date): Promise<number> {
+  return Number((await query<{ n: string }>(COUNT_SINCE, [accountId, now, "month"]))[0]?.n ?? 0);
+}
+
 const COUNT_SINCE = "SELECT count(*) AS n FROM analyses a JOIN documents d ON d.id = a.document_id WHERE d.owner_id = $1 AND a.created_at >= date_trunc($3, $2::timestamptz)";
 
 /**
@@ -47,7 +52,7 @@ export async function reserveAudit(query: Query, accountId: string, now: Date, c
   const e = await entitlementOf(query, accountId, now);
   if (!e.selfServe) return "exempt";
   const caps = capsOf(e.pro ? "pro" : "free");
-  const used = async (period: "day" | "month") => Number((await query<{ n: string }>(COUNT_SINCE, [accountId, now, period]))[0]?.n ?? 0);
+  const used = async (period: "day" | "month") => (period === "month" ? auditsUsedThisMonth(query, accountId, now) : Number((await query<{ n: string }>(COUNT_SINCE, [accountId, now, period]))[0]?.n ?? 0));
   if (caps.perDay > 0 && (await used("day")) >= caps.perDay) throw refuse(429, "DAILY_LIMIT", "Daily limit reached", { limit: caps.perDay });
   if (e.pro) {
     if ((await used("month")) >= caps.perMonth) throw refuse(429, "FAIR_USE", "Monthly fair-use limit reached", { limit: caps.perMonth });
