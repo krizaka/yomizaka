@@ -1,5 +1,5 @@
 /** Sizes and dates as the person's language writes them. */
-const INTL: Record<"en" | "fr", string> = { en: "en-CA", fr: "fr-CA" };
+export const INTL = { en: "en-CA", fr: "fr-CA" } as const;
 /** The server and the browser both draw a date: one time zone (the product's, Montréal) so they write the same text. */
 export const DISPLAY_TIME_ZONE = "America/Toronto";
 

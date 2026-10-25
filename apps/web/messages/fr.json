@@ -1663,6 +1663,79 @@
       "library": "Retour à la bibliothèque",
       "home": "Accueil",
       "console": "Retour à la console"
+    },
+    "dossiers": {
+      "title": "Dossiers de candidats",
+      "lead": "Les documents demandés à un candidat, à mesure qu'ils arrivent, chacun avec ses vérifications.",
+      "request": "Demander des documents",
+      "caption": "Vos dossiers de candidats, les plus récents d'abord",
+      "columns": {
+        "candidate": "Candidat",
+        "link": "Lien",
+        "documents": "Documents",
+        "asked": "Demandé le"
+      },
+      "open": "Ouvrir le dossier de {name}",
+      "link": {
+        "open": "Lien ouvert jusqu'au {date}",
+        "used": "Documents envoyés le {date}",
+        "closed": "Dossier fermé le {date}",
+        "expired": "Lien expiré",
+        "revoked": "Lien révoqué",
+        "erased": "Effacé à la demande du candidat"
+      },
+      "documents": {
+        "none": "Aucun sur {asked} reçu",
+        "some": "{count} sur {asked} reçus",
+        "all": "{count} sur {asked} reçus"
+      },
+      "empty": {
+        "title": "Aucun dossier pour l'instant",
+        "text": "Demandez ses documents à un candidat : Yomizaka vérifie chacun, et vous décidez."
+      },
+      "form": {
+        "title": "Demander des documents",
+        "lead": "Le candidat reçoit un lien pour envoyer les documents choisis, et seulement ceux-là. Un NAS, une carte d'assurance maladie, un passeport, un permis ou des coordonnées bancaires ne sont jamais demandés.",
+        "name": "Nom du candidat",
+        "email": "Courriel du candidat",
+        "types": "Documents à demander",
+        "submit": "Créer le lien",
+        "close": "Fermer"
+      },
+      "made": {
+        "title": "Le lien pour {name}",
+        "text": "Valable jusqu'au {date}. Il n'est montré qu'une fois : copiez-le et remettez-le au candidat. Aucun document ne passe par courriel.",
+        "notYet": "La page où le candidat envoie ses documents n'est pas encore en ligne : ce lien l'ouvrira dès qu'elle le sera.",
+        "copy": "Copier le lien",
+        "copied": "Copié"
+      },
+      "detail": {
+        "back": "Dossiers",
+        "asked": "Documents demandés",
+        "received": "Reçu : {file}",
+        "notReceived": "Pas encore reçu",
+        "kept": "Gardé jusqu'à votre décision (le candidat l'a accepté)",
+        "purged": "Effacé après ses vérifications ; le rapport reste",
+        "afterCheck": "Effacé dès ses vérifications faites",
+        "report": "Ouvrir le rapport",
+        "skipped": "Une vérification n'a pas pu être lancée sur ce document",
+        "requestedOn": "Demandé le {date}",
+        "none": "Aucun document reçu pour l'instant."
+      },
+      "check": {
+        "nothing": "Aucun problème trouvé sur les règles vérifiées",
+        "noSignal": "Aucun signal inhabituel",
+        "running": "En cours",
+        "failed": "N'a pas abouti",
+        "attentionOne": "{count} point à regarder",
+        "attentionMany": "{count} points à regarder",
+        "signalsOne": "{count} signal",
+        "signalsMany": "{count} signaux"
+      },
+      "studios": {
+        "compliance-check": "Au regard de la loi",
+        "document-authenticity": "Authenticité"
+      }
     }
   },
   "report": {

@@ -27,12 +27,12 @@ export interface Section {
   pending: Partial<Record<Platform, string>>;
 }
 
-const NO_APPLICANT_SCREEN = "the applicant files are read on the web only until their list and detail ship (P6 of the cut)";
+const NO_APPLICANT_SCREEN = "the applicant files' list and detail are on the web first (P6); @yomizaka/client has no applications call yet";
 const NO_SEARCH_CLIENT = "@yomizaka/client has no search call yet; search moves to ⌘K with the B2 shell (P14 of the cut)";
 
 export const SECTIONS: readonly Section[] = [
   { id: "library", path: "/app", pending: {} },
-  { id: "files", path: "/app/screening", gated: "applicantFiles", pending: { phone: NO_APPLICANT_SCREEN, mac: NO_APPLICANT_SCREEN } },
+  { id: "files", path: "/app/dossiers", gated: "applicantFiles", pending: { phone: NO_APPLICANT_SCREEN, mac: NO_APPLICANT_SCREEN } },
   { id: "checks", path: "/app/verifications", tabs: CHECKS_TABS, pending: {} },
   { id: "search", path: "/app/recherche", pending: { phone: NO_SEARCH_CLIENT, mac: NO_SEARCH_CLIENT } },
 ];

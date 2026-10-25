@@ -1,4 +1,3 @@
-import { APPLICATION_ERASED } from "./applicant-consent";
 import { refuse } from "./http";
 
 /*
@@ -6,6 +5,9 @@ import { refuse } from "./http";
  * seed and the retention a document gets. The database rows (lib/migrations.ts 0031) are the source of truth; this module
  * decides on them without touching the database.
  */
+
+/** The application status once erased (its personal fields are gone). Here, not in applicant-consent (which reads the database), so the browser can read the rules. */
+export const APPLICATION_ERASED = "erased" as const;
 
 /** The link of an applicant file: open, or refused for one reason. Erasure of the application is its own state. */
 export const LINK = { open: "open", revoked: "revoked", expired: "expired", used: "used", closed: "closed", erased: "erased" } as const;
