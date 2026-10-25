@@ -23,12 +23,16 @@ const render = (props: Partial<Parameters<typeof SettingsShell>[0]> = {}, locale
       </KrizakaQueryProvider>
     </I18nProvider>,
   );
-const navLinks = (html: string) => [...html.matchAll(/<a [^>]*href="(\/fr\/app\/settings\/[a-z]+)"[^>]*>/g)].map((m) => ({ href: m[1], current: m[0].includes('aria-current="page"') }));
+// The layout draws its navigation twice (a wide screen's and a phone's): each address is read once.
+const navLinks = (html: string) => {
+  const found = [...html.matchAll(/<a [^>]*href="(\/fr\/app\/settings\/[a-z]+)"[^>]*>/g)].map((m) => ({ href: m[1], current: m[0].includes('aria-current="page"') }));
+  return found.filter((l, i) => found.findIndex((o) => o.href === l.href) === i);
+};
 
 describe("the settings on SettingsLayout (the UX review's Y2)", () => {
-  it("navigates the five sections as routes, the current one from the route", () => {
+  it("navigates the six sections as routes, the current one from the route", () => {
     const links = navLinks(render());
-    expect(links.map((l) => l.href)).toEqual(["/fr/app/settings/profil", "/fr/app/settings/securite", "/fr/app/settings/facturation", "/fr/app/settings/stockage", "/fr/app/settings/donnees"]);
+    expect(links.map((l) => l.href)).toEqual(["/fr/app/settings/profil", "/fr/app/settings/apparence", "/fr/app/settings/securite", "/fr/app/settings/facturation", "/fr/app/settings/stockage", "/fr/app/settings/donnees"]);
     expect(links.filter((l) => l.current).map((l) => l.href)).toEqual(["/fr/app/settings/profil"]);
     expect(navLinks(render({ section: "facturation" })).filter((l) => l.current).map((l) => l.href)).toEqual(["/fr/app/settings/facturation"]);
   });

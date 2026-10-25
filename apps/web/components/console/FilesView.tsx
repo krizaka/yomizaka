@@ -10,6 +10,7 @@ import { EmptyState } from "@krizaka/ui/empty-state";
 import { type ActiveFilter, FilterBar, FilterMenu } from "@krizaka/ui/filter-bar";
 import { Mascot } from "@krizaka/ui/mascots";
 import { PageHeader } from "@krizaka/ui/page-header";
+import { StatusChip } from "@krizaka/ui/status-chip";
 import { Tabs } from "@krizaka/ui/tabs";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -23,13 +24,12 @@ import { filesInStates } from "@/lib/home-figures";
 import { useSay } from "@/lib/i18n-client";
 import { pluralKey } from "@/lib/plural";
 import type { binderPlan } from "@/lib/workspace/binder";
-import { KIND } from "@/lib/workspace/decl";
+import { KIND, OWNER_ROLE } from "@/lib/workspace/decl";
 import { decisionOrder } from "@/lib/workspace/order";
 import type { ResolvedView } from "@/lib/workspace/view";
 
-import { SavedViews } from "../organise/SavedViews";
-import { SelectionBar } from "../organise/SelectionBar";
-import { StatusChip } from "../organise/StatusChip";
+import { BulkActions } from "../organise/BulkActions";
+import { useSavedViews } from "../organise/useSavedViews";
 import { DISPLAY_TIME_ZONE, INTL } from "./format";
 import { type AskableType, RequestDocuments } from "./RequestDocuments";
 import { tableLabels } from "./table-labels";
@@ -48,6 +48,11 @@ export interface FilesWorkspace {
   plan: ReturnType<typeof binderPlan>;
   counts: { tabs: readonly number[]; chips: readonly number[] };
 }
+
+// @fixed: the ceiling of one bulk call in @krizaka/organize (krizaka-ts ADR-003); the bar says so past it.
+const BULK_MAX = 200;
+
+const NO_VIEW: ResolvedView = { active: null, filters: {}, modified: false };
 
 /** The words of a file's link and documents, shared by the list and the detail. */
 export function useFileFacts() {
@@ -80,8 +85,10 @@ export function FilesView({ files: all, states = [], types, origin, workspace }:
   const base = `/${locale}${CONSOLE_ROUTES.files}`;
   const router = useRouter();
   const [selected, setSelected] = useState<string[]>([]);
+  const [bulkResult, setBulkResult] = useState("");
   const filters: ViewFilters = workspace?.resolved.filters ?? {};
   const go = (next: ViewFilters) => router.push(viewHref(base, next, workspace?.resolved.active?.id ?? null), { scroll: false });
+  const views = useSavedViews({ path: base, system: (workspace?.system ?? []).filter((v) => (v.filters.status?.length ?? 0) !== 1 || !!v.filters.tags?.length), mine: workspace?.saved ?? [], resolved: workspace?.resolved ?? NO_VIEW, kind: KIND.applicantFile });
   const decisionLabel = (key: string) => workspace?.set.states.find((st) => st.key === key)?.label[locale] ?? key;
   const columns = useMemo<DataTableColumn<FileSummary>[]>(
     () => [
@@ -108,7 +115,7 @@ export function FilesView({ files: all, states = [], types, origin, workspace }:
               sortable: true,
               // The set's order, never a check's result (krizaka-ts ADR-003 § 2).
               value: (f: FileSummary) => decisionOrder(workspace.set, f.decision),
-              cell: (f: FileSummary) => <StatusChip set={workspace.set} state={f.decision} locale={locale} />,
+              cell: (f: FileSummary) => <StatusChip set={workspace.set} state={f.decision} role={OWNER_ROLE} locale={locale} />,
             } satisfies DataTableColumn<FileSummary>,
           ]
         : []),
@@ -128,7 +135,13 @@ export function FilesView({ files: all, states = [], types, origin, workspace }:
     ],
     [say, base, facts, workspace, locale],
   );
-  const labels = useMemo(() => tableLabels(say), [say]);
+  const labels = useMemo(
+    () => ({
+      ...tableLabels(say),
+      selection: { bar: say("dossiers.bulk.label"), selected: (count: number) => say(pluralKey("dossiers.bulk.selected", count), { count }), clear: say("dossiers.bulk.clear"), tooMany: (max: number) => say("dossiers.bulk.tooMany", { max }) },
+    }),
+    [say],
+  );
   const ask = (variant: "primary" | "secondary") => (
     <RequestDocuments
       types={types}
@@ -144,7 +157,6 @@ export function FilesView({ files: all, states = [], types, origin, workspace }:
     <div className="flex flex-col gap-6" data-testid="files-view">
       <PageHeader title={say("dossiers.title")} description={say("dossiers.lead")} actions={all.length ? ask("secondary") : null} />
       {workspace ? <Binder workspace={workspace} base={base} /> : null}
-      {workspace ? <SavedViews kind={KIND.applicantFile} path={base} system={workspace.system.filter((v) => (v.filters.status?.length ?? 0) !== 1 || !!v.filters.tags?.length)} mine={workspace.saved} resolved={workspace.resolved} /> : null}
       {workspace ? (
         <FilterBar
           label={say("dossiers.filters.bar")}
@@ -159,13 +171,13 @@ export function FilesView({ files: all, states = [], types, origin, workspace }:
           clearLabel={say("dossiers.filters.clear")}
           removeLabel={(label) => say("dossiers.filters.remove", { label })}
           results={say(pluralKey("dossiers.filters.results", all.length), { count: all.length })}
+          views={views}
           data-testid="files-filters"
         >
           {workspace.tags.length ? <FilterMenu label={say("dossiers.filters.tags")} options={workspace.tags.map((t) => ({ value: t.id, label: t.name }))} value={filters.tags ?? []} onValueChange={(tags) => go({ ...filters, tags })} /> : null}
           <FilterMenu label={say("dossiers.filters.decision")} options={workspace.set.states.map((st) => ({ value: st.key, label: st.label[locale] }))} value={filters.status ?? []} onValueChange={(status) => go({ ...filters, status })} />
         </FilterBar>
       ) : null}
-      {workspace && selected.length ? <SelectionBar kind={KIND.applicantFile} ids={selected} set={workspace.set} tags={workspace.tags} onDone={() => setSelected([])} /> : null}
       {states.length ? (
         <p className="m-0 text-sm text-fg-secondary" data-testid="files-filter">
           {say("dossiers.filter.label")} · {states.map((st) => say(`dossiers.filter.states.${st}`)).join(", ")} ·{" "}
@@ -181,7 +193,18 @@ export function FilesView({ files: all, states = [], types, origin, workspace }:
           {say("dossiers.filters.nothing")}
         </p>
       ) : files.length ? (
-        <DataTable caption={say("dossiers.caption")} rows={[...files]} columns={columns} getRowId={(f) => f.id} rowLabel={(f) => f.candidateName} pageSize={12} labels={labels} phone="list" {...(workspace ? { selectable: true, selected, onSelectedChange: setSelected } : {})} />
+        <DataTable caption={say("dossiers.caption")} rows={[...files]} columns={columns} getRowId={(f) => f.id} rowLabel={(f) => f.candidateName} pageSize={12} labels={labels} phone="list"
+          {...(workspace
+            ? {
+                selectable: true,
+                selected,
+                onSelectedChange: setSelected,
+                bulkMax: BULK_MAX,
+                bulkResult,
+                bulkActions: ({ selected: ids, clear }) => <BulkActions kind={KIND.applicantFile} ids={ids} set={workspace.set} tags={workspace.tags} onResult={setBulkResult} onDone={clear} />,
+              }
+            : {})}
+        />
       ) : (
         <EmptyState icon={<Mascot bird="owl" mood="empty" size={120} />} title={say("dossiers.empty.title")} description={say("dossiers.empty.text")} action={ask("primary")} data-testid="files-empty" />
       )}

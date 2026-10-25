@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { OrazakaPanel, PacksPanel, PricesPanel, ScopeBar } from "@/components/admin/ConfigPanels";
 import { ConfigView } from "@/components/admin/ConfigView";
+import { OrganisationPanel } from "@/components/admin/OrganisationPanel";
 import { RouteTabs } from "@/components/RouteTabs";
 import { appEnvironment } from "@/lib/env";
 import { listAdminFlows } from "@/lib/flows";
@@ -34,6 +35,7 @@ export default async function ConfigPage({ params, searchParams }: { params: Pro
           {group === CONFIG_PAGE.plans ? <PricesPanel /> : null}
           {isSettingsGroup(group) ? <ConfigView group={group} scope={scope} /> : null}
           {group === CONFIG_PAGE.packs ? <PacksPanel flows={await listAdminFlows()} environment={appEnvironment()} /> : null}
+          {group === CONFIG_PAGE.organisation ? <OrganisationPanel /> : null}
           {group === CONFIG_PAGE.orazaka ? <OrazakaPanel /> : null}
         </div>
       </RouteTabs>

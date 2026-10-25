@@ -4,6 +4,7 @@ import { movesFrom, type StatusSet } from "@krizaka/organize/contract";
 import { krizakaFetch, useMutation } from "@krizaka/query";
 import { Alert } from "@krizaka/ui/alert";
 import { Button } from "@krizaka/ui/button";
+import { StatusChip } from "@krizaka/ui/status-chip";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -11,8 +12,6 @@ import { errorKey } from "@/lib/client";
 import { useSay } from "@/lib/i18n-client";
 import { OWNER_ROLE } from "@/lib/workspace/decl";
 import { press } from "@/lib/workspace/press";
-
-import { StatusChip } from "./StatusChip";
 
 /**
  * The decision of one file: its state as a chip, then the moves the set allows from it — each a button; the one that asks for it needs
@@ -44,7 +43,7 @@ export function DecisionActions({ fileId, state, set }: { fileId: string; state:
         {say("dossiers.decide.title")}
       </h2>
       <p className="m-0 flex items-center gap-2 text-sm text-fg-secondary">
-        <StatusChip set={set} state={state} locale={locale} />
+        <StatusChip set={set} state={state} role={OWNER_ROLE} locale={locale} />
       </p>
       {moves.length ? (
         <>

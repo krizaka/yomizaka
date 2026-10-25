@@ -28,7 +28,7 @@ export const GET = (req: Request, { params }: Params) =>
 /**
  * The administration changes the vocabulary (the decision set, its words and tones, the tag rules, the system views): checked by the
  * layer, versioned (a stale editor is 409 CONFLICT), audited, and refused when it drops a state a file still holds (409 STATE_IN_USE).
- * The screens of the editors are krizaka-ui#690's.
+ * The screens of the editors are `TagSetEditor` and `StatusSetEditor` of Krizaka UI (`components/admin/OrganisationPanel.tsx`).
  */
 export const PUT = (req: Request, { params }: Params) =>
   handle(async () => {

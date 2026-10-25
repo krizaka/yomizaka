@@ -1132,6 +1132,7 @@
     "settings": {
       "tabs": {
         "profil": "Profile",
+        "apparence": "Appearance",
         "securite": "Security",
         "facturation": "Plan and billing",
         "donnees": "My data",
@@ -1242,6 +1243,25 @@
         "save": "Save",
         "saved": "Saved.",
         "noKey": "This installation cannot store credentials: your own S3 storage is unavailable."
+      },
+      "appearance": {
+        "lead": "How the app looks on this device. Kept in this browser.",
+        "theme": "Theme",
+        "themeHint": "System follows your device; dark is the default.",
+        "density": "Density",
+        "densityHint": "Compact tightens the rows and the gaps.",
+        "themes": {
+          "system": "System",
+          "systemHint": "Follows your device.",
+          "light": "Light",
+          "lightHint": "Light surfaces.",
+          "dark": "Dark",
+          "darkHint": "Dark surfaces, the default."
+        },
+        "densities": {
+          "standard": "Standard",
+          "compact": "Compact"
+        }
       }
     },
     "confirmEmail": {
@@ -1287,7 +1307,8 @@
         "limits": "Limits",
         "plans": "Plans",
         "packs": "Rules packs",
-        "orazaka": "Orazaka"
+        "orazaka": "Orazaka",
+        "organisation": "Organisation"
       },
       "scope": {
         "label": "Scope",
@@ -1547,6 +1568,75 @@
         "cost": "Estimated cost: {amount}",
         "notExposed": "Orazaka's own plan and usage figures are not exposed by its API yet: they are not shown rather than guessed.",
         "rotate": "Rotating the key is done in Orazaka, then in the app's secret: it is not done from here."
+      },
+      "organisation": {
+        "owner": "Owner",
+        "save": "Save",
+        "saved": "Saved (version {version}).",
+        "notSeeded": "Nothing seeded yet for this kind.",
+        "kinds": {
+          "applicant_file": "Applicant files",
+          "document": "Documents"
+        },
+        "moveUp": "Move {name} up",
+        "moveDown": "Move {name} down",
+        "remove": "Remove {name}",
+        "drag": "Drag {name}",
+        "problems": "To fix before saving",
+        "tags": {
+          "presets": "Tags offered",
+          "name": "Name of tag {position}",
+          "marker": "Colour of the tag {name}",
+          "add": "New tag",
+          "addButton": "Add",
+          "duplicate": "Another tag has this name",
+          "empty": "No tag offered yet",
+          "writers": "Who can manage tags",
+          "writersHint": "The roles that create, rename, remove and assign tags.",
+          "userTags": "People can add their own tags",
+          "userTagsHint": "Beyond the tags offered here.",
+          "max": "Most tags",
+          "maxHint": "Per account and kind."
+        },
+        "status": {
+          "languages": {
+            "fr": "French",
+            "en": "English"
+          },
+          "stateLabel": "Label in {language} of state {position}",
+          "tone": "Tone of state {position}",
+          "tones": {
+            "neutral": "Neutral",
+            "accent": "Accent",
+            "success": "Success",
+            "warning": "Warning",
+            "danger": "Danger"
+          },
+          "final": "State {position} is final",
+          "finalHint": "A final state has no way out.",
+          "initial": "State {position} is the initial state",
+          "initialNotFinal": "The initial state is never final",
+          "states": "States, in the order of the column",
+          "addState": "Add a state",
+          "newState": {
+            "fr": "Nouvel état",
+            "en": "New state"
+          },
+          "moves": "Moves",
+          "movesHint": "Who may move a file from one state to another.",
+          "from": "Moves out of {name}",
+          "noWayOut": "Final: no way out",
+          "move": "From {from} to {to}: {roles}",
+          "none": "nobody",
+          "moveDetail": "Move from {from} to {to}",
+          "roles": "Roles that can make this move",
+          "confirm": "Ask for a second press",
+          "reasons": "Reasons to pick from",
+          "addReason": "Add a reason",
+          "reasonLabel": "Reason in {language}, number {position}",
+          "removeReason": "Remove reason {position}",
+          "derived": "Derived: the product computes this status; nobody moves it"
+        }
       }
     },
     "steps": {
@@ -1809,7 +1899,16 @@
         "modified": "modified",
         "delete": "Delete the view {name}",
         "menu": "Views",
-        "empty": "No saved view."
+        "empty": "No saved view.",
+        "groups": {
+          "system": "Suggested",
+          "workspace": "Shared",
+          "mine": "Mine"
+        },
+        "menuCurrent": "View: {current}",
+        "rename": "Rename",
+        "remove": "Delete",
+        "actions": "Actions for the view {label}"
       },
       "binder": {
         "label": "Decisions",
@@ -1835,7 +1934,8 @@
         "noTags": "No tag yet: create one from a file.",
         "clear": "Clear selection",
         "done": "Done: {moved} decided, {skipped} left as they were.",
-        "tagged": "Tags updated: {count}."
+        "tagged": "Tags updated: {count}.",
+        "tooMany": "At most {max} files at a time"
       },
       "decide": {
         "title": "Your decision",
@@ -1851,7 +1951,21 @@
         "none": "No tag",
         "save": "Save",
         "empty": "You have no tag yet.",
-        "new": "New tag"
+        "new": "New tag",
+        "inputLabel": "Add a tag",
+        "placeholder": "Name of a tag",
+        "createLabel": "Create « {name} »",
+        "markerLabel": "Colour of the new tag",
+        "emptyLabel": "No tag of that name",
+        "count": "{count} of {max}",
+        "markers": {
+          "blue": "Blue",
+          "green": "Green",
+          "amber": "Amber",
+          "red": "Red",
+          "violet": "Violet",
+          "gray": "Grey"
+        }
       }
     },
     "states": {

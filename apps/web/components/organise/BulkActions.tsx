@@ -2,7 +2,6 @@
 
 import { movesFrom, type StatusSet } from "@krizaka/organize/contract";
 import { krizakaFetch, useMutation } from "@krizaka/query";
-import { Alert } from "@krizaka/ui/alert";
 import { Button } from "@krizaka/ui/button";
 import { DropdownMenu } from "@krizaka/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
@@ -10,7 +9,6 @@ import { useState } from "react";
 
 import { errorKey } from "@/lib/client";
 import { useSay } from "@/lib/i18n-client";
-import { pluralKey } from "@/lib/plural";
 import { OWNER_ROLE } from "@/lib/workspace/decl";
 import { press } from "@/lib/workspace/press";
 
@@ -19,26 +17,25 @@ import { TagChips } from "../console/TagChips";
 type TagOption = { id: string; name: string; color: "blue" | "green" | "amber" | "red" | "violet" | "gray" };
 
 /**
- * The bar of a selection: tag, untag, decide — at most 200 at a time, one transaction, one audit line per file. A decision that
- * asks for it needs a second press, and says what it does: the file closes and its documents are erased.
- * TODO(krizaka-ui#627): delete this wrapper the day the DataTable selection bar ships; the props stay.
+ * What the product gives the selection bar of the table (`DataTable bulkActions`; the bar, its count, « Clear selection » and the 200 ceiling
+ * are Krizaka UI's): tag, untag, decide — one transaction, one audit line per file. A decision that asks for it needs a second press,
+ * and says what it does: the file closes and its documents are erased. What the call did goes back to the bar (`onResult`).
  */
-export function SelectionBar({ kind, ids, set, tags, onDone }: { kind: string; ids: readonly string[]; set: StatusSet; tags: readonly TagOption[]; onDone: () => void }) {
+export function BulkActions({ kind, ids, set, tags, onResult, onDone }: { kind: string; ids: readonly string[]; set: StatusSet; tags: readonly TagOption[]; onResult: (text: string) => void; onDone: () => void }) {
   const { say, locale } = useSay();
   const router = useRouter();
   const [armed, setArmed] = useState<string | null>(null);
-  const [message, setMessage] = useState<{ tone: "success" | "danger"; text: string } | null>(null);
   const call = useMutation({ mutationFn: (request: { path: string; json: object }) => krizakaFetch(`/api/organize/${kind}/${request.path}`, { method: "POST", json: request.json }) });
   const moves = movesFrom(set, set.initial ?? "", OWNER_ROLE);
   const run = async (path: string, json: object, done: (answer: Record<string, unknown>) => string) => {
-    setMessage(null);
+    onResult("");
     try {
       const answer = (await call.mutateAsync({ path, json })) as Record<string, unknown>;
-      setMessage({ tone: "success", text: done(answer) });
+      onResult(done(answer));
       onDone();
       router.refresh();
     } catch (error) {
-      setMessage({ tone: "danger", text: say(`errors.${errorKey(error)}`) });
+      onResult(say(`errors.${errorKey(error)}`));
     }
   };
   const decide = (to: string, confirm: boolean) => {
@@ -67,28 +64,19 @@ export function SelectionBar({ kind, ids, set, tags, onDone }: { kind: string; i
       </DropdownMenu.Content>
     </DropdownMenu.Root>
   );
-  if (ids.length === 0) return message ? <Alert tone={message.tone}>{message.text}</Alert> : null;
   return (
-    <div role="region" aria-label={say("dossiers.bulk.label")} className="sticky top-2 z-10 flex flex-col gap-2 rounded-lg border border-border-default bg-surface-2 p-3" data-testid="selection-bar">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm font-semibold text-fg">{say(pluralKey("dossiers.bulk.selected", ids.length), { count: ids.length })}</span>
-        {tagMenu(say("dossiers.bulk.tag"), "add")}
-        {tagMenu(say("dossiers.bulk.untag"), "remove")}
-        {moves.map((m) => {
-          const state = set.states.find((s) => s.key === m.to)?.label[locale] ?? m.to;
-          const isArmed = armed === m.to;
-          return (
-            <Button key={m.to} variant={m.confirm ? "secondary" : "primary"} size="md" loading={call.isPending} onClick={() => decide(m.to, m.confirm === true)}>
-              {say(isArmed ? "dossiers.decide.confirm" : "dossiers.decide.mark", { state })}
-            </Button>
-          );
-        })}
-        <Button variant="ghost" size="md" onClick={() => { setArmed(null); onDone(); }}>
-          {say("dossiers.bulk.clear")}
-        </Button>
-      </div>
-      {armed ? <p className="m-0 text-sm text-fg-secondary">{say("dossiers.decide.final")}</p> : null}
-      {message ? <Alert tone={message.tone}>{message.text}</Alert> : null}
-    </div>
+    <>
+      {tagMenu(say("dossiers.bulk.tag"), "add")}
+      {tagMenu(say("dossiers.bulk.untag"), "remove")}
+      {moves.map((m) => {
+        const state = set.states.find((s) => s.key === m.to)?.label[locale] ?? m.to;
+        return (
+          <Button key={m.to} variant={m.confirm ? "secondary" : "primary"} size="md" loading={call.isPending} onClick={() => decide(m.to, m.confirm === true)}>
+            {say(armed === m.to ? "dossiers.decide.confirm" : "dossiers.decide.mark", { state })}
+          </Button>
+        );
+      })}
+      {armed ? <span className="text-sm text-fg-secondary">{say("dossiers.decide.final")}</span> : null}
+    </>
   );
 }
