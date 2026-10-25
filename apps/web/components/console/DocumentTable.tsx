@@ -30,8 +30,8 @@ const SORTABLE = ["title", "kind", "size", "added"] as const;
 
 export const STATUS_TONE = { stored: "neutral", analysing: "accent", checked: "success", attention: "warning", failed: "danger" } as const;
 
-/** Which columns stay in a narrow row: 1 always; 3 leaves a phone's card (title and result only, the review's B5) for the row's detail. */
-export const DOCUMENT_COLUMN_PRIORITY = { title: 1, kind: 3, status: 1, size: 3, added: 3 } as const;
+/** Which columns a phone's list row keeps (P12): 1 always (the title, the result); 2 joined as the one line of facts (« Bail · 23 oct. »); 3 leaves for the row's detail. */
+export const DOCUMENT_COLUMN_PRIORITY = { title: 1, kind: 2, status: 1, size: 3, added: 2 } as const;
 
 /** The documents of a view (rows come from the server; a run in progress refreshes them every 4 s). */
 export function DocumentTable({ rows, caption, organise }: { rows: DocumentSummary[]; caption?: string; organise?: Organise }) {
@@ -50,6 +50,8 @@ export function DocumentTable({ rows, caption, organise }: { rows: DocumentSumma
         header: say("library.columns.title"),
         sortable: true,
         filter: "text",
+        type: "title",
+        href: (d) => `/${locale}/app/documents/${d.id}`,
         card: "title",
         value: (d) => d.title,
         cell: (d) => (
@@ -125,6 +127,7 @@ export function DocumentTable({ rows, caption, organise }: { rows: DocumentSumma
       }}
       toolbar={<DataTableFilters />}
       labels={labels}
+      phone="list"
     />
   );
 }

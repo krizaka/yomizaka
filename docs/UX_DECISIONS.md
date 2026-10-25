@@ -284,6 +284,17 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
 - Cost: the rail has no entry for the search page, which is reached from ⌘K or its address. We are wrong if people look for
   « Recherche » in the rail: then the field in the bar is too quiet at 1024–1279 px.
 
+## 28. Phone lists are list rows: a title, one line of facts, the result at the end (P12, #329)
+
+- On a phone, « Vérifications », « Dossiers » and the documents of a collection draw each row as a list row
+  (`DataTable phone="list"`, @krizaka/ui 3.55, krizaka-ui#636): the checkbox when the table is selectable, the title as the row's
+  link (`type: "title"` with `href`), **one line of facts** (the `priority: 2` columns joined: « Bail · 20 oct. 2026 »), the result
+  or the decision at the end (`type: "status"`); everything else (size, studio, run id, tags) waits in the row's detail.
+  No box in the box, no label-and-value pair per row (no `dl`).
+- The facts: documents and checks = the kind and the day; files = the link's line (« Documents envoyés le 22 oct. »).
+- Wide screens keep the table, unchanged. Tested on the markup of each table: one title, one facts line, one status, no `dl`.
+- Cost: a phone shows two lines per row, not the whole record; the detail is one tap.
+
 ## 26. The organised workspace: your decision, tags with markers, saved views, bulk actions (P7, #324)
 
 Krizaka-ts ADR-003, `@krizaka/organize` 0.4. Yomizaka is the pilot, on « Dossiers » and on the documents' tags.

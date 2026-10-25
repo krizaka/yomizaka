@@ -88,6 +88,8 @@ export function FilesView({ files: all, states = [], types, origin, workspace }:
       {
         id: "candidate",
         header: say("dossiers.columns.candidate"),
+        type: "title",
+        href: (f) => `${base}/${f.id}`,
         card: "title",
         value: (f) => f.candidateName,
         cell: (f) => (
@@ -96,12 +98,13 @@ export function FilesView({ files: all, states = [], types, origin, workspace }:
           </Link>
         ),
       },
-      { id: "link", header: say("dossiers.columns.link"), value: (f) => f.status, cell: (f) => <span data-testid="file-link">{facts.link(f)}</span> },
+      { id: "link", header: say("dossiers.columns.link"), priority: 2, value: (f) => f.status, cell: (f) => <span data-testid="file-link">{facts.link(f)}</span> },
       ...(workspace
         ? [
             {
               id: "decision",
               header: say("dossiers.columns.decision"),
+              type: "status" as const,
               sortable: true,
               // The set's order, never a check's result (krizaka-ts ADR-003 § 2).
               value: (f: FileSummary) => decisionOrder(workspace.set, f.decision),
@@ -109,7 +112,7 @@ export function FilesView({ files: all, states = [], types, origin, workspace }:
             } satisfies DataTableColumn<FileSummary>,
           ]
         : []),
-      { id: "documents", header: say("dossiers.columns.documents"), priority: 2, value: (f) => f.documents, cell: (f) => <span className="tabular-nums">{facts.documents(f.documents, f.requested)}</span> },
+      { id: "documents", header: say("dossiers.columns.documents"), priority: 3, value: (f) => f.documents, cell: (f) => <span className="tabular-nums">{facts.documents(f.documents, f.requested)}</span> },
       ...(workspace
         ? [
             {
@@ -178,7 +181,7 @@ export function FilesView({ files: all, states = [], types, origin, workspace }:
           {say("dossiers.filters.nothing")}
         </p>
       ) : files.length ? (
-        <DataTable caption={say("dossiers.caption")} rows={[...files]} columns={columns} getRowId={(f) => f.id} rowLabel={(f) => f.candidateName} pageSize={12} labels={labels} {...(workspace ? { selectable: true, selected, onSelectedChange: setSelected } : {})} />
+        <DataTable caption={say("dossiers.caption")} rows={[...files]} columns={columns} getRowId={(f) => f.id} rowLabel={(f) => f.candidateName} pageSize={12} labels={labels} phone="list" {...(workspace ? { selectable: true, selected, onSelectedChange: setSelected } : {})} />
       ) : (
         <EmptyState icon={<Mascot bird="owl" mood="empty" size={120} />} title={say("dossiers.empty.title")} description={say("dossiers.empty.text")} action={ask("primary")} data-testid="files-empty" />
       )}
