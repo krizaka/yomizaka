@@ -1,7 +1,9 @@
+import { filterSql } from "@krizaka/organize";
 import type { CollectionAvatar } from "@yomizaka/core";
 import type { QueryResultRow } from "pg";
 
 import { refuse } from "../http";
+import { KIND, WORKSPACE } from "../workspace/decl";
 import { guard, organizeOver } from "./organize";
 import { cleanName, type DeleteChoice, isId, type TagColor } from "./rules";
 
@@ -16,7 +18,7 @@ export interface Library { id: string; name: string }
 export interface Collection { id: string; library_id: string; name: string; is_default: boolean; avatar: CollectionAvatar | null; description: string | null }
 export interface Folder { id: string; collection_id: string; name: string }
 export interface Tag { id: string; name: string; color: TagColor }
-export type TagTarget = "collection" | "folder" | "document";
+export type TagTarget = "collection" | "folder";
 
 const notFound = (what: string) => refuse(404, "NOT_FOUND", `No such ${what}`);
 const taken = () => refuse(409, "NAME_TAKEN", "That name is already used here");
@@ -209,7 +211,7 @@ export const listTags = (q: Query, owner: string) => guard(() => organizeOver(q)
 export const createTag = (q: Query, owner: string, name: string, color: TagColor) => guard(() => organizeOver(q).tags.create(owner, { name, color }));
 export const updateTag = (q: Query, owner: string, id: string, patch: { name?: string; color?: TagColor }): Promise<Tag> => guard(() => organizeOver(q).tags.update(owner, id, patch));
 export const deleteTag = (q: Query, owner: string, id: string): Promise<void> => guard(() => organizeOver(q).tags.remove(owner, id));
-/** Replaces the tags of a collection, a folder or a document (all of them must be the owner's). */
+/** Replaces the tags of a collection or a folder (all of them must be the owner's). The documents' tags are the workspace's. */
 export const setTags = (q: Query, owner: string, target: { kind: TagTarget; id: string }, tagIds: string[]): Promise<void> => guard(() => organizeOver(q).tags.assign(owner, target.kind, target.id, tagIds));
 /** The tags of many targets at once, by target id. */
 export const tagsOf = (q: Query, owner: string, kind: TagTarget, ids: string[]): Promise<Map<string, Tag[]>> => guard(() => organizeOver(q).tags.of(owner, kind, ids));
@@ -225,15 +227,12 @@ export async function placeOf(q: Query, owner: string, documentId: string): Prom
   return row ? { libraryId: row.library_id, collectionId: row.collection_id, name: row.name, isDefault: row.is_default } : null;
 }
 
-/** The ALL-tags condition, its array bound to the placeholder `param` (e.g. `$4`): built, never `String.replace` with a `$` replacement. */
-export const allTagsClause = (param: `$${number}`): string =>
-  `AND NOT EXISTS (SELECT 1 FROM unnest(${param}::uuid[]) want(id) WHERE NOT EXISTS (SELECT 1 FROM document_tags dt WHERE dt.document_id = d.id AND dt.tag_id = want.id))`;
-
-/** The files of a collection (its root, or one of its folders), newest first, matching ALL the selected tags. */
+/** The files of a collection (its root, or one of its folders), newest first, matching ALL the selected tags (the workspace layer's filter, yomizaka#324). */
 export async function browse(q: Query, owner: string, where: { collectionId: string; folderId?: string; tagIds: string[] }): Promise<{ documentIds: string[] }> {
+  const filter = filterSql(WORKSPACE, KIND.document, { tags: where.tagIds }, { from: 4 });
   const rows = await q<{ id: string }>(
-    `SELECT d.id FROM documents d WHERE d.owner_id = $1 AND d.collection_id = $2 AND d.folder_id IS NOT DISTINCT FROM $3 ${allTagsClause("$4")} ORDER BY d.created_at DESC LIMIT 500`,
-    [owner, where.collectionId, where.folderId ?? null, where.tagIds],
+    `SELECT e.id FROM documents e WHERE e.owner_id = $1 AND e.collection_id = $2 AND e.folder_id IS NOT DISTINCT FROM $3${filter.sql} ORDER BY e.created_at DESC LIMIT 500`,
+    [owner, where.collectionId, where.folderId ?? null, ...filter.params],
   );
   return { documentIds: rows.map((r) => r.id) };
 }

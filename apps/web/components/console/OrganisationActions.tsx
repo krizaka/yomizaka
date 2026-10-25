@@ -105,12 +105,16 @@ const CREATE = {
 type CreateKind = keyof typeof CREATE;
 
 /** « New collection », « New folder », « New tag »: a button and its dialog. */
-export function CreateButton({ kind, parentId, variant = "secondary" }: { kind: CreateKind; parentId?: string; variant?: "secondary" | "ghost" }) {
+export function CreateButton({ kind, parentId, variant = "secondary", tagsOf }: { kind: CreateKind; parentId?: string; variant?: "secondary" | "ghost"; tagsOf?: "document" }) {
   const { say } = useSay();
   const [open, setOpen] = useState(false);
   const { url, parentField, label: key } = CREATE[kind];
   const label = say(key);
-  const submit = (name: string, color: TagColor | null) => krizakaFetch(url, { method: "POST", json: { name, ...(parentField ? { [parentField]: parentId } : { color: color ?? "blue" }) } });
+  // A new tag for documents is the workspace's, with a marker; otherwise the first layer's, with a colour.
+  const submit = (name: string, color: TagColor | null) =>
+    tagsOf === "document"
+      ? krizakaFetch("/api/organize/document/tags", { method: "POST", json: { name, marker: color ?? "blue" } })
+      : krizakaFetch(url, { method: "POST", json: { name, ...(parentField ? { [parentField]: parentId } : { color: color ?? "blue" }) } });
   return (
     <>
       <Button variant={variant} size="md" onClick={() => setOpen(true)}>
@@ -286,7 +290,8 @@ function MoveDialog({ kind, id, api, collections, folders, collectionId, onClose
 function TagsDialog({ kind, id, tags, current, onClose }: { kind: ItemKind; id: string; tags: TagOption[]; current: string[]; onClose: () => void }) {
   const { say } = useSay();
   const [value, setValue] = useState<string[]>(current);
-  const save = useAction<string[]>((tagIds) => krizakaFetch("/api/tags/assign", { method: "PUT", json: { kind, id, tagIds } }), onClose);
+  // A document's tags are the workspace's (yomizaka#324); a collection's and a folder's are the first layer's.
+  const save = useAction<string[]>((tagIds) => (kind === "document" ? krizakaFetch("/api/organize/document/tags/set", { method: "PUT", json: { id, tagIds } }) : krizakaFetch("/api/tags/assign", { method: "PUT", json: { kind, id, tagIds } })), onClose);
   return (
     <Frame open onOpenChange={onClose} title={say("organisation.editTags")}>
       {tags.length === 0 ? <p className="m-0 text-sm text-fg-secondary">{say("organisation.noTags")}</p> : <TagSelector label={say("organisation.editTags")} options={tags.map((t) => ({ value: t.id, label: t.name }))} value={value} onValueChange={setValue} max={20} />}
@@ -295,7 +300,7 @@ function TagsDialog({ kind, id, tags, current, onClose }: { kind: ItemKind; id: 
         <Button size="md" loading={save.pending} onClick={() => save.go(value)}>
           {say("organisation.save")}
         </Button>
-        <CreateButton kind="tag" variant="ghost" />
+        <CreateButton kind="tag" variant="ghost" tagsOf={kind === "document" ? "document" : undefined} />
       </div>
     </Frame>
   );

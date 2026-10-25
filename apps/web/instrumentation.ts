@@ -16,6 +16,11 @@ export async function register() {
   const { seedDatabase } = await import("./lib/flows");
   const seeded = await seedDatabase();
   if (seeded.length) console.log(`[yomizaka] flows seeded: ${seeded.join(", ")}`);
+  // The organised workspace's defaults (the decision set, the system views, the tag rules): written once, then the database is the source of truth (yomizaka#324).
+  const { seedWorkspace } = await import("./lib/workspace/service");
+  const { systemClock } = await import("./app/system-clock");
+  const workspace = await seedWorkspace(systemClock);
+  if (workspace.length) console.log(`[yomizaka] workspace seeded: ${workspace.join(", ")}`);
   const e = readEnv();
   const { appSettings } = await import("./lib/settings/instance");
   const { seedLegacySettings } = await import("./lib/settings/seed");

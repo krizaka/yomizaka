@@ -1,0 +1,18 @@
+id: no-direct-organize-write
+language: Tsx
+severity: error
+message: "The workspace layer's tables (the `organize` schema: tags, decisions, views, configuration) are written only through `createWorkspace` (lib/workspace/service.ts): it holds the roles, the row locks, the 200-entity ceiling and the one audit line per entity. A hand-written INSERT, UPDATE or DELETE skips all of them (yomizaka#324)."
+rule:
+  any:
+    - kind: string
+    - kind: template_string
+  regex: '(INSERT\s+INTO|UPDATE|DELETE\s+FROM)\s+organize\.'
+files:
+  - "**/*.ts"
+  - "**/*.tsx"
+ignores:
+  - "**/node_modules/**"
+  - "**/.next/**"
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/workspace/migration.ts"

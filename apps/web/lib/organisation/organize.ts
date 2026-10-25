@@ -8,13 +8,13 @@ import type { Query } from "./store";
 
 /**
  * « organize » for Yomizaka (ADR-006, `@krizaka/organize`): the collections' default and avatar, and the tags, come from the package.
- * Libraries, folders, where a document sits and the counts stay Yomizaka's own levels on top.
+ * Libraries, folders, where a document sits and the counts stay Yomizaka's own levels on top. The documents' tags are the workspace's
+ * (`lib/workspace`, yomizaka#324): markers, bulk tagging and the filter live there; this layer keeps the collections' and folders'.
  */
 export const ORGANIZE_SCHEMA: OrganizeSchema = {
   collectionTags: "collections_tags",
   kinds: {
     folder: { table: "folders", tagTable: "folder_tags", tagColumn: "folder_id", inCollection: false, owns: "EXISTS (SELECT 1 FROM collections c WHERE c.id = e.collection_id AND c.owner_id = $1)" },
-    document: { table: "documents", tagTable: "document_tags", tagColumn: "document_id", inCollection: false },
   },
 };
 

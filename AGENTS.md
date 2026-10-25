@@ -106,6 +106,7 @@ with a message and, where safe, a `fix:`; written for Tsx and `.ts` is parsed as
 | `no-ambient-clock` | `new Date()` / `Date.now()` in domain code: the clock is injected |
 | `no-types-at-package-root` | `types.ts` at a package root (`<feature>/<feature>.types.ts`) |
 | `no-unjustified-numeric-export` | a numeric (or `…ToMilliseconds(n)`) `export const` in feature code without `// @fixed: <reason>` just above |
+| `no-direct-organize-write` | a hand-written `INSERT`, `UPDATE` or `DELETE` on the `organize` schema (tags, decisions, views, configuration) outside the migration: write through `createWorkspace` (`lib/workspace/service.ts`), which holds the roles, the row locks, the 200-entity ceiling and one audit line per entity (yomizaka#324) |
 | `no-hand-made-nav`, `no-hand-made-language-switch` | a navigation bar that is not `NavBar` of @krizaka/ui (own Radix NavigationMenu, a local `NavBar`/`TopNav`), a hand-made language switch (`hrefLang` in a component, a row of `aria-pressed={locale === …}` buttons): use `NavBar` and `NavBar.Language` (« Navigation in the family », ui.krizaka.com) |
 
 - **Run**: `npm run lint` runs everything (it includes `ast-grep test` and the ratchet). `npx ast-grep scan` lists the

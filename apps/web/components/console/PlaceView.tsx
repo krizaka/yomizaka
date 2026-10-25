@@ -23,7 +23,7 @@ type Say = Messages["console"]["organisation"];
  * folder's page); the folders as a row of chips; the tags as a filter bar (`?tags=`); the files; and the whole page as a drop
  * zone that files into this place (the only zone is the empty place's). Rendered on the server; the actions are client islands.
  */
-export function PlaceView({ locale, t, library, collection, folder, folders, documents, tags, view, tagsByDocument, folderTags, collections, collectionTags, path, jurisdictions }: {
+export function PlaceView({ locale, t, library, collection, folder, folders, documents, tags, documentTags, view, tagsByDocument, folderTags, collections, collectionTags, path, jurisdictions }: {
   locale: "en" | "fr";
   t: Say;
   library: { id: string; name: string };
@@ -31,7 +31,10 @@ export function PlaceView({ locale, t, library, collection, folder, folders, doc
   folder?: { id: string; name: string };
   folders: (Folder & { files: number; tags: Tag[] })[];
   documents: DocumentSummary[];
+  /** The first layer's tags: a collection's and a folder's. */
   tags: Tag[];
+  /** The workspace's tags of kind « document »: the filter bar's and the rows'. */
+  documentTags: Tag[];
   view: ViewState;
   tagsByDocument: Record<string, Tag[]>;
   folderTags?: Record<string, string[]>;
@@ -103,10 +106,10 @@ export function PlaceView({ locale, t, library, collection, folder, folders, doc
             ))}
           </nav>
         ) : null}
-        {tags.length > 0 ? <PlaceFilters tags={tags} selected={view.tags} path={path} view={view} count={documents.length} /> : null}
+        {documentTags.length > 0 ? <PlaceFilters tags={documentTags} selected={view.tags} path={path} view={view} count={documents.length} /> : null}
         <section aria-label={t.filesIn} className="flex flex-col gap-3">
           {documents.length > 0 ? (
-            <DocumentTable rows={documents} organise={{ collections, folders: folderOptions, collectionId: collection.id, tags, tagsByDocument }} />
+            <DocumentTable rows={documents} organise={{ collections, folders: folderOptions, collectionId: collection.id, tags: documentTags, tagsByDocument }} />
           ) : (
             <EmptyState icon={<Mascot bird="owl" mood="empty" size={96} />} title={t.emptyCollection} action={<DropZone />} data-testid="place-empty" />
           )}

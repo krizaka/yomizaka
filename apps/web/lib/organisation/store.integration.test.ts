@@ -1,6 +1,8 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { migrate, query } from "../db";
+import { KIND, OWNER_ROLE } from "../workspace/decl";
+import { workspaceFor } from "../workspace/service";
 import * as org from "./store";
 
 /** The organisation against a real PostgreSQL (skipped without YOMIZAKA_DB_IT=1 and DATABASE_URL, like billing.integration.test.ts). */
@@ -140,26 +142,30 @@ describe.runIf(enabled)("organisation (ADR-0007)", () => {
     expect(await where(d)).toEqual({ collection_id: c2.id, folder_id: f.id });
   });
 
-  it("tags: per owner, unique by name, many to many, and the filter needs all of them", async () => {
+  it("tags: per owner, unique by name, many to many, and the filter needs all of them (a document's tags are the workspace's, a collection's the first layer's)", async () => {
     const owner = await account();
     const lib = await org.ensureLibrary(query, owner, "L");
     const c = await org.createCollection(query, owner, lib.id, "C");
-    const urgent = await org.createTag(query, owner, "Urgent", "red");
     const done = await org.createTag(query, owner, "Fait", "green");
-    await expect(org.createTag(query, owner, "urgent", "blue")).rejects.toMatchObject({ status: 409 });
+    await expect(org.createTag(query, owner, "fait", "blue")).rejects.toMatchObject({ status: 409 });
+    const w = workspaceFor({ clock: { now: () => new Date() } });
+    const actor = { id: owner, label: "eric@yomizaka.test", role: OWNER_ROLE };
+    const urgent = await w.tags.create(owner, actor, KIND.document, { name: "Urgent", marker: "red" });
+    const fait = await w.tags.create(owner, actor, KIND.document, { name: "Fait", marker: "green" });
+    await expect(w.tags.create(owner, actor, KIND.document, { name: "urgent", marker: "blue" })).rejects.toMatchObject({ code: "NAME_TAKEN" });
     const d1 = await doc(owner);
     const d2 = await doc(owner);
     await org.placeDocument(query, owner, d1, { collectionId: c.id, folderId: null });
     await org.placeDocument(query, owner, d2, { collectionId: c.id, folderId: null });
-    await org.setTags(query, owner, { kind: "document", id: d1 }, [urgent.id, done.id]);
-    await org.setTags(query, owner, { kind: "document", id: d2 }, [urgent.id]);
+    await w.tags.set(owner, actor, KIND.document, d1, [urgent.id, fait.id]);
+    await w.tags.set(owner, actor, KIND.document, d2, [urgent.id]);
     await org.setTags(query, owner, { kind: "collection", id: c.id }, [done.id]);
     expect((await org.browse(query, owner, { collectionId: c.id, tagIds: [urgent.id] })).documentIds.sort()).toEqual([d1, d2].sort());
-    expect((await org.browse(query, owner, { collectionId: c.id, tagIds: [urgent.id, done.id] })).documentIds).toEqual([d1]);
-    expect((await org.tagsOf(query, owner, "document", [d1, d2])).get(d1)?.map((t) => t.name).sort()).toEqual(["Fait", "Urgent"]);
+    expect((await org.browse(query, owner, { collectionId: c.id, tagIds: [urgent.id, fait.id] })).documentIds).toEqual([d1]);
+    expect((await w.tags.of(owner, KIND.document, [d1, d2])).get(d1)?.map((t) => t.name).sort()).toEqual(["Fait", "Urgent"]);
     const other = await account();
-    await expect(org.setTags(query, other, { kind: "document", id: d1 }, [urgent.id])).rejects.toMatchObject({ status: 404 });
-    await org.deleteTag(query, owner, urgent.id);
+    await expect(org.setTags(query, other, { kind: "collection", id: c.id }, [done.id])).rejects.toMatchObject({ status: 404 });
+    await w.tags.remove(owner, actor, KIND.document, urgent.id);
     expect((await org.browse(query, owner, { collectionId: c.id, tagIds: [] })).documentIds.sort()).toEqual([d1, d2].sort());
   });
 

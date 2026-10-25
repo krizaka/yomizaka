@@ -1,3 +1,4 @@
+import { filterSql, type StatusSet, type ViewFilters } from "@krizaka/organize";
 import type { Analysis, StartAnalysis, StorageKind,Studio } from "@yomizaka/core";
 
 import { refresh, startAnalysis } from "./analyses";
@@ -11,6 +12,7 @@ import { HttpError, refuse } from "./http";
 import { EXTERNAL, objectKey, purgeIfDone } from "./retention";
 import { addDays, hash, newToken, REQUEST_VALID_DAYS } from "./screening";
 import type { DocumentStore } from "./storage/port";
+import { DECISION, KIND, WORKSPACE } from "./workspace/decl";
 
 /*
  * The applicant file (yomizaka#127). A manager asks for a file: a screening row of flow « file » carries the link (its
@@ -329,13 +331,29 @@ export interface FileSummary {
   documents: number;
   /** How many documents were asked for. */
   requested: number;
+  /** The manager's decision: a state of the decision set (`lib/workspace/defaults`). The link's state above is the system's fact, never merged with it. */
+  decision: string;
+  /** The ids of the tags the file wears (the workspace's tags of kind « applicant_file »). */
+  tagIds: string[];
 }
 
-/** The manager's files, newest first: each one's link state and how many documents it holds. */
-export async function listApplicantFiles(landlordId: string, now: Date): Promise<FileSummary[]> {
-  const rows = await query<FileRow & { documents: number }>(
-    "SELECT s.id, s.landlord_id, s.tenant_name, s.tenant_email, s.status, s.created_at, s.expires_at, s.requested_types, s.revoked_at, s.submitted_at, s.closed_at, (SELECT count(*)::int FROM documents d WHERE d.screening_id = s.id) AS documents FROM screenings s WHERE s.landlord_id = $1 AND s.flow = 'file' ORDER BY s.created_at DESC LIMIT 100",
-    [landlordId],
+/** How the list is organised: the filters of the address (`parseView`) and the kind's decision set (read from the database), whose initial state an undecided file has. */
+export interface Organised {
+  filters?: ViewFilters;
+  set?: StatusSet | null;
+}
+
+/** The manager's files, newest first: each one's link state, its decision, its tags and how many documents it holds; narrowed by the workspace's filter. */
+export async function listApplicantFiles(landlordId: string, now: Date, organised: Organised = {}): Promise<FileSummary[]> {
+  const initial = organised.set?.initial ?? DECISION.toDecide;
+  const filter = filterSql(WORKSPACE, KIND.applicantFile, organised.filters ?? {}, { from: 3, status: organised.set ?? null });
+  const rows = await query<FileRow & { documents: number; decision: string; tag_ids: string[] }>(
+    `SELECT e.id, e.landlord_id, e.tenant_name, e.tenant_email, e.status, e.created_at, e.expires_at, e.requested_types, e.revoked_at, e.submitted_at, e.closed_at,
+            (SELECT count(*)::int FROM documents d WHERE d.screening_id = e.id) AS documents,
+            COALESCE((SELECT st.state FROM organize.applicant_file_status st WHERE st.entity_id = e.id), $2) AS decision,
+            ARRAY(SELECT t.tag_id FROM organize.applicant_file_tag t WHERE t.entity_id = e.id) AS tag_ids
+       FROM screenings e WHERE e.landlord_id = $1 AND e.flow = 'file'${filter.sql} ORDER BY e.created_at DESC LIMIT 100`,
+    [landlordId, initial, ...filter.params],
   );
-  return rows.map((r) => ({ id: r.id, candidateName: r.tenant_name, status: linkState(r, now), createdAt: r.created_at.toISOString(), expiresAt: r.expires_at.toISOString(), submittedAt: r.submitted_at?.toISOString() ?? null, closedAt: r.closed_at?.toISOString() ?? null, documents: r.documents, requested: r.requested_types.length }));
+  return rows.map((r) => ({ id: r.id, candidateName: r.tenant_name, status: linkState(r, now), createdAt: r.created_at.toISOString(), expiresAt: r.expires_at.toISOString(), submittedAt: r.submitted_at?.toISOString() ?? null, closedAt: r.closed_at?.toISOString() ?? null, documents: r.documents, requested: r.requested_types.length, decision: r.decision, tagIds: r.tag_ids }));
 }

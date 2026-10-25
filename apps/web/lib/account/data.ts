@@ -61,7 +61,11 @@ export async function exportData(q: Query, accountId: string, stores: StoresOf, 
     for (const r of rows) map.set(r.target, [...(map.get(r.target) ?? []), r.tag]);
     return map;
   };
-  const [colTags, folderTags, docTags] = await Promise.all([tagged("collections_tags", "collection_id"), tagged("folder_tags", "folder_id"), tagged("document_tags", "document_id")]);
+  const [colTags, folderTags] = await Promise.all([tagged("collections_tags", "collection_id"), tagged("folder_tags", "folder_id")]);
+  // The documents' tags are the workspace's (yomizaka#324): the account's own tags of kind « document », worn through the layer's join table.
+  const docTagRows = await q<{ target: string; tag: string }>("SELECT w.entity_id AS target, t.name AS tag FROM organize.document_tag w JOIN organize.tag t ON t.id = w.tag_id WHERE t.scope_id = $1 AND t.kind = 'document'", [accountId]);
+  const docTags = new Map<string, string[]>();
+  for (const r of docTagRows) docTags.set(r.target, [...(docTags.get(r.target) ?? []), r.tag]);
   const docs = await q<{ id: string; title: string; filename: string; mime_type: string; kind: string; size_bytes: number; sha256: string; pages: number | null; created_at: Date; storage: StorageKind; storage_owner: CloudOwner; retain_until: Date | null; collection_id: string | null; folder_id: string | null; text: string; content: Buffer }>(
     "SELECT id, title, filename, mime_type, kind, size_bytes, sha256, pages, created_at, storage, storage_owner, retain_until, collection_id, folder_id, text, content FROM documents WHERE owner_id = $1 ORDER BY created_at",
     [accountId],
