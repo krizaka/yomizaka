@@ -18,6 +18,8 @@ describe("the rail's active entry comes from the route", () => {
     ["/fr/app/bibliotheque/lib/coll", "library"],
     ["/fr/app/bibliotheque/lib/coll/folder", "library"],
     ["/fr/app/screening", "files"],
+    ["/fr/app/dossiers", "files"],
+    ["/fr/app/dossiers/f1", "files"],
     ["/fr/app/verifications", "checks"],
     ["/fr/app/verifications/", "checks"],
     ["/fr/app/verifier", "checks"],

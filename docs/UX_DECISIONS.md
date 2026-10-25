@@ -413,3 +413,20 @@ signal that would tell us we are wrong. Feedback: the pinned Discussion of the r
   Vérifications are in the sans (tabular figures where they are numbers).
 - `components/console/typography.test.ts` holds the line for the console and the Mac app's components. The Mac app's
   faces come from `blocks.css` under `data-surface="product"` (#317) until krizaka-ui#632 moves them into the brand files.
+
+## « Dossiers »: the applicant files' list and detail (P6, #323)
+
+- `/app/dossiers` (the section map's « Dossiers » now leads there) lists the files of `listApplicantFiles`, newest first:
+  the applicant, **the link's state as a line of facts** (`linkState` → « Lien ouvert jusqu'au 7 nov. », « Documents
+  envoyés le 22 oct. », « Dossier fermé le … », expired, revoked, erased), the documents in against those asked, and the
+  day it was asked. There is no status chip: the decision is P7 (krizaka-ts#89), and the list never sorts by a check's result.
+- `/app/dossiers/[id]` lists the documents asked, each with the one received. A row says what becomes of the document
+  (deleted after its checks, or kept until the decision with the applicant's consent) and gives its checks in words as
+  Orazaka returned them. It leads to the document's report, where the run ids are.
+- « Demander des documents » is a dialog on `createKrizakaForm`. It offers only the requestable types: the minimisation
+  list (SIN, health card, passport, licence, bank details) is never offered, the form's schema refuses it, and the service
+  keeps its 422 `TYPE_NOT_NECESSARY`. The link comes back once and is shown once, to copy. The page where the applicant
+  sends the documents is not built yet (#341), and the dialog says so.
+- The empty state has the owl (`empty`), one sentence and the one action.
+- The provider screening (`/app/screening`) stays where it is and still belongs to « Dossiers » in the rail, until it
+  becomes a section of the file (design § 6).

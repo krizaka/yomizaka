@@ -9,7 +9,7 @@ describe("the section map", () => {
   it("is Bibliothèque · Dossiers · Vérifications · Recherche, in that order, each with its address", () => {
     expect(SECTION_IDS).toEqual(["library", "files", "checks", "search"]);
     expect(SECTIONS.map((s) => s.id)).toEqual(SECTION_IDS);
-    expect(Object.fromEntries(SECTIONS.map((s) => [s.id, s.path]))).toEqual({ library: "/app", files: "/app/screening", checks: "/app/verifications", search: "/app/recherche" });
+    expect(Object.fromEntries(SECTIONS.map((s) => [s.id, s.path]))).toEqual({ library: "/app", files: "/app/dossiers", checks: "/app/verifications", search: "/app/recherche" });
   });
 
   it("holds the batches as a tab of Vérifications (« Lots »), on all three platforms", () => {

@@ -1,7 +1,6 @@
-import { z } from "zod";
-
 import { requireSession } from "@/lib/access";
 import { listApplicantFiles, requestApplicantFile } from "@/lib/applicant-file";
+import { applicantRequestBody } from "@/lib/applicant-file-face";
 import { appEnvironment } from "@/lib/env";
 import { resolveFlow } from "@/lib/flows";
 import { handle, readJson } from "@/lib/http";
@@ -26,14 +25,8 @@ export function POST(req: Request) {
     const session = await requireSession(req);
     limit("applicant-file-request", req, session.account.id, [30, 3600], [20, 3600]);
     await resolveFlow(session.account, FLOW, appEnvironment());
-    const input = await readJson(
-      req,
-      z.object({
-        candidateName: z.string().trim().min(1).max(120),
-        candidateEmail: z.string().trim().toLowerCase().email().max(254),
-        types: z.array(z.string().min(2).max(40)).min(1).max(10),
-      }),
-    );
+    // The form's body (lib/applicant-file-face); a SIN-like type is refused by the service with its own code (422 TYPE_NOT_NECESSARY).
+    const input = await readJson(req, applicantRequestBody);
     const made = await requestApplicantFile({ id: session.account.id, email: session.account.email }, input, new Date(), req.headers);
     return Response.json(made, { status: 201, headers: { "Cache-Control": "no-store" } });
   });

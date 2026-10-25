@@ -1,3 +1,4 @@
+import { APPLICATION_ERASED } from "./applicant-file-rules";
 import { audit } from "./audit";
 import { query } from "./db";
 import { deleteDocument, isUuid } from "./documents";
@@ -18,8 +19,8 @@ export const CONSENT_PURPOSES = Object.values(CONSENT_PURPOSE) as ConsentPurpose
 
 /** The version of the notice (messages `applicant.notice`). Changing the text changes this, and a consent to an old one is refused. */
 export const NOTICE_VERSION = "2026-10-24.2";
-/** The application status once erased (its personal fields are gone). */
-export const APPLICATION_ERASED = "erased" as const;
+/** The application status once erased: defined with the file's pure rules, which the browser reads too. */
+export { APPLICATION_ERASED };
 /** How consent was given: the applicant's own form, on the link they received. */
 export const CONSENT_MEANS = { WEB_FORM: "web-form" } as const;
 

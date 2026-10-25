@@ -1663,6 +1663,79 @@
       "library": "Back to the library",
       "home": "Home",
       "console": "Back to the console"
+    },
+    "dossiers": {
+      "title": "Applicant files",
+      "lead": "The documents you asked an applicant for, as they come in, each with its checks.",
+      "request": "Ask for documents",
+      "caption": "Your applicant files, newest first",
+      "columns": {
+        "candidate": "Applicant",
+        "link": "Link",
+        "documents": "Documents",
+        "asked": "Asked on"
+      },
+      "open": "Open the file of {name}",
+      "link": {
+        "open": "Link open until {date}",
+        "used": "Documents sent on {date}",
+        "closed": "File closed on {date}",
+        "expired": "Link expired",
+        "revoked": "Link revoked",
+        "erased": "Erased at the applicant's request"
+      },
+      "documents": {
+        "none": "None of {asked} in",
+        "some": "{count} of {asked} in",
+        "all": "{count} of {asked} in"
+      },
+      "empty": {
+        "title": "No applicant file yet",
+        "text": "Ask an applicant for their documents: Yomizaka checks each one, and you decide."
+      },
+      "form": {
+        "title": "Ask for documents",
+        "lead": "The applicant gets a link to send the documents you choose, and only those. A social insurance number, a health card, a passport, a licence or bank details are never asked for.",
+        "name": "Applicant's name",
+        "email": "Applicant's e-mail",
+        "types": "Documents to ask for",
+        "submit": "Create the link",
+        "close": "Close"
+      },
+      "made": {
+        "title": "The link for {name}",
+        "text": "Valid until {date}. It is shown once: copy it and hand it to the applicant. No document travels by e-mail.",
+        "notYet": "The page where the applicant sends their documents is not online yet: this link will open it once it is.",
+        "copy": "Copy the link",
+        "copied": "Copied"
+      },
+      "detail": {
+        "back": "Applicant files",
+        "asked": "Documents asked",
+        "received": "Received: {file}",
+        "notReceived": "Not received yet",
+        "kept": "Kept until your decision (the applicant agreed)",
+        "purged": "Deleted after its checks; the report stays",
+        "afterCheck": "Deleted once its checks have run",
+        "report": "Open the report",
+        "skipped": "A check could not run on this document",
+        "requestedOn": "Asked on {date}",
+        "none": "No document received yet."
+      },
+      "check": {
+        "nothing": "Nothing found on the rules checked",
+        "noSignal": "No unusual signal",
+        "running": "Running",
+        "failed": "Did not finish",
+        "attentionOne": "{count} to look at",
+        "attentionMany": "{count} to look at",
+        "signalsOne": "{count} signal",
+        "signalsMany": "{count} signals"
+      },
+      "studios": {
+        "compliance-check": "Against the law",
+        "document-authenticity": "Authenticity"
+      }
     }
   },
   "report": {

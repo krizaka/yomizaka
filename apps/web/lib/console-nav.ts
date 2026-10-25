@@ -8,7 +8,7 @@ import { CHECKS_TABS, type ChecksTab, DOCUMENT_TABS, type DocumentTab, movedDocu
  */
 export type NavId = SectionId | "account";
 
-export const CONSOLE_ROUTES = { library: "/app", files: "/app/screening", checks: "/app/verifications", check: "/app/verifier", search: "/app/recherche", account: "/app/settings" } as const;
+export const CONSOLE_ROUTES = { library: "/app", files: "/app/dossiers", checks: "/app/verifications", check: "/app/verifier", search: "/app/recherche", account: "/app/settings" } as const;
 
 /** The tabs of the Vérifications destination (the map's, `@yomizaka/core`); the second lives in the address: `/app/verifications?tab=lots`. */
 export { CHECKS_TABS, type ChecksTab };
@@ -29,7 +29,7 @@ export function activeNav(path: string): NavId | null {
   if (under(p, CONSOLE_ROUTES.checks) || under(p, CONSOLE_ROUTES.check)) return "checks";
   if (under(p, CONSOLE_ROUTES.search) || under(p, "/app/search")) return "search";
   if (under(p, CONSOLE_ROUTES.account)) return "account";
-  if (under(p, CONSOLE_ROUTES.files)) return "files";
+  if (under(p, CONSOLE_ROUTES.files) || under(p, "/app/screening")) return "files";
   if (p === CONSOLE_ROUTES.library || under(p, "/app/documents") || under(p, "/app/bibliotheque")) return "library";
   return null;
 }

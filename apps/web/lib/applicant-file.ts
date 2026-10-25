@@ -327,6 +327,8 @@ export interface FileSummary {
   submittedAt: string | null;
   closedAt: string | null;
   documents: number;
+  /** How many documents were asked for. */
+  requested: number;
 }
 
 /** The manager's files, newest first: each one's link state and how many documents it holds. */
@@ -335,5 +337,5 @@ export async function listApplicantFiles(landlordId: string, now: Date): Promise
     "SELECT s.id, s.landlord_id, s.tenant_name, s.tenant_email, s.status, s.created_at, s.expires_at, s.requested_types, s.revoked_at, s.submitted_at, s.closed_at, (SELECT count(*)::int FROM documents d WHERE d.screening_id = s.id) AS documents FROM screenings s WHERE s.landlord_id = $1 AND s.flow = 'file' ORDER BY s.created_at DESC LIMIT 100",
     [landlordId],
   );
-  return rows.map((r) => ({ id: r.id, candidateName: r.tenant_name, status: linkState(r, now), createdAt: r.created_at.toISOString(), expiresAt: r.expires_at.toISOString(), submittedAt: r.submitted_at?.toISOString() ?? null, closedAt: r.closed_at?.toISOString() ?? null, documents: r.documents }));
+  return rows.map((r) => ({ id: r.id, candidateName: r.tenant_name, status: linkState(r, now), createdAt: r.created_at.toISOString(), expiresAt: r.expires_at.toISOString(), submittedAt: r.submitted_at?.toISOString() ?? null, closedAt: r.closed_at?.toISOString() ?? null, documents: r.documents, requested: r.requested_types.length }));
 }
