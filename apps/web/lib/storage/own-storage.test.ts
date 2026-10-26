@@ -48,7 +48,10 @@ describe("credentials are sealed for the database", () => {
   it("opens only with its key, and refuses a tampered value", () => {
     const a = seal("x", key);
     expect(() => open(a, crypto.randomBytes(32))).toThrow();
-    expect(() => open(`${a.slice(0, -2)}AA`, key)).toThrow();
+    // flip every bit of the last byte: always a different value (replacing characters by a fixed pair sometimes changed nothing)
+    const raw = Buffer.from(a.slice(3), "base64url");
+    raw[raw.length - 1] = raw.at(-1)! ^ 0xff;
+    expect(() => open(`v1.${raw.toString("base64url")}`, key)).toThrow();
     expect(() => parseSettingsKey(Buffer.alloc(8).toString("base64"))).toThrow();
   });
 });

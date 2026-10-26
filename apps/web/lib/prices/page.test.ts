@@ -10,6 +10,8 @@ import { pricingLines } from "./page";
 const NOW = new Date("2026-10-26T12:00:00Z");
 const ADMIN = { id: null, label: "admin@yomizaka.test" };
 const nb = (s: string | null) => s?.replaceAll(/\s/gu, " ") ?? null;
+/** The text of an HTML fragment: what sits between a `>` and the next `<`, without entities. No tag is stripped by pattern. */
+const textOf = (html: string) => [...`>${html}<`.matchAll(/>([^<>]*)</g)].map((m) => m[1]!.replaceAll(/&#x?[0-9a-f]+;/gi, "")).join("");
 const fresh = () => priceCatalogue(PRICES, memoryPriceStore());
 const linesOf = async (c: PriceCatalogue, locale: "en" | "fr") => pricingLines(publicCatalogue(await c.catalogue(NOW)), locale);
 const render = async (c: PriceCatalogue, locale: "en" | "fr", freeFirst = true) => {
@@ -54,7 +56,7 @@ describe("the pricing page reads the catalogue (#388)", () => {
   it("a « soon » line carries no number, in both languages", async () => {
     for (const locale of ["en", "fr"] as const) {
       const html = await render(fresh(), locale);
-      const soonLines = [...html.matchAll(/<li[^>]*data-soon="[^"]+"[^>]*>(.*?)<\/li>/g)].map((m) => m[1]!.replaceAll(/<[^>]+>/g, "").replaceAll(/&#x?[0-9a-f]+;/gi, ""));
+      const soonLines = [...html.matchAll(/<li[^>]*data-soon="[^"]+"[^>]*>(.*?)<\/li>/g)].map((m) => textOf(m[1]!));
       expect(soonLines).toHaveLength(3);
       for (const line of soonLines) expect(line, line).not.toMatch(/\d/);
     }
