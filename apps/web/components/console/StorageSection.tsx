@@ -40,6 +40,37 @@ export function StorageSection() {
   return <StorageForm key={info.data.settings.testedAt ?? "new"} initial={info.data.settings} canStoreCredentials={info.data.canStoreCredentials} say={say} locale={locale} onSaved={() => { void info.refetch(); router.refresh(); }} />;
 }
 
+type Say = (k: string, v?: Record<string, string | number>) => string;
+type S3Settings = z.infer<typeof current>["settings"]["s3"];
+
+const STEP_KEY = { write: "stepWrite", read: "stepRead", delete: "stepDelete" } as const;
+
+function s3Defaults(s3: S3Settings) {
+  return { endpoint: s3?.endpoint ?? "", region: s3?.region ?? "", bucket: s3?.bucket ?? "", accessKeyId: s3?.accessKeyId ?? "", secretAccessKey: "" };
+}
+
+function stepOutcome(s: Verification["steps"][number], say: Say): string {
+  if (s.ok) return say("settings.storage.stepOk");
+  return `${say("settings.storage.stepFail")}${s.error ? ` (${s.error})` : ""}`;
+}
+
+/** What the connection test did, step by step, and where the bucket sits. */
+function ConnectionResult({ verified, say }: Readonly<{ verified: Verification; say: Say }>) {
+  const canada = verified.residency === "canada";
+  return (
+    <div className="flex flex-col gap-2" data-testid="connection-result">
+      <ul className="m-0 flex list-none flex-col gap-1 p-0 text-sm">
+        {verified.steps.map((s) => (
+          <li key={s.name} className={s.ok ? "text-fg" : "text-danger"}>
+            {s.ok ? "✓" : "✕"} {say(`settings.storage.${STEP_KEY[s.name]}`)} · {stepOutcome(s, say)}
+          </li>
+        ))}
+      </ul>
+      {verified.ok && verified.host ? <Alert tone={canada ? "success" : "warning"}>{say(canada ? "settings.storage.whereCanada" : "settings.storage.whereElsewhere", { host: verified.host, region: verified.region })}</Alert> : null}
+    </div>
+  );
+}
+
 function StorageForm({ initial, canStoreCredentials, say, locale, onSaved }: { initial: z.infer<typeof current>["settings"]; canStoreCredentials: boolean; say: (k: string, v?: Record<string, string | number>) => string; locale: string; onSaved: () => void }) {
   const [mode, setMode] = useState<StorageMode>(initial.mode);
   const [keepDefault, setKeepDefault] = useState(initial.keepDefault);
@@ -52,7 +83,7 @@ function StorageForm({ initial, canStoreCredentials, say, locale, onSaved }: { i
   const save = useMutation({ mutationFn: () => krizakaFetch("/api/me/storage", { method: "PUT", json: { mode, keepDefault: mode === STORAGE_MODE.none ? false : keepDefault, ...(mode === STORAGE_MODE.s3 ? { s3: body() } : {}) } }) });
   const form = s3Form.useForm({
     ...formI18n(say, locale),
-    defaultValues: { endpoint: initial.s3?.endpoint ?? "", region: initial.s3?.region ?? "", bucket: initial.s3?.bucket ?? "", accessKeyId: initial.s3?.accessKeyId ?? "", secretAccessKey: "" },
+    defaultValues: s3Defaults(initial.s3),
     onSubmit: async () => {
       setProblem(null);
       setSaved(false);
@@ -77,7 +108,6 @@ function StorageForm({ initial, canStoreCredentials, say, locale, onSaved }: { i
     }
   };
   const needsTest = mode === STORAGE_MODE.s3 && !verified?.ok;
-  const step = (n: "write" | "read" | "delete") => ({ write: "stepWrite", read: "stepRead", delete: "stepDelete" })[n];
   return (
     <SettingsSection variant="flat" title={say("settings.storage.title")} description={say("settings.storage.lead")} data-testid="settings-stockage">
       {/* The person's own S3 is offered only where this installation can keep its credentials (the review's E4): never a choice that cannot be taken. */}
@@ -107,18 +137,7 @@ function StorageForm({ initial, canStoreCredentials, say, locale, onSaved }: { i
                 {say("settings.storage.test")}
               </Button>
             </div>
-            {verified && verified.steps.length > 0 ? (
-              <div className="flex flex-col gap-2" data-testid="connection-result">
-                <ul className="m-0 flex list-none flex-col gap-1 p-0 text-sm">
-                  {verified.steps.map((s) => (
-                    <li key={s.name} className={s.ok ? "text-fg" : "text-danger"}>
-                      {s.ok ? "✓" : "✕"} {say(`settings.storage.${step(s.name)}`)} · {s.ok ? say("settings.storage.stepOk") : `${say("settings.storage.stepFail")}${s.error ? ` (${s.error})` : ""}`}
-                    </li>
-                  ))}
-                </ul>
-                {verified.ok && verified.host ? <Alert tone={verified.residency === "canada" ? "success" : "warning"}>{say(verified.residency === "canada" ? "settings.storage.whereCanada" : "settings.storage.whereElsewhere", { host: verified.host, region: verified.region })}</Alert> : null}
-              </div>
-            ) : null}
+            {verified && verified.steps.length > 0 ? <ConnectionResult verified={verified} say={say} /> : null}
           </>
         ) : null}
         {mode === STORAGE_MODE.none ? null : (

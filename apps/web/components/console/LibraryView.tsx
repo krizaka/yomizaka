@@ -55,42 +55,14 @@ export function LibraryView({ libraries, documents, latest = [], tags, perspecti
     <PageHeader
       title={say("shell.titles.library")}
       description={say("library.lead")}
-      actions={
-        <span className="flex flex-wrap items-center gap-3" data-testid="library-actions">
-          {first ? <CreateButton kind="collection" parentId={first.id} /> : null}
-          {screen.secondary ? (
-            <Button asChild variant="secondary" size="md">
-              <Link href={`/${locale}${screen.secondary}`}>{say("library.screeningCta")}</Link>
-            </Button>
-          ) : null}
-        </span>
-      }
+      actions={<LibraryActions firstId={first?.id} secondary={screen.secondary} />}
     />
   );
   if (nothingYet) {
     return (
       <div className="flex flex-col gap-8">
         {header}
-        <section className="mx-auto flex w-full max-w-3xl flex-col gap-5" aria-label={say("library.emptyTitle")} data-testid="library-empty">
-          <EmptyState icon={<Mascot bird="owl" mood="welcome" size={120} />} title={say("library.emptyTitle")} description={say("library.emptyPitch")} />
-          <LibraryDrop
-            zone
-            jurisdictions={jurisdictions}
-            examples={(add) =>
-              examples ? (
-                <div className="flex flex-wrap items-center gap-2" data-testid="library-examples">
-                  <span className="text-sm text-fg-secondary">{say("library.tryExamples")}</span>
-                  {order.map((role) => (
-                    <Chip key={role} size="sm" selected={false} onClick={() => add([new File([examples[role].text], examples[role].filename, { type: "text/plain" })])}>
-                      {say(role === "tenant" ? "library.exampleTenant" : "library.exampleLandlord")}
-                    </Chip>
-                  ))}
-                  <span className="text-xs text-fg-muted">{say("library.examplesNote")}</span>
-                </div>
-              ) : null
-            }
-          />
-        </section>
+        <LibraryEmpty jurisdictions={jurisdictions} examples={examples} order={order} />
       </div>
     );
   }
@@ -107,96 +79,152 @@ export function LibraryView({ libraries, documents, latest = [], tags, perspecti
         title={say("shell.titles.library")}
         date={<Today now={now} />}
         description={todo ? <HomeLead todo={todo} /> : say("library.lead")}
-        actions={
-          <span className="flex flex-wrap items-center gap-3" data-testid="library-actions">
-            {first ? <CreateButton kind="collection" parentId={first.id} /> : null}
-            {screen.secondary ? (
-              <Button asChild variant="secondary" size="md">
-                <Link href={`/${locale}${screen.secondary}`}>{say("library.screeningCta")}</Link>
-              </Button>
-            ) : null}
-          </span>
-        }
-        side={
-          <>
-            <QuickAccess applicantFiles={screening} />
-            {strip.length ? <ActivityStrip figures={strip} period={period} collection={selected?.id ?? null} /> : null}
-            <WeekChart days={weekOf(activity)} />
-            {credits ? <Credits figure={credits} /> : null}
-          </>
-        }
+        actions={<LibraryActions firstId={first?.id} secondary={screen.secondary} />}
+        side={<LibrarySide screening={screening} strip={strip} period={period} collectionId={selected?.id ?? null} activity={activity} credits={credits} />}
       >
         <Widget title={say("home.binder.title")} span="full" data-testid="binder">
           {tabs.length === 0 ? <p className="m-0 text-sm text-fg-secondary">{say("organisation.noCollections")}</p> : <BinderTabs tabs={tabs} selectedHref={homeHref(locale, { period, collection: selected?.id ?? null })} />}
-          {selected && lib ? (
-            <div className="relative mt-3 h-full" data-testid="collection-card">
-              <LinkCard
-                href={libraryPath(locale, lib.id, selected.id)}
-                linkAs={Link}
-                className="h-full pr-12"
-                icon={<CollectionMark id={selected.id} name={labelOf(selected)} avatar={selected.avatar} />}
-                title={labelOf(selected)}
-                meta={selected.isDefault ? say("organisation.default") : undefined}
-                description={`${say(pluralKey("organisation.files", selected.files), { count: selected.files })}${selected.folders > 0 ? ` · ${say(pluralKey("organisation.folders", selected.folders), { count: selected.folders })}` : ""}`}
-                extra={
-                  <div className="flex flex-wrap items-center gap-2 text-sm text-fg-secondary" data-testid="collection-last-check">
-                    {selected.lastCheck ? (
-                      <>
-                        <Badge tone={STATUS_TONE[selected.lastCheck.status]} size="sm">
-                          {say(`statuses.${selected.lastCheck.status}`)}
-                        </Badge>
-                        <span>{say("organisation.lastCheck", { date: formatDate(selected.lastCheck.at, locale) })}</span>
-                      </>
-                    ) : (
-                      <span>{say("organisation.neverChecked")}</span>
-                    )}
-                    <TagChips tags={selected.tags} />
-                  </div>
-                }
-              />
-              {/* The card is one link; its menu sits beside it, over the corner, never inside the anchor. */}
-              <span className="absolute right-2 top-2">
-                <ItemMenu kind="collection" id={selected.id} name={labelOf(selected)} avatar={selected.avatar} isDefault={selected.isDefault} collections={destinations} tags={tags} current={selected.tags.map((t) => t.id)} />
-              </span>
-            </div>
-          ) : null}
+          {selected && lib ? <CollectionCard libraryId={lib.id} selected={selected} label={labelOf(selected)} destinations={destinations} tags={tags} /> : null}
         </Widget>
 
-        <Widget
-          title={say("organisation.latestChecks")}
-          span="full"
-          data-testid="latest-checks"
-          action={
-            latest.length ? (
-              <Link href={`/${locale}${CONSOLE_ROUTES.checks}`} className="text-sm font-semibold text-fg-accent hover:underline">
-                {say("organisation.seeAll")} →
-              </Link>
-            ) : undefined
-          }
-        >
-          {latest.length === 0 ? (
-            <p className="m-0 text-sm text-fg-secondary">{say("organisation.noChecks")}</p>
-          ) : (
-            <ul className="m-0 flex list-none flex-col divide-y divide-border-default rounded-lg border border-border-default p-0">
-              {latest.map((c) => (
-                <li key={c.id}>
-                  <Link href={`/${locale}/app/documents/${c.documentId}/rapport`} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 hover:bg-surface-1">
-                    <span className="flex min-w-0 items-center gap-2">
-                      <Badge tone={STATUS_TONE[c.result]} dot size="sm">
-                        {say(`statuses.${c.result}`)}
-                      </Badge>
-                      <span className="min-w-0 break-words font-semibold text-fg">{c.title}</span>
-                    </span>
-                    <span className="text-xs text-fg-muted">
-                      {say(`kinds.${c.kind}`)} · {formatDate(c.at, locale)}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Widget>
+        <LatestChecks latest={latest} />
       </DashboardLayout>
     </>
+  );
+}
+
+function LibrarySide({ screening, strip, period, collectionId, activity, credits }: Readonly<{ screening: boolean; strip: readonly StripFigure[]; period: HomePeriod; collectionId: string | null; activity: readonly ActivityDay[]; credits: CreditsFigure | null }>) {
+  return (
+    <>
+      <QuickAccess applicantFiles={screening} />
+      {strip.length ? <ActivityStrip figures={strip} period={period} collection={collectionId} /> : null}
+      <WeekChart days={weekOf(activity)} />
+      {credits ? <Credits figure={credits} /> : null}
+    </>
+  );
+}
+
+type Collection = LibraryOverview["collections"][number];
+
+function LibraryActions({ firstId, secondary }: Readonly<{ firstId?: string; secondary?: string | null }>) {
+  const { say, locale } = useSay();
+  return (
+    <span className="flex flex-wrap items-center gap-3" data-testid="library-actions">
+      {firstId ? <CreateButton kind="collection" parentId={firstId} /> : null}
+      {secondary ? (
+        <Button asChild variant="secondary" size="md">
+          <Link href={`/${locale}${secondary}`}>{say("library.screeningCta")}</Link>
+        </Button>
+      ) : null}
+    </span>
+  );
+}
+
+/** Nothing at all yet: the owl, one sentence, the only drop zone, and two examples. */
+function LibraryEmpty({ jurisdictions, examples, order }: Readonly<{ jurisdictions: readonly Jurisdiction[]; examples?: ExampleDocuments; order: readonly ("tenant" | "landlord")[] }>) {
+  const { say } = useSay();
+  return (
+    <section className="mx-auto flex w-full max-w-3xl flex-col gap-5" aria-label={say("library.emptyTitle")} data-testid="library-empty">
+      <EmptyState icon={<Mascot bird="owl" mood="welcome" size={120} />} title={say("library.emptyTitle")} description={say("library.emptyPitch")} />
+      <LibraryDrop
+        zone
+        jurisdictions={jurisdictions}
+        examples={(add) =>
+          examples ? (
+            <div className="flex flex-wrap items-center gap-2" data-testid="library-examples">
+              <span className="text-sm text-fg-secondary">{say("library.tryExamples")}</span>
+              {order.map((role) => (
+                <Chip key={role} size="sm" selected={false} onClick={() => add([new File([examples[role].text], examples[role].filename, { type: "text/plain" })])}>
+                  {say(role === "tenant" ? "library.exampleTenant" : "library.exampleLandlord")}
+                </Chip>
+              ))}
+              <span className="text-xs text-fg-muted">{say("library.examplesNote")}</span>
+            </div>
+          ) : null
+        }
+      />
+    </section>
+  );
+}
+
+function LastCheckExtra({ selected }: Readonly<{ selected: Collection }>) {
+  const { say, locale } = useSay();
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-sm text-fg-secondary" data-testid="collection-last-check">
+      {selected.lastCheck ? (
+        <>
+          <Badge tone={STATUS_TONE[selected.lastCheck.status]} size="sm">
+            {say(`statuses.${selected.lastCheck.status}`)}
+          </Badge>
+          <span>{say("organisation.lastCheck", { date: formatDate(selected.lastCheck.at, locale) })}</span>
+        </>
+      ) : (
+        <span>{say("organisation.neverChecked")}</span>
+      )}
+      <TagChips tags={selected.tags} />
+    </div>
+  );
+}
+
+function CollectionCard({ libraryId, selected, label, destinations, tags }: Readonly<{ libraryId: string; selected: Collection; label: string; destinations: { id: string; name: string; avatar: Collection["avatar"] }[]; tags: TagOption[] }>) {
+  const { say, locale } = useSay();
+  const folders = selected.folders > 0 ? ` · ${say(pluralKey("organisation.folders", selected.folders), { count: selected.folders })}` : "";
+  return (
+    <div className="relative mt-3 h-full" data-testid="collection-card">
+      <LinkCard
+        href={libraryPath(locale, libraryId, selected.id)}
+        linkAs={Link}
+        className="h-full pr-12"
+        icon={<CollectionMark id={selected.id} name={label} avatar={selected.avatar} />}
+        title={label}
+        meta={selected.isDefault ? say("organisation.default") : undefined}
+        description={`${say(pluralKey("organisation.files", selected.files), { count: selected.files })}${folders}`}
+        extra={<LastCheckExtra selected={selected} />}
+      />
+      {/* The card is one link; its menu sits beside it, over the corner, never inside the anchor. */}
+      <span className="absolute right-2 top-2">
+        <ItemMenu kind="collection" id={selected.id} name={label} avatar={selected.avatar} isDefault={selected.isDefault} collections={destinations} tags={tags} current={selected.tags.map((t) => t.id)} />
+      </span>
+    </div>
+  );
+}
+
+function LatestChecks({ latest }: Readonly<{ latest: CheckSummary[] }>) {
+  const { say, locale } = useSay();
+  return (
+    <Widget
+      title={say("organisation.latestChecks")}
+      span="full"
+      data-testid="latest-checks"
+      action={
+        latest.length ? (
+          <Link href={`/${locale}${CONSOLE_ROUTES.checks}`} className="text-sm font-semibold text-fg-accent hover:underline">
+            {say("organisation.seeAll")} →
+          </Link>
+        ) : undefined
+      }
+    >
+      {latest.length === 0 ? (
+        <p className="m-0 text-sm text-fg-secondary">{say("organisation.noChecks")}</p>
+      ) : (
+        <ul className="m-0 flex list-none flex-col divide-y divide-border-default rounded-lg border border-border-default p-0">
+          {latest.map((c) => (
+            <li key={c.id}>
+              <Link href={`/${locale}/app/documents/${c.documentId}/rapport`} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 hover:bg-surface-1">
+                <span className="flex min-w-0 items-center gap-2">
+                  <Badge tone={STATUS_TONE[c.result]} dot size="sm">
+                    {say(`statuses.${c.result}`)}
+                  </Badge>
+                  <span className="min-w-0 break-words font-semibold text-fg">{c.title}</span>
+                </span>
+                <span className="text-xs text-fg-muted">
+                  {say(`kinds.${c.kind}`)} · {formatDate(c.at, locale)}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Widget>
   );
 }

@@ -160,13 +160,7 @@ export function FilesView({ files: all, states = [], types, origin, workspace }:
       {workspace ? (
         <FilterBar
           label={say("dossiers.filters.bar")}
-          active={[
-            ...(filters.tags ?? []).flatMap((id): ActiveFilter[] => {
-              const tag = workspace.tags.find((t) => t.id === id);
-              return tag ? [{ id: `tag:${id}`, label: tag.name, onRemove: () => go({ ...filters, tags: (filters.tags ?? []).filter((x) => x !== id) }) }] : [];
-            }),
-            ...(filters.status ?? []).map((key): ActiveFilter => ({ id: `status:${key}`, label: decisionLabel(key), onRemove: () => go({ ...filters, status: (filters.status ?? []).filter((x) => x !== key) }) })),
-          ]}
+          active={activeFilters(filters, workspace.tags, decisionLabel, go)}
           onClearAll={() => go({})}
           clearLabel={say("dossiers.filters.clear")}
           removeLabel={(label) => say("dossiers.filters.remove", { label })}
@@ -186,29 +180,58 @@ export function FilesView({ files: all, states = [], types, origin, workspace }:
           </Link>
         </p>
       ) : null}
-      {states.length && !files.length ? (
-        <p className="m-0 text-sm text-fg-secondary">{say("dossiers.filter.none")}</p>
-      ) : !files.length && workspace && Object.values(filters).some((v) => (Array.isArray(v) ? v.length : !!v)) ? (
-        <p className="m-0 text-sm text-fg-secondary" data-testid="files-nothing">
-          {say("dossiers.filters.nothing")}
-        </p>
-      ) : files.length ? (
-        <DataTable caption={say("dossiers.caption")} rows={[...files]} columns={columns} getRowId={(f) => f.id} rowLabel={(f) => f.candidateName} pageSize={12} labels={labels} phone="list"
-          {...(workspace
-            ? {
-                selectable: true,
-                selected,
-                onSelectedChange: setSelected,
-                bulkMax: BULK_MAX,
-                bulkResult,
-                bulkActions: ({ selected: ids, clear }) => <BulkActions kind={KIND.applicantFile} ids={ids} set={workspace.set} tags={workspace.tags} onResult={setBulkResult} onDone={clear} />,
-              }
-            : {})}
-        />
-      ) : (
-        <EmptyState icon={<Mascot bird="owl" mood="empty" size={120} />} title={say("dossiers.empty.title")} description={say("dossiers.empty.text")} action={ask("primary")} data-testid="files-empty" />
-      )}
+      <FilesBody
+        files={files}
+        states={states}
+        filtered={Boolean(workspace) && hasActiveFilter(filters)}
+        columns={columns}
+        labels={labels}
+        table={workspace ? { workspace, selected, onSelectedChange: setSelected, bulkResult, onBulkResult: setBulkResult } : null}
+        empty={<EmptyState icon={<Mascot bird="owl" mood="empty" size={120} />} title={say("dossiers.empty.title")} description={say("dossiers.empty.text")} action={ask("primary")} data-testid="files-empty" />}
+      />
     </div>
+  );
+}
+
+const hasActiveFilter = (filters: ViewFilters) => Object.values(filters).some((v) => (Array.isArray(v) ? v.length : !!v));
+
+/** The chips of the filter bar: a removable one per tag and per decision state in the address. */
+function activeFilters(filters: ViewFilters, tags: readonly TagOption[], decisionLabel: (key: string) => string, go: (next: ViewFilters) => void): ActiveFilter[] {
+  const byTag = (filters.tags ?? []).flatMap((id): ActiveFilter[] => {
+    const tag = tags.find((t) => t.id === id);
+    return tag ? [{ id: `tag:${id}`, label: tag.name, onRemove: () => go({ ...filters, tags: (filters.tags ?? []).filter((x) => x !== id) }) }] : [];
+  });
+  const byStatus = (filters.status ?? []).map((key): ActiveFilter => ({ id: `status:${key}`, label: decisionLabel(key), onRemove: () => go({ ...filters, status: (filters.status ?? []).filter((x) => x !== key) }) }));
+  return [...byTag, ...byStatus];
+}
+
+type TableSelection = { workspace: FilesWorkspace; selected: string[]; onSelectedChange: (ids: string[]) => void; bulkResult: string; onBulkResult: (message: string) => void };
+
+/** What sits under the filters: why nothing is listed, the table (selectable in a workspace), or the empty state. */
+function FilesBody({ files, states, filtered, columns, labels, table, empty }: Readonly<{ files: readonly FileSummary[]; states: readonly LinkState[]; filtered: boolean; columns: DataTableColumn<FileSummary>[]; labels: ReturnType<typeof tableLabels>; table: TableSelection | null; empty: React.ReactNode }>) {
+  const { say } = useSay();
+  if (!files.length && states.length) return <p className="m-0 text-sm text-fg-secondary">{say("dossiers.filter.none")}</p>;
+  if (!files.length && filtered) {
+    return (
+      <p className="m-0 text-sm text-fg-secondary" data-testid="files-nothing">
+        {say("dossiers.filters.nothing")}
+      </p>
+    );
+  }
+  if (!files.length) return <>{empty}</>;
+  return (
+    <DataTable caption={say("dossiers.caption")} rows={[...files]} columns={columns} getRowId={(f) => f.id} rowLabel={(f) => f.candidateName} pageSize={12} labels={labels} phone="list"
+      {...(table
+        ? {
+            selectable: true,
+            selected: table.selected,
+            onSelectedChange: table.onSelectedChange,
+            bulkMax: BULK_MAX,
+            bulkResult: table.bulkResult,
+            bulkActions: ({ selected: ids, clear }: { selected: string[]; clear: () => void }) => <BulkActions kind={KIND.applicantFile} ids={ids} set={table.workspace.set} tags={table.workspace.tags} onResult={table.onBulkResult} onDone={clear} />,
+          }
+        : {})}
+    />
   );
 }
 

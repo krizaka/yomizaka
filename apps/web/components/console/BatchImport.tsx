@@ -34,6 +34,17 @@ interface Preview {
 const STATE_TONE = { check: "accent", reuse: "success", refused: "danger" } as const;
 const isCsv = (f: File) => /\.csv$/i.test(f.name) || f.type === "text/csv";
 
+/** The documents kept after a drop: the earlier ones the drop does not replace by name, then the dropped documents (the CSV is the manifest). */
+export function mergeDocuments(kept: readonly File[], dropped: readonly File[]): File[] {
+  return [...kept.filter((f) => !dropped.some((d) => d.name === f.name)), ...dropped.filter((f) => !isCsv(f))];
+}
+
+/** The key of the sentence that says what the batch costs. */
+export function costKey(cost: Preview["cost"]): "batch.cost.pro" | "batch.cost.covered" | "batch.cost.short" {
+  if (cost.pro) return "batch.cost.pro";
+  return cost.covered ? "batch.cost.covered" : "batch.cost.short";
+}
+
 /**
  * A batch of checks (yomizaka#232): drop the CSV and the documents it names together; the preview says row by row what will
  * be checked, reused (no audit) or refused and why, and the audits it costs; then one action starts it and its page follows it.
@@ -57,7 +68,7 @@ export function BatchImport() {
 
   const onFiles = async (dropped: File[]) => {
     const csv = dropped.find(isCsv) ?? manifest;
-    const docs = [...files.filter((f) => !dropped.some((d) => d.name === f.name)), ...dropped.filter((f) => !isCsv(f))];
+    const docs = mergeDocuments(files, dropped);
     setManifest(csv);
     setFiles(docs);
     setProblem(null);
@@ -114,23 +125,28 @@ export function BatchImport() {
       {problem ? <Alert tone="danger">{problem}</Alert> : null}
       {busy === "preview" ? <p className="text-sm text-fg-secondary">{say("batch.previewing")}</p> : null}
 
-      {preview ? (
-        <Card.Root className="flex flex-col gap-4 p-4">
-          {preview.missingColumns.length ? <Alert tone="danger">{say("batch.missingColumns", { columns: preview.missingColumns.join(", ") })}</Alert> : null}
-          {preview.unknownColumns.length ? <Alert tone="info">{say("batch.unknownColumns", { columns: preview.unknownColumns.join(", ") })}</Alert> : null}
-          {preview.unnamedFiles.length ? <Alert tone="info">{say("batch.unnamedFiles", { files: preview.unnamedFiles.join(", ") })}</Alert> : null}
-          <p className="text-sm text-fg">{say("batch.summary", { check: preview.counts.check, reuse: preview.counts.reuse, refused: preview.counts.refused })}</p>
-          <Alert tone={preview.cost.covered ? "success" : "warning"}>
-            {preview.cost.pro ? say("batch.cost.pro", { audits: preview.cost.audits }) : preview.cost.covered ? say("batch.cost.covered", { audits: preview.cost.audits, credits: preview.cost.credits }) : say("batch.cost.short", { audits: preview.cost.audits, credits: preview.cost.credits })}
-          </Alert>
-          <DataTable caption={say("batch.previewCaption")} rows={preview.rows} columns={columns} getRowId={(r) => String(r.line)} rowLabel={(r) => r.file} pageSize={12} />
-          <div>
-            <Button variant="primary" size="md" shape="cut" loading={busy === "start"} disabled={!preview.counts.check && !preview.counts.reuse} onClick={start}>
-              {say("batch.start", { count: preview.counts.check + preview.counts.reuse })}
-            </Button>
-          </div>
-        </Card.Root>
-      ) : null}
+      {preview ? <PreviewPanel preview={preview} columns={columns} starting={busy === "start"} onStart={start} /> : null}
     </div>
+  );
+}
+
+function PreviewPanel({ preview, columns, starting, onStart }: Readonly<{ preview: Preview; columns: DataTableColumn<PreviewRow>[]; starting: boolean; onStart: () => void }>) {
+  const { say } = useSay();
+  return (
+    <Card.Root className="flex flex-col gap-4 p-4">
+      {preview.missingColumns.length ? <Alert tone="danger">{say("batch.missingColumns", { columns: preview.missingColumns.join(", ") })}</Alert> : null}
+      {preview.unknownColumns.length ? <Alert tone="info">{say("batch.unknownColumns", { columns: preview.unknownColumns.join(", ") })}</Alert> : null}
+      {preview.unnamedFiles.length ? <Alert tone="info">{say("batch.unnamedFiles", { files: preview.unnamedFiles.join(", ") })}</Alert> : null}
+      <p className="text-sm text-fg">{say("batch.summary", { check: preview.counts.check, reuse: preview.counts.reuse, refused: preview.counts.refused })}</p>
+      <Alert tone={preview.cost.covered ? "success" : "warning"}>
+        {say(costKey(preview.cost), preview.cost.pro ? { audits: preview.cost.audits } : { audits: preview.cost.audits, credits: preview.cost.credits })}
+      </Alert>
+      <DataTable caption={say("batch.previewCaption")} rows={preview.rows} columns={columns} getRowId={(r) => String(r.line)} rowLabel={(r) => r.file} pageSize={12} />
+      <div>
+        <Button variant="primary" size="md" shape="cut" loading={starting} disabled={!preview.counts.check && !preview.counts.reuse} onClick={onStart}>
+          {say("batch.start", { count: preview.counts.check + preview.counts.reuse })}
+        </Button>
+      </div>
+    </Card.Root>
   );
 }

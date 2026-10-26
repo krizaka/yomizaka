@@ -41,6 +41,47 @@ import { StartCards, StartCheckActions } from "./StartChecks";
 /** Where the document sits: its collection (the way back), or null when the page could not say. */
 export interface DocumentPlace { libraryId: string; collectionId: string; name: string; isDefault: boolean }
 
+type Say = ReturnType<typeof useSay>["say"];
+type Facts = ReturnType<typeof documentFacts>;
+type StartProps = Parameters<typeof StartCheckActions>[0];
+
+function retentionText(doc: DocumentViewData, say: Say, locale: Parameters<typeof formatDate>[1]): string {
+  if (doc.purged) return say("document.where.retentionNotKept");
+  if (doc.retainUntil) return say("document.where.retentionUntil", { date: formatDate(doc.retainUntil, locale) });
+  return say("document.where.retentionNone");
+}
+
+/** « Voir dans le fichier »: on a narrow screen the file sits above the findings, bring it into view; the viewer scrolls to the passage itself. */
+function bringIntoView(id: string, viewer: HTMLElement | null, textShown: boolean) {
+  if (globalThis.matchMedia?.("(max-width: 1279px)").matches) viewer?.scrollIntoView({ block: "start", behavior: globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  if (textShown) document.getElementById(`passage-${id}`)?.scrollIntoView({ block: "center" });
+}
+
+/** The aside of a reported document: its facts, the other checks as actions and the sharing (design § 5.3). */
+function ReportAside({ doc, facts, placeName, retention, startProps }: Readonly<{ doc: DocumentViewData; facts: Facts; placeName: string | null; retention: string; startProps: Omit<StartProps, "done"> }>) {
+  const { say } = useSay();
+  const { latestCompliance, certifiable } = facts;
+  return (
+    <div className="flex flex-col gap-6" data-testid="report-aside-column">
+      <section aria-labelledby="document-facts-title" className="flex flex-col gap-2" data-testid="document-facts">
+        <h2 id="document-facts-title" className="m-0 text-base font-bold text-fg">
+          {say("document.facts.title")}
+        </h2>
+        <DescriptionList items={[...(placeName ? [{ term: say("document.facts.collection"), details: placeName }] : []), { term: say("document.file"), details: <span className="break-all">{doc.filename}</span> }, { term: say("document.where.title"), details: retention }]} />
+      </section>
+      <StartCheckActions {...startProps} done={facts.done} />
+      {certifiable && latestCompliance ? (
+        <section aria-label={say("reportFace.whoSees")} className="flex flex-col gap-2" data-testid="report-aside">
+          <h2 className="m-0 text-base font-bold text-fg">{say("reportFace.whoSees")}</h2>
+          <p className="m-0 text-sm text-fg-secondary">{say("reportFace.onlyYou")}</p>
+          <ReportShare documentId={doc.id} analysisId={latestCompliance.id} />
+          <p className="m-0 text-xs text-fg-muted">{say("analysis.language")}</p>
+        </section>
+      ) : null}
+    </div>
+  );
+}
+
 export function DocumentView({ initial, tab, place = null, perspective = null, offer }: { initial: DocumentViewData; tab: DocumentTab; place?: DocumentPlace | null; perspective?: Audience | null; offer: { studios: readonly Studio[]; jurisdictions: readonly Jurisdiction[]; rulesets: readonly string[] } }) {
   const { say, locale } = useSay();
   const router = useRouter();
@@ -76,18 +117,15 @@ export function DocumentView({ initial, tab, place = null, perspective = null, o
     activeId,
     onSelect: (id) => {
       setActiveId(id);
-      if (id) {
-        go("document", `?finding=${encodeURIComponent(id)}`);
-        // On a narrow screen the file sits above the findings: bring it into view; the viewer scrolls to the passage itself.
-        if (window.matchMedia?.("(max-width: 1279px)").matches) viewerRef.current?.scrollIntoView({ block: "start", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
-        if (!isPdf || doc.textSource) document.getElementById(`passage-${id}`)?.scrollIntoView({ block: "center" });
-      }
+      if (!id) return;
+      go("document", `?finding=${encodeURIComponent(id)}`);
+      bringIntoView(id, viewerRef.current, !isPdf || Boolean(doc.textSource));
     },
   };
   const startProps = { doc, perspective, offer, examinable: facts.examinable, running: facts.running };
   const startCards = <StartCards {...startProps} />;
   const placeName = place ? collectionLabel(place.name, place.isDefault, say("organisation.defaultName")) : null;
-  const retention = doc.purged ? say("document.where.retentionNotKept") : doc.retainUntil ? say("document.where.retentionUntil", { date: formatDate(doc.retainUntil, locale) }) : say("document.where.retentionNone");
+  const retention = retentionText(doc, say, locale);
 
   return (
     <DetailLayout
@@ -109,37 +147,17 @@ export function DocumentView({ initial, tab, place = null, perspective = null, o
         </Tabs.Nav>
       }
       aside={
-        facts.reported ? (
-          <div className="flex flex-col gap-6" data-testid="report-aside-column">
-            <section aria-labelledby="document-facts-title" className="flex flex-col gap-2" data-testid="document-facts">
-              <h2 id="document-facts-title" className="m-0 text-base font-bold text-fg">
-                {say("document.facts.title")}
-              </h2>
-              <DescriptionList items={[...(placeName ? [{ term: say("document.facts.collection"), details: placeName }] : []), { term: say("document.file"), details: <span className="break-all">{doc.filename}</span> }, { term: say("document.where.title"), details: retention }]} />
-            </section>
-            <StartCheckActions {...startProps} done={facts.done} />
-            {certifiable && latestCompliance ? (
-              <section aria-label={say("reportFace.whoSees")} className="flex flex-col gap-2" data-testid="report-aside">
-                <h2 className="m-0 text-base font-bold text-fg">{say("reportFace.whoSees")}</h2>
-                <p className="m-0 text-sm text-fg-secondary">{say("reportFace.onlyYou")}</p>
-                <ReportShare documentId={doc.id} analysisId={latestCompliance.id} />
-                <p className="m-0 text-xs text-fg-muted">{say("analysis.language")}</p>
-              </section>
-            ) : null}
-          </div>
-        ) : undefined
+        facts.reported ? <ReportAside doc={doc} facts={facts} placeName={placeName} retention={retention} startProps={startProps} /> : undefined
       }
     >
       {doc.analyses.filter((a) => a.status === ANALYSIS_STATUS.running).map((a) => (
         <LiveAnalysis key={a.id} documentId={doc.id} analysis={a} />
       ))}
-      {tab === "rapport" ? (
-        <DocumentReportTab doc={doc} facts={facts} selection={selection} perspective={perspective} startCards={startCards} />
-      ) : tab === "document" ? (
+      {tab === "rapport" ? <DocumentReportTab doc={doc} facts={facts} selection={selection} perspective={perspective} startCards={startCards} /> : null}
+      {tab === "document" ? (
         <DocumentFileTab doc={doc} path={path} isPdf={isPdf} report={latestReport} viewer={{ fileUrl, highlights, activeId, onActiveChange: setActiveId, onLocate: setFound }} viewerRef={viewerRef} found={found} onDelete={() => remove.mutate()} deleting={remove.isPending} />
-      ) : (
-        <DocumentHistoryTab doc={doc} path={path} latestCompliance={latestCompliance} />
-      )}
+      ) : null}
+      {tab === "historique" ? <DocumentHistoryTab doc={doc} path={path} latestCompliance={latestCompliance} /> : null}
     </DetailLayout>
   );
 }
