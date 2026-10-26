@@ -4,6 +4,7 @@ import { audit } from "./audit";
 import { query, withBlockingLock } from "./db";
 import { SEED_FLOWS } from "./flows-seed";
 import { refuse } from "./http";
+import { logError } from "./log";
 
 /**
  * Flows are data (ADR-0003): defined and administered in the database by the platform administrator, read by the app. This
@@ -52,7 +53,7 @@ export async function availableFlows(environment: FlowEnvironment, options: { fa
     });
   } catch (error) {
     if (!options.fallback) throw error;
-    console.error("flows: the database could not be read, using the seeded definitions", error instanceof Error ? error.message : error);
+    logError("flows: the database could not be read, using the seeded definitions", error);
     return seedFlows(environment);
   }
 }

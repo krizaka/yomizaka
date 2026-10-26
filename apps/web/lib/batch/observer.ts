@@ -1,3 +1,4 @@
+import { logError } from "../log";
 import type { BatchView } from "./run";
 
 /**
@@ -19,6 +20,6 @@ export async function notifyFinished(ownerId: string, batch: BatchView, now: Dat
   try {
     await holder.__yomizakaBatchObserver?.finished(ownerId, batch, now);
   } catch (error) {
-    console.error(`[yomizaka] batch ${batch.id}: the finished observer failed`, error);
+    logError(`[yomizaka] batch ${batch.id}: the finished observer failed`, error);
   }
 }

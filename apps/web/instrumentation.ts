@@ -4,28 +4,41 @@
  */
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
+  try {
+    await start();
+  } catch (error) {
+    // The platform prints what is thrown: only a described, redacted error leaves here, never the original, which can hold a connection string (yomizaka#386).
+    const { logError } = await import("./lib/log");
+    const { sanitizedError } = await import("./lib/redact");
+    logError("[yomizaka] start-up failed:", error);
+    throw sanitizedError(error);
+  }
+}
+
+async function start() {
+  const { logInfo, logWarn, logError } = await import("./lib/log");
   const { assertProductionEnv, readEnv } = await import("./lib/env");
   assertProductionEnv();
   if (!readEnv().DATABASE_URL) {
-    console.warn("[yomizaka] DATABASE_URL is not set: the public pages work, the library does not.");
+    logWarn("[yomizaka] DATABASE_URL is not set: the public pages work, the library does not.");
     return;
   }
   const { migrate } = await import("./lib/db");
   const applied = await migrate();
-  if (applied.length) console.log(`[yomizaka] migrations applied: ${applied.join(", ")}`);
+  if (applied.length) logInfo(`[yomizaka] migrations applied: ${applied.join(", ")}`);
   const { seedDatabase } = await import("./lib/flows");
   const seeded = await seedDatabase();
-  if (seeded.length) console.log(`[yomizaka] flows seeded: ${seeded.join(", ")}`);
+  if (seeded.length) logInfo(`[yomizaka] flows seeded: ${seeded.join(", ")}`);
   // The organised workspace's defaults (the decision set, the system views, the tag rules): written once, then the database is the source of truth (yomizaka#324).
   const { seedWorkspace } = await import("./lib/workspace/service");
   const { systemClock } = await import("./app/system-clock");
   const workspace = await seedWorkspace(systemClock);
-  if (workspace.length) console.log(`[yomizaka] workspace seeded: ${workspace.join(", ")}`);
+  if (workspace.length) logInfo(`[yomizaka] workspace seeded: ${workspace.join(", ")}`);
   const e = readEnv();
   const { appSettings } = await import("./lib/settings/instance");
   const { seedLegacySettings } = await import("./lib/settings/seed");
   const legacy = await seedLegacySettings(appSettings(), { signupOpen: e.AUTH_SIGNUP_ENABLED, purgeAfterHours: e.APP_PURGE_AFTER_HOURS }, new Date());
-  if (legacy.length) console.log(`[yomizaka] settings seeded from the environment: ${legacy.join(", ")}`);
+  if (legacy.length) logInfo(`[yomizaka] settings seeded from the environment: ${legacy.join(", ")}`);
   // A batch advances without anyone looking at it (yomizaka#240): the interval is a setting, re-read at every look.
   const { sessionSecret } = await import("./lib/env");
   const { registerBatchWebhooks, deliverWebhooks } = await import("./lib/webhooks/emit");
@@ -36,12 +49,12 @@ export async function register() {
   startScheduler({
     seconds: async () => (await appSettings().get("limits.batchTickSeconds")) as number,
     run: async () => {
-      const report = await tickBatches(new Date(), appEnvironment(), (message, error) => console.error(`[yomizaka] ${message}`, error));
-      if (report.advanced || report.failed) console.log(`[yomizaka] batch tick: ${report.advanced} advanced, ${report.failed} failed`);
+      const report = await tickBatches(new Date(), appEnvironment(), (message, error) => logError(`[yomizaka] ${message}`, error));
+      if (report.advanced || report.failed) logInfo(`[yomizaka] batch tick: ${report.advanced} advanced, ${report.failed} failed`);
       // The webhooks queued by closed batches ride the same tick (yomizaka#241).
       const sent = await deliverWebhooks(sessionSecret(), new Date(), { timeoutMs: 8000 });
-      if (sent && (sent.delivered || sent.retried || sent.failed)) console.log(`[yomizaka] webhooks: ${sent.delivered} delivered, ${sent.retried} to retry, ${sent.failed} given up`);
+      if (sent && (sent.delivered || sent.retried || sent.failed)) logInfo(`[yomizaka] webhooks: ${sent.delivered} delivered, ${sent.retried} to retry, ${sent.failed} given up`);
     },
-    onError: (error) => console.error("[yomizaka] batch tick", error),
+    onError: (error) => logError("[yomizaka] batch tick", error),
   });
 }
