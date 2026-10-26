@@ -18,7 +18,7 @@ import { useRouteState } from "@/lib/use-route-state";
 /*
  * « Vérifier un document », B2 (yomizaka#333, design § 5.4): the plan strip, and the catalogue of the checks Yomizaka runs — a
  * search, chips with their counts, and a row each with « Disponible » and its one action, which names the kind and leads to the drop.
- * TODO(krizaka-ui#711): `CataloguePage` has no « task column » beside the results (the drop, the run): the two columns are composed here
+ * Waiting on krizaka-ui#711: `CataloguePage` has no « task column » beside the results (the drop, the run): the two columns are composed here
  * from `PlanStrip`, `Chip.Group`, `SearchField` and `List` until it has.
  */
 

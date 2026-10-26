@@ -21,10 +21,10 @@ import { formatDate, INTL } from "./format";
 /*
  * The pieces of the B2 home (yomizaka#332, design § 5.6) that are not the binder: the sentence under the heading, and the
  * side column — quick access, the activity strip, the week, the credits. All of them are Krizaka UI / Krizaka Charts blocks.
- * TODO(krizaka-ui#651): the strip becomes `StatGrid variant="strip"` (one row, sparkline and trend in words) when it ships.
- * TODO(krizaka-ui#709): the quick access leads the side column via `DashboardLayout quickActionsPlacement="side"`.
- * TODO(krizaka-ui#710): the charts' French words (and the sparkline table's « Category » header) come from `@krizaka/charts` itself.
- * TODO(krizaka-ui#641): the credits meter, the period switch and the usage chart become `@krizaka/ui/usage` when it ships.
+ * Waiting on krizaka-ui#651: the strip becomes `StatGrid variant="strip"` (one row, sparkline and trend in words) when it ships.
+ * Waiting on krizaka-ui#709: the quick access leads the side column via `DashboardLayout quickActionsPlacement="side"`.
+ * Waiting on krizaka-ui#710: the charts' French words (and the sparkline table's « Category » header) come from `@krizaka/charts` itself.
+ * Waiting on krizaka-ui#641: the credits meter, the period switch and the usage chart become `@krizaka/ui/usage` when it ships.
  */
 
 const QUICK_ICONS: Record<QuickId, typeof CheckIcon> = { request: UsersIcon, documents: KnowledgeIcon, checks: CheckIcon, search: SearchIcon };
