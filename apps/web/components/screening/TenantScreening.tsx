@@ -40,7 +40,7 @@ export interface TenantWords {
  * The applicant's page, reached by the link: who asks, what is checked, why, who sees the result, for how long. They consent
  * or decline; they see the result first; they pass it on or contest it. No account, nothing hidden.
  */
-export function TenantScreening({ token, initial, words, locale }: { token: string; initial: TenantView; words: TenantWords; locale: string }) {
+export function TenantScreening({ token, initial, words, locale }: Readonly<{ token: string; initial: TenantView; words: TenantWords; locale: string }>) {
   const [view, setView] = useState(initial);
   const [problem, setProblem] = useState<string | null>(null);
   const [contesting, setContesting] = useState(false);

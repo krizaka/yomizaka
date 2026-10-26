@@ -29,7 +29,7 @@ import { formatDate, INTL } from "./format";
 const QUICK_ICONS: Record<QuickId, typeof CheckIcon> = { request: UsersIcon, documents: KnowledgeIcon, checks: CheckIcon, search: SearchIcon };
 
 /** The sentence under the heading: « Vous avez 6 vérifications à regarder, … », each figure a link to the view it counts. */
-export function HomeLead({ todo }: { todo: ToDo }) {
+export function HomeLead({ todo }: Readonly<{ todo: ToDo }>) {
   const { say, locale } = useSay();
   return (
     <>
@@ -60,7 +60,7 @@ function chartWords(say: ReturnType<typeof useSay>["say"]) {
 }
 
 /** The 7 · 30 · 90 d switch: the period lives in the address and keeps the binder's open tab. */
-function PeriodSwitch({ period, collection }: { period: HomePeriod; collection: string | null }) {
+function PeriodSwitch({ period, collection }: Readonly<{ period: HomePeriod; collection: string | null }>) {
   const { say, locale } = useSay();
   const href = (p: HomePeriod) => homeHref(locale, { period: p, collection });
   return (
@@ -77,7 +77,7 @@ function PeriodSwitch({ period, collection }: { period: HomePeriod; collection: 
 }
 
 /** The activity of the period as one discreet strip: compact figures, each with its sparkline. */
-export function ActivityStrip({ figures, period, collection }: { figures: readonly StripFigure[]; period: HomePeriod; collection: string | null }) {
+export function ActivityStrip({ figures, period, collection }: Readonly<{ figures: readonly StripFigure[]; period: HomePeriod; collection: string | null }>) {
   const { say, locale } = useSay();
   const words = chartWords(say);
   return (
@@ -103,7 +103,7 @@ export function ActivityStrip({ figures, period, collection }: { figures: readon
 }
 
 /** The checks of the last seven days, as bars; its table is in the page (the chart's own data table, for screen readers and « Voir les données »). */
-export function WeekChart({ days }: { days: readonly ActivityDay[] }) {
+export function WeekChart({ days }: Readonly<{ days: readonly ActivityDay[] }>) {
   const { say, locale } = useSay();
   return (
     <section className="flex flex-col gap-2" aria-label={say("home.week.title")} data-testid="week">
@@ -128,7 +128,7 @@ export function WeekChart({ days }: { days: readonly ActivityDay[] }) {
 }
 
 /** Where the person goes most, two by two. */
-export function QuickAccess({ applicantFiles }: { applicantFiles: boolean }) {
+export function QuickAccess({ applicantFiles }: Readonly<{ applicantFiles: boolean }>) {
   const { say, locale } = useSay();
   return (
     <nav aria-label={say("home.quick.label")} data-testid="quick-access">
@@ -145,7 +145,7 @@ export function QuickAccess({ applicantFiles }: { applicantFiles: boolean }) {
 }
 
 /** The credits: what the account has, from the billing state — the meter for Pro against its fair-use cap, the audits left otherwise. */
-export function Credits({ figure }: { figure: CreditsFigure }) {
+export function Credits({ figure }: Readonly<{ figure: CreditsFigure }>) {
   const { say, locale } = useSay();
   return (
     <section className="flex flex-col gap-2" aria-label={say("home.credits.title")} data-testid="credits">
@@ -169,7 +169,7 @@ export function Credits({ figure }: { figure: CreditsFigure }) {
 }
 
 /** Binder tabs: a tab per collection with its count, the open one in the address. */
-export function BinderTabs({ tabs, selectedHref }: { tabs: readonly BinderTab[]; selectedHref: string }) {
+export function BinderTabs({ tabs, selectedHref }: Readonly<{ tabs: readonly BinderTab[]; selectedHref: string }>) {
   const { say } = useSay();
   return (
     <Tabs.Nav label={say("home.binder.label")} current={selectedHref} variant="binder">

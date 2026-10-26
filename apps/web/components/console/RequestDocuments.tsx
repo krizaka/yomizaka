@@ -30,7 +30,7 @@ export interface AskableType {
  * ask for, among the requestable types only (`requestableTypes`; the schema and the service refuse the others too). The link
  * comes back once and is shown once, to copy; the list follows.
  */
-export function RequestDocuments({ types, origin, trigger }: { types: readonly AskableType[]; origin: string; trigger: React.ReactNode }) {
+export function RequestDocuments({ types, origin, trigger }: Readonly<{ types: readonly AskableType[]; origin: string; trigger: React.ReactNode }>) {
   const { say, locale } = useSay();
   const router = useRouter();
   const [problem, setProblem] = useState<string | null>(null);

@@ -29,7 +29,7 @@ const ICONS: Record<DocumentKind, typeof HomeIcon> = { lease: HomeIcon, contract
  * « Quel document ? » for one file whose kind Yomizaka did not recognise for sure (yomizaka#318, § 5.4 of the design
  * direction): the kinds as `ChoiceCards`, each with its title and its hint. Picking one starts the check of that file.
  */
-export function KindQuestion({ filename, onPick, disabled = false }: { filename: string; onPick: (kind: DocumentKind) => void; disabled?: boolean }) {
+export function KindQuestion({ filename, onPick, disabled = false }: Readonly<{ filename: string; onPick: (kind: DocumentKind) => void; disabled?: boolean }>) {
   const { say } = useSay();
   return (
     <ChoiceCards
@@ -47,7 +47,7 @@ export function KindQuestion({ filename, onPick, disabled = false }: { filename:
 }
 
 /** One row per file that landed, its stage in words (yomizaka#326): « Quel document ? » under each uncertain one; a row under way links to its report. */
-export function CheckQueue({ rows, onPick }: { rows: readonly CheckRow[]; onPick: (row: CheckRow, kind: DocumentKind) => void }) {
+export function CheckQueue({ rows, onPick }: Readonly<{ rows: readonly CheckRow[]; onPick: (row: CheckRow, kind: DocumentKind) => void }>) {
   const { say, locale } = useSay();
   if (!rows.length) return null;
   const linked = (r: CheckRow) => r.stage === "started" || r.stage === "refused";
@@ -80,7 +80,7 @@ export function CheckQueue({ rows, onPick }: { rows: readonly CheckRow[]; onPick
  * asked « Quel document ? » for that file only. A single file opens its report as soon as it is under way; with several,
  * each row links to its own (yomizaka#318, #326).
  */
-export function CheckView({ jurisdictions = ["QC"], catalogue = [], credits = null, now = new Date().toISOString() }: { jurisdictions?: readonly Jurisdiction[]; catalogue?: readonly CatalogueItem[]; credits?: CreditsFigure | null; now?: string }) {
+export function CheckView({ jurisdictions = ["QC"], catalogue = [], credits = null, now = new Date().toISOString() }: Readonly<{ jurisdictions?: readonly Jurisdiction[]; catalogue?: readonly CatalogueItem[]; credits?: CreditsFigure | null; now?: string }>) {
   const { say, locale } = useSay();
   const router = useRouter();
   const [kind] = useRouteState(ROUTE_STATES.checkKind.state);

@@ -13,7 +13,7 @@ import { TechnicalDetails } from "./ReportFace";
 const RUN_TONE = { running: "accent", succeeded: "success", failed: "danger", cancelled: "neutral" } as const;
 
 /** The history tab: every run of the document, newest first; a compliance run opens its own report (`?run=`). */
-export function DocumentHistoryTab({ doc, path, latestCompliance }: { doc: DocumentView; path: string; latestCompliance: DocumentFacts["latestCompliance"] }) {
+export function DocumentHistoryTab({ doc, path, latestCompliance }: Readonly<{ doc: DocumentView; path: string; latestCompliance: DocumentFacts["latestCompliance"] }>) {
   const { say, locale } = useSay();
   return (
     <section aria-label={say("document.tabs.historique")} className="flex min-w-0 flex-col gap-3" data-testid="tab-historique">

@@ -6,7 +6,7 @@ import { AVATAR_KIND, type CollectionAvatar as Avatar_ } from "@yomizaka/core";
  * version, so a new image is a new address), or — with none chosen — a tone derived from the collection itself, so a list is not
  * one colour. The same shape the Mac, iOS and Android apps read.
  */
-export function CollectionAvatar({ id, name, avatar, size = "md" }: { id: string; name: string; avatar: Avatar_ | null; size?: "sm" | "md" | "lg" }) {
+export function CollectionAvatar({ id, name, avatar, size = "md" }: Readonly<{ id: string; name: string; avatar: Avatar_ | null; size?: "sm" | "md" | "lg" }>) {
   const initial = name.trim().charAt(0).toUpperCase() || "·";
   if (avatar?.kind === AVATAR_KIND.image) return <Avatar size={size} src={`/api/collections/${id}/avatar?v=${avatar.version}`} alt="" fallback={initial} />;
   return <Avatar size={size} defaultAvatar={{ brand: "yomizaka", seed: avatar?.kind === AVATAR_KIND.set ? avatar.seed : id }} alt="" fallback={initial} />;

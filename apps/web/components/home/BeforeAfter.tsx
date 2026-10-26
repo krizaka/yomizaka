@@ -10,7 +10,7 @@ import { recordedRun } from "@/lib/recorded-runs";
  * and under it the finding Yomizaka returns for that line, with its article of law. Both halves are read from the recorded
  * run (content/recorded-runs/tenant.json). It is the home's proof.
  */
-export function BeforeAfter({ locale }: { locale: Locale }) {
+export function BeforeAfter({ locale }: Readonly<{ locale: Locale }>) {
   const d = getDictionary(locale);
   const t = d.landing.hero;
   const run = recordedRun("tenant");

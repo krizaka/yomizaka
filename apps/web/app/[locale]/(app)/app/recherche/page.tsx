@@ -8,6 +8,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /** Search: the query is in the address (`?q=`), so a search is a link. */
-export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+export default async function SearchPage({ searchParams }: Readonly<{ searchParams: Promise<{ q?: string }> }>) {
   return <SearchView initialQuery={(await searchParams).q ?? ""} />;
 }

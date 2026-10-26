@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /** Where the apps are: a card per platform, « soon » until its link exists. */
-export default async function Download({ params }: { params: Promise<{ locale: string }> }) {
+export default async function Download({ params }: Readonly<{ params: Promise<{ locale: string }> }>) {
   const locale = asLocale((await params).locale);
   const t = getDictionary(locale);
   return (

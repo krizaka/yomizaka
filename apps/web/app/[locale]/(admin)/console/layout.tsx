@@ -7,7 +7,7 @@ import { asLocale, getDictionary } from "@/lib/i18n";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { robots: { index: false, follow: false }, title: "Yomizaka — Administration" };
 
-export default async function AdminRoot({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {
+export default async function AdminRoot({ children, params }: Readonly<{ children: React.ReactNode; params: Promise<{ locale: string }> }>) {
   const locale = asLocale((await params).locale);
   const { console: messages } = getDictionary(locale);
   return (

@@ -56,7 +56,7 @@ export function queueItemsOf(items: readonly UploadItem[], say: Say, retry?: (id
 }
 
 /** The non-blocking tray of the files being checked (bottom-right from `sm`, the bottom edge on a phone); nothing while the queue is empty. */
-export function UploadTray({ items }: { items: readonly UploadQueueItem[] }) {
+export function UploadTray({ items }: Readonly<{ items: readonly UploadQueueItem[] }>) {
   const { say } = useSay();
   if (!items.length) return null;
   const t = tally(items);
@@ -73,7 +73,7 @@ export function UploadTray({ items }: { items: readonly UploadQueueItem[] }) {
 const DropIsland = createContext<{ add: (files: File[]) => void; zone: ReactNode } | null>(null);
 
 /** « Ajouter des documents »: a picker button that feeds the drop island it sits in (the header's action of a place); nothing outside one. */
-export function AddFilesButton({ children, variant = "secondary", size = "md" }: { children: ReactNode; variant?: "primary" | "secondary" | "ghost"; size?: "sm" | "md" }) {
+export function AddFilesButton({ children, variant = "secondary", size = "md" }: Readonly<{ children: ReactNode; variant?: "primary" | "secondary" | "ghost"; size?: "sm" | "md" }>) {
   const island = useContext(DropIsland);
   const input = useRef<HTMLInputElement>(null);
   if (!island) return null;
@@ -110,7 +110,7 @@ export function DropZone() {
  * (the empty library's only one) takes a click, and the tray follows the queue while the person keeps browsing. One path
  * (`send`) with the kind left to Yomizaka and the owner's keeping preference; the lists refresh as each file lands.
  */
-export function LibraryDrop({ zone = false, examples, jurisdictions = ["QC"], placement, children }: { zone?: boolean; examples?: (add: (files: File[]) => void) => ReactNode; jurisdictions?: readonly Jurisdiction[]; placement?: Placement; children?: ReactNode }) {
+export function LibraryDrop({ zone = false, examples, jurisdictions = ["QC"], placement, children }: Readonly<{ zone?: boolean; examples?: (add: (files: File[]) => void) => ReactNode; jurisdictions?: readonly Jurisdiction[]; placement?: Placement; children?: ReactNode }>) {
   const { say } = useSay();
   const router = useRouter();
   const app = useAppConfig();

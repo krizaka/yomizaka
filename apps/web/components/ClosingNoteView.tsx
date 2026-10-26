@@ -4,7 +4,7 @@ import type { ClosingNote } from "@/lib/closing-note/build";
 import { LINE, noteLines } from "@/lib/closing-note/render";
 
 /** « Ce que nous avons vérifié »: the closing note of a check, drawn from the same lines the signed report prints. */
-export function ClosingNoteView({ note }: { note: ClosingNote }) {
+export function ClosingNoteView({ note }: Readonly<{ note: ClosingNote }>) {
   const groups: { heading: string; lines: { kind: string; text: string }[] }[] = [];
   for (const line of noteLines(note)) {
     if (line.kind === LINE.title) continue;

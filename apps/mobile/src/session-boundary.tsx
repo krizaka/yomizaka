@@ -11,7 +11,7 @@ import { AppState } from "react-native";
  * nothing of the previous account). Query's focus follows the app state, so the screens refresh when the app comes back to
  * the foreground.
  */
-export function SessionBoundary({ session, children }: { session: Pick<SessionStore, "onChange">; children: React.ReactNode }) {
+export function SessionBoundary({ session, children }: Readonly<{ session: Pick<SessionStore, "onChange">; children: React.ReactNode }>) {
   const queryClient = useQueryClient();
   const [generation, setGeneration] = React.useState(0);
   React.useEffect(

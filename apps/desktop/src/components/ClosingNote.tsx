@@ -3,7 +3,7 @@ import { Card } from "@krizaka/ui/card";
 import type { ClosingNote as Note } from "@yomizaka/core";
 
 /** The plain-language closing note, as the server wrote it: the web, the phone and the signed report say the same. */
-export function ClosingNote({ note }: { note: Note }) {
+export function ClosingNote({ note }: Readonly<{ note: Note }>) {
   return (
     <div className="flex flex-col gap-4">
       <h2 className="text-xl font-semibold">{note.title}</h2>
@@ -42,7 +42,7 @@ export function ClosingNote({ note }: { note: Note }) {
   );
 }
 
-function Section({ heading, text }: { heading: string; text: string }) {
+function Section({ heading, text }: Readonly<{ heading: string; text: string }>) {
   return (
     <Card.Root className="flex flex-col gap-2 p-4">
       <h3 className="text-sm font-semibold">{heading}</h3>

@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { robots: { index: false, follow: false }, referrer: "no-referrer" };
 
 /** The applicant's page for an applicant file (yomizaka#341): public by token, never indexed, never cached. A screening's token opens its own page, not this one. */
-export default async function ApplicantFilePage({ params }: { params: Promise<{ locale: string; token: string }> }) {
+export default async function ApplicantFilePage({ params }: Readonly<{ params: Promise<{ locale: string; token: string }> }>) {
   const { locale: raw, token } = await params;
   const locale = asLocale(raw);
   const now = new Date();

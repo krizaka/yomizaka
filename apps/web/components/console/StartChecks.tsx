@@ -32,7 +32,7 @@ const authenticity = createKrizakaForm({
 });
 
 /** The compliance form: the kinds offered (a lease always), the one preselected, and the request built by the kind's ruleset in force (`rulesFor`). */
-function StartCompliance({ documentId, disabled, jurisdictions, options, initialType }: { documentId: string; disabled: boolean; initialType: CheckKind; jurisdictions: readonly (typeof JURISDICTIONS)[number][]; options: readonly CheckKind[] }) {
+function StartCompliance({ documentId, disabled, jurisdictions, options, initialType }: Readonly<{ documentId: string; disabled: boolean; initialType: CheckKind; jurisdictions: readonly (typeof JURISDICTIONS)[number][]; options: readonly CheckKind[] }>) {
   const { say, locale } = useSay();
   const client = useQueryClient();
   const [reused, setReused] = useState(false);
@@ -96,7 +96,7 @@ function StartCompliance({ documentId, disabled, jurisdictions, options, initial
   );
 }
 
-function StartAuthenticity({ documentId, disabled }: { documentId: string; disabled: boolean }) {
+function StartAuthenticity({ documentId, disabled }: Readonly<{ documentId: string; disabled: boolean }>) {
   const { say, locale } = useSay();
   const client = useQueryClient();
   const [reused, setReused] = useState(false);
@@ -178,7 +178,7 @@ function StartBody({ studio, doc, offer, examinable, running }: StartProps & { s
 const TITLE: Record<Studio, string> = { "compliance-check": "analysis.complianceTitle", "document-authenticity": "analysis.authenticityTitle" };
 
 /** The checks a document can start, each a card, for a document not checked yet: the checks are what the page is for. */
-export function StartCards(props: StartProps) {
+export function StartCards(props: Readonly<StartProps>) {
   const { say } = useSay();
   return (
     <>

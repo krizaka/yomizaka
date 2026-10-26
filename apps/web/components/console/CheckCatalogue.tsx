@@ -23,7 +23,7 @@ import { useRouteState } from "@/lib/use-route-state";
  */
 
 /** Where the account stands: its plan and its audits, from the billing state. */
-export function CheckPlanStrip({ credits }: { credits: CreditsFigure }) {
+export function CheckPlanStrip({ credits }: Readonly<{ credits: CreditsFigure }>) {
   const { say, locale } = useSay();
   const plan = planStrip(credits);
   return (
@@ -42,7 +42,7 @@ export function CheckPlanStrip({ credits }: { credits: CreditsFigure }) {
 }
 
 /** The checks Yomizaka runs for this person: the registry's, narrowed by a search and a chip (the chip lives in the address, the search is ephemeral). */
-export function CheckCatalogue({ items }: { items: readonly CatalogueItem[] }) {
+export function CheckCatalogue({ items }: Readonly<{ items: readonly CatalogueItem[] }>) {
   const { say, locale } = useSay();
   const [q, setQ] = useState("");
   const [filter, setFilter] = useRouteState(ROUTE_STATES.catalogueGroup.state);

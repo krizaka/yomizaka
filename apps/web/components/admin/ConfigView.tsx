@@ -37,7 +37,7 @@ type Say = (key: string, vars?: Record<string, string | number>) => string;
 const show = (value: unknown): string => (typeof value === "object" && value !== null ? JSON.stringify(value) : String(value));
 
 /** The settings of one group at one scope: every row says whether it is modified here or inherited, and can be reset to the default. */
-export function ConfigView({ group, scope }: { group: Group; scope: ScopeState }) {
+export function ConfigView({ group, scope }: Readonly<{ group: Group; scope: ScopeState }>) {
   const { say } = useSay();
   const router = useRouter();
   const client = useQueryClient();
@@ -99,7 +99,7 @@ interface RowProps {
   onReset: () => void;
 }
 
-function SettingRow(props: RowProps) {
+function SettingRow(props: Readonly<RowProps>) {
   const { def, scope, override, effective, say } = props;
   const base = `adminConfig.settings.${def.key}`;
   const modified = override !== undefined;
@@ -124,7 +124,7 @@ function SettingRow(props: RowProps) {
   );
 }
 
-function Control({ def, override, effective, say, onSet }: RowProps) {
+function Control({ def, override, effective, say, onSet }: Readonly<RowProps>) {
   const current = override !== undefined ? override : (effective?.value ?? def.default);
   if (def.kind === KIND.flag) return <Switch label={say(`adminConfig.settings.${def.key}.label`)} checked={current === true} onCheckedChange={(v: boolean) => void onSet(v)} />;
   if (def.kind === KIND.choice) {
@@ -146,7 +146,7 @@ function Control({ def, override, effective, say, onSet }: RowProps) {
   return <BilingualControl current={current as { fr: string; en: string }} say={say} onSet={onSet} />;
 }
 
-function IntegerControl({ def, current, say, onSet }: { def: SettingDescription; current: number; say: Say; onSet: (v: unknown) => Promise<unknown> }) {
+function IntegerControl({ def, current, say, onSet }: Readonly<{ def: SettingDescription; current: number; say: Say; onSet: (v: unknown) => Promise<unknown> }>) {
   const { locale } = useSay();
   const form = numberForm.useForm({ ...formI18n(say, locale), defaultValues: { value: current }, onSubmit: (v) => onSet(v.value) });
   return (
@@ -157,7 +157,7 @@ function IntegerControl({ def, current, say, onSet }: { def: SettingDescription;
   );
 }
 
-function BilingualControl({ current, say, onSet }: { current: { fr: string; en: string }; say: Say; onSet: (v: unknown) => Promise<unknown> }) {
+function BilingualControl({ current, say, onSet }: Readonly<{ current: { fr: string; en: string }; say: Say; onSet: (v: unknown) => Promise<unknown> }>) {
   const { locale } = useSay();
   const form = bilingualForm.useForm({ ...formI18n(say, locale), defaultValues: current, onSubmit: (v) => onSet(v) });
   return (

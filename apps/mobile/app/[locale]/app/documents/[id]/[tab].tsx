@@ -49,7 +49,7 @@ export default function DocumentScreen() {
   );
 }
 
-function Infos({ document }: { document: DocumentDetail }) {
+function Infos({ document }: Readonly<{ document: DocumentDetail }>) {
   const { t } = useI18n();
   const kept = deviceStore.uriOf(document.id) !== null;
   return (
@@ -70,7 +70,7 @@ function Infos({ document }: { document: DocumentDetail }) {
   );
 }
 
-function Verifications({ document, followed, locale }: { document: DocumentDetail; followed: string | undefined; locale: Locale }) {
+function Verifications({ document, followed, locale }: Readonly<{ document: DocumentDetail; followed: string | undefined; locale: Locale }>) {
   const { t } = useI18n();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -96,7 +96,7 @@ function Verifications({ document, followed, locale }: { document: DocumentDetai
   );
 }
 
-function Followed({ documentId, analysisId, locale, hasText }: { documentId: string; analysisId: string; locale: Locale; hasText: boolean }) {
+function Followed({ documentId, analysisId, locale, hasText }: Readonly<{ documentId: string; analysisId: string; locale: Locale; hasText: boolean }>) {
   const { t } = useI18n();
   const run = useQuery(queries.analysis(documentId, analysisId, locale));
   const share = useMutation({ mutationFn: () => shareSignedReport(documentId, analysisId, locale) });
@@ -124,7 +124,7 @@ function Followed({ documentId, analysisId, locale, hasText }: { documentId: str
   );
 }
 
-function OtherRuns({ analyses, documentId, locale }: { analyses: readonly Analysis[]; documentId: string; locale: Locale }) {
+function OtherRuns({ analyses, documentId, locale }: Readonly<{ analyses: readonly Analysis[]; documentId: string; locale: Locale }>) {
   const { t } = useI18n();
   const router = useRouter();
   return (

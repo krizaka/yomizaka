@@ -17,7 +17,7 @@ import { asTag, asTags } from "@/lib/workspace/tags";
 type Props = { params: Promise<{ locale: string; library?: string; collection?: string; folder?: string }>; searchParams: Promise<{ tags?: string | string[]; kind?: string; status?: string }> };
 
 /** A collection or a folder, read on the server from the URL: `/app/bibliotheque/[library]/[collection]/[folder]?tags=`. */
-export async function PlacePage({ params, searchParams }: Props) {
+export async function PlacePage({ params, searchParams }: Readonly<Props>) {
   const p = await params;
   const locale = asLocale(p.locale);
   const session = await pageSession();

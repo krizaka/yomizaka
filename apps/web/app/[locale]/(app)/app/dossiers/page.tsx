@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /** « Dossiers »: the applicant files of the account (filtered by the link's state with `?state=`) — only for the people offered the flow (the section map); otherwise a 404. */
-export default async function FilesPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+export default async function FilesPage({ params, searchParams }: Readonly<{ params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }>) {
   const locale = asLocale((await params).locale);
   const session = await pageSession();
   if (!session) notFound();

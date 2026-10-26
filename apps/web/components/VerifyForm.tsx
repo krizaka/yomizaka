@@ -37,7 +37,7 @@ const form = createKrizakaForm({
 });
 
 /** A signed-in member checks a report they own or were given access to; without a grant the answer offers « Request access ». */
-export function VerifyForm({ labels, locale }: { labels: VerifyLabels; locale: Locale }) {
+export function VerifyForm({ labels, locale }: Readonly<{ labels: VerifyLabels; locale: Locale }>) {
   const [problem, setProblem] = useState<string | null>(null);
   const [denied, setDenied] = useState<{ runId: string; documentSha256: string } | null>(null);
   const [asked, setAsked] = useState(false);
@@ -102,7 +102,7 @@ export function VerifyForm({ labels, locale }: { labels: VerifyLabels; locale: L
   );
 }
 
-function VerifyResult({ result, labels }: { result: Verification; labels: VerifyLabels }) {
+function VerifyResult({ result, labels }: Readonly<{ result: Verification; labels: VerifyLabels }>) {
   if (!result.ok) {
     return (
       <Alert tone="danger" title={labels.failTitle} data-testid="verify-failed">

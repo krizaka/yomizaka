@@ -12,7 +12,7 @@ import { APP_VERSION, contactHref, pagePath, REPO_URL } from "@/lib/site";
  * the publisher line « A Krizaka product » (→ www.krizaka.com), DEV · the version, Montréal. On a deployment kept out of
  * search engines the invitation line ends the signature row — one footer, no strip under it.
  */
-export function SiteFooter({ locale }: { locale: Locale }) {
+export function SiteFooter({ locale }: Readonly<{ locale: Locale }>) {
   const t = translator(locale);
   return (
     <FamilyFooter

@@ -11,7 +11,7 @@ import { useSay } from "@/lib/i18n-client";
 import { formatDate } from "../console/format";
 
 /** The accounts, read only: who, which role, active or not, how many documents, last seen. */
-export function UsersTable({ users }: { users: AdminUser[] }) {
+export function UsersTable({ users }: Readonly<{ users: AdminUser[] }>) {
   const { say, locale } = useSay();
   const columns = useMemo<DataTableColumn<AdminUser>[]>(
     () => [

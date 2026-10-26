@@ -11,7 +11,7 @@ const STATUS_OF: Record<CheckStep["state"], StepStatus> = { [STEP_STATE.done]: "
  * A check's progress — Lecture, Contrôle préalable, Vérification, Rapport — drawn with Krizaka UI's `Stepper`. The steps and their
  * states come from `@yomizaka/core` (`checkSteps`), the same contract the Mac, iOS and Android apps draw; this only translates and draws.
  */
-export function CheckSteps({ steps, orientation = "horizontal" }: { steps: readonly CheckStep[]; orientation?: "horizontal" | "vertical" }) {
+export function CheckSteps({ steps, orientation = "horizontal" }: Readonly<{ steps: readonly CheckStep[]; orientation?: "horizontal" | "vertical" }>) {
   const { say } = useSay();
   const title = (s: CheckStep) => say(s.id === CHECK_STEP.rules ? `steps.rules.${s.studio}` : `steps.${s.id}`);
   return (

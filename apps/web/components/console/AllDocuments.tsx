@@ -12,7 +12,7 @@ import { useSay } from "@/lib/i18n-client";
 import { DocumentTable } from "./DocumentTable";
 
 /** « Documents » (B2, P14): every document, in the table the collections use — sortable, filterable, a row leading to its report. */
-export function AllDocuments({ documents }: { documents: DocumentSummary[] }) {
+export function AllDocuments({ documents }: Readonly<{ documents: DocumentSummary[] }>) {
   const { say, locale } = useSay();
   return (
     <div className="flex flex-col gap-6" data-testid="all-documents">

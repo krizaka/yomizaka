@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /** « Forgot your password? » on the sign-in family's frame. The page only reflects the server: without e-mail it says a link cannot be sent. */
-export default async function ForgotPasswordPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function ForgotPasswordPage({ params }: Readonly<{ params: Promise<{ locale: string }> }>) {
   const locale = asLocale((await params).locale);
   if (await pageSession().catch(() => null)) redirect(`/${locale}/app`);
   const t = getDictionary(locale).console.forgotPassword;

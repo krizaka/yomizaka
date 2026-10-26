@@ -28,7 +28,7 @@ const ICONS = { profil: UserIcon, apparence: SunIcon, securite: LockIcon, factur
  * The settings on `SettingsLayout` (flat: one calm column, rows divided by hairlines), the identity card on top, the six
  * sections as routes in its navigation (chips that wrap on a phone — the review's E1), the current one from the route.
  */
-export function SettingsShell({ section, account, children }: { section: SettingsSection; account: SettingsAccount; children: ReactNode }) {
+export function SettingsShell({ section, account, children }: Readonly<{ section: SettingsSection; account: SettingsAccount; children: ReactNode }>) {
   const { say, locale } = useSay();
   const app = useAppConfig();
   const sections = SETTINGS_SECTIONS.filter((s) => s !== "stockage" || app?.features.ownStorage !== false);

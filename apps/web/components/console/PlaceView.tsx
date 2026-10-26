@@ -23,7 +23,7 @@ type Say = Messages["console"]["organisation"];
  * folder's page); the folders as a row of chips; the tags as a filter bar (`?tags=`); the files; and the whole page as a drop
  * zone that files into this place (the only zone is the empty place's). Rendered on the server; the actions are client islands.
  */
-export function PlaceView({ locale, t, library, collection, folder, folders, documents, tags, documentTags, view, tagsByDocument, folderTags, collections, collectionTags, path, jurisdictions }: {
+export function PlaceView({ locale, t, library, collection, folder, folders, documents, tags, documentTags, view, tagsByDocument, folderTags, collections, collectionTags, path, jurisdictions }: Readonly<{
   locale: "en" | "fr";
   t: Say;
   library: { id: string; name: string };
@@ -43,7 +43,7 @@ export function PlaceView({ locale, t, library, collection, folder, folders, doc
   path: string;
   /** The jurisdictions the account is offered: a dropped file is checked at once only when one is possible (Y4). */
   jurisdictions?: readonly Jurisdiction[];
-}) {
+}>) {
   const crumbs = [
     { href: `/${locale}/app`, label: t.library },
     { href: libraryPath(locale, library.id, collection.id), label: collection.name, avatar: <CollectionMark key="crumb-avatar" id={collection.id} name={collection.name} avatar={collection.avatar} size="sm" /> },

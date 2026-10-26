@@ -81,7 +81,7 @@ function editorLabels(say: Say): { tags: Partial<TagSetEditorLabels>; status: Pa
   };
 }
 
-function KindEditor({ kind, initial, version: first }: { kind: Kind; initial: KindConfig; version: number }) {
+function KindEditor({ kind, initial, version: first }: Readonly<{ kind: Kind; initial: KindConfig; version: number }>) {
   const { say, locale } = useSay();
   const [config, setConfig] = useState(initial);
   const [version, setVersion] = useState(first);
@@ -122,7 +122,7 @@ function KindEditor({ kind, initial, version: first }: { kind: Kind; initial: Ki
   );
 }
 
-function KindSection({ kind }: { kind: Kind }) {
+function KindSection({ kind }: Readonly<{ kind: Kind }>) {
   const { say } = useSay();
   const config = useQuery({ queryKey: ["admin-organize-config", kind], queryFn: () => krizakaFetch(`/api/admin/organize/${kind}/config`, { schema: stored }) });
   if (!config.data) return null;

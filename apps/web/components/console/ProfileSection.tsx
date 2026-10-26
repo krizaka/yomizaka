@@ -49,7 +49,7 @@ const LANGUAGES = ["fr", "en"] as const;
  * The save sends only what changed and commits each call as it succeeds (the profile, then the perspective), so a refusal of
  * the second never hides that the first is stored; edits typed while it saves stay in the draft.
  */
-export function ProfileSection({ initial, audiences }: { initial: ProfileValues; audiences: readonly { audience: Audience; status: "available" | "soon" }[] }) {
+export function ProfileSection({ initial, audiences }: Readonly<{ initial: ProfileValues; audiences: readonly { audience: Audience; status: "available" | "soon" }[] }>) {
   const { say } = useSay();
   const router = useRouter();
   const [saved, setSaved] = useState(initial);

@@ -67,7 +67,7 @@ const toFlat = (v: Values): FlowFormValues => ({
 });
 
 /** Creates a flow, or edits its draft; publishes it; enables it per environment. A published version is never edited. */
-export function FlowEditor({ flow, initial }: { flow: AdminFlow | null; initial: FlowFormValues | null }) {
+export function FlowEditor({ flow, initial }: Readonly<{ flow: AdminFlow | null; initial: FlowFormValues | null }>) {
   const { say, locale } = useSay();
   const router = useRouter();
   const [problem, setProblem] = useState<string | null>(null);

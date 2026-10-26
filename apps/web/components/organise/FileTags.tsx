@@ -17,7 +17,7 @@ import { TagChips } from "../console/TagChips";
 type TagOption = { id: string; name: string; color: "blue" | "green" | "amber" | "red" | "violet" | "gray" };
 
 /** The tags of one file, with their markers, and the dialog that sets them (the account's tags of kind « applicant_file »). */
-export function FileTags({ fileId, tags, current }: { fileId: string; tags: readonly TagOption[]; current: readonly string[] }) {
+export function FileTags({ fileId, tags, current }: Readonly<{ fileId: string; tags: readonly TagOption[]; current: readonly string[] }>) {
   const { say } = useSay();
   const router = useRouter();
   const [open, setOpen] = useState(false);

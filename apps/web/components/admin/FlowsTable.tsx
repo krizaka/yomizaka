@@ -10,7 +10,7 @@ import type { AdminFlow } from "@/lib/flows";
 import { useSay } from "@/lib/i18n-client";
 
 /** The flows: key, title, audiences, current version, status, enabled in dev / prod. */
-export function FlowsTable({ flows }: { flows: AdminFlow[] }) {
+export function FlowsTable({ flows }: Readonly<{ flows: AdminFlow[] }>) {
   const { say, locale } = useSay();
   const columns = useMemo<DataTableColumn<AdminFlow>[]>(
     () => [

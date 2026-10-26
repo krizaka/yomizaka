@@ -12,7 +12,7 @@ import { errorKey } from "@/lib/client";
 import { useSay } from "@/lib/i18n-client";
 
 /** The rest of what an administrator does to an account: the role, the sessions, Law 25 export and erasure. */
-export function UserActions({ user, onChange }: { user: UserDetail; onChange: (user: UserDetail) => void }) {
+export function UserActions({ user, onChange }: Readonly<{ user: UserDetail; onChange: (user: UserDetail) => void }>) {
   const { say, locale } = useSay();
   const router = useRouter();
   const [note, setNote] = useState<string | null>(null);

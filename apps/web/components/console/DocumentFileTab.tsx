@@ -19,7 +19,7 @@ const loadPdfjs = () => import("pdfjs-dist") as unknown as ReturnType<ComponentP
 const WORKER_SRC = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
 
 /** The document's text, the passages a compliance report quotes marked where they sit. */
-function DocumentText({ text, report }: { text: string; report: ComplianceReport | null }) {
+function DocumentText({ text, report }: Readonly<{ text: string; report: ComplianceReport | null }>) {
   const { say } = useSay();
   const parts = useMemo(
     () => passages(text, (report?.findings ?? []).filter((f) => f.evidenceSpan?.quote).map((f) => ({ id: f.ruleId, quote: f.evidenceSpan!.quote, start: f.evidenceSpan!.start ?? undefined }))),
@@ -65,7 +65,7 @@ const PdfViewer = memo(function PdfViewer({ fileUrl, highlights, activeId, onAct
  * Yomizaka read in it, where it lives (with « Supprimer maintenant »), and the file's facts.
  */
 /** The file's identifiers, folded: its fingerprint, in the mono — the only place a code is drawn on this tab (design § 3.4). */
-function FileTechnicalDetails({ sha256 }: { sha256: string }) {
+function FileTechnicalDetails({ sha256 }: Readonly<{ sha256: string }>) {
   const { say } = useSay();
   return (
     <details className="rounded-lg border border-border-default p-3" data-testid="file-technical-details">
@@ -106,7 +106,7 @@ function FileContent({ doc, isPdf, report, viewer, viewerRef }: Readonly<{ doc: 
   return <Alert tone="info">{say("document.noText")}</Alert>;
 }
 
-export function DocumentFileTab({ doc, path, isPdf, report, viewer, viewerRef, found, onDelete, deleting }: { doc: DocumentView; path: string; isPdf: boolean; report: ComplianceReport | null; viewer: ViewerProps; viewerRef: RefObject<HTMLElement | null>; found: Record<string, Located | null>; onDelete: () => void; deleting: boolean }) {
+export function DocumentFileTab({ doc, path, isPdf, report, viewer, viewerRef, found, onDelete, deleting }: Readonly<{ doc: DocumentView; path: string; isPdf: boolean; report: ComplianceReport | null; viewer: ViewerProps; viewerRef: RefObject<HTMLElement | null>; found: Record<string, Located | null>; onDelete: () => void; deleting: boolean }>) {
   const { say, locale } = useSay();
   const activeFinding = viewer.activeId ? (report?.findings.find((f) => f.ruleId === viewer.activeId) ?? null) : null;
   const place = viewer.activeId ? placeOf(found[viewer.activeId], say) : null;

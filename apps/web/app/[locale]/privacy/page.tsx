@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /** What happens to a document, in plain words. */
-export default async function Privacy({ params }: { params: Promise<{ locale: string }> }) {
+export default async function Privacy({ params }: Readonly<{ params: Promise<{ locale: string }> }>) {
   const locale = asLocale((await params).locale);
   const t = getDictionary(locale);
   return (

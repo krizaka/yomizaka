@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /** One section of the settings, one route: /app/settings/profil | securite | facturation | stockage | donnees — on `SettingsLayout`, the identity card on top (the UX review's Y2). */
-export default async function SettingsSectionPage({ params, searchParams }: { params: Promise<{ locale: string; section: string }>; searchParams: Promise<{ email?: string }> }) {
+export default async function SettingsSectionPage({ params, searchParams }: Readonly<{ params: Promise<{ locale: string; section: string }>; searchParams: Promise<{ email?: string }> }>) {
   const { locale: raw, section } = await params;
   if (!isSettingsSection(section)) notFound();
   const locale = asLocale(raw);

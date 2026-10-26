@@ -11,7 +11,7 @@ import { pluralKey } from "@/lib/plural";
  * The tags of a place as a filter bar (the UX review's Y7): a menu of the tags, the ones in force as removable chips, « Effacer le
  * filtre », the count of files — the `?tags=` of the address, as before (the URL is the state: a filtered place is a link, Back undoes a tag).
  */
-export function PlaceFilters({ tags, selected, path, view, count }: { tags: { id: string; name: string }[]; selected: string[]; path: string; view: ViewState; count: number }) {
+export function PlaceFilters({ tags, selected, path, view, count }: Readonly<{ tags: { id: string; name: string }[]; selected: string[]; path: string; view: ViewState; count: number }>) {
   const { say } = useSay();
   const router = useRouter();
   const go = (ids: string[]) => router.push(viewHref(path, { ...view, tags: ids }), { scroll: false });

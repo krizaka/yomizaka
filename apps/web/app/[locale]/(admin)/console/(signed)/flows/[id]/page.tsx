@@ -7,7 +7,7 @@ import { listAdminFlows } from "@/lib/flows";
 export const dynamic = "force-dynamic";
 
 /** One flow: edit its draft, publish it, enable it per environment. The form opens on the draft, else on the current version. */
-export default async function AdminFlow({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminFlow({ params }: Readonly<{ params: Promise<{ id: string }> }>) {
   const { id } = await params;
   const flow = (await listAdminFlows()).find((f) => f.id === id);
   if (!flow) notFound();

@@ -39,7 +39,7 @@ const TONE: Record<ItemState, "neutral" | "accent" | "success" | "warning" | "da
 const POLL_MS = 3000;
 
 /** A batch's page (yomizaka#232): how far it is, each row's state with its document, why a row did not run, the export. */
-export function BatchProgress({ initial }: { initial: Batch }) {
+export function BatchProgress({ initial }: Readonly<{ initial: Batch }>) {
   const { say, locale } = useSay();
   const live = useQuery({
     queryKey: ["batch", initial.id],

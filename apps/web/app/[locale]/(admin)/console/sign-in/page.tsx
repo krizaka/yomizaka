@@ -10,7 +10,7 @@ import { ipAllowed, pageAdmin } from "@/lib/access";
 import { asLocale, getDictionary } from "@/lib/i18n";
 
 /** The administration's own sign-in (its cookie belongs to admin.yomizaka.com), on @krizaka/ui's auth template. */
-export default async function AdminSignIn({ params }: { params: Promise<{ locale: string }> }) {
+export default async function AdminSignIn({ params }: Readonly<{ params: Promise<{ locale: string }> }>) {
   const locale = asLocale((await params).locale);
   if (!ipAllowed(await headers())) notFound();
   if (await pageAdmin().catch(() => null)) redirect(`/${locale}`);

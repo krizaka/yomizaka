@@ -18,7 +18,7 @@ import { useSay } from "@/lib/i18n-client";
 const VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? "";
 
 /** admin.yomizaka.com: @krizaka/ui's AppShell console — overview, people, documents, Orazaka runs, audit — and a DEV badge. */
-export function AdminShell({ locale, email, children }: { locale: "en" | "fr"; email: string; children: React.ReactNode }) {
+export function AdminShell({ locale, email, children }: Readonly<{ locale: "en" | "fr"; email: string; children: React.ReactNode }>) {
   const { say } = useSay();
   const router = useRouter();
   const path = usePathname() ?? "";

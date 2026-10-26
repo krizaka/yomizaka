@@ -7,7 +7,7 @@ import { View } from "react-native";
 import { type MessageKey, useI18n } from "@/i18n";
 
 /** A check's four steps (the contract every app and the web draw, `checkSteps` of @yomizaka/core) with the Krizaka Stepper; the engine gives no percentage, so none is invented. */
-export function CheckProgress({ steps, runId }: { steps: readonly CheckStep[]; runId: string | null }) {
+export function CheckProgress({ steps, runId }: Readonly<{ steps: readonly CheckStep[]; runId: string | null }>) {
   const { t } = useI18n();
   const working = steps.some((step) => step.state === STEP_STATE.current);
   return (

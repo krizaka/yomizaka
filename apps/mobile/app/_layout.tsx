@@ -37,7 +37,7 @@ export default function RootLayout() {
 }
 
 /** The theme keeps its bars and buttons clear of the notch and the home indicator: it needs the safe-area insets. */
-function Themed({ children }: { children: React.ReactNode }) {
+function Themed({ children }: Readonly<{ children: React.ReactNode }>) {
   const insets = useSafeAreaInsets();
   return (
     <ThemeProvider overrides={brands.yomizaka} insets={insets}>

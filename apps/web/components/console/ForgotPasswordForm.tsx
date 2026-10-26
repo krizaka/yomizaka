@@ -15,7 +15,7 @@ const forgot = createKrizakaForm({
 });
 
 /** The address, on @krizaka/ui's form. The answer is the same for every address: « if it has an account, a link is on its way ». */
-export function ForgotPasswordForm({ minutes }: { minutes: number }) {
+export function ForgotPasswordForm({ minutes }: Readonly<{ minutes: number }>) {
   const { say, locale } = useSay();
   const [problem, setProblem] = useState<string | null>(null);
   const [sent, setSent] = useState(false);

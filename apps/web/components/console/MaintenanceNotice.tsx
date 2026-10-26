@@ -1,7 +1,7 @@
 import { Mascot } from "@krizaka/ui/mascots";
 
 /** The app is closed for consumers: the message an administrator wrote, in the visitor's language. */
-export function MaintenanceNotice({ title, message }: { title: string; message: string }) {
+export function MaintenanceNotice({ title, message }: Readonly<{ title: string; message: string }>) {
   return (
     <main id="content" className="mx-auto flex min-h-dvh max-w-xl flex-col items-center justify-center gap-4 px-4 text-center" data-testid="maintenance">
       <Mascot bird="owl" mood="empty" size={144} />

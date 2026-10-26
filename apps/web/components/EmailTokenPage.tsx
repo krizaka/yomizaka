@@ -16,13 +16,13 @@ export async function EmailTokenPage({
   kind,
   isToken,
   action,
-}: {
+}: Readonly<{
   params: Promise<{ locale: string }>;
   searchParams: Promise<{ token?: string }>;
   kind: EmailTokenKind;
   isToken: (token: string | undefined) => boolean;
   action: string;
-}) {
+}>) {
   const locale = asLocale((await params).locale);
   const token = (await searchParams).token;
   const t = getDictionary(locale);
