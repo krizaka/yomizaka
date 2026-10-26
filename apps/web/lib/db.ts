@@ -60,8 +60,8 @@ export async function transaction<T>(work: (run: <R extends pg.QueryResultRow = 
     await conn.query("COMMIT");
     return value;
   } catch (error) {
-    await conn.query("ROLLBACK").catch((rollback: unknown) => {
-      throw new AggregateError([error, rollback], "transaction failed and its rollback failed");
+    await conn.query("ROLLBACK").catch((error_: unknown) => {
+      throw new AggregateError([error, error_], "transaction failed and its rollback failed");
     });
     throw error;
   } finally {

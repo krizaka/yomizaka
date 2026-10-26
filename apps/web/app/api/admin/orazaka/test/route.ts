@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/access";
 import { audit } from "@/lib/audit";
-import { handle, HttpError } from "@/lib/http";
+import { codeOf, handle, HttpError } from "@/lib/http";
 import { orazaka } from "@/lib/orazaka";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +15,7 @@ export const POST = (req: Request) =>
       await audit({ action: "orazaka.connection_tested", actorId: session.account.id, actorLabel: session.account.email, detail: { ok: true, studios: studios.length }, headers: req.headers });
       return Response.json({ ok: true, ms: Math.round(performance.now() - started), studios });
     } catch (error) {
-      const code = error instanceof HttpError ? String(error.body.code ?? "UNKNOWN") : "UNKNOWN";
+      const code = error instanceof HttpError ? codeOf(error, "UNKNOWN") : "UNKNOWN";
       await audit({ action: "orazaka.connection_tested", actorId: session.account.id, actorLabel: session.account.email, detail: { ok: false, code }, headers: req.headers });
       return Response.json({ ok: false, ms: Math.round(performance.now() - started), code, studios: [] });
     }

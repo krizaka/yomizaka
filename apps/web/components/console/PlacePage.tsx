@@ -40,7 +40,7 @@ export async function PlacePage({ params, searchParams }: Props) {
   const collection = await org.ownedCollection(query, owner, p.collection).catch(() => null);
   if (!collection || collection.library_id !== p.library) notFound();
   const folder = p.folder ? await org.ownedFolder(query, owner, p.folder).catch(() => null) : undefined;
-  if (p.folder && (!folder || folder.collection_id !== collection.id)) notFound();
+  if (p.folder && folder?.collection_id !== collection.id) notFound();
   const folders = await org.foldersOf(query, owner, collection.id);
   const ids = (await org.browse(query, owner, { collectionId: collection.id, folderId: folder?.id, tagIds: selected })).documentIds;
   const documents = await documentsByIds(owner, ids);
