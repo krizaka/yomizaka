@@ -28,6 +28,39 @@ const arg = (name, fallback) => {
   return i >= 0 ? process.argv[i + 1] : fallback;
 };
 
+/** Signs the administrator in; a problem line when the gate or the landing is not what it should be, null when signed in. */
+async function signIn(page, { base, email, password, tag }) {
+  const gate = await loadSettled(page, `${base}/en/sign-in`, { waitUntil: "networkidle" });
+  if (!gate || gate.status() !== 200) return `${tag}: the sign-in answers ${gate?.status()} — run this from an address of AUTH_ALLOWED_IPS`;
+  await page.getByLabel("E-mail").fill(email);
+  await page.getByLabel("Password").fill(password);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  try {
+    await page.waitForURL(`${base}/en`, { timeout: 30_000 });
+  } catch {
+    return `${tag}: the administrator did not land on the overview (${new URL(page.url()).pathname})`;
+  }
+  return null;
+}
+
+/** What one page shows: the problems found on it (status, <main>, overflow, DEV badge, console error). */
+async function auditPage(page, { base, path, tag, errors }) {
+  const response = await loadSettled(page, `${base}/en${path}`, { waitUntil: "networkidle" });
+  const state = await page.evaluate(() => ({
+    sideways: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+    main: !!document.querySelector("main"),
+    dev: /DEV/.test(document.body.innerText),
+  }));
+  const where = `${tag} ${path || "/"}`;
+  const found = [];
+  if (response?.status() !== 200) found.push(`${where}: ${response?.status()}`);
+  if (!state.main) found.push(`${where}: no <main>`);
+  if (state.sideways) found.push(`${where}: scrolls sideways`);
+  if (tag.startsWith("desktop") && !state.dev) found.push(`${where}: no DEV badge`);
+  if (errors.length) found.push(`${where}: console error — ${errors[0]}`);
+  return found;
+}
+
 export async function walk({ base, email, password, shots }) {
   const problems = [];
   const browser = await chromium.launch();
@@ -46,36 +79,15 @@ export async function walk({ base, email, password, shots }) {
       if (m.type() === "error" && !/Failed to load resource/.test(m.text())) errors.push(m.text().slice(0, 140));
     });
     page.on("pageerror", (e) => errors.push(String(e).slice(0, 140)));
-    const gate = await loadSettled(page, `${base}/en/sign-in`, { waitUntil: "networkidle" });
-    if (!gate || gate.status() !== 200) {
-      problems.push(`${tag}: the sign-in answers ${gate?.status()} — run this from an address of AUTH_ALLOWED_IPS`);
-      await context.close();
-      continue;
-    }
-    await page.getByLabel("E-mail").fill(email);
-    await page.getByLabel("Password").fill(password);
-    await page.getByRole("button", { name: "Sign in" }).click();
-    try {
-      await page.waitForURL(`${base}/en`, { timeout: 30_000 });
-    } catch {
-      problems.push(`${tag}: the administrator did not land on the overview (${new URL(page.url()).pathname})`);
+    const refused = await signIn(page, { base, email, password, tag });
+    if (refused) {
+      problems.push(refused);
       await context.close();
       continue;
     }
     for (const path of PAGES) {
       errors = [];
-      const response = await loadSettled(page, `${base}/en${path}`, { waitUntil: "networkidle" });
-      const state = await page.evaluate(() => ({
-        sideways: document.documentElement.scrollWidth > document.documentElement.clientWidth,
-        main: !!document.querySelector("main"),
-        dev: /DEV/.test(document.body.innerText),
-      }));
-      const where = `${tag} ${path || "/"}`;
-      if (response?.status() !== 200) problems.push(`${where}: ${response?.status()}`);
-      if (!state.main) problems.push(`${where}: no <main>`);
-      if (state.sideways) problems.push(`${where}: scrolls sideways`);
-      if (tag.startsWith("desktop") && !state.dev) problems.push(`${where}: no DEV badge`);
-      if (errors.length) problems.push(`${where}: console error — ${errors[0]}`);
+      problems.push(...(await auditPage(page, { base, path, tag, errors })));
       if (shots) {
         mkdirSync(shots, { recursive: true });
         await page.screenshot({ path: join(shots, `${tag}${(path || "/overview").replace(/\//g, "-")}.png`) });

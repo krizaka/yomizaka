@@ -8,33 +8,41 @@ export const WATERMARK = "SPÉCIMEN — document fictif";
 const LINES_PER_PAGE = 44;
 const FIXED_DATE = new Date("2026-01-01T00:00:00.000Z");
 
-export function wrapLines(lines, measure, maxWidth) {
-  return lines.flatMap((line) => {
-    if (!line.trim()) return [line];
-    const wrapped = [];
-    let current = "";
-    for (const word of line.trim().split(/\s+/)) {
-      const candidate = current ? `${current} ${word}` : word;
-      if (measure(candidate) <= maxWidth) {
-        current = candidate;
-        continue;
-      }
-      if (current) wrapped.push(current);
-      current = "";
-      let part = "";
-      for (const character of Array.from(word)) {
-        if (part && measure(part + character) > maxWidth) {
-          wrapped.push(part);
-          part = character;
-        } else {
-          part += character;
-        }
-      }
-      current = part;
+/** Cuts a word wider than the line into pieces that fit: the full pieces, and the last one, which the next word may follow. */
+function breakWord(word, measure, maxWidth) {
+  const full = [];
+  let part = "";
+  for (const character of Array.from(word)) {
+    if (part && measure(part + character) > maxWidth) {
+      full.push(part);
+      part = character;
+    } else {
+      part += character;
+    }
+  }
+  return { full, rest: part };
+}
+
+function wrapLine(line, measure, maxWidth) {
+  const wrapped = [];
+  let current = "";
+  for (const word of line.trim().split(/\s+/)) {
+    const candidate = current ? `${current} ${word}` : word;
+    if (measure(candidate) <= maxWidth) {
+      current = candidate;
+      continue;
     }
     if (current) wrapped.push(current);
-    return wrapped;
-  });
+    const { full, rest } = breakWord(word, measure, maxWidth);
+    wrapped.push(...full);
+    current = rest;
+  }
+  if (current) wrapped.push(current);
+  return wrapped;
+}
+
+export function wrapLines(lines, measure, maxWidth) {
+  return lines.flatMap((line) => (line.trim() ? wrapLine(line, measure, maxWidth) : [line]));
 }
 
 /** How many pages the rendered, wrapped lines occupy. */
