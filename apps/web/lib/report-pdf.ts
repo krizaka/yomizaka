@@ -143,7 +143,6 @@ export async function issuePdf(payload: ReportPayload, labels: ReportLabels, key
     y -= gap;
   };
   for (const b of blocks) draw(printable(b.text, font), b.size, b.mono ? mono : b.bold ? bold : font, b.gap ?? 4);
-  const contentPages = doc.getPageCount();
   const bodySha256 = sha256(signedText(blocks, font));
   const signature = crypto.sign(null, signedMessage(payload, bodySha256), key.privateKey).toString("base64");
   const attestation: Attestation = { schema: REPORT_SCHEMA, algorithm: "Ed25519", keyId: key.keyId, payload, bodySha256, signature };
@@ -169,7 +168,6 @@ export async function issuePdf(payload: ReportPayload, labels: ReportLabels, key
   doc.setModificationDate(finished);
   const info = doc.context.lookup(doc.context.trailerInfo.Info, PDFDict);
   info.set(PDFName.of(ATTESTATION_KEY), PDFString.of(Buffer.from(JSON.stringify(attestation), "utf8").toString("base64")));
-  void contentPages;
   const bytes = await doc.save({ useObjectStreams: false });
   return { bytes, fileSha256: sha256(bytes), attestation };
 }

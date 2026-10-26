@@ -10,7 +10,7 @@ export PORT=3000
 APP_REPORT_SIGNING_KEY="$(node -e 'process.stdout.write(require("crypto").generateKeyPairSync("ed25519").privateKey.export({type:"pkcs8",format:"der"}).toString("base64"))')"
 export APP_REPORT_SIGNING_KEY
 trap 'tail -100 web.log || true' ERR
-(cd apps/web && npx next start -p 3000 > ../../web.log 2>&1 &)
+(cd apps/web && pnpm exec next start -p 3000 > ../../web.log 2>&1 &)
 for _ in $(seq 1 60); do curl -sf http://localhost:3000/api/healthz && break; sleep 1; done
 pnpm run seo:check
 # The brand icons and their lock = the CDN manifest (the unit test checks icons = lock offline).

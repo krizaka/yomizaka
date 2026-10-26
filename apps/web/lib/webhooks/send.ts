@@ -14,6 +14,23 @@ export type Lookup = (host: string) => Promise<{ address: string; family: 4 | 6 
 
 const resolve: Lookup = async (host) => (await dns.promises.lookup(host, { all: true })) as { address: string; family: 4 | 6 }[];
 
+/** Node's `lookup` option answers in the shape Node asked for: every address when it may try several (`all`), one otherwise. */
+type NodeAnswer = (error: Error | null, address?: string | { address: string; family: number }[], family?: number) => void;
+
+/** The address check made at connect time: a name that resolves to a private address is refused, whatever it resolved to when saved. */
+function checkedLookup(lookup: Lookup) {
+  return (host: string, lookupOptions: object, callback: unknown) => {
+    const answer = callback as NodeAnswer;
+    const accept = (found: { address: string; family: 4 | 6 }[]) => {
+      const ok = found[0];
+      if (!ok || found.some((f) => isPrivateAddress(f.address))) return answer(new Error(`${host} resolves to a private address`));
+      if ((lookupOptions as { all?: boolean }).all) answer(null, found);
+      else answer(null, ok.address, ok.family);
+    };
+    lookup(host).then(accept, (error: unknown) => answer(error as Error));
+  };
+}
+
 export function safeSend(options: { timeoutMs: number; lookup?: Lookup }): Send {
   const lookup = options.lookup ?? resolve;
   return (request: OutgoingRequest) =>
@@ -27,20 +44,7 @@ export function safeSend(options: { timeoutMs: number; lookup?: Lookup }): Send 
           headers: { ...request.headers, "content-type": "application/json", "content-length": Buffer.byteLength(request.body) },
           timeout: options.timeoutMs,
           // Only a checked address is ever connected to.
-          lookup: (host, lookupOptions, callback) => {
-            // Node asks for every address when it may try several (`all`), for one otherwise: answer in the shape it asked for.
-            const answer = callback as unknown as (error: Error | null, address?: string | { address: string; family: number }[], family?: number) => void;
-            lookup(host).then(
-              (found) => {
-                const bad = found.find((f) => isPrivateAddress(f.address));
-                const ok = found[0];
-                if (bad || !ok) return answer(new Error(`${host} resolves to a private address`));
-                if ((lookupOptions as { all?: boolean }).all) answer(null, found);
-                else answer(null, ok.address, ok.family);
-              },
-              (error: unknown) => answer(error as Error),
-            );
-          },
+          lookup: checkedLookup(lookup),
         },
         (res) => {
           res.resume();

@@ -91,8 +91,8 @@ export async function createTake({ chromium, base, viewport, scale = 2, locale, 
   for (const [id, w] of Object.entries(words)) {
     if (!w[locale]) continue;
     const f = path.join(sayDir, `${id}.aiff`);
-    execFileSync("say", ["-v", voices[locale], "-r", String(SPEECH_RATE[locale]), "-o", f, w[locale]]);
-    speech[id] = Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", f]).toString().trim());
+    execFileSync("say", ["-v", voices[locale], "-r", String(SPEECH_RATE[locale]), "-o", f, w[locale]]); // NOSONAR S4036: a developer-machine script, PATH is the developer's own
+    speech[id] = Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", f]).toString().trim()); // NOSONAR S4036: a developer-machine script, PATH is the developer's own
   }
   const beatAt = {};
   const take = {
@@ -136,7 +136,7 @@ export async function createTake({ chromium, base, viewport, scale = 2, locale, 
       const outBeats = beats.map((b) => ({ id: b.id, at: Number(retime(b.at, spans).toFixed(3)) }));
       const base0 = path.join(outDir, name);
       const input = ["-f", "concat", "-safe", "0", "-i", path.join(frameDir, "list.txt")];
-      const ff = (...a) => execFileSync("ffmpeg", ["-y", "-loglevel", "error", ...a], { stdio: "inherit" });
+      const ff = (...a) => execFileSync("ffmpeg", ["-y", "-loglevel", "error", ...a], { stdio: "inherit" }); // NOSONAR S4036: a developer-machine script, PATH is the developer's own
       const vf = `fps=30,scale=${Math.round(viewport.width * (mobile ? 2 : 1))}:-2:flags=lanczos`;
       ff(...input, "-vf", vf, "-c:v", "libx264", "-crf", "21", "-preset", "slow", "-pix_fmt", "yuv420p", "-movflags", "+faststart", `${base0}.mp4`);
       ff(...input, "-vf", vf, "-c:v", "libvpx-vp9", "-crf", "34", "-b:v", "0", "-row-mt", "1", `${base0}.webm`);

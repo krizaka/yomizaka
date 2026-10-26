@@ -86,7 +86,7 @@ async function record(id, act) {
   const real = marks.end - start;
   const speed = Math.max(1, real / MAX_SECONDS[id]);
   const vf = `setpts=PTS/${speed.toFixed(4)},fps=30`;
-  const ff = (...a) => execFileSync("ffmpeg", ["-y", "-v", "error", ...a], { stdio: "inherit" });
+  const ff = (...a) => execFileSync("ffmpeg", ["-y", "-v", "error", ...a], { stdio: "inherit" }); // NOSONAR S4036: a developer-machine script, PATH is the developer's own
   const input = ["-ss", start.toFixed(2), "-t", real.toFixed(2), "-i", raw, "-an", "-vf", vf];
   ff(...input, "-c:v", "libvpx-vp9", "-crf", "34", "-b:v", "0", "-row-mt", "1", path.join(dir, `${id}.webm`));
   ff(...input, "-c:v", "libx264", "-crf", "24", "-preset", "slow", "-pix_fmt", "yuv420p", "-movflags", "+faststart", path.join(dir, `${id}.mp4`));

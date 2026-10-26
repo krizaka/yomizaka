@@ -157,7 +157,7 @@ frames.forEach((f, i) => {
 });
 list.push(`file '${path.join(tmp, `${String(frames.length - 1).padStart(5, "0")}.jpg`)}'`);
 writeFileSync(path.join(tmp, "list.txt"), `${list.join("\n")}\n`);
-execFileSync("ffmpeg", ["-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", path.join(tmp, "list.txt"), "-vf", "fps=30,scale=trunc(iw/2)*2:trunc(ih/2)*2", "-c:v", "libx264", "-crf", "12", "-preset", "fast", "-pix_fmt", "yuv420p", raw], { stdio: "inherit" });
+execFileSync("ffmpeg", ["-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", path.join(tmp, "list.txt"), "-vf", "fps=30,scale=trunc(iw/2)*2:trunc(ih/2)*2", "-c:v", "libx264", "-crf", "12", "-preset", "fast", "-pix_fmt", "yuv420p", raw], { stdio: "inherit" }); // NOSONAR S4036: a developer-machine script, PATH is the developer's own
 // The raw file starts at the first frame: shift every mark onto its clock.
 const shift = frames[0].at - t0 / 1000;
 for (const k of Object.keys(marks)) marks[k] -= shift;
@@ -169,7 +169,7 @@ const waitTo = marks.finding - start;
 const WAIT_SPEED = Math.max(1, (waitTo - waitFrom) / 3);
 const segs = [[0, waitFrom, 1], [waitFrom, waitTo, WAIT_SPEED], [waitTo, real, 1]];
 const total = segs.reduce((n, [x, y, k]) => n + (y - x) / k, 0);
-const ff = (...a) => execFileSync("ffmpeg", ["-y", "-v", "error", ...a], { stdio: "inherit" });
+const ff = (...a) => execFileSync("ffmpeg", ["-y", "-v", "error", ...a], { stdio: "inherit" }); // NOSONAR S4036: a developer-machine script, PATH is the developer's own
 const graph = segs.map(([x, y, k], i) => `[0:v]trim=start=${(start + x).toFixed(3)}:end=${(start + y).toFixed(3)},setpts=(PTS-STARTPTS)/${k.toFixed(4)}[v${i}]`).join(";") + `;${segs.map((_, i) => `[v${i}]`).join("")}concat=n=${segs.length}:v=1:a=0,fps=30[out]`;
 const input = ["-i", raw, "-an", "-filter_complex", graph, "-map", "[out]"];
 ff(...input, "-c:v", "libvpx-vp9", "-crf", "32", "-b:v", "0", "-row-mt", "1", path.join(dir, "take.webm"));
