@@ -60,7 +60,10 @@ function PiiNotice({ insight, documentId, say, locale }: Readonly<{ insight: Ins
   return (
     <Alert tone="warning" title={say("insight.piiTitle")}>
       <p data-testid="pii-notice">
-        {pii.map(([kind, n]) => `${say(`insight.piiKinds.${kind}`)} : ${n}`).join(" · ")}
+        {pii.map(([kind, n]) => {
+          const name = say(`insight.piiKinds.${kind}`);
+          return `${name} : ${n}`;
+        }).join(" · ")}
       </p>
       <p className="mt-2 text-sm">{say("insight.piiRetention")}</p>
       <p className="mt-2">

@@ -126,11 +126,12 @@ export function DocumentView({ initial, tab, place = null, perspective = null, o
   const startCards = <StartCards {...startProps} />;
   const placeName = place ? collectionLabel(place.name, place.isDefault, say("organisation.defaultName")) : null;
   const retention = retentionText(doc, say, locale);
+  const kindName = say(`kinds.${doc.kind}`);
 
   return (
     <DetailLayout
       back={place ? <Link href={libraryPath(locale, place.libraryId, place.collectionId)}>{placeName}</Link> : <Link href={`/${locale}/app`}>{say("document.back")}</Link>}
-      eyebrow={`${say(`kinds.${doc.kind}`)} · ${doc.filename}`}
+      eyebrow={`${kindName} · ${doc.filename}`}
       title={title}
       status={<Badge tone={STATUS_TONE[doc.status]}>{say(`statuses.${doc.status}`)}</Badge>}
       meta={[doc.pages ? say("library.pages", { count: doc.pages }) : null, formatBytes(doc.sizeBytes, locale), doc.retainUntil ? say("document.where.retentionUntil", { date: formatDate(doc.retainUntil, locale) }) : null].filter(Boolean).join(" · ")}

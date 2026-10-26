@@ -163,6 +163,14 @@ export function renderBody(payload: ReportPayload, labels: ReportLabels): string
   const studioVersion = c.studioVersion ? ` ${esc(c.studioVersion)}` : "";
   const revision = c.rulesetRevision !== null ? ` (rev. ${c.rulesetRevision})` : "";
   const row = (term: string, details: string) => `<dt>${esc(term)}</dt><dd>${details}</dd>`;
+  const reviewNote = c.reviewStatus ? `<p class="note">${esc(labels.toReview)}</p>` : "";
+  const contractNote = c.rulesetId === "qc-service-contract" ? `<p class="note">${esc(labels.notCheckedServiceContract)}</p>` : "";
+  const sizeCell = `${d.sizeBytes} B${pages}`;
+  const documentShaCell = `<code>${esc(d.sha256)}</code>`;
+  const engineCell = `${esc(c.engine)} · ${esc(c.studio)}${studioVersion}`;
+  const runIdCell = `<code>${esc(c.runId)}</code>`;
+  const rulesetCell = `${esc(c.rulesetId)} · ${esc(c.rulesetVersion)}${revision}`;
+  const verifyUrl = `${SITE_URL}/verify`;
   const findings = payload.findings
     .map(
       (f) => {
@@ -190,19 +198,19 @@ export function renderBody(payload: ReportPayload, labels: ReportLabels): string
 <p class="note"><strong>${esc(labels.disclaimer)}</strong></p>
 <h1>${esc(d.title)}</h1>
 <p>${esc(fill(labels.summary, { failures: payload.summary.blockingFailures, rules: payload.summary.rulesEvaluated }))}</p>
-${c.reviewStatus ? `<p class="note">${esc(labels.toReview)}</p>` : ""}
-${c.rulesetId === "qc-service-contract" ? `<p class="note">${esc(labels.notCheckedServiceContract)}</p>` : ""}
+${reviewNote}
+${contractNote}
 <h2>${esc(labels.documentHeading)}</h2>
-<dl>${row(labels.file, esc(d.filename))}${row(labels.size, `${d.sizeBytes} B${pages}`)}${row(labels.documentSha, `<code>${esc(d.sha256)}</code>`)}</dl>
+<dl>${row(labels.file, esc(d.filename))}${row(labels.size, sizeCell)}${row(labels.documentSha, documentShaCell)}</dl>
 <h2>${esc(labels.checkHeading)}</h2>
-<dl>${row(labels.engine, `${esc(c.engine)} · ${esc(c.studio)}${studioVersion}`)}${row(labels.runId, `<code>${esc(c.runId)}</code>`)}${row(labels.jurisdiction, esc(c.jurisdiction))}${row(labels.asOf, esc(c.asOf))}${row(labels.ruleset, `${esc(c.rulesetId)} · ${esc(c.rulesetVersion)}${revision}`)}${row(labels.model, esc(labels.modelValue))}${row(labels.started, esc(c.startedAt))}${row(labels.finished, esc(c.finishedAt))}</dl>
+<dl>${row(labels.engine, engineCell)}${row(labels.runId, runIdCell)}${row(labels.jurisdiction, esc(c.jurisdiction))}${row(labels.asOf, esc(c.asOf))}${row(labels.ruleset, rulesetCell)}${row(labels.model, esc(labels.modelValue))}${row(labels.started, esc(c.startedAt))}${row(labels.finished, esc(c.finishedAt))}</dl>
 <h2>${esc(fill(labels.findingsHeading, { count: payload.findings.length }))}</h2>
 ${findings}
 ${payload.note ? renderNote(payload.note) : ""}
 <h2>${esc(labels.guaranteeHeading)}</h2>
 <p>${esc(labels.guarantees)}</p>
 <p>${esc(labels.notGuaranteed)}</p>
-<p>${esc(fill(labels.howToVerify, { url: `${SITE_URL}/verify` }))}</p>
+<p>${esc(fill(labels.howToVerify, { url: verifyUrl }))}</p>
 <footer>${esc(labels.footer)}</footer>
 ${ATTESTATION_MARKER}
 </body>

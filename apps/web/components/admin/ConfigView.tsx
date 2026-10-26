@@ -184,7 +184,8 @@ function History() {
       { id: "what", header: say("adminConfig.history.what"), value: (e) => e.key, cell: (e) => <code className="text-xs">{e.key}</code> },
       { id: "scope", header: say("adminConfig.history.scope"), value: (e) => e.scope, cell: (e) => {
           const id = e.scopeId ? ` ${e.scopeId.slice(0, 8)}` : "";
-          return `${say(`adminConfig.sources.${e.scope}`)}${id}`;
+          const source = say(`adminConfig.sources.${e.scope}`);
+          return `${source}${id}`;
         } },
       { id: "before", header: say("adminConfig.history.before"), value: (e) => show(e.before), cell: (e) => <code className="text-xs">{e.before === null ? "—" : show(e.before)}</code> },
       { id: "after", header: say("adminConfig.history.after"), value: (e) => show(e.after), cell: (e) => <code className="text-xs">{e.after === null ? "—" : show(e.after)}</code> },
