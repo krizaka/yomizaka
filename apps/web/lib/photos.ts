@@ -3,6 +3,7 @@ import type { DocumentKind, DocumentSummary, PhotoOrigin } from "@yomizaka/core"
 import { inspectUpload, type StoragePolicy, storeDocument } from "./documents";
 import { refuse } from "./http";
 import { createImageCleaner, type ImageCleaner, ImageError, type ImageRules, pagesToPdf, type PhotoFacts, type PhotoKind, YOMIZAKA_IMAGE_RULES } from "./images";
+import { logError } from "./log";
 import { type OcrEngine, type OcrRules, readPhotoText, tesseractEngine, type VisionReader, YOMIZAKA_OCR_RULES } from "./ocr";
 import { sniff } from "./preflight/inspector";
 import type { PreflightRules } from "./preflight/port";
@@ -69,7 +70,7 @@ export async function storePhotos(ownerId: string, files: readonly PhotoFile[], 
     try {
       return await readPhotoText(cleaned.map((c) => c.page.jpeg), { ocr: deps.ocr, vision: deps.vision, rules: deps.ocrRules, origin });
     } catch (error) {
-      console.error("[yomizaka] reading a photo failed:", error instanceof Error ? `${error.message} / ${String(error.cause)}` : error);
+      logError("[yomizaka] reading a photo failed:", error);
       throw refuse(422, "OCR_FAILED", "The text of this photo could not be read");
     }
   });

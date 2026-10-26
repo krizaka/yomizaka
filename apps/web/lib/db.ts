@@ -9,7 +9,7 @@ import { MIGRATIONS } from "./migrations";
  */
 export function poolConfig(source: Record<string, string | undefined> = process.env): pg.PoolConfig {
   const env = readEnv(source);
-  return configFor(env, env.DATABASE_URL, env.DATABASE_MAX_CONNECTIONS);
+  return configFor(env, { variable: "DATABASE_URL", value: env.DATABASE_URL }, env.DATABASE_MAX_CONNECTIONS);
 }
 
 // @fixed: connections kept for session locks and migrations — a technical bound; the main pool is never touched by it
@@ -22,12 +22,28 @@ const SESSION_CONNECTIONS = 4;
  */
 export function sessionPoolConfig(source: Record<string, string | undefined> = process.env): pg.PoolConfig {
   const env = readEnv(source);
-  return { ...configFor(env, env.DATABASE_DIRECT_URL ?? env.DATABASE_URL, SESSION_CONNECTIONS), allowExitOnIdle: true };
+  const direct = env.DATABASE_DIRECT_URL ? { variable: "DATABASE_DIRECT_URL", value: env.DATABASE_DIRECT_URL } : { variable: "DATABASE_URL", value: env.DATABASE_URL };
+  return { ...configFor(env, direct, SESSION_CONNECTIONS), allowExitOnIdle: true };
 }
 
-function configFor(env: ReturnType<typeof readEnv>, databaseUrl: string | undefined, max: number): pg.PoolConfig {
-  if (!databaseUrl) throw new Error("DATABASE_URL is not set");
-  const url = new URL(databaseUrl);
+/**
+ * Reads a connection string. A bad one says WHICH variable is wrong and never shows any part of it: Node's `Invalid URL`
+ * error keeps the rejected input, so it is dropped here, not rethrown (yomizaka#386).
+ */
+function parseDatabaseUrl(variable: string, value: string): URL {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error(`${variable} is not a valid URL (expected postgresql://user:password@host:port/database)`);
+  }
+  if (!url.hostname) throw new Error(`${variable} has no host`);
+  return url;
+}
+
+function configFor(env: ReturnType<typeof readEnv>, source: { variable: string; value: string | undefined }, max: number): pg.PoolConfig {
+  if (!source.value) throw new Error(`${source.variable} is not set`);
+  const url = parseDatabaseUrl(source.variable, source.value);
   const mode = url.searchParams.get("sslmode");
   url.searchParams.delete("sslmode");
   const tls = mode === "require" || mode === "verify-ca" || mode === "verify-full";

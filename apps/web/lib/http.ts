@@ -1,3 +1,5 @@
+import { logError } from "./log";
+
 /** An error the API answers with: a status, a stable code (the client translates it), a message for logs. */
 export class HttpError extends Error {
   constructor(
@@ -30,7 +32,7 @@ export async function handle(run: () => Promise<Response>): Promise<Response> {
     if (error instanceof HttpError) {
       return Response.json({ error: error.message, ...error.body }, { status: error.status, headers: error.headers });
     }
-    console.error("api: unexpected error", error);
+    logError("api: unexpected error", error);
     return Response.json({ error: "Something went wrong", code: "INTERNAL" }, { status: 500 });
   }
 }

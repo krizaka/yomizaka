@@ -1,5 +1,6 @@
 import { clientIp } from "./client-ip";
 import { query } from "./db";
+import { logError } from "./log";
 
 type Entry = { action: string; actorId: string | null; actorLabel: string; targetId?: string | null; detail?: Record<string, unknown>; headers?: Headers };
 type Run = (text: string, values?: unknown[]) => Promise<unknown>;
@@ -21,6 +22,6 @@ export async function audit(entry: Entry) {
   try {
     await auditIn(query, entry);
   } catch (error) {
-    console.error(`audit: ${entry.action} not recorded`, error);
+    logError(`audit: ${entry.action} not recorded`, error);
   }
 }
