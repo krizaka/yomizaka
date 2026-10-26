@@ -2,7 +2,7 @@
   "meta": {
     "siteName": "Yomizaka",
     "titleTemplate": "{title} · Yomizaka",
-    "description": "Vos baux, contrats et factures, lus et vérifiés par Yomizaka : chaque constat cite sa règle et la ligne sur laquelle il repose, chaque PDF examiné pour des signes de retouche, chaque document retrouvé en une seconde."
+    "description": "Vos baux, contrats et factures, lus et vérifiés par Yomizaka : chaque constat cite son entrée de matrice et la ligne sur laquelle il repose, chaque PDF examiné pour des signes de retouche, chaque document retrouvé en une seconde."
   },
   "chrome": {
     "brandHome": "Yomizaka, accueil",
@@ -36,7 +36,7 @@
   },
   "landing": {
     "title": "Lisez avant de signer.",
-    "lead": "Déposez un bail, un contrat ou une facture. Yomizaka le lit selon les règles en vigueur et vous montre la ligne exacte derrière chaque constat.",
+    "lead": "Déposez un bail, un contrat ou une facture. Yomizaka fait la vérification documentaire et le tri du dossier : il le lit selon des matrices d’extraction documentaire et des gabarits technologiques paramétrables, et vous montre la ligne exacte derrière chaque constat.",
     "status": {
       "label": "Statut",
       "development": "En développement : les inscriptions sont fermées pendant nos essais sur de vrais baux québécois.",
@@ -2172,7 +2172,7 @@
   "report": {
     "title": "Rapport d’audit — {name}",
     "eyebrow": "Yomizaka · rapport d’audit de conformité",
-    "disclaimer": "Vérification informative, ce n’est pas un avis juridique. Yomizaka compare votre document à des règles publiées; ce n’est pas une opinion juridique, et seuls les membres du Barreau du Québec peuvent donner un avis juridique. Un résultat n’est jamais une garantie de conformité.",
+    "disclaimer": "Vérification informative, ce n’est pas un avis juridique. Yomizaka fait la vérification documentaire et le tri d’un dossier avec des matrices d’extraction documentaire et des gabarits technologiques paramétrables, des outils techniques validés par le conseiller juridique du client; ce n’est pas une opinion juridique, et seuls les membres du Barreau du Québec peuvent donner un avis juridique. Un résultat n’est jamais une garantie de conformité.",
     "summary": "{failures} manquement(s) bloquant(s) sur {rules} règles vérifiées.",
     "toReview": "Règles du Québec encore à faire réviser par un avocat : un rapport de démonstration, pas un avis juridique.",
     "documentHeading": "Le document",
@@ -2201,7 +2201,7 @@
     },
     "guaranteeHeading": "Ce que ce rapport garantit",
     "guarantees": "Ce rapport est signé avec la clé de Yomizaka (Ed25519, détenue par Krizaka). La signature couvre le SHA-256 du document, la juridiction et la version des règles, le Studio et sa version, l’identifiant d’exécution Orazaka, la date de la vérification, chaque constat avec son passage et son article, et le texte complet de ce rapport. Si un seul caractère de ce fichier change, la vérification échoue.",
-    "notGuaranteed": "Elle ne prouve pas que les constats sont justes en droit : Orazaka applique les règles, celles du Québec restent à faire réviser par un avocat, et ce n’est pas un avis juridique. Elle ne prouve pas que l’exécution existe chez Orazaka (seul son exploitant peut le dire), ni quand le rapport a été établi au-delà des dates de vérification ci-dessus : il n’y a ni horodatage indépendant ni chaîne de blocs. Ce à quoi vous faites confiance, c’est Krizaka, détentrice de la clé de signature.",
+    "notGuaranteed": "Elle ne prouve pas que les constats sont justes en droit : Orazaka applique les matrices d’extraction, celles du Québec restent à faire réviser par un avocat, et ce n’est pas un avis juridique. Elle ne prouve pas que l’exécution existe chez Orazaka (seul son exploitant peut le dire), ni quand le rapport a été établi au-delà des dates de vérification ci-dessus : il n’y a ni horodatage indépendant ni chaîne de blocs. Ce à quoi vous faites confiance, c’est Krizaka, détentrice de la clé de signature.",
     "howToVerify": "Pour le vérifier, connectez-vous à Yomizaka et ouvrez {url} — seules les personnes à qui le propriétaire du rapport a donné accès le peuvent, avec leur compte Yomizaka. Donnez-lui ce fichier et, pour confirmer quel document a été vérifié, le document d’origine.",
     "footer": "Yomizaka, un produit Krizaka — analyse par Orazaka.",
     "signatureHeading": "Page de signature",
@@ -2256,7 +2256,7 @@
     },
     "limitsTitle": "Ce qu’il ne garantit pas",
     "limits": {
-      "a": "Que les constats sont justes en droit : Orazaka applique les règles, et celles du Québec restent à faire réviser par un avocat. Ce n’est pas un avis juridique.",
+      "a": "Que les constats sont justes en droit : Orazaka applique des matrices d’extraction documentaire et des gabarits technologiques, et ceux du Québec restent à faire réviser par un avocat. Ce n’est pas un avis juridique.",
       "b": "Que l’exécution existe chez Orazaka : seul son exploitant peut confirmer un identifiant d’exécution.",
       "c": "Quand le rapport a été établi, au-delà des dates de vérification qu’il indique : il n’y a pas d’horodatage indépendant.",
       "d": "Rien sur le détenteur de la clé : vous faites confiance à Krizaka pour la garder. Ni chaîne de blocs ni tiers."

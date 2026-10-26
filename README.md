@@ -24,8 +24,9 @@ and a real run. The Dev preview is **web only** (phone-first); the phone app (`a
 
 - **Library** — upload PDF, Word (.docx), OpenDocument text (.odt) or plain text files (a queue that pauses, resumes and retries); each is kept as sent, its text
   layer read for search, its SHA-256 recorded; a file sent twice is one document.
-- **Against the law** — a lease checked rule by rule against the rules of its jurisdiction (Québec, France, Wallonia) in force
-  on a date: each finding gives its rule, severity, verdict, citation and the exact passage, highlighted in the text.
+- **Document verification** — a lease read entry by entry against the extraction matrices and technical templates of its jurisdiction
+  (Québec, France, Wallonia) in force on a date, tools validated by the client's counsel: each finding gives its entry, severity, verdict,
+  citation and the exact passage, highlighted in the text. Yomizaka verifies documents and screens files; it never verifies an identity.
 - **Signs of editing** — a PDF or office file (.docx, .odt) examined as a file by Orazaka (metadata, dates, revision history): signals at three
   plain levels, never a score, never a "fake" stamp.
 - **Search** — every document and every finding, one field (PostgreSQL full text, French and English alike).

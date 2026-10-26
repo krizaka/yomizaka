@@ -2,7 +2,7 @@
   "meta": {
     "siteName": "Yomizaka",
     "titleTemplate": "{title} · Yomizaka",
-    "description": "Your leases, contracts and invoices, read and checked by Yomizaka: every finding quotes its rule and the line it rests on, every PDF examined for signs of editing, every document found again in a second."
+    "description": "Your leases, contracts and invoices, read and checked by Yomizaka: every finding quotes its matrix entry and the line it rests on, every PDF examined for signs of editing, every document found again in a second."
   },
   "chrome": {
     "brandHome": "Yomizaka, home",
@@ -36,7 +36,7 @@
   },
   "landing": {
     "title": "Read before you sign.",
-    "lead": "Drop a lease, a contract or an invoice. Yomizaka reads it against the rules in force and shows you the exact line behind every finding.",
+    "lead": "Drop a lease, a contract or an invoice. Yomizaka verifies the document and screens the file: it reads it against extraction matrices and technical templates, and shows you the exact line behind every finding.",
     "status": {
       "label": "Status",
       "development": "In development: sign-up is closed while we test it on real Québec leases.",
@@ -2172,7 +2172,7 @@
   "report": {
     "title": "Audit report — {name}",
     "eyebrow": "Yomizaka · compliance audit report",
-    "disclaimer": "Informative check, not legal advice. Yomizaka compares your document with published rules; it is not a legal opinion, and only a member of the Barreau du Québec can give legal advice. A result is never a guarantee of compliance.",
+    "disclaimer": "Informative check, not legal advice. Yomizaka verifies a document and screens a file with configurable extraction matrices and technical templates, tools validated by the client's counsel; it is not a legal opinion, and only a member of the Barreau du Québec can give legal advice. A result is never a guarantee of compliance.",
     "summary": "{failures} blocking failure(s) out of {rules} rules checked.",
     "toReview": "Québec rules still to be reviewed by a lawyer: a demonstration report, not legal advice.",
     "documentHeading": "The document",
@@ -2201,7 +2201,7 @@
     },
     "guaranteeHeading": "What this report guarantees",
     "guarantees": "This report is signed with Yomizaka's key (Ed25519, held by Krizaka). The signature covers the document's SHA-256, the jurisdiction and rules version, the Studio and its version, the Orazaka run id, the date of the check, every finding with its passage and article, and the full text of this report. If a single character of this file changes, verification fails.",
-    "notGuaranteed": "It does not prove that the findings are legally right: Orazaka applies the rules, the Québec ruleset is still to be reviewed by a lawyer, and this is not legal advice. It does not prove that the run exists on Orazaka's side (only its operator can say), nor when the report was made beyond the check dates above: there is no independent time-stamp and no blockchain. What you trust is Krizaka, the holder of the signing key.",
+    "notGuaranteed": "It does not prove that the findings are legally right: Orazaka applies the extraction matrices, the Québec matrices are still to be reviewed by a lawyer, and this is not legal advice. It does not prove that the run exists on Orazaka's side (only its operator can say), nor when the report was made beyond the check dates above: there is no independent time-stamp and no blockchain. What you trust is Krizaka, the holder of the signing key.",
     "howToVerify": "To verify it, sign in to Yomizaka and open {url} — only the people the report's owner gave access to can, with their Yomizaka account. Give it this file and, to confirm which document was checked, the original document.",
     "footer": "Yomizaka, a Krizaka product — analysis by Orazaka.",
     "signatureHeading": "Signature page",
@@ -2256,7 +2256,7 @@
     },
     "limitsTitle": "What it does not guarantee",
     "limits": {
-      "a": "That the findings are right in law: Orazaka applies the rules, and the Québec ruleset is still to be reviewed by a lawyer. This is not legal advice.",
+      "a": "That the findings are right in law: Orazaka applies extraction matrices and technical templates, and the Québec ones are still to be reviewed by a lawyer. This is not legal advice.",
       "b": "That the run exists on Orazaka's side: only its operator can confirm a run id.",
       "c": "When the report was made, beyond the check dates it states: there is no independent time-stamp.",
       "d": "Anything about the key holder: you trust Krizaka to keep the key. No blockchain, no third party."
