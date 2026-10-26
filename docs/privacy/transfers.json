@@ -9,7 +9,7 @@
       "where": "Toronto (region tor, next to the app: the spec header and lib/env.ts)",
       "outsideQuebec": true,
       "outsideCanada": false,
-      "env": ["DATABASE_URL", "DATABASE_CA_CERT", "DATABASE_MAX_CONNECTIONS"],
+      "env": ["DATABASE_URL", "DATABASE_DIRECT_URL", "DATABASE_CA_CERT", "DATABASE_MAX_CONNECTIONS"],
       "hosts": []
     },
     {

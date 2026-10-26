@@ -9,14 +9,31 @@ import { MIGRATIONS } from "./migrations";
  */
 export function poolConfig(source: Record<string, string | undefined> = process.env): pg.PoolConfig {
   const env = readEnv(source);
-  if (!env.DATABASE_URL) throw new Error("DATABASE_URL is not set");
-  const url = new URL(env.DATABASE_URL);
+  return configFor(env, env.DATABASE_URL, env.DATABASE_MAX_CONNECTIONS);
+}
+
+// @fixed: connections kept for session locks and migrations — a technical bound; the main pool is never touched by it
+const SESSION_CONNECTIONS = 4;
+
+/**
+ * The pool of the work that must hold one backend for its whole life (session advisory locks: migrations, ticks, named locks).
+ * It goes to DATABASE_DIRECT_URL when set — a transaction pooler such as PgBouncer hands the next statement to another backend, and
+ * a session lock would be lost — and to DATABASE_URL otherwise.
+ */
+export function sessionPoolConfig(source: Record<string, string | undefined> = process.env): pg.PoolConfig {
+  const env = readEnv(source);
+  return { ...configFor(env, env.DATABASE_DIRECT_URL ?? env.DATABASE_URL, SESSION_CONNECTIONS), allowExitOnIdle: true };
+}
+
+function configFor(env: ReturnType<typeof readEnv>, databaseUrl: string | undefined, max: number): pg.PoolConfig {
+  if (!databaseUrl) throw new Error("DATABASE_URL is not set");
+  const url = new URL(databaseUrl);
   const mode = url.searchParams.get("sslmode");
   url.searchParams.delete("sslmode");
   const tls = mode === "require" || mode === "verify-ca" || mode === "verify-full";
   return {
     connectionString: url.toString(),
-    max: 5,
+    max,
     idleTimeoutMillis: 30_000,
     ...(tls ? { ssl: { ca: env.DATABASE_CA_CERT?.replace(/\\n/g, "\n"), rejectUnauthorized: true } } : {}),
   };
@@ -54,7 +71,7 @@ export async function transaction<T>(work: (run: <R extends pg.QueryResultRow = 
 
 /** Applies the migrations not applied yet, one transaction each, under an advisory lock (two instances never race). */
 export async function migrate(client?: pg.Pool): Promise<string[]> {
-  const db = client ?? pool();
+  const db = client ?? lockPool();
   const conn = await db.connect();
   const applied: string[] = [];
   try {
@@ -95,14 +112,12 @@ export async function withNamedLock<T>(name: string, work: () => Promise<T>): Pr
 }
 
 /**
- * Locks live on their own small pool: a holder keeps its connection for the whole of its work, and that work runs its queries on the
+ * Locks (and migrations) live on their own small pool, on the direct URL: a holder keeps its connection for the whole of its work, and that work runs its queries on the
  * main pool — if both came from one pool, as many concurrent holders as it has connections would wait forever for a connection to
  * read with (yomizaka#266, review). Holders beyond the pool simply wait their turn for a lock connection.
  */
 const lockHolder = globalThis as unknown as { __yomizakaLockPool?: pg.Pool };
-// @fixed: connections kept for locks — a technical bound; the main pool is never touched by it
-const LOCK_CONNECTIONS = 4;
-const lockPool = (): pg.Pool => (lockHolder.__yomizakaLockPool ??= new pg.Pool({ ...poolConfig(), max: LOCK_CONNECTIONS, allowExitOnIdle: true }));
+const lockPool = (): pg.Pool => (lockHolder.__yomizakaLockPool ??= new pg.Pool(sessionPoolConfig()));
 
 async function withLock<T>(lock: string, unlock: string, key: number | string, work: () => Promise<T>): Promise<T | null> {
   const conn = await lockPool().connect();
