@@ -11,7 +11,8 @@
       "what": "Ce que ça fait",
       "proof": "Une vraie vérification",
       "privacy": "Confidentialité",
-      "docs": "Docs"
+      "docs": "Docs",
+      "pricing": "Tarifs"
     },
     "signIn": "Se connecter",
     "themeToggle": "Thème",
@@ -2629,6 +2630,60 @@
       "retention": "Un document conservé reste jusqu'à ce que vous le supprimiez ; le supprimer efface son fichier, son texte et ses résultats, et fermer votre compte supprime vos documents.",
       "orazaka": "Quand vous demandez une vérification, le document est envoyé à Orazaka, le moteur d'analyse de Krizaka, par HTTPS. Rien n'est vendu, partagé ni utilisé pour entraîner un modèle.",
       "privacy": "Lire l'avis de confidentialité"
+    }
+  },
+  "pricing": {
+    "title": "Tarifs",
+    "lead": "Aucun abonnement annuel. Payez au document, ou abonnez-vous au mois et résiliez quand vous voulez. Prix en CAD, avant taxes : la TPS et la TVQ s'ajoutent sur la facture.",
+    "plansLabel": "Forfaits",
+    "perMonth": " par mois, plus taxes",
+    "perDocument": " par document, plus taxes",
+    "included": "{included} vérifications incluses par mois",
+    "paused": "Au-delà du volume inclus, les vérifications attendent le mois suivant",
+    "freeFirst": "Votre première vérification est offerte",
+    "cancel": "Facturé au mois, résiliable en tout temps depuis le portail de facturation",
+    "noSubscription": "Sans abonnement : vous payez les documents que vous vérifiez",
+    "plans": {
+      "document": {
+        "name": "Un document",
+        "features": [
+          "Vérification de document et filtrage de dossier",
+          "Un rapport signé qui cite l'article derrière chaque constat"
+        ]
+      },
+      "agency": {
+        "name": "PME",
+        "features": [
+          "Pour les agences et les gestionnaires d'immeubles",
+          "L'API, avec des clés créées dans votre compte"
+        ]
+      },
+      "firm": {
+        "name": "Études et entreprises",
+        "features": [
+          "Pour les études avec un plus grand volume",
+          "L'API, avec des clés créées dans votre compte"
+        ]
+      }
+    },
+    "soon": {
+      "title": "Bientôt",
+      "lead": "Pas encore offert. Aucun prix n'est promis pour ces éléments.",
+      "badge": "Bientôt",
+      "items": {
+        "fullFile": {
+          "name": "Le dossier complet du locataire",
+          "text": "Les documents, puis les vérifications aux registres."
+        },
+        "backgroundCheck": {
+          "name": "La vérification des antécédents",
+          "text": "Les dossiers du candidat, avec son consentement."
+        },
+        "screening": {
+          "name": "Le filtre des pièces seul",
+          "text": "La première étape d'un dossier, facturée seulement quand elle s'exécute."
+        }
+      }
     }
   }
 }

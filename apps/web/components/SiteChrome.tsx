@@ -9,7 +9,7 @@ import { Fragment } from "react";
 
 import { BarActions, BarQueryRoot } from "@/components/BarSession";
 import { type Locale, translator } from "@/lib/i18n";
-import { MENU, menuHref } from "@/lib/nav";
+import { menuHref, menuItems } from "@/lib/nav";
 import { type PageId, pagePath, REPO_URL } from "@/lib/site";
 
 /**
@@ -25,7 +25,7 @@ export function SiteHeader({ locale, current, provider = true }: Readonly<{ loca
   const Root = provider ? BarQueryRoot : Fragment;
   const languages = languagesFor(pagePath(locale, current));
   const home = pagePath(locale, "home");
-  const items = MENU.map((m) => ({ ...m, href: menuHref(locale, m), label: t(`chrome.nav.${m.id}`), active: m.page === current && !m.hash }));
+  const items = menuItems().map((m) => ({ ...m, href: menuHref(locale, m), label: t(`chrome.nav.${m.id}`), active: m.page === current && !m.hash }));
   return (
     <div className="pointer-events-none fixed inset-x-0 top-3 z-50 px-3" data-site-bar>
       <Root>

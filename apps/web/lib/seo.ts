@@ -3,6 +3,7 @@
 import type { Metadata } from "next";
 
 import { getDictionary, type Locale } from "./i18n";
+import { isListed } from "./listed";
 import { KRIZAKA_URL, type PageId, pagePath, REPO_URL, SITE_URL } from "./site";
 
 export const ORG_ID = `${KRIZAKA_URL}/#organization`;
@@ -19,7 +20,7 @@ const url = (locale: Locale, page: PageId) => `${SITE_URL}${pagePath(locale, pag
 
 export function pageMetadata(locale: Locale, page: PageId): Metadata {
   const t = getDictionary(locale);
-  const titles: Record<Exclude<PageId, "home">, string> = { docs: t.docs.title, download: t.download.title, privacy: t.privacy.title, terms: t.terms.title };
+  const titles: Record<Exclude<PageId, "home">, string> = { docs: t.docs.title, pricing: t.pricing.title, download: t.download.title, privacy: t.privacy.title, terms: t.terms.title };
   const title = page === "home" ? `${t.meta.siteName} · ${t.landing.title}` : `${titles[page]} · ${t.meta.siteName}`;
   const description = t.meta.description;
   return {
@@ -76,7 +77,7 @@ export function llmsText(): string {
 ## Key pages
 - [${getDictionary("fr").meta.siteName}](${SITE_URL}/fr) · [Yomizaka (en)](${SITE_URL}/en): what it does for you, and one real check recorded as it came back
 - [${getDictionary("fr").docs.title}](${SITE_URL}/fr/docs) · [${en.docs.title} (en)](${SITE_URL}/en/docs): how a check works, the API (OpenAPI at ${SITE_URL}/api/v1/openapi.json), your data
-- [${getDictionary("fr").privacy.title}](${SITE_URL}/fr/privacy) · [${en.privacy.title} (en)](${SITE_URL}/en/privacy)
+${isListed("pricing") ? `- [${getDictionary("fr").pricing.title}](${SITE_URL}/fr/pricing) · [${en.pricing.title} (en)](${SITE_URL}/en/pricing): the prices, read from the catalogue\n` : ""}- [${getDictionary("fr").privacy.title}](${SITE_URL}/fr/privacy) · [${en.privacy.title} (en)](${SITE_URL}/en/privacy)
 - Signed reports are verified by signed-in members the report's owner gave access to; there is no public verification.
 - [Talk to us about Yomizaka](${KRIZAKA_URL}/contact?topic=yomizaka): the one way to reach the team
 ## Source

@@ -7,7 +7,7 @@ export const PRIVACY_UPDATED = "2026-10-14";
 export const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? "0.1.0";
 
 /** The public pages, in both languages (sitemap, hreflang). `/download` is parked while no app ships (lib/downloads.ts). The report checker is in the app (`/app/verifications/report`, yomizaka#389). */
-export const PAGES = ["home", "docs", "download", "privacy", "terms"] as const;
+export const PAGES = ["home", "docs", "pricing", "download", "privacy", "terms"] as const;
 export type PageId = (typeof PAGES)[number];
 export const pagePath = (locale: "en" | "fr", page: PageId) => (page === "home" ? `/${locale}` : `/${locale}/${page}`);
 

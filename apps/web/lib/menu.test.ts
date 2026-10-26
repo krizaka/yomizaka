@@ -144,7 +144,7 @@ describe("every removed address redirects (308) to its new home", () => {
     for (const prefix of ["/en", "/fr"]) expect(rules).toContainEqual({ source: `${prefix}/download`, destination: prefix, permanent: true });
     const { default: sitemap } = await import("../app/sitemap");
     expect(sitemap().filter((e) => e.url.includes("/download"))).toEqual([]);
-    expect(readFileSync(join(ROOT, "components/SiteFooter.tsx"), "utf8")).toContain("downloadsOffered()");
+    expect(readFileSync(join(ROOT, "components/SiteFooter.tsx"), "utf8")).toContain('isListed("download")');
   });
 
   it("the report checker moved into the app: /verify answers 308 to /app/verifications/report, which exists and is no longer public", () => {
