@@ -12,7 +12,7 @@ import { App } from "./App";
 import { session } from "./lib/config";
 
 /** One account's data never shows to the next: a session that starts or ends (sign-out, sign-in, a 401) empties the cache. */
-function SessionBoundary({ children }: { children: ReactNode }) {
+function SessionBoundary({ children }: Readonly<{ children: ReactNode }>) {
   const queryClient = useQueryClient();
   useEffect(
     () =>

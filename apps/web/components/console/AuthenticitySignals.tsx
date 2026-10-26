@@ -12,7 +12,7 @@ import { formatDate } from "./format";
 const LEVEL_TONE: Record<string, "neutral" | "warning" | "danger"> = { observé: "neutral", inhabituel: "warning", incohérent: "danger" };
 
 /** The authenticity Studio's signals, each with its plain level, as Orazaka returned them. */
-export function AuthenticitySignals({ report }: { report: Pick<AuthenticityReport, "header" | "signals"> }) {
+export function AuthenticitySignals({ report }: Readonly<{ report: Pick<AuthenticityReport, "header" | "signals"> }>) {
   const { say } = useSay();
   return (
     <div className="flex flex-col gap-3">
@@ -40,7 +40,7 @@ export function AuthenticitySignals({ report }: { report: Pick<AuthenticityRepor
 }
 
 /** A photo document's origin, read at upload (its metadata never leaves the intake, ADR-0010), as the report's signals. */
-export function PhotoOriginSignals({ source }: { source: TextSource }) {
+export function PhotoOriginSignals({ source }: Readonly<{ source: TextSource }>) {
   const { say, locale } = useSay();
   const signals = photoOriginSignals(source.origin).map((s) => {
     const facts = { ...s.facts, ...(s.facts.taken ? { taken: formatDate(s.facts.taken, locale, true), modified: formatDate(s.facts.modified, locale, true) } : {}) };

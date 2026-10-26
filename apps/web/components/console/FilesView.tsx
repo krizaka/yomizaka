@@ -77,7 +77,7 @@ export function useFileFacts() {
  * result), the documents in against those asked, the tags with their markers, the day it was asked — the views, the filters of the
  * address, the selection bar and « Demander des documents ».
  */
-export function FilesView({ files: all, states = [], types, origin, workspace }: { files: readonly FileSummary[]; states?: readonly LinkState[]; types: readonly AskableType[]; origin: string; workspace?: FilesWorkspace }) {
+export function FilesView({ files: all, states = [], types, origin, workspace }: Readonly<{ files: readonly FileSummary[]; states?: readonly LinkState[]; types: readonly AskableType[]; origin: string; workspace?: FilesWorkspace }>) {
   // The link-state filter of the address (`?state=used`), the door of the home's « À traiter » (yomizaka#325).
   const files = filesInStates(all, states);
   const { say, locale } = useSay();
@@ -239,7 +239,7 @@ function FilesBody({ files, states, filtered, columns, labels, table, empty }: R
  * The binder (design B2, yomizaka#334): the decision states as binder tabs with their counts, the tags as chips with theirs. Every
  * one is a link, the address is the state; each count is the length of the view it opens (`countApplicantFiles`, the list's filter).
  */
-function Binder({ workspace, base }: { workspace: FilesWorkspace; base: string }) {
+function Binder({ workspace, base }: Readonly<{ workspace: FilesWorkspace; base: string }>) {
   const { say, locale } = useSay();
   const { plan, counts } = workspace;
   // `Tabs.Nav` marks a tab active when the link's parameters are in the route: « Tous » is `status=` (none), a state `status=<key>`.

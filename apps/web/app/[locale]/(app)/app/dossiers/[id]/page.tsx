@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /** One applicant file — another account's file is a 404, never a 403. */
-export default async function FilePage({ params }: { params: Promise<{ locale: string; id: string }> }) {
+export default async function FilePage({ params }: Readonly<{ params: Promise<{ locale: string; id: string }> }>) {
   const { locale: raw, id } = await params;
   const locale = asLocale(raw);
   const session = await pageSession();

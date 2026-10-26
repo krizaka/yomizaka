@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 /** The signed-in space: no session, no page. The administration lives apart, on admin.yomizaka.com (app/[locale]/(admin)). */
-export default async function ConsoleLayout({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {
+export default async function ConsoleLayout({ children, params }: Readonly<{ children: React.ReactNode; params: Promise<{ locale: string }> }>) {
   const locale = asLocale((await params).locale);
   const session = await pageSession();
   if (!session) redirect(`/${locale}/sign-in`);

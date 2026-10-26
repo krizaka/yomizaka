@@ -21,7 +21,7 @@ import { FindingList, type FindingSelection, TechnicalDetails, VerdictBand } fro
  * authenticity report alone; or « Pas encore vérifié » with the checks to start. Once a report is shown, the other checks are
  * the aside's actions (design § 5.3): no form in this column.
  */
-export function DocumentReportTab({ doc, facts, selection, perspective, startCards }: { doc: DocumentView; facts: DocumentFacts; selection: FindingSelection; perspective: Audience | null; startCards: ReactNode }) {
+export function DocumentReportTab({ doc, facts, selection, perspective, startCards }: Readonly<{ doc: DocumentView; facts: DocumentFacts; selection: FindingSelection; perspective: Audience | null; startCards: ReactNode }>) {
   const { say, locale } = useSay();
   const { latestCompliance, latestReport, latestAuthenticity, runningStudio, failures } = facts;
   // The notes at the foot (design § 3.5): the review note first (the verdict points to it, REVIEW_NOTE), then a demo check's note — never a box above the report.

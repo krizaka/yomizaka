@@ -33,7 +33,7 @@ const say = (table: Record<string, string>, code: string, fallback: string) => t
  * documents asked with what each is for, the upload, « Send my file », the withdrawal and the erasure. No account. Nothing
  * is read before the consent to the check: the drop stays closed until then (the route refuses it too).
  */
-export function ApplicantFile({ token, initial, consents: initialConsents, noticeVersion, words, locale, expires }: { token: string; initial: ApplicantFileState; consents: Consents; noticeVersion: string; words: ApplicantFileWords; locale: "en" | "fr"; expires: string }) {
+export function ApplicantFile({ token, initial, consents: initialConsents, noticeVersion, words, locale, expires }: Readonly<{ token: string; initial: ApplicantFileState; consents: Consents; noticeVersion: string; words: ApplicantFileWords; locale: "en" | "fr"; expires: string }>) {
   const [file, setFile] = useState(initial);
   const [consents, setConsents] = useState<Consents>(initialConsents);
   const [erased, setErased] = useState(false);
@@ -162,7 +162,7 @@ export function ApplicantFile({ token, initial, consents: initialConsents, notic
 }
 
 /** One document type asked: what it is for, what was received, and its drop (closed until the consent to the check). */
-function TypeRow({ token, row, words, locale, canUpload, onSent }: { token: string; row: { typeId: string; documents: ApplicantFileState["documents"] }; words: ApplicantFileWords; locale: "en" | "fr"; canUpload: boolean; onSent: () => void }) {
+function TypeRow({ token, row, words, locale, canUpload, onSent }: Readonly<{ token: string; row: { typeId: string; documents: ApplicantFileState["documents"] }; words: ApplicantFileWords; locale: "en" | "fr"; canUpload: boolean; onSent: () => void }>) {
   const type = (words.file.types as Record<string, { label: string; what: string } | undefined>)[row.typeId];
   const page = words.file.page;
   const errors: Record<string, string> = { ...words.applicant.error, ...words.file.error };

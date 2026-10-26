@@ -32,7 +32,7 @@ const SECTION_ICONS: Record<SectionId, typeof HomeIcon> = { library: HomeIcon, f
  * who you are under the avatar: profile, settings, billing, language, theme, sign out (Administration for an administrator).
  * The active entry comes from the route (lib/console-nav.ts), never from local state; each page draws its own `h1` (`PageHeader`).
  */
-export function ConsoleShell({ locale, email, name, avatarSeed, role, applicantFiles = false, toDecide = 0, children }: { locale: "en" | "fr"; email: string; name?: string; avatarSeed?: string; role: "USER" | "ADMIN"; applicantFiles?: boolean; toDecide?: number; children: React.ReactNode }) {
+export function ConsoleShell({ locale, email, name, avatarSeed, role, applicantFiles = false, toDecide = 0, children }: Readonly<{ locale: "en" | "fr"; email: string; name?: string; avatarSeed?: string; role: "USER" | "ADMIN"; applicantFiles?: boolean; toDecide?: number; children: React.ReactNode }>) {
   const { say } = useSay();
   const router = useRouter();
   const path = usePathname() ?? "";

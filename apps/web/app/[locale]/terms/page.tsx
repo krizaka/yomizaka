@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /** The terms of use. A draft: the clauses marked for the lawyer are placeholders until a member of the Barreau has read them. */
-export default async function Terms({ params }: { params: Promise<{ locale: string }> }) {
+export default async function Terms({ params }: Readonly<{ params: Promise<{ locale: string }> }>) {
   const locale = asLocale((await params).locale);
   const t = getDictionary(locale);
   return (

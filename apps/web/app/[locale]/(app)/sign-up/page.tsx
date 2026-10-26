@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /** Sign-up on @krizaka/ui's auth template. The page only reflects the server: it is closed unless the server says it is open. */
-export default async function SignUpPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function SignUpPage({ params }: Readonly<{ params: Promise<{ locale: string }> }>) {
   const locale = asLocale((await params).locale);
   if (await pageSession().catch(() => null)) redirect(`/${locale}/app`);
   const t = getDictionary(locale).console.signUp;

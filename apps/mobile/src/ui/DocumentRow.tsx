@@ -9,7 +9,7 @@ import { useI18n } from "@/i18n";
 import { useLocale } from "@/use-locale";
 
 /** A document in a list: its title, what it is and where it stands, the whole row one link to its page. */
-export function DocumentRow({ document }: { document: DocumentSummary }) {
+export function DocumentRow({ document }: Readonly<{ document: DocumentSummary }>) {
   const { t } = useI18n();
   const { locale } = useLocale();
   const router = useRouter();

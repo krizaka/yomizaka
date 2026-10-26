@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /** A batch, read (and advanced) on the server, then followed live by its page. */
-export default async function BatchPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
+export default async function BatchPage({ params }: Readonly<{ params: Promise<{ locale: string; id: string }> }>) {
   const { locale: raw, id } = await params;
   const locale = asLocale(raw);
   const session = await pageSession();

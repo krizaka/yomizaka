@@ -72,7 +72,7 @@ function ConnectionResult({ verified, say }: Readonly<{ verified: Verification; 
   );
 }
 
-function StorageForm({ initial, canStoreCredentials, say, locale, onSaved }: { initial: z.infer<typeof current>["settings"]; canStoreCredentials: boolean; say: (k: string, v?: Record<string, string | number>) => string; locale: string; onSaved: () => void }) {
+function StorageForm({ initial, canStoreCredentials, say, locale, onSaved }: Readonly<{ initial: z.infer<typeof current>["settings"]; canStoreCredentials: boolean; say: (k: string, v?: Record<string, string | number>) => string; locale: string; onSaved: () => void }>) {
   const [mode, setMode] = useState<StorageMode>(initial.mode);
   const [keepDefault, setKeepDefault] = useState(initial.keepDefault);
   const [verified, setVerified] = useState<Verification | null>(null);

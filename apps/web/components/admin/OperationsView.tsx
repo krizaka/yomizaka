@@ -13,7 +13,7 @@ import { usageShare } from "@/lib/operations-shared";
 import { formatDate } from "../console/format";
 
 /** The operations page: what is used against what is allowed, what is waiting, what failed, which rules and which key. */
-export function OperationsView({ pool, budget, queue, errors, rulesets, signing }: { pool: PoolUsage; budget: DatabaseBudget; queue: Queue; errors: RecentError[]; rulesets: RulesetUse[]; signing: { keyId: string; development: boolean } }) {
+export function OperationsView({ pool, budget, queue, errors, rulesets, signing }: Readonly<{ pool: PoolUsage; budget: DatabaseBudget; queue: Queue; errors: RecentError[]; rulesets: RulesetUse[]; signing: { keyId: string; development: boolean } }>) {
   const { say, locale } = useSay();
   const t = (key: string, vars?: Record<string, string | number>) => say(`adminConsole.operations.${key}`, vars);
   const errorColumns: DataTableColumn<RecentError>[] = [

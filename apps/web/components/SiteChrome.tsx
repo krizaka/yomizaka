@@ -20,7 +20,7 @@ import { type PageId, pagePath, REPO_URL } from "@/lib/site";
  * show. No version chip (the version is in the footer), no family switcher, no link to another product.
  */
 /** `provider`: false when the page already wraps the bar in `BarQueryRoot` (the home shares the session answer with its hero). */
-export function SiteHeader({ locale, current, provider = true }: { locale: Locale; current: PageId; provider?: boolean }) {
+export function SiteHeader({ locale, current, provider = true }: Readonly<{ locale: Locale; current: PageId; provider?: boolean }>) {
   const t = translator(locale);
   const Root = provider ? BarQueryRoot : Fragment;
   const languages = languagesFor(pagePath(locale, current));

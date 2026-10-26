@@ -21,7 +21,7 @@ type TagOption = { id: string; name: string; color: "blue" | "green" | "amber" |
  * are Krizaka UI's): tag, untag, decide — one transaction, one audit line per file. A decision that asks for it needs a second press,
  * and says what it does: the file closes and its documents are erased. What the call did goes back to the bar (`onResult`).
  */
-export function BulkActions({ kind, ids, set, tags, onResult, onDone }: { kind: string; ids: readonly string[]; set: StatusSet; tags: readonly TagOption[]; onResult: (text: string) => void; onDone: () => void }) {
+export function BulkActions({ kind, ids, set, tags, onResult, onDone }: Readonly<{ kind: string; ids: readonly string[]; set: StatusSet; tags: readonly TagOption[]; onResult: (text: string) => void; onDone: () => void }>) {
   const { say, locale } = useSay();
   const router = useRouter();
   const [armed, setArmed] = useState<string | null>(null);

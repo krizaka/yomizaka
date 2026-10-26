@@ -46,7 +46,7 @@ const TAB_ROUTES: Record<ChecksTab, Route> = { checks: { screen: "reports" }, lo
  * title bar). The signed-in account is always in the header (Oussama's decision, 2026-10-23). The screen is the hash; the
  * native menu and `yomizaka://` links move it too.
  */
-function Gate({ onLocale }: { onLocale: (locale: Locale) => void }) {
+function Gate({ onLocale }: Readonly<{ onLocale: (locale: Locale) => void }>) {
   const { t, messages, locale } = useI18n();
   const status = useAuth();
   const [route, go] = useRoute();
@@ -112,7 +112,7 @@ function Gate({ onLocale }: { onLocale: (locale: Locale) => void }) {
 }
 
 /** Vérifications holds the batches as its second tab (« Lots »), as on the web and the phone: each tab is its own hash. */
-function ChecksTabs({ current }: { current: string }) {
+function ChecksTabs({ current }: Readonly<{ current: string }>) {
   const { t } = useI18n();
   return (
     <Tabs.Nav label={t("checksTabs.label")} current={current} className="mb-4">
@@ -126,7 +126,7 @@ function ChecksTabs({ current }: { current: string }) {
 }
 
 /** The header's account menu: who is signed in, the settings, the theme, the language, sign out — at every width. */
-function Account({ locale, onLocale, go }: { locale: Locale; onLocale: (locale: Locale) => void; go: (route: Route) => void }) {
+function Account({ locale, onLocale, go }: Readonly<{ locale: Locale; onLocale: (locale: Locale) => void; go: (route: Route) => void }>) {
   const { t } = useI18n();
   const me = useQuery(queries.me());
   const email = me.data?.email ?? "";

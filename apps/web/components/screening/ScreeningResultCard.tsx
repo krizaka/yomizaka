@@ -12,7 +12,7 @@ export interface ResultWords {
 }
 
 /** A minimal screening result: a band and a few items — no score, no account, no address — and the way to read it. */
-export function ScreeningResultCard({ result, words, demo }: { result: ScreeningResult; words: ResultWords; demo: string | null }) {
+export function ScreeningResultCard({ result, words, demo }: Readonly<{ result: ScreeningResult; words: ResultWords; demo: string | null }>) {
   return (
     <Card.Root className="flex flex-col gap-3 p-4" data-testid="screening-result">
       <div className="flex flex-wrap items-center justify-between gap-2">

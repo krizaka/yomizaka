@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
  * Members only (ADR-0002): a signed-out visitor goes to sign-in and comes back here; a member checks a report they own or
  * were given access to — what a green result guarantees, what it does not, and the public key.
  */
-export default async function Verify({ params }: { params: Promise<{ locale: string }> }) {
+export default async function Verify({ params }: Readonly<{ params: Promise<{ locale: string }> }>) {
   const locale = asLocale((await params).locale);
   const t = getDictionary(locale);
   const v = t.verify;

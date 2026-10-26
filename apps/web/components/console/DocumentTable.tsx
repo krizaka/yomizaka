@@ -34,7 +34,7 @@ export const STATUS_TONE = { stored: "neutral", analysing: "accent", checked: "s
 export const DOCUMENT_COLUMN_PRIORITY = { title: 1, kind: 2, status: 1, size: 3, added: 2 } as const;
 
 /** The documents of a view (rows come from the server; a run in progress refreshes them every 4 s). */
-export function DocumentTable({ rows, caption, organise }: { rows: DocumentSummary[]; caption?: string; organise?: Organise }) {
+export function DocumentTable({ rows, caption, organise }: Readonly<{ rows: DocumentSummary[]; caption?: string; organise?: Organise }>) {
   const { say, locale } = useSay();
   const router = useRouter();
   const running = rows.some((d) => d.status === "analysing");

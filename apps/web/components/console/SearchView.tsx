@@ -19,7 +19,7 @@ import { pluralKey } from "@/lib/plural";
 type SearchHit = z.infer<typeof searchHit>;
 
 /** The hits — the count with proper plurals (H1), the words found in bold (the server escapes the passage and adds only `<b>`) — or the owl when nothing matches. */
-export function SearchResults({ hits, q }: { hits: SearchHit[]; q: string }) {
+export function SearchResults({ hits, q }: Readonly<{ hits: SearchHit[]; q: string }>) {
   const { say, locale } = useSay();
   if (!hits.length) return <EmptyState icon={<Mascot bird="owl" mood="thinking" size={72} />} title={say("search.none", { q })} description={say("search.hint")} data-testid="search-none" />;
   return (
@@ -49,7 +49,7 @@ export function SearchResults({ hits, q }: { hits: SearchHit[]; q: string }) {
 }
 
 /** Search across the documents and Orazaka's findings; the query lives in the address. */
-export function SearchView({ initialQuery }: { initialQuery: string }) {
+export function SearchView({ initialQuery }: Readonly<{ initialQuery: string }>) {
   const { say } = useSay();
   const router = useRouter();
   const path = usePathname() ?? "";

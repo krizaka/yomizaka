@@ -49,7 +49,7 @@ const TONE: Record<string, "neutral" | "success" | "warning" | "danger"> = { req
  * The landlord's side: accept the undertaking once (a consent the flow requires), ask an applicant's consent, hand them the
  * link, follow the answers. The result appears only once the applicant has passed it on; « contested » shows no result.
  */
-export function LandlordScreening({ initial, undertakingGiven, words, locale }: { initial: LandlordView[]; undertakingGiven: boolean; words: LandlordWords; locale: string }) {
+export function LandlordScreening({ initial, undertakingGiven, words, locale }: Readonly<{ initial: LandlordView[]; undertakingGiven: boolean; words: LandlordWords; locale: string }>) {
   const client = useQueryClient();
   const [given, setGiven] = useState(undertakingGiven);
   const [link, setLink] = useState<string | null>(null);

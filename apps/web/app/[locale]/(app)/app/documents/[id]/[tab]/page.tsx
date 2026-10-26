@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /** One document, one tab per route — another person's document is a 404, never a 403; an old tab address answers 308 to its tab; an unknown tab is a 404. */
-export default async function DocumentTabPage({ params, searchParams }: { params: Promise<{ locale: string; id: string; tab: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+export default async function DocumentTabPage({ params, searchParams }: Readonly<{ params: Promise<{ locale: string; id: string; tab: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }>) {
   const { locale, id, tab } = await params;
   // An old tab address answers 308 to its tab with its query kept (`?refused=`, `?analysis=`), by the map's own keys only.
   const moved = movedDocumentHref(asLocale(locale), id, tab, searchOf(await searchParams));

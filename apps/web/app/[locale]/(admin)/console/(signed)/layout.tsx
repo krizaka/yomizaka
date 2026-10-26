@@ -5,7 +5,7 @@ import { pageAdmin, pageSession } from "@/lib/access";
 import { asLocale } from "@/lib/i18n";
 
 /** Three locks: a session, the ADMIN role, an address of AUTH_ALLOWED_IPS. No session → sign-in; the rest → 404. */
-export default async function SignedAdmin({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {
+export default async function SignedAdmin({ children, params }: Readonly<{ children: React.ReactNode; params: Promise<{ locale: string }> }>) {
   const locale = asLocale((await params).locale);
   const session = await pageSession();
   if (!session) redirect(`/${locale}/sign-in`);

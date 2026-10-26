@@ -27,7 +27,7 @@ import { formatDate } from "./format";
 import { tableLabels } from "./table-labels";
 
 /** The checks, one row each: the document (a link to its report), what ran, the result, when, the run. A phone's list row (P12): the title, one line of facts (the kind and the day), the result. */
-function ChecksTable({ rows }: { rows: CheckSummary[] }) {
+function ChecksTable({ rows }: Readonly<{ rows: CheckSummary[] }>) {
   const { say, locale } = useSay();
   const columns = useMemo<DataTableColumn<CheckSummary>[]>(
     () => [
@@ -60,7 +60,7 @@ function ChecksTable({ rows }: { rows: CheckSummary[] }) {
  * The filters of the list (the UX review's Y6): the search, the result, the kind and the period as menus with their counts, the ones
  * in force as removable chips, the count of results — every one in the address, so a filtered list is a link and back undoes a filter.
  */
-function ChecksFilters({ filters, counts, periods, results, onChange }: { filters: CheckFilters; counts: { result: Record<string, number>; kind: Record<string, number> }; periods: Record<CheckPeriod, number>; results: number; onChange: (next: CheckFilters, history: FilterHistory) => void }) {
+function ChecksFilters({ filters, counts, periods, results, onChange }: Readonly<{ filters: CheckFilters; counts: { result: Record<string, number>; kind: Record<string, number> }; periods: Record<CheckPeriod, number>; results: number; onChange: (next: CheckFilters, history: FilterHistory) => void }>) {
   const { say } = useSay();
   // What is typed, until the address carries it: the field never jumps back while the words travel, and follows the address when it changes elsewhere.
   const [state, setState] = useState<DraftState>({ draft: null, pending: filters.q, seen: filters.q });
@@ -98,7 +98,7 @@ function ChecksFilters({ filters, counts, periods, results, onChange }: { filter
  * address (`?tab=lots`, where the batches live), and — with nothing checked yet — the owl and the one action, « Vérifier un document ».
  * `now` comes from the server, so the periods read the same on both sides.
  */
-export function ChecksView({ checks, batches, now }: { checks: CheckSummary[]; batches: boolean; now: string }) {
+export function ChecksView({ checks, batches, now }: Readonly<{ checks: CheckSummary[]; batches: boolean; now: string }>) {
   const { say, locale } = useSay();
   const path = usePathname() ?? `/${locale}${CONSOLE_ROUTES.checks}`;
   const search = useSearchParams();

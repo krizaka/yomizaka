@@ -82,7 +82,7 @@ function ReportAside({ doc, facts, placeName, retention, startProps }: Readonly<
   );
 }
 
-export function DocumentView({ initial, tab, place = null, perspective = null, offer }: { initial: DocumentViewData; tab: DocumentTab; place?: DocumentPlace | null; perspective?: Audience | null; offer: { studios: readonly Studio[]; jurisdictions: readonly Jurisdiction[]; rulesets: readonly string[] } }) {
+export function DocumentView({ initial, tab, place = null, perspective = null, offer }: Readonly<{ initial: DocumentViewData; tab: DocumentTab; place?: DocumentPlace | null; perspective?: Audience | null; offer: { studios: readonly Studio[]; jurisdictions: readonly Jurisdiction[]; rulesets: readonly string[] } }>) {
   const { say, locale } = useSay();
   const router = useRouter();
   const client = useQueryClient();

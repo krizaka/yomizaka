@@ -18,7 +18,7 @@ import { press } from "@/lib/workspace/press";
  * a second press. The state the manager saw travels with the call (`expect`): if someone decided meanwhile, they are told (STALE).
  * After a decision there is nothing to press and no undo: the documents are gone.
  */
-export function DecisionActions({ fileId, state, set }: { fileId: string; state: string; set: StatusSet }) {
+export function DecisionActions({ fileId, state, set }: Readonly<{ fileId: string; state: string; set: StatusSet }>) {
   const { say, locale } = useSay();
   const router = useRouter();
   const [armed, setArmed] = useState<string | null>(null);

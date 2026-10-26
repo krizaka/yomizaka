@@ -51,7 +51,7 @@ function useAction<T>(run: (input: T) => Promise<unknown>, done: () => void, aft
   };
 }
 
-function Frame({ open, onOpenChange, title, description, children }: { open: boolean; onOpenChange: (o: boolean) => void; title: string; description?: string; children: ReactNode }) {
+function Frame({ open, onOpenChange, title, description, children }: Readonly<{ open: boolean; onOpenChange: (o: boolean) => void; title: string; description?: string; children: ReactNode }>) {
   const { say } = useSay();
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -67,7 +67,7 @@ function Frame({ open, onOpenChange, title, description, children }: { open: boo
 }
 
 /** A name (and, for a tag, a colour): creates or renames. */
-function NameDialog({ open, onOpenChange, title, initial = "", color, submit }: { open: boolean; onOpenChange: (o: boolean) => void; title: string; initial?: string; color?: TagColor | null; submit: (name: string, color: TagColor | null) => Promise<unknown> }) {
+function NameDialog({ open, onOpenChange, title, initial = "", color, submit }: Readonly<{ open: boolean; onOpenChange: (o: boolean) => void; title: string; initial?: string; color?: TagColor | null; submit: (name: string, color: TagColor | null) => Promise<unknown> }>) {
   const { say, locale } = useSay();
   const [chosen, setChosen] = useState<TagColor>(color ?? "blue");
   const action = useAction<string>((name) => submit(name, color === undefined ? null : chosen), () => onOpenChange(false));
@@ -105,7 +105,7 @@ const CREATE = {
 type CreateKind = keyof typeof CREATE;
 
 /** « New collection », « New folder », « New tag »: a button and its dialog. */
-export function CreateButton({ kind, parentId, variant = "secondary", tagsOf }: { kind: CreateKind; parentId?: string; variant?: "secondary" | "ghost"; tagsOf?: "document" | "applicant_file" }) {
+export function CreateButton({ kind, parentId, variant = "secondary", tagsOf }: Readonly<{ kind: CreateKind; parentId?: string; variant?: "secondary" | "ghost"; tagsOf?: "document" | "applicant_file" }>) {
   const { say } = useSay();
   const [open, setOpen] = useState(false);
   const { url, parentField, label: key } = CREATE[kind];
@@ -129,7 +129,7 @@ export function CreateButton({ kind, parentId, variant = "secondary", tagsOf }: 
  * Chooses a collection's avatar: one of the set the administrator offers, or an image of one's own (when a storage is configured),
  * or none. (Krizaka UI's `AvatarPicker` replaces the grid when the account-settings blocks are published.)
  */
-function AvatarDialog({ id, name, avatar, onClose }: { id: string; name: string; avatar: CollectionAvatarData | null; onClose: () => void }) {
+function AvatarDialog({ id, name, avatar, onClose }: Readonly<{ id: string; name: string; avatar: CollectionAvatarData | null; onClose: () => void }>) {
   const { say } = useSay();
   const config = useAppConfig();
   const api = `/api/collections/${id}`;
@@ -186,7 +186,7 @@ function AvatarDialog({ id, name, avatar, onClose }: { id: string; name: string;
   );
 }
 
-function DefaultDialog({ api, name, onClose }: { api: string; name: string; onClose: () => void }) {
+function DefaultDialog({ api, name, onClose }: Readonly<{ api: string; name: string; onClose: () => void }>) {
   const { say } = useSay();
   const save = useAction<null>(() => krizakaFetch(api, { method: "PATCH", json: { default: true } }), onClose);
   return (
@@ -219,7 +219,7 @@ type Action = (typeof MENU)[number]["action"];
  * The menu of a collection, a folder or a document: rename, move, edit tags, delete. A deletion always asks what becomes of
  * the files. `collections` and `folders` are the destinations (the folders of the item's collection); `tags` the owner's tags.
  */
-export function ItemMenu({ kind, id, name, avatar = null, isDefault = false, collections = [], folders = [], tags = [], current = [], collectionId = null, afterDelete, afterMove }: { kind: ItemKind; id: string; name: string; avatar?: CollectionAvatarData | null; isDefault?: boolean; collections?: Option[]; folders?: Option[]; tags?: TagOption[]; current?: string[]; collectionId?: string | null; afterDelete?: string; afterMove?: Record<string, string> }) {
+export function ItemMenu({ kind, id, name, avatar = null, isDefault = false, collections = [], folders = [], tags = [], current = [], collectionId = null, afterDelete, afterMove }: Readonly<{ kind: ItemKind; id: string; name: string; avatar?: CollectionAvatarData | null; isDefault?: boolean; collections?: Option[]; folders?: Option[]; tags?: TagOption[]; current?: string[]; collectionId?: string | null; afterDelete?: string; afterMove?: Record<string, string> }>) {
   const { say } = useSay();
   const [dialog, setDialog] = useState<Action | null>(null);
   const close = () => setDialog(null);
@@ -253,7 +253,7 @@ export function ItemMenu({ kind, id, name, avatar = null, isDefault = false, col
 const DEFAULT = "__default__";
 const ROOT = "__root__";
 
-function MoveDialog({ kind, id, api, collections, folders, collectionId, onClose, after }: { kind: ItemKind; id: string; api: string; collections: Option[]; folders: Option[]; collectionId: string | null; onClose: () => void; after?: Record<string, string> }) {
+function MoveDialog({ kind, id, api, collections, folders, collectionId, onClose, after }: Readonly<{ kind: ItemKind; id: string; api: string; collections: Option[]; folders: Option[]; collectionId: string | null; onClose: () => void; after?: Record<string, string> }>) {
   const { say } = useSay();
   const [target, setTarget] = useState<string>("");
   const move = useAction<string>(async (to) => {
@@ -287,7 +287,7 @@ function MoveDialog({ kind, id, api, collections, folders, collectionId, onClose
   );
 }
 
-function TagsDialog({ kind, id, tags, current, onClose }: { kind: ItemKind; id: string; tags: TagOption[]; current: string[]; onClose: () => void }) {
+function TagsDialog({ kind, id, tags, current, onClose }: Readonly<{ kind: ItemKind; id: string; tags: TagOption[]; current: string[]; onClose: () => void }>) {
   const { say } = useSay();
   const [value, setValue] = useState<string[]>(current);
   // A document's tags are the workspace's (yomizaka#324); a collection's and a folder's are the first layer's.
@@ -306,7 +306,7 @@ function TagsDialog({ kind, id, tags, current, onClose }: { kind: ItemKind; id: 
   );
 }
 
-function DeleteDialog({ kind, id, name, api, collections, folders, onClose, after }: { kind: ItemKind; id: string; name: string; api: string; collections: Option[]; folders: Option[]; onClose: () => void; after?: string }) {
+function DeleteDialog({ kind, id, name, api, collections, folders, onClose, after }: Readonly<{ kind: ItemKind; id: string; name: string; api: string; collections: Option[]; folders: Option[]; onClose: () => void; after?: string }>) {
   const { say } = useSay();
   const [files, setFiles] = useState<"move" | "delete">("move");
   const [to, setTo] = useState<string>(kind === "folder" ? ROOT : DEFAULT);

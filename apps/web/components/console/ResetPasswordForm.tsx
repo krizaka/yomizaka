@@ -19,7 +19,7 @@ const reset = createKrizakaForm({
 });
 
 /** The new password twice, on @krizaka/ui's form. The server ends every session; the person is then sent to sign in. */
-export function ResetPasswordForm({ token }: { token: string }) {
+export function ResetPasswordForm({ token }: Readonly<{ token: string }>) {
   const { say, locale } = useSay();
   const router = useRouter();
   const [problem, setProblem] = useState<string | null>(null);

@@ -45,11 +45,11 @@ export function FileView({
   file,
   types,
   workspace,
-}: {
+}: Readonly<{
   file: ApplicantFileView;
   types: readonly AskableType[];
   workspace?: { set: StatusSet; decision: string; tags: readonly { id: string; name: string; color: "blue" | "green" | "amber" | "red" | "violet" | "gray" }[]; tagIds: readonly string[] };
-}) {
+}>) {
   const { say, locale } = useSay();
   const facts = useFileFacts();
   const label = (type: string) =>

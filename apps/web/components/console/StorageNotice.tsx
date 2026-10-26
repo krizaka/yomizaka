@@ -10,7 +10,7 @@ import { storageNotice } from "@/lib/storage/where";
 import { formatDate } from "./format";
 
 /** « Where does this document live? »: where it is kept, until when, and « Delete now » (ADR-0007, #164). */
-export function StorageNotice({ storage, retainUntil, purged, onDelete, deleting }: { storage: StorageDescriptor; retainUntil: string | null; purged: boolean; onDelete: () => void; deleting: boolean }) {
+export function StorageNotice({ storage, retainUntil, purged, onDelete, deleting }: Readonly<{ storage: StorageDescriptor; retainUntil: string | null; purged: boolean; onDelete: () => void; deleting: boolean }>) {
   const { say, locale } = useSay();
   const [confirming, setConfirming] = useState(false);
   const notice = storageNotice(storage);

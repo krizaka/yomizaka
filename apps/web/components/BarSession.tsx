@@ -39,7 +39,7 @@ export async function signOutAndForget(client: { setQueryData: (key: readonly st
   }
 }
 
-export function BarQueryRoot({ children }: { children: React.ReactNode }) {
+export function BarQueryRoot({ children }: Readonly<{ children: React.ReactNode }>) {
   return <KrizakaQueryProvider>{children}</KrizakaQueryProvider>;
 }
 
@@ -50,7 +50,7 @@ const useMe = () => useQuery({ queryKey: ME_KEY, queryFn: fetchMe, staleTime: 30
  * account entry — the avatar and the name when there is one, never the raw e-mail address — and the hero carries the one
  * primary action, « Ouvrir mes documents »; the mobile panel, a drawer, says it in full.
  */
-export function BarActionsView({ locale, placement, me, signupOpen, onSignOut }: { locale: Locale; placement: "bar" | "panel"; me: Me | null; signupOpen: boolean; onSignOut: () => void }) {
+export function BarActionsView({ locale, placement, me, signupOpen, onSignOut }: Readonly<{ locale: Locale; placement: "bar" | "panel"; me: Me | null; signupOpen: boolean; onSignOut: () => void }>) {
   const t = translator(locale);
   if (me) {
     const app = `/${locale}/app`;
@@ -90,7 +90,7 @@ export function BarActionsView({ locale, placement, me, signupOpen, onSignOut }:
 
 const signupStatus = z.object({ open: z.boolean() });
 
-export function BarActions({ locale, placement }: { locale: Locale; placement: "bar" | "panel" }) {
+export function BarActions({ locale, placement }: Readonly<{ locale: Locale; placement: "bar" | "panel" }>) {
   const client = useQueryClient();
   const me = useMe();
   const signup = useQuery({
@@ -109,7 +109,7 @@ export function BarActions({ locale, placement }: { locale: Locale; placement: "
  * in, « Se connecter » with the product's status line otherwise. Rendered on the server as signed out — the page is static —
  * and swapped as soon as the island knows; the two never say different things, they read one query.
  */
-export function HeroActionsView({ locale, me, status }: { locale: Locale; me: Me | null; status: string }) {
+export function HeroActionsView({ locale, me, status }: Readonly<{ locale: Locale; me: Me | null; status: string }>) {
   const t = translator(locale);
   if (me) {
     return (
@@ -134,13 +134,13 @@ export function HeroActionsView({ locale, me, status }: { locale: Locale; me: Me
   );
 }
 
-export function HeroActions({ locale, status }: { locale: Locale; status: string }) {
+export function HeroActions({ locale, status }: Readonly<{ locale: Locale; status: string }>) {
   const me = useMe();
   return <HeroActionsView locale={locale} me={me.data ?? null} status={status} />;
 }
 
 /** The closing call's action — secondary, the hero's island keeps the one primary: signed in, the documents; signed out, the way in. */
-export function ClosingActionsView({ locale, me }: { locale: Locale; me: Me | null }) {
+export function ClosingActionsView({ locale, me }: Readonly<{ locale: Locale; me: Me | null }>) {
   const t = translator(locale);
   return (
     <Button asChild variant="secondary" size="lg" shape="cut" data-testid="closing-action" data-session={me ? "in" : "out"}>
@@ -149,17 +149,17 @@ export function ClosingActionsView({ locale, me }: { locale: Locale; me: Me | nu
   );
 }
 
-export function ClosingActions({ locale }: { locale: Locale }) {
+export function ClosingActions({ locale }: Readonly<{ locale: Locale }>) {
   const me = useMe();
   return <ClosingActionsView locale={locale} me={me.data ?? null} />;
 }
 
 /** The closing call's sentence, by session: never « sign in » to someone who is. */
-export function ClosingBodyView({ me, signedOut, signedIn }: { me: Me | null; signedOut: string; signedIn: string }) {
+export function ClosingBodyView({ me, signedOut, signedIn }: Readonly<{ me: Me | null; signedOut: string; signedIn: string }>) {
   return <span data-testid="closing-body">{me ? signedIn : signedOut}</span>;
 }
 
-export function ClosingBody({ signedOut, signedIn }: { signedOut: string; signedIn: string }) {
+export function ClosingBody({ signedOut, signedIn }: Readonly<{ signedOut: string; signedIn: string }>) {
   const me = useMe();
   return <ClosingBodyView me={me.data ?? null} signedOut={signedOut} signedIn={signedIn} />;
 }

@@ -24,7 +24,7 @@ const TONE: Record<BatchItemState, "neutral" | "accent" | "success" | "danger" |
 const FINISHED: readonly BatchItemState[] = [BATCH_ITEM.done, BATCH_ITEM.reused, BATCH_ITEM.failed, BATCH_ITEM.refused];
 
 /** The batches of the account, newest first. */
-export function BatchesView({ go: _go }: { go: (route: Route) => void }) {
+export function BatchesView({ go: _go }: Readonly<{ go: (route: Route) => void }>) {
   const { t, locale } = useI18n();
   const list = useQuery(queries.batches());
   const when = (iso: string) => new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(iso));
@@ -55,7 +55,7 @@ export function BatchesView({ go: _go }: { go: (route: Route) => void }) {
 }
 
 /** A batch being followed: each read advances it; a finished row opens its check. */
-export function BatchView({ batchId, go: _go }: { batchId: string; go: (route: Route) => void }) {
+export function BatchView({ batchId, go: _go }: Readonly<{ batchId: string; go: (route: Route) => void }>) {
   const { t } = useI18n();
   const batch = useQuery(queries.batch(batchId));
   const data = batch.data;

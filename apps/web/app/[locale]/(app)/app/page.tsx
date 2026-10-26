@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /** The library's first screen (ADR-0007, § 5.1): « À traiter », the latest checks, the activity of the period, the collections; read on the server. */
-export default async function LibraryPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+export default async function LibraryPage({ params, searchParams }: Readonly<{ params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }>) {
   const locale = asLocale((await params).locale);
   const search = await searchParams;
   const session = await pageSession();

@@ -16,7 +16,7 @@ const signIn = createKrizakaForm({
 });
 
 /** E-mail and password on @krizaka/ui's form; the server sets the session cookie, the page then opens the library. */
-export function SignInForm({ next }: { next: string }) {
+export function SignInForm({ next }: Readonly<{ next: string }>) {
   const { say, locale } = useSay();
   const router = useRouter();
   const [problem, setProblem] = useState<string | null>(null);

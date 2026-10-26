@@ -16,7 +16,7 @@ import { formatBytes, formatDate } from "../console/format";
 const RUN_TONE: Record<string, "accent" | "success" | "danger" | "neutral"> = { running: "accent", succeeded: "success", failed: "danger", cancelled: "neutral" };
 
 /** An administrator's on/off flag on a row (a sample document, the showcase check): POST sets it, DELETE takes it away. */
-function FlagButton({ url, on, labels, disabled }: { url: string; on: boolean; labels: { on: string; off: string; set: string; unset: string }; disabled?: boolean }) {
+function FlagButton({ url, on, labels, disabled }: Readonly<{ url: string; on: boolean; labels: { on: string; off: string; set: string; unset: string }; disabled?: boolean }>) {
   const { say } = useSay();
   const router = useRouter();
   const change = useMutation({
@@ -40,7 +40,7 @@ function FlagButton({ url, on, labels, disabled }: { url: string; on: boolean; l
   );
 }
 
-export function RunsTable({ rows }: { rows: AdminRun[] }) {
+export function RunsTable({ rows }: Readonly<{ rows: AdminRun[] }>) {
   const { say, locale } = useSay();
   const columns = useMemo<DataTableColumn<AdminRun>[]>(
     () => [
@@ -71,7 +71,7 @@ export function RunsTable({ rows }: { rows: AdminRun[] }) {
   return <DataTable caption={say("adminConsole.runs.caption")} showCaption rows={rows} columns={columns} getRowId={(r) => r.id} rowLabel={(r) => r.runId ?? r.id} defaultSort={{ column: "started", direction: "descending" }} pageSize={50} />;
 }
 
-export function DocumentsTable({ rows }: { rows: AdminDocument[] }) {
+export function DocumentsTable({ rows }: Readonly<{ rows: AdminDocument[] }>) {
   const { say, locale } = useSay();
   const columns = useMemo<DataTableColumn<AdminDocument>[]>(
     () => [
@@ -100,7 +100,7 @@ export function DocumentsTable({ rows }: { rows: AdminDocument[] }) {
   return <DataTable caption={say("adminConsole.documents.caption")} showCaption rows={rows} columns={columns} getRowId={(d) => d.id} rowLabel={(d) => d.title} defaultSort={{ column: "added", direction: "descending" }} pageSize={50} />;
 }
 
-export function AuditTable({ entries }: { entries: AuditEntry[] }) {
+export function AuditTable({ entries }: Readonly<{ entries: AuditEntry[] }>) {
   const { say, locale } = useSay();
   const columns = useMemo<DataTableColumn<AuditEntry>[]>(
     () => [

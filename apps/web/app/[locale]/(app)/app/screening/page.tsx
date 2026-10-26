@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /** The landlord's screening page — only where the flow is enabled and offered to a landlord (ADR-0003); otherwise a 404. */
-export default async function ScreeningPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function ScreeningPage({ params }: Readonly<{ params: Promise<{ locale: string }> }>) {
   const locale = asLocale((await params).locale);
   const session = await pageSession();
   if (!session) notFound();

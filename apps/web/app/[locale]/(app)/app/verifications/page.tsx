@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /** Vérifications: every check of the account, newest first — and the batches under `?tab=lots` when the workspace has them. */
-export default async function ChecksPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function ChecksPage({ params }: Readonly<{ params: Promise<{ locale: string }> }>) {
   const locale = asLocale((await params).locale);
   const session = await pageSession();
   if (!session) redirect(`/${locale}/sign-in`);

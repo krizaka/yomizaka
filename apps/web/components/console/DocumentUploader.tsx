@@ -26,7 +26,7 @@ export type { Placement } from "./upload";
  * `defaultsFirst` (« Vérifier un document », Errata 6) the defaults are said before the drop, with « Modifier »; elsewhere
  * the options are asked once the files are known (the review's B4).
  */
-export function DocumentUploader({ kindRef, placement, onUploaded, onDrop, defaultsFirst = false, extra }: { kindRef?: MutableRefObject<DocumentKind | "auto">; placement?: Placement; onUploaded?: (document: DocumentSummary, requested: DocumentKind | "auto") => void; onDrop?: (files: readonly File[]) => void; defaultsFirst?: boolean; extra?: (add: (files: File[]) => void) => ReactNode }) {
+export function DocumentUploader({ kindRef, placement, onUploaded, onDrop, defaultsFirst = false, extra }: Readonly<{ kindRef?: MutableRefObject<DocumentKind | "auto">; placement?: Placement; onUploaded?: (document: DocumentSummary, requested: DocumentKind | "auto") => void; onDrop?: (files: readonly File[]) => void; defaultsFirst?: boolean; extra?: (add: (files: File[]) => void) => ReactNode }>) {
   const { say, locale } = useSay();
   const router = useRouter();
   const [notices, setNotices] = useState<string[]>([]);

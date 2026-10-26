@@ -31,7 +31,7 @@ const TONE = { member: "success", invited: "accent", expired: "neutral", revoked
  * once, an address without an account is an invitation honoured when the account exists. Grants can be revoked, and a
  * « request access » from a member appears here to be accepted in one click.
  */
-export function ReportShare({ documentId, analysisId }: { documentId: string; analysisId: string }) {
+export function ReportShare({ documentId, analysisId }: Readonly<{ documentId: string; analysisId: string }>) {
   const { say, locale } = useSay();
   const client = useQueryClient();
   const base = `/api/documents/${documentId}/analyses/${analysisId}/grants`;

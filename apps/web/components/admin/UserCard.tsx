@@ -17,7 +17,7 @@ import { formatDate } from "../console/format";
 import { UserActions } from "./UserActions";
 
 /** One account and the one action an administrator takes on it: suspend (every session ends) or restore. */
-export function UserCard({ initial }: { initial: UserDetail }) {
+export function UserCard({ initial }: Readonly<{ initial: UserDetail }>) {
   const { say, locale } = useSay();
   const [user, setUser] = useState(initial);
   const [confirming, setConfirming] = useState(false);

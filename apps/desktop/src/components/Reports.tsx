@@ -10,7 +10,7 @@ import { queries } from "../lib/config";
 import { hashOf, type Route } from "../lib/route";
 
 /** The documents checked, newest first: each opens its checks and their signed reports. The files stayed on the Mac. */
-export function ReportsView({ go: _go }: { go: (route: Route) => void }) {
+export function ReportsView({ go: _go }: Readonly<{ go: (route: Route) => void }>) {
   const { t, locale } = useI18n();
   const documents = useQuery(queries.documents());
   const when = (iso: string) => new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(iso));
@@ -44,7 +44,7 @@ const SHOWN: Record<AnalysisStatus, { state: "done" | "current" | "error"; tone:
 };
 
 /** One document's checks: each opens its stages, its note and its signed report. */
-export function DocumentView({ documentId, go: _go }: { documentId: string; go: (route: Route) => void }) {
+export function DocumentView({ documentId, go: _go }: Readonly<{ documentId: string; go: (route: Route) => void }>) {
   const { t, locale } = useI18n();
   const document = useQuery(queries.document(documentId));
   const when = (iso: string) => new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(iso));

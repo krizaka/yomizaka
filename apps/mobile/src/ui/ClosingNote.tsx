@@ -4,7 +4,7 @@ import * as React from "react";
 import { View } from "react-native";
 
 /** The plain-language closing note, as the server wrote it (the web and the signed report say the same): sections, one under the other. */
-export function ClosingNote({ note }: { note: Note }) {
+export function ClosingNote({ note }: Readonly<{ note: Note }>) {
   return (
     <View style={{ gap: 12 }}>
       <Txt variant="title">{note.title}</Txt>
@@ -49,7 +49,7 @@ export function ClosingNote({ note }: { note: Note }) {
   );
 }
 
-function Section({ heading, text }: { heading: string; text: string }) {
+function Section({ heading, text }: Readonly<{ heading: string; text: string }>) {
   return (
     <Card.Root>
       <Card.Body>

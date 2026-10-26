@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /** The one-time onboarding step: which side of the lease. Saved on selection, then the library; changeable later in settings. */
-export default async function WelcomePage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function WelcomePage({ params }: Readonly<{ params: Promise<{ locale: string }> }>) {
   const locale = asLocale((await params).locale);
   const session = await pageSession();
   const done = welcomeTarget(session?.account.perspective ?? null);

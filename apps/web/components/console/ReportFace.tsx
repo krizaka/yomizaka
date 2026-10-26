@@ -30,7 +30,7 @@ export const REVIEW_NOTE = 1;
  * report's tone, with the law's context in words — the ruleset's id stays in the technical details; never Yomizaka's own verdict.
  * The review note is a footnote at the foot of the report, pointed to from here.
  */
-export function VerdictBand({ report }: { report: ComplianceReport }) {
+export function VerdictBand({ report }: Readonly<{ report: ComplianceReport }>) {
   const { say, locale } = useSay();
   const v = verdictOf(report);
   const value = v.attention ? say(pluralKey("reportFace.attention", v.attention), { count: v.attention, rules: v.rules }) : say("reportFace.attentionNone", { rules: v.rules });
@@ -60,7 +60,7 @@ export interface FindingSelection {
  * title, its severity as a word, the quote it rests on (or that none is quoted), the explanation and the article; what passed is
  * folded and numbered on. The rule's id and the method stay in the technical details.
  */
-export function FindingList({ report, selection }: { report: ComplianceReport; selection?: FindingSelection }) {
+export function FindingList({ report, selection }: Readonly<{ report: ComplianceReport; selection?: FindingSelection }>) {
   const { say } = useSay();
   const { attention, passed } = numberFindings(report.findings);
   const item = ({ n, finding: f }: NumberedFinding) => {
@@ -127,7 +127,7 @@ export function useReportMeta(documentId: string, analysis: Analysis, locale: st
 }
 
 /** The engine's facts, folded (the review's D1, D2): the run id — once, here —, the Studio version, the rules, each finding's rule id and method by its number, the dates, the report's fingerprint and key. */
-export function TechnicalDetails({ documentId, analysis }: { documentId: string; analysis: Analysis }) {
+export function TechnicalDetails({ documentId, analysis }: Readonly<{ documentId: string; analysis: Analysis }>) {
   const { say, locale } = useSay();
   const meta = useReportMeta(documentId, analysis, locale);
   const report = analysis.report && "rulesetId" in analysis.report ? analysis.report : null;

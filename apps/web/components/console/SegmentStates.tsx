@@ -26,7 +26,7 @@ function Header() {
 }
 
 /** A list's rows: a title and one line of facts each. */
-function Rows({ count = 6 }: { count?: number }) {
+function Rows({ count = 6 }: Readonly<{ count?: number }>) {
   return (
     <div className="flex flex-col divide-y divide-border-subtle rounded-lg border border-border-default" data-skeleton="rows">
       {Array.from({ length: count }, (_, i) => (
@@ -42,7 +42,7 @@ function Rows({ count = 6 }: { count?: number }) {
   );
 }
 
-function Body({ shape }: { shape: SegmentShape }) {
+function Body({ shape }: Readonly<{ shape: SegmentShape }>) {
   switch (shape) {
     case "home":
       return (
@@ -111,7 +111,7 @@ function Body({ shape }: { shape: SegmentShape }) {
 }
 
 /** A page of the app on its way: its shape in skeletons, announced once (`role="status"`, `aria-busy`). */
-export function SegmentLoading({ shape }: { shape: SegmentShape }) {
+export function SegmentLoading({ shape }: Readonly<{ shape: SegmentShape }>) {
   const { say } = useSay();
   return (
     <div role="status" aria-busy="true" aria-live="polite" className="ym-wait flex min-w-0 flex-col gap-6" data-shape={shape} data-testid="segment-loading">
@@ -123,7 +123,7 @@ export function SegmentLoading({ shape }: { shape: SegmentShape }) {
 }
 
 /** A page of the app that failed: the cause in words and « Réessayer » (Next's `retry` re-fetches the segment). The raw error stays in the logs. */
-export function SegmentError({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
+export function SegmentError({ error, retry }: Readonly<{ error: Error & { digest?: string }; retry: () => void }>) {
   const { say } = useSay();
   useEffect(() => {
     console.error(error);

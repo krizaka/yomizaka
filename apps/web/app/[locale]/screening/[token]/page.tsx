@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { robots: { index: false, follow: false }, referrer: "no-referrer" };
 
 /** The applicant's page (the link the landlord handed over): public by token, never indexed, never cached. */
-export default async function TenantScreeningPage({ params }: { params: Promise<{ locale: string; token: string }> }) {
+export default async function TenantScreeningPage({ params }: Readonly<{ params: Promise<{ locale: string; token: string }> }>) {
   const { locale: raw, token } = await params;
   const locale = asLocale(raw);
   const t = getDictionary(locale).screening.tenant;
