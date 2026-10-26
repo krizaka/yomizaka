@@ -16,6 +16,56 @@ import { ItemMenu, type Option, type TagOption } from "./OrganisationActions";
 import { tableLabels } from "./table-labels";
 import { TagChips } from "./TagChips";
 
+type Say = ReturnType<typeof useSay>["say"];
+type Lang = ReturnType<typeof useSay>["locale"];
+
+function documentColumns(say: Say, locale: Lang, organise: Organise | undefined): DataTableColumn<DocumentSummary>[] {
+  return [
+    {
+      id: "title",
+      header: say("library.columns.title"),
+      sortable: true,
+      filter: "text",
+      type: "title",
+      href: (d) => `/${locale}/app/documents/${d.id}`,
+      card: "title",
+      value: (d) => d.title,
+      cell: (d) => (
+        <span className="flex flex-col">
+          <Link href={`/${locale}/app/documents/${d.id}`} className="font-semibold text-fg hover:text-fg-accent hover:underline" aria-label={say("library.open", { title: d.title })}>
+            {d.title}
+          </Link>
+          <span className="text-xs text-fg-muted">
+            {d.filename}
+            {d.pages ? ` · ${say("library.pages", { count: d.pages })}` : ""}
+            {!d.hasText ? ` · ${say("library.noText")}` : ""}
+          </span>
+        </span>
+      ),
+    },
+    { id: "kind", header: say("library.columns.kind"), priority: DOCUMENT_COLUMN_PRIORITY.kind, sortable: true, filter: "facet", options: DOCUMENT_KINDS.map((k) => ({ value: k, label: say(`kinds.${k}`) })), value: (d) => d.kind, cell: (d) => say(`kinds.${d.kind}`) },
+    { id: "status", header: say("library.columns.status"), type: "status", filter: "facet", options: DOCUMENT_STATUSES.map((k) => ({ value: k, label: say(`statuses.${k}`) })), value: (d) => d.status, cell: (d) => <Badge tone={STATUS_TONE[d.status]}>{say(`statuses.${d.status}`)}</Badge> },
+    { id: "size", header: say("library.columns.size"), priority: DOCUMENT_COLUMN_PRIORITY.size, sortable: true, align: "end", value: (d) => d.sizeBytes, cell: (d) => formatBytes(d.sizeBytes, locale) },
+    { id: "added", header: say("library.columns.added"), priority: DOCUMENT_COLUMN_PRIORITY.added, sortable: true, align: "end", value: (d) => d.createdAt, cell: (d) => formatDate(d.createdAt, locale) },
+    ...(organise
+      ? [
+          {
+            id: "organise",
+            header: say("organisation.title"),
+            align: "end" as const,
+            value: (d: DocumentSummary) => d.id,
+            cell: (d: DocumentSummary) => (
+              <span className="flex items-center justify-end gap-2">
+                <TagChips tags={organise.tagsByDocument[d.id] ?? []} />
+                <ItemMenu kind="document" id={d.id} name={d.title} collections={organise.collections} folders={organise.folders} collectionId={organise.collectionId} tags={organise.tags} current={(organise.tagsByDocument[d.id] ?? []).map((t) => t.id)} />
+              </span>
+            ),
+          },
+        ]
+      : []),
+  ];
+}
+
 /** What the row menu needs to move and tag a document: the destinations, the owner's tags and each document's own. */
 export interface Organise {
   collections: Option[];
@@ -43,53 +93,7 @@ export function DocumentTable({ rows, caption, organise }: Readonly<{ rows: Docu
     const timer = setInterval(() => router.refresh(), 4000);
     return () => clearInterval(timer);
   }, [running, router]);
-  const columns = useMemo<DataTableColumn<DocumentSummary>[]>(
-    () => [
-      {
-        id: "title",
-        header: say("library.columns.title"),
-        sortable: true,
-        filter: "text",
-        type: "title",
-        href: (d) => `/${locale}/app/documents/${d.id}`,
-        card: "title",
-        value: (d) => d.title,
-        cell: (d) => (
-          <span className="flex flex-col">
-            <Link href={`/${locale}/app/documents/${d.id}`} className="font-semibold text-fg hover:text-fg-accent hover:underline" aria-label={say("library.open", { title: d.title })}>
-              {d.title}
-            </Link>
-            <span className="text-xs text-fg-muted">
-              {d.filename}
-              {d.pages ? ` · ${say("library.pages", { count: d.pages })}` : ""}
-              {!d.hasText ? ` · ${say("library.noText")}` : ""}
-            </span>
-          </span>
-        ),
-      },
-      { id: "kind", header: say("library.columns.kind"), priority: DOCUMENT_COLUMN_PRIORITY.kind, sortable: true, filter: "facet", options: DOCUMENT_KINDS.map((k) => ({ value: k, label: say(`kinds.${k}`) })), value: (d) => d.kind, cell: (d) => say(`kinds.${d.kind}`) },
-      { id: "status", header: say("library.columns.status"), type: "status", filter: "facet", options: DOCUMENT_STATUSES.map((k) => ({ value: k, label: say(`statuses.${k}`) })), value: (d) => d.status, cell: (d) => <Badge tone={STATUS_TONE[d.status]}>{say(`statuses.${d.status}`)}</Badge> },
-      { id: "size", header: say("library.columns.size"), priority: DOCUMENT_COLUMN_PRIORITY.size, sortable: true, align: "end", value: (d) => d.sizeBytes, cell: (d) => formatBytes(d.sizeBytes, locale) },
-      { id: "added", header: say("library.columns.added"), priority: DOCUMENT_COLUMN_PRIORITY.added, sortable: true, align: "end", value: (d) => d.createdAt, cell: (d) => formatDate(d.createdAt, locale) },
-      ...(organise
-        ? [
-            {
-              id: "organise",
-              header: say("organisation.title"),
-              align: "end" as const,
-              value: (d: DocumentSummary) => d.id,
-              cell: (d: DocumentSummary) => (
-                <span className="flex items-center justify-end gap-2">
-                  <TagChips tags={organise.tagsByDocument[d.id] ?? []} />
-                  <ItemMenu kind="document" id={d.id} name={d.title} collections={organise.collections} folders={organise.folders} collectionId={organise.collectionId} tags={organise.tags} current={(organise.tagsByDocument[d.id] ?? []).map((t) => t.id)} />
-                </span>
-              ),
-            },
-          ]
-        : []),
-    ],
-    [say, locale, organise],
-  );
+  const columns = useMemo(() => documentColumns(say, locale, organise), [say, locale, organise]);
   // The state is the address: ?q= (search in the title) &kind= &status= (filters) &page= &size= &sort= — a refresh, a shared link and the back button restore it.
   const [q, setQ] = useUrlState<string>("q", { default: TABLE_DEFAULTS.q, history: "replace" });
   const [kind, setKind] = useUrlState<string>("kind", { default: "" });

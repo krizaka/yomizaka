@@ -12,22 +12,33 @@ import { usageShare } from "@/lib/operations-shared";
 
 import { formatDate } from "../console/format";
 
-/** The operations page: what is used against what is allowed, what is waiting, what failed, which rules and which key. */
-export function OperationsView({ pool, budget, queue, errors, rulesets, signing }: Readonly<{ pool: PoolUsage; budget: DatabaseBudget; queue: Queue; errors: RecentError[]; rulesets: RulesetUse[]; signing: { keyId: string; development: boolean } }>) {
-  const { say, locale } = useSay();
-  const t = (key: string, vars?: Record<string, string | number>) => say(`adminConsole.operations.${key}`, vars);
-  const errorColumns: DataTableColumn<RecentError>[] = [
+type Translate = (key: string, vars?: Record<string, string | number>) => string;
+type Lang = ReturnType<typeof useSay>["locale"];
+
+function errorColumnsOf(t: Translate, locale: Lang): DataTableColumn<RecentError>[] {
+  return [
     { id: "at", header: t("when"), sortable: true, value: (e) => e.at, cell: (e) => formatDate(e.at, locale, true) },
     { id: "kind", header: t("kind"), cell: (e) => <Badge tone={e.kind === "run" ? "danger" : "warning"}>{t(`kinds.${e.kind}`)}</Badge> },
     { id: "detail", header: t("detail"), card: "title" },
   ];
-  const rulesetColumns: DataTableColumn<RulesetUse>[] = [
+}
+
+function rulesetColumnsOf(t: Translate, locale: Lang): DataTableColumn<RulesetUse>[] {
+  return [
     { id: "rulesetId", header: t("ruleset"), card: "title" },
     { id: "rulesetVersion", header: t("version") },
     { id: "jurisdiction", header: t("jurisdiction") },
     { id: "checks", header: t("checks"), align: "end", sortable: true },
     { id: "lastAt", header: t("lastCheck"), cell: (r) => formatDate(r.lastAt, locale, true) },
   ];
+}
+
+/** The operations page: what is used against what is allowed, what is waiting, what failed, which rules and which key. */
+export function OperationsView({ pool, budget, queue, errors, rulesets, signing }: Readonly<{ pool: PoolUsage; budget: DatabaseBudget; queue: Queue; errors: RecentError[]; rulesets: RulesetUse[]; signing: { keyId: string; development: boolean } }>) {
+  const { say, locale } = useSay();
+  const t = (key: string, vars?: Record<string, string | number>) => say(`adminConsole.operations.${key}`, vars);
+  const errorColumns = errorColumnsOf(t, locale);
+  const rulesetColumns = rulesetColumnsOf(t, locale);
   return (
     <div className="flex flex-col gap-4">
       <div className="grid gap-4 lg:grid-cols-2">
