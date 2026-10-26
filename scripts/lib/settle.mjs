@@ -16,16 +16,25 @@ export const auditContext = (browser, options) => browser.newContext(auditOption
 export const settled = (page) =>
   page.waitForFunction(() => !document.activeViewTransition && !document.documentElement.matches(":active-view-transition"), null, { timeout: 10_000 });
 
-/** Loads a page, then waits for the faces and for the transitions: what is read afterwards is final. Returns the response. */
+/**
+ * Loads a page, then waits for the faces and for the transitions: what is read afterwards is final. Returns the response.
+ * It first lets the page we are leaving finish any transition it started after the last measure (a router refresh, a
+ * poll): leaving one running aborts it, and the browser reports « Transition was aborted » as a console error (#354).
+ */
 export async function loadSettled(page, url, options = { waitUntil: "load" }) {
+  if (page.url() !== "about:blank") await settled(page);
   const response = await page.goto(url, options);
   await page.evaluate(() => document.fonts.ready);
   await settled(page);
   return response;
 }
 
-/** Resizes the viewport, then waits for the transitions a resize can start. */
+/**
+ * Resizes the viewport, then waits for the transitions a resize can start. A transition already running is let finish
+ * first: a resize under it aborts it (« Viewport size changed », a console error), which is how this audit once failed.
+ */
 export async function resizeSettled(page, size) {
+  await settled(page);
   await page.setViewportSize(size);
   await settled(page);
 }

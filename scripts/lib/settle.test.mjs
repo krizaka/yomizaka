@@ -46,6 +46,7 @@ describe("the helper", () => {
   it("loads, waits for the faces, then waits for the transition to end, in that order", async () => {
     const calls = [];
     const page = {
+      url: () => "about:blank",
       goto: async (url) => (calls.push(`goto ${url}`), "response"),
       evaluate: async () => calls.push("fonts"),
       waitForFunction: async () => calls.push("settled"),
@@ -55,12 +56,23 @@ describe("the helper", () => {
     assert.deepEqual(calls, ["goto http://x/a", "fonts", "settled"]);
     calls.length = 0;
     await resizeSettled(page, { width: 360, height: 800 });
-    assert.deepEqual(calls, ["resize", "settled"]);
+    assert.deepEqual(calls, ["settled", "resize", "settled"]);
+  });
+  it("lets the page being left finish its transition before loading the next one", async () => {
+    const calls = [];
+    const page = {
+      url: () => "http://x/a",
+      goto: async () => calls.push("goto"),
+      evaluate: async () => calls.push("fonts"),
+      waitForFunction: async () => calls.push("settled"),
+    };
+    await loadSettled(page, "http://x/b");
+    assert.deepEqual(calls, ["settled", "goto", "fonts", "settled"]);
   });
   it("waits on a condition (no active view transition), with a bound, not on a sleep", async () => {
     let predicate;
     let opts;
-    await loadSettled({ goto: async () => {}, evaluate: async () => {}, waitForFunction: async (fn, _arg, o) => ((predicate = fn), (opts = o)) }, "http://x");
+    await loadSettled({ url: () => "about:blank", goto: async () => {}, evaluate: async () => {}, waitForFunction: async (fn, _arg, o) => ((predicate = fn), (opts = o)) }, "http://x");
     assert.match(String(predicate), /activeViewTransition/);
     assert.match(String(predicate), /:active-view-transition/);
     assert.ok(opts.timeout > 0);
