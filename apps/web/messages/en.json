@@ -2594,7 +2594,7 @@
       "data": "Your data"
     },
     "check": {
-      "intro": "A check reads one document and says what it found. Yomizaka does not judge the document itself: every check is a run of Orazaka, Krizaka's analysis engine, and the run id is kept with the report. Yomizaka verifies documents and screens files; it does not verify anyone's identity.",
+      "intro": "A check reads one document and says what it found. Yomizaka does not judge the document itself: every check is a run of Orazaka, Krizaka's analysis engine, and the run id is kept with the report.",
       "kindsTitle": "Two kinds of check",
       "compliance": "Compliance reads the text of a document against the rules of a jurisdiction (Québec by default for a residential lease).",
       "authenticity": "Authenticity examines the file itself as a file: its producer, its dates and its successive saves.",

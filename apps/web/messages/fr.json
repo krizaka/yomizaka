@@ -2594,7 +2594,7 @@
       "data": "Vos données"
     },
     "check": {
-      "intro": "Une vérification lit un document et dit ce qu'elle y a trouvé. Yomizaka ne juge pas le document lui-même : chaque vérification est une exécution d'Orazaka, le moteur d'analyse de Krizaka, et son identifiant est conservé avec le rapport. Yomizaka vérifie des documents et examine des dossiers ; il ne vérifie l'identité de personne.",
+      "intro": "Une vérification lit un document et dit ce qu'elle y a trouvé. Yomizaka ne juge pas le document lui-même : chaque vérification est une exécution d'Orazaka, le moteur d'analyse de Krizaka, et son identifiant est conservé avec le rapport.",
       "kindsTitle": "Deux sortes de vérification",
       "compliance": "La conformité lit le texte d'un document à la lumière des règles d'un territoire (le Québec par défaut pour un bail résidentiel).",
       "authenticity": "L'authenticité examine le fichier lui-même, en tant que fichier : son producteur, ses dates et ses enregistrements successifs.",

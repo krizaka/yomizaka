@@ -47,6 +47,7 @@ function claimHolds(store: Store, env: Environment): boolean {
 
 /** Every public message that says « Canada » or « Toronto », by its path, and the store it describes. */
 const CLAIMS: Record<string, Store> = {
+  "docs.data.intro": "database",
   "landing.what.trust": "database",
   "privacy.body": "database",
   "privacy.sections.2.p": "database",
