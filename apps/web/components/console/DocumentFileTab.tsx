@@ -9,6 +9,7 @@ import { type ComponentProps, memo, type RefObject, useMemo } from "react";
 
 import { DocumentInsight } from "@/components/console/DocumentInsight";
 import { useSay } from "@/lib/i18n-client";
+import { atOffsets } from "@/lib/text-parts";
 
 import { placeOf } from "./document-view-model";
 import { formatBytes, formatDate } from "./format";
@@ -27,13 +28,13 @@ function DocumentText({ text, report }: { text: string; report: ComplianceReport
   );
   return (
     <div className="max-h-[70vh] overflow-auto whitespace-pre-wrap rounded-lg border border-border-default bg-surface-1 p-4 text-sm leading-relaxed text-fg-secondary" data-testid="document-text">
-      {parts.map((p, i) =>
+      {atOffsets(parts).map((p) =>
         p.mark ? (
-          <mark key={i} id={`passage-${p.mark}`} className="ym-passage text-fg" title={say("document.passageOf", { rule: p.mark })}>
+          <mark key={p.at} id={`passage-${p.mark}`} className="ym-passage text-fg" title={say("document.passageOf", { rule: p.mark })}>
             {p.text}
           </mark>
         ) : (
-          <span key={i}>{p.text}</span>
+          <span key={p.at}>{p.text}</span>
         ),
       )}
     </div>

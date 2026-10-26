@@ -14,6 +14,7 @@ import { type BinderTab, type CreditsFigure, homeHref, leadParts, type QuickId, 
 import { type ActivityDay, HOME_PERIODS, type HomePeriod, type ToDo } from "@/lib/home-figures";
 import { useSay } from "@/lib/i18n-client";
 import { pluralKey } from "@/lib/plural";
+import { atOffsets } from "@/lib/text-parts";
 
 import { formatDate, INTL } from "./format";
 
@@ -33,13 +34,13 @@ export function HomeLead({ todo }: { todo: ToDo }) {
   const { say, locale } = useSay();
   return (
     <>
-      {leadParts(todo, locale, say).map((part, i) =>
+      {atOffsets(leadParts(todo, locale, say)).map((part) =>
         part.href ? (
-          <Link key={i} href={part.href} className="font-semibold text-fg-accent hover:underline" data-testid="lead-figure">
+          <Link key={part.at} href={part.href} className="font-semibold text-fg-accent hover:underline" data-testid="lead-figure">
             {part.text}
           </Link>
         ) : (
-          <span key={i}>{part.text}</span>
+          <span key={part.at}>{part.text}</span>
         ),
       )}
     </>

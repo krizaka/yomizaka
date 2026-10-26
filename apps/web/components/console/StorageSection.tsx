@@ -149,7 +149,7 @@ function StorageForm({ initial, canStoreCredentials, say, locale, onSaved }: { i
         {needsTest ? <p className="m-0 text-sm text-fg-secondary">{say("settings.storage.testRequired")}</p> : null}
         <div className="flex items-center gap-3">
           <form.Submit size="md" disabled={needsTest}>{say("settings.storage.save")}</form.Submit>
-          {saved ? <span role="status" className="text-sm text-fg-secondary">{say("settings.storage.saved")}</span> : null}
+          {saved ? <output className="text-sm text-fg-secondary">{say("settings.storage.saved")}</output> : null}
         </div>
       </form.Form>
     </SettingsSection>
