@@ -1,5 +1,5 @@
-import { TabBar } from "@krizaka/ui/native";
 import { CheckIcon, HomeIcon, KnowledgeIcon, UsersIcon } from "@krizaka/icons/native";
+import { TabBar } from "@krizaka/ui/native";
 import type { SectionId } from "@yomizaka/core";
 import { Redirect, Tabs, useRouter } from "expo-router";
 import type { ComponentProps } from "react";

@@ -10,7 +10,12 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { localDay } from "@krizaka/intl";
+
 import { SAMPLES } from "../apps/web/content/recorded-runs/samples.mjs";
+
+// The calendar day of the law (apps/web/lib/rulesets.ts LAW_TIME_ZONE), never the UTC day (yomizaka#309).
+const LAW_TIME_ZONE = "America/Toronto";
 
 const OUT = join(dirname(fileURLToPath(import.meta.url)), "../apps/web/content/recorded-runs");
 const base = (process.env.AI_API_URL ?? "https://dev.orazaka.com/edge").replace(/\/$/, "");
@@ -36,7 +41,7 @@ mkdirSync(OUT, { recursive: true });
 for (const [side, sample] of Object.entries(SAMPLES)) {
   if (wanted.length && !wanted.includes(side)) continue;
   // A sample may name a ruleset of the Studio besides the jurisdiction's lease (the Québec invoice: pack 1.3.0).
-  const inputs = { document: sample.text, jurisdiction: "QC", asOf: new Date().toISOString().slice(0, 10), ...(sample.ruleset ? { ruleset: sample.ruleset } : {}) };
+  const inputs = { document: sample.text, jurisdiction: "QC", asOf: localDay(new Date(), LAW_TIME_ZONE), ...(sample.ruleset ? { ruleset: sample.ruleset } : {}) };
   let run = await call(`/api/v1/studios/${STUDIO}/runs`, { method: "POST", body: { inputs } });
   for (let i = 0; i < 90 && !["SUCCEEDED", "FAILED", "CANCELLED"].includes(run.status); i++) {
     await new Promise((r) => setTimeout(r, 2000));

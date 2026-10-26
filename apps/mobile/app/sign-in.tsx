@@ -1,7 +1,7 @@
 import { ApiError } from "@krizaka/app-client";
 import { Button, Screen, TextField, Txt } from "@krizaka/ui/native";
-import { Redirect } from "expo-router";
 import * as Linking from "expo-linking";
+import { Redirect } from "expo-router";
 import * as React from "react";
 import { View } from "react-native";
 

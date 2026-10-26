@@ -1,8 +1,7 @@
+import type { PickedFile } from "@yomizaka/client";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import * as Print from "expo-print";
-
-import type { PickedFile } from "@yomizaka/client";
 
 /** Where a document comes from: a PDF in the Files app, a photo of it, or the camera. */
 export const SOURCE = { pdf: "pdf", photo: "photo", camera: "camera" } as const;

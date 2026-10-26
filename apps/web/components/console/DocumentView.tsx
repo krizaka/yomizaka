@@ -110,7 +110,7 @@ export function DocumentView({ initial, tab, place = null, perspective = null, o
   // The history can open an earlier run's report (`?run=`): its findings, its download and its sharing follow it.
   const facts = documentFacts(doc, { run: params.get("run"), locale });
   const { latestCompliance, latestReport, certifiable, reportHref, isPdf } = facts;
-  const lang = locale === "fr" ? "fr" : "en";
+  const lang = locale;
   const title = displayTitle(doc, lang);
   const highlights = highlightsOf(latestReport);
   const selection: FindingSelection = {

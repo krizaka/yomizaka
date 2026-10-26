@@ -1,6 +1,6 @@
 import { Stepper, Txt } from "@krizaka/ui/native";
-import { type CheckStep, STEP_STATE } from "@yomizaka/core";
 import { stepperSteps } from "@yomizaka/client";
+import { type CheckStep, STEP_STATE } from "@yomizaka/core";
 import * as React from "react";
 import { View } from "react-native";
 

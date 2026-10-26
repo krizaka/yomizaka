@@ -1,11 +1,10 @@
 import { createI18n, type MessageKey as KeyOf } from "@krizaka/i18n";
 import { createI18nReact } from "@krizaka/i18n/react";
+import sharedEn from "@yomizaka/client/messages/en.json";
+import sharedFr from "@yomizaka/client/messages/fr.json";
 import { getLocales } from "expo-localization";
 
 import { asLocale, type Locale } from "@/domain/links";
-
-import sharedEn from "@yomizaka/client/messages/en.json";
-import sharedFr from "@yomizaka/client/messages/fr.json";
 
 import ownEn from "./en.json";
 import ownFr from "./fr.json";

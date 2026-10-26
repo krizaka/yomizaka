@@ -9,6 +9,7 @@ import { SearchField } from "@krizaka/ui/search-field";
 import Link from "next/link";
 import { useState } from "react";
 
+import { INTL } from "@/components/console/format";
 import { type CatalogueItem, checkHref, chipsOf, planStrip, visibleItems } from "@/lib/check-catalogue";
 import type { CreditsFigure } from "@/lib/home-b2";
 import { useSay } from "@/lib/i18n-client";
@@ -31,7 +32,7 @@ export function CheckPlanStrip({ credits }: Readonly<{ credits: CreditsFigure }>
       label={say("check.plan.label")}
       figures={[
         { id: "plan", label: say("check.plan.plan"), value: say(`check.plan.names.${plan.plan}`) },
-        ...plan.figures.map((f) => ({ id: f.id, label: say(`check.plan.${f.id}`), value: new Intl.NumberFormat(locale === "fr" ? "fr-CA" : "en-CA").format(f.value) })),
+        ...plan.figures.map((f) => ({ id: f.id, label: say(`check.plan.${f.id}`), value: new Intl.NumberFormat(INTL[locale]).format(f.value) })),
         ...(plan.plan === "included" ? [{ id: "included", label: say("check.plan.included"), value: "" }] : []),
         { id: "manage", label: say("check.plan.manage"), value: <Link href={`/${locale}/app/settings/facturation`} className="font-semibold text-fg-accent hover:underline">{say("check.plan.open")} →</Link> },
       ]}

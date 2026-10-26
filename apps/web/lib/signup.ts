@@ -39,11 +39,12 @@ const VERIFY_TOKEN = /^yv1\.[A-Za-z0-9_-]{43}$/;
 export const isVerifyToken = (v: string | undefined | null): v is string => !!v && VERIFY_TOKEN.test(v);
 
 /** The mail's words, in the person's language — and never promising more than the check does. */
-export function verificationMail(locale: "en" | "fr", url: string) {
-  return locale === "fr"
-    ? { subject: "Confirmez votre adresse — Yomizaka", text: `Bonjour,\n\nPour activer votre compte Yomizaka, confirmez votre adresse en ouvrant ce lien (valide ${VERIFY_TTL_HOURS} h) :\n${url}\n\nSi vous n'avez pas créé de compte, ignorez ce message.\n\nYomizaka propose une vérification informative, ce n'est pas un avis juridique.` }
-    : { subject: "Confirm your address — Yomizaka", text: `Hello,\n\nTo activate your Yomizaka account, confirm your address by opening this link (valid ${VERIFY_TTL_HOURS} h):\n${url}\n\nIf you did not create an account, ignore this message.\n\nYomizaka gives an informative check, not legal advice.` };
-}
+const VERIFICATION_MAIL = {
+  fr: (url: string) => ({ subject: "Confirmez votre adresse — Yomizaka", text: `Bonjour,\n\nPour activer votre compte Yomizaka, confirmez votre adresse en ouvrant ce lien (valide ${VERIFY_TTL_HOURS} h) :\n${url}\n\nSi vous n'avez pas créé de compte, ignorez ce message.\n\nYomizaka propose une vérification informative, ce n'est pas un avis juridique.` }),
+  en: (url: string) => ({ subject: "Confirm your address — Yomizaka", text: `Hello,\n\nTo activate your Yomizaka account, confirm your address by opening this link (valid ${VERIFY_TTL_HOURS} h):\n${url}\n\nIf you did not create an account, ignore this message.\n\nYomizaka gives an informative check, not legal advice.` }),
+};
+
+export const verificationMail = (locale: "en" | "fr", url: string) => VERIFICATION_MAIL[locale](url);
 
 /** Creates the account (or re-sends the link of an unverified one) and mails the link. Always resolves the same way. */
 export async function signUp(deps: SignUpDeps, input: SignUpInput, now: Date): Promise<{ accountId: string | null }> {
