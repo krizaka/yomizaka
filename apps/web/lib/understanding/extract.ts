@@ -35,7 +35,7 @@ type Raw = { y: number; m: number; d: number; text: string; index: number };
 function rawDates(text: string): Raw[] {
   const out: Raw[] = [];
   for (const m of text.matchAll(/\b(\d{4})-(\d{2})-(\d{2})\b/g)) if (validDate(+m[1]!, +m[2]!, +m[3]!)) out.push({ y: +m[1]!, m: +m[2]!, d: +m[3]!, text: m[0], index: m.index! });
-  for (const m of text.matchAll(/\b(\d{1,2})(?:er)?\s+([A-Za-zéûôèÉ]{3,9})\s+(\d{4})\b/giu)) {
+  for (const m of text.matchAll(/\b(\d{1,2})(?:er)?\s+([A-Za-zéûôè]{3,9})\s+(\d{4})\b/giu)) {
     const month = MONTHS[m[2]!.toLowerCase()];
     if (month && validDate(+m[3]!, month, +m[1]!)) out.push({ y: +m[3]!, m: month, d: +m[1]!, text: m[0], index: m.index! });
   }
@@ -88,7 +88,7 @@ const AMOUNT_KINDS: readonly { kind: AmountFact["kind"]; pattern: RegExp }[] = [
 function amounts(text: string): AmountFact[] {
   const out: AmountFact[] = [];
   for (const line of text.split("\n")) {
-    for (const m of line.matchAll(/(\d{1,3}(?:[\s\u00a0.,]\d{3})*(?:[.,]\d{2})?|\d+(?:[.,]\d{2})?)\s*(?:\$|CAD|\$\s*CAD)/giu)) {
+    for (const m of line.matchAll(/(\d{1,3}(?:[\s.,]\d{3})*(?:[.,]\d{2})?|\d+(?:[.,]\d{2})?)\s*(?:\$|CAD|\$\s*CAD)/giu)) {
       const cents = toCents(m[1]!);
       if (cents === null || cents === 0) continue;
       const before = line.slice(0, m.index);

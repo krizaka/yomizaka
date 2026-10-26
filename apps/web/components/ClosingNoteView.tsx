@@ -9,7 +9,7 @@ export function ClosingNoteView({ note }: Readonly<{ note: ClosingNote }>) {
   for (const line of noteLines(note)) {
     if (line.kind === LINE.title) continue;
     if (line.kind === LINE.heading) groups.push({ heading: line.text, lines: [] });
-    else groups[groups.length - 1]?.lines.push(line);
+    else groups.at(-1)?.lines.push(line);
   }
   return (
     <section aria-labelledby="closing-note-title" className="flex flex-col gap-4 rounded-lg border border-border-default bg-surface-1 p-4" data-testid="closing-note">

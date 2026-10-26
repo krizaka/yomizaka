@@ -49,7 +49,7 @@ describe.runIf(enabled)("the default collection", () => {
     const second = await org.createLibrary(query, owner, "Autre");
     await expect(org.deleteLibrary(query, owner, lib!.id)).rejects.toMatchObject({ status: 409 });
     await expect(query("DELETE FROM libraries WHERE id = $1", [lib!.id])).rejects.toThrow(/DEFAULT_COLLECTION/);
-    expect((await defaults(owner)).length).toBe(1);
+    expect(await defaults(owner)).toHaveLength(1);
     await org.deleteLibrary(query, owner, second.id);
   });
 
@@ -76,7 +76,7 @@ describe.runIf(enabled)("the default collection", () => {
     // an account cannot be left without one, even by hand
     await expect(query("UPDATE collections SET is_default = false WHERE id = $1", [other.id])).rejects.toThrow(/DEFAULT_COLLECTION/);
     await expect(org.setDefaultCollection(query, owner, "00000000-0000-4000-8000-000000000000")).rejects.toMatchObject({ status: 404 });
-    expect((await defaults(owner)).length).toBe(1);
+    expect(await defaults(owner)).toHaveLength(1);
   });
 
   it("a deleted folder's files go up to its collection; a deleted collection's files go to the default one", async () => {
@@ -121,7 +121,7 @@ describe.runIf(enabled)("the default collection", () => {
     expect(home?.name).toBe("My documents");
     expect(await collectionOf(d)).toBe(home!.id);
     await query(BACKFILL_DEFAULT_COLLECTIONS);
-    expect((await defaults(owner)).length).toBe(1);
+    expect(await defaults(owner)).toHaveLength(1);
   });
 
   it("is in the overview, flagged, so the page can say which one it is", async () => {

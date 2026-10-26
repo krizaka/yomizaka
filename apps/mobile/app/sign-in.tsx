@@ -12,7 +12,7 @@ import { useI18n } from "@/i18n";
 import { useLocale } from "@/use-locale";
 
 /** A wrong address or password answers 400 or 401; anything else is the network or the server. */
-const REFUSALS = [400, 401];
+const REFUSALS = new Set([400, 401]);
 
 export default function SignIn() {
   const { t } = useI18n();
@@ -31,7 +31,7 @@ export default function SignIn() {
     try {
       await signIn(email.trim(), password);
     } catch (e) {
-      setError(e instanceof ApiError && REFUSALS.includes(e.status) ? t("signIn.wrong") : t("common.offline"));
+      setError(e instanceof ApiError && REFUSALS.has(e.status) ? t("signIn.wrong") : t("common.offline"));
     } finally {
       setBusy(false);
     }

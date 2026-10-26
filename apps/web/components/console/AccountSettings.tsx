@@ -111,8 +111,8 @@ export function billingRows(e: Entitlement, say: Say, date: (iso: string) => str
 export function BillingSection() {
   const { say, locale } = useSay();
   const info = useQuery({ queryKey: ["billing-settings"], queryFn: () => krizakaFetch("/api/billing", { schema: billing }) });
-  const portal = useCall<null>(async () => window.location.assign((await krizakaFetch("/api/billing/portal", { method: "POST", schema: redirect })).url));
-  const buy = useCall<SoldKind>(async (kind) => window.location.assign((await krizakaFetch("/api/billing/checkout", { method: "POST", json: { kind }, schema: redirect })).url));
+  const portal = useCall<null>(async () => globalThis.location.assign((await krizakaFetch("/api/billing/portal", { method: "POST", schema: redirect })).url));
+  const buy = useCall<SoldKind>(async (kind) => globalThis.location.assign((await krizakaFetch("/api/billing/checkout", { method: "POST", json: { kind }, schema: redirect })).url));
   const e = info.data?.entitlement;
   const date = (iso: string) => new Intl.DateTimeFormat(locale, { dateStyle: "long" }).format(new Date(iso));
   return (

@@ -21,7 +21,7 @@ const TONE: Record<BatchItemState, "neutral" | "accent" | "success" | "danger" |
   [BATCH_ITEM.refused]: "warning",
 };
 
-const FINISHED: readonly BatchItemState[] = [BATCH_ITEM.done, BATCH_ITEM.reused, BATCH_ITEM.failed, BATCH_ITEM.refused];
+const FINISHED: ReadonlySet<BatchItemState> = new Set([BATCH_ITEM.done, BATCH_ITEM.reused, BATCH_ITEM.failed, BATCH_ITEM.refused]);
 
 /** The batches of the account, newest first. */
 export function BatchesView({ go: _go }: Readonly<{ go: (route: Route) => void }>) {
@@ -60,7 +60,7 @@ export function BatchView({ batchId, go: _go }: Readonly<{ batchId: string; go: 
   const batch = useQuery(queries.batch(batchId));
   const data = batch.data;
   const total = data?.items.length ?? 0;
-  const finished = data ? data.items.filter((i) => FINISHED.includes(i.state)).length : 0;
+  const finished = data ? data.items.filter((i) => FINISHED.has(i.state)).length : 0;
   const kept = keptOnMac.get(batchId) ?? 0;
   return (
     <div className="flex max-w-3xl flex-col gap-4">
@@ -78,7 +78,7 @@ export function BatchView({ batchId, go: _go }: Readonly<{ batchId: string; go: 
         row={(i) => ({
           title: i.file,
           description: i.error ?? undefined,
-          href: i.documentId && i.analysisId && FINISHED.includes(i.state) ? hashOf({ screen: "check", documentId: i.documentId, analysisId: i.analysisId }) : undefined,
+          href: i.documentId && i.analysisId && FINISHED.has(i.state) ? hashOf({ screen: "check", documentId: i.documentId, analysisId: i.analysisId }) : undefined,
           meta: <Badge tone={TONE[i.state]}>{t(`batch.state.${i.state}`)}</Badge>,
         })}
       />
