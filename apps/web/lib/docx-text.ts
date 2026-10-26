@@ -10,7 +10,7 @@ const DOCUMENT_PART = "word/document.xml";
 const ENTITIES: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'" };
 const decode = (text: string) =>
   text.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (whole, code: string) =>
-    code[0] === "#" ? String.fromCodePoint(code[1]?.toLowerCase() === "x" ? parseInt(code.slice(2), 16) : parseInt(code.slice(1), 10)) : (ENTITIES[code] ?? whole),
+    code.startsWith("#") ? String.fromCodePoint(code[1]?.toLowerCase() === "x" ? parseInt(code.slice(2), 16) : parseInt(code.slice(1), 10)) : (ENTITIES[code] ?? whole),
   );
 
 /** What makes the text: a run's text, a tab, a break, the end of a paragraph — everything else (markup, layout whitespace) is not read. */
