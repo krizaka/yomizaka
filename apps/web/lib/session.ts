@@ -1,22 +1,17 @@
-import crypto from "node:crypto";
-
+import { createSessions, dbSessionStore, memorySessionStore, sessionCookie as cookieOf } from "@krizaka/auth";
 import type { Audience } from "@yomizaka/core";
 
+import { systemClock } from "../app/system-clock";
 import { query } from "./db";
 import { sessionSecret } from "./env";
+import { appSettings } from "./settings/instance";
 
 /**
- * Web sessions. The cookie holds a random token (`ys1.` + 32 bytes); the table keeps only its keyed hash, so a leaked
- * table opens nothing. The account is re-read on every request (a suspension applies at once). 14 days, HttpOnly,
- * Secure in production, SameSite=Lax.
+ * Web sessions (`@krizaka/auth`). The cookie holds a random token (`ys1.` + 32 bytes); the table keeps only its keyed hash, so a leaked
+ * table opens nothing. The account is re-read on every request (a suspension applies at once). The length is the setting
+ * `auth.sessionDays` (14 by default); HttpOnly, Secure in production, SameSite=Lax. The tokens and hashes already stored keep working.
  */
 export const SESSION_COOKIE = "yomizaka_session";
-export const SESSION_TTL_DAYS = 14;
-const TOKEN = /^ys1\.[A-Za-z0-9_-]{43}$/;
-
-export const newToken = () => `ys1.${crypto.randomBytes(32).toString("base64url")}`;
-export const isToken = (value: string | undefined): value is string => !!value && TOKEN.test(value);
-export const tokenHash = (token: string, secret = sessionSecret()) => crypto.createHmac("sha256", `session:${secret}`).update(token).digest("hex");
 
 export interface SessionAccount {
   id: string;
@@ -33,30 +28,34 @@ export interface Session {
   account: SessionAccount;
 }
 
-export async function createSession(accountId: string, meta: { ip: string | null; userAgent: string | null }): Promise<{ token: string; expires: Date }> {
-  const token = newToken();
-  const expires = new Date(Date.now() + SESSION_TTL_DAYS * 86_400_000);
-  await query("INSERT INTO sessions (account_id, token_hash, expires_at, ip, user_agent) VALUES ($1, $2, $3, $4, $5)", [accountId, tokenHash(token), expires, meta.ip, meta.userAgent?.slice(0, 300) ?? null]);
-  return { token, expires };
-}
+const sessions = createSessions<SessionAccount>({
+  store: dbSessionStore(query, {
+    columns: ["id", "email", "role", "locale", "perspective", "name", "avatar_seed"],
+    toAccount: (row) => ({
+      id: String(row.id),
+      email: String(row.email),
+      role: row.role as SessionAccount["role"],
+      locale: row.locale as SessionAccount["locale"],
+      perspective: (row.perspective as Audience | null) ?? null,
+      name: (row.name as string | null) ?? null,
+      avatarSeed: (row.avatar_seed as string | null) ?? null,
+    }),
+    active: { column: "status", equals: "ACTIVE" },
+  }),
+  clock: systemClock,
+  tokenPrefix: "ys",
+  secret: sessionSecret,
+  sessionDays: async () => (await appSettings().get("auth.sessionDays")) as number,
+});
 
-export async function resolveSession(token: string | undefined): Promise<Session | null> {
-  if (!isToken(token)) return null;
-  const [row] = await query<{ session_id: string; id: string; email: string; role: "USER" | "ADMIN"; locale: "en" | "fr"; perspective: Audience | null; name: string | null; avatar_seed: string | null }>(
-    `SELECT s.id AS session_id, a.id, a.email, a.role, a.locale, a.perspective, a.name, a.avatar_seed
-       FROM sessions s JOIN accounts a ON a.id = s.account_id
-      WHERE s.token_hash = $1 AND s.expires_at > now() AND a.status = 'ACTIVE'`,
-    [tokenHash(token)],
-  );
-  if (!row) return null;
-  return { id: row.session_id, account: { id: row.id, email: row.email, role: row.role, locale: row.locale, perspective: row.perspective, name: row.name, avatarSeed: row.avatar_seed } };
-}
+export const newToken = sessions.newToken;
+export const isToken = sessions.isToken;
 
-export async function revokeSession(token: string | undefined): Promise<void> {
-  if (!isToken(token)) return;
-  await query("DELETE FROM sessions WHERE token_hash = $1", [tokenHash(token)]);
-}
+/** The keyed hash of a token (`HMAC-SHA256("session:" + secret)`): also what the mailed links keep instead of their token. */
+export const tokenHash = (token: string, secret = sessionSecret()) => createSessions({ store: memorySessionStore(() => null), clock: systemClock, tokenPrefix: "ys", secret, sessionDays: 1 }).tokenHash(token);
 
-export function sessionCookie(token: string, expires: Date) {
-  return { name: SESSION_COOKIE, value: token, httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" as const, path: "/", expires };
-}
+export const createSession = sessions.create;
+export const resolveSession = sessions.resolve;
+export const revokeSession = sessions.revoke;
+
+export const sessionCookie = (token: string, expires: Date) => cookieOf(token, expires, { name: SESSION_COOKIE, secure: process.env.NODE_ENV === "production" });

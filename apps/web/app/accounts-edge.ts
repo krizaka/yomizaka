@@ -1,9 +1,9 @@
 import { postgresAccounts } from "@krizaka/auth";
+import { hashPassword, verifyPassword } from "@krizaka/auth";
 
 import { query, transaction } from "@/lib/db";
 import { env } from "@/lib/env";
 import { mailerFor } from "@/lib/mailer";
-import { hashPassword, verifyPassword } from "@/lib/password";
 import { resetLinkMinutes } from "@/lib/password-reset";
 import { tokenHash } from "@/lib/session";
 

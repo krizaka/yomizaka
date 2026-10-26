@@ -2,7 +2,7 @@ import { type AuditEntryInput, createAudit } from "@krizaka/audit";
 import type { Query } from "@krizaka/db";
 
 import { systemClock } from "../app/system-clock";
-import { clientIp } from "./client-ip";
+import { clientAddress } from "./client-address";
 import { query } from "./db";
 import { logError } from "./log";
 
@@ -27,7 +27,7 @@ function inputOf(entry: Entry): AuditEntryInput {
     action: entry.action,
     target: entry.targetId ? { type: targetType(entry.action), id: entry.targetId } : null,
     detail: entry.detail ?? {},
-    ip: entry.headers ? clientIp(entry.headers) : null,
+    ip: entry.headers ? clientAddress(entry.headers) : null,
   };
 }
 

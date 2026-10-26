@@ -23,6 +23,7 @@ const PUBLIC: Record<string, string> = {
   "auth/sign-up/status": "whether sign-up is open: one boolean for the bar",
   "auth/verify-email": "the link mailed to the person (a single-use token)",
   healthz: "the platform's health probe",
+  me: "who is signed in: signed out is a 200 `{ signedIn: false }`, the family's contract (krizaka-ui#551); lib/me-route.test.ts holds it",
   "screenings/respond": "the applicant's own link (a token), not a member",
   "applicant": "the applicant's own link (a token), not a member: the notice, consent per purpose, erasure (yomizaka#131)",
   "applicant/documents": "the applicant's own link (a token, open and consented): one document of the file, checked and purged (yomizaka#127)",

@@ -1,3 +1,4 @@
+import { allowedIps } from "@krizaka/auth";
 import { STORAGE_KIND, STORAGE_PROVIDERS } from "@yomizaka/core";
 import { z } from "zod";
 
@@ -132,10 +133,9 @@ export const signupOpen = (source: Record<string, string | undefined> = process.
   return e.AUTH_SIGNUP_ENABLED && !!e.MAIL_PROVIDER && !!e.MAIL_API_KEY && !!e.MAIL_DOMAIN;
 };
 /** The administration's allow-list; `null` = no restriction (development only). */
-export function consoleAllowedIps(source: Record<string, string | undefined> = process.env): string[] | null {
+export function consoleAllowedIps(source: Record<string, string | undefined> = process.env): readonly string[] | null {
   const e = readEnv(source);
-  if (e.AUTH_ALLOWED_IPS.length) return e.AUTH_ALLOWED_IPS;
-  return e.NODE_ENV === "production" ? [] : null;
+  return allowedIps(e.AUTH_ALLOWED_IPS, { production: e.NODE_ENV === "production" });
 }
 
 const DEV_SECRET = "development-only-session-secret-not-for-production";

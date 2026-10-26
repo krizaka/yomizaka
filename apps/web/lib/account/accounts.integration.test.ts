@@ -1,12 +1,12 @@
 import crypto from "node:crypto";
 
 import { postgresAccounts } from "@krizaka/auth";
+import { hashPassword, verifyPassword } from "@krizaka/auth";
 import { addHours } from "date-fns";
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { migrate, query } from "../db";
 import type { Mail } from "../mailer";
-import { hashPassword, verifyPassword } from "../password";
 import { tokenHash } from "../session";
 
 /** The account adapter (`@krizaka/auth`, whose own tests cover the rules) wired as Yomizaka wires it, against a real PostgreSQL (skipped without YOMIZAKA_DB_IT=1 and DATABASE_URL). */

@@ -1,6 +1,5 @@
+import { hashPassword } from "@krizaka/auth";
 import { describe, expect, it, vi } from "vitest";
-
-import { hashPassword } from "./password";
 
 const row = { id: "a1", email: "eric@example.com", status: "ACTIVE", email_verified_at: null as Date | null, locale: "fr", password_hash: "" };
 vi.mock("./db", () => ({ query: vi.fn(async (text: string) => (text.startsWith("SELECT") ? [row] : [])) }));

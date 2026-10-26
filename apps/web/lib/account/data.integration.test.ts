@@ -1,9 +1,9 @@
 import { postgresAccounts } from "@krizaka/auth";
+import { hashPassword, verifyPassword } from "@krizaka/auth";
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { migrate, query } from "../db";
 import { type StoragePolicy,storeDocument } from "../documents";
-import { hashPassword, verifyPassword } from "../password";
 import { memoryStore } from "../storage/memory";
 import { noneStore } from "../storage/none";
 import { eraseAccount, exportData } from "./data";

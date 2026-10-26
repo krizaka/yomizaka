@@ -1516,6 +1516,10 @@
           "passwordResetMinutes": {
             "label": "Password reset link lifetime",
             "hint": "Minutes a « Forgot your password? » link works, once. From 5 to 1440. The e-mail says it."
+          },
+          "sessionDays": {
+            "label": "Session length",
+            "hint": "How many days a sign-in lasts before the person must sign in again."
           }
         },
         "payments": {

@@ -1,3 +1,4 @@
+import { hashPassword } from "@krizaka/auth";
 import { ODT_MIME } from "@yomizaka/core";
 import { beforeAll, describe, expect, it } from "vitest";
 
@@ -5,7 +6,6 @@ import { listUsers } from "./accounts";
 import { allDocuments, allRuns, auditLog, overview, setUserStatus, userDetail } from "./admin";
 import { migrate, pool, query } from "./db";
 import { deleteDocument, getDocument, getFile, listDocuments, storeDocument } from "./documents";
-import { hashPassword } from "./password";
 import { zipOf } from "./preflight/fixtures";
 import { search } from "./search";
 import { createSession, resolveSession, revokeSession } from "./session";

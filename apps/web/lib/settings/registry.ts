@@ -1,3 +1,4 @@
+import { authSettings } from "@krizaka/auth/settings";
 import { ALL_SCOPES, bilingual, choice, defineSettings, flag, integer, type Registry, SCOPE, subset, WORKSPACE_SCOPES } from "@krizaka/settings";
 import type { z } from "zod";
 
@@ -28,13 +29,18 @@ export const FILE_TYPES = ["pdf", "text", "image", "word"] as const;
 // @fixed: what the pre-flight and the uploads can carry
 export const PLATFORM_MAX_FILE_MB = 10;
 
+/** A package fragment, filed under one of the console's groups (the package names its own; the console's tabs are this product's). */
+function inGroup<F extends Registry>(group: Group, fragment: F): F {
+  return Object.fromEntries(Object.entries(fragment).map(([key, def]) => [key, { ...def, group }])) as F;
+}
+
 export const SETTINGS = {
   // General: the switches that open and close the app for consumers.
   "app.maintenance": flag(GROUP.general, false),
   "app.maintenanceMessage": bilingual(GROUP.general, { fr: "Yomizaka est en maintenance. Revenez dans quelques minutes.", en: "Yomizaka is down for maintenance. Please come back in a few minutes." }),
   "signup.open": flag(GROUP.general, false),
-  /** How long a « Forgot your password? » link works (once): @krizaka/auth's bounds are 5 to 1440. */
-  "auth.passwordResetMinutes": integer(GROUP.general, 30, { min: 5, max: 1440, unit: "minutes" }),
+  // How long a session lasts (`auth.sessionDays`) and how long a « Forgot your password? » link works (`auth.passwordResetMinutes`): @krizaka/auth's.
+  ...inGroup(GROUP.general, authSettings),
   "payments.enabled": flag(GROUP.general, true, WORKSPACE),
   "payments.display": choice(GROUP.general, [PAYMENT_DISPLAY.test, PAYMENT_DISPLAY.live], PAYMENT_DISPLAY.test),
   "audit.freeFirst": flag(GROUP.general, true, WORKSPACE),

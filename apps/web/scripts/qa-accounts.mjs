@@ -5,17 +5,10 @@
 //
 //   DATABASE_URL=… DATABASE_CA_CERT=… QA_USER_EMAIL=… QA_USER_PASSWORD=… QA_ADMIN_EMAIL=… QA_ADMIN_PASSWORD=… \
 //     node scripts/qa-accounts.mjs
-import crypto from "node:crypto";
-import { promisify } from "node:util";
+import { hashPassword } from "@krizaka/auth";
 
-const scrypt = promisify(crypto.scrypt);
-
-/** The same scheme as lib/password.ts: scrypt N=2^15 r=8 p=1, 16-byte salt, `scrypt$N$r$p$salt$hash`. */
-export async function hashPassword(password) {
-  const salt = crypto.randomBytes(16);
-  const hash = await scrypt(password, salt, 32, { N: 32768, r: 8, p: 1, maxmem: 64 * 1024 * 1024 });
-  return `scrypt$32768$8$1$${salt.toString("base64url")}$${hash.toString("base64url")}`;
-}
+// The scheme is @krizaka/auth's (scrypt N=2^15 r=8 p=1, `scrypt$N$r$p$salt$hash`): the one the sign-in verifies.
+export { hashPassword };
 
 export function accountsFromEnv(env) {
   const accounts = [

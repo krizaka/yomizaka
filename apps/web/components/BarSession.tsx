@@ -1,5 +1,6 @@
 "use client";
 
+import { type MeAccount, meSchema } from "@krizaka/auth/contract";
 import { HomeIcon, LogoutIcon, SettingsIcon } from "@krizaka/icons";
 import { krizakaFetch, KrizakaQueryProvider, useMutation, useQuery, useQueryClient } from "@krizaka/query";
 import { AccountMenu } from "@krizaka/ui/account-menu";
@@ -13,18 +14,18 @@ import { signInPath } from "@/lib/nav";
 
 /**
  * The public site knows who is signed in (yomizaka#243) without the pages stopping being static: a small client island asks
- * `/api/me` (401 = signed out) and `/api/auth/sign-up/status`. What it learns only changes what the page SHOWS — the bar's
+ * `/api/me` (`signedIn: false` = signed out) and `/api/auth/sign-up/status`. What it learns only changes what the page SHOWS — the bar's
  * account and the hero's action — never what anyone may do: the app and the API check the real session on every request.
  * The bar and the hero read the same answer (one `BarQueryRoot` around the page), so they never disagree (the review's F0).
  */
 export const ME_KEY = ["me"] as const;
-const meSchema = z.object({ account: z.object({ email: z.string(), name: z.string().nullable(), avatarSeed: z.string().nullable() }) });
-export type Me = z.infer<typeof meSchema>["account"];
+export type Me = Pick<MeAccount, "email" | "name" | "avatarSeed">;
 
 /** The person signed in, or null (no session, an expired one, or the server unreachable: the page then says « Sign in »). */
 export async function fetchMe(): Promise<Me | null> {
   try {
-    return (await krizakaFetch("/api/me", { schema: meSchema })).account;
+    // The family's contract (200 `{ signedIn, signupOpen, account? }`): signed out is an answer, not an error.
+    return (await krizakaFetch("/api/me", { schema: meSchema })).account ?? null;
   } catch {
     return null;
   }

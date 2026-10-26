@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { hostAllowed } from "@/lib/access";
 import { checkPassword } from "@/lib/accounts";
-import { clientIp } from "@/lib/client-ip";
+import { clientAddress } from "@/lib/client-address";
 import { query } from "@/lib/db";
 import { handle, readJson, refuse } from "@/lib/http";
 import { limit } from "@/lib/limits";
@@ -22,7 +22,7 @@ export function POST(req: Request) {
     // During maintenance only an administrator signs in.
     const [who] = await query<{ role: "USER" | "ADMIN" }>("SELECT role FROM accounts WHERE id = $1", [account.id]);
     await assertOpen({ role: who?.role ?? "USER" });
-    const { token, expires } = await createSession(account.id, { ip: clientIp(req.headers), userAgent: req.headers.get("user-agent") });
+    const { token, expires } = await createSession(account.id, { ip: clientAddress(req.headers), userAgent: req.headers.get("user-agent") });
     const signedIn = { email: account.email, locale: account.locale };
     // A native app keeps the token in its Keychain and sends it as a bearer; it never gets a cookie.
     if (client === "native") return Response.json({ account: signedIn, token }, { headers: { "Cache-Control": "no-store" } });

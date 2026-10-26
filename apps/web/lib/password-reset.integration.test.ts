@@ -1,11 +1,11 @@
 import { postgresAccounts } from "@krizaka/auth";
+import { hashPassword, verifyPassword } from "@krizaka/auth";
 import { addMinutes } from "date-fns";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { audit } from "./audit";
 import { migrate, query, transaction } from "./db";
 import { resetRateLimits } from "./limits";
-import { hashPassword, verifyPassword } from "./password";
 import { applyReset, requestReset } from "./password-reset";
 import { createSession, resolveSession, tokenHash } from "./session";
 

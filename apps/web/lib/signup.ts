@@ -1,10 +1,10 @@
 import crypto from "node:crypto";
 
+import { hashPassword, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "@krizaka/auth";
 import type { QueryResultRow } from "pg";
 import { z } from "zod";
 
 import type { Mailer } from "./mailer";
-import { hashPassword, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "./password";
 import { tokenHash } from "./session";
 
 /**
