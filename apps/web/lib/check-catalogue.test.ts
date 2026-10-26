@@ -54,9 +54,9 @@ describe("the chips: a group each, its count; the search narrows both", () => {
 describe("the action names the kind in the address and leads to the drop", () => {
   it("uses the app's own `type` key; « auto » leaves the address clean", () => {
     expect(ROUTE_STATES.checkKind.state.key).toBe("type");
-    expect(checkHref("fr", "lease")).toBe("/fr/app/verifier?type=lease#depot");
-    expect(checkHref("en", "invoice")).toBe("/en/app/verifier?type=invoice#depot");
-    expect(checkHref("en", "auto")).toBe("/en/app/verifier#depot");
+    expect(checkHref("fr", "lease")).toBe("/fr/app/check?type=lease#depot");
+    expect(checkHref("en", "invoice")).toBe("/en/app/check?type=invoice#depot");
+    expect(checkHref("en", "auto")).toBe("/en/app/check#depot");
   });
 });
 

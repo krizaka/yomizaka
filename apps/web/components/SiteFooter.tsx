@@ -2,6 +2,7 @@ import { SiteFooter as FamilyFooter, SiteFooterColumn, SiteFooterLink } from "@k
 import { familyLabels } from "@krizaka/ui/sites";
 import Link from "next/link";
 
+import { downloadsOffered } from "@/lib/downloads";
 import { format, getDictionary, type Locale, translator } from "@/lib/i18n";
 import { indexable } from "@/lib/indexing";
 import { uiVersion } from "@/lib/platform";
@@ -33,9 +34,11 @@ export function SiteFooter({ locale }: Readonly<{ locale: Locale }>) {
       }
     >
       <SiteFooterColumn title="Yomizaka">
-        <SiteFooterLink asChild>
-          <Link href={pagePath(locale, "download")}>{t("chrome.download")}</Link>
-        </SiteFooterLink>
+        {downloadsOffered() ? (
+          <SiteFooterLink asChild>
+            <Link href={pagePath(locale, "download")}>{t("chrome.download")}</Link>
+          </SiteFooterLink>
+        ) : null}
         <SiteFooterLink asChild>
           <Link href={pagePath(locale, "privacy")}>{t("chrome.legal")}</Link>
         </SiteFooterLink>

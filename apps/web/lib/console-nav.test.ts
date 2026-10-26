@@ -16,17 +16,17 @@ describe("the rail's active entry comes from the route", () => {
     ["/fr/app", "library"],
     ["/fr/app/documents", "documents"],
     ["/en/app/documents/abc/verifications", "documents"],
-    ["/fr/app/bibliotheque/lib/coll", "library"],
-    ["/fr/app/bibliotheque/lib/coll/folder", "library"],
+    ["/fr/app/library/lib/coll", "library"],
+    ["/fr/app/library/lib/coll/folder", "library"],
     ["/fr/app/screening", "files"],
     ["/fr/app/dossiers", "files"],
     ["/fr/app/dossiers/f1", "files"],
     ["/fr/app/verifications", "checks"],
     ["/fr/app/verifications/", "checks"],
-    ["/fr/app/verifier", "checks"],
-    ["/fr/app/verifier/lots/abc", "checks"],
+    ["/fr/app/check", "checks"],
+    ["/fr/app/check/batches/abc", "checks"],
     // Search is the top bar's ⌘K (B2, P14): its full page belongs to the documents it searches, and has no rail entry of its own.
-    ["/fr/app/recherche", "documents"],
+    ["/fr/app/search", "documents"],
     ["/fr/app/search", "documents"],
     ["/fr/app/settings", "account"],
     ["/fr/app/settings/profil", "account"],
@@ -57,11 +57,11 @@ describe("Vérifications is a destination; its « Lots » tab lives in the addre
   });
   it("has its page, and the old batches address answers 308 to the tab (a batch's own page keeps its address)", () => {
     expect(existsSync(app("verifications/page.tsx"))).toBe(true);
-    const old = readFileSync(app("verifier/lots/page.tsx"), "utf8");
+    const old = readFileSync(app("check/batches/page.tsx"), "utf8");
     expect(old).toContain("permanentRedirect(");
     expect(old).toContain('checksTabHref(');
     expect(old).toContain('"lots"');
-    expect(existsSync(app("verifier/lots/[id]/page.tsx"))).toBe(true);
+    expect(existsSync(app("check/batches/[id]/page.tsx"))).toBe(true);
     expect(read("components/console/CheckView.tsx")).toContain('checksTabHref(locale, "lots")');
   });
 });
@@ -104,10 +104,10 @@ describe("tabs are routes: the URL is the state", () => {
     expect(view).toContain("refetchInterval");
     expect(view).toContain("<LiveAnalysis key={a.id}");
   });
-  it("search keeps its query in the address, and the old address redirects", () => {
-    expect(CONSOLE_ROUTES.search).toBe("/app/recherche");
-    expect(existsSync(app("recherche/page.tsx"))).toBe(true);
-    expect(readFileSync(app("search/page.tsx"), "utf8")).toContain("redirect(");
+  it("search keeps its query in the address; the old French address redirects from the config (308)", () => {
+    expect(CONSOLE_ROUTES.search).toBe("/app/search");
+    expect(existsSync(app("search/page.tsx"))).toBe(true);
+    expect(readFileSync(app("search/page.tsx"), "utf8")).not.toContain("redirect(");
     expect(read("components/console/SearchView.tsx")).toContain("router.replace");
   });
   it("the rail has no local active state", () => {
@@ -174,7 +174,7 @@ describe("the shell follows Orazaka's pattern (krizaka/yomizaka#278, the UX revi
     expect(ROUTE_STATES.checkKind.state.fallback).toBe("auto");
   });
   it("every signed-in page draws its h1 with PageHeader — the document with DetailLayout's title (Y5) — (the header names the product, never the page)", () => {
-    for (const file of ["components/console/LibraryView.tsx", "components/console/CheckView.tsx", "components/console/ChecksView.tsx", "components/console/SearchView.tsx", "components/console/AllDocuments.tsx", "components/console/PlaceView.tsx", "components/console/BatchProgress.tsx", "app/[locale]/(app)/app/settings/[section]/page.tsx", "app/[locale]/(app)/app/bienvenue/page.tsx"]) {
+    for (const file of ["components/console/LibraryView.tsx", "components/console/CheckView.tsx", "components/console/ChecksView.tsx", "components/console/SearchView.tsx", "components/console/AllDocuments.tsx", "components/console/PlaceView.tsx", "components/console/BatchProgress.tsx", "app/[locale]/(app)/app/settings/[section]/page.tsx", "app/[locale]/(app)/app/welcome/page.tsx"]) {
       expect(read(file), file).toContain('from "@krizaka/ui/page-header"');
       expect(read(file), file).toMatch(/<PageHeader\b/);
       expect(read(file), file).not.toMatch(/<h1\b/);

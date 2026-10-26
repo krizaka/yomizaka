@@ -27,6 +27,6 @@ describe("« Documents » (B2, P14)", () => {
     const html = wrap(<AllDocuments documents={[]} />, "en");
     expect(html).toContain('data-testid="documents-empty"');
     expect(html).toContain(en.console.documentsPage.empty);
-    expect(html).toContain('href="/en/app/verifier"');
+    expect(html).toContain('href="/en/app/check"');
   });
 });

@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 
 /**
  * The key that signs audit reports: Ed25519, the private half in `APP_REPORT_SIGNING_KEY` (lib/report-signer.ts reads it) (base64 of the PKCS#8 DER — a
- * DO SECRET, never printed, never in the repository), the public half derived from it and shown on /verify so anyone
+ * DO SECRET, never printed, never in the repository), the public half derived from it and shown on /app/verifications/report so anyone
  * can check a report without us. Development without a key uses a fixed, public development key: its reports say
  * `development` in their key id and are worth nothing.
  */

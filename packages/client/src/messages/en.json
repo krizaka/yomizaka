@@ -27,7 +27,7 @@
     "share": "Share the signed report (PDF)",
     "sharing": "Preparing the report…",
     "shareFailed": "The report could not be prepared.",
-    "signed": "Signed report, SHA-256 fingerprint verifiable on yomizaka.com/verify.",
+    "signed": "Signed report, SHA-256 fingerprint verifiable on yomizaka.com/app/verifications/report.",
     "runningHint": "Orazaka is reading the document. It usually takes less than a minute.",
     "failedHint": "The check did not complete. You can run it again."
   },

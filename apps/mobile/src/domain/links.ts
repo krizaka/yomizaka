@@ -13,9 +13,9 @@ export const asLocale = (value: string | null | undefined): Locale => LOCALES.fi
 const app = (locale: Locale, ...parts: string[]) => ["", locale, "app", ...parts].join("/");
 
 export const routes = {
-  verify: (locale: Locale) => app(locale, "verifier"),
+  verify: (locale: Locale) => app(locale, "check"),
   library: (locale: Locale, library?: string, collection?: string, tags: readonly string[] = []) =>
-    tagsHref(app(locale, "bibliotheque", ...[library, library ? collection : undefined].filter((p): p is string => !!p)), tags),
+    tagsHref(app(locale, "library", ...[library, library ? collection : undefined].filter((p): p is string => !!p)), tags),
   document: (locale: Locale, id: string, tab: DocumentTab = "rapport") => app(locale, "documents", id, tab),
   /** Vérifications, its first tab at a clean address and « Lots » in the address, as on the web. */
   checks: (locale: Locale, tab: ChecksTab = CHECKS_TABS[0]) => {

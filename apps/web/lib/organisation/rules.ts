@@ -14,7 +14,7 @@ export function cleanName(raw: string): string {
 }
 
 export function libraryPath(locale: string, library: string, collection?: string, folder?: string): string {
-  return ["", locale, "app", "bibliotheque", library, collection, collection ? folder : undefined].filter((p) => p !== undefined).join("/");
+  return ["", locale, "app", "library", library, collection, collection ? folder : undefined].filter((p) => p !== undefined).join("/");
 }
 
 const choice = z.object({ files: z.enum(["move", "delete"]), to: z.string().nullish() });

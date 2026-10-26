@@ -13,7 +13,7 @@ import { SITE_URL } from "./site";
  *   - the file carries an attestation: a canonical JSON `payload` (the document's SHA-256, the check — jurisdiction,
  *     rules version, Studio and its version, the Orazaka run id, the date — and every finding with its passage and
  *     article), the SHA-256 of the report's own visible text (`bodySha256`) and an Ed25519 signature over both;
- *   - a member the owner gave access to (ADR-0002) checks on /verify that THIS server's key signed exactly this content
+ *   - a member the owner gave access to (ADR-0002) checks on /app/verifications/report that THIS server's key signed exactly this content
  *     and that not one byte of the file changed since; and, given the original document, that it is the one checked;
  *   - it does NOT prove the law was applied correctly (the Québec ruleset awaits a lawyer's review), that the run id
  *     exists on Orazaka's side (only its operator can say), or WHEN the report was made beyond the date the check
@@ -170,7 +170,7 @@ export function renderBody(payload: ReportPayload, labels: ReportLabels): string
   const engineCell = `${esc(c.engine)} · ${esc(c.studio)}${studioVersion}`;
   const runIdCell = `<code>${esc(c.runId)}</code>`;
   const rulesetCell = `${esc(c.rulesetId)} · ${esc(c.rulesetVersion)}${revision}`;
-  const verifyUrl = `${SITE_URL}/verify`;
+  const verifyUrl = `${SITE_URL}/app/verifications/report`;
   const findings = payload.findings
     .map(
       (f) => {

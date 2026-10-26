@@ -1,11 +1,13 @@
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 
-import { asLocale } from "@/lib/i18n";
+import { SearchView } from "@/components/console/SearchView";
+import { asLocale, getDictionary } from "@/lib/i18n";
 
-/** The old address of the search: it lives at /recherche now (the query travels with it). */
-export default async function OldSearch({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ q?: string }> }) {
-  const locale = asLocale((await params).locale);
-  const q = (await searchParams).q;
-  const query = q ? `?q=${encodeURIComponent(q)}` : "";
-  redirect(`/${locale}/app/recherche${query}`);
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  return { title: getDictionary(asLocale((await params).locale)).console.meta.search };
+}
+
+/** Search: the query is in the address (`?q=`), so a search is a link. */
+export default async function SearchPage({ searchParams }: Readonly<{ searchParams: Promise<{ q?: string }> }>) {
+  return <SearchView initialQuery={(await searchParams).q ?? ""} />;
 }

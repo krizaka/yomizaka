@@ -37,7 +37,7 @@ export default function AppLayout() {
       {tabs.map((tab) => (
         <Tabs.Screen key={tab.screen} name={tab.screen} />
       ))}
-      <Tabs.Screen name="verifier" />
+      <Tabs.Screen name="check" />
       <Tabs.Screen name="settings" />
       <Tabs.Screen name="documents" />
     </Tabs>

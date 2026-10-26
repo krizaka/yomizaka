@@ -47,7 +47,7 @@ describe("the Vérifications destination (the UX review's § 4.1)", () => {
     const html = render({ checks: [], batches: false });
     expect(html).toContain('data-testid="checks-empty"');
     expect(readable(html)).toContain(fr.console.checks.empty.title);
-    expect(html).toContain('href="/fr/app/verifier"');
+    expect(html).toContain('href="/fr/app/check"');
     expect(html).not.toContain(fr.console.checks.tabs.lots);
   });
 

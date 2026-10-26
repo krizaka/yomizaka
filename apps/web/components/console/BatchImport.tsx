@@ -89,7 +89,7 @@ export function BatchImport() {
     setBusy("start");
     try {
       const { batch } = (await krizakaFetch("/api/batches", { method: "POST", body: form(manifest, files) })) as { batch: { id: string } };
-      router.push(`/${locale}/app/verifier/lots/${batch.id}`);
+      router.push(`/${locale}/app/check/batches/${batch.id}`);
     } catch (error) {
       setProblem(refusal(error));
       setBusy(null);

@@ -39,7 +39,7 @@ describe("the report's legal guardrail", () => {
     const { extractText, getDocumentProxy } = await import("unpdf");
     const text = ((await extractText(await getDocumentProxy(new Uint8Array(issued.bytes)), { mergePages: true })).text as string).replace(/\s+/g, " ");
     expect(text).toContain(lang === "fr" ? "Vérification informative, ce n’est pas un avis juridique" : "Informative check, not legal advice");
-    expect(text).toContain("https://www.yomizaka.com/verify");
+    expect(text).toContain("https://www.yomizaka.com/app/verifications/report");
     expect(text).not.toMatch(/\bconforme\b/i);
     expect(text).not.toMatch(/\bcompliant\b/i);
   });

@@ -18,8 +18,8 @@ describe("the tags parameter is the filter's state", () => {
   it("toggles a tag and builds the link that keeps the rest of the path", () => {
     expect(toggleTag([A], B)).toEqual([A, B]);
     expect(toggleTag([A, B], A)).toEqual([B]);
-    expect(tagsHref("/fr/app/bibliotheque/l/c", [A, B])).toBe(`/fr/app/bibliotheque/l/c?tags=${A},${B}`);
-    expect(tagsHref("/fr/app/bibliotheque/l/c", [])).toBe("/fr/app/bibliotheque/l/c");
+    expect(tagsHref("/fr/app/library/l/c", [A, B])).toBe(`/fr/app/library/l/c?tags=${A},${B}`);
+    expect(tagsHref("/fr/app/library/l/c", [])).toBe("/fr/app/library/l/c");
   });
 });
 
@@ -30,7 +30,7 @@ describe("the library's filters are the URL's state: ?tags=…&kind=…&status=�
     expect(parseView({})).toEqual({ tags: [], kind: null, status: null });
   });
   it("writes them back in a stable order, keeping the others when one changes", () => {
-    const path = "/fr/app/bibliotheque/l/c";
+    const path = "/fr/app/library/l/c";
     expect(viewHref(path, { tags: [], kind: null, status: null })).toBe(path);
     expect(viewHref(path, { tags: [A], kind: "invoice", status: "checked" })).toBe(`${path}?tags=${A}&kind=invoice&status=checked`);
     expect(viewHref(path, { tags: [], kind: null, status: "failed" })).toBe(`${path}?status=failed`);

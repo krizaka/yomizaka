@@ -12,14 +12,14 @@ import fr from "@/messages/fr.json";
 
 import { CheckView } from "./CheckView";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push() {}, replace() {}, refresh() {} }), usePathname: () => "/fr/app/verifier", useSearchParams: () => new URLSearchParams(window.location.search) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push() {}, replace() {}, refresh() {} }), usePathname: () => "/fr/app/check", useSearchParams: () => new URLSearchParams(window.location.search) }));
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const tenant = catalogueOf(offerOf(SEED_FLOWS.filter((f) => f.definition.audiences.includes("tenant")).map((f) => f.definition)));
 let root: Root | null = null;
 let host: HTMLElement;
 const mount = async (search = "") => {
-  window.history.replaceState(null, "", `/fr/app/verifier${search}`);
+  window.history.replaceState(null, "", `/fr/app/check${search}`);
   host = document.createElement("div");
   document.body.append(host);
   root = createRoot(host);
@@ -80,7 +80,7 @@ describe("the catalogue's state is the address (yomizaka#333)", () => {
     await mount("?type=lease");
     const chosen = host.querySelector('[data-testid="check-chosen"]');
     expect(chosen?.textContent).toContain("Vérification choisie : Bail");
-    expect(chosen?.querySelector("a")?.getAttribute("href")).toBe("/fr/app/verifier");
+    expect(chosen?.querySelector("a")?.getAttribute("href")).toBe("/fr/app/check");
   });
 
   it("no chosen line without a kind", async () => {

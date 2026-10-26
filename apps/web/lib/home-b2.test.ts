@@ -111,12 +111,12 @@ describe("the quick access: where the person goes most, besides the header's one
       ["request", "/fr/app/dossiers"],
       ["documents", "/fr/app/documents"],
       ["checks", "/fr/app/verifications"],
-      ["search", "/fr/app/recherche"],
+      ["search", "/fr/app/search"],
     ]);
   });
   it("is the other three without the flow — never a tile that leads nowhere — and never repeats « Vérifier un document »", () => {
     expect(quickLinks("en", false).map((q) => q.id)).toEqual(["documents", "checks", "search"]);
-    expect(quickLinks("en", true).some((q) => q.href.endsWith("/app/verifier"))).toBe(false);
+    expect(quickLinks("en", true).some((q) => q.href.endsWith("/app/check"))).toBe(false);
   });
 });
 

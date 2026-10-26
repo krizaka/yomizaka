@@ -17,7 +17,7 @@ import { auditContext, loadSettled, resizeSettled } from "./lib/settle.mjs";
 
 export const WIDTHS = [360, 390, 1440];
 export const THEMES = ["dark", "light"];
-export const PAGES = ["/app", "/app/documents", "/app/verifier", "/app/verifications", "/app/verifications?tab=lots", "/app/verifications?q=bail&result=attention,checked&kind=lease&period=year", "/app/recherche", "/app/settings/profil", "/app/settings/apparence", "/app/settings/securite", "/app/settings/facturation", "/app/settings/stockage", "/app/settings/donnees"];
+export const PAGES = ["/app", "/app/documents", "/app/check", "/app/verifications", "/app/verifications?tab=lots", "/app/verifications?q=bail&result=attention,checked&kind=lease&period=year", "/app/search", "/app/settings/profil", "/app/settings/apparence", "/app/settings/securite", "/app/settings/facturation", "/app/settings/stockage", "/app/settings/donnees"];
 
 const arg = (name, fallback) => {
   const i = process.argv.indexOf(`--${name}`);
@@ -38,7 +38,7 @@ export async function discover(page, base, locale) {
   await loadSettled(page, `${base}/${locale}/app`);
   const hrefs = await page.$$eval("a[href]", (as) => as.map((a) => a.getAttribute("href")));
   const found = [];
-  const collection = hrefs.find((h) => /\/app\/bibliotheque\/[^/]+\/[^/]+$/.test(h ?? ""));
+  const collection = hrefs.find((h) => /\/app\/library\/[^/]+\/[^/]+$/.test(h ?? ""));
   if (collection) found.push(collection.replace(/^\/(en|fr)/, ""));
   const document = hrefs.find((h) => /\/app\/documents\/[^/]+(\/|$)/.test(h ?? ""));
   if (document) {

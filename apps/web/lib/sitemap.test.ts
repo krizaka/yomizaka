@@ -14,9 +14,9 @@ describe("sitemap.xml", () => {
     urls = entries.map((e) => e.url);
   });
 
-  it("lists the home, download, privacy and terms, in en and fr, and nothing else", () => {
-    for (const locale of ["en", "fr"]) for (const path of ["", "/download", "/privacy", "/terms"]) expect(urls).toContain(`${SITE_URL}/${locale}${path}`);
-    expect(urls).toHaveLength(8);
+  it("lists the home, privacy and terms, in en and fr, and nothing else (no /download while no app ships)", () => {
+    for (const locale of ["en", "fr"]) for (const path of ["", "/privacy", "/terms"]) expect(urls).toContain(`${SITE_URL}/${locale}${path}`);
+    expect(urls).toHaveLength(6);
   });
 
   it("lists none of the removed addresses", () => {
@@ -31,8 +31,8 @@ describe("sitemap.xml", () => {
     for (const e of entries) expect(e.alternates?.languages?.["x-default"]).toBe(e.alternates?.languages?.fr);
   });
 
-  it("does not list the members-only /verify", () => {
-    expect(urls.filter((u) => u.includes("/verify"))).toEqual([]);
+  it("does not list the report checker (in the app, not public) nor the parked /download", () => {
+    expect(urls.filter((u) => u.includes("/verify") || u.includes("/download"))).toEqual([]);
   });
 });
 

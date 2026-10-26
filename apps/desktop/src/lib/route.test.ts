@@ -27,13 +27,13 @@ describe("the window's hash is the screen", () => {
 describe("a web link opens the same place in the Mac app", () => {
   it("maps the web's routes to the app's screens", () => {
     expect(routeOfLink("/app/documents/d1/rapport")).toEqual({ screen: "document", documentId: "d1" });
-    expect(routeOfLink("/app/verifier/lots/b1")).toEqual({ screen: "batch", batchId: "b1" });
-    expect(routeOfLink("/app/verifier/lots")).toEqual({ screen: "batches" });
+    expect(routeOfLink("/app/check/batches/b1")).toEqual({ screen: "batch", batchId: "b1" });
+    expect(routeOfLink("/app/check/batches")).toEqual({ screen: "batches" });
     expect(routeOfLink("/app/settings/stockage?x=1")).toEqual({ screen: "settings" });
   });
 
   it("opens the library for any other path", () => {
-    for (const link of ["/app", "/app/recherche", "/tarifs", "/", ""]) expect(routeOfLink(link)).toEqual(HOME);
+    for (const link of ["/app", "/app/search", "/tarifs", "/", ""]) expect(routeOfLink(link)).toEqual(HOME);
     // Vérifications and its « Lots » tab, at the web's address (yomizaka#319).
     expect(routeOfLink("/app/verifications")).toEqual({ screen: "reports" });
     expect(routeOfLink("/app/verifications?tab=lots")).toEqual({ screen: "batches" });

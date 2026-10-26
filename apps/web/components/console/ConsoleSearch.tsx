@@ -46,7 +46,7 @@ export function ConsoleSearch() {
         shouldFilter={false}
         footer={
           ready ? (
-            <Link href={`/${locale}/app/recherche?q=${encodeURIComponent(words)}`} onClick={() => close(false)} className="text-sm font-semibold text-fg-accent hover:underline">
+            <Link href={`/${locale}/app/search?q=${encodeURIComponent(words)}`} onClick={() => close(false)} className="text-sm font-semibold text-fg-accent hover:underline">
               {say("shell.palette.all")}
             </Link>
           ) : undefined

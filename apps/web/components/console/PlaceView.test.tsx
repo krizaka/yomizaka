@@ -12,13 +12,13 @@ import fr from "@/messages/fr.json";
 
 import { PlaceView } from "./PlaceView";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push() {}, replace() {}, refresh() {} }), usePathname: () => "/fr/app/bibliotheque/l1/c1", useSearchParams: () => new URLSearchParams("") }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push() {}, replace() {}, refresh() {} }), usePathname: () => "/fr/app/library/l1/c1", useSearchParams: () => new URLSearchParams("") }));
 
 const MESSAGES = { en: { console: en.console }, fr: { console: fr.console } } as const;
 const readable = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ");
 const doc = (n: number): DocumentSummary => ({ id: `d${n}`, title: `Bail ${n}`, filename: `bail-${n}.pdf`, mimeType: "application/pdf", kind: "lease", sizeBytes: 1000, pages: 1, hasText: true, status: "checked", createdAt: "2026-10-20T12:00:00.000Z" });
 const folder = (id: string, name: string, files: number) => ({ id, name, files, tags: [], collection_id: "c1", owner_id: "o1", created_at: "2026-10-01T00:00:00.000Z" }) as never;
-const PATH = "/fr/app/bibliotheque/l1/c1";
+const PATH = "/fr/app/library/l1/c1";
 type Props = Partial<Parameters<typeof PlaceView>[0]>;
 const render = (props: Props = {}, locale: "en" | "fr" = "fr") =>
   renderToStaticMarkup(
@@ -79,7 +79,7 @@ describe("a collection (the UX review's Y7)", () => {
     const html = render();
     expect(html).toContain('data-testid="folder-chips"');
     expect(html).not.toContain('data-testid="folder-card"');
-    expect(html).toContain('href="/fr/app/bibliotheque/l1/c1/f1"');
+    expect(html).toContain('href="/fr/app/library/l1/c1/f1"');
     const text = readable(html);
     expect(text).toContain("Baux · 3 fichiers");
     expect(text).toContain("Factures · 1 fichier");

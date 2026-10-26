@@ -9,7 +9,7 @@ describe("the app's links are the web's paths", () => {
   });
 
   it("writes each screen's path", () => {
-    expect(routes.verify("fr")).toBe("/fr/app/verifier");
+    expect(routes.verify("fr")).toBe("/fr/app/check");
     expect(routes.document("en", A)).toBe(`/en/app/documents/${A}/rapport`);
     expect(routes.document("fr", A, "document")).toBe(`/fr/app/documents/${A}/document`);
     expect(routes.settings("fr")).toBe("/fr/app/settings");
@@ -22,10 +22,10 @@ describe("the app's links are the web's paths", () => {
   });
 
   it("writes the library's path down to a collection, the filter in the query", () => {
-    expect(routes.library("fr")).toBe("/fr/app/bibliotheque");
-    expect(routes.library("fr", A)).toBe(`/fr/app/bibliotheque/${A}`);
-    expect(routes.library("fr", A, B)).toBe(`/fr/app/bibliotheque/${A}/${B}`);
-    expect(routes.library("fr", A, B, [A, B])).toBe(`/fr/app/bibliotheque/${A}/${B}?tags=${A},${B}`);
-    expect(routes.library("fr", undefined, B)).toBe("/fr/app/bibliotheque");
+    expect(routes.library("fr")).toBe("/fr/app/library");
+    expect(routes.library("fr", A)).toBe(`/fr/app/library/${A}`);
+    expect(routes.library("fr", A, B)).toBe(`/fr/app/library/${A}/${B}`);
+    expect(routes.library("fr", A, B, [A, B])).toBe(`/fr/app/library/${A}/${B}?tags=${A},${B}`);
+    expect(routes.library("fr", undefined, B)).toBe("/fr/app/library");
   });
 });

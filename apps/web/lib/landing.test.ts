@@ -44,7 +44,7 @@ describe("the home is one short page: who it is for, one real check, one way in"
     // LandingPage's hero frame pads itself with --kz-hero-top: nothing added on main (the offset would double).
     expect(read("app/globals.css")).not.toMatch(/main\[data-landing\] \{\s*padding-top/);
     expect(read("components/SiteChrome.tsx")).toContain("data-site-bar");
-    for (const page of ["privacy", "verify", "terms", "download"]) expect(read(`app/[locale]/${page}/page.tsx`), page).not.toContain("pt-20");
+    for (const page of ["privacy", "terms", "download"]) expect(read(`app/[locale]/${page}/page.tsx`), page).not.toContain("pt-20");
     expect(read("app/globals.css")).toContain("--kz-hero-top: 5.75rem");
   });
 
