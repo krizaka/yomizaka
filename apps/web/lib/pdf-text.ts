@@ -23,7 +23,8 @@ export function normaliseText(raw: string): string {
     .replace(/\r\n?/g, "\n")
     .replace(/[\t\f\v\u00a0]+/g, " ")
     .replace(/ {2,}/g, " ")
-    .replace(/ *\n */g, "\n")
+    // Runs of spaces are already one by now: at most one is next to a line break.
+    .replace(/ ?\n ?/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }

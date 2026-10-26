@@ -13,6 +13,12 @@ const decode = (text: string) =>
     code[0] === "#" ? String.fromCodePoint(code[1]?.toLowerCase() === "x" ? Number.parseInt(code.slice(2), 16) : Number.parseInt(code.slice(1), 10)) : (ENTITIES[code] ?? whole),
   );
 
+/** The ODF elements whose tags matter: paragraphs and headings, the tracked changes (history), spaces, tabs, breaks, notes. */
+const ODT_TAGS = ["p", "h", "tracked-changes", "s", "tab", "line-break", "note", "note-citation"];
+
+/** An ODF tag of those (captured with its closing slash and its name), any other tag, or a run of text: the three things `odtText` walks through. */
+export const ODT_TOKENS = new RegExp(String.raw`<(\/?)(text:(?:${ODT_TAGS.join("|")}))(?=[\s/>])[^<>]*>|<[^<>]*>|([^<]+)`, "g");
+
 /** What makes the text: a run's text, a tab, a break, the end of a paragraph — everything else (markup, layout whitespace) is not read. */
 const TEXT_TOKENS = /<w:t\b[^>]*>([\s\S]*?)<\/w:t>|<w:tab\/>|<w:(?:br|cr)\b[^>]*\/>|<\/w:p>/g;
 
@@ -58,7 +64,7 @@ export function odtText(bytes: Uint8Array): string {
   let text = "";
   let paragraphs = 0;
   let history = 0;
-  for (const [token, closing, name, run] of xml.matchAll(/<(\/?)(text:(?:p|h|tracked-changes|s|tab|line-break|note|note-citation))(?=[\s/>])[^<>]*>|<[^<>]*>|([^<]+)/g)) {
+  for (const [token, closing, name, run] of xml.matchAll(ODT_TOKENS)) {
     const empty = token.endsWith("/>");
     if (name === "text:tracked-changes") {
       history = historyDepth(history, !!closing, empty);

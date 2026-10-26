@@ -44,7 +44,7 @@ export async function truncatedPdf(): Promise<Uint8Array> {
 /** Right trailer, broken body: the file parses as a PDF header and trailer only. */
 export async function corruptedPdf(): Promise<Uint8Array> {
   const clean = Buffer.from(await cleanPdf()).toString("latin1");
-  const broken = clean.replaceAll("endobj", "ENDOBJ").replace(/\d+ 0 obj/g, "x y obj");
+  const broken = clean.replaceAll("endobj", "ENDOBJ").replace(/(?<!\d)\d+ 0 obj/g, "x y obj");
   return Buffer.from(broken, "latin1");
 }
 

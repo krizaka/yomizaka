@@ -1,6 +1,7 @@
 import { type AcceptedType, type Analysis, type AnalysisStatus, type AuthenticityReport, type CloudOwner, type ComplianceReport, type DocumentDetail, type DocumentInsight, type DocumentKind, type DocumentStatus, type DocumentSummary, DOCX_MIME, ODT_MIME, type StorageKind, type Studio, type TextSource } from "@yomizaka/core";
 
 import { query } from "./db";
+import { isGenericName } from "./generic-name";
 import { HttpError, refuse } from "./http";
 import { readText } from "./pdf-text";
 import { personalInfo } from "./pii";
@@ -216,10 +217,9 @@ export async function checkUpload(file: { name: string; type: string; size: numb
 export const titleOf = (filename: string) => filename.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim().slice(0, 200) || "Document";
 /** NFC first (a macOS name arrives decomposed: the accent is a combining mark), then keep letters, marks, digits and apostrophes. */
 /** A filename that says nothing (scan, IMG_2041, a hash): the title then comes from the (normalised) first line of the text. */
-const GENERIC_NAME = /^(document|doc|scan|scanner|image|img|photo|file|fichier|untitled|sans titre|download|télécharg\w*)?[\s_-]*[\d\s_()-]*$|^[a-f0-9-]{16,}$/i;
 export function titleFor(filename: string, text: string): string {
   const fromName = titleOf(filename);
-  if (!GENERIC_NAME.test(fromName)) return fromName;
+  if (!isGenericName(fromName)) return fromName;
   const first = text.split("\n").map((l) => l.trim()).find((l) => l.length >= 4);
   return first ? first.slice(0, 120) : fromName;
 }
