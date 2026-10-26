@@ -25,7 +25,9 @@
   in DigitalOcean as a SECRET). `lib/orazaka.ts` is the only client.
 - **Every analysis keeps its Orazaka run id**, shown in the UI: the trace of what ran, on which Studio version.
 - Reading a file's **text layer** (pdf.js through `unpdf`) is parsing, not analysis: it feeds the compliance Studio and
-  search. A scanned PDF has no text layer — the UI says so; reading images would be Orazaka's job.
+  search. A scanned PDF has no text layer — the UI says so; reading images would be Orazaka's job. pdf.js never runs in the web
+  process: `lib/extraction/isolated.ts` reads the PDF in a `node:worker_threads` worker with its own heap (384 MB), a 10 s deadline
+  and a 150-page ceiling, so a heavy or hostile file ends the worker, not the container (`deploy/docker/smoke/pdf.cjs` proves it in the image).
 - A report is shown as Orazaka returned it (`packages/core` `reportOf`): a shape it did not send is `null`, never a guess.
   The home's proof shows **the recorded tenant run**; the landlord's is kept beside it: a fictitious sample lease sent to Orazaka's compliance Studio on dev (Québec ruleset), the answer kept exactly as Orazaka returned it in `apps/web/content/recorded-runs/<side>.json` — written by `scripts/record-runs.mjs` (key from the environment, never by hand; re-run it when the ruleset or the Studio changes). `lib/recorded-runs.ts` validates both at build: a page without a recorded run does not build (`lib/recorded-runs.test.ts`). The platform's own showcase (an administrator promotes a check on a sample document, `lib/showcase.ts`, `/api/showcase/*`) stays available but the page no longer depends on it.
 

@@ -1,6 +1,7 @@
 import { type AcceptedType, DOCX_MIME, ODT_MIME } from "@yomizaka/core";
 
 import { docxText, odtText } from "./docx-text";
+import { extractPdfText } from "./extraction/isolated";
 /**
  * Reading a file's text layer — deterministic parsing, no model: a PDF's embedded text (pdf.js, through unpdf) or a text
  * file as UTF-8. It is the input of Orazaka's compliance Studio and of search. A scanned PDF has no text layer: `text`
@@ -33,10 +34,9 @@ export async function readText(mimeType: AcceptedType, bytes: Uint8Array): Promi
   if (mimeType === DOCX_MIME) return { text: normaliseText(docxText(bytes)), pages: null };
   if (mimeType === ODT_MIME) return { text: normaliseText(odtText(bytes)), pages: null };
   if (mimeType === "text/plain") return { text: normaliseText(new TextDecoder("utf-8", { fatal: false }).decode(bytes)), pages: null };
-  const { extractText, getDocumentProxy } = await import("unpdf");
-  const pdf = await getDocumentProxy(new Uint8Array(bytes));
-  const { totalPages, text } = await extractText(pdf, { mergePages: true });
-  return { text: normaliseText(Array.isArray(text) ? text.join("\n") : text), pages: totalPages };
+  // Off the web process: an isolated worker with its own heap, deadline and page ceiling (yomizaka#21).
+  const { text, pages } = await extractPdfText(bytes);
+  return { text: normaliseText(text), pages };
 }
 
 /** A PDF starts with `%PDF-` — what is checked, not what the browser declared. */

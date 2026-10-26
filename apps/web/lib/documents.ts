@@ -1,6 +1,7 @@
 import { type AcceptedType, type Analysis, type AnalysisStatus, type AuthenticityReport, type CloudOwner, type ComplianceReport, type DocumentDetail, type DocumentInsight, type DocumentKind, type DocumentStatus, type DocumentSummary, DOCX_MIME, ODT_MIME, type StorageKind, type Studio, type TextSource } from "@yomizaka/core";
 
 import { query } from "./db";
+import { ExtractionError } from "./extraction/isolated";
 import { isGenericName } from "./generic-name";
 import { HttpError, refuse } from "./http";
 import { readText } from "./pdf-text";
@@ -248,6 +249,19 @@ export interface StoragePolicy {
 /** The text of a document that has no text layer — read only if the document is new (a duplicate is never read twice). */
 export type TextReader = () => Promise<{ text: string; source: TextSource }>;
 
+/** What the isolated PDF reader's failures say to the person: too long, too heavy to read in time, or simply not readable. */
+export function extractionRefusal(error: ExtractionError): HttpError {
+  switch (error.code) {
+    case "TOO_MANY_PAGES":
+      return refuse(422, "FILE_TOO_MANY_PAGES", "Refused: too many pages");
+    case "TIMEOUT":
+    case "MEMORY":
+      return refuse(422, "FILE_TOO_COMPLEX", "Refused: this PDF is too heavy to read within the limits");
+    default:
+      return refuse(422, "UNREADABLE_FILE", "This PDF cannot be opened");
+  }
+}
+
 /** The text of a new document: from the reader given (a photo), or from its text layer; an unreadable file is a 422. */
 async function readNewDocument(mimeType: AcceptedType, bytes: Uint8Array, pages: number | null, textOf?: TextReader): Promise<{ read: { text: string; pages: number | null }; source: TextSource | null }> {
   try {
@@ -256,6 +270,7 @@ async function readNewDocument(mimeType: AcceptedType, bytes: Uint8Array, pages:
     return { read: { text: recognised.text, pages }, source: recognised.source };
   } catch (error) {
     if (error instanceof HttpError) throw error;
+    if (error instanceof ExtractionError) throw extractionRefusal(error);
     throw refuse(422, "UNREADABLE_FILE", "This PDF cannot be opened");
   }
 }

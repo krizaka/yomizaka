@@ -769,6 +769,7 @@
       "FILE_TRUNCATED": "This file looks cut short (incomplete download or upload). Send it again.",
       "FILE_ENCRYPTED": "This PDF is password-protected. Remove the protection and send it again.",
       "FILE_TOO_MANY_PAGES": "This PDF has too many pages to check.",
+      "FILE_TOO_COMPLEX": "This PDF is too complex to be read within the limits. Export it again as a simpler PDF, or send photos.",
       "FILE_ACTIVE_CONTENT": "This PDF contains active content (scripts, launched programs or attachments) and is refused for your safety.",
       "FILE_ARCHIVE_BOMB": "This archive is refused: it expands far beyond a reasonable size.",
       "NAME_TAKEN": "That name is already used here.",
