@@ -1,7 +1,7 @@
 import { requireSession } from "@/lib/access";
 import { previewBatch } from "@/lib/batch/preview";
 import { handle, refuse } from "@/lib/http";
-import { limit } from "@/lib/rate-limit";
+import { limit } from "@/lib/limits";
 import { assertFeature, settingsFor } from "@/lib/settings/guards";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +14,7 @@ export function POST(req: Request) {
   return handle(async () => {
     const session = await requireSession(req);
     await assertFeature("batches", session.account.id);
-    limit("batch-preview", req, session.account.id, [30, 3600], [15, 3600]);
+    await limit("batchPreview", req, session.account.id);
     const form = await req.formData().catch(() => null);
     const manifest = form?.get("manifest");
     if (!(manifest instanceof File) && typeof manifest !== "string") throw refuse(400, "BAD_REQUEST", "A CSV is expected in the field `manifest`");

@@ -4,7 +4,7 @@ import { requireSession } from "@/lib/access";
 import { appEnvironment } from "@/lib/env";
 import { resolveFlow } from "@/lib/flows";
 import { handle, readJson } from "@/lib/http";
-import { limit } from "@/lib/rate-limit";
+import { limit } from "@/lib/limits";
 import { listForLandlord, requestScreening, SCREENING_SCOPES } from "@/lib/screening";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +24,7 @@ export function GET(req: Request) {
 export function POST(req: Request) {
   return handle(async () => {
     const session = await requireSession(req);
-    limit("screening-request", req, session.account.id, [30, 3600], [20, 3600]);
+    await limit("screeningRequest", req, session.account.id);
     await resolveFlow(session.account, FLOW, appEnvironment());
     const input = await readJson(req, z.object({ tenantName: z.string().trim().min(1).max(120), tenantEmail: z.string().trim().toLowerCase().email().max(254), scope: z.array(z.enum(SCREENING_SCOPES)).min(1) }));
     const made = await requestScreening({ id: session.account.id, email: session.account.email }, input, new Date(), req.headers);

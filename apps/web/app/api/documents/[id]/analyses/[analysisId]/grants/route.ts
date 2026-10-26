@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireSession } from "@/lib/access";
 import { audit } from "@/lib/audit";
 import { handle, readJson } from "@/lib/http";
-import { limit } from "@/lib/rate-limit";
+import { limit } from "@/lib/limits";
 import { createGrant, listSharing } from "@/lib/report-access";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +25,7 @@ const body = z.object({ email: z.string().trim().toLowerCase().email().max(254),
 export function POST(req: Request, { params }: Ctx) {
   return handle(async () => {
     const session = await requireSession(req);
-    limit("report-grant", req, session.account.id, [60, 3600], [30, 3600]);
+    await limit("reportGrant", req, session.account.id);
     const { id, analysisId } = await params;
     const input = await readJson(req, body);
     const made = await createGrant({ id: session.account.id, email: session.account.email }, id, analysisId, { email: input.email, expiresAt: input.expiresAt ? new Date(input.expiresAt) : null }, new Date());

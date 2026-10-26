@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { resetRateLimits } from "../limits";
 import { maskKey } from "../orazaka-status";
-import { resetRateLimits } from "../rate-limit";
 import { CONFIG_PAGE, CONFIG_PAGES, isConfigPage, isSettingsGroup } from "./admin-config";
 
 const state = vi.hoisted(() => ({ role: "ADMIN" as "ADMIN" | "USER" | null, writes: [] as string[] }));

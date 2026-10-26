@@ -4,8 +4,8 @@ import { AccountError } from "@krizaka/auth";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { HttpError } from "./http";
+import { resetRateLimits } from "./limits";
 import { applyReset, requestReset,type ResetDeps } from "./password-reset";
-import { resetRateLimits } from "./rate-limit";
 import { defOf } from "./settings/registry";
 
 /** A deployment with one account, `known@example.test`. The service is the package's: it answers the same either way, mails only the known one. */

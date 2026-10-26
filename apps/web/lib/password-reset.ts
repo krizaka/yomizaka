@@ -2,7 +2,7 @@ import { AccountError, type AccountService } from "@krizaka/auth";
 
 import type { audit } from "./audit";
 import { refuse } from "./http";
-import { limit } from "./rate-limit";
+import { limit } from "./limits";
 import { appSettings } from "./settings/instance";
 
 /** What the forgot-password flow needs from the edge: the account service (the package's) and the audit trail. */
@@ -20,7 +20,7 @@ export const resetLinkMinutes = (): Promise<number> => appSettings().get("auth.p
  * for known addresses would tell). The line names no address and no token. 3 requests an hour per address, 10 per client.
  */
 export async function requestReset(deps: ResetDeps, input: { email: string }, req: { headers: Headers }, now: Date): Promise<{ ok: true }> {
-  limit("forgot-password", req, input.email, [10, 3600], [3, 3600]);
+  await limit("forgotPassword", req, input.email);
   try {
     await deps.accounts.requestPasswordReset(input.email, now);
   } catch (error) {
@@ -36,7 +36,7 @@ export async function requestReset(deps: ResetDeps, input: { email: string }, re
  * session, and answers INVALID for an expired, used or unknown link alike. The audit line says only the result.
  */
 export async function applyReset(deps: ResetDeps, input: { token: string; password: string }, req: { headers: Headers }, now: Date): Promise<{ ok: true }> {
-  limit("reset-password", req, null, [20, 3600]);
+  await limit("resetPassword", req, null);
   let result: "CHANGED" | "INVALID";
   try {
     result = await deps.accounts.resetPassword(input.token, input.password, now);

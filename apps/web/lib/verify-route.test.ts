@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { resetRateLimits } from "./rate-limit";
+import { resetRateLimits } from "./limits";
 import { buildPayload, issueReport, sha256 } from "./report";
 import type { Grant, Target } from "./report-access";
 import { reportLabels } from "./report-labels";

@@ -7,7 +7,7 @@ import { systemClock } from "@/app/system-clock";
 
 import { requireApiKey } from "./api-access";
 import { migrate, pool, query } from "./db";
-import { resetRateLimits } from "./rate-limit";
+import { resetRateLimits } from "./limits";
 import { createSession, SESSION_COOKIE } from "./session";
 import { appSettings, resetAppSettings } from "./settings/instance";
 import { GLOBAL } from "./settings/service";

@@ -3,14 +3,14 @@ import { audit } from "@/lib/audit";
 import { env } from "@/lib/env";
 import { fieldText, handle } from "@/lib/http";
 import { asLocale } from "@/lib/i18n";
-import { limit } from "@/lib/rate-limit";
+import { limit } from "@/lib/limits";
 
 export const dynamic = "force-dynamic";
 
 /** The mailed link's button (a form POST, so a mail scanner cannot spend the link): applies the change and goes to the security settings. */
 export function POST(req: Request) {
   return handle(async () => {
-    limit("confirm-email", req, null, [30, 3600]);
+    await limit("confirmEmail", req, null);
     const form = await req.formData().catch(() => null);
     const locale = asLocale(fieldText(form, "locale"));
     const result = await accountService().confirmEmailChange(fieldText(form, "token"), new Date());

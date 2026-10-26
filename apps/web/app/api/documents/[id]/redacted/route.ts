@@ -3,8 +3,8 @@ import { audit } from "@/lib/audit";
 import { getDocument } from "@/lib/documents";
 import { handle } from "@/lib/http";
 import { asLocale } from "@/lib/i18n";
+import { limit } from "@/lib/limits";
 import { personalInfo } from "@/lib/pii";
-import { limit } from "@/lib/rate-limit";
 import { assertFeature } from "@/lib/settings/guards";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   return handle(async () => {
     const session = await requireSession(req);
-    limit("redacted", req, session.account.id, [60, 3600]);
+    await limit("redacted", req, session.account.id);
     await assertFeature("personalInfo", session.account.id);
     const { id } = await params;
     const doc = await getDocument(session.account.id, id);

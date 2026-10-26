@@ -6,7 +6,7 @@ import { checkPassword } from "@/lib/accounts";
 import { clientIp } from "@/lib/client-ip";
 import { query } from "@/lib/db";
 import { handle, readJson, refuse } from "@/lib/http";
-import { limit } from "@/lib/rate-limit";
+import { limit } from "@/lib/limits";
 import { createSession, sessionCookie } from "@/lib/session";
 import { assertOpen } from "@/lib/settings/guards";
 
@@ -17,7 +17,7 @@ export function POST(req: Request) {
   return handle(async () => {
     if (!hostAllowed(req.headers)) throw refuse(403, "IP_NOT_ALLOWED", "This address may not use the administration");
     const { email, password, client } = await readJson(req, body);
-    limit("sign-in", req, email, [30, 900], [10, 900]);
+    await limit("signIn", req, email);
     const account = await checkPassword(email, password, req.headers);
     // During maintenance only an administrator signs in.
     const [who] = await query<{ role: "USER" | "ADMIN" }>("SELECT role FROM accounts WHERE id = $1", [account.id]);

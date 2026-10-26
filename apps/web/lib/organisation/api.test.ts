@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { resetRateLimits } from "../rate-limit";
+import { resetRateLimits } from "../limits";
 
 const state = vi.hoisted(() => ({ session: null as null | { account: { id: string; email: string; perspective: string | null } }, calls: [] as string[] }));
 

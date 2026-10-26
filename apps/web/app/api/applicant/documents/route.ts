@@ -4,9 +4,9 @@ import { z } from "zod";
 import { storesOf } from "@/app/active-store";
 import { fileByToken, uploadApplicantDocument } from "@/lib/applicant-file";
 import { handle, refuse } from "@/lib/http";
+import { limit } from "@/lib/limits";
 import { YOMIZAKA_RULES } from "@/lib/preflight/rules";
 import { capsFor } from "@/lib/prices/caps";
-import { limit } from "@/lib/rate-limit";
 import { preflightRulesFrom } from "@/lib/settings/boundary";
 import { settingsFor } from "@/lib/settings/guards";
 
@@ -22,7 +22,7 @@ const typeId = z.string().min(2).max(40);
  */
 export function POST(req: Request) {
   return handle(async () => {
-    limit("applicant-upload", req, null, [60, 3600]);
+    await limit("applicantUpload", req, null);
     const form = await req.formData().catch(() => null);
     const parsedToken = token.safeParse(form?.get("token"));
     const parsedType = typeId.safeParse(form?.get("typeId"));

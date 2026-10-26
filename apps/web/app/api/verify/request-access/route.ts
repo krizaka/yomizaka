@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireSession } from "@/lib/access";
 import { audit } from "@/lib/audit";
 import { handle, readJson } from "@/lib/http";
-import { limit } from "@/lib/rate-limit";
+import { limit } from "@/lib/limits";
 import { loadTarget, requestAccess } from "@/lib/report-access";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +19,7 @@ export function POST(req: Request) {
   return handle(async () => {
     const session = await requireSession(req);
     const who = { id: session.account.id, email: session.account.email };
-    limit("verify-request", req, who.id, [30, 3600], [10, 3600]);
+    await limit("verifyRequest", req, who.id);
     const input = await readJson(req, body);
     const target = await loadTarget(input.runId, input.documentSha256);
     const { recorded } = await requestAccess(who, target, new Date());

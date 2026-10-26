@@ -4,7 +4,7 @@ import { applicantRequestBody } from "@/lib/applicant-file-face";
 import { appEnvironment } from "@/lib/env";
 import { resolveFlow } from "@/lib/flows";
 import { handle, readJson } from "@/lib/http";
-import { limit } from "@/lib/rate-limit";
+import { limit } from "@/lib/limits";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +23,7 @@ export function GET(req: Request) {
 export function POST(req: Request) {
   return handle(async () => {
     const session = await requireSession(req);
-    limit("applicant-file-request", req, session.account.id, [30, 3600], [20, 3600]);
+    await limit("applicantFileRequest", req, session.account.id);
     await resolveFlow(session.account, FLOW, appEnvironment());
     // The form's body (lib/applicant-file-face); a SIN-like type is refused by the service with its own code (422 TYPE_NOT_NECESSARY).
     const input = await readJson(req, applicantRequestBody);

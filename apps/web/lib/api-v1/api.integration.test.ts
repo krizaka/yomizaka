@@ -11,9 +11,9 @@ import { POST as createCheckRoute } from "@/app/api/v1/checks/route";
 
 import { migrate, pool, query } from "../db";
 import { seedDatabase } from "../flows";
+import { resetRateLimits } from "../limits";
 import { useOrazakaClient } from "../orazaka";
 import { cleanPdf } from "../preflight/fixtures";
-import { resetRateLimits } from "../rate-limit";
 import { createSession, SESSION_COOKIE } from "../session";
 
 /**

@@ -9,12 +9,12 @@ import { audit } from "@/lib/audit";
 import { query } from "@/lib/db";
 import { listDocuments, storeDocument } from "@/lib/documents";
 import { handle, HttpError, refuse } from "@/lib/http";
+import { limit } from "@/lib/limits";
 import { isId } from "@/lib/organisation/rules";
 import { placeDocument } from "@/lib/organisation/store";
 import { isPhoto, storePhotos } from "@/lib/photos";
 import { YOMIZAKA_RULES } from "@/lib/preflight/rules";
 import { recordPreflight } from "@/lib/preflight-events";
-import { limit } from "@/lib/rate-limit";
 import { preflightRulesFrom } from "@/lib/settings/boundary";
 import { assertFeature, settingsFor } from "@/lib/settings/guards";
 
@@ -72,7 +72,7 @@ export function POST(req: Request) {
   return handle(async () => {
     const session = await requireSession(req);
     const accountId = session.account.id;
-    limit("upload", req, accountId, [120, 3600], [60, 3600]);
+    await limit("upload", req, accountId);
     const form = await req.formData().catch(() => null);
     const files = (form?.getAll("file") ?? []).filter((f): f is File => f instanceof File);
     const file = files[0];
