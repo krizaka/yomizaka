@@ -11,7 +11,8 @@
       "what": "What it does",
       "proof": "A real run",
       "privacy": "Privacy",
-      "docs": "Docs"
+      "docs": "Docs",
+      "pricing": "Pricing"
     },
     "signIn": "Sign in",
     "themeToggle": "Theme",
@@ -1791,7 +1792,6 @@
         },
         "limits": {
           "included": "Verifications included a month",
-          "overageCents": "Each verification beyond (cents)",
           "founderCap": "Founder places",
           "feeBps": "Fee (basis points)",
           "feeCapCents": "Fee cap (cents)"
@@ -2629,6 +2629,60 @@
       "retention": "A kept document stays until you delete it; deleting it deletes its file, its text and its results, and closing your account deletes your documents.",
       "orazaka": "When you ask for a check, the document is sent to Orazaka, Krizaka's analysis engine, over HTTPS. Nothing is sold, shared or used to train a model.",
       "privacy": "Read the privacy notice"
+    }
+  },
+  "pricing": {
+    "title": "Pricing",
+    "lead": "No annual subscription. Pay per document, or subscribe by the month and cancel when you like. Prices in CAD, before taxes: GST and QST are added on the invoice.",
+    "plansLabel": "Plans",
+    "perMonth": " a month, plus taxes",
+    "perDocument": " per document, plus taxes",
+    "included": "{included} verifications included each month",
+    "paused": "Past the included volume, checks wait until next month",
+    "freeFirst": "Your first verification is free",
+    "cancel": "Billed monthly, cancel any time from the billing portal",
+    "noSubscription": "No subscription: you pay for the documents you verify",
+    "plans": {
+      "document": {
+        "name": "One document",
+        "features": [
+          "Document verification and file screening",
+          "A signed report that cites the article behind every finding"
+        ]
+      },
+      "agency": {
+        "name": "Small business",
+        "features": [
+          "For agencies and property managers",
+          "The API, with keys created in your account"
+        ]
+      },
+      "firm": {
+        "name": "Firms and corporate",
+        "features": [
+          "For firms with a larger volume",
+          "The API, with keys created in your account"
+        ]
+      }
+    },
+    "soon": {
+      "title": "Soon",
+      "lead": "Not offered yet. No price is promised for these.",
+      "badge": "Soon",
+      "items": {
+        "fullFile": {
+          "name": "The full applicant file",
+          "text": "The documents, then the registry checks."
+        },
+        "backgroundCheck": {
+          "name": "Background checks",
+          "text": "The applicant's records, with their consent."
+        },
+        "screening": {
+          "name": "The document filter alone",
+          "text": "The first stage of a file, charged only when it runs."
+        }
+      }
     }
   }
 }

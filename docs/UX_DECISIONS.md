@@ -633,3 +633,15 @@ Krizaka-ts ADR-003, `@krizaka/organize` 0.4. Yomizaka is the pilot, on « Dossie
   processor charges, « Égal » or « Différent » (sales stop while different). Then every change, who and from when. Composed from
   `SettingsSection` / `SettingsRow` until the price-list block exists (krizaka/krizaka-ui#713).
 - The paywall and « Abonnement et facturation » say the catalogue's prices (`paywallFigures`, « plus taxes »); no message types an amount.
+
+## Prices on their own page, read from the catalogue, held until the grid is approved (#388, #300)
+
+- **Decision** (2026-10-26): `/pricing` is on the pricing template of `@krizaka/ui`. It reads the catalogue in force
+  (`publicCatalogue`, `lib/prices/page.ts`): one document, then the small-business and the firm subscriptions with what they
+  include, every price "plus taxes". What is not built (full file, background checks, screening alone) is listed as "soon" with no
+  figure. The dedicated API stays an internal entry. The call to action is sign-in and the status line is the home's.
+- **Held**: the grid waits for Oussama's OK (#300). `PRICING_PUBLISHED` is `false`: the route answers 404 and the page is in no
+  bar, footer, sitemap or `llms.txt` (`lib/listed.ts`). The OK is one line.
+- **Refused**: the per-verification overage (#373: not billed, the page says "past the included volume, checks wait until next
+  month"); a figure for what is soon; an annual plan; "Start now" while sign-up is closed.
+- **Signal we are wrong**: visitors read "soon" as a broken page.

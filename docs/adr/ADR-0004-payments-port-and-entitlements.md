@@ -19,7 +19,7 @@ infrastructure and no vendor SDK, a vendor is chosen in configuration, prices an
   and keeps it; the verifications it includes are that version's `included` limit. The processor's prices (`deploy/payments-catalogue.json`,
   created by `pnpm payments:setup`, lookup keys in `lib/pricing.ts` `SOLD`) equal the seed (`lib/pricing.test.ts`); a checkout refuses
   (503 `PRICE_MISMATCH`) while the processor's amount differs from the catalogue's. No amount is typed in the code or the messages.
-  Billing the verifications beyond the included volume (`overageCents`) is not wired yet: past it, the account is held at the cap.
+  Verifications beyond the included volume are **not billed** (usage-based billing is not wired): past it, the account is held at the cap until next month (429 `FAIR_USE`). The catalogue therefore holds no per-verification price beyond the included volume, and no page may advertise one (yomizaka#373, `lib/prices/billed-charges.test.ts`). Metered billing would come with its own entry, its processor price and its test.
 - **Taxes**: the processor's automatic tax (GST 5 % + QST 9.975 % for Québec) and its invoices carry Krizaka's registration numbers.
 - **Entitlements** (migration `0009_billing`): `accounts.free_audit_used_at`, `audit_credits`, `plan`, `subscription_status`,
   `current_period_end`, `payment_customer_id`; `payment_events(id)` makes each notification apply once. The free audit and

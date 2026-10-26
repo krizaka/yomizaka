@@ -7,6 +7,7 @@
 
 - The public site is **three pages** (Simplify Yomizaka, #120): the home, sign-in and the privacy notice; the menu is `lib/nav.ts`, the removed addresses are `lib/removed-urls.mjs` (308), `lib/menu.test.ts` guards both. Never add a marketing page back: change the home.
 - **One language of addresses** (yomizaka#389): the signed-in space's addresses are English (`/app/search`, `/app/check`, `/app/check/batches`, `/app/library`, `/app/welcome`, `/app/verifications/report`); the French ones answer 308 from `lib/removed-urls.mjs` (with and without the language), never from a page. `/download` is parked (308 to the home, out of the footer and the sitemap) while `lib/downloads.ts` has no link; `lib/menu.test.ts` keeps the two in step.
+- **Docs and pricing** (yomizaka#387, #388): `/docs` documents the product on the docs template (the API reference is generated from `lib/api-v1/openapi.ts`); `/pricing` reads the price catalogue on the pricing template, no price typed, what is not built "soon" with no figure, never a charge the code does not make (#373). `/pricing` is HELD behind `PRICING_PUBLISHED` (`lib/prices/publication.ts`) until Oussama approves the price grid (#300): 404, and out of the bar, footer, sitemap and llms.txt (`lib/listed.ts`).
 - A **pnpm + Turborepo** monorepo: `apps/web` (Next.js 16: the public page, sign-in, the console and the BFF — route
   handlers are the only HTTP surface) and `packages/core` (zod contracts the API answers with and the web reads, the
   query keys, the pure helpers). One product = one repository (`krizaka/<product>`).

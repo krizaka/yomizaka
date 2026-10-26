@@ -9,9 +9,9 @@ import { AVAILABILITY, definePrices, UNIT } from "@krizaka/settings";
 export const PRICE = {
   /** One document verified, paid per document. */
   document: "yomizaka.document",
-  /** Small business (PME), agencies and property managers: a month, with verifications included and a price for each one beyond. */
+  /** Small business (PME), agencies and property managers: a month, with verifications included (past them, the account waits until next month). */
   agency: "yomizaka.agency",
-  /** Firms (études) and corporate: a month, with more verifications included and a lower price beyond. */
+  /** Firms (études) and corporate: a month, with more verifications included. */
   firm: "yomizaka.firm",
   /** A dedicated API over 5 000 verifications a month: on quote; its internal target per document, never on a public page. */
   api: "yomizaka.api",
@@ -22,13 +22,17 @@ export const PRICE = {
 } as const;
 export type PriceKey = (typeof PRICE)[keyof typeof PRICE];
 
-/** The named limits an entry holds: the verifications a month includes, the price of each one beyond (cents). */
-export const LIMIT = { included: "included", overageCents: "overageCents" } as const;
+/**
+ * The named limits an entry holds: the verifications a month includes. There is NO price for a verification beyond them: the
+ * code does not bill usage (the account is held at its volume until next month, 429 `FAIR_USE`), so the catalogue carries no
+ * such figure and no page can advertise it (yomizaka#373, `lib/prices/billed-charges.test.ts`).
+ */
+export const LIMIT = { included: "included" } as const;
 
 export const PRICES = definePrices([
   { product: "yomizaka", plan: "document", unit: UNIT.document, amountCents: 65, availability: AVAILABILITY.public },
-  { product: "yomizaka", plan: "agency", unit: UNIT.month, amountCents: 5900, availability: AVAILABILITY.public, limits: { [LIMIT.included]: 100, [LIMIT.overageCents]: 45 } },
-  { product: "yomizaka", plan: "firm", unit: UNIT.month, amountCents: 27900, availability: AVAILABILITY.public, limits: { [LIMIT.included]: 750, [LIMIT.overageCents]: 32 } },
+  { product: "yomizaka", plan: "agency", unit: UNIT.month, amountCents: 5900, availability: AVAILABILITY.public, limits: { [LIMIT.included]: 100 } },
+  { product: "yomizaka", plan: "firm", unit: UNIT.month, amountCents: 27900, availability: AVAILABILITY.public, limits: { [LIMIT.included]: 750 } },
   { product: "yomizaka", plan: "api", unit: UNIT.document, amountCents: 22, availability: AVAILABILITY.internal },
   { product: "yomizaka", plan: "fullFile", unit: UNIT.document, amountCents: null, availability: AVAILABILITY.preparing },
   { product: "yomizaka", plan: "backgroundCheck", unit: UNIT.document, amountCents: null, availability: AVAILABILITY.preparing },

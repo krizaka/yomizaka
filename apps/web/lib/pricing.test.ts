@@ -17,8 +17,8 @@ describe("the seed is the pricing audit's grid (yomizaka#367)", () => {
   it("has every entry, at its default, with its availability", async () => {
     const byKey = Object.fromEntries((await catalogue().catalogue(NOW)).map((e) => [e.key, e]));
     expect(byKey[PRICE.document]).toMatchObject({ unit: "document", amountCents: 65, availability: AVAILABILITY.public, currency: "CAD", taxes: "plus-taxes" });
-    expect(byKey[PRICE.agency]).toMatchObject({ unit: "month", amountCents: 5900, availability: AVAILABILITY.public, limits: { included: 100, overageCents: 45 } });
-    expect(byKey[PRICE.firm]).toMatchObject({ unit: "month", amountCents: 27900, availability: AVAILABILITY.public, limits: { included: 750, overageCents: 32 } });
+    expect(byKey[PRICE.agency]).toMatchObject({ unit: "month", amountCents: 5900, availability: AVAILABILITY.public, limits: { included: 100 } });
+    expect(byKey[PRICE.firm]).toMatchObject({ unit: "month", amountCents: 27900, availability: AVAILABILITY.public, limits: { included: 750 } });
     expect(byKey[PRICE.api]).toMatchObject({ unit: "document", amountCents: 22, availability: AVAILABILITY.internal });
     for (const k of [PRICE.fullFile, PRICE.backgroundCheck, PRICE.screening]) expect(byKey[k]).toMatchObject({ amountCents: null, availability: AVAILABILITY.preparing });
   });
@@ -55,7 +55,7 @@ describe("the included volume is the catalogue's, for the version a subscription
     const c = catalogue();
     const sold = await soldEntry(c, "agency", NOW);
     expect(sold.versionId).toBe(seedVersionId(PRICE.agency));
-    await c.schedule(ADMIN, PRICE.agency, { limits: { [LIMIT.included]: 120, [LIMIT.overageCents]: 45 } }, LATER, NOW);
+    await c.schedule(ADMIN, PRICE.agency, { limits: { [LIMIT.included]: 120 } }, LATER, NOW);
     const after = new Date("2026-12-02T00:00:00Z");
     expect(await includedFor(c, { planKey: PRICE.agency, priceVersionId: sold.versionId }, after)).toBe(100);
     const fresh = await soldEntry(c, "agency", after);
