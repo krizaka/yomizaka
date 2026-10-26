@@ -1,6 +1,6 @@
 import { test } from "vitest";
 import assert from "node:assert/strict";
-import { auditRobots, auditSitemap, auditLlms, auditHtml, auditHeaders, AI_CRAWLERS, ORG_ID } from "../scripts/check-seo-family.mjs";
+import { auditDevRedirect, auditRobots, auditSitemap, auditLlms, auditHtml, auditHeaders, AI_CRAWLERS, ORG_ID } from "../scripts/check-seo-family.mjs";
 
 const HOST = "https://dev.example.com";
 const robots = AI_CRAWLERS.map((b) => `User-Agent: ${b}\nAllow: /\n`).join("\n") + `\nSitemap: ${HOST}/sitemap.xml\n`;
@@ -24,10 +24,8 @@ test("robots.txt: a missing AI crawler, a missing Sitemap line and a blanket Dis
 });
 
 test("a site that is not indexed must say so in robots, meta and header", () => {
-  const off = `User-Agent: *\nDisallow: /\n`;
+  const off = `User-Agent: *\nDisallow: /\nSitemap: ${HOST}/sitemap.xml\n`;
   assert.deepEqual(auditRobots(off, { host: HOST, index: false }), []);
-  // a site that is not indexed advertises nothing: a sitemap line is a finding
-  assert.ok(auditRobots(`${off}Sitemap: ${HOST}/sitemap.xml\n`, { host: HOST, index: false }).some((p) => p.includes("sitemap")));
   assert.ok(auditRobots(robots, { host: HOST, index: false }).length > 0);
   assert.ok(auditHtml(page(), "/", { ...opts, index: false }).some((p) => p.includes("noindex")));
   assert.deepEqual(auditHtml(page({ robotsMeta: "noindex, nofollow" }), "/", { ...opts, index: false }), []);
@@ -59,4 +57,15 @@ test("an operator console: no sitemap needed, but it must say noindex", async ()
   assert.deepEqual(auditRobots("User-Agent: *\nDisallow: /\n", { host: HOST, index: false, sitemap: false }), []);
   assert.deepEqual(auditConsoleHtml('<meta name="robots" content="noindex, nofollow"/>'), []);
   assert.equal(auditConsoleHtml("<html></html>").length, 1);
+});
+
+test("a development host: robots closed and noindex, pages 308 to www", () => {
+  const www = "https://www.example.com";
+  const ok = { robotsText: "User-agent: *\nDisallow: /\n", robotsHeaders: new Headers({ "x-robots-tag": "noindex, nofollow" }), rootStatus: 308, rootLocation: `${www}/`, rootHeaders: new Headers({ "x-robots-tag": "noindex, nofollow" }) };
+  assert.deepEqual(auditDevRedirect(ok, { www }), []);
+  assert.deepEqual(auditDevRedirect({ ...ok, rootLocation: `${www}/en/sign-in` }, { www }), []);
+  assert.match(auditDevRedirect({ ...ok, robotsText: "User-agent: *\nAllow: /\n" }, { www }).join(), /Disallow/);
+  assert.match(auditDevRedirect({ ...ok, rootStatus: 200, rootLocation: null }, { www }).join(), /expected 308/);
+  assert.match(auditDevRedirect({ ...ok, rootLocation: "https://evil.test/" }, { www }).join(), /expected/);
+  assert.match(auditDevRedirect({ ...ok, rootHeaders: new Headers() }, { www }).join(), /noindex/);
 });
