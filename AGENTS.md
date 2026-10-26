@@ -32,6 +32,12 @@
   once (`documents.extraction`: queued → running → done | failed, with `extraction_error`), the worker reads it after the answer, a check waits (`409 EXTRACTING`),
   `@yomizaka/client`'s `uploadDocument` and the web's `startIfSure` wait for `done` (`waitForExtraction`, `packages/core`), the document page polls. A reading left
   queued or running for 3 minutes (the process restarted) shows as failed.
+  search. A scanned PDF has no text layer — the UI says so; reading images would be Orazaka's job.
+- **The TAL renewal radar** (`lib/brief/`, yomizaka#228): Yomizaka's first detector of the Monday brief, on `@krizaka/brief` (`renewalRadar`, pure). The notice
+  windows of art. 1942 C.c.Q. and the TAL's yearly figures are **data** (`content/tal/renewal-radar.json`: one entry per year, each with its source page and the day
+  it was entered; no year, no figure — the radar says so and shows the table's source). Never a percentage in code, never an invented figure: the shipped table has
+  no year until the TAL's are entered. `renewalNotice` writes the document the manager signs and sends: Yomizaka sends nothing on anyone's behalf. The lease
+  portfolio that feeds it (doors, buildings, costs) is yomizaka#126.
 - A report is shown as Orazaka returned it (`packages/core` `reportOf`): a shape it did not send is `null`, never a guess.
   The home's proof shows **the recorded tenant run**; the landlord's is kept beside it: a fictitious sample lease sent to Orazaka's compliance Studio on dev (Québec ruleset), the answer kept exactly as Orazaka returned it in `apps/web/content/recorded-runs/<side>.json` — written by `scripts/record-runs.mjs` (key from the environment, never by hand; re-run it when the ruleset or the Studio changes). `lib/recorded-runs.ts` validates both at build: a page without a recorded run does not build (`lib/recorded-runs.test.ts`). The platform's own showcase (an administrator promotes a check on a sample document, `lib/showcase.ts`, `/api/showcase/*`) stays available but the page no longer depends on it.
 

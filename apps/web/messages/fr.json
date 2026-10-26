@@ -2685,5 +2685,19 @@
         }
       }
     }
+  },
+  "brief": {
+    "renewalNotice": {
+      "title": "Avis de reconduction du bail avec augmentation de loyer",
+      "door": "Logement : {door}",
+      "end": "Le bail se termine le {end}.",
+      "current": "Loyer actuel : {rent} par mois.",
+      "proposed": "Loyer proposé : {rent} par mois, à compter du {effective}.",
+      "proposedBlank": "Loyer proposé : ____________ par mois, à compter du {effective}.",
+      "refusal": "Vous avez un mois à compter de la réception de cet avis pour refuser l’augmentation ; le locateur peut alors demander au Tribunal administratif du logement de fixer le loyer.",
+      "window": "Avis donné entre le {opens} et le {closes} ({citation}).",
+      "signature": "Nom et signature du locateur : ____________    Date : ____________",
+      "disclaimer": "Préparé avec Yomizaka à titre informatif, ce n’est pas un avis juridique. Le locateur le vérifie, le signe et l’envoie lui-même : Yomizaka n’envoie rien au nom de quiconque."
+    }
   }
 }
