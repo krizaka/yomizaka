@@ -69,9 +69,9 @@ export const SETTINGS = {
   "limits.batchExportMaxMb": integer(GROUP.limits, 50, { min: 1, max: 200, unit: "MB" }),
   "limits.avatarMaxKb": integer(GROUP.limits, 512, { min: 16, max: 2048, unit: "KB" }),
   "limits.bonusAuditsPerMonth": integer(GROUP.limits, 0, { min: 0, max: 10000, unit: "audits" }, [SCOPE.user]),
-  // Plans: what each plan includes (prices stay in Stripe).
+  // Plans: what each plan allows beside its price. The prices and the verifications a subscription includes are the price
+  // catalogue's (ADR-009, `lib/pricing.ts`, admin `/config/prices`); « pro » is any subscription (Agencies or Law firms).
   "plans.free.auditsPerDay": integer(GROUP.plans, 0, { min: 0, max: 1000, unit: "audits" }, WORKSPACE),
-  "plans.pro.auditsPerMonth": integer(GROUP.plans, 100, { min: 1, max: 100000, unit: "audits" }, WORKSPACE),
   "plans.free.apiKeys": integer(GROUP.plans, 0, { min: 0, max: 100, unit: "keys" }, WORKSPACE),
   "plans.pro.apiKeys": integer(GROUP.plans, 10, { min: 0, max: 100, unit: "keys" }, WORKSPACE),
   "plans.free.webhookEndpoints": integer(GROUP.plans, 0, { min: 0, max: 100, unit: "endpoints" }, WORKSPACE),

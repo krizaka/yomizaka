@@ -52,14 +52,14 @@ export const clientConfigOf = (s: Snapshot): ClientConfig => ({
   avatars: { enabled: value(s, "features.collectionAvatars"), maxBytes: value<number>(s, "limits.avatarMaxKb") * 1024, seeds: value<string[]>(s, "features.avatarSet") },
 });
 
-/** The caps an audit is held to: monthly (a person's bonus added) and daily (0 = no cap), for the plan the account is on. */
+/** The caps an audit is held to: monthly — the verifications the subscription's catalogue entry includes, a person's bonus added — and daily (0 = no cap), for the plan the account is on. */
 export interface AuditCaps {
   perMonth: number;
   perDay: number;
   freeFirst: boolean;
 }
-export const auditCapsOf = (s: Snapshot, plan: "free" | "pro"): AuditCaps => ({
-  perMonth: plan === "pro" ? value<number>(s, "plans.pro.auditsPerMonth") + value<number>(s, "limits.bonusAuditsPerMonth") : Number.POSITIVE_INFINITY,
+export const auditCapsOf = (s: Snapshot, plan: "free" | "pro", included: number): AuditCaps => ({
+  perMonth: plan === "pro" ? included + value<number>(s, "limits.bonusAuditsPerMonth") : Number.POSITIVE_INFINITY,
   perDay: value<number>(s, plan === "pro" ? "plans.pro.auditsPerDay" : "plans.free.auditsPerDay"),
   freeFirst: value<boolean>(s, "audit.freeFirst"),
 });

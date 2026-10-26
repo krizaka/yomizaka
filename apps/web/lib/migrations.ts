@@ -4,6 +4,7 @@
  * deployed: a change is a new entry.
  */
 import { accountsMigration } from "@krizaka/auth";
+import { pricesMigration } from "@krizaka/settings";
 import { webhooksMigration } from "@krizaka/webhooks";
 
 import { DEFAULT_COLLECTION_MIGRATION } from "./organisation/default-collection";
@@ -589,5 +590,16 @@ ALTER TABLE documents ADD COLUMN checks_skipped jsonb NOT NULL DEFAULT '[]';
     version: "0033_workspace_organised",
     // krizaka-ts ADR-003, @krizaka/organize 0.4 (yomizaka#324): tags with markers, the decision set, saved views; the documents' tags move in.
     sql: WORKSPACE_MIGRATION,
+  },
+  {
+    version: "0034_price_catalogue",
+    // ADR-009 (krizaka/.github#253, yomizaka#367): the price versions an administrator schedules (@krizaka/settings 0.2, idempotent),
+    // and what a subscription was sold at — the catalogue entry and its version, recorded at checkout and kept when it starts.
+    sql: `${pricesMigration()}
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS checkout_price_key text;
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS checkout_price_version text;
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS subscription_price_key text;
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS subscription_price_version text;
+`,
   },
 ];

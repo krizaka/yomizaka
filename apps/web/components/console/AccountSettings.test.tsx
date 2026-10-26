@@ -9,7 +9,7 @@ const say = (key: string, vars?: Record<string, string | number>) => {
   return Object.entries(vars ?? {}).reduce((s, [k, v]) => s.replace(`{${k}}`, String(v)), words ?? key);
 };
 const date = (iso: string) => iso.slice(0, 10);
-const FREE: Entitlement = { credits: 0, pro: false, proUntil: null, freeAuditUsed: false, selfServe: true, hasCustomer: false };
+const FREE: Entitlement = { credits: 0, pro: false, proUntil: null, freeAuditUsed: false, selfServe: true, hasCustomer: false, planKey: null };
 
 describe("billing as flat rows (the review's E3)", () => {
   it("a free self-serve account: the plan, the free audit, the paid audits left — no renewal", () => {
@@ -20,9 +20,10 @@ describe("billing as flat rows (the review's E3)", () => {
     ]);
     expect(billingRows({ ...FREE, freeAuditUsed: true, credits: 3 }, say, date).map((r) => r.value)).toEqual(["Gratuit", fr.console.settings.billing.freeUsed, "3"]);
   });
-  it("a Pro account: the plan and its renewal; an account that is not self-serve has no free audit row", () => {
+  it("a subscribed account: its plan, named by the catalogue entry it was sold at, and its renewal; an account that is not self-serve has no free audit row", () => {
+    expect(billingRows({ ...FREE, pro: true, planKey: "yomizaka.firm", proUntil: "2026-11-23T00:00:00.000Z", selfServe: false }, say, date)[0]!.value).toBe(fr.console.settings.billing.plans.firm);
     expect(billingRows({ ...FREE, pro: true, proUntil: "2026-11-23T00:00:00.000Z", selfServe: false }, say, date).map((r) => [r.id, r.value])).toEqual([
-      ["plan", "Pro"],
+      ["plan", fr.console.settings.billing.plans.agency],
       ["credits", "0"],
       ["until", "2026-11-23"],
     ]);

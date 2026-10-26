@@ -835,7 +835,11 @@
       "CANCELLED": "The check was cancelled.",
       "REFUSED": "Row refused.",
       "ORAZAKA_BUSY": "Orazaka is busy right now. The batch goes on by itself as soon as it has room.",
-      "EXPORT_TOO_LARGE": "The reports of this batch are too heavy for one archive: export fewer rows."
+      "EXPORT_TOO_LARGE": "The reports of this batch are too heavy for one archive: export fewer rows.",
+      "NOT_ON_SALE": "This offer is not on sale.",
+      "PRICE_MISMATCH": "This price is being updated. Try again in a moment.",
+      "UNKNOWN_PRICE": "No such price.",
+      "BAD_DATE": "A price changes from today or later, never in the past."
     },
     "adminConsole": {
       "shell": {
@@ -1105,14 +1109,16 @@
     },
     "paywall": {
       "title": "Your free audit is used",
-      "text": "The first audit is free. To check another document, pay for this audit or subscribe to Pro.",
-      "payOne": "Pay for this audit",
-      "pro": "Go Pro",
+      "text": "The first verification is free. To check another document, pay for this one or subscribe.",
+      "payOne": "Pay for this document",
       "soon": "Payment coming soon.",
-      "notice": "9.99 $ CAD per audit, or 29 $ CAD per month for Pro, before GST and QST. An informative check, not legal advice.",
+      "notice": "{document} per document, or {agency} a month for small businesses ({included} verifications included), plus taxes.",
       "fairUseTitle": "Monthly limit reached",
-      "fairUse": "Pro includes up to {limit} audits a month. The limit resets at the start of next month.",
-      "testMode": "Test mode: no real card is charged."
+      "fairUse": "Your subscription includes {limit} verifications a month. The limit resets at the start of next month.",
+      "testMode": "Test mode: no real card is charged.",
+      "agency": "Subscribe — Small business",
+      "firm": "Subscribe — Firms",
+      "informative": "An informative check, not legal advice."
     },
     "insight": {
       "title": "This document",
@@ -1324,7 +1330,6 @@
         "creditsLabel": "Paid audits left",
         "renewal": "Renewal",
         "planFree": "Free",
-        "planPro": "Pro",
         "credits": "Paid audits left: {count}",
         "freeAvailable": "Your free audit is available.",
         "freeUsed": "Your free audit is used.",
@@ -1333,7 +1338,11 @@
         "portalHint": "Payment method, invoices (with GST and QST) and cancellation: in Stripe's secure portal.",
         "off": "Payment is not available yet.",
         "buy": "Buy or subscribe",
-        "testMode": "Test mode: no real card is charged."
+        "testMode": "Test mode: no real card is charged.",
+        "plans": {
+          "agency": "Small business",
+          "firm": "Firms & corporate"
+        }
       },
       "data": {
         "exportTitle": "Export my data",
@@ -1441,6 +1450,7 @@
         "features": "Features",
         "limits": "Limits",
         "plans": "Plans",
+        "prices": "Prices",
         "packs": "Rules packs",
         "orazaka": "Orazaka",
         "organisation": "Organisation"
@@ -1640,20 +1650,16 @@
             }
           },
           "pro": {
-            "auditsPerMonth": {
-              "label": "Pro: audits per month",
-              "hint": "Fair-use cap."
-            },
             "auditsPerDay": {
-              "label": "Pro: audits per day",
+              "label": "Subscription: audits per day",
               "hint": "0: no cap."
             },
             "apiKeys": {
-              "label": "Pro: API keys",
+              "label": "Subscription: API keys",
               "hint": "Number of active keys. 0: the plan has no API."
             },
             "webhookEndpoints": {
-              "label": "Pro: webhook endpoints",
+              "label": "Subscription: webhook endpoints",
               "hint": "Number of endpoints. 0: the plan has no webhooks."
             }
           }
@@ -1678,14 +1684,6 @@
         "empty": "No flow."
       },
       "plans": {
-        "pricesTitle": "Prices (read from Stripe)",
-        "pricesLead": "Prices stay in Stripe: nothing here edits them.",
-        "audit": "One audit",
-        "pro": "Pro",
-        "off": "Payments are not configured on this installation.",
-        "notFound": "Price not found in Stripe.",
-        "lookup": "Price key",
-        "mode": "Stripe",
         "entitlementsTitle": "What each plan includes"
       },
       "orazaka": {
@@ -1771,6 +1769,60 @@
           "reasonLabel": "Reason in {language}, number {position}",
           "removeReason": "Remove reason {position}",
           "derived": "Derived: the product computes this status; nobody moves it"
+        }
+      },
+      "prices": {
+        "lead": "The prices are data: a change applies from the day you choose (today or later), the history keeps every version, and a subscription keeps the price it was sold at. Every price is in CAD, plus taxes.",
+        "processorOff": "Payments are not configured on this installation: nothing is charged.",
+        "processorMode": "Payment processor",
+        "seed": "default price",
+        "since": "since {date}",
+        "amount": "Amount (CAD, plus taxes)",
+        "amountHint": "In dollars, e.g. 0.65. Empty: on quote (only for an entry not on sale).",
+        "availability": "Availability",
+        "availabilityHint": "Public: shown with its figure. Internal: never on a public page. In preparation: shown without a figure.",
+        "availabilities": {
+          "public": "Public",
+          "internal": "Internal",
+          "founder-limited": "Founders only",
+          "preparing": "In preparation"
+        },
+        "limits": {
+          "included": "Verifications included a month",
+          "overageCents": "Each verification beyond (cents)",
+          "founderCap": "Founder places",
+          "feeBps": "Fee (basis points)",
+          "feeCapCents": "Fee cap (cents)"
+        },
+        "from": "From",
+        "fromHint": "Empty or today: from now. A later day: from its start.",
+        "schedule": "Schedule the change",
+        "charged": "Charged by the processor",
+        "chargedHint": "Sales stop while it differs from the catalogue: create the new processor price first.",
+        "notFound": "Price not found at the processor.",
+        "mismatch": "Differs",
+        "match": "Equal",
+        "onQuote": "on quote",
+        "upcoming": "Scheduled",
+        "upcomingLine": "From {date}: {amount}, {availability}",
+        "historyTitle": "Price changes",
+        "units": {
+          "month": "a month",
+          "year": "a year",
+          "once": "once",
+          "document": "per document",
+          "order": "per order",
+          "pack": "per pack",
+          "hour": "per hour"
+        },
+        "entries": {
+          "document": "One document verified",
+          "agency": "Small business",
+          "firm": "Firms & corporate",
+          "api": "Dedicated API (over 5,000 a month, on quote)",
+          "fullFile": "Full applicant file",
+          "backgroundCheck": "Background checks",
+          "screening": "Screening alone"
         }
       }
     },

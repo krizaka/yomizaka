@@ -91,7 +91,7 @@ describe("the week chart: the last seven days of the period, whatever its length
 });
 
 describe("the credits: what the account has, said as the billing state says it", () => {
-  const e = (patch: Partial<Parameters<typeof creditsFigure>[0]> = {}) => ({ selfServe: true, freeAuditUsed: true, credits: 0, pro: false, proUntil: null, subscriptionStatus: null, hasCustomer: false, ...patch });
+  const e = (patch: Partial<Parameters<typeof creditsFigure>[0]> = {}) => ({ selfServe: true, freeAuditUsed: true, credits: 0, pro: false, proUntil: null, subscriptionStatus: null, hasCustomer: false, planKey: null, priceVersionId: null, ...patch });
   it("an account made by an operator (demo, QA) has its audits included, with no meter", () => {
     expect(creditsFigure(e({ selfServe: false }), 4, 100)).toEqual({ kind: "included" });
   });

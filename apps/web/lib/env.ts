@@ -49,10 +49,7 @@ export const envSchema = z.object({
   PAYMENTS_STRIPE_SECRET_KEY: z.string().optional(),
   PAYMENTS_STRIPE_WEBHOOK_SECRET: z.string().optional(),
   /** The processor's price lookup keys: prices are data at the processor, never typed here. */
-  PAYMENTS_PRICE_KEY_AUDIT: z.string().default("yomizaka_audit_cad"),
-  PAYMENTS_PRICE_KEY_PRO: z.string().default("yomizaka_pro_monthly_cad"),
   /** The Pro plan's fair-use cap, audits per calendar month. */
-  APP_FAIR_USE_AUDITS_PER_MONTH: z.coerce.number().int().min(1).default(100),
   /** What one engine run costs, in cents — an ESTIMATE the pre-flight's metrics multiply by the runs it avoided. */
   APP_ESTIMATED_RUN_COST_CENTS: z.coerce.number().int().min(0).default(3),
   /** The addresses that may open the administration (comma-separated). Empty in production = nobody. */

@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { applyPaymentEvent, entitlementOf, refundFailedAudit, releaseAudit, reserveAudit } from "./billing";
+import { applyPaymentEvent, entitlementOf, recordCheckout, refundFailedAudit, releaseAudit, reserveAudit } from "./billing";
 import { migrate, query } from "./db";
 
 /** The entitlements against a real PostgreSQL (skipped without YOMIZAKA_DB_IT=1 and DATABASE_URL, like db.integration.test.ts). */
@@ -83,5 +83,14 @@ describe.runIf(enabled)("billing", () => {
     const id = await account();
     await expect(reserveAudit(query, id, NOW, caps(100, 0, false))).rejects.toMatchObject({ status: 402, body: { code: "PAYWALL" } });
     expect(await reserveAudit(query, id, NOW, caps(100, 0, true))).toBe("free");
+  });
+  it("a subscription keeps the catalogue version it was sold at (recorded at checkout, kept when it starts) — ADR-009", async () => {
+    const id = await account();
+    await recordCheckout(query, id, { key: "yomizaka.firm", versionId: "seed:yomizaka.firm" });
+    await applyPaymentEvent(query, { id: `evt-sub-${id}`, type: "subscription_started", accountId: id, customerId: `cus-sub-${id}`, subscriptionId: `sub-${id}` });
+    expect(await entitlementOf(query, id, NOW)).toMatchObject({ planKey: "yomizaka.firm", priceVersionId: "seed:yomizaka.firm" });
+    await recordCheckout(query, id, { key: "yomizaka.agency", versionId: "7" });
+    await applyPaymentEvent(query, { id: `evt-chg-${id}`, type: "subscription_changed", accountId: id, customerId: `cus-sub-${id}`, subscriptionId: `sub-${id}`, status: "active", active: true, periodEnd: null });
+    expect(await entitlementOf(query, id, NOW)).toMatchObject({ planKey: "yomizaka.firm", priceVersionId: "seed:yomizaka.firm" });
   });
 });

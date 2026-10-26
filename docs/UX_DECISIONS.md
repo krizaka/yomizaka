@@ -625,3 +625,11 @@ Krizaka-ts ADR-003, `@krizaka/organize` 0.4. Yomizaka is the pilot, on « Dossie
 - Search narrows the rows and the counts of the chips (accents and case do not matter; it is ephemeral, not in the address). The chips
   — « Toutes · 6 », « Baux · 3 », « Avis et états · 2 », « Authenticité · 1 » — are `Chip.Group` bound to `?groupe=`: the address is the
   state, and a group the search empties keeps its chip at 0.
+
+## Prices: one catalogue, edited in the administration (ADR-009, #367)
+
+- `admin.yomizaka.com/config/prices`: one flat `SettingsSection` per entry (amount in dollars, availability, its limits, « À partir du »
+  — empty or today is now, a later day is its start, never the past), one save « Planifier le changement »; beside it what the
+  processor charges, « Égal » or « Différent » (sales stop while different). Then every change, who and from when. Composed from
+  `SettingsSection` / `SettingsRow` until the price-list block exists (krizaka/krizaka-ui#713).
+- The paywall and « Abonnement et facturation » say the catalogue's prices (`paywallFigures`, « plus taxes »); no message types an amount.

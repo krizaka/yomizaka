@@ -254,8 +254,8 @@ importers:
         specifier: ^0.2.1
         version: 0.2.1(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1)
       '@krizaka/settings':
-        specifier: 0.1.0
-        version: 0.1.0(zod@4.6.7)
+        specifier: 0.2.0
+        version: 0.2.0(zod@4.6.7)
       '@krizaka/tailwind':
         specifier: ^3.59.0
         version: 3.59.0(@krizaka/tokens@3.59.0)(@krizaka/ui@3.59.0)(tailwindcss@4.3.3)
@@ -1792,8 +1792,8 @@ packages:
       pg:
         optional: true
 
-  '@krizaka/settings@0.1.0':
-    resolution: {integrity: sha512-FhSlYe+Akqt+eYRXDqJEC94IW2xjs+IgjOHUzmQS+kPc5psMVq/G0twFX20Ozku5LXbk5fZupdiCjxdAnKDhWw==}
+  '@krizaka/settings@0.2.0':
+    resolution: {integrity: sha512-s4tHMGkkL7OlKXsL1SPjHW6SHesr5KqzfmVqhbLngCZw4PDBBDWVxxOVP0dsXwrT+nm7IJ1Ux9mwRW2CbpDxtA==}
     engines: {node: '>=22'}
     peerDependencies:
       zod: '>=3.23'
@@ -9627,7 +9627,7 @@ snapshots:
     optionalDependencies:
       pg: 8.23.1
 
-  '@krizaka/settings@0.1.0(zod@4.6.7)':
+  '@krizaka/settings@0.2.0(zod@4.6.7)':
     dependencies:
       zod: 4.6.7
 

@@ -5,8 +5,9 @@ import { storesOf } from "@/app/active-store";
 import { fileByToken, uploadApplicantDocument } from "@/lib/applicant-file";
 import { handle, refuse } from "@/lib/http";
 import { YOMIZAKA_RULES } from "@/lib/preflight/rules";
+import { capsFor } from "@/lib/prices/caps";
 import { limit } from "@/lib/rate-limit";
-import { auditCapsOf, preflightRulesFrom } from "@/lib/settings/boundary";
+import { preflightRulesFrom } from "@/lib/settings/boundary";
 import { settingsFor } from "@/lib/settings/guards";
 
 export const dynamic = "force-dynamic";
@@ -39,7 +40,7 @@ export function POST(req: Request) {
         purgeAfterHours: settings["limits.purgeAfterHours"].value as number,
         rules: preflightRulesFrom(YOMIZAKA_RULES, settings),
         keepAllowed: stores.settings.mode !== STORAGE_MODE.none,
-        auditCaps: (plan) => auditCapsOf(settings, plan),
+        auditCaps: capsFor(settings, new Date()),
       },
       new Date(),
       req.headers,
