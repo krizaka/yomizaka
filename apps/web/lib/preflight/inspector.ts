@@ -92,8 +92,11 @@ export function zipEntryBytes(bytes: Uint8Array, name: string, maxBytes: number)
   if (start + entry.compressed > bytes.length) return null;
   const data = bytes.subarray(start, start + entry.compressed);
   try {
-    const result = method === 0 ? (data.length <= maxBytes ? Buffer.from(data) : null)
-      : method === 8 ? inflateRawSync(data, { maxOutputLength: maxBytes }) : null;
+    const unpack = () => {
+      if (method === 0) return data.length <= maxBytes ? Buffer.from(data) : null;
+      return method === 8 ? inflateRawSync(data, { maxOutputLength: maxBytes }) : null;
+    };
+    const result = unpack();
     return result?.length === entry.uncompressed ? result : null;
   } catch {
     return null;

@@ -118,7 +118,12 @@ export async function listSharing(ownerId: string, documentId: string, analysisI
   return {
     grants: rows.map((r) => {
       const grant = toGrant(r);
-      const status: GrantStatus = grant.revokedAt ? "revoked" : !grantIsLive(grant, now) ? "expired" : r.member ? "member" : "invited";
+      const statusOf = (): GrantStatus => {
+        if (grant.revokedAt) return "revoked";
+        if (!grantIsLive(grant, now)) return "expired";
+        return r.member ? "member" : "invited";
+      };
+      const status = statusOf();
       return { id: r.id, email: r.grantee_email, status, createdAt: r.created_at.toISOString(), expiresAt: r.expires_at?.toISOString() ?? null };
     }),
     requests: requests.map((r) => ({ id: r.id, email: r.requester_email, createdAt: r.created_at.toISOString() })),

@@ -29,7 +29,8 @@ export function verdictOf(report: Pick<ComplianceReport, "findings" | "summary">
   const blocking = report.summary?.blockingFailures ?? failed.filter((f) => f.severity === "BLOCKING").length;
   const rules = report.summary?.rulesEvaluated ?? findings.length;
   const attention = failed.length + unsure;
-  return { rules, attention, blocking, unsure, passed, tone: blocking > 0 ? "danger" : attention > 0 ? "warning" : "success" };
+  const calm = attention > 0 ? "warning" : "success";
+  return { rules, attention, blocking, unsure, passed, tone: blocking > 0 ? "danger" : calm };
 }
 
 const SEVERITY_RANK: Record<string, number> = { BLOCKING: 0, MAJOR: 1, MINOR: 2, INFO: 3 };

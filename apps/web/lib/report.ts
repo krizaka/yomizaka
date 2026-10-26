@@ -112,13 +112,18 @@ export function buildPayload(doc: Pick<DocumentDetail, "sha256" | "filename" | "
   };
 }
 
+const compareKeys = (a: string, b: string) => {
+  if (a < b) return -1;
+  return a > b ? 1 : 0;
+};
+
 /** JSON with sorted keys and no whitespace: the one text a payload is signed as. */
 export function canonicalJson(value: unknown): string {
   if (value === null || typeof value !== "object") return JSON.stringify(value);
   if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
   const entries = Object.entries(value as Record<string, unknown>)
     .filter(([, v]) => v !== undefined)
-    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+    .sort(([a], [b]) => compareKeys(a, b));
   const members = entries.map(([k, v]) => `${JSON.stringify(k)}:${canonicalJson(v)}`);
   return `{${members.join(",")}}`;
 }

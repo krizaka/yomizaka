@@ -39,7 +39,8 @@ export function Paywall({ reason }: { reason: "PAYWALL" | "FAIR_USE" }) {
             {say("paywall.agency")}
           </Button>
         </div>
-      ) : info.data ? (
+      ) : null}
+      {info.data && !info.data.paymentsOn ? (
         <p className="mt-3 font-semibold" data-testid="payments-soon">
           {say("paywall.soon")}
         </p>

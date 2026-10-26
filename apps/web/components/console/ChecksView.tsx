@@ -127,6 +127,20 @@ export function ChecksView({ checks, batches, now }: Readonly<{ checks: CheckSum
   }, [live, router]);
   // Each tab names itself for the match (`?tab=checks` · `?tab=lots`); the first one's real link keeps the address clean.
   const current = `${path}?${CHECKS_TAB_KEY}=${tab}`;
+  const list = rows.length ? (
+    <ChecksTable rows={rows} />
+  ) : (
+    <EmptyState
+      title={say("checks.noMatch.title")}
+      description={say("checks.noMatch.text")}
+      action={
+        <ButtonLink href={hrefWith(NO_CHECK_FILTERS)} variant="secondary" size="md">
+          {say("checks.filters.clear")}
+        </ButtonLink>
+      }
+      data-testid="checks-no-match"
+    />
+  );
   return (
     <div className="flex flex-col gap-6" data-live={live || undefined}>
       <PageHeader
@@ -151,27 +165,14 @@ export function ChecksView({ checks, batches, now }: Readonly<{ checks: CheckSum
           ))}
         </Tabs.Nav>
       ) : null}
-      {tab === "lots" ? (
-        <BatchImport />
-      ) : checks.length ? (
+      {tab === "lots" ? <BatchImport /> : null}
+      {tab !== "lots" && checks.length ? (
         <>
           <ChecksFilters filters={filters} counts={counts} periods={periods} results={rows.length} onChange={(next, history) => router[history](hrefWith(next), { scroll: false })} />
-          {rows.length ? (
-            <ChecksTable rows={rows} />
-          ) : (
-            <EmptyState
-              title={say("checks.noMatch.title")}
-              description={say("checks.noMatch.text")}
-              action={
-                <ButtonLink href={hrefWith(NO_CHECK_FILTERS)} variant="secondary" size="md">
-                  {say("checks.filters.clear")}
-                </ButtonLink>
-              }
-              data-testid="checks-no-match"
-            />
-          )}
+          {list}
         </>
-      ) : (
+      ) : null}
+      {tab !== "lots" && !checks.length ? (
         <EmptyState
           icon={<Mascot bird="owl" mood="empty" size={120} />}
           title={say("checks.empty.title")}
@@ -183,7 +184,7 @@ export function ChecksView({ checks, batches, now }: Readonly<{ checks: CheckSum
           }
           data-testid="checks-empty"
         />
-      )}
+      ) : null}
     </div>
   );
 }

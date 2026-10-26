@@ -54,9 +54,8 @@ export function ConsoleSearch() {
       >
         <CommandInput placeholder={say("shell.palette.placeholder")} value={q} onValueChange={setQ} />
         <CommandList label={say("shell.palette.hits")} emptyLabel={ready ? say("shell.palette.none", { q: words }) : say("shell.palette.type")}>
-          {!ready ? null : hits.isPending ? (
-            <CommandLoading>{say("shell.palette.hits")}</CommandLoading>
-          ) : hits.data?.length ? (
+          {ready && hits.isPending ? <CommandLoading>{say("shell.palette.hits")}</CommandLoading> : null}
+          {ready && !hits.isPending && hits.data?.length ? (
             <CommandGroup heading={say("shell.palette.hits")}>
               {hits.data.map((hit, i) => (
                 <CommandItem

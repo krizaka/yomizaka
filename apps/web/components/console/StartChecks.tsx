@@ -200,7 +200,10 @@ export function StartCards(props: Readonly<StartProps>) {
 export function StartCheckActions({ done, ...props }: StartProps & { done: readonly Studio[] }) {
   const { say } = useSay();
   const refused = useSearchParams()?.get("refused") ?? null;
-  const label = (studio: Studio) => (studio === "document-authenticity" ? say("reportFace.examine") : done.includes(studio) ? say("reportFace.recheck") : say("reportFace.checkLaw"));
+  const label = (studio: Studio) => {
+    if (studio === "document-authenticity") return say("reportFace.examine");
+    return done.includes(studio) ? say("reportFace.recheck") : say("reportFace.checkLaw");
+  };
   return (
     <section aria-labelledby="other-checks-title" className="flex flex-col gap-2" data-testid="other-checks">
       <h2 id="other-checks-title" className="m-0 text-base font-bold text-fg">

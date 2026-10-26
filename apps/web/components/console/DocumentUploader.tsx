@@ -26,6 +26,8 @@ export type { Placement } from "./upload";
  * `defaultsFirst` (« Vérifier un document », Errata 6) the defaults are said before the drop, with « Modifier »; elsewhere
  * the options are asked once the files are known (the review's B4).
  */
+const REFUSAL_KEY: Record<string, "library.refusedSize" | "library.refusedType"> = { size: "library.refusedSize", type: "library.refusedType" };
+
 export function DocumentUploader({ kindRef, placement, onUploaded, onDrop, defaultsFirst = false, extra }: Readonly<{ kindRef?: MutableRefObject<DocumentKind | "auto">; placement?: Placement; onUploaded?: (document: DocumentSummary, requested: DocumentKind | "auto") => void; onDrop?: (files: readonly File[]) => void; defaultsFirst?: boolean; extra?: (add: (files: File[]) => void) => ReactNode }>) {
   const { say, locale } = useSay();
   const router = useRouter();
@@ -82,7 +84,7 @@ export function DocumentUploader({ kindRef, placement, onUploaded, onDrop, defau
       .catch((error: { body?: { code?: string } }) => setGroupNotice({ tone: "danger", text: say(`errors.${error.body?.code ?? "UNKNOWN"}`) }))
       .finally(() => setGrouped(false));
   };
-  const refusal = (r: FileRejection) => say(r.reason === "size" ? "library.refusedSize" : r.reason === "type" ? "library.refusedType" : "library.refusedCount", { name: r.file.name });
+  const refusal = (r: FileRejection) => say(REFUSAL_KEY[r.reason] ?? "library.refusedCount", { name: r.file.name });
   // The options are asked once the files are known (the review's B4): keeping, and « these photos are one document » only with two photos or more (C3).
   const known = dropped;
   const keepControl = (

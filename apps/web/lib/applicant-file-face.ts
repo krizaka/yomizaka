@@ -29,7 +29,8 @@ export function linkFact(file: { status: LinkState; expiresAt: string; submitted
 
 /** The documents in, against those asked: « 2 sur 3 », « aucun sur 2 », « 3 sur 3 ». */
 export function documentsFact(count: number, asked: number): { key: "dossiers.documents.none" | "dossiers.documents.some" | "dossiers.documents.all"; count: number; asked: number } {
-  return { key: count === 0 ? "dossiers.documents.none" : count >= asked ? "dossiers.documents.all" : "dossiers.documents.some", count, asked };
+  const enough = count >= asked ? "dossiers.documents.all" : "dossiers.documents.some";
+  return { key: count === 0 ? "dossiers.documents.none" : enough, count, asked };
 }
 
 /** The catalogue's types a manager may ask for: never one of the minimisation list, whatever the catalogue holds (Loi 25). */

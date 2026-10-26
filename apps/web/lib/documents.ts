@@ -173,7 +173,16 @@ export function insightOf(text: string, pages: number | null): DocumentInsight {
 
 /** The upload form's « automatic » choice: the document kind follows the detected nature (never a default that is wrong). */
 export function kindFromNature(natureId: string | null): DocumentKind {
-  return natureId === "residential-lease" ? "lease" : natureId === "invoice" ? "invoice" : natureId === "service-contract" ? "contract" : "other";
+  switch (natureId) {
+    case "residential-lease":
+      return "lease";
+    case "invoice":
+      return "invoice";
+    case "service-contract":
+      return "contract";
+    default:
+      return "other";
+  }
 }
 
 /** Why a file is refused: the HTTP answer and the stable code the page translates (messages `console.errors.*`). */

@@ -40,7 +40,10 @@ const sentences = (key: string, lang: Lang) => (template(key) as unknown as Bili
 /** « 22 octobre 2026 »: the date of the rules, in the reader's language. */
 const longDate = (iso: string, lang: Lang) => new Intl.DateTimeFormat(say((template("dates") as unknown as Record<string, Bilingual>).locale!, lang), { dateStyle: "long", timeZone: "UTC" }).format(new Date(`${iso}T00:00:00Z`));
 
-const stateOf = (verdict: string): FindingState => (verdict === VERDICT.pass ? FINDING_STATE.ok : verdict === VERDICT.fail ? FINDING_STATE.attention : FINDING_STATE.undecided);
+const stateOf = (verdict: string): FindingState => {
+  if (verdict === VERDICT.pass) return FINDING_STATE.ok;
+  return verdict === VERDICT.fail ? FINDING_STATE.attention : FINDING_STATE.undecided;
+};
 const rank = (severity: string) => {
   const i = SEVERITY_ORDER.indexOf(severity);
   return i === -1 ? SEVERITY_ORDER.length : i;

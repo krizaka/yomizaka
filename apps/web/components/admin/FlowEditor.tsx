@@ -18,6 +18,8 @@ import { useSay } from "@/lib/i18n-client";
 
 import { formatDate } from "../console/format";
 
+const VERSION_TONE: Record<string, "success" | "warning" | "neutral"> = { published: "success", draft: "warning" };
+
 const schema = z.object({
     key: z.string().trim().max(60),
     titleEn: z.string().trim().min(1).max(300),
@@ -184,7 +186,7 @@ export function FlowEditor({ flow, initial }: Readonly<{ flow: AdminFlow | null;
                 <li key={v.id} className="flex flex-wrap items-center justify-between gap-2 text-sm text-fg-secondary">
                   <span className="flex items-center gap-2">
                     <b className="text-fg">v{v.version}</b>
-                    <Badge tone={v.status === "published" ? "success" : v.status === "draft" ? "warning" : "neutral"}>{say(`adminConsole.flows.versionStatus.${v.status}`)}</Badge>
+                    <Badge tone={VERSION_TONE[v.status] ?? "neutral"}>{say(`adminConsole.flows.versionStatus.${v.status}`)}</Badge>
                     {v.publishedAt ? formatDate(v.publishedAt, locale, true) : null}
                   </span>
                   {v.status === "draft" ? (
