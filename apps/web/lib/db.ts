@@ -1,3 +1,4 @@
+import { type Connection, migrate as runMigrations, type Query, transaction as dbTransaction } from "@krizaka/db";
 import pg from "pg";
 
 import { readEnv } from "./env";
@@ -62,56 +63,33 @@ export function pool(): pg.Pool {
   return holder.__yomizakaPool;
 }
 
-export async function query<T extends pg.QueryResultRow = pg.QueryResultRow>(text: string, values: unknown[] = []): Promise<T[]> {
-  const result = await pool().query<T>(text, values);
-  return result.rows;
+/** The main pool as a `Query` (`@krizaka/db`): the rows of one statement. Any Krizaka module takes it as it is. */
+export async function query<T = Record<string, unknown>>(text: string, values: unknown[] = []): Promise<T[]> {
+  const result = await pool().query(text, values);
+  return result.rows as T[];
 }
 
-/** Runs `work` on one connection between BEGIN and COMMIT. A failure rolls back and is rethrown: the rollback never masks it. */
-export async function transaction<T>(work: (run: <R extends pg.QueryResultRow = pg.QueryResultRow>(text: string, values?: unknown[]) => Promise<R[]>) => Promise<T>): Promise<T> {
-  const conn = await pool().connect();
-  try {
-    await conn.query("BEGIN");
-    const value = await work(async (text, values = []) => (await conn.query(text, values)).rows as never);
-    await conn.query("COMMIT");
-    return value;
-  } catch (error) {
-    await conn.query("ROLLBACK").catch((error_: unknown) => {
-      throw new AggregateError([error, error_], "transaction failed and its rollback failed");
-    });
-    throw error;
-  } finally {
-    conn.release();
-  }
+/**
+ * The unit of work: `@krizaka/db`'s transaction on the main pool. `run` is its `Query`, so a Krizaka module takes it as it is.
+ * A failure rolls back and is rethrown; a failed rollback never masks it (an AggregateError, the original first).
+ */
+export async function transaction<T>(work: (run: Query) => Promise<T>): Promise<T> {
+  return dbTransaction(() => connectionOf(pool()), work);
 }
+
+/** A pool's connection, seen as the `Connection` of `@krizaka/db` (its rows, its release). */
+async function connectionOf(source: pg.Pool): Promise<Connection> {
+  const client = await source.connect();
+  return { query: (text, values) => client.query(text, values as unknown[] | undefined), release: () => client.release() };
+}
+
+/** The history table and the lock key of every deployed database: `@krizaka/db`'s runner finds the same ones, so nothing is replayed. */
+// @fixed: the advisory-lock key every deployed instance already takes; changing it would let two instances migrate at once
+export const MIGRATION_LOCK_KEY = 73191;
 
 /** Applies the migrations not applied yet, one transaction each, under an advisory lock (two instances never race). */
 export async function migrate(client?: pg.Pool): Promise<string[]> {
-  const db = client ?? lockPool();
-  const conn = await db.connect();
-  const applied: string[] = [];
-  try {
-    await conn.query("SELECT pg_advisory_lock(73191)");
-    await conn.query("CREATE TABLE IF NOT EXISTS schema_migrations (version text PRIMARY KEY, applied_at timestamptz NOT NULL DEFAULT now())");
-    const done = new Set((await conn.query<{ version: string }>("SELECT version FROM schema_migrations")).rows.map((r) => r.version));
-    for (const m of MIGRATIONS) {
-      if (done.has(m.version)) continue;
-      await conn.query("BEGIN");
-      try {
-        await conn.query(m.sql);
-        await conn.query("INSERT INTO schema_migrations (version) VALUES ($1)", [m.version]);
-        await conn.query("COMMIT");
-        applied.push(m.version);
-      } catch (error) {
-        await conn.query("ROLLBACK");
-        throw error;
-      }
-    }
-  } finally {
-    await conn.query("SELECT pg_advisory_unlock(73191)").catch(() => undefined);
-    conn.release();
-  }
-  return applied;
+  return runMigrations(() => connectionOf(client ?? lockPool()), MIGRATIONS, { lockKey: MIGRATION_LOCK_KEY });
 }
 
 /**

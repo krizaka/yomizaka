@@ -26,6 +26,11 @@ async function start() {
   const { migrate } = await import("./lib/db");
   const applied = await migrate();
   if (applied.length) logInfo(`[yomizaka] migrations applied: ${applied.join(", ")}`);
+  // A database that lacks a version of a Krizaka module the code needs does not start (krizaka-ts ADR-001).
+  const { assertModules } = await import("@krizaka/db");
+  const { MODULES } = await import("./lib/modules");
+  const { query } = await import("./lib/db");
+  await assertModules(query, MODULES);
   const { seedDatabase } = await import("./lib/flows");
   const seeded = await seedDatabase();
   if (seeded.length) logInfo(`[yomizaka] flows seeded: ${seeded.join(", ")}`);

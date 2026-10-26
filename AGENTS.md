@@ -83,8 +83,8 @@
 
 - Documents (≤ 10 MB) are kept **in the database** (`documents.content`, bytea) for the MVP: no storage service to pay
   for or secure. Database `yomizaka_db` on the shared dev cluster `krizaka-dev-pg` (its own role, trusted source = the
-  app). Migrations are code (`lib/migrations.ts`), applied at start under an advisory lock; a deployed migration is never
-  edited.
+  app). Migrations are code (`lib/migrations.ts`), applied at start by `@krizaka/db`'s `migrate` under an advisory lock (key 73191, history `schema_migrations`; on `DATABASE_DIRECT_URL`); a deployed migration is never
+  edited. The Krizaka modules whose tables pre-date the package are adopted (markers only, `lib/modules.ts`, migration 0036) and `assertModules` runs at boot.
 - Deployed on DigitalOcean App Platform, project `yomizaka`, the smallest service (`apps-s-1vcpu-0.5gb`, $5/month),
   `dev.yomizaka.com`. Budget mode: nothing recurring above that without a written decision.
 

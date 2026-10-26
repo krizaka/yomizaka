@@ -239,17 +239,23 @@ importers:
   apps/web:
     dependencies:
       '@krizaka/api-keys':
-        specifier: 0.1.0
-        version: 0.1.0(vitest@4.1.11)
+        specifier: 0.3.0
+        version: 0.3.0(vitest@4.1.11)
+      '@krizaka/audit':
+        specifier: 0.1.3
+        version: 0.1.3(vitest@4.1.11)(zod@4.6.7)
       '@krizaka/auth':
-        specifier: 0.5.0
-        version: 0.5.0
+        specifier: 0.9.0
+        version: 0.9.0(vitest@4.1.11)(zod@4.6.7)
       '@krizaka/brief':
         specifier: ^0.1.0
         version: 0.1.0
       '@krizaka/charts':
         specifier: 0.6.2
         version: 0.6.2(@krizaka/ui@3.63.0)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)
+      '@krizaka/db':
+        specifier: 0.2.0
+        version: 0.2.0
       '@krizaka/fonts':
         specifier: 0.3.0
         version: 0.3.0
@@ -266,20 +272,26 @@ importers:
         specifier: ^0.1.0
         version: 0.1.0
       '@krizaka/organize':
-        specifier: 0.4.0
-        version: 0.4.0(vitest@4.1.11)
+        specifier: 0.5.0
+        version: 0.5.0(vitest@4.1.11)
       '@krizaka/payments':
         specifier: 0.1.0
         version: 0.1.0
       '@krizaka/query':
         specifier: ^0.2.2
         version: 0.2.2(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1)
+      '@krizaka/rate-limit':
+        specifier: 0.1.0
+        version: 0.1.0(vitest@4.1.11)(zod@4.6.7)
       '@krizaka/settings':
-        specifier: 0.2.0
-        version: 0.2.0(zod@4.6.7)
+        specifier: 0.4.0
+        version: 0.4.0(zod@4.6.7)
       '@krizaka/tailwind':
         specifier: ^3.63.0
         version: 3.63.0(@krizaka/tokens@3.63.0)(@krizaka/ui@3.63.0)(tailwindcss@4.3.3)
+      '@krizaka/time':
+        specifier: 0.1.0
+        version: 0.1.0
       '@krizaka/tokens':
         specifier: ^3.63.0
         version: 3.63.0
@@ -287,8 +299,8 @@ importers:
         specifier: ^3.63.0
         version: 3.63.0(@krizaka/query@0.2.2(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.63.0)(@shopify/flash-list@2.3.2(@babel/runtime@7.29.10)(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(expo-image-picker@58.0.10(expo@58.0.17))(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)(vitest@4.1.11)
       '@krizaka/webhooks':
-        specifier: 0.2.0
-        version: 0.2.0
+        specifier: 0.3.0
+        version: 0.3.0
       '@tesseract.js-data/eng':
         specifier: ^1.0.0
         version: 1.0.0
@@ -339,8 +351,8 @@ importers:
         version: 4.6.7
     devDependencies:
       '@krizaka/config':
-        specifier: ^0.8.0
-        version: 0.8.0(eslint-config-next@16.4.1(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3)
+        specifier: ^0.8.1
+        version: 0.8.1(eslint-config-next@16.4.1(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3)
       '@tailwindcss/postcss':
         specifier: ^4.3.3
         version: 4.3.3
@@ -1671,8 +1683,8 @@ packages:
     peerDependencies:
       solid-js: ^1.8.8
 
-  '@krizaka/api-keys@0.1.0':
-    resolution: {integrity: sha512-IHcc1hq9i+m66Poau25okxfKofmPsAuIztF9QCeldFycixlF93BeY/kVmbLAqFaRKghTjk5Lqf0PAOuzDhkFuw==}
+  '@krizaka/api-keys@0.3.0':
+    resolution: {integrity: sha512-DDBRvFpLQxDm+wVADZK0kh1faoCLcZWxzqJ2QJC3EdgdaLRp487bcOChvAcmx2uRb18LLaFmeFklzLKrb6BvYA==}
     engines: {node: '>=22'}
     peerDependencies:
       vitest: '>=4'
@@ -1706,9 +1718,27 @@ packages:
     resolution: {integrity: sha512-15jrWLV235dAI03puMmft1VUxqQmqrKX+EKpGP9GwiHWQYhR3Qo/0aqBgoXECFRtNdaJY9y6Im1DPzATg5Cq4A==}
     engines: {node: '>=22'}
 
-  '@krizaka/auth@0.5.0':
-    resolution: {integrity: sha512-s3y2XI1LnEj7r2Vhj+cGYa24D9LWJz9icOaBGTVLcqsQvL8h4xAQXytp2Or7RGFTti52nR8tClY4TcxcxHv/PA==}
+  '@krizaka/audit@0.1.3':
+    resolution: {integrity: sha512-CiZG0fqia7lIoaYRbQqjEwRDnhlRE8P1F5eBUACh0w24PDfLif57pgpE2j1CwKQ7fwow6Kukl/il2kodgjn5xA==}
     engines: {node: '>=22'}
+    peerDependencies:
+      vitest: '>=4'
+      zod: '>=3.23'
+    peerDependenciesMeta:
+      vitest:
+        optional: true
+
+  '@krizaka/auth@0.9.0':
+    resolution: {integrity: sha512-+D05dks8LrcFSYM0SgutAMsc7EZCR/DUhv9LS2aBv9JaQTM6wpRKZp/xeiK8WzSx/QMJjjykFIW6RfJxEZBa1A==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      vitest: '>=4'
+      zod: '>=3.23'
+    peerDependenciesMeta:
+      vitest:
+        optional: true
+      zod:
+        optional: true
 
   '@krizaka/brief@0.1.0':
     resolution: {integrity: sha512-nE8CEbFT1jdREjIHgUZQfVFOBs4oA2swe2VxiYvSMHXkPmgMwxItx+PecGnB/4HSMFpoIRWkykdfGudaH1CWLg==}
@@ -1745,6 +1775,25 @@ packages:
         optional: true
       prettier:
         optional: true
+
+  '@krizaka/config@0.8.1':
+    resolution: {integrity: sha512-GqLNq3qzPe9N03p66FiLesAOMxV8K2xm4gEsOx1l2W8tKUDuhhUjbTw2hVkDsPJfs0pOKUR7ZHq4WzT6FCBNEQ==}
+    engines: {node: '>=22'}
+    hasBin: true
+    peerDependencies:
+      eslint: ^9 || ^10
+      eslint-config-next: '>=16'
+      prettier: ^3
+      typescript: ^5
+    peerDependenciesMeta:
+      eslint-config-next:
+        optional: true
+      prettier:
+        optional: true
+
+  '@krizaka/db@0.2.0':
+    resolution: {integrity: sha512-m4gFEqeKd1B//UDjGaj/6YN0pXPWjKi2vH391Hl86K0pCemuVg57+AKx9b1pHzpLXm1SyBK4p/svmoi9o1gOgA==}
+    engines: {node: '>=22'}
 
   '@krizaka/discovery@0.1.0':
     resolution: {integrity: sha512-45XrvMxxTdJQ6Oi+auQpegfYPBQsfFbMmTKpoQbIbNvQeyccrVgAjZv6Qfe5SOstXc+99oZDMcKtKig1OcgB6g==}
@@ -1811,6 +1860,15 @@ packages:
       vitest:
         optional: true
 
+  '@krizaka/organize@0.5.0':
+    resolution: {integrity: sha512-UT6/w0iznN1kSuAYXU2OSoGEjwcuSL8jrXCaINrtgVKwph6eJy3IeolYVtc9k+OcyajzHYejWngf8+kUNkcbjg==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      vitest: '>=4'
+    peerDependenciesMeta:
+      vitest:
+        optional: true
+
   '@krizaka/pacer@0.1.0':
     resolution: {integrity: sha512-MLl1rYubhRJeIOkBOOc1YPJrJTQX89YxxrnXuw/wmqs8os+/YCZ8srCvWrVre9M7AkZ3SBLLpYgnIDXeA8rO7g==}
     engines: {node: '>=22'}
@@ -1831,6 +1889,18 @@ packages:
     peerDependencies:
       react: '>=18'
 
+  '@krizaka/rate-limit@0.1.0':
+    resolution: {integrity: sha512-e5kfGl6Br7IKJVBnLRdw2K4jv9q4vpkpGeudpd2ny+quJeGIS+/BKZWuMMDz9iiNss/rR9rQnp3JdTgP5oTCYw==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      vitest: '>=4'
+      zod: '>=3.23'
+    peerDependenciesMeta:
+      vitest:
+        optional: true
+      zod:
+        optional: true
+
   '@krizaka/realtime@0.2.1':
     resolution: {integrity: sha512-3ctQQctIsqgZ50LjR7AGM0dw+CMACGk92XMhgOKglH7qESo9FKDh5L3On2h3VdFeEKRlCZhktDCAdzxgawUQDg==}
     engines: {node: '>=22'}
@@ -1843,8 +1913,8 @@ packages:
       pg:
         optional: true
 
-  '@krizaka/settings@0.2.0':
-    resolution: {integrity: sha512-s4tHMGkkL7OlKXsL1SPjHW6SHesr5KqzfmVqhbLngCZw4PDBBDWVxxOVP0dsXwrT+nm7IJ1Ux9mwRW2CbpDxtA==}
+  '@krizaka/settings@0.4.0':
+    resolution: {integrity: sha512-ZGzkVLMIE3QxSsxheVAd5uZ3LTeh08hqsbxajIZTPUokcst84Lk+C10jJACdsDw4S0syPDha8dWshpl9D4RitQ==}
     engines: {node: '>=22'}
     peerDependencies:
       zod: '>=3.23'
@@ -1856,6 +1926,10 @@ packages:
       '@krizaka/tokens': ^3.63.0
       '@krizaka/ui': ^3.63.0
       tailwindcss: ^4.1
+
+  '@krizaka/time@0.1.0':
+    resolution: {integrity: sha512-GceKAmqE6X39p+zmtYCAJ3menmqNKLYzTUpwkb99ppiARBjqSFB15gioo1Hb93V70QHUWaRBsIsJDc6n1SuHJA==}
+    engines: {node: '>=22'}
 
   '@krizaka/tokens@3.63.0':
     resolution: {integrity: sha512-Fn7UY+Pu+3okbaZ2u1u7mx0XA1VXCGPr7oAs+QszGpttPVhhze1C/ZzwWLLVkSZpgqJeS9SL1g+U6aqT27K1+A==}
@@ -1910,8 +1984,8 @@ packages:
       tailwindcss:
         optional: true
 
-  '@krizaka/webhooks@0.2.0':
-    resolution: {integrity: sha512-6EbVdUOERxxU7lz4cV7ZsPXbEnARtFNI/GqOsIbZkKZR3k2Z0ttAuQ807mfLbGmSKlJ+HsQEZDxt4O+LzxsuDw==}
+  '@krizaka/webhooks@0.3.0':
+    resolution: {integrity: sha512-EaZz4gdm6dnAY/bsPY8Vao9NVD3XMQhhkiN9Fohu9iEpJbWuddTduHGUK0EpWQOZ1ZrdVB90nR23INUn15g/Dw==}
     engines: {node: '>=22'}
 
   '@napi-rs/canvas-android-arm64@1.0.11':
@@ -9719,8 +9793,9 @@ snapshots:
       '@solid-primitives/utils': 6.4.1(solid-js@1.9.17)
       solid-js: 1.9.17
 
-  '@krizaka/api-keys@0.1.0(vitest@4.1.11)':
+  '@krizaka/api-keys@0.3.0(vitest@4.1.11)':
     dependencies:
+      '@krizaka/db': 0.2.0
       date-fns: 4.4.0
     optionalDependencies:
       vitest: 4.1.11(@types/node@24.19.2)(@vitest/coverage-v8@4.1.11)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.4(@types/node@24.19.2)(jiti@2.7.0)(terser@5.51.2))
@@ -9747,9 +9822,23 @@ snapshots:
     transitivePeerDependencies:
       - react
 
-  '@krizaka/auth@0.5.0':
+  '@krizaka/audit@0.1.3(vitest@4.1.11)(zod@4.6.7)':
     dependencies:
+      '@krizaka/db': 0.2.0
+      '@krizaka/settings': 0.4.0(zod@4.6.7)
       date-fns: 4.4.0
+      zod: 4.6.7
+    optionalDependencies:
+      vitest: 4.1.11(@types/node@24.19.2)(@vitest/coverage-v8@4.1.11)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.4(@types/node@24.19.2)(jiti@2.7.0)(terser@5.51.2))
+
+  '@krizaka/auth@0.9.0(vitest@4.1.11)(zod@4.6.7)':
+    dependencies:
+      '@krizaka/db': 0.2.0
+      '@krizaka/settings': 0.4.0(zod@4.6.7)
+      date-fns: 4.4.0
+    optionalDependencies:
+      vitest: 4.1.11(@types/node@24.19.2)(@vitest/coverage-v8@4.1.11)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.4(@types/node@24.19.2)(jiti@2.7.0)(terser@5.51.2))
+      zod: 4.6.7
 
   '@krizaka/brief@0.1.0':
     dependencies:
@@ -9784,7 +9873,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@krizaka/config@0.8.0(eslint-config-next@16.4.1(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3)':
+  '@krizaka/config@0.8.1(eslint-config-next@16.4.1(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3)':
     dependencies:
       '@eslint/js': 10.0.1(eslint@9.39.5(jiti@2.7.0))
       dependency-cruiser: 18.7.0
@@ -9799,6 +9888,8 @@ snapshots:
       eslint-config-next: 16.4.1(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3)
     transitivePeerDependencies:
       - supports-color
+
+  '@krizaka/db@0.2.0': {}
 
   '@krizaka/discovery@0.1.0(react@19.3.1)':
     dependencies:
@@ -9842,6 +9933,12 @@ snapshots:
     optionalDependencies:
       vitest: 4.1.11(@types/node@26.6.5)(@vitest/coverage-v8@4.1.11)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.4(@types/node@26.6.5)(jiti@2.7.0)(terser@5.51.2))
 
+  '@krizaka/organize@0.5.0(vitest@4.1.11)':
+    dependencies:
+      '@krizaka/db': 0.2.0
+    optionalDependencies:
+      vitest: 4.1.11(@types/node@24.19.2)(@vitest/coverage-v8@4.1.11)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.4(@types/node@24.19.2)(jiti@2.7.0)(terser@5.51.2))
+
   '@krizaka/pacer@0.1.0(react@19.3.1)':
     dependencies:
       '@tanstack/pacer': 0.23.1
@@ -9864,12 +9961,22 @@ snapshots:
       - ioredis
       - pg
 
+  '@krizaka/rate-limit@0.1.0(vitest@4.1.11)(zod@4.6.7)':
+    dependencies:
+      '@krizaka/db': 0.2.0
+      '@krizaka/settings': 0.4.0(zod@4.6.7)
+      '@krizaka/time': 0.1.0
+    optionalDependencies:
+      vitest: 4.1.11(@types/node@24.19.2)(@vitest/coverage-v8@4.1.11)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.4(@types/node@24.19.2)(jiti@2.7.0)(terser@5.51.2))
+      zod: 4.6.7
+
   '@krizaka/realtime@0.2.1(pg@8.23.1)':
     optionalDependencies:
       pg: 8.23.1
 
-  '@krizaka/settings@0.2.0(zod@4.6.7)':
+  '@krizaka/settings@0.4.0(zod@4.6.7)':
     dependencies:
+      '@krizaka/db': 0.2.0
       zod: 4.6.7
 
   '@krizaka/tailwind@3.63.0(@krizaka/tokens@3.63.0)(@krizaka/ui@3.63.0)(tailwindcss@4.3.3)':
@@ -9877,6 +9984,10 @@ snapshots:
       '@krizaka/tokens': 3.63.0
       '@krizaka/ui': 3.63.0(@krizaka/query@0.2.2(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.63.0)(@shopify/flash-list@2.3.2(@babel/runtime@7.29.10)(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(expo-image-picker@58.0.10(expo@58.0.17))(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)(vitest@4.1.11)
       tailwindcss: 4.3.3
+
+  '@krizaka/time@0.1.0':
+    dependencies:
+      date-fns: 4.4.0
 
   '@krizaka/tokens@3.63.0': {}
 
@@ -9919,8 +10030,9 @@ snapshots:
       - tailwind-merge
       - vitest
 
-  '@krizaka/webhooks@0.2.0':
+  '@krizaka/webhooks@0.3.0':
     dependencies:
+      '@krizaka/db': 0.2.0
       '@krizaka/payments': 0.1.0
       date-fns: 4.4.0
 
