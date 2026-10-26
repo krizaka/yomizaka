@@ -71,7 +71,7 @@ describe("the closing note", () => {
       const note = buildNote(compliance(fixture), lang);
       const failed = findings.filter((f) => f.verdict === VERDICT.fail).length;
       const undecided = findings.filter((f) => f.verdict === VERDICT.undecided).length;
-      expect(note.next.items.length).toBe(failed + undecided);
+      expect(note.next.items).toHaveLength(failed + undecided);
       expect(note.what.text).toContain(String(findings.length));
       if (failed === 0 && undecided === 0) expect(note.next.none).not.toBeNull();
       else expect(note.result.text).toMatch(/\d/);

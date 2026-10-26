@@ -31,10 +31,10 @@ export const isDevHost = (host: string | null | undefined, env: Record<string, s
 
 /** What the dev host keeps serving: robots.txt, /healthz, the API (auth callbacks, webhooks, the mobile apps' calls) and /.well-known. */
 const DEV_KEEPS = ["/api/", "/.well-known/"];
-const DEV_KEEPS_EXACT = ["/robots.txt", "/healthz"];
+const DEV_KEEPS_EXACT = new Set(["/robots.txt", "/healthz"]);
 /** The www address a dev-host request goes to (308), or null when the dev host keeps serving it. Only GET and HEAD are pages. */
 export function devRedirect(method: string, pathname: string, search: string, publicUrl: string): string | null {
   if (method !== "GET" && method !== "HEAD") return null;
-  if (DEV_KEEPS_EXACT.includes(pathname) || DEV_KEEPS.some((p) => pathname.startsWith(p))) return null;
+  if (DEV_KEEPS_EXACT.has(pathname) || DEV_KEEPS.some((p) => pathname.startsWith(p))) return null;
   return `${publicUrl.replace(/\/$/, "")}${pathname}${search}`;
 }

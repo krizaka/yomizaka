@@ -194,7 +194,8 @@ function pdfRawRejection(raw: string, active: ReadonlySet<string>): Inspection |
   const names = pdfNames(raw);
   if (names.has("Encrypt")) return reject("ENCRYPTED");
   const found = [...names].filter((n) => active.has(n));
-  return found.length ? reject("ACTIVE_CONTENT", [...found].sort((a, b) => (a < b ? -1 : Number(a > b))).join(", ")) : null;
+  found.sort((a, b) => (a < b ? -1 : Number(a > b)));
+  return found.length ? reject("ACTIVE_CONTENT", found.join(", ")) : null;
 }
 
 /** The parsed PDF: its page count against the rules and its object tree. */

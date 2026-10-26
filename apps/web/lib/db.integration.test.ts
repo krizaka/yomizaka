@@ -129,7 +129,7 @@ describe.runIf(enabled)("database", () => {
     expect((await getShowcase())?.runId).toBe("run-1");
     await setShowcase(admin, b, true);
     expect((await getShowcase())?.runId).toBe("run-2");
-    expect((await query("SELECT id FROM analyses WHERE showcase")).length).toBe(1);
+    expect(await query("SELECT id FROM analyses WHERE showcase")).toHaveLength(1);
     expect((await showcaseFile())?.filename).toBe("s.txt");
     await setSample(admin, doc!.id, false);
     expect(await getShowcase()).toBeNull();

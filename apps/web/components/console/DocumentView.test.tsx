@@ -150,7 +150,7 @@ describe("the document on DetailLayout (the UX review's Y5)", () => {
     expect(html).toContain('data-testid="tab-document"');
     expect(html).toContain('data-testid="document-insight"');
     expect(html).toContain('data-testid="document-storage"');
-    expect((readable(html).match(/Loyer/g) ?? []).length).toBe(1);
+    expect(readable(html).match(/Loyer/g) ?? []).toHaveLength(1);
     expect(readable(html)).toContain("bail-rosemont-5.pdf");
   });
 

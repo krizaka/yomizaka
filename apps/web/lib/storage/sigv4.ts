@@ -36,9 +36,9 @@ function signature(c: Credentials, method: string, url: URL, headers: Record<str
 export function signRequest(c: Credentials, req: { method: string; url: string; headers?: Record<string, string>; payloadHash: string; now: Date }) {
   const url = new URL(req.url);
   const amzDate = stamp(req.now);
-  const toSign = { ...(req.headers ?? {}), host: url.host, "x-amz-date": amzDate, ...(c.service === "s3" ? { "x-amz-content-sha256": req.payloadHash } : {}) };
+  const toSign = { ...req.headers, host: url.host, "x-amz-date": amzDate, ...(c.service === "s3" ? { "x-amz-content-sha256": req.payloadHash } : {}) };
   const s = signature(c, req.method, url, toSign, req.payloadHash, amzDate);
-  return { ...(req.headers ?? {}), "x-amz-date": amzDate, ...(c.service === "s3" ? { "x-amz-content-sha256": req.payloadHash } : {}), authorization: `AWS4-HMAC-SHA256 Credential=${c.accessKeyId}/${s.scope}, SignedHeaders=${s.signed}, Signature=${s.value}` };
+  return { ...req.headers, "x-amz-date": amzDate, ...(c.service === "s3" ? { "x-amz-content-sha256": req.payloadHash } : {}), authorization: `AWS4-HMAC-SHA256 Credential=${c.accessKeyId}/${s.scope}, SignedHeaders=${s.signed}, Signature=${s.value}` };
 }
 
 /** A presigned GET URL, valid for `ttlSeconds`. */

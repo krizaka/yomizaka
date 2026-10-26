@@ -19,7 +19,7 @@ describe("the home is one short page: who it is for, one real check, one way in"
   it("has the two sections the menu points to, in this order, and one primary action — the hero's island, which follows the session (F0)", () => {
     expect(home.indexOf('id="what"')).toBeGreaterThan(0);
     expect(home.indexOf('id="proof"')).toBeGreaterThan(home.indexOf('id="what"'));
-    expect((home.match(/<HeroActions\b/g) ?? []).length).toBe(1);
+    expect(home.match(/<HeroActions\b/g) ?? []).toHaveLength(1);
     expect(home).not.toContain('variant="primary"');
     // The island draws the one primary action per state: « Se connecter » signed out, « Ouvrir mes documents » signed in.
     const island = read("components/BarSession.tsx");
@@ -31,13 +31,13 @@ describe("the home is one short page: who it is for, one real check, one way in"
     expect(home).toMatch(/<LandingPage\b/);
     expect(home).toContain('data-testid="home-visual"');
     expect(home).not.toMatch(/DeviceFrame/);
-    expect((home.match(/<BeforeAfter\b/g) ?? []).length).toBe(1);
+    expect(home.match(/<BeforeAfter\b/g) ?? []).toHaveLength(1);
     // The closing call follows the session like the hero (F0): its islands, no sign-in link typed on the page.
     expect(home).toContain("<ClosingActions locale={locale} />");
     expect(home).toContain("<ClosingBody signedOut=");
     expect(home).not.toContain("/sign-in`");
     expect(home).not.toContain("proofs=");
-    expect((home.match(/<MascotQuote\b/g) ?? []).length).toBe(1);
+    expect(home.match(/<MascotQuote\b/g) ?? []).toHaveLength(1);
     expect(home).not.toMatch(/NumberTicker|GlowCard|Sparkle|shimmer|grid\b/);
     expect(home).not.toContain("pt-20");
     expect(home).toContain("<main id=\"content\" data-landing>");

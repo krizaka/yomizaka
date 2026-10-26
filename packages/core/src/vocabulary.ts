@@ -9,4 +9,4 @@ export type DocumentTab = (typeof DOCUMENT_TABS)[number];
 export const OLD_DOCUMENT_TABS: Readonly<Record<string, DocumentTab>> = { infos: "document", fichier: "document", texte: "document", verifications: "rapport" };
 
 /** Where an old tab address went — by the map's own keys only (`tab=constructor` is an unknown tab, not a redirect); null when the tab did not move. */
-export const movedDocumentTab = (tab: string): DocumentTab | null => (Object.prototype.hasOwnProperty.call(OLD_DOCUMENT_TABS, tab) ? (OLD_DOCUMENT_TABS[tab as keyof typeof OLD_DOCUMENT_TABS] ?? null) : null);
+export const movedDocumentTab = (tab: string): DocumentTab | null => (Object.hasOwn(OLD_DOCUMENT_TABS, tab) ? (OLD_DOCUMENT_TABS[tab as keyof typeof OLD_DOCUMENT_TABS] ?? null) : null);

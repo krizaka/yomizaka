@@ -38,7 +38,7 @@ export const isPhoto = (bytes: Uint8Array): boolean => IMAGE_KINDS.has(sniff(byt
 
 /** Where the photos come from, as one record: the first value found on any photo, GPS if any carried it. */
 function originOf(all: readonly PhotoFacts[]): PhotoOrigin | null {
-  const pick = <K extends "software" | "device" | "takenAt" | "modifiedAt">(key: K) => all.map((f) => f[key]).find((v) => v) ?? null;
+  const pick = <K extends "software" | "device" | "takenAt" | "modifiedAt">(key: K) => all.map((f) => f[key]).find(Boolean) ?? null;
   const origin = { software: pick("software"), device: pick("device"), takenAt: pick("takenAt"), modifiedAt: pick("modifiedAt"), hadGps: all.some((f) => f.hadGps) };
   return origin.software || origin.device || origin.takenAt || origin.modifiedAt || origin.hadGps ? origin : null;
 }

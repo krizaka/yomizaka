@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 const token = z.string().min(20).max(80);
 const purpose = z.enum([CONSENT_PURPOSE.DOCUMENT_CHECK, CONSENT_PURPOSE.COURT_RECORDS, CONSENT_PURPOSE.CREDIT, CONSENT_PURPOSE.DOCUMENT_KEEP]);
 /** The purposes an applicant file asks for: the documents' check and their keeping. The other purposes belong to a screening. */
-const FILE_PURPOSES: readonly ConsentPurpose[] = [CONSENT_PURPOSE.DOCUMENT_CHECK, CONSENT_PURPOSE.DOCUMENT_KEEP];
+const FILE_PURPOSES: ReadonlySet<ConsentPurpose> = new Set([CONSENT_PURPOSE.DOCUMENT_CHECK, CONSENT_PURPOSE.DOCUMENT_KEEP]);
 const body = z.discriminatedUnion("action", [
   z.object({ token, action: z.literal("view") }),
   z.object({ token, action: z.literal("grant"), purpose, noticeVersion: z.string().min(1).max(40) }),
@@ -37,7 +37,7 @@ export function POST(req: Request) {
     if (app.status === APPLICATION_ERASED) throw refuse(410, "APPLICATION_ERASED", "This application was erased");
     const file = app.flow === "file";
     if (file && input.action === "grant") {
-      if (!FILE_PURPOSES.includes(input.purpose)) throw refuse(422, "PURPOSE_NOT_IN_FILE", "This purpose does not belong to an applicant file", { purpose: input.purpose });
+      if (!FILE_PURPOSES.has(input.purpose)) throw refuse(422, "PURPOSE_NOT_IN_FILE", "This purpose does not belong to an applicant file", { purpose: input.purpose });
       assertOpen(linkState(app, now));
     }
     if (file && input.action === "submit") assertOpen(linkState(app, now));

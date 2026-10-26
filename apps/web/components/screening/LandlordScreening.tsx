@@ -59,7 +59,7 @@ export function LandlordScreening({ initial, undertakingGiven, words, locale }: 
   const ask = useMutation({
     mutationFn: (body: { tenantName: string; tenantEmail: string; scope: string[] }) => krizakaFetch("/api/screenings", { method: "POST", json: body }) as Promise<{ token: string }>,
     onSuccess: (r) => {
-      setLink(`${window.location.origin}/${locale}/screening/${r.token}`);
+      setLink(`${globalThis.location.origin}/${locale}/screening/${r.token}`);
       void client.invalidateQueries({ queryKey: ["screenings"] });
     },
   });

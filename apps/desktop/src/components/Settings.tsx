@@ -26,7 +26,7 @@ export function Settings() {
           getId={(folder) => folder}
           empty={<p className="text-sm text-fg-secondary">{t("settings.watchedNone")}</p>}
           row={(folder) => ({
-            title: folder.split("/").filter(Boolean).pop() ?? folder,
+            title: folder.split("/").findLast(Boolean) ?? folder,
             description: folder,
             actions: (
               <Button

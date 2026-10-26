@@ -22,7 +22,7 @@ export function Paywall({ reason }: { reason: "PAYWALL" | "FAIR_USE" }) {
   const info = useQuery({ queryKey: ["billing"], queryFn: () => krizakaFetch("/api/billing", { schema: summary }) });
   const go = useMutation({
     mutationFn: (kind: SoldKind) => krizakaFetch("/api/billing/checkout", { method: "POST", json: { kind }, schema: redirect }),
-    onSuccess: ({ url }) => window.location.assign(url),
+    onSuccess: ({ url }) => globalThis.location.assign(url),
     onError: (error) => setProblem(say(`errors.${errorKey(error)}`)),
   });
   if (reason === "FAIR_USE") return <Alert tone="warning" title={say("paywall.fairUseTitle")}>{say("paywall.fairUse", { limit: info.data?.fairUsePerMonth ?? 0 })}</Alert>;

@@ -138,7 +138,7 @@ describe.runIf(enabled)("webhooks", () => {
     // nothing more is due; and the log says what happened
     const sentBefore = seen.length;
     await deliverWebhooks(SERVER_SECRET, new Date(), { timeoutMs: 1000, send });
-    expect(seen.length).toBe(sentBefore);
+    expect(seen).toHaveLength(sentBefore);
     const log = await (await deliveriesRoute(as(proToken, "GET", `/api/me/webhooks/${endpoint.id}/deliveries`), params(endpoint.id))).json();
     expect(log.deliveries.filter((d: { eventId: string }) => d.eventId.endsWith(closed.id)).map((d: { status: string }) => d.status)).toEqual(["delivered", "delivered"]);
   });

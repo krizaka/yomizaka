@@ -36,6 +36,6 @@ export function createLocalDocuments(store: PathStore) {
 }
 
 export const localDocuments = createLocalDocuments({
-  getItem: (key) => window.localStorage.getItem(key),
-  setItem: (key, value) => window.localStorage.setItem(key, value),
+  getItem: (key) => globalThis.localStorage.getItem(key),
+  setItem: (key, value) => globalThis.localStorage.setItem(key, value),
 });

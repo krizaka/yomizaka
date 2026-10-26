@@ -22,7 +22,7 @@ export const { I18nProvider, useI18n } = createI18nReact(i18n);
 const STORAGE_KEY = "yomizaka.locale";
 const readLocale = (): Locale => {
   try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
+    const stored = globalThis.localStorage.getItem(STORAGE_KEY);
     if (stored === "fr" || stored === "en") return stored;
   } catch {
     // Storage refused: the system's language decides.
@@ -36,7 +36,7 @@ export const currentLocale = (): Locale => current;
 export function rememberLocale(locale: Locale): void {
   current = locale;
   try {
-    window.localStorage.setItem(STORAGE_KEY, locale);
+    globalThis.localStorage.setItem(STORAGE_KEY, locale);
   } catch {
     // Not remembered: the next launch follows the system.
   }

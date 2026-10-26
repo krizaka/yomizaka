@@ -20,7 +20,7 @@ export const discovery = createAppDiscovery({
   hostSuffix: "yomizaka.com",
   appVersion: APP_VERSION,
   baked: BAKED,
-  storage: browserStorage(() => window.localStorage),
+  storage: browserStorage(() => globalThis.localStorage),
   env: { url: import.meta.env.VITE_APP_URL, environment: import.meta.env.VITE_APP_ENV },
 });
 

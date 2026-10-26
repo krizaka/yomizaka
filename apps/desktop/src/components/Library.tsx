@@ -19,7 +19,7 @@ import { Refused, useCheck } from "../lib/use-check";
 
 const FOLDERS_KEY = ["yomizaka-desktop", "folders"] as const;
 const folderKey = (path: string) => ["yomizaka-desktop", "folder", path] as const;
-const lastPart = (path: string) => path.split("/").filter(Boolean).pop() ?? path;
+const lastPart = (path: string) => path.split("/").findLast(Boolean) ?? path;
 
 type Translate = ReturnType<typeof useI18n>["t"];
 type Listing = Awaited<ReturnType<typeof yomizakaNative.listDocuments>>;

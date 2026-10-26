@@ -13,7 +13,7 @@ const form = createKrizakaForm({
 });
 
 /** A wrong address or password answers 400 or 401; anything else is the network or the server. */
-const REFUSALS = [400, 401];
+const REFUSALS = new Set([400, 401]);
 
 export function SignIn() {
   const { t, locale } = useI18n();
@@ -25,7 +25,7 @@ export function SignIn() {
       try {
         await yomizaka.signIn(email, password);
       } catch (error) {
-        setProblem(error instanceof ApiError && REFUSALS.includes(error.status) ? t("signIn.wrong") : t("common.offline"));
+        setProblem(error instanceof ApiError && REFUSALS.has(error.status) ? t("signIn.wrong") : t("common.offline"));
       }
     },
   });

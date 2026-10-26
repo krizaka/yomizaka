@@ -35,6 +35,6 @@ describe("what the provider holds is ciphertext, bound to its key", () => {
   });
   it("wants a 32-byte key", () => {
     expect(() => parseEncryptionKey(Buffer.alloc(16).toString("base64"))).toThrow();
-    expect(parseEncryptionKey(KEY.toString("base64")).length).toBe(32);
+    expect(parseEncryptionKey(KEY.toString("base64"))).toHaveLength(32);
   });
 });

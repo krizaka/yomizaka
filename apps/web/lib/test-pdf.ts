@@ -6,13 +6,14 @@ export function textPdf(lines: readonly string[], linesPerPage = 40): Uint8Array
   const esc = (s: string) => s.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
   const objects: Buffer[] = [];
   const font = 3 + pages.length * 2;
-  objects.push(latin1("<< /Type /Catalog /Pages 2 0 R >>"));
   const kids = pages.map((_, i) => `${3 + i * 2} 0 R`).join(" ");
-  objects.push(latin1(`<< /Type /Pages /Kids [${kids}] /Count ${pages.length} >>`));
+  objects.push(latin1("<< /Type /Catalog /Pages 2 0 R >>"), latin1(`<< /Type /Pages /Kids [${kids}] /Count ${pages.length} >>`));
   pages.forEach((page, i) => {
     const stream = page.map((line, n) => `BT /F1 11 Tf 72 ${720 - n * 16} Td (${esc(line)}) Tj ET`).join("\n");
-    objects.push(latin1(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents ${4 + i * 2} 0 R /Resources << /Font << /F1 ${font} 0 R >> >> >>`));
-    objects.push(latin1(`<< /Length ${Buffer.byteLength(stream, "latin1")} >>\nstream\n${stream}\nendstream`));
+    objects.push(
+      latin1(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents ${4 + i * 2} 0 R /Resources << /Font << /F1 ${font} 0 R >> >> >>`),
+      latin1(`<< /Length ${Buffer.byteLength(stream, "latin1")} >>\nstream\n${stream}\nendstream`),
+    );
   });
   objects.push(latin1("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>"));
   let out = latin1("%PDF-1.4\n");
