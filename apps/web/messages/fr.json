@@ -188,13 +188,75 @@
       },
       "activity": {
         "title": "Activité",
-        "label": "Vérifications",
+        "label": "Activité",
         "periodsLabel": "Période",
         "periods": {
           "7d": "7 j",
           "30d": "30 j",
           "90d": "90 j"
+        },
+        "checks": "Vérifications",
+        "toReview": "À regarder",
+        "documents": "Documents ajoutés",
+        "files": "Dossiers reçus"
+      },
+      "lead": {
+        "intro": "Vous avez {items}.",
+        "toReviewOne": "{count} vérification à regarder",
+        "toReviewMany": "{count} vérifications à regarder",
+        "toDecideOne": "{count} dossier à décider",
+        "toDecideMany": "{count} dossiers à décider",
+        "openLinksOne": "{count} lien de dépôt ouvert",
+        "openLinksMany": "{count} liens de dépôt ouverts"
+      },
+      "binder": {
+        "title": "Le classeur",
+        "label": "Collections",
+        "open": "Ouvrir cette collection",
+        "empty": "Aucun fichier dans cette collection pour l’instant."
+      },
+      "quick": {
+        "label": "Accès rapide",
+        "request": {
+          "title": "Demander des documents",
+          "hint": "Envoyer un lien"
+        },
+        "documents": {
+          "title": "Mes documents",
+          "hint": "Par collection"
+        },
+        "checks": {
+          "title": "Vérifications",
+          "hint": "Résultats et rapports"
+        },
+        "search": {
+          "title": "Recherche",
+          "hint": "Un titre, un passage"
         }
+      },
+      "week": {
+        "title": "Cette semaine",
+        "summary": "Vérifications par jour, les 7 derniers jours",
+        "day": "Jour",
+        "checks": "Vérifications",
+        "chart": {
+          "showData": "Voir les données",
+          "hideData": "Masquer les données",
+          "tableCaption": "{title}",
+          "keyboardHint": "Utilisez les flèches pour passer d’une barre à l’autre.",
+          "roleDescription": "graphique",
+          "empty": "Aucune vérification pour l’instant.",
+          "kind": "Graphique à barres"
+        }
+      },
+      "credits": {
+        "title": "Crédits et usage",
+        "included": "Vos vérifications sont incluses.",
+        "leftOne": "{count} vérification restante",
+        "leftMany": "{count} vérifications restantes",
+        "pro": "{used} sur {cap} vérifications ce mois-ci",
+        "renews": "Se renouvelle le {date}",
+        "manage": "Crédits et usage"
       }
     },
     "sections": {

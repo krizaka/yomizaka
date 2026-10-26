@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { readCheckFilters } from "./check-filters";
 import { listChecks } from "./checks";
 import { migrate, query } from "./db";
-import { activity, filesToDecide, toDo } from "./home";
+import { activity, activityStrip, filesToDecide, toDo } from "./home";
 import { toDoLinks } from "./home-figures";
 
 /** The home's figures against a real PostgreSQL (yomizaka#325): each one counted over the rows its view lists. */
@@ -75,5 +75,24 @@ describe.runIf(enabled)("the home's figures", () => {
       { day: "2026-10-24", checks: 1 },
     ]);
     expect(days.reduce((n, d) => n + d.checks, 0)).toBe(2);
+  });
+
+  it("the strip's four figures are queries over the chosen period, the owner's own rows only (yomizaka#332)", async () => {
+    const owner = await account();
+    const doc = await document(owner);
+    await query("UPDATE documents SET created_at = $2 WHERE id = $1", [doc, "2026-10-23T12:00:00Z"]);
+    await analysis(doc, "succeeded", true, "2026-10-24T12:00:00Z"); // to look at, in the 7 days
+    await analysis(doc, "succeeded", false, "2026-10-23T12:00:00Z");
+    await analysis(doc, "failed", null, "2026-10-10T12:00:00Z"); // in the 30 days, not the 7
+    await analysis(await document(await account()), "succeeded", true, "2026-10-24T12:00:00Z");
+    await file(owner, { expires: "2026-11-07T12:00:00Z", submitted: "2026-10-22T12:00:00Z" });
+    await file(owner, { expires: "2026-11-07T12:00:00Z" }); // never sent
+    const sum = (days: { checks: number }[] | null) => (days ?? []).reduce((n, d) => n + d.checks, 0);
+    const week = await activityStrip(query, owner, "7d", NOW, { applicantFiles: true });
+    expect([sum(week.checks), sum(week.toReview), sum(week.files)]).toEqual([2, 1, 1]);
+    const month = await activityStrip(query, owner, "30d", NOW, { applicantFiles: true });
+    expect([sum(month.checks), sum(month.toReview)]).toEqual([3, 2]);
+    expect(sum(month.documents)).toBe(1);
+    expect((await activityStrip(query, owner, "7d", NOW, { applicantFiles: false })).files).toBeNull();
   });
 });

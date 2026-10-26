@@ -188,13 +188,75 @@
       },
       "activity": {
         "title": "Activity",
-        "label": "Checks",
+        "label": "Activity",
         "periodsLabel": "Period",
         "periods": {
           "7d": "7 d",
           "30d": "30 d",
           "90d": "90 d"
+        },
+        "checks": "Checks",
+        "toReview": "To look at",
+        "documents": "Documents added",
+        "files": "Files received"
+      },
+      "lead": {
+        "intro": "You have {items}.",
+        "toReviewOne": "{count} check to look at",
+        "toReviewMany": "{count} checks to look at",
+        "toDecideOne": "{count} file to decide",
+        "toDecideMany": "{count} files to decide",
+        "openLinksOne": "{count} open upload link",
+        "openLinksMany": "{count} open upload links"
+      },
+      "binder": {
+        "title": "The binder",
+        "label": "Collections",
+        "open": "Open this collection",
+        "empty": "No file in this collection yet."
+      },
+      "quick": {
+        "label": "Quick access",
+        "request": {
+          "title": "Ask for documents",
+          "hint": "Send a link"
+        },
+        "documents": {
+          "title": "My documents",
+          "hint": "Browse by collection"
+        },
+        "checks": {
+          "title": "Checks",
+          "hint": "Results and reports"
+        },
+        "search": {
+          "title": "Search",
+          "hint": "A title, a passage"
         }
+      },
+      "week": {
+        "title": "This week",
+        "summary": "Checks per day, the last 7 days",
+        "day": "Day",
+        "checks": "Checks",
+        "chart": {
+          "showData": "View the data",
+          "hideData": "Hide the data",
+          "tableCaption": "{title}",
+          "keyboardHint": "Use the arrow keys to move between bars.",
+          "roleDescription": "chart",
+          "empty": "No check yet.",
+          "kind": "Bar chart"
+        }
+      },
+      "credits": {
+        "title": "Credits and usage",
+        "included": "Your audits are included.",
+        "leftOne": "{count} audit left",
+        "leftMany": "{count} audits left",
+        "pro": "{used} of {cap} audits this month",
+        "renews": "Renews on {date}",
+        "manage": "Credits and usage"
       }
     },
     "sections": {

@@ -590,3 +590,21 @@ Krizaka-ts ADR-003, `@krizaka/organize` 0.4. Yomizaka is the pilot, on « Dossie
   can be withdrawn, and the file erased, until it is erased. The routes keep their own rules.
 - The notice's « {days} days » sentence belongs to the provider screening; the file's notice says only what is proven
   (a document is deleted after its checks unless kept with consent; deletion on request). It is the lawyer's to review.
+
+## B2 home: the binder on top, two columns, the activity strip, the credits (P15, #332)
+
+- The home is `DashboardLayout` (« Operate »): the `h1` « Bibliothèque » on the left and **today's date on the right** (a `time`, under the
+  title on a phone), **one sentence** under it whose figures are links — « Vous avez 6 vérifications à regarder, 2 dossiers à décider
+  et 1 lien de dépôt ouvert. » (`leadParts`: the plurals are messages, the list is the locale's `Intl.ListFormat`, a figure at zero is
+  left out, all at zero is « Rien à traiter »). Each link opens the view it counts, its filter in the address (`toDoLinks`, P8).
+- **Main column:** « Le classeur » — the collections as binder tabs (`Tabs.Nav variant="binder"`) with their file counts; the open
+  one is in the address (`?collection=`, the default collection otherwise) and its card is the panel. The tab's colour follows
+  its last check, and the name and the count always say it. Then « Dernières vérifications ».
+- **Side column** (under the main one on a phone, so the binder is first at 360 px): quick access 2 × 2 (« Demander des documents »
+  only with the applicant-file flow, documents, checks, search — never a second « Vérifier un document », the header's one action);
+  the activity as **one discreet strip** (checks, to look at, documents added, files received — each the sum of its own
+  query over the period, with a sparkline) and the 7 · 30 · 90 d switch (`?period=`, kept with the open tab); the week's bar chart,
+  whose table is in the page (« Voir les données »); the credits from the billing state — the meter against the fair-use cap for
+  Pro, the audits left otherwise, « incluses » for an account an operator made. No price is shown here.
+- The strip and the week are demo-free: they read `analyses`, `documents` and `screenings` (`activityStrip`). Trend words
+  (« +12 % ») wait for krizaka-ui#651 (`StatGrid variant="strip"`): the figures are not compared with the previous period until then.
