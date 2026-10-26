@@ -1,8 +1,8 @@
 import { query } from "@/lib/db";
 import { env } from "@/lib/env";
 import { handle, readJson, refuse } from "@/lib/http";
+import { limit } from "@/lib/limits";
 import { mailerFor } from "@/lib/mailer";
-import { limit } from "@/lib/rate-limit";
 import { assertOpen } from "@/lib/settings/guards";
 import { signupOpenNow } from "@/lib/settings/signup";
 import { signUp, signUpBody } from "@/lib/signup";
@@ -17,7 +17,7 @@ export function POST(req: Request) {
     await assertOpen({ role: "USER" });
     if (!(await signupOpenNow(env()))) throw refuse(403, "SIGNUP_CLOSED", "Sign-up is closed");
     const input = await readJson(req, signUpBody);
-    limit("sign-up", req, input.email, [5, 3600], [3, 3600]);
+    await limit("signUp", req, input.email);
     const e = env();
     await signUp({ query, mail: mailerFor(e), baseUrl: e.APP_PUBLIC_URL }, input, new Date());
     return Response.json({ ok: true }, { status: 202 });

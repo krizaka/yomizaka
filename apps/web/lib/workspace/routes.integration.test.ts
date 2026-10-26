@@ -12,7 +12,7 @@ import { GET as viewsRoute, POST as createViewRoute } from "@/app/api/organize/[
 
 import { requestApplicantFile } from "../applicant-file";
 import { migrate, pool, query } from "../db";
-import { resetRateLimits } from "../rate-limit";
+import { resetRateLimits } from "../limits";
 import { createSession, SESSION_COOKIE } from "../session";
 import { DECISION } from "./decl";
 import { seedWorkspace } from "./service";

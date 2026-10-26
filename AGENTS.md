@@ -70,7 +70,7 @@
 - The administration lives on **admin.yomizaka.com** (same app, host-routed by `proxy.ts`/`lib/host.ts` to `app/[locale]/(admin)/console`, never indexed; 404 on dev.yomizaka.com) and `/api/admin/*`; it needs a session, the ADMIN role **and** an address of
   `AUTH_ALLOWED_IPS` (empty in production = nobody); a failed lock is a 404 on pages, a 403 on the API.
 - Passwords: scrypt; sessions: random tokens kept as keyed hashes (`AUTH_SESSION_SECRET`), HttpOnly cookies; rate limits
-  on sign-in, upload, analysis and search; security headers (CSP same-origin, HSTS, nosniff, frame-ancestors self).
+  on sign-in, upload, analysis and search (`@krizaka/rate-limit` through `lib/limits.ts`; every number is a setting `limits.<action>.perIp|perSubject|windowSeconds`, defaults in `lib/settings/limits.ts`); security headers (CSP same-origin, HSTS, nosniff, frame-ancestors self).
 - A production server refuses to start without `DATABASE_URL`, `AUTH_SESSION_SECRET` (≥ 32), an `oz_` key and, for a TLS
   database, its CA (`lib/env.ts`). Secrets only in DO as SECRET and in the maintainer's local files — never in the
   repository, never printed (read them with `~/.krizaka-worktrees/tools/secret.sh`).

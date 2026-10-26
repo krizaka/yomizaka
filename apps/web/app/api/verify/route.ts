@@ -1,7 +1,7 @@
 import { requireSession } from "@/lib/access";
 import { audit } from "@/lib/audit";
 import { handle, refuse } from "@/lib/http";
-import { limit } from "@/lib/rate-limit";
+import { limit } from "@/lib/limits";
 import { verifyReport } from "@/lib/report";
 import { accessTo, loadTarget, referenceOf } from "@/lib/report-access";
 import { attestationOfPdf, verifyPdf } from "@/lib/report-pdf";
@@ -21,7 +21,7 @@ export function POST(req: Request) {
   return handle(async () => {
     const session = await requireSession(req);
     const who = { id: session.account.id, email: session.account.email };
-    limit("verify", req, who.id, [60, 600]);
+    await limit("verify", req, who.id);
     if (Number(req.headers.get("content-length") ?? "0") > MAX_BODY_BYTES) throw refuse(413, "FILE_TOO_LARGE", "Too large");
     let form: FormData;
     try {

@@ -9,10 +9,10 @@ import { GET as apiExport } from "@/app/api/v1/batches/[id]/export/route";
 
 import { migrate, pool, query } from "../db";
 import { seedDatabase } from "../flows";
+import { resetRateLimits } from "../limits";
 import { useOrazakaClient } from "../orazaka";
 import { cleanPdf } from "../preflight/fixtures";
 import { zipEntries, zipEntryBytes } from "../preflight/inspector";
-import { resetRateLimits } from "../rate-limit";
 import { verifyPdf } from "../report-pdf";
 import { signingKey } from "../report-signer";
 import { createSession, SESSION_COOKIE } from "../session";

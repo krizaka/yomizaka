@@ -5,7 +5,7 @@ import { readBatchForm } from "@/lib/batch/form";
 import { createBatch } from "@/lib/batch/run";
 import { appEnvironment } from "@/lib/env";
 import { handle } from "@/lib/http";
-import { limit } from "@/lib/rate-limit";
+import { limit } from "@/lib/limits";
 import { assertFeature, settingsFor } from "@/lib/settings/guards";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +15,7 @@ export function POST(req: Request) {
   return handle(async () => {
     const caller = await apiCaller(req, "checks:write", systemClock);
     await assertFeature("batches", caller.account.id);
-    limit("batch-create", req, caller.account.id, [20, 3600], [10, 3600]);
+    await limit("batchCreate", req, caller.account.id);
     const form = await readBatchForm(req);
     const batch = await createBatch(caller.account, form.name, form.manifest, form.files, { settings: await settingsFor(caller.account.id), now: systemClock.now(), environment: appEnvironment() });
     await audit({ action: "api.batch.created", actorId: caller.account.id, actorLabel: `api-key:${caller.keyId}`, targetId: batch.id, detail: { rows: batch.items.length, refused: batch.counts.refused }, headers: req.headers });

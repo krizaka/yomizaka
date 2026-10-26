@@ -6,7 +6,7 @@ import { batchView } from "@/lib/batch/run";
 import { isUuid } from "@/lib/documents";
 import { handle, refuse } from "@/lib/http";
 import { asLocale } from "@/lib/i18n";
-import { limit } from "@/lib/rate-limit";
+import { limit } from "@/lib/limits";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +21,7 @@ export function GET(req: Request, { params }: { params: Promise<{ id: string }> 
     const id = (await params).id;
     if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such batch");
     if (new URL(req.url).searchParams.get("format") === "zip") {
-      limit("batch-export", req, session.account.id, [20, 3600], [10, 3600]);
+      await limit("batchExport", req, session.account.id);
       const zip = await batchZipFor(session.account.id, id, asLocale(new URL(req.url).searchParams.get("lang") ?? undefined));
       await audit({ action: "batch.exported", actorId: session.account.id, actorLabel: session.account.email, targetId: id, detail: { files: zip.files.length, bytes: zip.bytes.length }, headers: req.headers });
       return new Response(new Uint8Array(zip.bytes), { headers: { "content-type": "application/zip", "content-disposition": `attachment; filename="lot-${id.slice(0, 8)}-rapports.zip"`, "cache-control": "private, no-store", "x-content-type-options": "nosniff" } });

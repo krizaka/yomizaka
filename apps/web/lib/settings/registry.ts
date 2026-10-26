@@ -1,6 +1,8 @@
 import { ALL_SCOPES, bilingual, choice, defineSettings, flag, integer, type Registry, SCOPE, subset, WORKSPACE_SCOPES } from "@krizaka/settings";
 import type { z } from "zod";
 
+import { LIMIT_SETTINGS } from "./limits";
+
 /**
  * Every setting of the app: its key, its type, its default and the scopes it can be overridden at. Settings are DATA in the
  * database (ADR-0009), changed by an administrator without a redeploy; the registry is the one place that says what exists,
@@ -70,6 +72,8 @@ export const SETTINGS = {
   "limits.batchExportMaxMb": integer(GROUP.limits, 50, { min: 1, max: 200, unit: "MB" }),
   "limits.avatarMaxKb": integer(GROUP.limits, 512, { min: 16, max: 2048, unit: "KB" }),
   "limits.bonusAuditsPerMonth": integer(GROUP.limits, 0, { min: 0, max: 10000, unit: "audits" }, [SCOPE.user]),
+  // What an action may do in a window (yomizaka#260): `limits.<action>.perIp|perSubject|windowSeconds`, from `@krizaka/rate-limit`.
+  ...LIMIT_SETTINGS,
   // Plans: what each plan allows beside its price. The prices and the verifications a subscription includes are the price
   // catalogue's (ADR-009, `lib/pricing.ts`, admin `/config/prices`); « pro » is any subscription (Agencies or Law firms).
   "plans.free.auditsPerDay": integer(GROUP.plans, 0, { min: 0, max: 1000, unit: "audits" }, WORKSPACE),

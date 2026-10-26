@@ -4,7 +4,7 @@ import { storesOf } from "@/app/active-store";
 import { requireSession } from "@/lib/access";
 import { applicantFileOf, closeApplicantFile, revokeApplicantFile } from "@/lib/applicant-file";
 import { handle, readJson } from "@/lib/http";
-import { limit } from "@/lib/rate-limit";
+import { limit } from "@/lib/limits";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +21,7 @@ export function GET(req: Request, { params }: { params: Promise<{ id: string }> 
 export function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   return handle(async () => {
     const session = await requireSession(req);
-    limit("applicant-file-action", req, session.account.id, [60, 3600]);
+    await limit("applicantFileAction", req, session.account.id);
     const { id } = await params;
     const input = await readJson(req, z.discriminatedUnion("action", [z.object({ action: z.literal("revoke") }), z.object({ action: z.literal("close") })]));
     const now = new Date();

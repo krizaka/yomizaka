@@ -1636,6 +1636,430 @@
           "batchExportMaxMb": {
             "label": "ZIP le plus lourd des rapports d'un lot",
             "hint": "Au-delà, l'export est refusé et invite à en exporter moins ; les lignes ne sont jamais coupées en silence."
+          },
+          "batchCreate": {
+            "perIp": {
+              "label": "Limite par adresse : Création d'un lot",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "perSubject": {
+              "label": "Limite par compte : Création d'un lot",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Création d'un lot",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "batchExport": {
+            "perIp": {
+              "label": "Limite par adresse : Export d'un lot",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "perSubject": {
+              "label": "Limite par compte : Export d'un lot",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Export d'un lot",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "verifyRequest": {
+            "perIp": {
+              "label": "Limite par adresse : Demande d'accès à une vérification",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "perSubject": {
+              "label": "Limite par compte : Demande d'accès à une vérification",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Demande d'accès à une vérification",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "verify": {
+            "perIp": {
+              "label": "Limite par adresse : Vérification d'un rapport signé",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Vérification d'un rapport signé",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "consent": {
+            "perIp": {
+              "label": "Limite par adresse : Enregistrement d'un consentement",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "perSubject": {
+              "label": "Limite par compte : Enregistrement d'un consentement",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Enregistrement d'un consentement",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "signUp": {
+            "perIp": {
+              "label": "Limite par adresse : Création de compte",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "perSubject": {
+              "label": "Limite par compte : Création de compte",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Création de compte",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "verifyEmail": {
+            "perIp": {
+              "label": "Limite par adresse : Demande de courriel de vérification",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Demande de courriel de vérification",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "signIn": {
+            "perIp": {
+              "label": "Limite par adresse : Connexion",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "perSubject": {
+              "label": "Limite par compte : Connexion",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Connexion",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "confirmEmail": {
+            "perIp": {
+              "label": "Limite par adresse : Confirmation d'une adresse courriel",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Confirmation d'une adresse courriel",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "search": {
+            "perIp": {
+              "label": "Limite par adresse : Recherche dans la bibliothèque",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "perSubject": {
+              "label": "Limite par compte : Recherche dans la bibliothèque",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Recherche dans la bibliothèque",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "perspective": {
+            "perIp": {
+              "label": "Limite par adresse : Changement de point de vue",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "perSubject": {
+              "label": "Limite par compte : Changement de point de vue",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Changement de point de vue",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "applicantFileRequest": {
+            "perIp": {
+              "label": "Limite par adresse : Demande d'un dossier de candidat",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "perSubject": {
+              "label": "Limite par compte : Demande d'un dossier de candidat",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Demande d'un dossier de candidat",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "applicantFileAction": {
+            "perIp": {
+              "label": "Limite par adresse : Action sur un dossier de candidat",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Action sur un dossier de candidat",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "screeningRequest": {
+            "perIp": {
+              "label": "Limite par adresse : Demande de vérification de candidat",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "perSubject": {
+              "label": "Limite par compte : Demande de vérification de candidat",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Demande de vérification de candidat",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "screeningRespond": {
+            "perIp": {
+              "label": "Limite par adresse : Réponse à une vérification de candidat",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Réponse à une vérification de candidat",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "upload": {
+            "perIp": {
+              "label": "Limite par adresse : Téléversement d'un document",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "perSubject": {
+              "label": "Limite par compte : Téléversement d'un document",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Téléversement d'un document",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "analysis": {
+            "perIp": {
+              "label": "Limite par adresse : Lancement d'une vérification",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "perSubject": {
+              "label": "Limite par compte : Lancement d'une vérification",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Lancement d'une vérification",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "redacted": {
+            "perIp": {
+              "label": "Limite par adresse : Téléchargement d'une copie caviardée",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Téléchargement d'une copie caviardée",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "reportGrant": {
+            "perIp": {
+              "label": "Limite par adresse : Partage d'un rapport",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "perSubject": {
+              "label": "Limite par compte : Partage d'un rapport",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Partage d'un rapport",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "report": {
+            "perIp": {
+              "label": "Limite par adresse : Lecture d'un rapport",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "perSubject": {
+              "label": "Limite par compte : Lecture d'un rapport",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Lecture d'un rapport",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "applicant": {
+            "perIp": {
+              "label": "Limite par adresse : Page du candidat",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Page du candidat",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "applicantUpload": {
+            "perIp": {
+              "label": "Limite par adresse : Téléversements du candidat",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Téléversements du candidat",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "showcaseFile": {
+            "perIp": {
+              "label": "Limite par adresse : Fichier de démonstration",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Fichier de démonstration",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "showcase": {
+            "perIp": {
+              "label": "Limite par adresse : Démonstration",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Démonstration",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "batchPreview": {
+            "perIp": {
+              "label": "Limite par adresse : Aperçu d'un lot",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "perSubject": {
+              "label": "Limite par compte : Aperçu d'un lot",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Aperçu d'un lot",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "avatar": {
+            "perIp": {
+              "label": "Limite par adresse : Changement de l'image d'une collection",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "perSubject": {
+              "label": "Limite par compte : Changement de l'image d'une collection",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Changement de l'image d'une collection",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "portal": {
+            "perIp": {
+              "label": "Limite par adresse : Ouverture du portail de facturation",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Ouverture du portail de facturation",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "checkout": {
+            "perIp": {
+              "label": "Limite par adresse : Démarrage d'un paiement",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "perSubject": {
+              "label": "Limite par compte : Démarrage d'un paiement",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Démarrage d'un paiement",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "apiKeyAuth": {
+            "perIp": {
+              "label": "Limite par adresse : Présentation d'une clé d'API (avant qu'elle soit connue)",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Présentation d'une clé d'API (avant qu'elle soit connue)",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "forgotPassword": {
+            "perIp": {
+              "label": "Limite par adresse : Demande de réinitialisation du mot de passe",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "perSubject": {
+              "label": "Limite par compte : Demande de réinitialisation du mot de passe",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Demande de réinitialisation du mot de passe",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "resetPassword": {
+            "perIp": {
+              "label": "Limite par adresse : Réinitialisation du mot de passe",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Réinitialisation du mot de passe",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "organise": {
+            "perIp": {
+              "label": "Limite par adresse : Organisation (étiquettes, vues, actions groupées)",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "perSubject": {
+              "label": "Limite par compte : Organisation (étiquettes, vues, actions groupées)",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Organisation (étiquettes, vues, actions groupées)",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "accountRead": {
+            "perIp": {
+              "label": "Limite par adresse : Lecture des pages du compte",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "perSubject": {
+              "label": "Limite par compte : Lecture des pages du compte",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Lecture des pages du compte",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "accountWrite": {
+            "perIp": {
+              "label": "Limite par adresse : Modification du compte",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "perSubject": {
+              "label": "Limite par compte : Modification du compte",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Modification du compte",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
           }
         },
         "plans": {

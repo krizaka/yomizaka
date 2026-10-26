@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { handle, readJson } from "@/lib/http";
-import { limit } from "@/lib/rate-limit";
+import { limit } from "@/lib/limits";
 import { consent, contest, decline, share, viewForTenant } from "@/lib/screening";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +21,7 @@ const body = z.discriminatedUnion("action", [
  */
 export function POST(req: Request) {
   return handle(async () => {
-    limit("screening-respond", req, null, [60, 600]);
+    await limit("screeningRespond", req, null);
     const input = await readJson(req, body);
     const now = new Date();
     const act = () => {

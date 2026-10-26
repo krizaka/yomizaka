@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { resetRateLimits } from "./rate-limit";
+import { resetRateLimits } from "./limits";
 
 const state = vi.hoisted(() => ({ session: null as null | { account: { id: string; email: string; perspective: string | null } }, saved: [] as unknown[][], audits: [] as Record<string, unknown>[] }));
 
@@ -8,6 +8,8 @@ vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => undefined })
 vi.mock("./session", async (orig) => ({ ...(await orig<typeof import("./session")>()), resolveSession: async () => state.session }));
 vi.mock("./settings/guards", () => ({ assertOpen: async () => undefined }));
 vi.mock("./audit", () => ({ audit: async (entry: Record<string, unknown>) => void state.audits.push(entry) }));
+// The limits read their numbers from the settings (yomizaka#260): here they are the defaults, and not a query of this test's.
+vi.mock("./settings/instance", () => ({ appSettings: () => ({ get: async () => undefined }) }));
 vi.mock("./db", () => ({ query: async (_sql: string, values: unknown[]) => void state.saved.push(values) }));
 
 import { firstCheck, wordingOf } from "./perspective-defaults";

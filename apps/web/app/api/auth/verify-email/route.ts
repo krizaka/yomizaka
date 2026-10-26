@@ -2,13 +2,13 @@ import { query } from "@/lib/db";
 import { env } from "@/lib/env";
 import { fieldText, handle } from "@/lib/http";
 import { asLocale } from "@/lib/i18n";
-import { limit } from "@/lib/rate-limit";
+import { limit } from "@/lib/limits";
 import { verifyEmail } from "@/lib/signup";
 
 /** The link's button: a form POST (a mail scanner opening the link cannot spend the token). Answers a redirect to the sign-in page. */
 export function POST(req: Request) {
   return handle(async () => {
-    limit("verify-email", req, null, [30, 3600]);
+    await limit("verifyEmail", req, null);
     const form = await req.formData().catch(() => null);
     const token = fieldText(form, "token");
     const locale = asLocale(fieldText(form, "locale"));

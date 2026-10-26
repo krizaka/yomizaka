@@ -5,8 +5,8 @@ import { systemClock } from "@/app/system-clock";
 
 import { requireSession } from "../access";
 import { handle, refuse } from "../http";
+import { limit } from "../limits";
 import { guard } from "../organisation/organize";
-import { limit } from "../rate-limit";
 import type { Session } from "../session";
 import { isKind, type Kind } from "./decl";
 import { actorOf, workspaceFor } from "./service";
@@ -26,7 +26,7 @@ export interface WorkspaceContext {
 export function workspaceAct(req: Request, params: Promise<{ kind: string }>, run: (ctx: WorkspaceContext) => Promise<unknown>, options: { status?: number; purges?: boolean } = {}): Promise<Response> {
   return handle(async () => {
     const session = await requireSession(req);
-    limit("organise", req, session.account.id, [300, 3600], [120, 3600]);
+    await limit("organise", req, session.account.id);
     const { kind } = await params;
     if (!isKind(kind)) throw refuse(404, "NOT_FOUND", "No such kind");
     // The kept files' store is needed only by a call that can decide (a decision purges the files it closes).

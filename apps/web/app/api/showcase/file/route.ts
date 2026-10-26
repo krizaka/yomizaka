@@ -1,5 +1,5 @@
 import { handle, refuse } from "@/lib/http";
-import { limit } from "@/lib/rate-limit";
+import { limit } from "@/lib/limits";
 import { showcaseFile } from "@/lib/showcase";
 
 export const dynamic = "force-dynamic";
@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 /** The showcase's sample document, as uploaded — only the sample of the promoted check, never another file. */
 export function GET(req: Request) {
   return handle(async () => {
-    limit("showcase-file", req, null, [60, 3600]);
+    await limit("showcaseFile", req, null);
     const file = await showcaseFile();
     if (!file) throw refuse(404, "NOT_FOUND", "No showcase");
     return new Response(new Uint8Array(file.content), {

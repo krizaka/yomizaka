@@ -1636,6 +1636,430 @@
           "batchExportMaxMb": {
             "label": "Heaviest ZIP of a batch's reports",
             "hint": "Above it the export is refused and says to export fewer rows; the rows are never cut silently."
+          },
+          "batchCreate": {
+            "perIp": {
+              "label": "Limit per address: Creating a batch",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "perSubject": {
+              "label": "Limit per account: Creating a batch",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Creating a batch",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "batchExport": {
+            "perIp": {
+              "label": "Limit per address: Exporting a batch",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "perSubject": {
+              "label": "Limit per account: Exporting a batch",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Exporting a batch",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "verifyRequest": {
+            "perIp": {
+              "label": "Limit per address: Asking for access to a verification",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "perSubject": {
+              "label": "Limit per account: Asking for access to a verification",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Asking for access to a verification",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "verify": {
+            "perIp": {
+              "label": "Limit per address: Verifying a signed report",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Verifying a signed report",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "consent": {
+            "perIp": {
+              "label": "Limit per address: Recording a consent",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "perSubject": {
+              "label": "Limit per account: Recording a consent",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Recording a consent",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "signUp": {
+            "perIp": {
+              "label": "Limit per address: Signing up",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "perSubject": {
+              "label": "Limit per account: Signing up",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Signing up",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "verifyEmail": {
+            "perIp": {
+              "label": "Limit per address: Asking for a verification e-mail",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Asking for a verification e-mail",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "signIn": {
+            "perIp": {
+              "label": "Limit per address: Signing in",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "perSubject": {
+              "label": "Limit per account: Signing in",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Signing in",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "confirmEmail": {
+            "perIp": {
+              "label": "Limit per address: Confirming an e-mail address",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Confirming an e-mail address",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "search": {
+            "perIp": {
+              "label": "Limit per address: Searching the library",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "perSubject": {
+              "label": "Limit per account: Searching the library",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Searching the library",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "perspective": {
+            "perIp": {
+              "label": "Limit per address: Changing the perspective",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "perSubject": {
+              "label": "Limit per account: Changing the perspective",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Changing the perspective",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "applicantFileRequest": {
+            "perIp": {
+              "label": "Limit per address: Asking for an applicant file",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "perSubject": {
+              "label": "Limit per account: Asking for an applicant file",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Asking for an applicant file",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "applicantFileAction": {
+            "perIp": {
+              "label": "Limit per address: Acting on an applicant file",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Acting on an applicant file",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "screeningRequest": {
+            "perIp": {
+              "label": "Limit per address: Asking for a screening",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "perSubject": {
+              "label": "Limit per account: Asking for a screening",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Asking for a screening",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "screeningRespond": {
+            "perIp": {
+              "label": "Limit per address: Answering a screening",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Answering a screening",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "upload": {
+            "perIp": {
+              "label": "Limit per address: Uploading a document",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "perSubject": {
+              "label": "Limit per account: Uploading a document",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Uploading a document",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "analysis": {
+            "perIp": {
+              "label": "Limit per address: Starting a check",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "perSubject": {
+              "label": "Limit per account: Starting a check",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Starting a check",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "redacted": {
+            "perIp": {
+              "label": "Limit per address: Downloading a redacted copy",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Downloading a redacted copy",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "reportGrant": {
+            "perIp": {
+              "label": "Limit per address: Sharing a report",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "perSubject": {
+              "label": "Limit per account: Sharing a report",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Sharing a report",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "report": {
+            "perIp": {
+              "label": "Limit per address: Reading a report",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "perSubject": {
+              "label": "Limit per account: Reading a report",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Reading a report",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "applicant": {
+            "perIp": {
+              "label": "Limit per address: The applicant's page",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: The applicant's page",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "applicantUpload": {
+            "perIp": {
+              "label": "Limit per address: The applicant's uploads",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: The applicant's uploads",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "showcaseFile": {
+            "perIp": {
+              "label": "Limit per address: A showcase file",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: A showcase file",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "showcase": {
+            "perIp": {
+              "label": "Limit per address: The showcase",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: The showcase",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "batchPreview": {
+            "perIp": {
+              "label": "Limit per address: Previewing a batch",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "perSubject": {
+              "label": "Limit per account: Previewing a batch",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Previewing a batch",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "avatar": {
+            "perIp": {
+              "label": "Limit per address: Changing a collection's picture",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "perSubject": {
+              "label": "Limit per account: Changing a collection's picture",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Changing a collection's picture",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "portal": {
+            "perIp": {
+              "label": "Limit per address: Opening the billing portal",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Opening the billing portal",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "checkout": {
+            "perIp": {
+              "label": "Limit per address: Starting a checkout",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "perSubject": {
+              "label": "Limit per account: Starting a checkout",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Starting a checkout",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "apiKeyAuth": {
+            "perIp": {
+              "label": "Limit per address: Presenting an API key (before it is known)",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Presenting an API key (before it is known)",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "forgotPassword": {
+            "perIp": {
+              "label": "Limit per address: Asking for a password reset",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "perSubject": {
+              "label": "Limit per account: Asking for a password reset",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Asking for a password reset",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "resetPassword": {
+            "perIp": {
+              "label": "Limit per address: Resetting a password",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Resetting a password",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "organise": {
+            "perIp": {
+              "label": "Limit per address: Organising (tags, views, bulk actions)",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "perSubject": {
+              "label": "Limit per account: Organising (tags, views, bulk actions)",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Organising (tags, views, bulk actions)",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "accountRead": {
+            "perIp": {
+              "label": "Limit per address: Reading the account's pages",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "perSubject": {
+              "label": "Limit per account: Reading the account's pages",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Reading the account's pages",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "accountWrite": {
+            "perIp": {
+              "label": "Limit per address: Changing the account",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "perSubject": {
+              "label": "Limit per account: Changing the account",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Changing the account",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
           }
         },
         "plans": {

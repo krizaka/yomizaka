@@ -5,7 +5,7 @@ import { activeConsents, APPLICATION_ERASED, CONSENT_MEANS, CONSENT_PURPOSE, typ
 import { applicantFileState, submitApplicantFile } from "@/lib/applicant-file";
 import { assertOpen, linkState } from "@/lib/applicant-file-rules";
 import { handle, readJson, refuse } from "@/lib/http";
-import { limit } from "@/lib/rate-limit";
+import { limit } from "@/lib/limits";
 import { byToken } from "@/lib/screening";
 
 export const dynamic = "force-dynamic";
@@ -30,7 +30,7 @@ const body = z.discriminatedUnion("action", [
  */
 export function POST(req: Request) {
   return handle(async () => {
-    limit("applicant", req, null, [60, 600]);
+    await limit("applicant", req, null);
     const input = await readJson(req, body);
     const now = new Date();
     const app = await byToken(input.token);

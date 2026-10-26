@@ -2,8 +2,8 @@ import { memoryPriceStore, priceCatalogue } from "@krizaka/settings";
 import { addDays } from "date-fns";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { resetRateLimits } from "../limits";
 import { PRICE, PRICES } from "../pricing";
-import { resetRateLimits } from "../rate-limit";
 
 const state = vi.hoisted(() => ({ role: "ADMIN" as "ADMIN" | "USER" | null, trail: [] as string[] }));
 const prices = vi.hoisted(() => ({ catalogue: null as unknown }));

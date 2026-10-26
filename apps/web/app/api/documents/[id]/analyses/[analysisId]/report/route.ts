@@ -2,7 +2,7 @@ import { requireSession } from "@/lib/access";
 import { audit } from "@/lib/audit";
 import { handle } from "@/lib/http";
 import { asLocale } from "@/lib/i18n";
-import { limit } from "@/lib/rate-limit";
+import { limit } from "@/lib/limits";
 import { reportFor, reportPdfFor } from "@/lib/reports";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 export function GET(req: Request, { params }: { params: Promise<{ id: string; analysisId: string }> }) {
   return handle(async () => {
     const session = await requireSession(req);
-    limit("report", req, session.account.id, [120, 3600], [60, 3600]);
+    await limit("report", req, session.account.id);
     const { id, analysisId } = await params;
     const url = new URL(req.url);
     if (url.searchParams.get("format") === "pdf" && !url.searchParams.get("meta")) {

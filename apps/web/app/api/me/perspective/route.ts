@@ -4,8 +4,8 @@ import { z } from "zod";
 import { requireSession } from "@/lib/access";
 import { audit } from "@/lib/audit";
 import { handle, readJson } from "@/lib/http";
+import { limit } from "@/lib/limits";
 import { setPerspective } from "@/lib/perspective";
-import { limit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +21,7 @@ export function GET(req: Request) {
 export function PUT(req: Request) {
   return handle(async () => {
     const session = await requireSession(req);
-    limit("perspective", req, session.account.id, [60, 3600], [30, 3600]);
+    await limit("perspective", req, session.account.id);
     const input = await readJson(req, z.object({ perspective: audience }));
     await setPerspective(session.account.id, input.perspective);
     await audit({ action: "profile.perspective_set", actorId: session.account.id, actorLabel: session.account.email, targetId: session.account.id, detail: { from: session.account.perspective, to: input.perspective }, headers: req.headers });

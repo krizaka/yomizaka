@@ -4,10 +4,10 @@ import { avatarStore } from "@/app/active-store";
 import { requireSession } from "@/lib/access";
 import { query } from "@/lib/db";
 import { handle, refuse } from "@/lib/http";
+import { limit } from "@/lib/limits";
 import { act, type Params } from "@/lib/organisation/api";
 import { readAvatar, removeAvatar, uploadAvatar } from "@/lib/organisation/avatar";
 import { ownedCollection } from "@/lib/organisation/store";
-import { limit } from "@/lib/rate-limit";
 import { assertFeature, settingsFor } from "@/lib/settings/guards";
 
 export const dynamic = "force-dynamic";
@@ -37,7 +37,7 @@ export function GET(req: Request, { params }: Params) {
 /** Uploads the image (multipart, field `file`): checked, made square without metadata, kept under its own prefix. */
 export const POST = (req: Request, { params }: Params) =>
   act(req, async ({ owner, q, note }) => {
-    limit("avatar", req, owner, [60, 3600], [20, 3600]);
+    await limit("avatar", req, owner);
     await assertFeature("collectionAvatars", owner);
     const store = avatarStore();
     if (!store) throw refuse(503, "AVATAR_STORAGE_OFF", "No storage is configured for avatar images");

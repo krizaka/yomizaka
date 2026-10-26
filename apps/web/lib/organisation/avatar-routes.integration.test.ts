@@ -5,7 +5,7 @@ import { PATCH as patchRoute } from "@/app/api/collections/[id]/route";
 import { GET as configRoute } from "@/app/api/me/app/route";
 
 import { migrate, pool, query } from "../db";
-import { resetRateLimits } from "../rate-limit";
+import { resetRateLimits } from "../limits";
 import { createSession, SESSION_COOKIE } from "../session";
 import { appSettings, resetAppSettings } from "../settings/instance";
 import { GLOBAL } from "../settings/service";

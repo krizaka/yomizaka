@@ -7,7 +7,7 @@ import { startCheck } from "@/lib/checks";
 import { deleteDocument, documentStorage, getDocument } from "@/lib/documents";
 import { appEnvironment } from "@/lib/env";
 import { handle, readJson } from "@/lib/http";
-import { limit } from "@/lib/rate-limit";
+import { limit } from "@/lib/limits";
 import { withFeatures } from "@/lib/settings/boundary";
 import { insightFeatures } from "@/lib/settings/guards";
 
@@ -28,7 +28,7 @@ export function GET(req: Request, { params }: Params) {
 export function POST(req: Request, { params }: Params) {
   return handle(async () => {
     const session = await requireSession(req);
-    limit("analysis", req, session.account.id, [60, 3600], [30, 3600]);
+    await limit("analysis", req, session.account.id);
     const id = (await params).id;
     const request = await readJson(req, startAnalysisBody);
     const started = await startCheck(session.account, id, request, new Date(), appEnvironment());

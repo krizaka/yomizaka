@@ -4,7 +4,7 @@ import { YOMIZAKA_API_KEY_RULES } from "./api-keys";
 import { entitlementOf } from "./billing";
 import { query } from "./db";
 import { refuse } from "./http";
-import { limit } from "./rate-limit";
+import { limit, limitWith } from "./limits";
 import { assertFeature, settingsFor } from "./settings/guards";
 
 /**
@@ -60,13 +60,13 @@ export async function assertKeysAllowed(accountId: string, now: Date): Promise<n
  * 429 past the per-minute limit. A refused key costs a rate-limit hit on the caller's address, so guessing is slow.
  */
 export async function requireApiKey(req: Request, scope: string, clock: Clock): Promise<{ ownerId: string; keyId: string }> {
-  limit("api-key-auth", req, null, [120, 60]);
+  await limit("apiKeyAuth", req, null);
   const result = await apiKeys(clock).authenticate(req.headers.get("authorization"), scope);
   if (!result.ok) throw keyRefusal(result.code);
   const { ownerId, id } = result.key;
   await assertFeature("apiKeys", ownerId);
   if ((await maxActiveKeys(ownerId, clock.now())) < 1) throw refuse(403, "API_PLAN", "Your plan does not include API keys");
   const perMinute = (await settingsFor(ownerId))["limits.apiRequestsPerMinute"].value as number;
-  limit("api-key", req, id, [perMinute * 2, 60], [perMinute, 60]);
+  await limitWith("apiKey", req, id, perMinute * 2, perMinute, 60);
   return { ownerId, keyId: id };
 }
