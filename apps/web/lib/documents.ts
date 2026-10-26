@@ -239,47 +239,58 @@ export interface StoragePolicy {
 /** The text of a document that has no text layer — read only if the document is new (a duplicate is never read twice). */
 export type TextReader = () => Promise<{ text: string; source: TextSource }>;
 
+/** The text of a new document: from the reader given (a photo), or from its text layer; an unreadable file is a 422. */
+async function readNewDocument(mimeType: AcceptedType, bytes: Uint8Array, pages: number | null, textOf?: TextReader): Promise<{ read: { text: string; pages: number | null }; source: TextSource | null }> {
+  try {
+    if (!textOf) return { read: await readText(mimeType, bytes), source: null };
+    const recognised = await textOf();
+    return { read: { text: recognised.text, pages }, source: recognised.source };
+  } catch (error) {
+    if (error instanceof HttpError) throw error;
+    throw refuse(422, "UNREADABLE_FILE", "This PDF cannot be opened");
+  }
+}
+
+/** Writes the document's row: restores a purged duplicate in place, or inserts a new one. */
+async function saveDocumentRow(args: { ownerId: string; existingId: string | null; file: { filename: string; mimeType: AcceptedType; kind: DocumentKind; sha256: string; pages: number | null }; bytes: Uint8Array; text: string; where: StorageKind; deadline: Date | null; source: TextSource | null }): Promise<DocumentRow> {
+  const { ownerId, existingId, file, bytes, text, where, deadline, source } = args;
+  const [row] = existingId
+    ? await query<DocumentRow>(`WITH d AS (UPDATE documents SET content = $3, text = $4, storage = $5, retain_until = $6, text_source = $7 WHERE owner_id = $1 AND id = $2 RETURNING *) SELECT ${SUMMARY_COLUMNS} FROM d`, [ownerId, existingId, Buffer.from(bytes), text, where, deadline, source])
+    : await query<DocumentRow>(
+        `WITH d AS (
+           INSERT INTO documents (owner_id, title, filename, mime_type, kind, size_bytes, sha256, pages, content, text, storage, retain_until, text_source)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *)
+         SELECT ${SUMMARY_COLUMNS} FROM d`,
+        [ownerId, titleFor(file.filename, text), file.filename, file.mimeType, file.kind, bytes.length, file.sha256, file.pages, Buffer.from(bytes), text, where, deadline, source],
+      );
+  return row!;
+}
+
+/** Moves the bytes to the external store; if it does not answer, the new row goes away and the upload is refused (502). */
+async function moveToStore(policy: StoragePolicy, ownerId: string, id: string, mimeType: AcceptedType, bytes: Uint8Array): Promise<void> {
+  try {
+    await policy.store.put(objectKey(ownerId, id, mimeType), bytes, { contentType: mimeType });
+  } catch {
+    await query("DELETE FROM documents WHERE id = $1 AND NOT EXISTS (SELECT 1 FROM analyses WHERE document_id = $1)", [id]);
+    throw refuse(502, "STORAGE_UNAVAILABLE", "The storage that keeps documents did not answer");
+  }
+  await query("UPDATE documents SET content = ''::bytea, storage_owner = $2 WHERE id = $1", [id, policy.store.describe().owner === "workspace" ? "workspace" : "krizaka"]);
+}
+
 export async function storeDocument(ownerId: string, file: { name: string; type: string; size: number }, bytes: Uint8Array, requested: DocumentKind | "auto", policy?: StoragePolicy, textOf?: TextReader): Promise<{ summary: DocumentSummary; duplicate: boolean }> {
   const { mimeType, sha256, pages } = await checkUpload(file, bytes, policy?.rules);
   const where = policy ? storageFor(policy.keep, policy.store.describe()) : "database";
   const [existing] = await query<DocumentRow & { purged: boolean }>(`SELECT ${SUMMARY_COLUMNS}, (d.storage = 'none' AND octet_length(d.content) = 0 AND d.text = '') AS purged FROM documents d WHERE d.owner_id = $1 AND d.sha256 = $2`, [ownerId, sha256]);
   // The same file again: reused as it is — unless it was purged and the person now keeps it, then it is restored below.
   if (existing && !(existing.purged && where !== "none")) return { summary: summary(existing), duplicate: true };
-  let read: { text: string; pages: number | null };
-  let source: TextSource | null = null;
-  try {
-    if (textOf) {
-      const recognised = await textOf();
-      read = { text: recognised.text, pages: pages };
-      source = recognised.source;
-    } else read = await readText(mimeType, bytes);
-  } catch (error) {
-    if (error instanceof HttpError) throw error;
-    throw refuse(422, "UNREADABLE_FILE", "This PDF cannot be opened");
-  }
+  const { read, source } = await readNewDocument(mimeType, bytes, pages, textOf);
   const kind = requested === "auto" ? kindFromNature(understanding.understand(read.text, { pages: read.pages }).nature?.id ?? null) : requested;
   const filename = safeFilename(file.name);
   const deadline = where === "none" && policy ? purgeDeadline(policy.now, policy.purgeAfterHours) : null;
   // The bytes sit in the database until the document is placed (and, if not kept, until its check has run).
-  const [row] = existing
-    ? await query<DocumentRow>(`WITH d AS (UPDATE documents SET content = $3, text = $4, storage = $5, retain_until = $6, text_source = $7 WHERE owner_id = $1 AND id = $2 RETURNING *) SELECT ${SUMMARY_COLUMNS} FROM d`, [ownerId, existing.id, Buffer.from(bytes), read.text, where, deadline, source])
-    : await query<DocumentRow>(
-        `WITH d AS (
-           INSERT INTO documents (owner_id, title, filename, mime_type, kind, size_bytes, sha256, pages, content, text, storage, retain_until, text_source)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *)
-         SELECT ${SUMMARY_COLUMNS} FROM d`,
-        [ownerId, titleFor(filename, read.text), filename, mimeType, kind, bytes.length, sha256, read.pages, Buffer.from(bytes), read.text, where, deadline, source],
-      );
-  if (policy && EXTERNAL.has(where)) {
-    try {
-      await policy.store.put(objectKey(ownerId, row!.id, mimeType), bytes, { contentType: mimeType });
-    } catch {
-      await query("DELETE FROM documents WHERE id = $1 AND NOT EXISTS (SELECT 1 FROM analyses WHERE document_id = $1)", [row!.id]);
-      throw refuse(502, "STORAGE_UNAVAILABLE", "The storage that keeps documents did not answer");
-    }
-    await query("UPDATE documents SET content = ''::bytea, storage_owner = $2 WHERE id = $1", [row!.id, policy.store.describe().owner === "workspace" ? "workspace" : "krizaka"]);
-  }
-  return { summary: summary(row!), duplicate: false };
+  const row = await saveDocumentRow({ ownerId, existingId: existing?.id ?? null, file: { filename, mimeType, kind, sha256, pages: read.pages }, bytes, text: read.text, where, deadline, source });
+  if (policy && EXTERNAL.has(where)) await moveToStore(policy, ownerId, row.id, mimeType, bytes);
+  return { summary: summary(row), duplicate: false };
 }
 
 export const isUuid = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);

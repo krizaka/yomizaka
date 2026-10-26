@@ -33,46 +33,94 @@ const NOTE_STYLE: Record<LineKind, { size: number; bold?: boolean; gap?: number 
 
 type Block = { text: string; size: number; bold?: boolean; mono?: boolean; gap?: number };
 
+const block = (text: string, size = 10, extra: Partial<Block> = {}): Block => ({ text, size, ...extra });
+/** An optional piece of a line, or nothing: keeps the conditionals out of the template literals. */
+const optional = (present: boolean, text: string) => (present ? text : "");
+
+/** The top of the report: who says what, the disclaimer, the summary and the review notices. */
+function headerBlocks(payload: ReportPayload, labels: ReportLabels): Block[] {
+  const blocks = [
+    block(labels.eyebrow!, 8, { gap: 2 }),
+    block(payload.document.title, 18, { bold: true, gap: 6 }),
+    block(labels.disclaimer!, 10, { bold: true, gap: 8 }),
+    block(fill(labels.summary!, { failures: payload.summary.blockingFailures, rules: payload.summary.rulesEvaluated }), 10, { gap: 8 }),
+  ];
+  if (payload.check.reviewStatus) blocks.push(block(labels.toReview!, 9, { gap: 8 }));
+  if (payload.check.rulesetId === "qc-service-contract") blocks.push(block(labels.notCheckedServiceContract!, 9, { bold: true, gap: 8 }));
+  return blocks;
+}
+
+/** The document that was checked: its file, size and fingerprint. */
+function documentBlocks(payload: ReportPayload, labels: ReportLabels): Block[] {
+  const d = payload.document;
+  const pages = optional(!!d.pages, ` · ${d.pages} p.`);
+  return [
+    block(labels.documentHeading!, 12, { bold: true, gap: 2 }),
+    block(`${labels.file}: ${d.filename}`, 9),
+    block(`${labels.size}: ${d.sizeBytes} B${pages}`, 9),
+    block(`${labels.documentSha}: ${d.sha256}`, 8, { mono: true, gap: 8 }),
+  ];
+}
+
+/** The check that was run: engine, run id, jurisdiction, ruleset, times. */
+function checkBlocks(payload: ReportPayload, labels: ReportLabels): Block[] {
+  const c = payload.check;
+  const version = optional(!!c.studioVersion, ` ${c.studioVersion}`);
+  const revision = optional(c.rulesetRevision !== null, ` (rev. ${c.rulesetRevision})`);
+  return [
+    block(labels.checkHeading!, 12, { bold: true, gap: 2 }),
+    block(`${labels.engine}: ${c.engine} · ${c.studio}${version}`, 9),
+    block(`${labels.runId}: ${c.runId}`, 8, { mono: true }),
+    block(`${labels.jurisdiction}: ${c.jurisdiction}`, 9),
+    block(`${labels.asOf}: ${c.asOf}`, 9),
+    block(`${labels.ruleset}: ${c.rulesetId} · ${c.rulesetVersion}${revision}`, 9),
+    block(`${labels.model}: ${labels.modelValue}`, 9),
+    block(`${labels.started}: ${c.startedAt}`, 9),
+    block(`${labels.finished}: ${c.finishedAt}`, 9, { gap: 8 }),
+  ];
+}
+
+/** One finding: its verdict, explanation, rule, citation and the passage it rests on. */
+function findingBlocks(f: ReportPayload["findings"][number], labels: ReportLabels): Block[] {
+  const method = optional(!!f.method, ` · ${f.method}`);
+  const passage = f.quote ? `« ${f.quote} »` : labels.noPassage;
+  const blocks = [
+    block(`${f.title ?? f.ruleId} — ${labels[`verdict.${f.verdict}`] ?? f.verdict}`, 10, { bold: true, gap: 1 }),
+    block(f.explanation, 9),
+    block(`${labels.rule}: ${f.ruleId} · ${f.severity}${method}`, 8),
+  ];
+  if (f.citation) blocks.push(block(`${labels.article}: ${f.citation}`, 8));
+  blocks.push(block(`${labels.passage}: ${passage}`, 8, { gap: 6 }));
+  return blocks;
+}
+
+/** The closing note, line by line, in the style of each kind of line. */
+function noteBlocks(note: NonNullable<ReportPayload["note"]>): Block[] {
+  return noteLines(note).map(({ kind, text }) => block(kind === LINE.item ? `- ${text}` : text, NOTE_STYLE[kind].size, NOTE_STYLE[kind]));
+}
+
+/** What the signature guarantees and does not, how to verify, the footer. */
+function guaranteeBlocks(labels: ReportLabels): Block[] {
+  return [
+    block(labels.guaranteeHeading!, 12, { bold: true, gap: 2 }),
+    block(labels.guarantees!, 9),
+    block(labels.notGuaranteed!, 9),
+    block(fill(labels.howToVerify!, { url: `${SITE_URL}/verify` }), 9),
+    block(labels.footer!, 8),
+  ];
+}
+
 /** The report's text, in reading order: what the pages print and what the signature covers. */
 export function reportBlocks(payload: ReportPayload, labels: ReportLabels): Block[] {
-  const c = payload.check;
-  const d = payload.document;
-  const blocks: Block[] = [];
-  const add = (text: string, size = 10, extra: Partial<Block> = {}) => blocks.push({ text, size, ...extra });
-  add(labels.eyebrow!, 8, { gap: 2 });
-  add(d.title, 18, { bold: true, gap: 6 });
-  add(labels.disclaimer!, 10, { bold: true, gap: 8 });
-  add(fill(labels.summary!, { failures: payload.summary.blockingFailures, rules: payload.summary.rulesEvaluated }), 10, { gap: 8 });
-  if (c.reviewStatus) add(labels.toReview!, 9, { gap: 8 });
-  if (c.rulesetId === "qc-service-contract") add(labels.notCheckedServiceContract!, 9, { bold: true, gap: 8 });
-  add(labels.documentHeading!, 12, { bold: true, gap: 2 });
-  add(`${labels.file}: ${d.filename}`, 9);
-  add(`${labels.size}: ${d.sizeBytes} B${d.pages ? ` · ${d.pages} p.` : ""}`, 9);
-  add(`${labels.documentSha}: ${d.sha256}`, 8, { mono: true, gap: 8 });
-  add(labels.checkHeading!, 12, { bold: true, gap: 2 });
-  add(`${labels.engine}: ${c.engine} · ${c.studio}${c.studioVersion ? ` ${c.studioVersion}` : ""}`, 9);
-  add(`${labels.runId}: ${c.runId}`, 8, { mono: true });
-  add(`${labels.jurisdiction}: ${c.jurisdiction}`, 9);
-  add(`${labels.asOf}: ${c.asOf}`, 9);
-  add(`${labels.ruleset}: ${c.rulesetId} · ${c.rulesetVersion}${c.rulesetRevision !== null ? ` (rev. ${c.rulesetRevision})` : ""}`, 9);
-  add(`${labels.model}: ${labels.modelValue}`, 9);
-  add(`${labels.started}: ${c.startedAt}`, 9);
-  add(`${labels.finished}: ${c.finishedAt}`, 9, { gap: 8 });
-  add(fill(labels.findingsHeading!, { count: payload.findings.length }), 12, { bold: true, gap: 2 });
-  for (const f of payload.findings) {
-    add(`${f.title ?? f.ruleId} — ${labels[`verdict.${f.verdict}`] ?? f.verdict}`, 10, { bold: true, gap: 1 });
-    add(f.explanation, 9);
-    add(`${labels.rule}: ${f.ruleId} · ${f.severity}${f.method ? ` · ${f.method}` : ""}`, 8);
-    if (f.citation) add(`${labels.article}: ${f.citation}`, 8);
-    add(`${labels.passage}: ${f.quote ? `« ${f.quote} »` : labels.noPassage}`, 8, { gap: 6 });
-  }
-  if (payload.note) for (const { kind, text } of noteLines(payload.note)) add(kind === LINE.item ? `- ${text}` : text, NOTE_STYLE[kind].size, NOTE_STYLE[kind]);
-  add(labels.guaranteeHeading!, 12, { bold: true, gap: 2 });
-  add(labels.guarantees!, 9);
-  add(labels.notGuaranteed!, 9);
-  add(fill(labels.howToVerify!, { url: `${SITE_URL}/verify` }), 9);
-  add(labels.footer!, 8);
-  return blocks;
+  return [
+    ...headerBlocks(payload, labels),
+    ...documentBlocks(payload, labels),
+    ...checkBlocks(payload, labels),
+    block(fill(labels.findingsHeading!, { count: payload.findings.length }), 12, { bold: true, gap: 2 }),
+    ...payload.findings.flatMap((f) => findingBlocks(f, labels)),
+    ...(payload.note ? noteBlocks(payload.note) : []),
+    ...guaranteeBlocks(labels),
+  ];
 }
 
 /** What French typography and common symbols become where the standard fonts have no glyph: their plain equivalent, not « ? ». */

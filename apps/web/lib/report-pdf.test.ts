@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { buildPayload, sha256 } from "./report";
 import { generateSigningKeyBase64, parseSigningKey } from "./report-key";
 import { reportLabels } from "./report-labels";
-import { attestationOfPdf, foldToWinAnsi, issuePdf, verifyPdf } from "./report-pdf";
+import { attestationOfPdf, foldToWinAnsi, issuePdf, reportBlocks, verifyPdf } from "./report-pdf";
 import { signingKey } from "./report-signer";
 
 const doc = { sha256: sha256("lease bytes"), filename: "bail.pdf", title: "Bail — rue Saint-Denis (fictif)", sizeBytes: 11, pages: 1 };
@@ -127,5 +127,34 @@ describe("typography the PDF's fonts cannot draw", () => {
     expect(foldToWinAnsi("a\u2009b\u2011c")).toBe("a b-c");
     expect(foldToWinAnsi("loyer \u2265 850 \u2192 refus \u2713")).toBe("loyer >= 850 -> refus ok");
     expect(foldToWinAnsi("« dépôt » — l’article")).toBe("« dépôt » — l’article");
+  });
+});
+
+describe("the report's text blocks, in reading order", () => {
+  const labels = reportLabels("fr");
+  const texts = (p = payload) => reportBlocks(p, labels).map((b) => b.text);
+
+  it("lays out the header, the document, the check, each finding, the guarantees and the footer", () => {
+    const blocks = reportBlocks(payload, labels);
+    expect(blocks[0]).toMatchObject({ text: labels.eyebrow, size: 8 });
+    expect(blocks[1]).toMatchObject({ text: doc.title, size: 18, bold: true });
+    expect(blocks.at(-1)).toMatchObject({ text: labels.footer, size: 8 });
+    const all = texts();
+    expect(all).toContain(`${labels.file}: bail.pdf`);
+    expect(all).toContain(`${labels.size}: 11 B · 1 p.`);
+    expect(all).toContain(`${labels.ruleset}: qc-residential-lease · 2024-02-21 (rev. 2)`);
+    expect(all).toContain(`${labels.passage}: « dépôt de sécurité de 1 450 $ »`);
+    expect(all).toContain(`${labels.passage}: ${labels.noPassage}`);
+    expect(all.filter((t) => t.startsWith(`${labels.article}: `))).toHaveLength(2);
+  });
+
+  it("leaves out what is absent: the page count, the Studio version, the review notice", () => {
+    const bare = { ...payload, document: { ...payload.document, pages: null }, check: { ...payload.check, studioVersion: null, reviewStatus: null, rulesetRevision: null } };
+    const all = texts(bare as typeof payload);
+    expect(all).toContain(`${labels.size}: 11 B`);
+    expect(all).not.toContain(labels.toReview);
+    expect(all.find((t) => t.startsWith(`${labels.ruleset}: `))).not.toContain("rev.");
+    expect(all.find((t) => t.startsWith(`${labels.engine}: `))).toMatch(/compliance-check$/);
+    expect(texts()).toContain(labels.toReview);
   });
 });
