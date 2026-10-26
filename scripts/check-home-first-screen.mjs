@@ -7,6 +7,8 @@
 // Exits 1 listing every page × viewport × theme with a problem.
 import { chromium } from "playwright-core";
 
+import { auditContext, loadSettled } from "./lib/settle.mjs";
+
 // @fixed: the gap between the bar and the page (`--kz-hero-top` = the bar's bottom + this), the family's « One frame for every page »
 export const GAP_PX = 24;
 export const TOLERANCE_PX = 6;
@@ -45,7 +47,7 @@ export async function check({ base }) {
   try {
     for (const theme of THEMES) {
       for (const viewport of VIEWPORTS) {
-        const ctx = await browser.newContext({ viewport, colorScheme: theme });
+        const ctx = await auditContext(browser, { viewport, colorScheme: theme });
         await ctx.addInitScript((t) => {
           try {
             localStorage.setItem("kz-theme", t);
@@ -55,8 +57,7 @@ export async function check({ base }) {
         }, theme);
         const page = await ctx.newPage();
         for (const path of PAGES) {
-          await page.goto(`${base}${path}`, { waitUntil: "networkidle", timeout: 90000 });
-          await page.evaluate(() => document.fonts.ready);
+          await loadSettled(page, `${base}${path}`, { waitUntil: "networkidle", timeout: 90000 });
           const m = await page.evaluate(MEASURE);
           problems.push(...problemsOf({ ...m, path, theme, ...viewport }));
         }

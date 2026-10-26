@@ -13,6 +13,7 @@ import { mkdirSync } from "node:fs";
 import { createRequire } from "node:module";
 
 import { accountsFromEnv, hashPassword } from "../apps/web/scripts/qa-accounts.mjs";
+import { auditContext, loadSettled } from "./lib/settle.mjs";
 
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright-core");
@@ -74,7 +75,7 @@ try {
   check(attempt.status === 403, `the sign-in call from a foreign address is refused even with the right password (${attempt.status})`);
 
   const browser = await chromium.launch();
-  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: "dark", extraHTTPHeaders: { "do-connecting-ip": ALLOWED } });
+  const context = await auditContext(browser, { viewport: { width: 1440, height: 900 }, colorScheme: "dark", extraHTTPHeaders: { "do-connecting-ip": ALLOWED } });
   await context.addInitScript(() => {
     try {
       localStorage.setItem("kz-theme", "dark");
@@ -83,7 +84,7 @@ try {
     }
   });
   const page = await context.newPage();
-  await page.goto(`${BASE}/en/sign-in`, { waitUntil: "networkidle" });
+  await loadSettled(page, `${BASE}/en/sign-in`, { waitUntil: "networkidle" });
   await page.waitForTimeout(1500); // dev compile: let the form hydrate before it is submitted
   await page.getByLabel("E-mail").fill(admin);
   await page.getByLabel("Password").fill(password);
@@ -94,15 +95,15 @@ try {
   if (process.env.E2E_SHOTS) mkdirSync(process.env.E2E_SHOTS, { recursive: true });
   const pages = [["", "Health"], ["/users", null], [`/users/${ids.USER}`, member], ["/documents", "E2E lease"], ["/runs", "compliance-check"], ["/operations", "Database"], ["/audit", null]];
   for (const [path, text] of pages) {
-    await page.goto(`${BASE}/en${path}`, { waitUntil: "networkidle" });
+    await loadSettled(page, `${BASE}/en${path}`, { waitUntil: "networkidle" });
     if (text) check(await page.getByText(text).first().isVisible(), `/en${path || ""} shows "${text}"`);
     else check((await page.locator("main").count()) > 0, `/en${path} renders`);
     if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/${path.startsWith("/users/") ? "user" : path.slice(1) || "overview"}.png` });
   }
-  await page.goto(`${BASE}/en/operations`, { waitUntil: "networkidle" });
+  await loadSettled(page, `${BASE}/en/operations`, { waitUntil: "networkidle" });
   check(await page.getByText("orazaka unreachable").first().isVisible(), "/operations lists the failed run's error");
 
-  await page.goto(`${BASE}/en/users/${ids.USER}`, { waitUntil: "networkidle" });
+  await loadSettled(page, `${BASE}/en/users/${ids.USER}`, { waitUntil: "networkidle" });
   await page.getByRole("button", { name: "Make administrator" }).click();
   await page.getByRole("button", { name: "Withdraw administrator role" }).waitFor({ timeout: 15_000 });
   check(true, "the role is granted from the account page");
