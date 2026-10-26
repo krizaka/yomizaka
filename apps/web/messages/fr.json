@@ -2,7 +2,7 @@
   "meta": {
     "siteName": "Yomizaka",
     "titleTemplate": "{title} · Yomizaka",
-    "description": "Vos baux, contrats et factures, lus et vérifiés par Yomizaka : chaque constat cite son entrée de matrice et la ligne sur laquelle il repose, chaque PDF examiné pour des signes de retouche, chaque document retrouvé en une seconde."
+    "description": "Gestionnaires d'immeubles et propriétaires : Yomizaka lit le bail selon le Code civil du Québec, examine le talon de paie comme un fichier, et montre la ligne exacte derrière chaque constat."
   },
   "chrome": {
     "brandHome": "Yomizaka, accueil",
@@ -37,7 +37,7 @@
   },
   "landing": {
     "title": "Lisez avant de signer.",
-    "lead": "Déposez un bail, un contrat ou une facture. Yomizaka fait la vérification documentaire et le tri du dossier : il le lit selon des matrices d’extraction documentaire et des gabarits technologiques paramétrables, et vous montre la ligne exacte derrière chaque constat.",
+    "lead": "Pour les gestionnaires d’immeubles et les propriétaires qui évaluent des candidats au Québec : déposez le bail et les pièces du dossier. Yomizaka fait la vérification documentaire et le tri du dossier : il les lit selon des matrices d’extraction documentaire et des gabarits technologiques paramétrables, et vous montre la ligne exacte derrière chaque constat.",
     "status": {
       "label": "Statut",
       "development": "En développement : les inscriptions sont fermées pendant nos essais sur de vrais baux québécois.",
@@ -54,7 +54,7 @@
     "what": {
       "title": "Ce que ça fait",
       "lead": "Trois choses, sans rien de caché derrière.",
-      "who": "Pour les locataires et les propriétaires qui vérifient un bail québécois. Les travailleurs autonomes et les petites entreprises peuvent aussi vérifier un contrat ou une facture.",
+      "who": "Pour les gestionnaires d'immeubles et les propriétaires qui évaluent des candidats au Québec : un bail et un talon de paie par dossier, plusieurs dossiers par mois. Les locataires sont les bienvenus : leur première vérification est offerte. Les registres (SOQUIJ, TAL, plumitif) sont en préparation.",
       "trust": "Par défaut, votre compte et vos vérifications sont gardés dans une base de données à Toronto, au Canada, et visibles par votre seul compte ; vos fichiers peuvent aller dans votre propre stockage, si vous le choisissez. Rien n'est vendu, partagé ni utilisé pour entraîner un modèle.",
       "privacy": "Lire l'avis de confidentialité",
       "items": {
@@ -86,9 +86,9 @@
       "title": "Pour qui"
     },
     "closing": {
-      "title": "Un document, une réponse.",
-      "body": "Connectez-vous pour vérifier un document. Visible de votre seul compte.",
-      "bodyIn": "Vos documents sont dans votre bibliothèque, vérifiés et visibles par votre seul compte."
+      "title": "Un dossier, une réponse.",
+      "body": "Connectez-vous pour vérifier les dossiers de votre mois. Visible de votre seul compte.",
+      "bodyIn": "Les dossiers de votre mois sont dans votre bibliothèque, vérifiés et visibles par votre seul compte."
     },
     "visual": {
       "caption": "Une vraie vérification, enregistrée telle qu'elle est revenue"
@@ -2647,14 +2647,14 @@
       "document": {
         "name": "Un document",
         "features": [
-          "Vérification de document et filtrage de dossier",
+          "Pour un dossier ponctuel : vérification de document et filtrage de dossier",
           "Un rapport signé qui cite l'article derrière chaque constat"
         ]
       },
       "agency": {
-        "name": "PME",
+        "name": "Gestionnaire d'immeubles",
         "features": [
-          "Pour les agences et les gestionnaires d'immeubles",
+          "Pour qui vérifie plusieurs dossiers par mois : agences, gestionnaires d'immeubles et propriétaires",
           "L'API, avec des clés créées dans votre compte"
         ]
       },
