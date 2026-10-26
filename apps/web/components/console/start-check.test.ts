@@ -24,6 +24,27 @@ describe("starting the check once a file landed", () => {
   });
 });
 
+describe("the text is read after the upload answered (202 Accepted)", () => {
+  const reading = (extraction: "queued" | "running" | "done" | "failed", extractionError?: string) => {
+    const d = detail("high", "invoice");
+    return { document: { ...d.document, extraction, ...(extractionError ? { extractionError } : {}) } };
+  };
+  it("waits for the reading to end, then starts the check", async () => {
+    const fetcher = vi.fn().mockResolvedValueOnce(reading("running")).mockResolvedValueOnce(reading("done")).mockResolvedValueOnce({ analysis: {} });
+    vi.useFakeTimers();
+    const outcome = startIfSure("d1", "auto", ["QC"], NOON, fetcher as never);
+    await vi.runAllTimersAsync();
+    vi.useRealTimers();
+    expect(await outcome).toEqual({ started: true, refused: null });
+    expect(fetcher).toHaveBeenCalledTimes(3);
+  });
+  it("keeps the reason when the text could not be read, and starts nothing", async () => {
+    const fetcher = vi.fn().mockResolvedValueOnce(reading("failed", "FILE_TOO_COMPLEX"));
+    expect(await startIfSure("d1", "auto", ["QC"], NOON, fetcher as never)).toEqual({ started: false, refused: "FILE_TOO_COMPLEX" });
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("the check is dated on the Québec day, never the UTC day", () => {
   const startedWith = async (instant: string) => {
     const fetcher = vi.fn().mockResolvedValueOnce(detail("high", "invoice")).mockResolvedValueOnce({ analysis: {} });

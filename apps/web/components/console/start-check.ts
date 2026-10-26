@@ -1,6 +1,6 @@
 import { localDay } from "@krizaka/intl";
 import { krizakaFetch } from "@krizaka/query";
-import { type DocumentKind, documentView, type Jurisdiction } from "@yomizaka/core";
+import { type DocumentKind, documentView, ExtractionNotReady, type Jurisdiction, waitForExtraction } from "@yomizaka/core";
 import { z } from "zod";
 
 import { afterUpload } from "@/lib/check-flow";
@@ -22,10 +22,12 @@ export interface StartOutcome {
 export async function startIfSure(id: string, requested: DocumentKind | "auto", jurisdictions: readonly Jurisdiction[], now: Date, fetcher: typeof krizakaFetch = krizakaFetch): Promise<StartOutcome> {
   let start = null;
   try {
-    const { document } = await fetcher(`/api/documents/${id}`, { schema: z.object({ document: documentView }) });
+    // The upload answered 202: the text is read after the answer (yomizaka#21), so wait for it before looking at what the document is.
+    const document = await waitForExtraction(() => fetcher(`/api/documents/${id}`, { schema: z.object({ document: documentView }) }).then((r) => r.document));
     start = afterUpload({ requested, insight: document.insight?.understanding ?? null, jurisdictions, asOf: localDay(now, LAW_TIME_ZONE) }).start;
-  } catch {
-    // Nothing sure: the report tab asks for the kind itself.
+  } catch (error) {
+    // A text that could not be read says why; otherwise nothing is sure: the report tab asks for the kind itself.
+    if (error instanceof ExtractionNotReady && error.reason) return { started: false, refused: error.reason };
   }
   if (!start) return { started: false, refused: null };
   try {

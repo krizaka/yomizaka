@@ -1,5 +1,5 @@
 import { localDay } from "@krizaka/intl";
-import { type Analysis, AUTHENTICITY_MAX_BYTES, COMPLIANCE_MAX_CHARS, DOCX_MIME, fromRunStatus, isTerminal, ODT_MIME, type OrazakaRun, reportOf, type StartAnalysis,type StorageKind } from "@yomizaka/core";
+import { type Analysis, AUTHENTICITY_MAX_BYTES, COMPLIANCE_MAX_CHARS, DOCX_MIME, type ExtractionStatus, fromRunStatus, isExtracting, isTerminal, ODT_MIME, type OrazakaRun, reportOf, type StartAnalysis,type StorageKind } from "@yomizaka/core";
 
 import { assertAnalysisAllowed } from "./applicant-consent";
 import { refundFailedAudit } from "./billing";
@@ -40,8 +40,11 @@ export function searchText(report: ReturnType<typeof reportOf>): string {
 
 export async function startAnalysis(ownerId: string, documentId: string, request: StartAnalysis, flowVersionId: string | null = null, billedVia: string | null = null, store?: DocumentStore): Promise<Analysis> {
   if (!isUuid(documentId)) throw refuse(404, "NOT_FOUND", "No such document");
-  const [doc] = await query<{ mime_type: string; text: string; content: Buffer; storage: StorageKind; screening_id: string | null }>("SELECT mime_type, text, content, storage, screening_id FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, documentId]);
+  const [doc] = await query<{ mime_type: string; text: string; content: Buffer; storage: StorageKind; screening_id: string | null; extraction: ExtractionStatus; extraction_error: string | null }>("SELECT mime_type, text, content, storage, screening_id, extraction, extraction_error FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, documentId]);
   if (!doc) throw refuse(404, "NOT_FOUND", "No such document");
+  // The text is read after the upload answered (yomizaka#21): a check waits for it, or says why it will never come.
+  if (isExtracting(doc.extraction)) throw refuse(409, "EXTRACTING", "The document is still being read");
+  if (doc.extraction === "failed") throw refuse(422, doc.extraction_error ?? "UNREADABLE_FILE", "The document could not be read");
   // A document of an application is checked only while the applicant's consent to the document check stands (yomizaka#131).
   await assertAnalysisAllowed(doc.screening_id);
   // The file comes from where the document lives (a purged one has none: 409 NOT_KEPT); the compliance check reads the text, which a purge also removes.

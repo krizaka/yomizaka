@@ -23,7 +23,7 @@ and a real run. The Dev preview is **web only** (phone-first); the phone app (`a
 ## What it does
 
 - **Library** — upload PDF, Word (.docx), OpenDocument text (.odt) or plain text files (a queue that pauses, resumes and retries); each is kept as sent, its text
-  layer read for search, its SHA-256 recorded; a file sent twice is one document.
+  layer read for search (in an isolated worker, after the upload answered 202 Accepted), its SHA-256 recorded; a file sent twice is one document.
 - **Document verification** — a lease read entry by entry against the extraction matrices and technical templates of its jurisdiction
   (Québec, France, Wallonia) in force on a date, tools validated by the client's counsel: each finding gives its entry, severity, verdict,
   citation and the exact passage, highlighted in the text. Yomizaka verifies documents and screens files; it never verifies an identity.

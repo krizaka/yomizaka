@@ -1,4 +1,4 @@
-import { analysis, BATCH_CHECKS, BATCH_ITEM_STATES, closingNote, documentSummary, type StartAnalysis, storageDescriptor, writeBatchManifest } from "@yomizaka/core";
+import { analysis, BATCH_CHECKS, BATCH_ITEM_STATES, closingNote, documentSummary, isExtracting, type StartAnalysis, storageDescriptor, waitForExtraction, type WaitOptions, writeBatchManifest } from "@yomizaka/core";
 import { z } from "zod";
 
 import { limitsFromConfig, type PreflightLimits } from "./preflight";
@@ -23,7 +23,7 @@ const appConfig = z.object({ config: z.object({ maxFileBytes: z.number(), allowe
 const uploaded = z.object({ document: documentSummary, duplicate: z.boolean() });
 const started = z.object({ analysis, reused: z.boolean().optional() });
 const analysisAnswer = z.object({ analysis, closingNote: closingNote.nullable() });
-const documentAnswer = z.object({ document: documentSummary.extend({ analyses: z.array(analysis), storage: storageDescriptor.optional() }) });
+const documentAnswer = z.object({ document: documentSummary.extend({ analyses: z.array(analysis), storage: storageDescriptor.optional(), extractionError: z.string().nullable().optional() }) });
 const tag = z.object({ id: z.string(), name: z.string(), color: z.string() });
 const libraries = z.object({
   libraries: z.array(z.object({ id: z.string(), name: z.string(), collections: z.array(z.object({ id: z.string(), name: z.string(), files: z.number(), folders: z.number(), tags: z.array(tag) })) })),
@@ -60,7 +60,7 @@ export type BatchCheck = keyof typeof BATCH_CHECKS;
  * Yomizaka's API as the apps use it. Every answer is parsed at the edge: a shape the server did not promise stops here,
  * never inside a screen.
  */
-export function createYomizakaApi(port: ApiPort, session: SessionPort) {
+export function createYomizakaApi(port: ApiPort, session: SessionPort, wait: WaitOptions = {}) {
   const get = <T extends z.ZodType>(schema: T, path: string): Promise<z.infer<T>> => port.call<unknown>(path).then((value) => schema.parse(value));
   return {
     /** The account signs in; its bearer token is kept by `session`. */
@@ -79,9 +79,16 @@ export function createYomizakaApi(port: ApiPort, session: SessionPort) {
     async fetchLimits(): Promise<PreflightLimits> {
       return limitsFromConfig((await get(appConfig, "/api/me/app")).config);
     },
-    /** One file as multipart (field `file`): never kept by the server, the document is purged after its check. */
+    /**
+     * One file as multipart (field `file`): never kept by the server, the document is purged after its check. The server answers
+     * 202 Accepted and reads the text after the answer (yomizaka#21): this resolves when the text is read, so a screen checks
+     * what it was handed. A reading that failed rejects with `ExtractionNotReady` (its `reason` is the code to show).
+     */
     async uploadDocument(form: FormData) {
-      return uploaded.parse(await port.call("/api/documents", { method: "POST", body: form }));
+      const answer = uploaded.parse(await port.call("/api/documents", { method: "POST", body: form }));
+      if (!isExtracting(answer.document.extraction)) return answer;
+      const read = await waitForExtraction(() => get(documentAnswer, `/api/documents/${answer.document.id}`).then((r) => r.document), wait);
+      return { ...answer, document: { ...answer.document, ...read, extraction: read.extraction } };
     },
     listDocuments: () => get(z.object({ documents: z.array(documentSummary) }), "/api/documents").then((r) => r.documents),
     async startAnalysis(documentId: string, request: StartAnalysis) {

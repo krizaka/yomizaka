@@ -502,6 +502,7 @@
       "failed": "Échec de la vérification"
     },
     "document": {
+      "reading": "Yomizaka lit le document…",
       "back": "Bibliothèque",
       "details": "Détails",
       "file": "Fichier",
@@ -736,6 +737,7 @@
       "NOT_A_PDF": "Yomizaka examine les fichiers PDF, Word (.docx) et OpenDocument (.odt).",
       "PDF_TOO_LARGE": "Yomizaka examine les fichiers jusqu'à 5 Mo.",
       "ALREADY_RUNNING": "Cette vérification est déjà en cours.",
+      "EXTRACTING": "Yomizaka lit encore ce document. Réessayez dans un instant.",
       "ORAZAKA_NOT_CONFIGURED": "La connexion à Orazaka n'est pas configurée.",
       "ORAZAKA_UNAVAILABLE": "Orazaka n'a pas répondu. Réessayez dans un instant.",
       "ORAZAKA_KEY": "Orazaka a refusé la clé de Yomizaka.",

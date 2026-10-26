@@ -502,6 +502,7 @@
       "failed": "Check failed"
     },
     "document": {
+      "reading": "Yomizaka is reading the document…",
       "back": "Library",
       "details": "Details",
       "file": "File",
@@ -736,6 +737,7 @@
       "NOT_A_PDF": "Yomizaka examines PDF, Word (.docx) and OpenDocument (.odt) files.",
       "PDF_TOO_LARGE": "Yomizaka examines files up to 5 MB.",
       "ALREADY_RUNNING": "This check is already running.",
+      "EXTRACTING": "Yomizaka is still reading this document. Try again in a moment.",
       "ORAZAKA_NOT_CONFIGURED": "The connection to Orazaka is not configured.",
       "ORAZAKA_UNAVAILABLE": "Orazaka did not answer. Try again in a moment.",
       "ORAZAKA_KEY": "Orazaka refused Yomizaka's key.",
