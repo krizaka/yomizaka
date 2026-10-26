@@ -66,34 +66,98 @@ export function detectDelimiter(header: string): "," | ";" | "\t" {
   return ([",", ";", "\t"] as const).reduce((best, c) => (count(c) > count(best) ? c : best), ",");
 }
 
+interface CsvState {
+  records: string[][];
+  record: string[];
+  field: string;
+  quoted: boolean;
+}
+
+const endField = (s: CsvState) => {
+  s.record.push(s.field);
+  s.field = "";
+};
+const endRecord = (s: CsvState) => {
+  endField(s);
+  s.records.push(s.record);
+  s.record = [];
+};
+
+/** One character inside quotes: a doubled quote is a quote, a lone one closes the field. Returns the index of the last character consumed. */
+function stepQuoted(s: CsvState, src: string, i: number): number {
+  const c = src[i]!;
+  if (c !== '"') s.field += c;
+  else if (src[i + 1] === '"') {
+    s.field += '"';
+    return i + 1;
+  } else s.quoted = false;
+  return i;
+}
+
+/** One character outside quotes: a quote opens a field, a delimiter ends it, a line break ends the record. Returns the index of the last character consumed. */
+function stepPlain(s: CsvState, src: string, i: number, delimiter: string): number {
+  const c = src[i]!;
+  if (c === '"' && s.field === "") s.quoted = true;
+  else if (c === delimiter) endField(s);
+  else if (c === "\n" || c === "\r") {
+    const crlf = c === "\r" && src[i + 1] === "\n";
+    endRecord(s);
+    return crlf ? i + 1 : i;
+  } else s.field += c;
+  return i;
+}
+
 /** RFC 4180 records: quoted fields, doubled quotes, separators and line breaks inside quotes, CRLF or LF, a leading BOM. */
 export function parseCsv(text: string, delimiter = detectDelimiter(text.replace(/^﻿/, "").split(/\r?\n/)[0] ?? "")): string[][] {
   const src = text.replace(/^﻿/, "");
-  const records: string[][] = [];
-  let field = "";
-  let record: string[] = [];
-  let quoted = false;
+  const state: CsvState = { records: [], record: [], field: "", quoted: false };
   for (let i = 0; i < src.length; i++) {
-    const c = src[i]!;
-    if (quoted) {
-      if (c === '"' && src[i + 1] === '"') (field += '"'), i++;
-      else if (c === '"') quoted = false;
-      else field += c;
-    } else if (c === '"' && field === "") quoted = true;
-    else if (c === delimiter) record.push(field), (field = "");
-    else if (c === "\n" || c === "\r") {
-      if (c === "\r" && src[i + 1] === "\n") i++;
-      record.push(field), records.push(record), (record = []), (field = "");
-    } else field += c;
+    i = state.quoted ? stepQuoted(state, src, i) : stepPlain(state, src, i, delimiter);
   }
-  if (field !== "" || record.length) record.push(field), records.push(record);
-  return records.filter((r) => r.some((f) => f.trim() !== ""));
+  if (state.field !== "" || state.record.length) endRecord(state);
+  return state.records.filter((r) => r.some((f) => f.trim() !== ""));
 }
 
 /** Lower case, no accents, no spaces, dashes or underscores: « Émetteur attendu » and « expected_issuer » read as one. */
 const norm = (s: string) => s.trim().toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").replace(/[\s_-]+/g, "");
 const COLUMN_OF = new Map<string, BatchColumn>([...BATCH_COLUMNS.map((c) => [norm(c), c] as const), ...Object.entries(BATCH_COLUMN_ALIASES)]);
 const cell = (s: string | undefined) => (s ?? "").trim() || null;
+
+type CellReader = (c: BatchColumn) => string | null;
+
+/** The request a row asks for, once its check is known: the same options a single check sends. */
+function requestOf(studio: string, get: CellReader): StartAnalysis | null {
+  const parsed = startAnalysis.safeParse(
+    studio === BATCH_CHECKS.compliance
+      ? { studio, jurisdiction: (get("jurisdiction") ?? "QC").toUpperCase(), ...(get("ruleset") ? { ruleset: get("ruleset") } : {}) }
+      : { studio, ...(get("expectedIssuer") ? { expectedIssuer: get("expectedIssuer") } : {}) },
+  );
+  return parsed.success ? parsed.data : null;
+}
+
+/** One body row against the single-check rules; `seen` holds the file+check pairs already read (a repeat is one check asked twice). */
+function readBatchRow(fields: string[], columns: (BatchColumn | null)[], n: number, seen: Map<string, number>): BatchRow {
+  const get: CellReader = (c) => cell(fields[columns.indexOf(c)]);
+  const errors: BatchRowError[] = [];
+  const file = get("file") ?? "";
+  if (!file) errors.push(BATCH_ROW_ERROR.missingFile);
+  const studio = BATCH_CHECKS[norm(get("check") ?? "") as keyof typeof BATCH_CHECKS];
+  let request: StartAnalysis | null = null;
+  if (!studio) errors.push(BATCH_ROW_ERROR.unknownCheck);
+  else {
+    request = requestOf(studio, get);
+    if (!request) errors.push(BATCH_ROW_ERROR.invalidOptions);
+  }
+  const kind = get("documentType")?.toLowerCase() ?? null;
+  const unknownKind = !!kind && !(DOCUMENT_KINDS as readonly string[]).includes(kind);
+  if (unknownKind) errors.push(BATCH_ROW_ERROR.unknownDocumentType);
+  // The same file and the same check twice is one check asked twice: the second row says so.
+  const key = `${file.toLowerCase()}|${studio ?? ""}`;
+  if (file && seen.has(key)) errors.push(BATCH_ROW_ERROR.duplicateRow);
+  else seen.set(key, n);
+  const documentType = kind && !unknownKind ? (kind as BatchRow["documentType"]) : null;
+  return { line: n + 2, file, request, documentType, reference: get("reference"), collection: get("collection"), errors };
+}
 
 /** The manifest from the CSV's text: its header read by name, every row checked against the single-check rules. */
 export function readBatchManifest(text: string): BatchManifest {
@@ -102,31 +166,7 @@ export function readBatchManifest(text: string): BatchManifest {
   const unknownColumns = header.filter((_, i) => columns[i] === null).map((h) => h.trim()).filter(Boolean);
   const missingColumns = REQUIRED.filter((c) => !columns.includes(c));
   const seen = new Map<string, number>();
-  const rows = body.map((fields, n): BatchRow => {
-    const get = (c: BatchColumn) => cell(fields[columns.indexOf(c)]);
-    const errors: BatchRowError[] = [];
-    const file = get("file") ?? "";
-    if (!file) errors.push(BATCH_ROW_ERROR.missingFile);
-    const studio = BATCH_CHECKS[norm(get("check") ?? "") as keyof typeof BATCH_CHECKS];
-    let request: StartAnalysis | null = null;
-    if (!studio) errors.push(BATCH_ROW_ERROR.unknownCheck);
-    else {
-      const parsed = startAnalysis.safeParse(
-        studio === BATCH_CHECKS.compliance
-          ? { studio, jurisdiction: (get("jurisdiction") ?? "QC").toUpperCase(), ...(get("ruleset") ? { ruleset: get("ruleset") } : {}) }
-          : { studio, ...(get("expectedIssuer") ? { expectedIssuer: get("expectedIssuer") } : {}) },
-      );
-      if (parsed.success) request = parsed.data;
-      else errors.push(BATCH_ROW_ERROR.invalidOptions);
-    }
-    const kind = get("documentType")?.toLowerCase() ?? null;
-    if (kind && !(DOCUMENT_KINDS as readonly string[]).includes(kind)) errors.push(BATCH_ROW_ERROR.unknownDocumentType);
-    // The same file and the same check twice is one check asked twice: the second row says so.
-    const key = `${file.toLowerCase()}|${studio ?? ""}`;
-    if (file && seen.has(key)) errors.push(BATCH_ROW_ERROR.duplicateRow);
-    else seen.set(key, n);
-    return { line: n + 2, file, request, documentType: kind && !errors.includes(BATCH_ROW_ERROR.unknownDocumentType) ? (kind as BatchRow["documentType"]) : null, reference: get("reference"), collection: get("collection"), errors };
-  });
+  const rows = body.map((fields, n) => readBatchRow(fields, columns, n, seen));
   return { rows, missingColumns, unknownColumns };
 }
 

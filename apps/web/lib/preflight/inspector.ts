@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import { inflateRawSync } from "node:zlib";
 
 import { ODT_MIME } from "@yomizaka/core";
-import { EncryptedPDFError, PDFArray, PDFDict, PDFDocument, PDFName } from "pdf-lib";
+import { EncryptedPDFError, PDFArray, PDFDict, PDFDocument, PDFName, type PDFPage } from "pdf-lib";
 
 import { imageSize, isHeif } from "./image-size";
 import type { DocumentPreflight, FileKind, Inspection, PdfFacts, PreflightRules, RejectReason } from "./port";
@@ -122,83 +122,124 @@ function pdfFacts(doc: PDFDocument, raw: string): PdfFacts {
   };
 }
 
-/** Actions that run something, on the catalogue and on each annotation of the first pages — in object streams too. */
-function treeHasActiveContent(doc: PDFDocument, active: ReadonlySet<string>, pageLimit: number): boolean {
+/** Whether the catalogue itself runs something when the file opens (an open action, additional actions, scripts or attachments). */
+function catalogHasActiveContent(doc: PDFDocument, active: ReadonlySet<string>): boolean {
   const catalog = doc.catalog;
   for (const key of ["OpenAction", "AA"]) if (active.has(key) && catalog.has(PDFName.of(key))) return true;
   const names = catalog.lookupMaybe(PDFName.of("Names"), PDFDict);
-  if (names) for (const key of ["JavaScript", "EmbeddedFiles"]) if (active.has(key) && names.has(PDFName.of(key))) return true;
-  for (const page of doc.getPages().slice(0, pageLimit)) {
-    const annots = page.node.lookupMaybe(PDFName.of("Annots"), PDFArray);
-    for (let i = 0; annots && i < annots.size(); i++) {
-      const action = annots.lookupMaybe(i, PDFDict)?.lookupMaybe(PDFName.of("A"), PDFDict);
-      const type = action?.get(PDFName.of("S"))?.toString().slice(1);
-      if (type && active.has(type)) return true;
-    }
+  return !!names && ["JavaScript", "EmbeddedFiles"].some((key) => active.has(key) && names.has(PDFName.of(key)));
+}
+
+/** Whether one of the page's annotations carries an action that runs something. */
+function pageHasActiveAnnotation(page: PDFPage, active: ReadonlySet<string>): boolean {
+  const annots = page.node.lookupMaybe(PDFName.of("Annots"), PDFArray);
+  for (let i = 0; annots && i < annots.size(); i++) {
+    const action = annots.lookupMaybe(i, PDFDict)?.lookupMaybe(PDFName.of("A"), PDFDict);
+    const type = action?.get(PDFName.of("S"))?.toString().slice(1);
+    if (type && active.has(type)) return true;
   }
   return false;
 }
 
+/** Actions that run something, on the catalogue and on each annotation of the first pages — in object streams too. */
+function treeHasActiveContent(doc: PDFDocument, active: ReadonlySet<string>, pageLimit: number): boolean {
+  return catalogHasActiveContent(doc, active) || doc.getPages().slice(0, pageLimit).some((page) => pageHasActiveAnnotation(page, active));
+}
+
 const reject = (reason: RejectReason, detail?: string): Inspection => ({ kind: "rejected", reason, ...(detail ? { detail } : {}) });
+const ARCHIVE_KINDS: ReadonlySet<FileKind> = new Set<FileKind>(["zip", "docx", "odt"]);
+const IMAGE_KINDS: ReadonlySet<FileKind> = new Set<FileKind>(["png", "jpeg", "heic"]);
+
+/** Size limits, before anything reads the bytes. */
+function sizeRejection(bytes: Uint8Array, rules: PreflightRules): Inspection | null {
+  if (bytes.length === 0) return reject("EMPTY");
+  return bytes.length > rules.maxBytes ? reject("TOO_LARGE", String(bytes.length)) : null;
+}
+
+/** An OpenDocument's main part must be readable within its bound and carry no script. */
+function odtRejection(bytes: Uint8Array): Inspection | null {
+  const xml = zipEntryBytes(bytes, "content.xml", MAX_OFFICE_PART_BYTES)?.toString("utf8");
+  if (xml === undefined) return reject("CORRUPT");
+  return /<(?:[\w.-]+:)?(?:script|event-listener)(?=[\s/>])/i.test(xml) ? reject("ACTIVE_CONTENT") : null;
+}
+
+/** What the bytes are against what was claimed, the archive guards and the kinds the workspace accepts. */
+function typeRejection(bytes: Uint8Array, detected: FileKind, declared: { name: string; type: string }, rules: PreflightRules): Inspection | null {
+  if (detected === "executable") return reject("EXECUTABLE");
+  const said = claimed(declared);
+  if (said && said !== detected && !(said === "text" && detected === "unknown")) return reject("TYPE_MISMATCH", `${said} ≠ ${detected}`);
+  if (ARCHIVE_KINDS.has(detected)) {
+    const problem = archiveProblem(bytes, rules);
+    if (problem) return reject(problem);
+  }
+  if (!rules.allowedKinds.includes(detected)) return reject("UNSUPPORTED_TYPE", detected);
+  return detected === "odt" ? odtRejection(bytes) : null;
+}
+
+/** The kinds that are not a PDF: text and office files are accepted as they are, an image unless its header declares too many pixels. */
+function inspectOther(bytes: Uint8Array, detected: FileKind, sha256: string, rules: PreflightRules): Inspection {
+  const accepted = (fileKind: FileKind): Inspection => ({ kind: "accepted", fileKind, sha256, pages: null, facts: null });
+  if (IMAGE_KINDS.has(detected)) {
+    const size = imageSize(bytes);
+    return size && size.width * size.height > rules.maxImagePixels ? reject("IMAGE_TOO_LARGE", `${size.width}x${size.height}`) : accepted(detected);
+  }
+  // An office file passed the archive guards above (no macro, no bomb): its pages are not counted (no layout here).
+  return detected === "text" || detected === "docx" || detected === "odt" ? accepted(detected) : reject("UNSUPPORTED_TYPE", detected);
+}
+
+/** The PDF's raw bytes: a cut file, an encrypted one, one that names an active action. */
+function pdfRawRejection(raw: string, active: ReadonlySet<string>): Inspection | null {
+  const tail = raw.slice(-2048);
+  if (!/startxref/.test(tail) || !/%%EOF/.test(tail)) return reject("TRUNCATED");
+  const names = pdfNames(raw);
+  if (names.has("Encrypt")) return reject("ENCRYPTED");
+  const found = [...names].filter((n) => active.has(n));
+  return found.length ? reject("ACTIVE_CONTENT", found.sort().join(", ")) : null;
+}
+
+/** The parsed PDF: its page count against the rules and its object tree. */
+function pdfTreeRejection(doc: PDFDocument, rules: PreflightRules, active: ReadonlySet<string>): Inspection | null {
+  let pages: number;
+  try {
+    pages = doc.getPageCount();
+  } catch {
+    return reject("CORRUPT", "page tree");
+  }
+  if (pages < 1) return reject("CORRUPT", "no page");
+  if (pages > rules.maxPages) return reject("TOO_MANY_PAGES", String(pages));
+  try {
+    return treeHasActiveContent(doc, active, rules.maxPages) ? reject("ACTIVE_CONTENT", "object tree") : null;
+  } catch {
+    return reject("CORRUPT", "object tree");
+  }
+}
+
+async function inspectPdf(bytes: Uint8Array, sha256: string, rules: PreflightRules, active: ReadonlySet<string>): Promise<Inspection> {
+  const raw = ascii(bytes, 0, bytes.length);
+  const rawRejection = pdfRawRejection(raw, active);
+  if (rawRejection) return rawRejection;
+  let doc: PDFDocument;
+  try {
+    doc = await PDFDocument.load(bytes, { updateMetadata: false, throwOnInvalidObject: true });
+  } catch (error) {
+    return error instanceof EncryptedPDFError ? reject("ENCRYPTED") : reject("CORRUPT");
+  }
+  const treeRejection = pdfTreeRejection(doc, rules, active);
+  if (treeRejection) return treeRejection;
+  return { kind: "accepted", fileKind: "pdf", sha256, pages: doc.getPageCount(), facts: pdfFacts(doc, raw) };
+}
 
 export function createInspector(rules: PreflightRules): DocumentPreflight {
   const active = new Set(rules.pdfActiveNames);
   return {
     async inspect(bytes, declared) {
-      if (bytes.length === 0) return reject("EMPTY");
-      if (bytes.length > rules.maxBytes) return reject("TOO_LARGE", String(bytes.length));
+      const tooBig = sizeRejection(bytes, rules);
+      if (tooBig) return tooBig;
       const detected = sniff(bytes);
-      if (detected === "executable") return reject("EXECUTABLE");
-      const said = claimed(declared);
-      if (said && said !== detected && !(said === "text" && detected === "unknown")) return reject("TYPE_MISMATCH", `${said} ≠ ${detected}`);
-      if (detected === "zip" || detected === "docx" || detected === "odt") {
-        const problem = archiveProblem(bytes, rules);
-        if (problem) return reject(problem);
-      }
-      if (!rules.allowedKinds.includes(detected)) return reject("UNSUPPORTED_TYPE", detected);
-      if (detected === "odt") {
-        const xml = zipEntryBytes(bytes, "content.xml", MAX_OFFICE_PART_BYTES)?.toString("utf8");
-        if (xml === undefined) return reject("CORRUPT");
-        if (/<(?:[\w.-]+:)?(?:script|event-listener)(?=[\s/>])/i.test(xml)) return reject("ACTIVE_CONTENT");
-      }
+      const refused = typeRejection(bytes, detected, declared, rules);
+      if (refused) return refused;
       const sha256 = crypto.createHash("sha256").update(bytes).digest("hex");
-
-      if (detected === "text") return { kind: "accepted", fileKind: "text", sha256, pages: null, facts: null };
-      if (detected === "png" || detected === "jpeg" || detected === "heic") {
-        const size = imageSize(bytes);
-        if (size && size.width * size.height > rules.maxImagePixels) return reject("IMAGE_TOO_LARGE", `${size.width}x${size.height}`);
-        return { kind: "accepted", fileKind: detected, sha256, pages: null, facts: null };
-      }
-      // An office file passed the archive guards above (no macro, no bomb): its pages are not counted (no layout here).
-      if (detected === "docx" || detected === "odt") return { kind: "accepted", fileKind: detected, sha256, pages: null, facts: null };
-      if (detected !== "pdf") return reject("UNSUPPORTED_TYPE", detected);
-
-      const raw = ascii(bytes, 0, bytes.length);
-      const tail = raw.slice(-2048);
-      if (!/startxref/.test(tail) || !/%%EOF/.test(tail)) return reject("TRUNCATED");
-      const found = [...pdfNames(raw)].filter((n) => active.has(n));
-      if (pdfNames(raw).has("Encrypt")) return reject("ENCRYPTED");
-      if (found.length) return reject("ACTIVE_CONTENT", found.sort().join(", "));
-      let doc: PDFDocument;
-      try {
-        doc = await PDFDocument.load(bytes, { updateMetadata: false, throwOnInvalidObject: true });
-      } catch (error) {
-        return error instanceof EncryptedPDFError ? reject("ENCRYPTED") : reject("CORRUPT");
-      }
-      let pages: number;
-      try {
-        pages = doc.getPageCount();
-      } catch {
-        return reject("CORRUPT", "page tree");
-      }
-      if (pages < 1) return reject("CORRUPT", "no page");
-      if (pages > rules.maxPages) return reject("TOO_MANY_PAGES", String(pages));
-      try {
-        if (treeHasActiveContent(doc, active, rules.maxPages)) return reject("ACTIVE_CONTENT", "object tree");
-      } catch {
-        return reject("CORRUPT", "object tree");
-      }
-      return { kind: "accepted", fileKind: "pdf", sha256, pages, facts: pdfFacts(doc, raw) };
+      return detected === "pdf" ? inspectPdf(bytes, sha256, rules, active) : inspectOther(bytes, detected, sha256, rules);
     },
   };
 }

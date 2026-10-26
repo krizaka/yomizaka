@@ -28,6 +28,30 @@ export function docxText(bytes: Uint8Array): string {
   return text;
 }
 
+/** The depth of the tracked changes (history the reader never sees) after a tag: a closing one leaves, an open one enters, a self-closed one is nothing. */
+function historyDepth(depth: number, closing: boolean, empty: boolean): number {
+  if (closing) return Math.max(0, depth - 1);
+  return empty ? depth : depth + 1;
+}
+
+/** The depth of open paragraphs after a tag: text is read only inside one. */
+function paragraphDepth(depth: number, closing: boolean, empty: boolean): number {
+  if (empty) return depth;
+  return Math.max(0, depth + (closing ? -1 : 1));
+}
+
+/** What a tag or a run adds inside a paragraph: its text, a tab, a break, a space — a closing tag adds nothing. */
+function inlineText(name: string | undefined, closing: boolean, run: string | undefined): string {
+  if (run !== undefined) return decode(run);
+  if (closing) return "";
+  if (name === "text:tab") return "\t";
+  if (name === "text:line-break") return "\n";
+  return name === "text:s" ? " " : "";
+}
+
+const isBlock = (name: string | undefined) => name === "text:p" || name === "text:h";
+const isNote = (name: string | undefined) => name === "text:note" || name === "text:note-citation";
+
 /** OpenDocument's content.xml: headings and paragraphs, with inline text, tabs and line breaks kept. */
 export function odtText(bytes: Uint8Array): string {
   const xml = zipEntryBytes(bytes, "content.xml", MAX_OFFICE_PART_BYTES)?.toString("utf8") ?? "";
@@ -37,20 +61,17 @@ export function odtText(bytes: Uint8Array): string {
   for (const [token, closing, name, run] of xml.matchAll(/<(\/?)(text:(?:p|h|tracked-changes|s|tab|line-break|note|note-citation))(?=[\s/>])[^<>]*>|<[^<>]*>|([^<]+)/g)) {
     const empty = token.endsWith("/>");
     if (name === "text:tracked-changes") {
-      history = Math.max(0, history + (closing ? -1 : empty ? 0 : 1));
+      history = historyDepth(history, !!closing, empty);
       continue;
     }
     if (history) continue;
-    if (name === "text:p" || name === "text:h") {
+    if (isBlock(name)) {
       if (closing || empty) text += "\n";
-      if (!empty) paragraphs = Math.max(0, paragraphs + (closing ? -1 : 1));
-    } else if (name === "text:note" || name === "text:note-citation") {
+      paragraphs = paragraphDepth(paragraphs, !!closing, empty);
+    } else if (isNote(name)) {
       text += "\n";
     } else if (paragraphs) {
-      if (run !== undefined) text += decode(run);
-      else if (!closing && name === "text:tab") text += "\t";
-      else if (!closing && name === "text:line-break") text += "\n";
-      else if (!closing && name === "text:s") text += " ";
+      text += inlineText(name, !!closing, run);
     }
   }
   return text;
