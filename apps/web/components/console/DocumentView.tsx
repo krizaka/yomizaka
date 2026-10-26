@@ -1,12 +1,13 @@
 "use client";
 
 import { krizakaFetch, useMutation, useQuery, useQueryClient } from "@krizaka/query";
+import { Alert } from "@krizaka/ui/alert";
 import { Badge } from "@krizaka/ui/badge";
 import { DescriptionList } from "@krizaka/ui/description-list";
 import { DetailLayout } from "@krizaka/ui/detail-layout";
 import type { Located } from "@krizaka/ui/document-viewer";
 import { Tabs } from "@krizaka/ui/tabs";
-import { ANALYSIS_STATUS, type Audience, type DocumentView as DocumentViewData, documentView, type Jurisdiction, queryKeys, type Studio } from "@yomizaka/core";
+import { ANALYSIS_STATUS, type Audience, type DocumentView as DocumentViewData, documentView, isExtracting, type Jurisdiction, queryKeys, type Studio } from "@yomizaka/core";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
@@ -91,6 +92,8 @@ export function DocumentView({ initial, tab, place = null, perspective = null, o
     queryKey: queryKeys.document(initial.id),
     queryFn: () => krizakaFetch(`/api/documents/${initial.id}`, { schema: z.object({ document: documentView }) }).then((r) => r.document),
     initialData: initial,
+    // The text is read after the upload answered (202 Accepted): look again until it is.
+    refetchInterval: (query) => (isExtracting(query.state.data?.extraction) ? 1500 : false),
   }).data;
   const remove = useMutation({
     mutationFn: () => krizakaFetch(`/api/documents/${initial.id}`, { method: "DELETE" }),
@@ -151,6 +154,8 @@ export function DocumentView({ initial, tab, place = null, perspective = null, o
         facts.reported ? <ReportAside doc={doc} facts={facts} placeName={placeName} retention={retention} startProps={startProps} /> : undefined
       }
     >
+      {isExtracting(doc.extraction) ? <Alert tone="info">{say("document.reading")}</Alert> : null}
+      {doc.extraction === "failed" ? <Alert tone="danger">{say(`errors.${doc.extractionError ?? "UNREADABLE_FILE"}`)}</Alert> : null}
       {doc.analyses.filter((a) => a.status === ANALYSIS_STATUS.running).map((a) => (
         <LiveAnalysis key={a.id} documentId={doc.id} analysis={a} />
       ))}

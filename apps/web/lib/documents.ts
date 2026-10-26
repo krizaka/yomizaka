@@ -1,6 +1,7 @@
-import { type AcceptedType, type Analysis, type AnalysisStatus, type AuthenticityReport, type CloudOwner, type ComplianceReport, type DocumentDetail, type DocumentInsight, type DocumentKind, type DocumentStatus, type DocumentSummary, DOCX_MIME, ODT_MIME, type StorageKind, type Studio, type TextSource } from "@yomizaka/core";
+import { type AcceptedType, type Analysis, type AnalysisStatus, type AuthenticityReport, type CloudOwner, type ComplianceReport, type DocumentDetail, type DocumentInsight, type DocumentKind, type DocumentStatus, type DocumentSummary, DOCX_MIME, type ExtractionStatus, ODT_MIME, type StorageKind, type Studio, type TextSource } from "@yomizaka/core";
 
 import { query } from "./db";
+import { ExtractionError } from "./extraction/isolated";
 import { isGenericName } from "./generic-name";
 import { HttpError, refuse } from "./http";
 import { readText } from "./pdf-text";
@@ -23,6 +24,7 @@ interface DocumentRow {
   pages: number | null;
   has_text: boolean;
   created_at: Date;
+  extraction: ExtractionStatus;
   statuses: { studio: Studio; status: AnalysisStatus; attention: boolean }[] | null;
 }
 
@@ -56,7 +58,9 @@ export function documentStatus(latest: { status: AnalysisStatus; attention: bool
   return "checked";
 }
 
+// A reading that was queued or running and never ended (the process restarted) is shown as failed after a few minutes, never as an endless wait.
 const SUMMARY_COLUMNS = `d.id, d.title, d.filename, d.mime_type, d.kind, d.size_bytes, d.pages, d.text <> '' AS has_text, d.created_at,
+  CASE WHEN d.extraction IN ('queued', 'running') AND d.extraction_at < now() - interval '3 minutes' THEN 'failed' ELSE d.extraction END AS extraction,
   (SELECT json_agg(json_build_object('studio', l.studio, 'status', l.status, 'attention', l.attention))
      FROM (SELECT DISTINCT ON (a.studio) a.studio, a.status, coalesce((a.report->>'attention')::boolean, false) AS attention
              FROM analyses a WHERE a.document_id = d.id ORDER BY a.studio, a.created_at DESC) l) AS statuses`;
@@ -72,6 +76,7 @@ function summary(row: DocumentRow): DocumentSummary {
     pages: row.pages,
     hasText: row.has_text,
     status: documentStatus(row.statuses ?? []),
+    extraction: row.extraction,
     createdAt: row.created_at.toISOString(),
   };
 }
@@ -108,10 +113,10 @@ export async function documentsByIds(ownerId: string, ids: string[]): Promise<Do
 
 export async function getDocument(ownerId: string, id: string): Promise<DocumentDetail> {
   if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such document");
-  const [row] = await query<DocumentRow & { sha256: string; text: string; text_source: TextSource | null }>(`SELECT ${SUMMARY_COLUMNS}, d.sha256, d.text, d.text_source FROM documents d WHERE d.owner_id = $1 AND d.id = $2`, [ownerId, id]);
+  const [row] = await query<DocumentRow & { sha256: string; text: string; text_source: TextSource | null; extraction_error: string | null }>(`SELECT ${SUMMARY_COLUMNS}, d.sha256, d.text, d.text_source, d.extraction_error FROM documents d WHERE d.owner_id = $1 AND d.id = $2`, [ownerId, id]);
   if (!row) throw refuse(404, "NOT_FOUND", "No such document");
   const analyses = await query<AnalysisRow>("SELECT * FROM analyses WHERE document_id = $1 ORDER BY created_at DESC LIMIT 50", [id]);
-  return { ...summary(row), sha256: row.sha256, text: row.text, textSource: row.text_source ?? undefined, insight: row.text ? insightOf(row.text, row.pages) : undefined, analyses: analyses.map(toAnalysis) };
+  return { ...summary(row), extractionError: row.extraction === "failed" ? (row.extraction_error ?? "UNREADABLE_FILE") : null, sha256: row.sha256, text: row.text, textSource: row.text_source ?? undefined, insight: row.text ? insightOf(row.text, row.pages) : undefined, analyses: analyses.map(toAnalysis) };
 }
 
 /** Whether a document was made from photos (its file is a PDF Yomizaka assembled: file-level authenticity signals would describe Yomizaka, not the document). */
@@ -248,6 +253,19 @@ export interface StoragePolicy {
 /** The text of a document that has no text layer — read only if the document is new (a duplicate is never read twice). */
 export type TextReader = () => Promise<{ text: string; source: TextSource }>;
 
+/** What the isolated PDF reader's failures say to the person: too long, too heavy to read in time, or simply not readable. */
+export function extractionRefusal(error: ExtractionError): HttpError {
+  switch (error.code) {
+    case "TOO_MANY_PAGES":
+      return refuse(422, "FILE_TOO_MANY_PAGES", "Refused: too many pages");
+    case "TIMEOUT":
+    case "MEMORY":
+      return refuse(422, "FILE_TOO_COMPLEX", "Refused: this PDF is too heavy to read within the limits");
+    default:
+      return refuse(422, "UNREADABLE_FILE", "This PDF cannot be opened");
+  }
+}
+
 /** The text of a new document: from the reader given (a photo), or from its text layer; an unreadable file is a 422. */
 async function readNewDocument(mimeType: AcceptedType, bytes: Uint8Array, pages: number | null, textOf?: TextReader): Promise<{ read: { text: string; pages: number | null }; source: TextSource | null }> {
   try {
@@ -256,21 +274,22 @@ async function readNewDocument(mimeType: AcceptedType, bytes: Uint8Array, pages:
     return { read: { text: recognised.text, pages }, source: recognised.source };
   } catch (error) {
     if (error instanceof HttpError) throw error;
+    if (error instanceof ExtractionError) throw extractionRefusal(error);
     throw refuse(422, "UNREADABLE_FILE", "This PDF cannot be opened");
   }
 }
 
 /** Writes the document's row: restores a purged duplicate in place, or inserts a new one. */
-async function saveDocumentRow(args: { ownerId: string; existingId: string | null; file: { filename: string; mimeType: AcceptedType; kind: DocumentKind; sha256: string; pages: number | null }; bytes: Uint8Array; text: string; where: StorageKind; deadline: Date | null; source: TextSource | null }): Promise<DocumentRow> {
-  const { ownerId, existingId, file, bytes, text, where, deadline, source } = args;
+async function saveDocumentRow(args: { ownerId: string; existingId: string | null; file: { filename: string; mimeType: AcceptedType; kind: DocumentKind; sha256: string; pages: number | null }; bytes: Uint8Array; text: string; where: StorageKind; deadline: Date | null; source: TextSource | null; extraction: "queued" | "done" }): Promise<DocumentRow> {
+  const { ownerId, existingId, file, bytes, text, where, deadline, source, extraction } = args;
   const [row] = existingId
-    ? await query<DocumentRow>(`WITH d AS (UPDATE documents SET content = $3, text = $4, storage = $5, retain_until = $6, text_source = $7 WHERE owner_id = $1 AND id = $2 RETURNING *) SELECT ${SUMMARY_COLUMNS} FROM d`, [ownerId, existingId, Buffer.from(bytes), text, where, deadline, source])
+    ? await query<DocumentRow>(`WITH d AS (UPDATE documents SET content = $3, text = $4, storage = $5, retain_until = $6, text_source = $7, extraction = $8, extraction_error = NULL, extraction_at = now() WHERE owner_id = $1 AND id = $2 RETURNING *) SELECT ${SUMMARY_COLUMNS} FROM d`, [ownerId, existingId, Buffer.from(bytes), text, where, deadline, source, extraction])
     : await query<DocumentRow>(
         `WITH d AS (
-           INSERT INTO documents (owner_id, title, filename, mime_type, kind, size_bytes, sha256, pages, content, text, storage, retain_until, text_source)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *)
+           INSERT INTO documents (owner_id, title, filename, mime_type, kind, size_bytes, sha256, pages, content, text, storage, retain_until, text_source, extraction)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *)
          SELECT ${SUMMARY_COLUMNS} FROM d`,
-        [ownerId, titleFor(file.filename, text), file.filename, file.mimeType, file.kind, bytes.length, file.sha256, file.pages, Buffer.from(bytes), text, where, deadline, source],
+        [ownerId, titleFor(file.filename, text), file.filename, file.mimeType, file.kind, bytes.length, file.sha256, file.pages, Buffer.from(bytes), text, where, deadline, source, extraction],
       );
   return row!;
 }
@@ -286,20 +305,39 @@ async function moveToStore(policy: StoragePolicy, ownerId: string, id: string, m
   await query("UPDATE documents SET content = ''::bytea, storage_owner = $2 WHERE id = $1", [id, policy.store.describe().owner === "workspace" ? "workspace" : "krizaka"]);
 }
 
-export async function storeDocument(ownerId: string, file: { name: string; type: string; size: number }, bytes: Uint8Array, requested: DocumentKind | "auto", policy?: StoragePolicy, textOf?: TextReader): Promise<{ summary: DocumentSummary; duplicate: boolean }> {
+export async function storeDocument(ownerId: string, file: { name: string; type: string; size: number }, bytes: Uint8Array, requested: DocumentKind | "auto", policy?: StoragePolicy, textOf?: TextReader, options: { defer?: boolean } = {}): Promise<{ summary: DocumentSummary; duplicate: boolean; finish?: () => Promise<void> }> {
   const { mimeType, sha256, pages } = await checkUpload(file, bytes, policy?.rules);
   const where = policy ? storageFor(policy.keep, policy.store.describe()) : "database";
   const [existing] = await query<DocumentRow & { purged: boolean }>(`SELECT ${SUMMARY_COLUMNS}, (d.storage = 'none' AND octet_length(d.content) = 0 AND d.text = '') AS purged FROM documents d WHERE d.owner_id = $1 AND d.sha256 = $2`, [ownerId, sha256]);
-  // The same file again: reused as it is — unless it was purged and the person now keeps it, then it is restored below.
-  if (existing && !(existing.purged && where !== "none")) return { summary: summary(existing), duplicate: true };
-  const { read, source } = await readNewDocument(mimeType, bytes, pages, textOf);
-  const kind = requested === "auto" ? kindFromNature(understanding.understand(read.text, { pages: read.pages }).nature?.id ?? null) : requested;
+  // The same file again: reused as it is — unless it was purged and the person now keeps it, then it is restored below; or its reading failed, then it is read again.
+  if (existing && existing.extraction !== "failed" && !(existing.purged && where !== "none")) return { summary: summary(existing), duplicate: true };
   const filename = safeFilename(file.name);
   const deadline = where === "none" && policy ? purgeDeadline(policy.now, policy.purgeAfterHours) : null;
+  // Deferred (the upload route): the row is saved at once with its text still to read — an isolated worker reads it after the answer (yomizaka#21).
+  const deferred = options.defer === true && !textOf;
+  const { read, source } = deferred ? { read: { text: "", pages }, source: null } : await readNewDocument(mimeType, bytes, pages, textOf);
+  const kind = requested !== "auto" ? requested : deferred ? "other" : kindFromNature(understanding.understand(read.text, { pages: read.pages }).nature?.id ?? null);
   // The bytes sit in the database until the document is placed (and, if not kept, until its check has run).
-  const row = await saveDocumentRow({ ownerId, existingId: existing?.id ?? null, file: { filename, mimeType, kind, sha256, pages: read.pages }, bytes, text: read.text, where, deadline, source });
+  const row = await saveDocumentRow({ ownerId, existingId: existing?.id ?? null, file: { filename, mimeType, kind, sha256, pages: read.pages }, bytes, text: read.text, where, deadline, source, extraction: deferred ? "queued" : "done" });
   if (policy && EXTERNAL.has(where)) await moveToStore(policy, ownerId, row.id, mimeType, bytes);
-  return { summary: summary(row), duplicate: false };
+  return { summary: summary(row), duplicate: false, ...(deferred ? { finish: () => finishExtraction({ ownerId, id: row.id, filename, mimeType, requested, bytes }) } : {}) };
+}
+
+/**
+ * Reads the text of a deferred document in the isolated worker and completes its row: the text, the pages, the kind it turns out
+ * to be (when the person left it to Yomizaka) and the title. A failure is kept on the row, with the code the page translates.
+ */
+export async function finishExtraction(args: { ownerId: string; id: string; filename: string; mimeType: AcceptedType; requested: DocumentKind | "auto"; bytes: Uint8Array }): Promise<void> {
+  const { ownerId, id, filename, mimeType, requested, bytes } = args;
+  await query("UPDATE documents SET extraction = 'running', extraction_at = now() WHERE owner_id = $1 AND id = $2 AND extraction = 'queued'", [ownerId, id]);
+  try {
+    const read = await readText(mimeType, bytes);
+    const kind = requested === "auto" ? kindFromNature(understanding.understand(read.text, { pages: read.pages }).nature?.id ?? null) : requested;
+    await query("UPDATE documents SET text = $3, pages = $4, kind = $5, title = $6, extraction = 'done', extraction_error = NULL, extraction_at = now() WHERE owner_id = $1 AND id = $2 AND extraction IN ('queued', 'running')", [ownerId, id, read.text, read.pages, kind, titleFor(filename, read.text)]);
+  } catch (error) {
+    const code = error instanceof ExtractionError ? String(extractionRefusal(error).body.code) : "UNREADABLE_FILE";
+    await query("UPDATE documents SET extraction = 'failed', extraction_error = $3, extraction_at = now() WHERE owner_id = $1 AND id = $2 AND extraction IN ('queued', 'running')", [ownerId, id, code]);
+  }
 }
 
 export const isUuid = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);

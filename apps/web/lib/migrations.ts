@@ -602,4 +602,12 @@ ALTER TABLE accounts ADD COLUMN IF NOT EXISTS subscription_price_key text;
 ALTER TABLE accounts ADD COLUMN IF NOT EXISTS subscription_price_version text;
 `,
   },
+  {
+    version: "0035_document_extraction",
+    // yomizaka#21: a new document's text is read after the upload answered (202 Accepted). Every existing row is already read: `done`.
+    sql: `ALTER TABLE documents ADD COLUMN extraction text NOT NULL DEFAULT 'done' CHECK (extraction IN ('queued', 'running', 'done', 'failed'));
+ALTER TABLE documents ADD COLUMN extraction_error text;
+ALTER TABLE documents ADD COLUMN extraction_at timestamptz NOT NULL DEFAULT now();
+`,
+  },
 ];

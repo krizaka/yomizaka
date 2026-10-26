@@ -1,4 +1,5 @@
 import { type DocumentKind, documentKind, STORAGE_MODE } from "@yomizaka/core";
+import { after } from "next/server";
 import { z } from "zod";
 
 import { storeForDocument, storesOf } from "@/app/active-store";
@@ -51,7 +52,7 @@ async function storeUpload(accountId: string, upload: { files: File[]; bytes: Ui
     const policy = { keep, store: stores.write, now: new Date(), purgeAfterHours: settings["limits.purgeAfterHours"].value as number, rules: preflightRulesFrom(YOMIZAKA_RULES, settings) };
     return photos
       ? await storePhotos(accountId, await Promise.all(files.map(async (f, i) => ({ name: f.name, type: f.type, bytes: i === 0 ? bytes : new Uint8Array(await f.arrayBuffer()) }))), kind, { policy })
-      : await storeDocument(accountId, { name: file.name, type: file.type, size: file.size }, bytes, kind, policy);
+      : await storeDocument(accountId, { name: file.name, type: file.type, size: file.size }, bytes, kind, policy, undefined, { defer: true });
   } catch (error) {
     const reason = error instanceof HttpError ? error.body.reason : undefined;
     if (typeof reason === "string") await recordPreflight(query, accountId, "rejected", reason);
@@ -66,7 +67,7 @@ async function placeUpload(accountId: string, documentId: string, form: FormData
   if (collectionId && isId(collectionId)) await placeDocument(query, accountId, documentId, { collectionId, folderId: folderId && isId(folderId) ? folderId : null });
 }
 
-/** One file per request (multipart, field `file`; `kind` optional). 60 uploads per account per hour. */
+/** One file per request (multipart, field `file`; `kind` optional). 60 uploads per account per hour. A new PDF or text file answers 202 Accepted `QUEUED`: its text is read after the answer. */
 export function POST(req: Request) {
   return handle(async () => {
     const session = await requireSession(req);
@@ -85,12 +86,17 @@ export function POST(req: Request) {
     const photos = isPhoto(bytes);
     if (files.length > 1 && !photos) throw refuse(400, "BAD_REQUEST", "One PDF or text file per request; several photos make one document");
     const { keep, stores } = await keepRequest(form, accountId);
-    const { summary, duplicate } = await storeUpload(accountId, { files, bytes, photos, kind, keep, stores });
+    const { summary, duplicate, finish } = await storeUpload(accountId, { files, bytes, photos, kind, keep, stores });
     if (screeningId !== null) await attachToApplication(accountId, summary.id, screeningId, await storeForDocument(accountId, summary.id));
     if (!duplicate) {
       await placeUpload(accountId, summary.id, form);
       await recordPreflight(query, accountId, "accepted");
       await audit({ action: "document.uploaded", actorId: accountId, actorLabel: session.account.email, targetId: summary.id, detail: { size: summary.sizeBytes, mime: summary.mimeType }, headers: req.headers });
+    }
+    // 202 Accepted: the file is stored and checked by the pre-flight; its text is read by an isolated worker after this answer (yomizaka#21).
+    if (finish) {
+      after(finish);
+      return Response.json({ document: summary, duplicate, status: "QUEUED" }, { status: 202 });
     }
     return Response.json({ document: summary, duplicate }, { status: duplicate ? 200 : 201 });
   });

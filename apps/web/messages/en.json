@@ -501,6 +501,7 @@
       "failed": "Check failed"
     },
     "document": {
+      "reading": "Yomizaka is reading the document…",
       "back": "Library",
       "details": "Details",
       "file": "File",
@@ -735,6 +736,7 @@
       "NOT_A_PDF": "Yomizaka examines PDF, Word (.docx) and OpenDocument (.odt) files.",
       "PDF_TOO_LARGE": "Yomizaka examines files up to 5 MB.",
       "ALREADY_RUNNING": "This check is already running.",
+      "EXTRACTING": "Yomizaka is still reading this document. Try again in a moment.",
       "ORAZAKA_NOT_CONFIGURED": "The connection to Orazaka is not configured.",
       "ORAZAKA_UNAVAILABLE": "Orazaka did not answer. Try again in a moment.",
       "ORAZAKA_KEY": "Orazaka refused Yomizaka's key.",
@@ -768,6 +770,7 @@
       "FILE_TRUNCATED": "This file looks cut short (incomplete download or upload). Send it again.",
       "FILE_ENCRYPTED": "This PDF is password-protected. Remove the protection and send it again.",
       "FILE_TOO_MANY_PAGES": "This PDF has too many pages to check.",
+      "FILE_TOO_COMPLEX": "This PDF is too complex to be read within the limits. Export it again as a simpler PDF, or send photos.",
       "FILE_ACTIVE_CONTENT": "This PDF contains active content (scripts, launched programs or attachments) and is refused for your safety.",
       "FILE_ARCHIVE_BOMB": "This archive is refused: it expands far beyond a reasonable size.",
       "NAME_TAKEN": "That name is already used here.",
