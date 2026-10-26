@@ -66,7 +66,7 @@ export async function createBatch(account: Account, name: string, manifestText: 
   for (const row of preview.rows) {
     const source = manifestRows.get(row.line);
     if (row.state === PREVIEW_ROW.refused || !source?.request) {
-      await insertItem(batch!.id, row.line, row.file, row.reference, null, null, BATCH_ITEM.refused, row.errors.join(",") || "REFUSED");
+      await insertItem({ batchId: batch!.id, line: row.line, file: row.file, reference: row.reference, request: null, documentId: null, state: BATCH_ITEM.refused, error: row.errors.join(",") || "REFUSED" });
       continue;
     }
     const file = byName.get(row.file.toLowerCase())!;
@@ -76,9 +76,9 @@ export async function createBatch(account: Account, name: string, manifestText: 
         ? await storePhotos(account.id, [file], source.documentType ?? "auto", { policy })
         : await storeDocument(account.id, { name: file.name, type: file.type, size: file.bytes.length }, file.bytes, source.documentType ?? "auto", policy);
       await placeInCollection(account.id, stored.summary.id, source.collection).catch(() => undefined);
-      await insertItem(batch!.id, row.line, row.file, row.reference, source.request, stored.summary.id, BATCH_ITEM.pending, null);
+      await insertItem({ batchId: batch!.id, line: row.line, file: row.file, reference: row.reference, request: source.request, documentId: stored.summary.id, state: BATCH_ITEM.pending, error: null });
     } catch (error) {
-      await insertItem(batch!.id, row.line, row.file, row.reference, null, null, BATCH_ITEM.refused, codeOf(error));
+      await insertItem({ batchId: batch!.id, line: row.line, file: row.file, reference: row.reference, request: null, documentId: null, state: BATCH_ITEM.refused, error: codeOf(error) });
     }
   }
   return advanceBatch(account, batch!.id, { settings, now, environment });
@@ -91,8 +91,28 @@ async function placeInCollection(ownerId: string, documentId: string, name: stri
   if (found) await placeDocument(query, ownerId, documentId, { collectionId: found.id, folderId: null });
 }
 
-async function insertItem(batchId: string, line: number, file: string, reference: string | null, request: StartAnalysis | null, documentId: string | null, state: BatchItemState, error: string | null) {
-  await query("INSERT INTO batch_items (batch_id, line, file_name, reference, request, document_id, state, error) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)", [batchId, line, file, reference, request ? JSON.stringify(request) : null, documentId, state, error]);
+interface NewItem {
+  batchId: string;
+  line: number;
+  file: string;
+  reference: string | null;
+  request: StartAnalysis | null;
+  documentId: string | null;
+  state: BatchItemState;
+  error: string | null;
+}
+
+async function insertItem(item: NewItem) {
+  await query("INSERT INTO batch_items (batch_id, line, file_name, reference, request, document_id, state, error) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)", [
+    item.batchId,
+    item.line,
+    item.file,
+    item.reference,
+    item.request ? JSON.stringify(item.request) : null,
+    item.documentId,
+    item.state,
+    item.error,
+  ]);
 }
 
 /** Reads the running rows back, starts pending ones up to the concurrency, closes the batch when nothing is left. */
@@ -105,42 +125,18 @@ export async function advanceBatch(account: Account, batchId: string, context: C
 }
 
 async function advanceOnce(account: Account, batchId: string, { settings, now, environment }: Context): Promise<BatchView> {
-  const items = await query<{ id: string; state: BatchItemState; document_id: string | null; analysis_id: string | null; request: StartAnalysis | null }>(
+  const items = await query<BatchItemRow>(
     "SELECT id, state, document_id, analysis_id, request FROM batch_items WHERE batch_id = $1 ORDER BY line",
     [batchId],
   );
-  let running = 0;
-  for (const item of items.filter((i) => i.state === BATCH_ITEM.running && i.document_id && i.analysis_id)) {
-    const analysis = await getAnalysis(account.id, item.document_id!, item.analysis_id!);
-    if (analysis.status === ANALYSIS_STATUS.succeeded) await setState(item.id, BATCH_ITEM.done, null);
-    else if (analysis.status === ANALYSIS_STATUS.failed || analysis.status === ANALYSIS_STATUS.cancelled) await setState(item.id, BATCH_ITEM.failed, analysis.status.toUpperCase());
-    else running++;
-  }
+  let running = await settleRunning(account.id, items);
   const concurrency = settings["limits.batchConcurrency"].value as number;
   let pausedBy: string | null = null;
   for (const item of items.filter((i) => i.state === BATCH_ITEM.pending)) {
     if (running >= concurrency) break;
-    for (let attempt = 1; ; attempt++) {
-      try {
-        const started = await startCheck(account, item.document_id!, item.request!, now, environment);
-        await query("UPDATE batch_items SET analysis_id = $2, state = $3, error = NULL WHERE id = $1", [item.id, started.analysis.id, started.reused ? BATCH_ITEM.reused : BATCH_ITEM.running]);
-        if (!started.reused) running++;
-        break;
-      } catch (error) {
-        const code = codeOf(error);
-        // The same check of the same document is already running (a row of another batch, a page). Bring it up to date — it may have
-        // finished in Orazaka while nobody looked — then the normal rules apply again (reuse its result or start); while it truly
-        // runs, this row waits for it.
-        if (code === ALREADY_RUNNING) {
-          if (attempt < 2 && !(await refreshBlocking(account.id, item.document_id!, item.request!.studio))) continue;
-          running++;
-          break;
-        }
-        if (pausesBatch(code)) pausedBy = code;
-        else await setState(item.id, BATCH_ITEM.failed, code);
-        break;
-      }
-    }
+    const outcome = await startItem(account, item, now, environment);
+    running += outcome.running;
+    pausedBy = outcome.pausedBy;
     if (pausedBy) break;
   }
   const [{ left }] = (await query<{ left: number }>("SELECT count(*)::int AS left FROM batch_items WHERE batch_id = $1 AND state IN ('pending', 'running')", [batchId])) as [{ left: number }];
@@ -149,6 +145,50 @@ async function advanceOnce(account: Account, batchId: string, { settings, now, e
   const view = { ...(await batchView(account.id, batchId)), pausedBy };
   if (closed.length) await notifyFinished(account.id, view, now);
   return view;
+}
+
+type BatchItemRow = { id: string; state: BatchItemState; document_id: string | null; analysis_id: string | null; request: StartAnalysis | null };
+
+/** Reads the running rows back from their analyses, closes the ones that ended; returns how many still run. */
+async function settleRunning(ownerId: string, items: readonly BatchItemRow[]): Promise<number> {
+  let running = 0;
+  for (const item of items.filter((i) => i.state === BATCH_ITEM.running && i.document_id && i.analysis_id)) {
+    const analysis = await getAnalysis(ownerId, item.document_id!, item.analysis_id!);
+    if (analysis.status === ANALYSIS_STATUS.succeeded) await setState(item.id, BATCH_ITEM.done, null);
+    else if (analysis.status === ANALYSIS_STATUS.failed || analysis.status === ANALYSIS_STATUS.cancelled) await setState(item.id, BATCH_ITEM.failed, analysis.status.toUpperCase());
+    else running++;
+  }
+  return running;
+}
+
+/** Starts one pending row through the single check path: how many more run because of it, and the reason the batch pauses, if any. */
+async function startItem(account: Account, item: BatchItemRow, now: Date, environment: FlowEnvironment): Promise<StartOutcome> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const started = await startCheck(account, item.document_id!, item.request!, now, environment);
+      await query("UPDATE batch_items SET analysis_id = $2, state = $3, error = NULL WHERE id = $1", [item.id, started.analysis.id, started.reused ? BATCH_ITEM.reused : BATCH_ITEM.running]);
+      return { running: started.reused ? 0 : 1, pausedBy: null };
+    } catch (error) {
+      const outcome = await outcomeOfRefusal(account, item, codeOf(error), attempt);
+      if (outcome) return outcome;
+    }
+  }
+}
+
+type StartOutcome = { running: number; pausedBy: string | null };
+
+/** What a refused start means for its row; null when the start should be tried once more. */
+async function outcomeOfRefusal(account: Account, item: BatchItemRow, code: string, attempt: number): Promise<StartOutcome | null> {
+  // The same check of the same document is already running (a row of another batch, a page). Bring it up to date — it may have
+  // finished in Orazaka while nobody looked — then the normal rules apply again (reuse its result or start); while it truly
+  // runs, this row waits for it.
+  if (code === ALREADY_RUNNING) {
+    if (attempt < 2 && !(await refreshBlocking(account.id, item.document_id!, item.request!.studio))) return null;
+    return { running: 1, pausedBy: null };
+  }
+  if (pausesBatch(code)) return { running: 0, pausedBy: code };
+  await setState(item.id, BATCH_ITEM.failed, code);
+  return { running: 0, pausedBy: null };
 }
 
 /** Brings up to date the analyses already running on a document for a Studio; true while one still runs. */
