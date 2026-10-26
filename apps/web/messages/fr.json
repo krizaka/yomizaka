@@ -175,7 +175,80 @@
         "started": "Vérification lancée",
         "refused": "Non lancée : {reason}"
       },
-      "openReport": "Ouvrir le rapport"
+      "openReport": "Ouvrir le rapport",
+      "catalogue": {
+        "title": "Les vérifications",
+        "searchLabel": "Chercher une vérification",
+        "searchPlaceholder": "Chercher une vérification",
+        "groupsLabel": "Type de vérification",
+        "all": "Toutes",
+        "groups": {
+          "lease": "Baux",
+          "invoice": "Factures",
+          "contract": "Contrats",
+          "notice": "Avis et états",
+          "authenticity": "Authenticité"
+        },
+        "available": "Disponible",
+        "action": "Vérifier",
+        "actionFor": "Vérifier : {title}",
+        "none": "Aucune vérification ne correspond à cette recherche.",
+        "chosen": "Vérification choisie : {kind}",
+        "change": "Changer",
+        "listLabel": "Les vérifications que Yomizaka fait",
+        "items": {
+          "qc-residential-lease": {
+            "title": "Bail de logement, Québec",
+            "line": "Votre bail au regard des règles du Québec, ligne par ligne."
+          },
+          "fr-residential-lease": {
+            "title": "Bail d’habitation, France",
+            "line": "France · bail d’habitation"
+          },
+          "be-residential-lease": {
+            "title": "Bail d’habitation, Wallonie",
+            "line": "Wallonie · bail d’habitation"
+          },
+          "qc-invoice": {
+            "title": "Facture de fournisseur, Québec",
+            "line": "Québec · numéros de TPS et de TVQ, mentions obligatoires"
+          },
+          "qc-service-contract": {
+            "title": "Contrat de service, Québec",
+            "line": "Québec · intérêt de retard, droit d’auteur et droits moraux"
+          },
+          "qc-visit-notice": {
+            "title": "Avis de visite, Québec",
+            "line": "Québec · préavis de 24 heures"
+          },
+          "qc-premises-condition": {
+            "title": "État des lieux, Québec",
+            "line": "Québec · l’état du logement à l’entrée"
+          },
+          "authenticity": {
+            "title": "Authenticité du fichier",
+            "line": "Le fichier PDF lui-même : producteur, dates, enregistrements successifs, polices."
+          }
+        }
+      },
+      "dropTitle": "Déposer",
+      "plan": {
+        "label": "Votre forfait",
+        "plan": "Forfait",
+        "names": {
+          "pro": "Pro",
+          "credits": "Crédits",
+          "included": "Inclus"
+        },
+        "used": "Ce mois-ci",
+        "cap": "Plafond d’usage équitable",
+        "left": "Vérifications restantes",
+        "meterLabel": "Vérifications ce mois-ci",
+        "meterText": "{used} sur {cap}",
+        "included": "Vos vérifications sont incluses.",
+        "manage": "Crédits et usage",
+        "open": "Ouvrir"
+      }
     },
     "home": {
       "todo": {

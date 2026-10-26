@@ -18,9 +18,16 @@ export type KeepChoice = (typeof KEEP_CHOICES)[number];
 export const GROUP_CHOICES = ["0", "1"] as const;
 export type GroupChoice = (typeof GROUP_CHOICES)[number];
 
+/** The groups of the check catalogue (« Baux », « Factures »…), and « Toutes » as the default of its chips. */
+export const CATALOGUE_GROUPS = ["lease", "invoice", "contract", "notice", "authenticity"] as const;
+export const CATALOGUE_FILTERS = ["all", ...CATALOGUE_GROUPS] as const;
+export type CatalogueFilter = (typeof CATALOGUE_FILTERS)[number];
+
 /** Every route-state of the app, so one test table covers them all. */
 export const ROUTE_STATES = {
   checkKind: { path: "/app/verifier", state: { key: "type", values: CHECK_KINDS, fallback: "auto" } satisfies RouteState<CheckKind> },
+  /** The chip of the check catalogue that is chosen (« Toutes » by default). */
+  catalogueGroup: { path: "/app/verifier", state: { key: "groupe", values: CATALOGUE_FILTERS, fallback: "all" } satisfies RouteState<CatalogueFilter> },
   /** Several photos dropped together are the pages of one document (the default), or separate documents. */
   groupPhotos: { path: "/app/verifier", state: { key: "pages", values: GROUP_CHOICES, fallback: "1" } satisfies RouteState<GroupChoice> },
   keepDocuments: { path: "/app/verifier", state: { key: "conserver", values: KEEP_CHOICES, fallback: "0" } satisfies RouteState<KeepChoice> },

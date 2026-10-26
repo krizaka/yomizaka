@@ -4,20 +4,18 @@ import { redirect } from "next/navigation";
 import { LibraryView } from "@/components/console/LibraryView";
 import { SAMPLES } from "@/content/recorded-runs/samples.mjs";
 import { pageSession } from "@/lib/access";
-import { auditsUsedThisMonth, entitlementOf } from "@/lib/billing";
 import { listChecks } from "@/lib/checks";
+import { creditsOf } from "@/lib/credits";
 import { query } from "@/lib/db";
 import { appEnvironment } from "@/lib/env";
 import { applicantFilesOffered, availableFlows, offerFor } from "@/lib/flows";
 import { activityStrip, toDo } from "@/lib/home";
-import { BINDER_KEY, creditsFigure, stripOf } from "@/lib/home-b2";
+import { BINDER_KEY, stripOf } from "@/lib/home-b2";
 import { HOME_PERIOD_KEY, homePeriodOf } from "@/lib/home-figures";
 import { asLocale, getDictionary } from "@/lib/i18n";
 import { onboardingTarget } from "@/lib/library-screen";
 import * as org from "@/lib/organisation/store";
 import { purgeExpired } from "@/lib/retention";
-import { auditCapsOf } from "@/lib/settings/boundary";
-import { settingsFor } from "@/lib/settings/guards";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   return { title: getDictionary(asLocale((await params).locale)).console.meta.library };
@@ -40,17 +38,14 @@ export default async function LibraryPage({ params, searchParams }: { params: Pr
   await org.ensureLibrary(query, owner, getDictionary(locale).console.organisation.library);
   const period = homePeriodOf(typeof search[HOME_PERIOD_KEY] === "string" ? search[HOME_PERIOD_KEY] : null);
   const now = new Date();
-  const [libraries, tags, latest, todo, series, entitlement, usedThisMonth, settings] = await Promise.all([
+  const [libraries, tags, latest, todo, series, credits] = await Promise.all([
     org.overview(query, owner),
     org.listTags(query, owner),
     listChecks(query, owner, 5),
     toDo(query, owner, now, { applicantFiles: screeningOffered }),
     activityStrip(query, owner, period, now, { applicantFiles: screeningOffered }),
-    entitlementOf(query, owner, now),
-    auditsUsedThisMonth(query, owner, now),
-    settingsFor(owner),
+    creditsOf(owner, now),
   ]);
-  const credits = creditsFigure(entitlement, usedThisMonth, auditCapsOf(settings, "pro").perMonth);
   const documents = libraries.reduce((n, l) => n + l.collections.reduce((m, c) => m + c.files, 0), 0);
   return <LibraryView libraries={libraries} documents={documents} latest={latest} tags={tags} perspective={perspective} screening={screeningOffered} examples={SAMPLES} jurisdictions={offerFor(flows, perspective).jurisdictions} todo={todo} activity={series.checks} strip={stripOf(series)} credits={credits} period={period} chosen={typeof search[BINDER_KEY] === "string" ? search[BINDER_KEY] : null} now={now.toISOString()} />;
 }

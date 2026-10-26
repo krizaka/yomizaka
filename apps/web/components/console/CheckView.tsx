@@ -10,14 +10,18 @@ import { useRouter } from "next/navigation";
 import { useEffect, useReducer, useRef } from "react";
 
 import { useAppConfig } from "@/lib/app-config-client";
+import { type CatalogueItem, checkHref } from "@/lib/check-catalogue";
 import { type CheckRow, checkRows, opensAtOnce, reportHref } from "@/lib/check-queue";
 import { checksTabHref, CONSOLE_ROUTES } from "@/lib/console-nav";
+import type { CreditsFigure } from "@/lib/home-b2";
 import { useSay } from "@/lib/i18n-client";
 import { ROUTE_STATES } from "@/lib/route-state";
 import { useRouteState } from "@/lib/use-route-state";
 
+import { CheckCatalogue, CheckPlanStrip } from "./CheckCatalogue";
 import { DocumentUploader } from "./DocumentUploader";
 import { startIfSure } from "./start-check";
+import { Today } from "./Today";
 
 const ICONS: Record<DocumentKind, typeof HomeIcon> = { lease: HomeIcon, contract: EditIcon, invoice: BillingIcon, other: MoreIcon };
 
@@ -76,7 +80,7 @@ export function CheckQueue({ rows, onPick }: { rows: readonly CheckRow[]; onPick
  * asked « Quel document ? » for that file only. A single file opens its report as soon as it is under way; with several,
  * each row links to its own (yomizaka#318, #326).
  */
-export function CheckView({ jurisdictions = ["QC"] }: { jurisdictions?: readonly Jurisdiction[] }) {
+export function CheckView({ jurisdictions = ["QC"], catalogue = [], credits = null, now = new Date().toISOString() }: { jurisdictions?: readonly Jurisdiction[]; catalogue?: readonly CatalogueItem[]; credits?: CreditsFigure | null; now?: string }) {
   const { say, locale } = useSay();
   const router = useRouter();
   const [kind] = useRouteState(ROUTE_STATES.checkKind.state);
@@ -103,7 +107,7 @@ export function CheckView({ jurisdictions = ["QC"] }: { jurisdictions?: readonly
     void follow(row.id, chosen);
   };
   return (
-    <section className="flex max-w-3xl flex-col gap-5" aria-label={say("library.dropTitle")}>
+    <section className="flex max-w-5xl flex-col gap-5" aria-label={say("library.dropTitle")}>
       <PageHeader
         breadcrumb={
           <Link href={`/${locale}${CONSOLE_ROUTES.library}`} className="text-sm text-fg-muted hover:text-fg">
@@ -112,9 +116,25 @@ export function CheckView({ jurisdictions = ["QC"] }: { jurisdictions?: readonly
         }
         title={say("shell.titles.check")}
         description={say("library.checkLead")}
+        actions={<Today now={now} />}
       />
-      <DocumentUploader defaultsFirst kindRef={kindRef} onDrop={(files) => (dropped.current += files.length)} onUploaded={landed} />
-      <CheckQueue rows={rows} onPick={pick} />
+      {credits ? <CheckPlanStrip credits={credits} /> : null}
+      <div className={catalogue.length ? "grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-start" : "flex max-w-3xl flex-col gap-5"}>
+        <div id="depot" className="flex min-w-0 scroll-mt-24 flex-col gap-5" data-testid="check-drop">
+          <h2 className="m-0 font-display text-lg font-bold text-fg">{say("check.dropTitle")}</h2>
+          {kind !== "auto" ? (
+            <p className="m-0 text-sm text-fg-secondary" data-testid="check-chosen">
+              {say("check.catalogue.chosen", { kind: say(`kinds.${kind}`) })} ·{" "}
+              <Link className="font-semibold text-fg-accent underline-offset-2 hover:underline" href={checkHref(locale, "auto").replace(/#depot$/, "")}>
+                {say("check.catalogue.change")}
+              </Link>
+            </p>
+          ) : null}
+          <DocumentUploader defaultsFirst kindRef={kindRef} onDrop={(files) => (dropped.current += files.length)} onUploaded={landed} />
+          <CheckQueue rows={rows} onPick={pick} />
+        </div>
+        {catalogue.length ? <CheckCatalogue items={catalogue} /> : null}
+      </div>
       {app?.features.batches ? (
         <p className="m-0 text-sm text-fg-secondary">
           {say("batch.fromCheck")}{" "}

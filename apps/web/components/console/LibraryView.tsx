@@ -1,6 +1,5 @@
 "use client";
 
-import { localDay } from "@krizaka/intl";
 import { Badge } from "@krizaka/ui/badge";
 import { Button } from "@krizaka/ui/button";
 import { Chip } from "@krizaka/ui/chip";
@@ -25,11 +24,12 @@ import { pluralKey } from "@/lib/plural";
 
 import { CollectionMark } from "./CollectionMark";
 import { STATUS_TONE } from "./DocumentTable";
-import { DISPLAY_TIME_ZONE, formatDate, INTL } from "./format";
+import { formatDate } from "./format";
 import { ActivityStrip, BinderTabs, Credits, HomeLead, QuickAccess, WeekChart } from "./HomeSections";
 import { LibraryDrop } from "./LibraryDrop";
 import { CreateButton, ItemMenu, type TagOption } from "./OrganisationActions";
 import { TagChips } from "./TagChips";
+import { Today } from "./Today";
 
 export type ExampleDocuments = Record<"tenant" | "landlord", { title: string; filename: string; text: string }>;
 
@@ -100,17 +100,12 @@ export function LibraryView({ libraries, documents, latest = [], tags, perspecti
     (id) => homeHref(locale, { period, collection: id }),
   );
   const lib = libraries.find((l) => l.collections.some((c) => c.id === selected?.id)) ?? first;
-  const today = new Date(now);
   return (
     <>
       <LibraryDrop jurisdictions={jurisdictions} />
       <DashboardLayout
         title={say("shell.titles.library")}
-        date={
-          <time dateTime={localDay(today, DISPLAY_TIME_ZONE)} data-testid="today">
-            {new Intl.DateTimeFormat(INTL[locale], { dateStyle: "full", timeZone: DISPLAY_TIME_ZONE }).format(today)}
-          </time>
-        }
+        date={<Today now={now} />}
         description={todo ? <HomeLead todo={todo} /> : say("library.lead")}
         actions={
           <span className="flex flex-wrap items-center gap-3" data-testid="library-actions">
