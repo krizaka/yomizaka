@@ -64,12 +64,13 @@ export function FileView({
     <span className="mt-1 flex flex-wrap gap-1">
       {d.checks.map((c) => {
         const fact = checkFact(c);
+        const studio = say(`dossiers.studios.${c.studio}`);
         const words = fact.count
           ? say(pluralKey(fact.key, fact.count), { count: fact.count })
           : say(fact.key);
         return (
           <Badge key={c.id} tone={fact.tone}>
-            {`${say(`dossiers.studios.${c.studio}`)} · ${words}`}
+            {`${studio} · ${words}`}
           </Badge>
         );
       })}

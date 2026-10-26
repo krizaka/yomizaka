@@ -70,7 +70,11 @@ export function chipsOf(items: readonly CatalogueItem[], q: string, labelOf: (it
 export const visibleItems = (items: readonly CatalogueItem[], { group, q }: { group: Group | null; q: string }, labelOf: (item: CatalogueItem) => string): CatalogueItem[] => items.filter((i) => (!group || i.group === group) && matches(labelOf(i), q));
 
 /** The action of a row: it names the kind in the address (`?type=`, the app's own state) and leads to the drop. « auto » leaves the address clean. */
-export const checkHref = (locale: "en" | "fr", kind: CheckKind): string => `/${locale}${CONSOLE_ROUTES.check}${kind === ROUTE_STATES.checkKind.state.fallback ? "" : `?${ROUTE_STATES.checkKind.state.key}=${kind}`}#depot`;
+export const checkHref = (locale: "en" | "fr", kind: CheckKind): string => {
+  const { fallback, key } = ROUTE_STATES.checkKind.state;
+  const query = kind === fallback ? "" : `?${key}=${kind}`;
+  return `/${locale}${CONSOLE_ROUTES.check}${query}#depot`;
+};
 
 export interface PlanStripModel {
   plan: CreditsFigure["kind"];

@@ -18,9 +18,10 @@ export type Mailer = (mail: Mail) => Promise<void>;
 export const mailerFor = (e: MailConfig): Mailer => async (mail) => {
   if (e.MAIL_PROVIDER !== "mailgun" || !e.MAIL_API_KEY || !e.MAIL_DOMAIN) throw new Error("Mail is not configured");
   const body = new URLSearchParams({ from: e.MAIL_FROM ?? `Yomizaka <no-reply@${e.MAIL_DOMAIN}>`, to: mail.to, subject: mail.subject, text: mail.text });
+  const credentials = Buffer.from(`api:${e.MAIL_API_KEY}`).toString("base64");
   const res = await fetch(`${e.MAIL_API_URL.replace(/\/$/, "")}/v3/${e.MAIL_DOMAIN}/messages`, {
     method: "POST",
-    headers: { authorization: `Basic ${Buffer.from(`api:${e.MAIL_API_KEY}`).toString("base64")}` },
+    headers: { authorization: `Basic ${credentials}` },
     body,
   });
   if (!res.ok) throw new Error(`Mail provider answered ${res.status}`);

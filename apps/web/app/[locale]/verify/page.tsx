@@ -29,7 +29,8 @@ export default async function Verify({ params }: { params: Promise<{ locale: str
   const t = getDictionary(locale);
   const v = t.verify;
   const key = signingKey();
-  if ((await pageSession().catch(() => null)) === null) redirect(`/${locale}/sign-in?next=${encodeURIComponent(`/${locale}/verify`)}`);
+  const next = encodeURIComponent(`/${locale}/verify`);
+  if ((await pageSession().catch(() => null)) === null) redirect(`/${locale}/sign-in?next=${next}`);
   const labels: VerifyLabels = {
     reportFile: v.reportFile,
     reportPaste: v.reportPaste,

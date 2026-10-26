@@ -16,7 +16,10 @@ export const CHECKS_TAB_KEY = "tab";
 /** The tab named by the address; an unknown or missing one is the list of checks (a stale link never breaks the page). */
 export const checksTabOf = (raw: string | null | undefined): ChecksTab => CHECKS_TABS.find((t) => t === raw) ?? "checks";
 /** The address of a tab: the first keeps the address clean, the others name themselves. */
-export const checksTabHref = (locale: "en" | "fr", tab: ChecksTab): string => `/${locale}${CONSOLE_ROUTES.checks}${tab === CHECKS_TABS[0] ? "" : `?${CHECKS_TAB_KEY}=${tab}`}`;
+export const checksTabHref = (locale: "en" | "fr", tab: ChecksTab): string => {
+  const query = tab === CHECKS_TABS[0] ? "" : `?${CHECKS_TAB_KEY}=${tab}`;
+  return `/${locale}${CONSOLE_ROUTES.checks}${query}`;
+};
 
 /** The path without its language segment: `/fr/app/documents/x` → `/app/documents/x`. */
 export const withoutLocale = (path: string) => path.replace(/^\/(en|fr)(?=\/|$)/, "") || "/";
@@ -53,5 +56,6 @@ export function movedDocumentHref(locale: "en" | "fr", id: string, tab: string, 
   const moved = movedDocumentTab(tab);
   if (!moved) return null;
   const qs = new URLSearchParams(search).toString();
-  return `/${locale}/app/documents/${id}/${moved}${qs ? `?${qs}` : ""}`;
+  const query = qs ? `?${qs}` : "";
+  return `/${locale}/app/documents/${id}/${moved}${query}`;
 }

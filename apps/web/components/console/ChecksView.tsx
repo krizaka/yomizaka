@@ -76,11 +76,12 @@ function ChecksFilters({ filters, counts, periods, results, onChange }: { filter
     setState((s) => ({ ...s, draft: null, pending: "" }));
     onChange(NO_CHECK_FILTERS, FILTER_HISTORY.chosen);
   };
+  const labelled = (field: string, value: string) => `${say(field)} : ${value}`;
   const active: ActiveFilter[] = [
     ...(filters.q ? [{ id: "q", label: `${say("checks.filters.search")} : ${filters.q}`, onRemove: () => commit("", FILTER_HISTORY.chosen) }] : []),
-    ...filters.result.map((v) => ({ id: `result:${v}`, label: `${say("checks.filters.result")} : ${say(`statuses.${v}`)}`, onRemove: () => set({ result: filters.result.filter((r) => r !== v) }) })),
-    ...filters.kind.map((v) => ({ id: `kind:${v}`, label: `${say("checks.filters.kind")} : ${say(`kinds.${v}`)}`, onRemove: () => set({ kind: filters.kind.filter((k) => k !== v) }) })),
-    ...(filters.period ? [{ id: "period", label: `${say("checks.filters.period")} : ${say(`checks.filters.periods.${filters.period}`)}`, onRemove: () => set({ period: null }) }] : []),
+    ...filters.result.map((v) => ({ id: `result:${v}`, label: labelled("checks.filters.result", say(`statuses.${v}`)), onRemove: () => set({ result: filters.result.filter((r) => r !== v) }) })),
+    ...filters.kind.map((v) => ({ id: `kind:${v}`, label: labelled("checks.filters.kind", say(`kinds.${v}`)), onRemove: () => set({ kind: filters.kind.filter((k) => k !== v) }) })),
+    ...(filters.period ? [{ id: "period", label: labelled("checks.filters.period", say(`checks.filters.periods.${filters.period}`)), onRemove: () => set({ period: null }) }] : []),
   ];
   return (
     <FilterBar label={say("checks.filters.label")} active={active} onClearAll={clear} clearLabel={say("checks.filters.clear")} removeLabel={(label) => say("checks.filters.remove", { label })} results={say(pluralKey("checks.results", results), { count: results })} data-testid="checks-filters">

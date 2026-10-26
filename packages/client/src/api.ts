@@ -90,7 +90,10 @@ export function createYomizakaApi(port: ApiPort, session: SessionPort) {
     fetchAnalysis: (documentId: string, analysisId: string, locale: Locale) => get(analysisAnswer, `/api/documents/${documentId}/analyses/${analysisId}?lang=${locale}`),
     fetchDocument: (documentId: string) => get(documentAnswer, `/api/documents/${documentId}`).then((r) => r.document),
     fetchLibraries: () => get(libraries, "/api/libraries"),
-    fetchCollection: (collectionId: string, tags: readonly string[]) => get(z.object({ documents: z.array(documentSummary) }), `/api/collections/${collectionId}${tags.length ? `?tags=${tags.join(",")}` : ""}`),
+    fetchCollection: (collectionId: string, tags: readonly string[]) => {
+      const query = tags.length ? `?tags=${tags.join(",")}` : "";
+      return get(z.object({ documents: z.array(documentSummary) }), `/api/collections/${collectionId}${query}`);
+    },
     async placeDocument(documentId: string, collectionId: string | null): Promise<void> {
       await port.call(`/api/documents/${documentId}/placement`, { method: "PUT", body: { collectionId } });
     },

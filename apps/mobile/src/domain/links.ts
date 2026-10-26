@@ -18,11 +18,17 @@ export const routes = {
     tagsHref(app(locale, "bibliotheque", ...[library, library ? collection : undefined].filter((p): p is string => !!p)), tags),
   document: (locale: Locale, id: string, tab: DocumentTab = "rapport") => app(locale, "documents", id, tab),
   /** Vérifications, its first tab at a clean address and « Lots » in the address, as on the web. */
-  checks: (locale: Locale, tab: ChecksTab = CHECKS_TABS[0]) => `${app(locale, "verifications")}${tab === CHECKS_TABS[0] ? "" : `?tab=${tab}`}`,
+  checks: (locale: Locale, tab: ChecksTab = CHECKS_TABS[0]) => {
+    const query = tab === CHECKS_TABS[0] ? "" : `?tab=${tab}`;
+    return `${app(locale, "verifications")}${query}`;
+  },
   settings: (locale: Locale) => app(locale, "settings"),
 } as const;
 
 /** An old document address (`/infos`, `/verifications`…) opens the tab it moved to, the followed run kept (`?analysis=`); an unknown tab opens the report. */
-export const legacyDocumentHref = (locale: Locale, id: string, tab: string, analysis?: string | null): string => `${routes.document(locale, id, movedDocumentTab(tab) ?? "rapport")}${analysis ? `?analysis=${encodeURIComponent(analysis)}` : ""}`;
+export const legacyDocumentHref = (locale: Locale, id: string, tab: string, analysis?: string | null): string => {
+  const query = analysis ? `?analysis=${encodeURIComponent(analysis)}` : "";
+  return `${routes.document(locale, id, movedDocumentTab(tab) ?? "rapport")}${query}`;
+};
 
 export { parseTagsParam };

@@ -51,6 +51,7 @@ const LANGUAGES = ["fr", "en"] as const;
  */
 export function ProfileSection({ initial, audiences }: { initial: ProfileValues; audiences: readonly { audience: Audience; status: "available" | "soon" }[] }) {
   const { say } = useSay();
+  const soonSuffix = (status: keyof typeof SOON) => (SOON[status] ? ` (${say("profile.soon")})` : "");
   const router = useRouter();
   const [saved, setSaved] = useState(initial);
   const [values, setValues] = useState(initial);
@@ -116,7 +117,7 @@ export function ProfileSection({ initial, audiences }: { initial: ProfileValues;
       <SettingsRow label={say("profile.legend")} description={say("profile.lead")}>
         <ChoiceCards
           label={say("profile.legend")}
-          options={audiences.map(({ audience, status }) => ({ id: audience, title: `${say(`profile.${audience}`)}${SOON[status] ? ` (${say("profile.soon")})` : ""}`, description: say(`profile.${audience}Hint`) }))}
+          options={audiences.map(({ audience, status }) => ({ id: audience, title: `${say(`profile.${audience}`)}${soonSuffix(status)}`, description: say(`profile.${audience}Hint`) }))}
           value={values.perspective ?? undefined}
           onValueChange={(id) => setValues({ ...values, perspective: id as Audience })}
         />
