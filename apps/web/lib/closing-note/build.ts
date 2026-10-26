@@ -2,7 +2,7 @@ import { type AuthenticityReport, type ClosingNote, type ComplianceReport, TEXT_
 
 import { pluralKey } from "../plural";
 import { authenticityData, type Bilingual, compliancePackOf, say, template } from "./data";
-import { AUTHENTICITY_PACK, FINDING_STATE, type FindingState, type Lang, NOTE_KIND, NOTE_SOURCE, type NoteKind, type NoteSource, SEVERITY_ORDER, SIGNAL_LEVEL, SIGNAL_LEVELS_ORDERED, VERDICT } from "./vocabulary";
+import { FINDING_STATE, type FindingState, type Lang, NOTE_KIND, NOTE_SOURCE, type NoteKind, type NoteSource, SEVERITY_ORDER, SIGNAL_LEVEL, SIGNAL_LEVELS_ORDERED, VERDICT } from "./vocabulary";
 
 /** The note's shape is a contract the apps read too: it lives in `@yomizaka/core`. */
 export { type ClosingNote, closingNote } from "@yomizaka/core";
@@ -166,4 +166,4 @@ export function buildNote(input: NoteInput, lang: Lang): ClosingNote {
   return input.kind === NOTE_KIND.compliance ? complianceNote(input, lang) : authenticityNote(input, lang);
 }
 
-export { AUTHENTICITY_PACK };
+export { AUTHENTICITY_PACK } from "./vocabulary";

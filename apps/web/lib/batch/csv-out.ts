@@ -7,5 +7,5 @@ export function csvCell(value: string | number | null): string {
   if (typeof value === "number") return String(value);
   let text = value ?? "";
   if (/^[=+\-@\t\r]/.test(text)) text = `'${text}`;
-  return /[",\r\n;]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+  return /[",\r\n;]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 }

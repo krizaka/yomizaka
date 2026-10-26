@@ -5,7 +5,7 @@ export const LEASE_LINES = ["BAIL DE LOGEMENT", "Le locateur loue au locataire l
 
 /** A flat « scan » of the page: black text on white. */
 export function pageSvg(lines: readonly string[] = LEASE_LINES, width = 1200, height = 520): Buffer {
-  const text = lines.map((l, i) => `<text x="50" y="${90 + i * 100}" font-family="Helvetica, Arial, DejaVu Sans, sans-serif" font-size="42" fill="#111">${l.replace(/&/g, "&amp;")}</text>`).join("");
+  const text = lines.map((l, i) => `<text x="50" y="${90 + i * 100}" font-family="Helvetica, Arial, DejaVu Sans, sans-serif" font-size="42" fill="#111">${l.replaceAll("&", "&amp;")}</text>`).join("");
   return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="100%" height="100%" fill="white"/>${text}</svg>`);
 }
 

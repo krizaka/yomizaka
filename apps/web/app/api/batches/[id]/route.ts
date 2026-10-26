@@ -2,8 +2,7 @@ import { requireSession } from "@/lib/access";
 import { advanceBatch } from "@/lib/batch/run";
 import { isUuid } from "@/lib/documents";
 import { appEnvironment } from "@/lib/env";
-import { handle } from "@/lib/http";
-import { refuse } from "@/lib/http";
+import { handle, refuse } from "@/lib/http";
 import { settingsFor } from "@/lib/settings/guards";
 
 export const dynamic = "force-dynamic";

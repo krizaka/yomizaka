@@ -59,7 +59,7 @@ export async function loadTarget(runId: string, documentSha256: string): Promise
 
 /** The pair a report file claims (run id, document hash), read without trusting it: only used to find the report's owner. */
 export function referenceOf(file: string): { runId: string; documentSha256: string } | null {
-  const match = /<script type="application\/json" id="yomizaka-attestation">([^<]*)<\/script>/.exec(file.includes("\r") ? file.replace(/\r\n/g, "\n") : file);
+  const match = /<script type="application\/json" id="yomizaka-attestation">([^<]*)<\/script>/.exec(file.includes("\r") ? file.replaceAll("\r\n", "\n") : file);
   if (!match) return null;
   try {
     const payload = (JSON.parse(match[1]!) as { payload?: { check?: { runId?: unknown }; document?: { sha256?: unknown } } }).payload;

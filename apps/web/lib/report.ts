@@ -125,7 +125,7 @@ export function canonicalJson(value: unknown): string {
 
 export const sha256 = (data: string | Uint8Array) => crypto.createHash("sha256").update(data).digest("hex");
 
-const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const esc = (s: string) => s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 export const fill = (template: string, vars: Record<string, string | number>) => template.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
 
 /** Where the attestation goes. The body is hashed with this marker removed, the file has the block in its place. */
@@ -265,7 +265,7 @@ export function verifyReport(file: string, key: Pick<SigningKey, "keyId" | "publ
   const fileSha256 = sha256(file);
   const fail = (reason: VerifyFailure): Verification => ({ ok: false, reason, fileSha256 });
   // A pasted text may arrive with CRLF line ends; our files never contain a CR.
-  const text = file.includes("\r") ? file.replace(/\r\n/g, "\n") : file;
+  const text = file.includes("\r") ? file.replaceAll("\r\n", "\n") : file;
   const match = BLOCK.exec(text);
   if (!match) return fail("NOT_A_REPORT");
   let attestation: Attestation;

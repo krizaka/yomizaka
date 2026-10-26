@@ -1,12 +1,13 @@
-import { type Actor, type AuditEntry, type Context, GLOBAL, postgresSettings as postgres, type PostgresSettingsDeps, type ScopeRef, SettingsError, type SettingsService as Service } from "@krizaka/settings";
+import { postgresSettings as postgres, type PostgresSettingsDeps, type SettingsService as Service } from "@krizaka/settings";
 import type { QueryResultRow } from "pg";
 
-import { SCOPES_BY_SPECIFICITY, SETTINGS, settings } from "./registry";
+import { SETTINGS, settings } from "./registry";
 
 /** The SettingsService (ADR-0009) is `@krizaka/settings`; this binds it to Yomizaka's own registry. */
 export type SettingsService = Service<typeof SETTINGS>;
-export type { Actor, AuditEntry, Context, ScopeRef };
-export { GLOBAL, SCOPES_BY_SPECIFICITY, SettingsError };
+export { SCOPES_BY_SPECIFICITY } from "./registry";
+export type { Actor, AuditEntry, Context, ScopeRef } from "@krizaka/settings";
+export { GLOBAL, SettingsError } from "@krizaka/settings";
 
 type AppQuery = <T extends QueryResultRow>(text: string, values?: unknown[]) => Promise<T[]>;
 

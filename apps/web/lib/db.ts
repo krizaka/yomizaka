@@ -35,7 +35,7 @@ function configFor(env: ReturnType<typeof readEnv>, databaseUrl: string | undefi
     connectionString: url.toString(),
     max,
     idleTimeoutMillis: 30_000,
-    ...(tls ? { ssl: { ca: env.DATABASE_CA_CERT?.replace(/\\n/g, "\n"), rejectUnauthorized: true } } : {}),
+    ...(tls ? { ssl: { ca: env.DATABASE_CA_CERT?.replaceAll("\\n", "\n"), rejectUnauthorized: true } } : {}),
   };
 }
 
