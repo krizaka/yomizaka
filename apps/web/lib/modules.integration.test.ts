@@ -32,7 +32,7 @@ describe.runIf(enabled)("adopted Krizaka modules", () => {
       expect(applied).toEqual(["0036_adopt_krizaka_modules"]);
       expect((await columns()).filter((c) => !before.includes(c) && !c.startsWith("public.krizaka_module_versions."))).toEqual([]);
       expect(before.some((c) => c.startsWith("public.krizaka_module_versions."))).toBe(false);
-      await assertModules(async (text, params) => (await pool.query(text, params)).rows as never, ADOPTED);
+      await assertModules(async (text, params) => (await pool.query(text, params)).rows as never, ADOPTED.filter((m) => m.schema.module !== "auth_sessions"));
 
       // 0037 (yomizaka#259): the trail moves into `audit.entry`, every row, none lost, the view keeps the old name.
       const [{ id: person }] = (await pool.query("INSERT INTO accounts (email) VALUES ('p@yomizaka.test') RETURNING id")).rows;
@@ -45,7 +45,7 @@ describe.runIf(enabled)("adopted Krizaka modules", () => {
         [person],
       );
       const old = (await pool.query("SELECT count(*)::int AS n FROM audit_log")).rows[0].n;
-      expect(await runMigrations(connect, MIGRATIONS, { lockKey: MIGRATION_LOCK_KEY })).toEqual(["0037_audit_package"]);
+      expect(await runMigrations(connect, MIGRATIONS, { lockKey: MIGRATION_LOCK_KEY })).toEqual(["0037_audit_package", "0038_adopt_sessions"]);
       const rows = (await pool.query("SELECT actor_id, actor_label, action, target_type, target_id, host(ip) AS ip FROM audit.entry ORDER BY at")).rows;
       expect(rows).toHaveLength(old);
       expect((await pool.query("SELECT count(*)::int AS n FROM audit_log")).rows[0].n).toBe(old);

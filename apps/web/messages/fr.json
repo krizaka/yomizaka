@@ -1516,6 +1516,10 @@
           "passwordResetMinutes": {
             "label": "Durée du lien de réinitialisation",
             "hint": "Minutes pendant lesquelles un lien « Mot de passe oublié ? » fonctionne, une seule fois. De 5 à 1440. Le courriel l'indique."
+          },
+          "sessionDays": {
+            "label": "Durée d'une session",
+            "hint": "Nombre de jours pendant lesquels une connexion dure avant de devoir se reconnecter."
           }
         },
         "payments": {

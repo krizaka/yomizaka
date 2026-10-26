@@ -1,6 +1,5 @@
+import { decoyHash, hashPassword, passwordProblem, verifyPassword } from "@krizaka/auth";
 import { describe, expect, it } from "vitest";
-
-import { decoyHash, hashPassword, passwordProblem, verifyPassword } from "./password";
 
 describe("passwords", () => {
   it("hashes with scrypt and a salt: the right password passes, a wrong one does not", async () => {

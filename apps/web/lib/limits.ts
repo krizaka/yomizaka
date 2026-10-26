@@ -2,7 +2,7 @@ import { createLimiter, type Limiter, memoryLimitStore, RateLimited } from "@kri
 import { limitsFromSettings } from "@krizaka/rate-limit/settings";
 
 import { systemClock } from "../app/system-clock";
-import { clientIp } from "./client-ip";
+import { clientAddress } from "./env";
 import { HttpError } from "./http";
 import { logError } from "./log";
 import { appSettings } from "./settings/instance";
@@ -39,7 +39,7 @@ function refusal(error: unknown): unknown {
 
 async function enforce(limiter: Limiter, counter: string, req: { headers: Headers }, subject: string | null) {
   try {
-    await limiter.enforce(counter, { ip: clientIp(req.headers), subject });
+    await limiter.enforce(counter, { ip: clientAddress(req.headers), subject });
   } catch (error) {
     throw refusal(error);
   }
