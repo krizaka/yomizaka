@@ -1,4 +1,4 @@
-import { type Connection, type Query, migrate as runMigrations, transaction as dbTransaction } from "@krizaka/db";
+import { type Connection, migrate as runMigrations, type Query, transaction as dbTransaction } from "@krizaka/db";
 import pg from "pg";
 
 import { readEnv } from "./env";

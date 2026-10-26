@@ -1,5 +1,5 @@
-import { accountsSchema } from "@krizaka/auth";
 import { apiKeysSchema } from "@krizaka/api-keys";
+import { accountsSchema } from "@krizaka/auth";
 import type { ComposedModule } from "@krizaka/db";
 import { workspaceSchema } from "@krizaka/organize";
 import { pricesSchema, settingsSchema } from "@krizaka/settings";
