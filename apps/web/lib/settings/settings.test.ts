@@ -46,5 +46,5 @@ describe("the effective value is user, then workspace, then global, then the def
 });
 
 describe("what the registry says is configurable", () => {
-  it.each(["app.maintenance", "signup.open", "payments.enabled", "audit.freeFirst", "features.keepDocuments", "limits.maxFileMb", "plans.pro.auditsPerMonth"] as const)("%s exists", (key) => expect(SETTINGS[key]).toBeDefined());
+  it.each(["app.maintenance", "signup.open", "payments.enabled", "audit.freeFirst", "features.keepDocuments", "limits.maxFileMb", "plans.free.auditsPerDay"] as const)("%s exists", (key) => expect(SETTINGS[key]).toBeDefined());
 });

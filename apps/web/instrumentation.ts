@@ -24,7 +24,7 @@ export async function register() {
   const e = readEnv();
   const { appSettings } = await import("./lib/settings/instance");
   const { seedLegacySettings } = await import("./lib/settings/seed");
-  const legacy = await seedLegacySettings(appSettings(), { signupOpen: e.AUTH_SIGNUP_ENABLED, purgeAfterHours: e.APP_PURGE_AFTER_HOURS, proAuditsPerMonth: e.APP_FAIR_USE_AUDITS_PER_MONTH }, new Date());
+  const legacy = await seedLegacySettings(appSettings(), { signupOpen: e.AUTH_SIGNUP_ENABLED, purgeAfterHours: e.APP_PURGE_AFTER_HOURS }, new Date());
   if (legacy.length) console.log(`[yomizaka] settings seeded from the environment: ${legacy.join(", ")}`);
   // A batch advances without anyone looking at it (yomizaka#240): the interval is a setting, re-read at every look.
   const { sessionSecret } = await import("./lib/env");

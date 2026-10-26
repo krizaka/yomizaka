@@ -124,11 +124,10 @@ describe.runIf(enabled)("settings at the server boundary", () => {
   it("legacy environment values are written once at start, only when they differ from the default and nobody set them since", async () => {
     await query("DELETE FROM app_settings");
     const service = postgresSettings({ query, cacheMs: 0 });
-    expect(await seedLegacySettings(service, { signupOpen: true, purgeAfterHours: 24, proAuditsPerMonth: 250 }, NOW)).toEqual(["signup.open", "plans.pro.auditsPerMonth"]);
+    expect(await seedLegacySettings(service, { signupOpen: true, purgeAfterHours: 24 }, NOW)).toEqual(["signup.open"]);
     expect(await service.get("signup.open")).toBe(true);
     await service.set(ADMIN, GLOBAL, "signup.open", false, NOW);
-    expect(await seedLegacySettings(service, { signupOpen: true, purgeAfterHours: 24, proAuditsPerMonth: 250 }, NOW)).toEqual([]);
+    expect(await seedLegacySettings(service, { signupOpen: true, purgeAfterHours: 24 }, NOW)).toEqual([]);
     expect(await service.get("signup.open")).toBe(false);
-    expect(await service.get("plans.pro.auditsPerMonth")).toBe(250);
   });
 });

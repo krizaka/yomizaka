@@ -10,7 +10,7 @@ import { resolveStart } from "./flows";
 import { refuse } from "./http";
 import type { Query } from "./organisation/store";
 import { findReusableAnalysis, recordPreflight } from "./preflight-events";
-import { auditCapsOf } from "./settings/boundary";
+import { capsFor } from "./prices/caps";
 import { settingsFor } from "./settings/guards";
 
 /**
@@ -38,7 +38,7 @@ export async function startCheck(account: { id: string; perspective: Audience | 
     await recordPreflight(query, account.id, "reused");
     return { analysis: await getAnalysis(account.id, documentId, reusable), reused: true };
   }
-  const via = await reserveAudit(query, account.id, now, (plan) => auditCapsOf(settings, plan));
+  const via = await reserveAudit(query, account.id, now, capsFor(settings, now));
   try {
     return { analysis: await startAnalysis(account.id, documentId, request, flowVersionId, via, await storeForDocument(account.id, documentId)), reused: false, via };
   } catch (error) {

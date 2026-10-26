@@ -17,6 +17,10 @@ describe("env", () => {
     expect(Object.keys(envSchema.shape)).not.toContain("APP_PUBLIC_ACTIONS");
   });
 
+  it("holds no price and no included volume: they are the price catalogue's (ADR-009, yomizaka#367)", () => {
+    for (const gone of ["PAYMENTS_PRICE_KEY_AUDIT", "PAYMENTS_PRICE_KEY_PRO", "APP_FAIR_USE_AUDITS_PER_MONTH"]) expect(Object.keys(envSchema.shape)).not.toContain(gone);
+  });
+
   it("declares the demo seed credentials under the app context", () => {
     expect(readEnv({ APP_DEMO_ACCOUNT_EMAIL: "demo@example.test", APP_DEMO_ACCOUNT_PASSWORD: "long-enough-password" })).toMatchObject({
       APP_DEMO_ACCOUNT_EMAIL: "demo@example.test",

@@ -13,6 +13,7 @@ import { z } from "zod";
 import { errorKey } from "@/lib/client";
 import { formI18n } from "@/lib/form-i18n";
 import { useSay } from "@/lib/i18n-client";
+import { DEFAULT_SUBSCRIPTION, SOLD, type SoldKind } from "@/lib/pricing";
 
 type Say = (key: string, vars?: Record<string, string | number>) => string;
 
@@ -86,17 +87,20 @@ export function SecuritySection({ email, pendingEmail, notice }: { email: string
 // ── billing ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 const billing = z.object({
-  entitlement: z.object({ credits: z.number(), pro: z.boolean(), proUntil: z.string().nullable(), freeAuditUsed: z.boolean(), selfServe: z.boolean(), hasCustomer: z.boolean() }),
+  entitlement: z.object({ credits: z.number(), pro: z.boolean(), proUntil: z.string().nullable(), freeAuditUsed: z.boolean(), selfServe: z.boolean(), hasCustomer: z.boolean(), planKey: z.string().nullable() }),
   paymentsOn: z.boolean(),
   paymentsDisplay: z.string().optional(),
 });
 const redirect = z.object({ url: z.string().url() });
 export type Entitlement = z.infer<typeof billing>["entitlement"];
 
+/** The subscription's plan, named by its catalogue entry (one sold before the catalogue is on the default plan). */
+const planOf = (e: Entitlement) => (e.planKey === SOLD.firm.key ? "firm" : DEFAULT_SUBSCRIPTION);
+
 /** The plan as flat rows (the review's E3): the plan, the free audit, the paid audits left, the renewal — each a label and a value. */
 export function billingRows(e: Entitlement, say: Say, date: (iso: string) => string): { id: string; label: string; value: string }[] {
   return [
-    { id: "plan", label: say("settings.billing.plan"), value: say(e.pro ? "settings.billing.planPro" : "settings.billing.planFree") },
+    { id: "plan", label: say("settings.billing.plan"), value: say(e.pro ? `settings.billing.plans.${planOf(e)}` : "settings.billing.planFree") },
     ...(e.selfServe ? [{ id: "free", label: say("settings.billing.freeAudit"), value: say(e.freeAuditUsed ? "settings.billing.freeUsed" : "settings.billing.freeAvailable") }] : []),
     { id: "credits", label: say("settings.billing.creditsLabel"), value: String(e.credits) },
     ...(e.pro && e.proUntil ? [{ id: "until", label: say("settings.billing.renewal"), value: date(e.proUntil) }] : []),
@@ -108,7 +112,7 @@ export function BillingSection() {
   const { say, locale } = useSay();
   const info = useQuery({ queryKey: ["billing-settings"], queryFn: () => krizakaFetch("/api/billing", { schema: billing }) });
   const portal = useCall<null>(async () => window.location.assign((await krizakaFetch("/api/billing/portal", { method: "POST", schema: redirect })).url));
-  const buy = useCall<"audit" | "pro">(async (kind) => window.location.assign((await krizakaFetch("/api/billing/checkout", { method: "POST", json: { kind }, schema: redirect })).url));
+  const buy = useCall<SoldKind>(async (kind) => window.location.assign((await krizakaFetch("/api/billing/checkout", { method: "POST", json: { kind }, schema: redirect })).url));
   const e = info.data?.entitlement;
   const date = (iso: string) => new Intl.DateTimeFormat(locale, { dateStyle: "long" }).format(new Date(iso));
   return (
@@ -121,12 +125,17 @@ export function BillingSection() {
         info.data?.paymentsOn ? (
           <div className="flex flex-wrap items-center gap-3">
             {e && !e.pro ? (
-              <Button size="md" variant="primary" shape="cut" loading={buy.pending} onClick={() => buy.go("pro", () => undefined)}>
-                {say("paywall.pro")}
+              <Button size="md" variant="primary" shape="cut" loading={buy.pending} onClick={() => buy.go("agency", () => undefined)}>
+                {say("paywall.agency")}
               </Button>
             ) : null}
             {e && !e.pro ? (
-              <Button size="md" variant="secondary" loading={buy.pending} onClick={() => buy.go("audit", () => undefined)}>
+              <Button size="md" variant="secondary" loading={buy.pending} onClick={() => buy.go("firm", () => undefined)}>
+                {say("paywall.firm")}
+              </Button>
+            ) : null}
+            {e && !e.pro ? (
+              <Button size="md" variant="secondary" loading={buy.pending} onClick={() => buy.go("document", () => undefined)}>
                 {say("paywall.payOne")}
               </Button>
             ) : null}

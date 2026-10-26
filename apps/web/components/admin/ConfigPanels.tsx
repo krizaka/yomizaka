@@ -99,32 +99,6 @@ export function PacksPanel({ flows, environment }: { flows: AdminFlow[]; environ
   );
 }
 
-const plans = z.object({ stripe: z.object({ mode: z.string() }).nullable(), prices: z.array(z.object({ kind: z.string(), lookupKey: z.string().optional(), fr: z.string().nullable(), en: z.string().nullable(), interval: z.string().nullable(), error: z.string().nullable() })) });
-
-/** The prices, read from Stripe and never edited here. */
-export function PricesPanel() {
-  const { say, locale } = useSay();
-  const data = useQuery({ queryKey: ["admin-plans"], queryFn: () => krizakaFetch("/api/admin/plans", { schema: plans }) });
-  if (!data.data) return null;
-  return (
-    <section className="flex flex-col gap-2" data-testid="prices-panel">
-      <h2 className="m-0 font-display text-lg font-bold text-fg">{say("adminConfig.plans.pricesTitle")}</h2>
-      <p className="m-0 text-sm text-fg-secondary">{say("adminConfig.plans.pricesLead")}</p>
-      {data.data.stripe === null ? <Alert tone="info">{say("adminConfig.plans.off")}</Alert> : null}
-      {data.data.stripe ? <p className="m-0 text-sm">{say("adminConfig.plans.mode")}: <Badge tone={data.data.stripe.mode === "live" ? "danger" : "neutral"}>{data.data.stripe.mode}</Badge></p> : null}
-      <ul className="m-0 flex list-none flex-col gap-2 p-0">
-        {data.data.prices.map((p) => (
-          <li key={p.kind} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border-default bg-surface-1 p-4">
-            <span className="font-semibold text-fg">{say(`adminConfig.plans.${p.kind}`)}</span>
-            <span className="text-sm text-fg-secondary">{p.error ? say("adminConfig.plans.notFound") : `${locale === "fr" ? p.fr : p.en}${p.interval ? ` / ${p.interval}` : ""}`}</span>
-            {p.lookupKey ? <code className="text-xs text-fg-muted">{say("adminConfig.plans.lookup")}: {p.lookupKey}</code> : null}
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
 const orazakaStatus = z.object({
   key: z.object({ configured: z.boolean(), masked: z.string().nullable() }),
   baseUrl: z.string(),

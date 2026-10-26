@@ -1,24 +1,19 @@
-import { type PaymentsPort, stripeAdapter } from "@krizaka/payments";
+import { type PaymentsPort, type PlanConfig, stripeAdapter } from "@krizaka/payments";
+
+import { SOLD, SOLD_KINDS } from "../pricing";
 
 /** The settings the payments vendor needs — read from the environment by the edge (a route), passed in. */
 export interface PaymentsSettings {
   PAYMENTS_PROVIDER?: string;
   PAYMENTS_STRIPE_SECRET_KEY?: string;
   PAYMENTS_STRIPE_WEBHOOK_SECRET?: string;
-  PAYMENTS_PRICE_KEY_AUDIT: string;
-  PAYMENTS_PRICE_KEY_PRO: string;
 }
 
+/** What the processor sells, by checkout kind: the price catalogue's sold entries (`lib/pricing.ts` SOLD), each found by its lookup key. */
+const PLANS: Record<string, PlanConfig> = Object.fromEntries(SOLD_KINDS.map((kind) => [kind, { lookupKey: SOLD[kind].lookupKey, mode: SOLD[kind].mode }]));
 
 /** The only place a payments vendor is chosen. Null = payments are off. */
 export function paymentsFrom(e: PaymentsSettings): PaymentsPort | null {
   if (e.PAYMENTS_PROVIDER !== "stripe" || !e.PAYMENTS_STRIPE_SECRET_KEY || !e.PAYMENTS_STRIPE_WEBHOOK_SECRET) return null;
-  return stripeAdapter({
-    secretKey: e.PAYMENTS_STRIPE_SECRET_KEY,
-    webhookSecret: e.PAYMENTS_STRIPE_WEBHOOK_SECRET,
-    plans: {
-      audit: { lookupKey: e.PAYMENTS_PRICE_KEY_AUDIT, mode: "payment" },
-      pro: { lookupKey: e.PAYMENTS_PRICE_KEY_PRO, mode: "subscription" },
-    },
-  });
+  return stripeAdapter({ secretKey: e.PAYMENTS_STRIPE_SECRET_KEY, webhookSecret: e.PAYMENTS_STRIPE_WEBHOOK_SECRET, plans: PLANS });
 }

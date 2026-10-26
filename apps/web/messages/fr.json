@@ -835,7 +835,11 @@
       "CANCELLED": "La vérification a été annulée.",
       "REFUSED": "Ligne refusée.",
       "ORAZAKA_BUSY": "Orazaka est occupé en ce moment. Le lot continue tout seul dès qu'il a de la place.",
-      "EXPORT_TOO_LARGE": "Les rapports de ce lot sont trop lourds pour une seule archive : exportez moins de lignes."
+      "EXPORT_TOO_LARGE": "Les rapports de ce lot sont trop lourds pour une seule archive : exportez moins de lignes.",
+      "NOT_ON_SALE": "Cette offre n’est pas en vente.",
+      "PRICE_MISMATCH": "Ce prix est en cours de mise à jour. Réessayez dans un instant.",
+      "UNKNOWN_PRICE": "Prix inconnu.",
+      "BAD_DATE": "Un prix change à partir d’aujourd’hui ou plus tard, jamais dans le passé."
     },
     "adminConsole": {
       "shell": {
@@ -1105,14 +1109,16 @@
     },
     "paywall": {
       "title": "Votre audit gratuit est utilisé",
-      "text": "Le premier audit est gratuit. Pour vérifier un autre document, payez cet audit ou abonnez-vous à Pro.",
-      "payOne": "Payer cet audit",
-      "pro": "Passer à Pro",
+      "text": "La première vérification est offerte. Pour vérifier un autre document, payez celui-ci ou abonnez-vous.",
+      "payOne": "Payer ce document",
       "soon": "Paiement bientôt disponible.",
-      "notice": "9,99 $ CAD par audit, ou 29 $ CAD par mois pour Pro, avant TPS et TVQ. Vérification informative, ce n’est pas un avis juridique.",
+      "notice": "{document} par document, ou {agency} par mois pour les PME ({included} vérifications incluses), plus taxes.",
       "fairUseTitle": "Limite mensuelle atteinte",
-      "fairUse": "Pro comprend jusqu’à {limit} audits par mois. La limite revient au début du mois prochain.",
-      "testMode": "Mode test : aucune vraie carte n'est débitée."
+      "fairUse": "Votre abonnement comprend {limit} vérifications par mois. La limite revient au début du mois prochain.",
+      "testMode": "Mode test : aucune vraie carte n'est débitée.",
+      "agency": "S’abonner — PME",
+      "firm": "S’abonner — Études",
+      "informative": "Vérification informative, ce n’est pas un avis juridique."
     },
     "insight": {
       "title": "Ce document",
@@ -1324,7 +1330,6 @@
         "creditsLabel": "Audits payés restants",
         "renewal": "Renouvellement",
         "planFree": "Gratuit",
-        "planPro": "Pro",
         "credits": "Audits payés restants : {count}",
         "freeAvailable": "Votre audit gratuit est disponible.",
         "freeUsed": "Votre audit gratuit est utilisé.",
@@ -1333,7 +1338,11 @@
         "portalHint": "Mode de paiement, factures (avec TPS et TVQ) et annulation : dans le portail sécurisé de Stripe.",
         "off": "Le paiement n'est pas encore disponible.",
         "buy": "Acheter ou s'abonner",
-        "testMode": "Mode test : aucune vraie carte n'est débitée."
+        "testMode": "Mode test : aucune vraie carte n'est débitée.",
+        "plans": {
+          "agency": "PME",
+          "firm": "Études et entreprises"
+        }
       },
       "data": {
         "exportTitle": "Exporter mes données",
@@ -1441,6 +1450,7 @@
         "features": "Fonctions",
         "limits": "Limites",
         "plans": "Forfaits",
+        "prices": "Prix",
         "packs": "Ensembles de règles",
         "orazaka": "Orazaka",
         "organisation": "Organisation"
@@ -1640,20 +1650,16 @@
             }
           },
           "pro": {
-            "auditsPerMonth": {
-              "label": "Pro : audits par mois",
-              "hint": "Plafond d'usage raisonnable."
-            },
             "auditsPerDay": {
-              "label": "Pro : audits par jour",
+              "label": "Abonnement : audits par jour",
               "hint": "0 : sans plafond."
             },
             "apiKeys": {
-              "label": "Pro : clés d'API",
+              "label": "Abonnement : clés d'API",
               "hint": "Nombre de clés actives. 0 : le forfait n'a pas d'API."
             },
             "webhookEndpoints": {
-              "label": "Pro : points de terminaison webhook",
+              "label": "Abonnement : points de terminaison webhook",
               "hint": "Nombre de points de terminaison. 0 : le forfait n'a pas de webhooks."
             }
           }
@@ -1678,14 +1684,6 @@
         "empty": "Aucun parcours."
       },
       "plans": {
-        "pricesTitle": "Prix (lus dans Stripe)",
-        "pricesLead": "Les prix restent dans Stripe : rien ici ne les modifie.",
-        "audit": "Un audit",
-        "pro": "Pro",
-        "off": "Les paiements ne sont pas configurés sur cette installation.",
-        "notFound": "Prix introuvable dans Stripe.",
-        "lookup": "Clé de prix",
-        "mode": "Stripe",
         "entitlementsTitle": "Ce que chaque forfait inclut"
       },
       "orazaka": {
@@ -1771,6 +1769,60 @@
           "reasonLabel": "Motif en {language}, numéro {position}",
           "removeReason": "Retirer le motif {position}",
           "derived": "Dérivé : le produit calcule ce statut ; personne ne le change"
+        }
+      },
+      "prices": {
+        "lead": "Les prix sont des données : un changement s’applique à partir du jour choisi (aujourd’hui ou plus tard), l’historique garde chaque version, et un abonnement garde le prix auquel il a été vendu. Chaque prix est en CAD, plus taxes.",
+        "processorOff": "Les paiements ne sont pas configurés sur cette installation : rien n’est facturé.",
+        "processorMode": "Processeur de paiement",
+        "seed": "prix par défaut",
+        "since": "depuis le {date}",
+        "amount": "Montant (CAD, plus taxes)",
+        "amountHint": "En dollars, p. ex. 0,65. Vide : sur soumission (seulement pour une entrée hors vente).",
+        "availability": "Disponibilité",
+        "availabilityHint": "Public : affiché avec son chiffre. Interne : jamais sur une page publique. En préparation : affiché sans chiffre.",
+        "availabilities": {
+          "public": "Public",
+          "internal": "Interne",
+          "founder-limited": "Fondateurs seulement",
+          "preparing": "En préparation"
+        },
+        "limits": {
+          "included": "Vérifications incluses par mois",
+          "overageCents": "Chaque vérification au-delà (cents)",
+          "founderCap": "Places fondateurs",
+          "feeBps": "Frais (points de base)",
+          "feeCapCents": "Plafond des frais (cents)"
+        },
+        "from": "À partir du",
+        "fromHint": "Vide ou aujourd’hui : dès maintenant. Un jour plus tard : dès son début.",
+        "schedule": "Planifier le changement",
+        "charged": "Facturé par le processeur",
+        "chargedHint": "La vente s’arrête tant qu’il diffère du catalogue : créez d’abord le nouveau prix chez le processeur.",
+        "notFound": "Prix introuvable chez le processeur.",
+        "mismatch": "Différent",
+        "match": "Égal",
+        "onQuote": "sur soumission",
+        "upcoming": "Planifié",
+        "upcomingLine": "À partir du {date} : {amount}, {availability}",
+        "historyTitle": "Changements de prix",
+        "units": {
+          "month": "par mois",
+          "year": "par an",
+          "once": "une fois",
+          "document": "par document",
+          "order": "par commande",
+          "pack": "par forfait",
+          "hour": "par heure"
+        },
+        "entries": {
+          "document": "Un document vérifié",
+          "agency": "PME",
+          "firm": "Études et entreprises",
+          "api": "API dédiée (plus de 5 000 par mois, sur soumission)",
+          "fullFile": "Dossier complet du locataire",
+          "backgroundCheck": "Vérification des antécédents",
+          "screening": "Filtre seul"
         }
       }
     },

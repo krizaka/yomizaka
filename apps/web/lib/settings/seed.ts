@@ -10,10 +10,9 @@ import type { SettingsService } from "./service";
 export interface LegacyValues {
   signupOpen: boolean;
   purgeAfterHours: number;
-  proAuditsPerMonth: number;
 }
 
-const LEGACY_KEYS = { signupOpen: "signup.open", purgeAfterHours: "limits.purgeAfterHours", proAuditsPerMonth: "plans.pro.auditsPerMonth" } as const satisfies Record<keyof LegacyValues, SettingKey>;
+const LEGACY_KEYS = { signupOpen: "signup.open", purgeAfterHours: "limits.purgeAfterHours" } as const satisfies Record<keyof LegacyValues, SettingKey>;
 
 export const seedLegacySettings = (service: SettingsService, legacy: LegacyValues, now: Date): Promise<SettingKey[]> =>
   seed(settings, service, Object.fromEntries((Object.keys(LEGACY_KEYS) as (keyof LegacyValues)[]).map((f) => [LEGACY_KEYS[f], legacy[f]])), now);
