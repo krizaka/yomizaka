@@ -34,19 +34,19 @@ export default async function SettingsSectionPage({ params, searchParams }: Read
   if (!facts) notFound();
   const email = (await searchParams).email;
   const audiences = audiencesOf(await availableFlows(appEnvironment()));
-  const views: Record<SettingsSection, () => ReactNode> = {
-    profil: () => <ProfileSection initial={{ name: profile.name ?? "", avatarSeed: profile.avatarSeed ?? "", locale: profile.locale, perspective: session.account.perspective }} audiences={audiences} />,
-    apparence: () => <AppearanceSection />,
-    securite: () => <SecuritySection email={profile.email} pendingEmail={profile.pendingEmail} notice={email === "changed" || email === "invalid" ? email : null} />,
-    facturation: () => <BillingSection />,
-    stockage: () => <StorageSection />,
-    donnees: () => <DataSection />,
+  const views: Record<SettingsSection, ReactNode> = {
+    profil: <ProfileSection initial={{ name: profile.name ?? "", avatarSeed: profile.avatarSeed ?? "", locale: profile.locale, perspective: session.account.perspective }} audiences={audiences} />,
+    apparence: <AppearanceSection />,
+    securite: <SecuritySection email={profile.email} pendingEmail={profile.pendingEmail} notice={email === "changed" || email === "invalid" ? email : null} />,
+    facturation: <BillingSection />,
+    stockage: <StorageSection />,
+    donnees: <DataSection />,
   };
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title={getDictionary(locale).console.profile.settingsTitle} />
       <SettingsShell section={section} account={{ email: profile.email, name: profile.name, avatarSeed: profile.avatarSeed, verified: facts.email_verified_at !== null, memberSince: facts.created_at.toISOString() }}>
-        {views[section]()}
+        {views[section]}
       </SettingsShell>
     </div>
   );

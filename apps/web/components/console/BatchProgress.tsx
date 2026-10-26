@@ -15,6 +15,9 @@ import { waitsForAccount, waitsForEngine } from "@/lib/batch/pausing";
 import { checksTabHref } from "@/lib/console-nav";
 import { useSay } from "@/lib/i18n-client";
 
+type Say = ReturnType<typeof useSay>["say"];
+type Lang = ReturnType<typeof useSay>["locale"];
+
 type ItemState = "pending" | "reused" | "running" | "done" | "failed" | "refused";
 interface Item {
   id: string;
@@ -35,6 +38,31 @@ interface Batch {
 }
 
 const TONE: Record<ItemState, "neutral" | "accent" | "success" | "warning" | "danger"> = { pending: "neutral", running: "accent", reused: "success", done: "success", failed: "danger", refused: "warning" };
+function itemColumns(say: Say, locale: Lang): DataTableColumn<Item>[] {
+  return [
+    { id: "line", header: say("batch.columns.line"), type: "number", value: (i) => i.line },
+    {
+      id: "file",
+      header: say("batch.columns.file"),
+      type: "title",
+      card: "title",
+      filter: "text",
+      value: (i) => i.file,
+      cell: (i) =>
+        i.documentId ? (
+          <Link className="break-all text-sm font-semibold text-fg-accent underline" href={`/${locale}/app/documents/${i.documentId}/rapport`}>
+            {i.file}
+          </Link>
+        ) : (
+          <span className="break-all text-sm">{i.file}</span>
+        ),
+    },
+    { id: "state", header: say("batch.columns.state"), type: "status", filter: "facet", options: (Object.keys(TONE) as ItemState[]).map((s) => ({ value: s, label: say(`batch.states.${s}`) })), value: (i) => i.state, cell: (i) => <Badge tone={TONE[i.state]}>{say(`batch.states.${i.state}`)}</Badge> },
+    { id: "reason", header: say("batch.columns.reason"), value: (i) => i.error ?? "", cell: (i) => (i.error ? i.error.split(",").map((e) => say(`errors.${e}`)).join(" · ") : "—") },
+    { id: "reference", header: say("batch.columns.reference"), priority: 3, value: (i) => i.reference ?? "" },
+  ];
+}
+
 /** While rows run, the page asks again; each read advances the batch on the server (no second scheduler). */
 const POLL_MS = 3000;
 
@@ -51,31 +79,7 @@ export function BatchProgress({ initial }: Readonly<{ initial: Batch }>) {
   const total = batch.items.length - batch.counts.refused;
   const settled = batch.counts.done + batch.counts.reused + batch.counts.failed;
 
-  const columns = useMemo<DataTableColumn<Item>[]>(
-    () => [
-      { id: "line", header: say("batch.columns.line"), type: "number", value: (i) => i.line },
-      {
-        id: "file",
-        header: say("batch.columns.file"),
-        type: "title",
-        card: "title",
-        filter: "text",
-        value: (i) => i.file,
-        cell: (i) =>
-          i.documentId ? (
-            <Link className="break-all text-sm font-semibold text-fg-accent underline" href={`/${locale}/app/documents/${i.documentId}/rapport`}>
-              {i.file}
-            </Link>
-          ) : (
-            <span className="break-all text-sm">{i.file}</span>
-          ),
-      },
-      { id: "state", header: say("batch.columns.state"), type: "status", filter: "facet", options: (Object.keys(TONE) as ItemState[]).map((s) => ({ value: s, label: say(`batch.states.${s}`) })), value: (i) => i.state, cell: (i) => <Badge tone={TONE[i.state]}>{say(`batch.states.${i.state}`)}</Badge> },
-      { id: "reason", header: say("batch.columns.reason"), value: (i) => i.error ?? "", cell: (i) => (i.error ? i.error.split(",").map((e) => say(`errors.${e}`)).join(" · ") : "—") },
-      { id: "reference", header: say("batch.columns.reference"), priority: 3, value: (i) => i.reference ?? "" },
-    ],
-    [say, locale],
-  );
+  const columns = useMemo(() => itemColumns(say, locale), [say, locale]);
 
   return (
     <div className="flex flex-col gap-5">

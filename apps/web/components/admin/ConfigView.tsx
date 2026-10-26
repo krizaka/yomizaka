@@ -20,6 +20,8 @@ import type { SettingDescription } from "@/lib/settings/describe";
 import { type Group, KIND, SCOPE, type Scope } from "@/lib/settings/registry";
 import type { AuditEntry } from "@/lib/settings/service";
 
+type Lang = ReturnType<typeof useSay>["locale"];
+
 const sourceOf = z.enum(["default", SCOPE.global, SCOPE.workspace, SCOPE.user]);
 const settingsAnswer = z.object({
   definitions: z.array(z.custom<SettingDescription>()),
@@ -172,26 +174,22 @@ function BilingualControl({ current, say, onSet }: Readonly<{ current: { fr: str
     </form.Form>
   );
 }
+function auditEntryColumns(say: Say, locale: Lang): DataTableColumn<AuditEntry>[] {
+  return [
+    { id: "when", header: say("adminConfig.history.when"), value: (e) => e.at, cell: (e) => new Intl.DateTimeFormat(locale, { dateStyle: "short", timeStyle: "medium" }).format(new Date(e.at)) },
+    { id: "who", header: say("adminConfig.history.who"), value: (e) => e.actorLabel },
+    { id: "what", header: say("adminConfig.history.what"), value: (e) => e.key, cell: (e) => <code className="text-xs">{e.key}</code> },
+    { id: "scope", header: say("adminConfig.history.scope"), value: (e) => e.scope, cell: (e) => `${say(`adminConfig.sources.${e.scope}`)}${e.scopeId ? ` ${e.scopeId.slice(0, 8)}` : ""}` },
+    { id: "before", header: say("adminConfig.history.before"), value: (e) => show(e.before), cell: (e) => <code className="text-xs">{e.before === null ? "—" : show(e.before)}</code> },
+    { id: "after", header: say("adminConfig.history.after"), value: (e) => show(e.after), cell: (e) => <code className="text-xs">{e.after === null ? "—" : show(e.after)}</code> },
+  ];
+}
 
 /** Who changed what and when, before and after. */
 function History() {
   const { say, locale } = useSay();
   const history = useQuery({ queryKey: ["admin-settings-audit"], queryFn: () => krizakaFetch("/api/admin/settings/audit", { schema: auditAnswer }) });
-  const columns = useMemo<DataTableColumn<AuditEntry>[]>(
-    () => [
-      { id: "when", header: say("adminConfig.history.when"), value: (e) => e.at, cell: (e) => new Intl.DateTimeFormat(locale, { dateStyle: "short", timeStyle: "medium" }).format(new Date(e.at)) },
-      { id: "who", header: say("adminConfig.history.who"), value: (e) => e.actorLabel },
-      { id: "what", header: say("adminConfig.history.what"), value: (e) => e.key, cell: (e) => <code className="text-xs">{e.key}</code> },
-      { id: "scope", header: say("adminConfig.history.scope"), value: (e) => e.scope, cell: (e) => {
-          const id = e.scopeId ? ` ${e.scopeId.slice(0, 8)}` : "";
-          const source = say(`adminConfig.sources.${e.scope}`);
-          return `${source}${id}`;
-        } },
-      { id: "before", header: say("adminConfig.history.before"), value: (e) => show(e.before), cell: (e) => <code className="text-xs">{e.before === null ? "—" : show(e.before)}</code> },
-      { id: "after", header: say("adminConfig.history.after"), value: (e) => show(e.after), cell: (e) => <code className="text-xs">{e.after === null ? "—" : show(e.after)}</code> },
-    ],
-    [say, locale],
-  );
+  const columns = useMemo(() => auditEntryColumns(say, locale), [say, locale]);
   const rows = history.data?.history ?? [];
   return (
     <section aria-label={say("adminConfig.history.title")} className="flex flex-col gap-2" data-testid="settings-history">

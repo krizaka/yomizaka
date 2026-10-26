@@ -35,6 +35,9 @@ import { type AskableType, RequestDocuments } from "./RequestDocuments";
 import { tableLabels } from "./table-labels";
 import { TagChips } from "./TagChips";
 
+type Say = ReturnType<typeof useSay>["say"];
+type Lang = ReturnType<typeof useSay>["locale"];
+
 type TagOption = { id: string; name: string; color: "blue" | "green" | "amber" | "red" | "violet" | "gray" };
 
 /** What the organised workspace gives « Dossiers » (yomizaka#324): the decision set, the account's tags, the views and the one the address names. */
@@ -70,6 +73,50 @@ export function useFileFacts() {
     date,
   };
 }
+function fileColumns(say: Say, base: string, facts: ReturnType<typeof useFileFacts>, workspace: FilesWorkspace | undefined, locale: Lang): DataTableColumn<FileSummary>[] {
+  return [
+    {
+      id: "candidate",
+      header: say("dossiers.columns.candidate"),
+      type: "title",
+      href: (f) => `${base}/${f.id}`,
+      card: "title",
+      value: (f) => f.candidateName,
+      cell: (f) => (
+        <Link href={`${base}/${f.id}`} className="font-semibold text-fg hover:text-fg-accent hover:underline" aria-label={say("dossiers.open", { name: f.candidateName })}>
+          {f.candidateName}
+        </Link>
+      ),
+    },
+    { id: "link", header: say("dossiers.columns.link"), priority: 2, value: (f) => f.status, cell: (f) => <span data-testid="file-link">{facts.link(f)}</span> },
+    ...(workspace
+      ? [
+          {
+            id: "decision",
+            header: say("dossiers.columns.decision"),
+            type: "status" as const,
+            sortable: true,
+            // The set's order, never a check's result (krizaka-ts ADR-003 § 2).
+            value: (f: FileSummary) => decisionOrder(workspace.set, f.decision),
+            cell: (f: FileSummary) => <StatusChip set={workspace.set} state={f.decision} role={OWNER_ROLE} locale={locale} />,
+          } satisfies DataTableColumn<FileSummary>,
+        ]
+      : []),
+    { id: "documents", header: say("dossiers.columns.documents"), priority: 3, value: (f) => f.documents, cell: (f) => <span className="tabular-nums">{facts.documents(f.documents, f.requested)}</span> },
+    ...(workspace
+      ? [
+          {
+            id: "tags",
+            header: say("dossiers.columns.tags"),
+            priority: 3,
+            value: (f: FileSummary) => f.tagIds.length,
+            cell: (f: FileSummary) => <TagChips tags={workspace.tags.filter((t) => f.tagIds.includes(t.id))} />,
+          } satisfies DataTableColumn<FileSummary>,
+        ]
+      : []),
+    { id: "asked", header: say("dossiers.columns.asked"), priority: 3, align: "end", value: (f) => f.createdAt, cell: (f) => <span className="tabular-nums">{facts.date(f.createdAt)}</span> },
+  ];
+}
 
 /**
  * « Dossiers » (design § 4, § 5.2, yomizaka#323, #324): the applicant files, newest first, as `listApplicantFiles` returns them —
@@ -90,51 +137,7 @@ export function FilesView({ files: all, states = [], types, origin, workspace }:
   const go = (next: ViewFilters) => router.push(viewHref(base, next, workspace?.resolved.active?.id ?? null), { scroll: false });
   const views = useSavedViews({ path: base, system: (workspace?.system ?? []).filter((v) => (v.filters.status?.length ?? 0) !== 1 || !!v.filters.tags?.length), mine: workspace?.saved ?? [], resolved: workspace?.resolved ?? NO_VIEW, kind: KIND.applicantFile });
   const decisionLabel = (key: string) => workspace?.set.states.find((st) => st.key === key)?.label[locale] ?? key;
-  const columns = useMemo<DataTableColumn<FileSummary>[]>(
-    () => [
-      {
-        id: "candidate",
-        header: say("dossiers.columns.candidate"),
-        type: "title",
-        href: (f) => `${base}/${f.id}`,
-        card: "title",
-        value: (f) => f.candidateName,
-        cell: (f) => (
-          <Link href={`${base}/${f.id}`} className="font-semibold text-fg hover:text-fg-accent hover:underline" aria-label={say("dossiers.open", { name: f.candidateName })}>
-            {f.candidateName}
-          </Link>
-        ),
-      },
-      { id: "link", header: say("dossiers.columns.link"), priority: 2, value: (f) => f.status, cell: (f) => <span data-testid="file-link">{facts.link(f)}</span> },
-      ...(workspace
-        ? [
-            {
-              id: "decision",
-              header: say("dossiers.columns.decision"),
-              type: "status" as const,
-              sortable: true,
-              // The set's order, never a check's result (krizaka-ts ADR-003 § 2).
-              value: (f: FileSummary) => decisionOrder(workspace.set, f.decision),
-              cell: (f: FileSummary) => <StatusChip set={workspace.set} state={f.decision} role={OWNER_ROLE} locale={locale} />,
-            } satisfies DataTableColumn<FileSummary>,
-          ]
-        : []),
-      { id: "documents", header: say("dossiers.columns.documents"), priority: 3, value: (f) => f.documents, cell: (f) => <span className="tabular-nums">{facts.documents(f.documents, f.requested)}</span> },
-      ...(workspace
-        ? [
-            {
-              id: "tags",
-              header: say("dossiers.columns.tags"),
-              priority: 3,
-              value: (f: FileSummary) => f.tagIds.length,
-              cell: (f: FileSummary) => <TagChips tags={workspace.tags.filter((t) => f.tagIds.includes(t.id))} />,
-            } satisfies DataTableColumn<FileSummary>,
-          ]
-        : []),
-      { id: "asked", header: say("dossiers.columns.asked"), priority: 3, align: "end", value: (f) => f.createdAt, cell: (f) => <span className="tabular-nums">{facts.date(f.createdAt)}</span> },
-    ],
-    [say, base, facts, workspace, locale],
-  );
+  const columns = useMemo(() => fileColumns(say, base, facts, workspace, locale), [say, base, facts, workspace, locale]);
   const labels = useMemo(
     () => ({
       ...tableLabels(say),
@@ -207,6 +210,13 @@ function activeFilters(filters: ViewFilters, tags: readonly TagOption[], decisio
 
 type TableSelection = { workspace: FilesWorkspace; selected: string[]; onSelectedChange: (ids: string[]) => void; bulkResult: string; onBulkResult: (message: string) => void };
 
+/** The selection bar's actions for the dossiers, bound to the table's workspace and to where the outcome is said. */
+function bulkActionsOf(table: TableSelection) {
+  return function FileBulkActions({ selected: ids, clear }: { selected: string[]; clear: () => void }) {
+    return <BulkActions kind={KIND.applicantFile} ids={ids} set={table.workspace.set} tags={table.workspace.tags} onResult={table.onBulkResult} onDone={clear} />;
+  };
+}
+
 /** What sits under the filters: why nothing is listed, the table (selectable in a workspace), or the empty state. */
 function FilesBody({ files, states, filtered, columns, labels, table, empty }: Readonly<{ files: readonly FileSummary[]; states: readonly LinkState[]; filtered: boolean; columns: DataTableColumn<FileSummary>[]; labels: ReturnType<typeof tableLabels>; table: TableSelection | null; empty: React.ReactNode }>) {
   const { say } = useSay();
@@ -228,7 +238,7 @@ function FilesBody({ files, states, filtered, columns, labels, table, empty }: R
             onSelectedChange: table.onSelectedChange,
             bulkMax: BULK_MAX,
             bulkResult: table.bulkResult,
-            bulkActions: ({ selected: ids, clear }: { selected: string[]; clear: () => void }) => <BulkActions kind={KIND.applicantFile} ids={ids} set={table.workspace.set} tags={table.workspace.tags} onResult={table.onBulkResult} onDone={clear} />,
+            bulkActions: bulkActionsOf(table),
           }
         : {})}
     />

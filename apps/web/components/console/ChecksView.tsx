@@ -26,32 +26,36 @@ import { STATUS_TONE } from "./DocumentTable";
 import { formatDate } from "./format";
 import { tableLabels } from "./table-labels";
 
+type Say = ReturnType<typeof useSay>["say"];
+type Lang = ReturnType<typeof useSay>["locale"];
+
+function checkColumns(say: Say, locale: Lang): DataTableColumn<CheckSummary>[] {
+  return [
+    {
+      id: "title",
+      header: say("checks.columns.document"),
+      type: "title",
+      href: (c) => `/${locale}/app/documents/${c.documentId}/rapport`,
+      card: "title",
+      value: (c) => c.title,
+      cell: (c) => (
+        <Link href={`/${locale}/app/documents/${c.documentId}/rapport`} className="font-semibold text-fg hover:text-fg-accent hover:underline" aria-label={say("library.open", { title: c.title })}>
+          {c.title}
+        </Link>
+      ),
+    },
+    { id: "kind", header: say("checks.columns.kind"), priority: 2, value: (c) => c.kind, cell: (c) => say(`kinds.${c.kind}`) },
+    { id: "studio", header: say("checks.columns.check"), priority: 3, value: (c) => c.studio, cell: (c) => say(`batch.studios.${c.studio}`) },
+    { id: "result", header: say("checks.columns.result"), type: "status", value: (c) => c.result, cell: (c) => <Badge tone={STATUS_TONE[c.result]}>{say(`statuses.${c.result}`)}</Badge> },
+    { id: "at", header: say("checks.columns.when"), priority: 2, align: "end", value: (c) => c.at, cell: (c) => formatDate(c.at, locale) },
+    { id: "run", header: say("checks.columns.run"), priority: 3, value: (c) => c.runId ?? "", cell: (c) => <code className="break-all font-sans text-xs tabular-nums text-fg-muted">{c.runId ?? "—"}</code> },
+  ];
+}
+
 /** The checks, one row each: the document (a link to its report), what ran, the result, when, the run. A phone's list row (P12): the title, one line of facts (the kind and the day), the result. */
 function ChecksTable({ rows }: Readonly<{ rows: CheckSummary[] }>) {
   const { say, locale } = useSay();
-  const columns = useMemo<DataTableColumn<CheckSummary>[]>(
-    () => [
-      {
-        id: "title",
-        header: say("checks.columns.document"),
-        type: "title",
-        href: (c) => `/${locale}/app/documents/${c.documentId}/rapport`,
-        card: "title",
-        value: (c) => c.title,
-        cell: (c) => (
-          <Link href={`/${locale}/app/documents/${c.documentId}/rapport`} className="font-semibold text-fg hover:text-fg-accent hover:underline" aria-label={say("library.open", { title: c.title })}>
-            {c.title}
-          </Link>
-        ),
-      },
-      { id: "kind", header: say("checks.columns.kind"), priority: 2, value: (c) => c.kind, cell: (c) => say(`kinds.${c.kind}`) },
-      { id: "studio", header: say("checks.columns.check"), priority: 3, value: (c) => c.studio, cell: (c) => say(`batch.studios.${c.studio}`) },
-      { id: "result", header: say("checks.columns.result"), type: "status", value: (c) => c.result, cell: (c) => <Badge tone={STATUS_TONE[c.result]}>{say(`statuses.${c.result}`)}</Badge> },
-      { id: "at", header: say("checks.columns.when"), priority: 2, align: "end", value: (c) => c.at, cell: (c) => formatDate(c.at, locale) },
-      { id: "run", header: say("checks.columns.run"), priority: 3, value: (c) => c.runId ?? "", cell: (c) => <code className="break-all font-sans text-xs tabular-nums text-fg-muted">{c.runId ?? "—"}</code> },
-    ],
-    [say, locale],
-  );
+  const columns = useMemo(() => checkColumns(say, locale), [say, locale]);
   const labels = useMemo(() => tableLabels(say), [say]);
   return <DataTable caption={say("checks.caption")} rows={rows} columns={columns} getRowId={(c) => c.id} rowLabel={(c) => c.title} pageSize={12} labels={labels} phone="list" />;
 }
