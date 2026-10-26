@@ -12,7 +12,24 @@ import { LibraryView } from "./LibraryView";
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh() {}, push() {}, replace() {} }), usePathname: () => "/fr/app", useSearchParams: () => new URLSearchParams() }));
 
 const MESSAGES = { en: { console: en.console }, fr: { console: fr.console } } as const;
-const readable = (html: string) => html.replace(/<style[\s\S]*?<\/style>/g, "").replace(/<[^>]*>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ");
+/** The text of some markup, scanned (no regular expression strips tags): each tag becomes `gap`, a `<style>` element is dropped whole. */
+function flatten(html: string, gap: string): string {
+  let out = "";
+  let i = 0;
+  while (i < html.length) {
+    if (html[i] !== "<") {
+      out += html[i++];
+      continue;
+    }
+    const end = html.indexOf(">", i);
+    if (end < 0) break;
+    const name = html.slice(i + 1, end).split(/[\s/>]/)[0]?.toLowerCase();
+    i = name === "style" ? html.indexOf("</style>", end) + "</style>".length : end + 1;
+    out += gap;
+  }
+  return out;
+}
+const readable = (html: string) => flatten(html, " ").replace(/&#x27;|&#39;/g, "'").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ");
 const collection = (patch: Record<string, unknown> = {}) => ({ id: "c1", name: "My documents", files: 2, folders: 0, tags: [], isDefault: true, avatar: null, description: null, lastCheck: { at: "2026-10-20T15:00:00.000Z", status: "attention" }, ...patch });
 const check = (n: number, result: CheckSummary["result"]): CheckSummary => ({ id: `a${n}`, documentId: `d${n}`, title: `Bail ${n}`, kind: "lease", studio: "compliance-check", result, runId: `run_${n}`, at: `2026-10-2${n}T12:00:00.000Z` });
 const EXAMPLES = { tenant: { title: "Bail locataire", filename: "bail-locataire.txt", text: "…" }, landlord: { title: "Bail propriétaire", filename: "bail-proprietaire.txt", text: "…" } };
@@ -108,14 +125,14 @@ describe("the library home (yomizaka#275, the UX review's Y3)", () => {
     expect(lead).toContain('href="/fr/app/verifications?result=attention%2Cfailed"');
     expect(lead).toContain('href="/fr/app/dossiers?state=used"');
     expect(lead).toContain('href="/fr/app/dossiers?state=open"');
-    expect(lead.replace(/<[^>]*>/g, "")).toBe("Vous avez 6 vérifications à regarder, 2 dossiers à décider et 1 lien de dépôt ouvert.");
+    expect(flatten(lead, "")).toBe("Vous avez 6 vérifications à regarder, 2 dossiers à décider et 1 lien de dépôt ouvert.");
   });
 
   it("without the applicant-file flow the sentence counts the checks only", () => {
     const html = render({ todo: { toReview: 3, toDecide: null, openLinks: null } });
     expect(html).toContain('href="/fr/app/verifications?result=attention%2Cfailed"');
     expect(html).not.toContain("/fr/app/dossiers?state=");
-    expect(html.replace(/<style[\s\S]*?<\/style>/g, "").replace(/<[^>]*>/g, "")).toContain("Vous avez 3 vérifications à regarder.");
+    expect(flatten(html, "")).toContain("Vous avez 3 vérifications à regarder.");
   });
 
   it("the sentence is « Rien à traiter » when everything is at zero — no figure link", () => {
