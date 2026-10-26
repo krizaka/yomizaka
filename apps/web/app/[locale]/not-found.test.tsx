@@ -42,10 +42,10 @@ describe("the 404 (the UX review's Y10)", () => {
     nav.host = "www.yomizaka.com";
   });
 
-  it("answers in English on an English address, and in English when the address says nothing", async () => {
+  it("answers in English on an English address, and in French when the address says nothing (Loi 96, yomizaka#366)", async () => {
     nav.locale = "en";
     expect(readable(renderToStaticMarkup(await NotFound()))).toContain("Back to the library");
     nav.locale = "";
-    expect(renderToStaticMarkup(await NotFound())).toContain('href="/en/app"');
+    expect(renderToStaticMarkup(await NotFound())).toContain('href="/fr/app"');
   });
 });

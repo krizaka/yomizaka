@@ -5,14 +5,14 @@ import { CLOSED_ROBOTS, devRedirect, indexableOn, isDevHost, NOINDEX_HEADER } fr
 import { SITE_URL } from "./lib/site";
 
 /**
- * Every page exists in English and French (`/en/…`, `/fr/…`); an address without a language goes to the visitor's choice
- * (cookie `NEXT_LOCALE`), else English. admin.yomizaka.com serves only the administration console (lib/host.ts), never
+ * Every page exists in French and English (`/fr/…`, `/en/…`); an address without a language goes to the visitor's choice
+ * (cookie `NEXT_LOCALE`), else French (Loi 96, yomizaka#366): English is a choice, never the default. admin.yomizaka.com serves only the administration console (lib/host.ts), never
  * indexed; dev.yomizaka.com never serves it. A deployment with APP_SEARCH_INDEXING=off (lib/indexing.ts) answers noindex on
  * every response — pages, redirects and the API — and a closed robots.txt without a sitemap.
  */
 export function proxy(request: NextRequest) {
   const host = request.headers.get("host");
-  const chosen = request.cookies.get("NEXT_LOCALE")?.value === "fr" ? "fr" : "en";
+  const chosen = request.cookies.get("NEXT_LOCALE")?.value === "en" ? "en" : "fr";
   const admin = isAdminHost(host);
   const dev = isDevHost(host);
   // Closed to search engines: the consoles and the dev host always; every other host but the public one (APP_PUBLIC_URL's:

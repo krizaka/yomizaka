@@ -25,7 +25,7 @@ export function pageMetadata(locale: Locale, page: PageId): Metadata {
   return {
     title: { absolute: title },
     description,
-    alternates: { canonical: url(locale, page), languages: { en: url("en", page), fr: url("fr", page), "x-default": url("en", page) } },
+    alternates: { canonical: url(locale, page), languages: { en: url("en", page), fr: url("fr", page), "x-default": url("fr", page) } },
     openGraph: {
       type: "website",
       siteName: t.meta.siteName,
@@ -74,8 +74,8 @@ export function llmsText(): string {
 > A product of Krizaka (Montréal), in development: sign-up is closed. Powered by Orazaka; every analysis keeps its run id.
 
 ## Key pages
-- [${en.meta.siteName}](${SITE_URL}/en) · [Yomizaka (fr)](${SITE_URL}/fr): what it does for you, and one real check recorded as it came back
-- [${en.privacy.title}](${SITE_URL}/en/privacy) · [${getDictionary("fr").privacy.title} (fr)](${SITE_URL}/fr/privacy)
+- [${getDictionary("fr").meta.siteName}](${SITE_URL}/fr) · [Yomizaka (en)](${SITE_URL}/en): what it does for you, and one real check recorded as it came back
+- [${getDictionary("fr").privacy.title}](${SITE_URL}/fr/privacy) · [${en.privacy.title} (en)](${SITE_URL}/en/privacy)
 - Signed reports are verified by signed-in members the report's owner gave access to; there is no public verification.
 - [Talk to us about Yomizaka](${KRIZAKA_URL}/contact?topic=yomizaka): the one way to reach the team
 ## Source
@@ -86,6 +86,6 @@ export function llmsText(): string {
 
 - [Krizaka](${KRIZAKA_URL}): the company, an open-source software studio in Montréal
 
-Languages: English and French. Sitemap: ${SITE_URL}/sitemap.xml
+Languages: French and English. Sitemap: ${SITE_URL}/sitemap.xml
 `;
 }
