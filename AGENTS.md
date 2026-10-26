@@ -69,6 +69,7 @@
   `company/QA.md` still exist (`apps/web/scripts/qa-accounts.mjs`, passwords from the environment, never printed).
 - The administration lives on **admin.yomizaka.com** (same app, host-routed by `proxy.ts`/`lib/host.ts` to `app/[locale]/(admin)/console`, never indexed; 404 on dev.yomizaka.com) and `/api/admin/*`; it needs a session, the ADMIN role **and** an address of
   `AUTH_ALLOWED_IPS` (empty in production = nobody); a failed lock is a 404 on pages, a 403 on the API.
+- The audit trail is `@krizaka/audit` (`lib/audit.ts`, table `audit.entry`, migration 0037; `audit_log` stays one release as a view, dropped in a follow-up). An action id is `[a-z0-9_]` segments joined by dots (`applicant_file.closed`, never a hyphen); `audit()` never throws, `auditIn(tx, …)` joins the caller's transaction.
 - Passwords: scrypt; sessions: random tokens kept as keyed hashes (`AUTH_SESSION_SECRET`), HttpOnly cookies; rate limits
   on sign-in, upload, analysis and search (`@krizaka/rate-limit` through `lib/limits.ts`; every number is a setting `limits.<action>.perIp|perSubject|windowSeconds`, defaults in `lib/settings/limits.ts`); security headers (CSP same-origin, HSTS, nosniff, frame-ancestors self).
 - A production server refuses to start without `DATABASE_URL`, `AUTH_SESSION_SECRET` (≥ 32), an `oz_` key and, for a TLS

@@ -58,8 +58,9 @@ describe.runIf(enabled)("export and erasure (Loi 25)", () => {
     expect(store.size()).toBe(0);
     expect(await query("SELECT 1 FROM accounts WHERE id = $1", [owner])).toHaveLength(0);
     expect(await query("SELECT 1 FROM documents WHERE owner_id = $1", [owner])).toHaveLength(0);
-    const [trail] = await query<{ actor_label: string; ip: string | null; detail: unknown }>("SELECT actor_label, ip, detail FROM audit_log WHERE actor_id = $1", [owner]);
-    expect(trail).toEqual({ actor_label: "deleted account", ip: null, detail: {} });
+    // The package's table clears the actor with the account (ON DELETE SET NULL): the entry is found by its target, no longer by the person.
+    const [trail] = await query<{ actor_label: string; ip: string | null; detail: unknown; actor_id: string | null }>("SELECT actor_label, ip, detail, actor_id FROM audit_log WHERE target_id = $1", [doc.summary.id]);
+    expect(trail).toEqual({ actor_label: "deleted account", ip: null, detail: {}, actor_id: null });
   });
 
   it("refuses while a subscription is active: cancel it in the portal first", async () => {

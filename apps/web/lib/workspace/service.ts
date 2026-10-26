@@ -52,7 +52,7 @@ export async function closeDecidedFiles(tx: LayerQuery, moves: readonly StatusMo
   if (held.length) await tx("UPDATE documents SET content = ''::bytea, text = '', storage = 'none', retain_until = NULL WHERE id = ANY($1::uuid[])", [held.map((d) => d.id)]);
   for (const m of decided) {
     const purged = held.filter((d) => d.screening_id === m.entityId).length;
-    await auditIn(tx, { action: "applicant-file.closed", actorId: owner, actorLabel: "manager", targetId: m.entityId, detail: { purged, decision: m.to }, headers: options.headers });
+    await auditIn(tx, { action: "applicant_file.closed", actorId: owner, actorLabel: "manager", targetId: m.entityId, detail: { purged, decision: m.to }, headers: options.headers });
   }
   for (const d of held) if (EXTERNAL.has(d.storage as never)) await options.store!.delete(objectKey(owner, d.id, d.mime_type));
 }

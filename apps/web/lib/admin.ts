@@ -1,4 +1,6 @@
-import { audit } from "./audit";
+import { PAGE } from "@krizaka/audit";
+
+import { audit, trail } from "./audit";
 import { query } from "./db";
 import { isUuid } from "./documents";
 import { refuse } from "./http";
@@ -92,12 +94,25 @@ export interface AuditEntry {
   ip: string | null;
 }
 
+/**
+ * The newest entries of the trail (`@krizaka/audit`'s `list`, a page at a time). With an id: every entry that person did or that was
+ * about them — the package filters a target by its kind and its id, and this reads by the id alone (krizaka-ts gap), so that case reads `audit.entry` itself.
+ */
 export async function auditLog(limit = 300, targetId?: string): Promise<AuditEntry[]> {
-  const rows = await query<{ id: string; at: Date; actor_label: string; action: string; target_id: string | null; ip: string | null }>(
-    `SELECT id, at, actor_label, action, target_id, ip FROM audit_log ${targetId ? "WHERE target_id = $2 OR actor_id::text = $2" : ""} ORDER BY at DESC LIMIT $1`,
-    targetId ? [limit, targetId] : [limit],
-  );
-  return rows.map((r) => ({ id: String(r.id), at: r.at.toISOString(), actor: r.actor_label, action: r.action, target: r.target_id, ip: r.ip }));
+  if (targetId) {
+    const rows = await query<{ id: string; at: Date; actor_label: string; action: string; target_id: string | null; ip: string | null }>(
+      "SELECT id, at, actor_label, action, target_id, ip FROM audit.entry WHERE target_id = $2 OR actor_id::text = $2 ORDER BY at DESC, id DESC LIMIT $1",
+      [limit, targetId],
+    );
+    return rows.map((r) => ({ id: String(r.id), at: r.at.toISOString(), actor: r.actor_label, action: r.action, target: r.target_id, ip: r.ip }));
+  }
+  const entries: Awaited<ReturnType<typeof trail.list>> = [];
+  while (entries.length < limit) {
+    const page = await trail.list(query, { limit: Math.min(PAGE.max, limit - entries.length), before: entries.at(-1)?.id });
+    entries.push(...page);
+    if (page.length < PAGE.max) break;
+  }
+  return entries.map((e) => ({ id: e.id, at: e.at.toISOString(), actor: e.actorLabel, action: e.action, target: e.targetId, ip: e.ip }));
 }
 
 export interface UserDetail {
@@ -207,8 +222,9 @@ export async function deleteAccount(actor: { id: string; email: string }, id: st
     if (Number(n) <= 1) throw refuse(409, "LAST_ADMIN", "The last administrator keeps the role");
   }
   if (confirmEmail.trim().toLowerCase() !== user.email) throw refuse(409, "CONFIRM_MISMATCH", "The e-mail typed does not match the account");
+  // First the person goes out of the trail (the entries' actor column is cleared by the account's deletion, so it is read before it).
+  await query("UPDATE audit.entry SET actor_label = 'deleted account', ip = NULL WHERE actor_id = $1", [id]);
   await query("DELETE FROM accounts WHERE id = $1", [id]);
-  await query("UPDATE audit_log SET actor_label = 'deleted account', ip = NULL WHERE actor_id = $1", [id]);
   await audit({ action: "admin.account_deleted", actorId: actor.id, actorLabel: actor.email, targetId: id, detail: { documents: user.documents }, headers });
   return { deleted: true, documents: user.documents };
 }

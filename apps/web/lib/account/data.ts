@@ -114,6 +114,6 @@ export async function eraseAccount(deps: { query: Query; stores: StoresOf; accou
     if (!store || store.describe().kind !== d.storage) throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds a document is not available");
     await store.delete(objectKey(accountId, d.id, d.mime_type));
   }
-  await q("UPDATE audit_log SET actor_label = 'deleted account', ip = NULL, detail = '{}'::jsonb WHERE actor_id = $1 OR target_id = $2", [accountId, accountId]);
+  await q("UPDATE audit.entry SET actor_label = 'deleted account', ip = NULL, detail = '{}'::jsonb WHERE actor_id = $1 OR target_id = $2", [accountId, accountId]);
   await deps.accounts.deleteAccount(accountId);
 }

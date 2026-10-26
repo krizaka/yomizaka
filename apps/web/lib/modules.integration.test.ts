@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { MIGRATION_LOCK_KEY } from "./db";
 import { MIGRATIONS } from "./migrations";
-import { MODULES } from "./modules";
+import { ADOPTED, MODULES } from "./modules";
 
 /** A database migrated by `main` (before 0036) takes markers only (skipped without YOMIZAKA_DB_IT=1 and DATABASE_URL). */
 const enabled = process.env.YOMIZAKA_DB_IT === "1" && !!process.env.DATABASE_URL;
@@ -28,11 +28,35 @@ describe.runIf(enabled)("adopted Krizaka modules", () => {
     try {
       await runMigrations(connect, MIGRATIONS.filter((m) => m.version < "0036"), { lockKey: MIGRATION_LOCK_KEY });
       const before = await columns();
-      const applied = await runMigrations(connect, MIGRATIONS, { lockKey: MIGRATION_LOCK_KEY });
-      expect(applied.filter((v) => v < "0036")).toEqual([]);
-      expect(applied).toContain("0036_adopt_krizaka_modules");
+      const applied = await runMigrations(connect, MIGRATIONS.filter((m) => m.version <= "0036_adopt_krizaka_modules"), { lockKey: MIGRATION_LOCK_KEY });
+      expect(applied).toEqual(["0036_adopt_krizaka_modules"]);
       expect((await columns()).filter((c) => !before.includes(c) && !c.startsWith("public.krizaka_module_versions."))).toEqual([]);
       expect(before.some((c) => c.startsWith("public.krizaka_module_versions."))).toBe(false);
+      await assertModules(async (text, params) => (await pool.query(text, params)).rows as never, ADOPTED);
+
+      // 0037 (yomizaka#259): the trail moves into `audit.entry`, every row, none lost, the view keeps the old name.
+      const [{ id: person }] = (await pool.query("INSERT INTO accounts (email) VALUES ('p@yomizaka.test') RETURNING id")).rows;
+      await pool.query(
+        `INSERT INTO audit_log (at, actor_id, actor_label, action, target_id, detail, ip) VALUES
+           ('2026-10-01T10:00:00Z', $1::uuid, 'p@yomizaka.test', 'auth.sign_in', $1::text, '{}', '203.0.113.7'),
+           ('2026-10-02T10:00:00Z', NULL, 'applicant', 'applicant-file.document-uploaded', 'abc', '{"type":"id"}', NULL),
+           ('2026-10-03T10:00:00Z', gen_random_uuid(), '', 'Weird Action!', NULL, '{}', 'not an address'),
+           ('2026-10-04T10:00:00Z', $1::uuid, repeat('x', 300), 'document.deleted', repeat('y', 300), '{}', '2001:db8::1')`,
+        [person],
+      );
+      const old = (await pool.query("SELECT count(*)::int AS n FROM audit_log")).rows[0].n;
+      expect(await runMigrations(connect, MIGRATIONS, { lockKey: MIGRATION_LOCK_KEY })).toEqual(["0037_audit_package"]);
+      const rows = (await pool.query("SELECT actor_id, actor_label, action, target_type, target_id, host(ip) AS ip FROM audit.entry ORDER BY at")).rows;
+      expect(rows).toHaveLength(old);
+      expect((await pool.query("SELECT count(*)::int AS n FROM audit_log")).rows[0].n).toBe(old);
+      expect(rows[0]).toMatchObject({ actor_id: person, action: "auth.sign_in", target_type: "auth", ip: "203.0.113.7" });
+      expect(rows[1]).toMatchObject({ action: "applicant_file.document_uploaded", target_type: "applicant_file", target_id: "abc" });
+      expect(rows[2]).toMatchObject({ actor_id: null, actor_label: "unknown", action: "weird_action_", ip: null });
+      expect(rows[3]?.actor_label).toHaveLength(120);
+      expect(rows[3]?.target_id).toHaveLength(200);
+      // the old name still reads and, for a rolled-back code, still writes
+      await pool.query("INSERT INTO audit_log (actor_id, actor_label, action, ip) VALUES ($1, 'p', 'auth.sign_in', '203.0.113.9')", [person]);
+      expect((await pool.query("SELECT count(*)::int AS n FROM audit.entry")).rows[0].n).toBe(old + 1);
       await assertModules(async (text, params) => (await pool.query(text, params)).rows as never, MODULES);
     } finally {
       await pool.end();

@@ -100,7 +100,7 @@ export async function requestApplicantFile(owner: Owner, input: { candidateName:
     "INSERT INTO screenings (landlord_id, tenant_name, tenant_email, scope, provider, token_hash, expires_at, flow, requested_types) VALUES ($1, $2, $3, '{}', 'applicant-file', $4, $5, 'file', $6) RETURNING id",
     [owner.id, input.candidateName.trim(), input.candidateEmail.trim().toLowerCase(), hash(token), expiresAt, types],
   );
-  await audit({ action: "applicant-file.requested", actorId: owner.id, actorLabel: owner.email, targetId: row!.id, detail: { types }, headers });
+  await audit({ action: "applicant_file.requested", actorId: owner.id, actorLabel: owner.email, targetId: row!.id, detail: { types }, headers });
   return { id: row!.id, token, expiresAt: expiresAt.toISOString() };
 }
 
@@ -192,7 +192,7 @@ export async function uploadApplicantDocument(token: string, typeId: string, fil
     await query("UPDATE documents SET checks_skipped = $2::jsonb WHERE id = $1", [summary.id, JSON.stringify(checks.skipped)]);
     // Not kept and no check is running (every one was skipped): the file goes now. Otherwise it goes when its check ends.
     await purgeIfDone(query, summary.id);
-    await audit({ action: "applicant-file.document-uploaded", actorId: null, actorLabel: "applicant", targetId: link.id, detail: { type: typeId, document: summary.id, started: checks.started, skipped: checks.skipped.map((s) => s.code) }, headers });
+    await audit({ action: "applicant_file.document_uploaded", actorId: null, actorLabel: "applicant", targetId: link.id, detail: { type: typeId, document: summary.id, started: checks.started, skipped: checks.skipped.map((s) => s.code) }, headers });
     return { document: { id: summary.id, typeId, filename: summary.filename, sizeBytes: summary.sizeBytes }, checks: { started: checks.started, skipped: checks.skipped } };
   });
 }
@@ -205,7 +205,7 @@ export async function submitApplicantFile(token: string, now: Date, headers?: He
   if (!count?.n) throw refuse(409, "NO_DOCUMENT", "Send at least one document before submitting");
   const updated = await query<{ id: string }>("UPDATE screenings SET submitted_at = $2 WHERE id = $1 AND submitted_at IS NULL AND revoked_at IS NULL AND closed_at IS NULL RETURNING id", [link.id, now]);
   if (!updated.length) throw refuse(409, "LINK_USED", "This file was already sent");
-  await audit({ action: "applicant-file.submitted", actorId: null, actorLabel: "applicant", targetId: link.id, detail: { documents: count.n }, headers });
+  await audit({ action: "applicant_file.submitted", actorId: null, actorLabel: "applicant", targetId: link.id, detail: { documents: count.n }, headers });
 }
 
 /** The manager revokes a link: no upload or submission after it. A closed file cannot be revoked (it is already decided). */
@@ -213,7 +213,7 @@ export async function revokeApplicantFile(landlordId: string, id: string, now: D
   const row = await ownedFile(landlordId, id);
   if (row.closed_at) throw refuse(409, "FILE_CLOSED", "This file was closed");
   await query("UPDATE screenings SET revoked_at = $3 WHERE id = $1 AND landlord_id = $2 AND revoked_at IS NULL", [id, landlordId, now]);
-  await audit({ action: "applicant-file.revoked", actorId: landlordId, actorLabel: "manager", targetId: id, headers });
+  await audit({ action: "applicant_file.revoked", actorId: landlordId, actorLabel: "manager", targetId: id, headers });
 }
 
 /**
@@ -243,7 +243,7 @@ export async function closeApplicantFile(landlordId: string, id: string, store: 
   if (row.closed_at) return { purged: 0 };
   await query("UPDATE screenings SET closed_at = $3, revoked_at = coalesce(revoked_at, $3) WHERE id = $1 AND landlord_id = $2 AND closed_at IS NULL", [id, landlordId, now]);
   const purged = await purgeApplicationFiles(landlordId, id, store);
-  await audit({ action: "applicant-file.closed", actorId: landlordId, actorLabel: "manager", targetId: id, detail: { purged }, headers });
+  await audit({ action: "applicant_file.closed", actorId: landlordId, actorLabel: "manager", targetId: id, detail: { purged }, headers });
   return { purged };
 }
 
