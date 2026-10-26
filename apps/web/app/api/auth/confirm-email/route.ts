@@ -2,6 +2,7 @@ import { accountService } from "@/app/accounts-edge";
 import { audit } from "@/lib/audit";
 import { env } from "@/lib/env";
 import { fieldText, handle } from "@/lib/http";
+import { asLocale } from "@/lib/i18n";
 import { limit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +12,7 @@ export function POST(req: Request) {
   return handle(async () => {
     limit("confirm-email", req, null, [30, 3600]);
     const form = await req.formData().catch(() => null);
-    const locale = form?.get("locale") === "en" ? "en" : "fr";
+    const locale = asLocale(fieldText(form, "locale"));
     const result = await accountService().confirmEmailChange(fieldText(form, "token"), new Date());
     if (result === "CHANGED") await audit({ action: "profile.email_changed", actorId: null, actorLabel: "e-mail change link", headers: req.headers });
     return Response.redirect(`${env().APP_PUBLIC_URL}/${locale}/app/settings/securite?email=${result === "CHANGED" ? "changed" : "invalid"}`, 303);

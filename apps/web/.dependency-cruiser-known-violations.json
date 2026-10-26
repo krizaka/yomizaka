@@ -1,0 +1,336 @@
+[
+  {
+    "type": "dependency",
+    "from": "components/admin/PriceCatalogueView.tsx",
+    "to": "../../node_modules/.pnpm/date-fns@4.4.0/node_modules/date-fns/index.cjs",
+    "unresolvedTo": "date-fns",
+    "dependencyTypes": [
+      "npm",
+      "import"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "krizaka-first-dates"
+    }
+  },
+  {
+    "type": "dependency",
+    "from": "lib/account/accounts.integration.test.ts",
+    "to": "../../node_modules/.pnpm/date-fns@4.4.0/node_modules/date-fns/index.cjs",
+    "unresolvedTo": "date-fns",
+    "dependencyTypes": [
+      "npm",
+      "import"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "krizaka-first-dates"
+    }
+  },
+  {
+    "type": "dependency",
+    "from": "lib/batch/tick.ts",
+    "to": "../../node_modules/.pnpm/date-fns@4.4.0/node_modules/date-fns/index.cjs",
+    "unresolvedTo": "date-fns",
+    "dependencyTypes": [
+      "npm",
+      "import"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "krizaka-first-dates"
+    }
+  },
+  {
+    "type": "dependency",
+    "from": "lib/check-filters.ts",
+    "to": "../../node_modules/.pnpm/date-fns@4.4.0/node_modules/date-fns/index.cjs",
+    "unresolvedTo": "date-fns",
+    "dependencyTypes": [
+      "npm",
+      "import"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "krizaka-first-dates"
+    }
+  },
+  {
+    "type": "dependency",
+    "from": "lib/home.ts",
+    "to": "../../node_modules/.pnpm/date-fns@4.4.0/node_modules/date-fns/index.cjs",
+    "unresolvedTo": "date-fns",
+    "dependencyTypes": [
+      "npm",
+      "import"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "krizaka-first-dates"
+    }
+  },
+  {
+    "type": "dependency",
+    "from": "lib/password-reset.integration.test.ts",
+    "to": "../../node_modules/.pnpm/date-fns@4.4.0/node_modules/date-fns/index.cjs",
+    "unresolvedTo": "date-fns",
+    "dependencyTypes": [
+      "npm",
+      "import"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "krizaka-first-dates"
+    }
+  },
+  {
+    "type": "dependency",
+    "from": "lib/photo-origin.ts",
+    "to": "../../node_modules/.pnpm/date-fns@4.4.0/node_modules/date-fns/index.cjs",
+    "unresolvedTo": "date-fns",
+    "dependencyTypes": [
+      "npm",
+      "import"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "krizaka-first-dates"
+    }
+  },
+  {
+    "type": "dependency",
+    "from": "lib/prices/admin-api.test.ts",
+    "to": "../../node_modules/.pnpm/date-fns@4.4.0/node_modules/date-fns/index.cjs",
+    "unresolvedTo": "date-fns",
+    "dependencyTypes": [
+      "npm",
+      "import"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "krizaka-first-dates"
+    }
+  },
+  {
+    "type": "dependency",
+    "from": "lib/retention.ts",
+    "to": "../../node_modules/.pnpm/date-fns@4.4.0/node_modules/date-fns/index.cjs",
+    "unresolvedTo": "date-fns",
+    "dependencyTypes": [
+      "npm",
+      "import"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "krizaka-first-dates"
+    }
+  },
+  {
+    "type": "cycle",
+    "from": "../../packages/core/src/batch.ts",
+    "to": "../../packages/core/src/index.ts",
+    "unresolvedTo": "./index",
+    "dependencyTypes": [
+      "local",
+      "import"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "no-circular"
+    },
+    "cycle": [
+      {
+        "name": "../../packages/core/src/index.ts",
+        "dependencyTypes": [
+          "local",
+          "import"
+        ]
+      },
+      {
+        "name": "../../packages/core/src/batch.ts",
+        "dependencyTypes": [
+          "local",
+          "export"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "cycle",
+    "from": "../../packages/core/src/document-store-memory.ts",
+    "to": "../../packages/core/src/document-store.ts",
+    "unresolvedTo": "./document-store",
+    "dependencyTypes": [
+      "local",
+      "import"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "no-circular"
+    },
+    "cycle": [
+      {
+        "name": "../../packages/core/src/document-store.ts",
+        "dependencyTypes": [
+          "local",
+          "import"
+        ]
+      },
+      {
+        "name": "../../packages/core/src/index.ts",
+        "dependencyTypes": [
+          "local",
+          "type-only",
+          "import"
+        ]
+      },
+      {
+        "name": "../../packages/core/src/document-store-memory.ts",
+        "dependencyTypes": [
+          "local",
+          "export"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "cycle",
+    "from": "../../packages/core/src/document-store.ts",
+    "to": "../../packages/core/src/index.ts",
+    "unresolvedTo": "./index",
+    "dependencyTypes": [
+      "local",
+      "type-only",
+      "import"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "no-circular"
+    },
+    "cycle": [
+      {
+        "name": "../../packages/core/src/index.ts",
+        "dependencyTypes": [
+          "local",
+          "type-only",
+          "import"
+        ]
+      },
+      {
+        "name": "../../packages/core/src/document-store.ts",
+        "dependencyTypes": [
+          "local",
+          "export"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "cycle",
+    "from": "../../packages/core/src/index.ts",
+    "to": "../../packages/core/src/steps.ts",
+    "unresolvedTo": "./steps",
+    "dependencyTypes": [
+      "local",
+      "export"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "no-circular"
+    },
+    "cycle": [
+      {
+        "name": "../../packages/core/src/steps.ts",
+        "dependencyTypes": [
+          "local",
+          "export"
+        ]
+      },
+      {
+        "name": "../../packages/core/src/index.ts",
+        "dependencyTypes": [
+          "local",
+          "type-only",
+          "import"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "cycle",
+    "from": "lib/batch/observer.ts",
+    "to": "lib/batch/run.ts",
+    "unresolvedTo": "./run",
+    "dependencyTypes": [
+      "local",
+      "type-only",
+      "import"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "no-circular"
+    },
+    "cycle": [
+      {
+        "name": "lib/batch/run.ts",
+        "dependencyTypes": [
+          "local",
+          "type-only",
+          "import"
+        ]
+      },
+      {
+        "name": "lib/batch/observer.ts",
+        "dependencyTypes": [
+          "local",
+          "import"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "cycle",
+    "from": "lib/organisation/organize.ts",
+    "to": "lib/organisation/store.ts",
+    "unresolvedTo": "./store",
+    "dependencyTypes": [
+      "local",
+      "type-only",
+      "import"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "no-circular"
+    },
+    "cycle": [
+      {
+        "name": "lib/organisation/store.ts",
+        "dependencyTypes": [
+          "local",
+          "type-only",
+          "import"
+        ]
+      },
+      {
+        "name": "lib/organisation/organize.ts",
+        "dependencyTypes": [
+          "local",
+          "import"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "dependency",
+    "from": "../../scripts/demo-documents/render.mjs",
+    "to": "pdf-lib",
+    "unresolvedTo": "pdf-lib",
+    "dependencyTypes": [
+      "unknown"
+    ],
+    "rule": {
+      "severity": "error",
+      "name": "not-to-unresolvable"
+    }
+  }
+]

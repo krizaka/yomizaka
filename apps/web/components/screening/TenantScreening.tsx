@@ -6,6 +6,7 @@ import { Button } from "@krizaka/ui/button";
 import { Card } from "@krizaka/ui/card";
 import { useState } from "react";
 
+import { INTL } from "@/components/console/format";
 import { errorKey } from "@/lib/client";
 import type { TenantView } from "@/lib/screening";
 
@@ -40,7 +41,7 @@ export interface TenantWords {
  * The applicant's page, reached by the link: who asks, what is checked, why, who sees the result, for how long. They consent
  * or decline; they see the result first; they pass it on or contest it. No account, nothing hidden.
  */
-export function TenantScreening({ token, initial, words, locale }: Readonly<{ token: string; initial: TenantView; words: TenantWords; locale: string }>) {
+export function TenantScreening({ token, initial, words, locale }: Readonly<{ token: string; initial: TenantView; words: TenantWords; locale: keyof typeof INTL }>) {
   const [view, setView] = useState(initial);
   const [problem, setProblem] = useState<string | null>(null);
   const [contesting, setContesting] = useState(false);
@@ -86,7 +87,7 @@ export function TenantScreening({ token, initial, words, locale }: Readonly<{ to
         {words.state[view.status]}
       </output>
       {view.result ? <ScreeningResultCard result={view.result} words={words.result} demo={view.demo ? words.demo : null} /> : null}
-      {view.resultExpiresAt && view.result ? <p className="m-0 text-xs text-fg-muted">{words.deleteOn.replace("{date}", new Date(view.resultExpiresAt).toLocaleDateString(locale === "fr" ? "fr-CA" : "en-CA", { dateStyle: "long" }))}</p> : null}
+      {view.resultExpiresAt && view.result ? <p className="m-0 text-xs text-fg-muted">{words.deleteOn.replace("{date}", new Date(view.resultExpiresAt).toLocaleDateString(INTL[locale], { dateStyle: "long" }))}</p> : null}
       {view.contestComment ? <p className="m-0 text-sm text-fg-secondary">{words.contested.replace("{comment}", view.contestComment)}</p> : null}
       {problem ? <Alert tone="danger">{problem}</Alert> : null}
       {pending ? (

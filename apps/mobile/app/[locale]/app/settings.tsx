@@ -1,6 +1,6 @@
 import { Button, Card, Screen, Segmented, Txt } from "@krizaka/ui/native";
-import { useRouter } from "expo-router";
 import * as Linking from "expo-linking";
+import { useRouter } from "expo-router";
 import * as React from "react";
 import { View } from "react-native";
 

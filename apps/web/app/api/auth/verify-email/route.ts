@@ -1,6 +1,7 @@
 import { query } from "@/lib/db";
 import { env } from "@/lib/env";
 import { fieldText, handle } from "@/lib/http";
+import { asLocale } from "@/lib/i18n";
 import { limit } from "@/lib/rate-limit";
 import { verifyEmail } from "@/lib/signup";
 
@@ -10,7 +11,7 @@ export function POST(req: Request) {
     limit("verify-email", req, null, [30, 3600]);
     const form = await req.formData().catch(() => null);
     const token = fieldText(form, "token");
-    const locale = form?.get("locale") === "en" ? "en" : "fr";
+    const locale = asLocale(fieldText(form, "locale"));
     const result = await verifyEmail({ query }, token, new Date());
     return Response.redirect(`${env().APP_PUBLIC_URL}/${locale}/sign-in?${result === "VERIFIED" ? "verified=1" : "verify=invalid"}`, 303);
   });

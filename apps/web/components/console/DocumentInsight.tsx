@@ -83,7 +83,7 @@ function PiiNotice({ insight, documentId, say, locale }: Readonly<{ insight: Ins
 export function DocumentInsight({ insight, documentId, source }: Readonly<{ insight: Insight; documentId: string; source?: TextSource }>) {
   const { say, locale } = useSay();
   const u = insight.understanding;
-  const lang = locale === "fr" ? "fr" : "en";
+  const lang = locale;
   const rows = [...understandingRows(u, say, locale), ...(source ? sourceRows(source, say, locale) : [])];
   const weak = source?.kind === TEXT_SOURCE.ocr && source.lowConfidence;
   return (

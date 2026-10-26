@@ -16,9 +16,9 @@ const RELEASE_CONFIG = `        release {
 /** Adds the `release` signing config and makes the release build type use it when the environment names a key. Idempotent. */
 function addReleaseSigning(gradle) {
   if (gradle.includes("KRIZAKA_ANDROID_KEYSTORE")) return gradle;
-  const withConfig = gradle.replace(/(signingConfigs \{\n(?:.*\n)*?        debug \{(?:.*\n)*?        \}\n)/, `$1${RELEASE_CONFIG}`);
+  const withConfig = gradle.replace(/(signingConfigs \{\n(?:.*\n)*? {8}debug \{(?:.*\n)*? {8}\}\n)/, `$1${RELEASE_CONFIG}`);
   if (withConfig === gradle) throw new Error("with-release-signing: the signingConfigs block of the template changed");
-  const used = withConfig.replace(/(buildTypes \{\n(?:.*\n)*?        release \{\n(?:.*\n)*?\s*)signingConfig signingConfigs\.debug/, `$1signingConfig System.getenv("KRIZAKA_ANDROID_KEYSTORE") ? signingConfigs.release : signingConfigs.debug`);
+  const used = withConfig.replace(/(buildTypes \{\n(?:.*\n)*? {8}release \{\n(?:.*\n)*?\s*)signingConfig signingConfigs\.debug/, `$1signingConfig System.getenv("KRIZAKA_ANDROID_KEYSTORE") ? signingConfigs.release : signingConfigs.debug`);
   if (used === withConfig) throw new Error("with-release-signing: the release build type of the template changed");
   return used;
 }

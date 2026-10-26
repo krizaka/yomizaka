@@ -1,5 +1,5 @@
-import type { ClosingNote as Note } from "@yomizaka/core";
 import { Badge, Card, Txt } from "@krizaka/ui/native";
+import type { ClosingNote as Note } from "@yomizaka/core";
 import * as React from "react";
 import { View } from "react-native";
 

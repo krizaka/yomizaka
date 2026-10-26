@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
+import { footerLine, org } from "@krizaka/org";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
@@ -43,6 +44,17 @@ describe("the pages render exactly one footer", () => {
       expect(html.match(/<footer\b/g)).toHaveLength(1);
       expect(html).toContain('href="https://www.krizaka.com"');
       expect(html).not.toMatch(/Krizaka family|Famille Krizaka/);
+    }
+  });
+
+  it("reads the signature line and the legal links from @krizaka/org, none typed here", () => {
+    const footer = read("components/SiteFooter.tsx");
+    expect(footer).toContain('from "@krizaka/org"');
+    expect(footer).toContain("org={org}");
+    for (const locale of ["en", "fr"] as const) {
+      const html = renderToStaticMarkup(SiteFooter({ locale })).replaceAll("&#x27;", "'");
+      expect(html).toContain(footerLine(locale));
+      for (const link of org.footer.legal) expect(html).toContain(link.label[locale]);
     }
   });
 });

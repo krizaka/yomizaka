@@ -113,6 +113,10 @@ with a message and, where safe, a `fix:`; written for Tsx and `.ts` is parsed as
 
 - **Run**: `npm run lint` runs everything (it includes `ast-grep test` and the ratchet). `npx ast-grep scan` lists the
   violations with their message; `npm run lint:sg:test` runs the rule tests.
+- **Shared rules** (`@krizaka/config`, krizaka/.github#232): `apps/web` lints with the UI rules, `krizakaStack()` and `noLocaleTernary()`
+  (tests may compare locales); `apps/mobile` lints with `krizakaBase`. `.dependency-cruiser.cjs` (« Krizaka first », no cycle, no
+  unresolvable import, no dev dependency in production code) runs in each app's `lint` through `krizaka-known-violations check`;
+  the violations recorded in `.dependency-cruiser-known-violations.json` only go down (`krizaka-known-violations update` locks a gain).
 - **Ratchet**: `scripts/sg-ratchet.mjs` counts the violations per rule and refuses any increase against
   `sg-ratchet.json` (same idea as `krizaka-ratchet` / `lint-ratchet.json`: the debt only goes down). Fixed some? Lock the gain with
   `npm run sg:ratchet:update` (it never raises a count and records a new rule at its current count). A new rule is

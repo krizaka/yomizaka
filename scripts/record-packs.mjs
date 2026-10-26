@@ -9,6 +9,11 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { localDay } from "@krizaka/intl";
+
+// The calendar day of the law (apps/web/lib/rulesets.ts LAW_TIME_ZONE), never the UTC day (yomizaka#309).
+const LAW_TIME_ZONE = "America/Toronto";
+
 const OUT = join(dirname(fileURLToPath(import.meta.url)), "../apps/web/content/pack-proofs");
 const base = (process.env.AI_API_URL ?? "https://dev.orazaka.com/edge").replace(/\/$/, "");
 const key = process.env.AI_API_KEY;
@@ -38,7 +43,7 @@ async function call(path, init = {}) {
 mkdirSync(OUT, { recursive: true });
 for (const c of CASES) {
   const text = readFileSync(join(fixtures, c.file), "utf8");
-  const inputs = { document: text, jurisdiction: "QC", asOf: new Date().toISOString().slice(0, 10), ...(c.ruleset === "qc-residential-lease" ? {} : { ruleset: c.ruleset }) };
+  const inputs = { document: text, jurisdiction: "QC", asOf: localDay(new Date(), LAW_TIME_ZONE), ...(c.ruleset === "qc-residential-lease" ? {} : { ruleset: c.ruleset }) };
   let run = await call(`/api/v1/studios/${STUDIO}/runs`, { method: "POST", body: { inputs } });
   for (let i = 0; i < 90 && !["SUCCEEDED", "FAILED", "CANCELLED"].includes(run.status); i++) {
     await new Promise((r) => setTimeout(r, 2000));
