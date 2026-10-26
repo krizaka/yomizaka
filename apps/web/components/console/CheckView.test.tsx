@@ -11,7 +11,7 @@ import fr from "@/messages/fr.json";
 
 import { CheckQueue, CheckView, KindQuestion } from "./CheckView";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push() {}, replace() {}, refresh() {} }), usePathname: () => "/fr/app/verifier", useSearchParams: () => new URLSearchParams() }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push() {}, replace() {}, refresh() {} }), usePathname: () => "/fr/app/check", useSearchParams: () => new URLSearchParams() }));
 
 const MESSAGES = { en: { console: en.console }, fr: { console: fr.console } } as const;
 const readable = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ");
@@ -133,8 +133,8 @@ describe("« Vérifier un document », B2: the plan strip, the catalogue, the dr
     expect(readable(list)).toContain(fr.console.check.catalogue.items["qc-residential-lease"].title);
     expect(readable(list)).not.toContain("qc-made-up");
     expect(list.match(new RegExp(escape(fr.console.check.catalogue.available), "g"))).toHaveLength(6);
-    expect(list).toContain('href="/fr/app/verifier?type=lease#depot"');
-    expect(list).toContain('href="/fr/app/verifier#depot"');
+    expect(list).toContain('href="/fr/app/check?type=lease#depot"');
+    expect(list).toContain('href="/fr/app/check#depot"');
   });
 
   it("the chips carry the counts of each group, « Toutes » first", () => {

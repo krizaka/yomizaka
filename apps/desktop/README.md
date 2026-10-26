@@ -15,7 +15,7 @@ signed PDF as the web and the phone.
 | Store | The Mac's `DocumentStore` (ADR-0007): what Yomizaka keeps for the person on this Mac lives in the app's own folder (`Application Support/…/documents`); keys checked twice (the port's rule, then Rust: no `..`, no absolute path, no link planted in the folder); it passes the same contract test as the web's adapters (`@yomizaka/core/document-store/contract`) |
 | Account | The header's account menu at every width: name, e-mail, settings, theme, language, sign out. The bearer session is in the Keychain (`@krizaka/app-client`'s session store over `keychainStorage`) |
 | Menu bar | File · Go (⌘O, then the section map of `@yomizaka/core` numbered ⌘1 to ⌘4: Library, Vérifications; ⌘, Settings), in the app's language |
-| Links | `yomizaka://app/…` and `https://www.yomizaka.com/app/…` open the same place (`/app/documents/<id>`, `/app/verifier/lots/<id>`, `/app/settings`) |
+| Links | `yomizaka://app/…` and `https://www.yomizaka.com/app/…` open the same place (`/app/documents/<id>`, `/app/check/batches/<id>`, `/app/settings`) |
 | URLs | The window's hash: `#/library/<folder>`, `#/check/<document>/<run>`, `#/documents/<document>`, `#/batches/<batch>`, `#/reports`, `#/settings` |
 
 The page has no `fs`, no shell, no opener: its capability is `core:default`, `krizaka:default`, the title bar's drag and

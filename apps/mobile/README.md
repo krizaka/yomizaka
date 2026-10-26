@@ -6,9 +6,9 @@ The same account and the same API as the web; the logic every Krizaka Expo app s
 
 | Screen | URL (the web's path, under the language) |
 | :-- | :-- |
-| Check a document: camera scan, photo or PDF, the pre-flight, the Orazaka run | `/fr/app/verifier` |
+| Check a document: camera scan, photo or PDF, the pre-flight, the Orazaka run | `/fr/app/check` |
 | A document and its checks, the result with its plain-language closing note, the signed PDF | `/fr/app/documents/<id>/infos` · `/verifications?analysis=<id>` |
-| The library: collections, tags | `/fr/app/bibliotheque` · `/<library>/<collection>?tags=a,b` |
+| The library: collections, tags | `/fr/app/library` · `/<library>/<collection>?tags=a,b` |
 | Settings | `/fr/app/settings` |
 
 **Documents stay on the device** (ADR-0007): the picked file is kept in the app's sandbox (`src/data/device-store.ts`, the

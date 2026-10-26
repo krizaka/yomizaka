@@ -106,7 +106,7 @@ function guaranteeBlocks(labels: ReportLabels): Block[] {
     block(labels.guaranteeHeading!, 12, { bold: true, gap: 2 }),
     block(labels.guarantees!, 9),
     block(labels.notGuaranteed!, 9),
-    block(fill(labels.howToVerify!, { url: `${SITE_URL}/verify` }), 9),
+    block(fill(labels.howToVerify!, { url: `${SITE_URL}/app/verifications/report` }), 9),
     block(labels.footer!, 8),
   ];
 }

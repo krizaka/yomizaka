@@ -4,7 +4,7 @@ import { type Locale, routes } from "./links";
 
 /** The route (under `app/[locale]/app/`) that draws each destination of the section map on the phone. */
 const SCREENS: Partial<Record<SectionId, { screen: string; href: (locale: Locale) => string }>> = {
-  library: { screen: "bibliotheque", href: (locale) => routes.library(locale) },
+  library: { screen: "library", href: (locale) => routes.library(locale) },
   checks: { screen: "verifications", href: (locale) => routes.checks(locale) },
 };
 

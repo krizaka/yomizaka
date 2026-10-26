@@ -43,7 +43,7 @@ const render = (props: Record<string, unknown>, locale: "en" | "fr" = "fr") =>
   );
 /** The markup of the first collection card's link, from its `<a` to its `</a>`. */
 const cardLink = (html: string) => {
-  const from = html.indexOf('href="/fr/app/bibliotheque/l1/c1"');
+  const from = html.indexOf('href="/fr/app/library/l1/c1"');
   const open = html.lastIndexOf("<a ", from);
   return html.slice(open, html.indexOf("</a>", from));
 };
@@ -169,9 +169,9 @@ describe("the library home (yomizaka#275, the UX review's Y3)", () => {
     expect(readable(binder)).toMatch(/Rosemont\s+4/);
     expect(binder).toMatch(/aria-current="page"[^>]*href="\/fr\/app\?period=30d&amp;collection=c2"|href="\/fr\/app\?period=30d&amp;collection=c2"[^>]*aria-current="page"/);
     // the open tab's panel is that collection
-    expect(cardLink(binder.replace("/fr/app/bibliotheque/l1/c1", "x")).length).toBeGreaterThanOrEqual(0);
-    expect(binder).toContain('href="/fr/app/bibliotheque/l1/c2"');
-    expect(binder).not.toContain('href="/fr/app/bibliotheque/l1/c1"');
+    expect(cardLink(binder.replace("/fr/app/library/l1/c1", "x")).length).toBeGreaterThanOrEqual(0);
+    expect(binder).toContain('href="/fr/app/library/l1/c2"');
+    expect(binder).not.toContain('href="/fr/app/library/l1/c1"');
   });
 
   it("the side column: quick access (the request only with the applicant-file flow), the strip, the week and the credits", () => {

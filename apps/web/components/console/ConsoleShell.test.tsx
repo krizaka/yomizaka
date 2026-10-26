@@ -39,7 +39,7 @@ describe("the signed-in shell, B2 (P14)", () => {
     expect(links.map((l) => l.match(/href="([^"]+)"/)![1])).toEqual(["/fr/app", "/fr/app/documents", "/fr/app/verifications"]);
     expect(links[2]).toContain('aria-current="page"');
     expect(links[0]).not.toContain("aria-current");
-    expect(html).not.toMatch(/<a [^>]*data-rail-item[^>]*href="\/fr\/app\/(settings|verifier|recherche)"/);
+    expect(html).not.toMatch(/<a [^>]*data-rail-item[^>]*href="\/fr\/app\/(settings|check|search)"/);
     expect((html.match(/<button [^>]*data-rail-item[^>]*>/g) ?? [])).toHaveLength(1);
     expect(html).toContain(fr.console.shell.expand);
   });
@@ -75,7 +75,7 @@ describe("the signed-in shell, B2 (P14)", () => {
     expect(header).toContain(`aria-label="${fr.console.shell.language}: Français"`);
     const action = header.match(/<a [^>]*data-testid="header-check"[^>]*>/)![0];
     expect(action).toContain('aria-label="Vérifier un document"');
-    expect(action).toContain('href="/fr/app/verifier"');
+    expect(action).toContain('href="/fr/app/check"');
     expect(action).toMatch(/gradient/);
     expect(header).toContain('data-name="Éric Tremblay"');
     expect(header).not.toMatch(/messag|notif/i);

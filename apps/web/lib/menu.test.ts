@@ -1,11 +1,12 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
 import config from "../next.config.mjs";
+import { DOWNLOADS, downloadsOffered } from "./downloads";
 import { HOME_ANCHORS, MENU, menuHref, signInPath } from "./nav";
-import { OLD_AUDIENCE_SLUGS, redirectRules } from "./removed-urls.mjs";
+import { OLD_AUDIENCE_SLUGS, PARKED_PAGES, redirectRules } from "./removed-urls.mjs";
 import { pagePath, PAGES } from "./site";
 
 /**
@@ -38,7 +39,7 @@ describe("every menu item resolves", () => {
 
   it("every public page is reachable from the bar (the terms and the downloads from the footer): the home by the mark, the others by the menu or the action", () => {
     const reachable = new Set<string>(["home", ...MENU.map((m) => m.page)]);
-    for (const page of PAGES.filter((p) => p !== "verify" && p !== "terms" && p !== "download")) expect(reachable.has(page), page).toBe(true);
+    for (const page of PAGES.filter((p) => p !== "terms" && p !== "download")) expect(reachable.has(page), page).toBe(true);
     expect(pagePath("en", "home")).toBe("/en");
   });
 
@@ -51,6 +52,34 @@ describe("every menu item resolves", () => {
     }
   });
 });
+
+/** The signed-in space's renamed addresses (yomizaka#389), as opposed to the public pages that went to the home. */
+const isAppRule = (r: { source: string; destination: string }) => /\/app(\/|$)/.test(r.destination);
+
+/** Whether a path (without its language) is served by a page file of app/[locale]: groups ignored, `[param]` matches any segment. */
+function pageExists(path: string): boolean {
+  const walk = (dir: string, segments: string[]): boolean => {
+    if (segments.length === 0) return existsSync(join(dir, "page.tsx"));
+    const [head, ...rest] = segments;
+    const entries = readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory());
+    for (const entry of entries) {
+      if (/^\(.+\)$/.test(entry.name)) {
+        if (walk(join(dir, entry.name), segments)) return true;
+      } else if ((entry.name === head || /^\[[^.].*\]$/.test(entry.name)) && walk(join(dir, entry.name), rest)) return true;
+    }
+    return false;
+  };
+  return walk(join(ROOT, "app/[locale]"), path.split("/").filter(Boolean));
+}
+
+/** What Next does with `redirects()`: the first rule whose source matches (`:path*` is the rest of the address). */
+function resolve(path: string): string | null {
+  for (const rule of redirectRules()) {
+    const match = new RegExp(`^${rule.source.replace(/\/:path\*$/, "(?:/(.*))?").replace(/\/:path\+$/, "/(.+)")}$`).exec(path);
+    if (match) return rule.destination.replace(/:path[*+]/, match[1] ?? "").replace(/\/$/, "") || "/";
+  }
+  return null;
+}
 
 describe("every removed address redirects (308) to its new home", () => {
   const rules = redirectRules();
@@ -68,8 +97,8 @@ describe("every removed address redirects (308) to its new home", () => {
     }
   });
 
-  it("leads each one to the home of its language, or to the proof for the run page", () => {
-    for (const rule of rules) {
+  it("leads each removed public page to the home of its language, or to the proof for the run page", () => {
+    for (const rule of rules.filter((r) => !isAppRule(r))) {
       const locale = rule.source.match(/^\/(en|fr)\//)?.[1];
       const target = rule.source.endsWith("/run") ? "#proof" : "";
       expect(rule.destination).toBe(locale ? `/${locale}${target}` : `/${target}`);
@@ -77,7 +106,50 @@ describe("every removed address redirects (308) to its new home", () => {
   });
 
   it("no page file is left behind a removed address", () => {
-    for (const dir of ["run", "changelog", "[side]", "tenant", "landlord", "locataire"]) expect(existsSync(join(ROOT, "app/[locale]", dir)), dir).toBe(false);
+    for (const dir of ["run", "changelog", "[side]", "tenant", "landlord", "locataire", "verify"]) expect(existsSync(join(ROOT, "app/[locale]", dir)), dir).toBe(false);
+    for (const dir of ["recherche", "verifier", "bibliotheque", "bienvenue"]) expect(existsSync(join(ROOT, "app/[locale]/(app)/app", dir)), dir).toBe(false);
+  });
+
+  it("every moved address answers 308 to a page that exists (yomizaka#389)", () => {
+    const moved = rules.filter(isAppRule);
+    expect(moved.length).toBeGreaterThan(0);
+    for (const rule of moved) {
+      expect(rule.permanent).toBe(true);
+      const target = rule.destination.replace(/^\/(en|fr)(?=\/)/, "").replace(/:path[*+]/, "x");
+      expect(pageExists(target), `${rule.source} -> ${rule.destination}`).toBe(true);
+    }
+  });
+
+  it("each old French address lands on its English one, first matching rule, with and without the language", () => {
+    const table: [string, string][] = [
+      ["/verify", "/app/verifications/report"],
+      ["/app/recherche", "/app/search"],
+      ["/app/bienvenue", "/app/welcome"],
+      ["/app/verifier", "/app/check"],
+      ["/app/verifier/lots", "/app/check/batches"],
+      ["/app/verifier/lots/b1", "/app/check/batches/b1"],
+      ["/app/bibliotheque", "/app"],
+      ["/app/bibliotheque/sans-collection", "/app"],
+      ["/app/bibliotheque/l1/c1/f1", "/app/library/l1/c1/f1"],
+    ];
+    for (const [from, to] of table) {
+      for (const prefix of ["/en", "/fr", ""]) expect(resolve(`${prefix}${from}`), `${prefix}${from}`).toBe(`${prefix}${to}`);
+    }
+  });
+
+  it("/download is parked while no app can be downloaded: 308 to the home, out of the footer and the sitemap; it comes back with the first link", async () => {
+    const parked = PARKED_PAGES.includes("/download");
+    expect(parked).toBe(!downloadsOffered());
+    expect(DOWNLOADS.every((d) => d.href === null)).toBe(parked);
+    for (const prefix of ["/en", "/fr"]) expect(rules).toContainEqual({ source: `${prefix}/download`, destination: prefix, permanent: true });
+    const { default: sitemap } = await import("../app/sitemap");
+    expect(sitemap().filter((e) => e.url.includes("/download"))).toEqual([]);
+    expect(readFileSync(join(ROOT, "components/SiteFooter.tsx"), "utf8")).toContain("downloadsOffered()");
+  });
+
+  it("the report checker moved into the app: /verify answers 308 to /app/verifications/report, which exists and is no longer public", () => {
+    expect(rules).toContainEqual({ source: "/fr/verify", destination: "/fr/app/verifications/report", permanent: true });
+    expect(existsSync(join(ROOT, "app/[locale]/(app)/app/verifications/report/page.tsx"))).toBe(true);
   });
 
   it("no destination is itself removed (no chain)", () => {

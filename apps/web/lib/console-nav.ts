@@ -8,7 +8,7 @@ import { CHECKS_TABS, type ChecksTab, DOCUMENT_TABS, type DocumentTab, movedDocu
  */
 export type NavId = SectionId | "account";
 
-export const CONSOLE_ROUTES = { library: "/app", files: "/app/dossiers", documents: "/app/documents", checks: "/app/verifications", check: "/app/verifier", search: "/app/recherche", account: "/app/settings" } as const;
+export const CONSOLE_ROUTES = { library: "/app", files: "/app/dossiers", documents: "/app/documents", checks: "/app/verifications", check: "/app/check", search: "/app/search", account: "/app/settings" } as const;
 
 /** The tabs of the Vérifications destination (the map's, `@yomizaka/core`); the second lives in the address: `/app/verifications?tab=lots`. */
 export { CHECKS_TABS, type ChecksTab };
@@ -31,11 +31,11 @@ export function activeNav(path: string): NavId | null {
   const p = withoutLocale(path).replace(/\/$/, "") || "/";
   if (under(p, CONSOLE_ROUTES.checks) || under(p, CONSOLE_ROUTES.check)) return "checks";
   // Search is the top bar's ⌘K; its full page belongs to the documents it searches.
-  if (under(p, CONSOLE_ROUTES.search) || under(p, "/app/search")) return "documents";
+  if (under(p, CONSOLE_ROUTES.search)) return "documents";
   if (under(p, CONSOLE_ROUTES.account)) return "account";
   if (under(p, CONSOLE_ROUTES.files) || under(p, "/app/screening")) return "files";
   if (under(p, CONSOLE_ROUTES.documents)) return "documents";
-  if (p === CONSOLE_ROUTES.library || under(p, "/app/bibliotheque")) return "library";
+  if (p === CONSOLE_ROUTES.library || under(p, "/app/library")) return "library";
   return null;
 }
 

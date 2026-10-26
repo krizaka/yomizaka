@@ -18,7 +18,7 @@ import fr from "@/messages/fr.json";
  */
 const WEB = join(__dirname, "../..");
 /** The public pages and the components they draw: everything outside the app, the console and the administration. */
-const PUBLIC = ["app/[locale]/page.tsx", "app/[locale]/not-found.tsx", "app/[locale]/confirm-email", "app/[locale]/download", "app/[locale]/privacy", "app/[locale]/screening", "app/[locale]/terms", "app/[locale]/verify", "app/[locale]/verify-email", "components/home", "components/screening", "components/BarSession.tsx", "components/ClosingNoteView.tsx", "components/EmailTokenPage.tsx", "components/SiteChrome.tsx", "components/SiteFooter.tsx", "components/VerifyForm.tsx"];
+const PUBLIC = ["app/[locale]/page.tsx", "app/[locale]/not-found.tsx", "app/[locale]/confirm-email", "app/[locale]/download", "app/[locale]/privacy", "app/[locale]/screening", "app/[locale]/terms", "app/[locale]/(app)/app/verifications/report", "app/[locale]/verify-email", "components/home", "components/screening", "components/BarSession.tsx", "components/ClosingNoteView.tsx", "components/EmailTokenPage.tsx", "components/SiteChrome.tsx", "components/SiteFooter.tsx", "components/VerifyForm.tsx"];
 
 function sources(path: string): { name: string; source: string }[] {
   const full = join(WEB, path);
@@ -47,7 +47,7 @@ describe("the public site, plain (P10)", () => {
   const files = PUBLIC.flatMap(sources);
 
   it("reads the home, the verification page and the public components", () => {
-    for (const name of ["app/[locale]/page.tsx", "app/[locale]/verify/page.tsx", "components/home/BeforeAfter.tsx", "components/SiteChrome.tsx"]) expect(files.map((f) => f.name)).toContain(name);
+    for (const name of ["app/[locale]/page.tsx", "app/[locale]/(app)/app/verifications/report/page.tsx", "components/home/BeforeAfter.tsx", "components/SiteChrome.tsx"]) expect(files.map((f) => f.name)).toContain(name);
   });
 
   it("uses a mono only on code: every font-mono sits on a <code> or a <pre>", () => {

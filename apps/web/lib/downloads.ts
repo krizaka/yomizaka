@@ -21,3 +21,6 @@ export const DOWNLOAD_STATE = { available: "available", soon: "soon" } as const;
 export type DownloadState = (typeof DOWNLOAD_STATE)[keyof typeof DOWNLOAD_STATE];
 
 export const downloadState = (download: Download): DownloadState => (download.href ? DOWNLOAD_STATE.available : DOWNLOAD_STATE.soon);
+
+/** Whether any app can be downloaded. While none can, `/download` answers 308 to the home and is in neither the footer nor the sitemap (yomizaka#389). */
+export const downloadsOffered = (downloads: readonly Download[] = DOWNLOADS): boolean => downloads.some((d) => downloadState(d) === DOWNLOAD_STATE.available);

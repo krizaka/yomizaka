@@ -98,7 +98,7 @@ describe("the document on DetailLayout (the UX review's Y5)", () => {
 
   it("leads back to the document's collection (its name), or to the library when it has none", () => {
     const placed = render(document([check({ jurisdiction: "QC" })]), "rapport", "fr", { libraryId: "l1", collectionId: "c1", name: "4½ Villeray", isDefault: false });
-    expect(placed).toContain('href="/fr/app/bibliotheque/l1/c1"');
+    expect(placed).toContain('href="/fr/app/library/l1/c1"');
     expect(readable(placed)).toContain("4½ Villeray");
     const mine = render(document([check({ jurisdiction: "QC" })]), "rapport", "fr", { libraryId: "l1", collectionId: "c0", name: "My documents", isDefault: true });
     expect(readable(mine)).toContain(fr.console.organisation.defaultName);

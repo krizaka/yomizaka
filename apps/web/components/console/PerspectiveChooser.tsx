@@ -13,7 +13,7 @@ import { errorKey } from "@/lib/client";
 import { useSay } from "@/lib/i18n-client";
 
 /**
- * Which side of the lease the person is on: asked once at onboarding (its own route, /app/bienvenue, saved on selection) and
+ * Which side of the lease the person is on: asked once at onboarding (its own route, /app/welcome, saved on selection) and
  * changeable in settings. It changes the checks offered first and the wording, never the rules.
  */
 export function PerspectiveChooser({ current, audiences, onboarding = false, next }: Readonly<{ current: Audience | null; audiences: readonly { audience: Audience; status: "available" | "soon" }[]; onboarding?: boolean; next?: string }>) {

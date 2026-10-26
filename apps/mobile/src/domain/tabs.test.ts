@@ -8,14 +8,14 @@ describe("the phone's tabs", () => {
   it("are the section map's phone row, in its order, each at the web's path", () => {
     expect(phoneTabs("fr").map((tab) => tab.id)).toEqual(sectionsFor("phone").map((s) => s.id));
     expect(phoneTabs("fr").map((tab) => [tab.id, tab.screen, tab.href])).toEqual([
-      ["library", "bibliotheque", "/fr/app/bibliotheque"],
+      ["library", "library", "/fr/app/library"],
       ["checks", "verifications", "/fr/app/verifications"],
     ]);
   });
 
   it("have no « Vérifier » and no « Réglages » tab: the check is the header's « + », the settings are under the avatar", () => {
     const screens = phoneTabs("en").map((tab) => tab.screen);
-    expect(screens).not.toContain("verifier");
+    expect(screens).not.toContain("check");
     expect(screens).not.toContain("settings");
   });
 

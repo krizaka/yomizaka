@@ -29,6 +29,6 @@ describe("a tab's header", () => {
   it("holds « Vérifier un document » as its « + », the one action of every tab (yomizaka#319)", async () => {
     await render(wrap(<AppHeader title="Bibliothèque" />));
     await fireEvent.press(await screen.findByRole("button", { name: "Vérifier un document" }));
-    expect(mockNavigate).toHaveBeenCalledWith("/fr/app/verifier");
+    expect(mockNavigate).toHaveBeenCalledWith("/fr/app/check");
   });
 });

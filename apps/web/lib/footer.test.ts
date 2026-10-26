@@ -26,7 +26,7 @@ describe("the pages render exactly one footer", () => {
   });
 
   it("each public page renders <SiteFooter/> once, after its main, and nothing else renders a footer", () => {
-    for (const page of ["page.tsx", "privacy/page.tsx", "verify/page.tsx", "download/page.tsx"]) {
+    for (const page of ["page.tsx", "privacy/page.tsx", "download/page.tsx"]) {
       const source = read(`app/[locale]/${page}`);
       expect(source.match(/<SiteFooter\b/g)).toHaveLength(1);
       expect(source.lastIndexOf("</main>")).toBeLessThan(source.indexOf("<SiteFooter "));

@@ -19,7 +19,7 @@ const url = (locale: Locale, page: PageId) => `${SITE_URL}${pagePath(locale, pag
 
 export function pageMetadata(locale: Locale, page: PageId): Metadata {
   const t = getDictionary(locale);
-  const titles: Record<Exclude<PageId, "home">, string> = { verify: t.verify.title, download: t.download.title, privacy: t.privacy.title, terms: t.terms.title };
+  const titles: Record<Exclude<PageId, "home">, string> = { download: t.download.title, privacy: t.privacy.title, terms: t.terms.title };
   const title = page === "home" ? `${t.meta.siteName} · ${t.landing.title}` : `${titles[page]} · ${t.meta.siteName}`;
   const description = t.meta.description;
   return {
