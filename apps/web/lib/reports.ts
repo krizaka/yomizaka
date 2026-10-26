@@ -6,6 +6,10 @@ import { buildPayload, type IssuedReport, issueReport, ReportError } from "./rep
 import { reportLabels } from "./report-labels";
 import { type IssuedPdf, issuePdf } from "./report-pdf";
 import { signingKey } from "./report-signer";
+import { trimEdges } from "./trim-edges";
+
+/** The part of a file name a document title gives: accents folded, no separator at the ends, 60 characters at most. */
+const slugOf = (title: string): string => trimEdges(title.normalize("NFKD").replace(/[^\w-]+/g, "-"), "-").slice(0, 60) || "document";
 
 /** The signed audit report of one finished compliance check, for the document's owner — or the reason it cannot be made. */
 export async function reportFor(ownerId: string, documentId: string, analysisId: string, lang: Locale): Promise<{ issued: IssuedReport; filename: string }> {
@@ -19,7 +23,7 @@ export async function reportFor(ownerId: string, documentId: string, analysisId:
     throw error;
   }
   const issued = issueReport(payload, reportLabels(lang), signingKey());
-  const slug = document.title.normalize("NFKD").replace(/[^\w-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "document";
+  const slug = slugOf(document.title);
   return { issued, filename: `yomizaka-audit-${slug}-${(analysis.runId ?? analysis.id).slice(0, 8)}.html` };
 }
 
@@ -35,6 +39,6 @@ export async function reportPdfFor(ownerId: string, documentId: string, analysis
     throw error;
   }
   const issued = await issuePdf(payload, reportLabels(lang), signingKey());
-  const slug = document.title.normalize("NFKD").replace(/[^\w-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "document";
+  const slug = slugOf(document.title);
   return { issued, filename: `yomizaka-audit-${slug}-${(analysis.runId ?? analysis.id).slice(0, 8)}.pdf` };
 }

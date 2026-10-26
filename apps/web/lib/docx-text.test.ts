@@ -1,7 +1,7 @@
 import { DOCX_MIME } from "@yomizaka/core";
 import { describe, expect, it } from "vitest";
 
-import { docxText } from "./docx-text";
+import { docxText, ODT_TOKENS } from "./docx-text";
 import { readText } from "./pdf-text";
 import { docx, zipOf } from "./preflight/fixtures";
 import { createInspector } from "./preflight/inspector";
@@ -32,5 +32,20 @@ describe("a Word file (yomizaka#229)", () => {
 
   it("a file without its main part reads as no text, never as an error", () => {
     expect(docxText(zipOf([{ name: "[Content_Types].xml", data: Buffer.from("<Types/>") }]))).toBe("");
+  });
+});
+
+describe("ODT_TOKENS", () => {
+  it("is the pattern it was written as", () => {
+    expect(ODT_TOKENS.source).toBe(/<(\/?)(text:(?:p|h|tracked-changes|s|tab|line-break|note|note-citation))(?=[\s/>])[^<>]*>|<[^<>]*>|([^<]+)/g.source);
+    expect(ODT_TOKENS.flags).toBe("g");
+  });
+
+  it("walks tags and runs the same way as that pattern", () => {
+    const old = /<(\/?)(text:(?:p|h|tracked-changes|s|tab|line-break|note|note-citation))(?=[\s/>])[^<>]*>|<[^<>]*>|([^<]+)/g;
+    const xml = '<text:p text:style-name="P1">Bail<text:s/> <text:tab/>de<text:line-break/>x</text:p><text:span>y</text:span><text:tracked-changes><text:p>z</text:p></text:tracked-changes><text:notes>n</text:notes><text:note-citation>1</text:note-citation>';
+    const tokens = (re: RegExp) => [...xml.matchAll(re)].map((m) => [m.index, m[0], m[1], m[2], m[3]]);
+    expect(tokens(ODT_TOKENS)).toEqual(tokens(old));
+    expect(tokens(ODT_TOKENS).length).toBeGreaterThan(15);
   });
 });

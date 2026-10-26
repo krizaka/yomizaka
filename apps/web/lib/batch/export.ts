@@ -1,6 +1,7 @@
 import type { Analysis } from "@yomizaka/core";
 
 import { refuse } from "../http";
+import { trimEdges } from "../trim-edges";
 import { buildZip, type ZipEntry } from "../zip";
 import { csvCell } from "./csv-out";
 import { BATCH_ITEM, type BatchItemView, type BatchView } from "./run";
@@ -21,7 +22,7 @@ export interface ExportDeps {
 
 
 /** A file name that survives every system: accents folded, no separator, no leading dot. */
-export const safeName = (text: string): string => text.normalize("NFKD").replace(/\p{M}/gu, "").replace(/[^\w.-]+/g, "-").replace(/^[-.]+|[-.]+$/g, "").slice(0, 60) || "document";
+export const safeName = (text: string): string => trimEdges(text.normalize("NFKD").replace(/\p{M}/gu, "").replace(/[^\w.-]+/g, "-"), "-.").slice(0, 60) || "document";
 
 const REPORTED = new Set<string>([BATCH_ITEM.done, BATCH_ITEM.reused]);
 

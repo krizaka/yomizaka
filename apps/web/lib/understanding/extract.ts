@@ -1,3 +1,4 @@
+import { EN_WORDS, FR_WORDS } from "./language-words";
 import type { AmountFact, Confidence, DateFact, DocumentTypeDef, DocumentUnderstanding, IdentifierDef, Lang, PartyFact, ReferenceFact, Understanding } from "./port";
 
 /**
@@ -14,8 +15,6 @@ export interface UnderstandingConfig {
   alternativeShare: number;
 }
 
-const FR_WORDS = /\b(le|la|les|des|du|de|et|est|pour|une|un|dans|sur|avec|par|au|aux|ce|cette|entre|loyer|facture)\b/giu;
-const EN_WORDS = /\b(the|of|and|is|for|with|this|that|between|to|in|on|by|an|agreement|invoice|rent|tenant|number|payment|terms|due|subtotal|total)\b/giu;
 
 function language(text: string): Lang {
   const fr = (text.match(FR_WORDS) ?? []).length;
