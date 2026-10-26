@@ -2,7 +2,7 @@
   "meta": {
     "siteName": "Yomizaka",
     "titleTemplate": "{title} · Yomizaka",
-    "description": "Your leases, contracts and invoices, read and checked by Yomizaka: every finding quotes its matrix entry and the line it rests on, every PDF examined for signs of editing, every document found again in a second."
+    "description": "For property managers and landlords in Québec: Yomizaka reads the lease against the Civil Code of Québec, examines the pay stub as a file, and shows the exact line behind every finding."
   },
   "chrome": {
     "brandHome": "Yomizaka, home",
@@ -37,7 +37,7 @@
   },
   "landing": {
     "title": "Read before you sign.",
-    "lead": "Drop a lease, a contract or an invoice. Yomizaka verifies the document and screens the file: it reads it against extraction matrices and technical templates, and shows you the exact line behind every finding.",
+    "lead": "For property managers and landlords who screen applicants in Québec: drop the lease and the applicant's papers. Yomizaka verifies the documents and screens the file: it reads them against extraction matrices and technical templates, and shows you the exact line behind every finding.",
     "status": {
       "label": "Status",
       "development": "In development: sign-up is closed while we test it on real Québec leases.",
@@ -54,7 +54,7 @@
     "what": {
       "title": "What it does",
       "lead": "Three things, with nothing hidden behind them.",
-      "who": "For tenants and landlords checking a Québec lease. Freelancers and small businesses can check a contract or an invoice too.",
+      "who": "For property managers and landlords who screen applicants in Québec: a lease and a pay stub per file, several files a month. Tenants are welcome too: their first check is free. The registry checks (SOQUIJ, TAL, plumitif) are in preparation.",
       "trust": "By default, your account and your checks are kept in a database in Toronto, Canada, and seen by your account alone; your files can go to your own storage instead, when you choose it. Nothing is sold, shared or used to train a model.",
       "privacy": "Read the privacy notice",
       "items": {
@@ -86,9 +86,9 @@
       "title": "For whom"
     },
     "closing": {
-      "title": "One document, one answer.",
-      "body": "Sign in to check a document. Visible to your account only.",
-      "bodyIn": "Your documents are in your library, checked and seen by your account alone."
+      "title": "One file, one answer.",
+      "body": "Sign in to check the files of your month. Visible to your account only.",
+      "bodyIn": "The files of your month are in your library, checked and seen by your account alone."
     },
     "visual": {
       "caption": "A real check, recorded as it came back"
@@ -2647,14 +2647,14 @@
       "document": {
         "name": "One document",
         "features": [
-          "Document verification and file screening",
+          "For a single file: document verification and file screening",
           "A signed report that cites the article behind every finding"
         ]
       },
       "agency": {
-        "name": "Small business",
+        "name": "Property manager",
         "features": [
-          "For agencies and property managers",
+          "For those who check several files a month: agencies, property managers and landlords",
           "The API, with keys created in your account"
         ]
       },
