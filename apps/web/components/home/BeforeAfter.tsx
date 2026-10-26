@@ -4,6 +4,7 @@ import { passages } from "@yomizaka/core";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { HERO_RULE } from "@/lib/landing";
 import { recordedRun } from "@/lib/recorded-runs";
+import { atOffsets } from "@/lib/text-parts";
 
 /**
  * One clear before/after, stacked so it is as sharp on a phone as on a desktop: the lease with the forbidden clause lit,
@@ -26,13 +27,13 @@ export function BeforeAfter({ locale }: Readonly<{ locale: Locale }>) {
       <figure className="m-0 flex min-w-0 flex-col gap-2" aria-label={t.leaseCaption}>
         <figcaption className="text-xs font-semibold text-fg-muted">{t.before}</figcaption>
         <div className="whitespace-pre-wrap break-words rounded-lg border border-border-default bg-surface-1 p-3 text-sm leading-relaxed text-fg-secondary">
-          {parts.map((p, i) =>
+          {atOffsets(parts).map((p) =>
             p.mark ? (
-              <mark key={i} className="ym-passage text-fg" title={p.mark}>
+              <mark key={p.at} className="ym-passage text-fg" title={p.mark}>
                 {p.text}
               </mark>
             ) : (
-              <span key={i}>{p.text}</span>
+              <span key={p.at}>{p.text}</span>
             ),
           )}
         </div>

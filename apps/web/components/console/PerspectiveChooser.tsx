@@ -74,7 +74,7 @@ export function PerspectiveChooser({ current, audiences, onboarding = false, nex
         >
           {say("profile.save")}
         </Button>
-        {saved ? <span role="status" className="text-sm text-fg-secondary">{say("profile.saved")}</span> : null}
+        {saved ? <output className="text-sm text-fg-secondary">{say("profile.saved")}</output> : null}
       </div>}
     </Card.Root>
   );

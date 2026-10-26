@@ -5,6 +5,7 @@ import { type DocumentInsight as Insight, TEXT_SOURCE, type TextSource } from "@
 
 import { amountsOnce } from "@/lib/document-face";
 import { useSay } from "@/lib/i18n-client";
+import { keyedByLabel } from "@/lib/text-parts";
 
 const date = (iso: string, locale: string) => new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "UTC" }).format(new Date(`${iso}T00:00:00Z`));
 const money = (cents: number, locale: string) => new Intl.NumberFormat(locale, { style: "currency", currency: "CAD" }).format(cents / 100);
@@ -96,10 +97,10 @@ export function DocumentInsight({ insight, documentId, source }: Readonly<{ insi
       {!u.check ? <Alert tone="info">{say("insight.noCheck")}</Alert> : null}
       {rows.length ? (
         <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
-          {rows.map(([k, v], i) => (
-            <div key={i} className="contents">
-              <dt className="text-fg-secondary">{k}</dt>
-              <dd className="break-words">{v}</dd>
+          {keyedByLabel(rows).map(({ key, label, value }) => (
+            <div key={key} className="contents">
+              <dt className="text-fg-secondary">{label}</dt>
+              <dd className="break-words">{value}</dd>
             </div>
           ))}
         </dl>

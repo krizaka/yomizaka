@@ -82,9 +82,9 @@ export function TenantScreening({ token, initial, words, locale }: Readonly<{ to
         <p className="m-0 text-sm text-fg-secondary">{words.rights}</p>
         {view.demo ? <p className="m-0 text-xs font-semibold text-fg-muted">{words.demo}</p> : null}
       </Card.Root>
-      <p className="m-0 text-sm font-semibold text-fg" role="status" data-testid="screening-state">
+      <output className="m-0 block text-sm font-semibold text-fg" data-testid="screening-state">
         {words.state[view.status]}
-      </p>
+      </output>
       {view.result ? <ScreeningResultCard result={view.result} words={words.result} demo={view.demo ? words.demo : null} /> : null}
       {view.resultExpiresAt && view.result ? <p className="m-0 text-xs text-fg-muted">{words.deleteOn.replace("{date}", new Date(view.resultExpiresAt).toLocaleDateString(locale === "fr" ? "fr-CA" : "en-CA", { dateStyle: "long" }))}</p> : null}
       {view.contestComment ? <p className="m-0 text-sm text-fg-secondary">{words.contested.replace("{comment}", view.contestComment)}</p> : null}
