@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { extractionStatus } from "./extraction";
 import { DOCUMENT_KINDS, DOCUMENT_STATUSES } from "./vocabulary";
 
 export { DOCUMENT_KINDS, DOCUMENT_STATUSES, DOCUMENT_TABS, type DocumentTab, movedDocumentTab, OLD_DOCUMENT_TABS } from "./vocabulary";
@@ -263,6 +264,8 @@ export const documentSummary = z.object({
   /** Whether a text layer was read (a scanned PDF has none: the compliance check needs one). */
   hasText: z.boolean(),
   status: documentStatus,
+  /** Whether the text is read yet (yomizaka#21); absent on a document read before the status existed: it is `done`. */
+  extraction: extractionStatus.optional(),
   createdAt: z.string(),
 });
 export type DocumentSummary = z.infer<typeof documentSummary>;
@@ -345,6 +348,8 @@ export const textSource = z.discriminatedUnion("kind", [
 export type TextSource = z.infer<typeof textSource>;
 
 export const documentDetail = documentSummary.extend({
+  /** The code of the refusal when the reading `failed` (the page translates it). */
+  extractionError: z.string().nullable().optional(),
   /** Set for a document made from photos; absent for a PDF or a text file (their text is read, not recognised). */
   textSource: textSource.optional(),
   insight: documentInsight.optional(),
@@ -447,6 +452,7 @@ export * from "./closing-note";
 export * from "./steps";
 export * from "./batch";
 export * from "./document-store";
+export * from "./extraction";
 export { memoryStore } from "./document-store-memory";
 
 export { CHECKS_TABS, type ChecksTab, PLATFORMS, type Platform, type Section, SECTION_IDS, type SectionId, SECTIONS, sectionShortcut, sectionsFor } from "./sections";
