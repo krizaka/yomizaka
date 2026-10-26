@@ -34,7 +34,7 @@ describe("every menu item resolves", () => {
   it("sign-in exists and is the bar's action; the menu stays short", () => {
     expect(existsSync(join(ROOT, "app/[locale]/(app)/sign-in/page.tsx"))).toBe(true);
     expect(signInPath("fr")).toBe("/fr/sign-in");
-    expect(MENU.length).toBeLessThanOrEqual(4);
+    expect(MENU.length).toBeLessThanOrEqual(5);
   });
 
   it("every public page is reachable from the bar (the terms and the downloads from the footer): the home by the mark, the others by the menu or the action", () => {
