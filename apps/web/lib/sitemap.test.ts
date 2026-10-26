@@ -27,6 +27,10 @@ describe("sitemap.xml", () => {
     for (const e of entries) expect(Object.keys(e.alternates?.languages ?? {}).sort()).toEqual(["en", "fr", "x-default"]);
   });
 
+  it("points x-default to the French page: French is the default language (yomizaka#366)", () => {
+    for (const e of entries) expect(e.alternates?.languages?.["x-default"]).toBe(e.alternates?.languages?.fr);
+  });
+
   it("does not list the members-only /verify", () => {
     expect(urls.filter((u) => u.includes("/verify"))).toEqual([]);
   });
