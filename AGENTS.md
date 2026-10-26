@@ -38,6 +38,9 @@
   it was entered; no year, no figure — the radar says so and shows the table's source). Never a percentage in code, never an invented figure: the shipped table has
   no year until the TAL's are entered. `renewalNotice` writes the document the manager signs and sends: Yomizaka sends nothing on anyone's behalf. The lease
   portfolio that feeds it (doors, buildings, costs) is yomizaka#126.
+- **The signed PDF is paper** (design § 3.2, P13): a folio « n / total » first on every page, the findings in the screen's order and with its numbers
+  (`numberFindings`), the review note and the contract's non-check as footnotes at the foot of the first page (¹ ²). The folios are not part of the
+  signed text; verification checks that each page starts with the folio of its place (a moved page is `ALTERED`).
 - A report is shown as Orazaka returned it (`packages/core` `reportOf`): a shape it did not send is `null`, never a guess.
   The home's proof shows **the recorded tenant run**; the landlord's is kept beside it: a fictitious sample lease sent to Orazaka's compliance Studio on dev (Québec ruleset), the answer kept exactly as Orazaka returned it in `apps/web/content/recorded-runs/<side>.json` — written by `scripts/record-runs.mjs` (key from the environment, never by hand; re-run it when the ruleset or the Studio changes). `lib/recorded-runs.ts` validates both at build: a page without a recorded run does not build (`lib/recorded-runs.test.ts`). The platform's own showcase (an administrator promotes a check on a sample document, `lib/showcase.ts`, `/api/showcase/*`) stays available but the page no longer depends on it.
 

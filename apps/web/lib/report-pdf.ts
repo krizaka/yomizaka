@@ -4,6 +4,7 @@ import { PDFDict, PDFDocument, type PDFFont, PDFName, PDFString, rgb, StandardFo
 import { z } from "zod";
 
 import { LINE, type LineKind, noteLines } from "./closing-note/render";
+import { numberFindings } from "./document-face";
 import { type Attestation, fill, REPORT_SCHEMA, type ReportLabels, type ReportPayload, reportPayload, sha256, signedMessage, type Verification, type VerifyFailure } from "./report";
 import { type SigningKey } from "./report-key";
 import { SITE_URL } from "./site";
@@ -31,7 +32,11 @@ const NOTE_STYLE: Record<LineKind, { size: number; bold?: boolean; gap?: number 
   [LINE.note]: { size: 9, bold: true, gap: 4 },
 };
 
-type Block = { text: string; size: number; bold?: boolean; mono?: boolean; gap?: number };
+/** `footnote`: the note is printed at the foot of the first page, marked ¹ ² ³ in the order given, and pointed to from the summary. */
+type Block = { text: string; size: number; bold?: boolean; mono?: boolean; gap?: number; footnote?: number };
+
+/** The superscripts WinAnsi has (¹ ² ³): at most three footnotes. */
+const MARKS = ["\u00b9", "\u00b2", "\u00b3"] as const;
 
 const block = (text: string, size = 10, extra: Partial<Block> = {}): Block => ({ text, size, ...extra });
 /** An optional piece of a line, or nothing: keeps the conditionals out of the template literals. */
@@ -39,15 +44,19 @@ const optional = (present: boolean, text: string) => (present ? text : "");
 
 /** The top of the report: who says what, the disclaimer, the summary and the review notices. */
 function headerBlocks(payload: ReportPayload, labels: ReportLabels): Block[] {
-  const blocks = [
+  // The review note and the contract's non-check are footnotes (the signed PDF is paper: folios, numbered findings, footnotes — design § 3.2).
+  const notes = [
+    ...(payload.check.reviewStatus ? [block(labels.toReview!, 8, { footnote: 1 })] : []),
+    ...(payload.check.rulesetId === "qc-service-contract" ? [block(labels.notCheckedServiceContract!, 8, { bold: true, footnote: 1 })] : []),
+  ].map((note, i) => ({ ...note, footnote: i + 1 }));
+  const marks = notes.map((n) => MARKS[n.footnote! - 1]).join("");
+  return [
     block(labels.eyebrow!, 8, { gap: 2 }),
     block(payload.document.title, 18, { bold: true, gap: 6 }),
     block(labels.disclaimer!, 10, { bold: true, gap: 8 }),
-    block(fill(labels.summary!, { failures: payload.summary.blockingFailures, rules: payload.summary.rulesEvaluated }), 10, { gap: 8 }),
+    block(`${fill(labels.summary!, { failures: payload.summary.blockingFailures, rules: payload.summary.rulesEvaluated })}${marks}`, 10, { gap: 8 }),
+    ...notes,
   ];
-  if (payload.check.reviewStatus) blocks.push(block(labels.toReview!, 9, { gap: 8 }));
-  if (payload.check.rulesetId === "qc-service-contract") blocks.push(block(labels.notCheckedServiceContract!, 9, { bold: true, gap: 8 }));
-  return blocks;
 }
 
 /** The document that was checked: its file, size and fingerprint. */
@@ -80,13 +89,13 @@ function checkBlocks(payload: ReportPayload, labels: ReportLabels): Block[] {
   ];
 }
 
-/** One finding: its verdict, explanation, rule, citation and the passage it rests on. */
-function findingBlocks(f: ReportPayload["findings"][number], labels: ReportLabels): Block[] {
+/** One finding, numbered as on the screen: its verdict, explanation, rule, citation and the passage it rests on. */
+function findingBlocks(n: number, f: ReportPayload["findings"][number], labels: ReportLabels): Block[] {
   const method = optional(!!f.method, ` · ${f.method}`);
   const passage = f.quote ? `« ${f.quote} »` : labels.noPassage;
   const verdict = labels[`verdict.${f.verdict}`] ?? f.verdict;
   const blocks = [
-    block(`${f.title ?? f.ruleId} — ${verdict}`, 10, { bold: true, gap: 1 }),
+    block(`${n}. ${f.title ?? f.ruleId} — ${verdict}`, 10, { bold: true, gap: 1 }),
     block(f.explanation, 9),
     block(`${labels.rule}: ${f.ruleId} · ${f.severity}${method}`, 8),
   ];
@@ -113,12 +122,14 @@ function guaranteeBlocks(labels: ReportLabels): Block[] {
 
 /** The report's text, in reading order: what the pages print and what the signature covers. */
 export function reportBlocks(payload: ReportPayload, labels: ReportLabels): Block[] {
+  const { attention, passed } = numberFindings(payload.findings);
   return [
     ...headerBlocks(payload, labels),
     ...documentBlocks(payload, labels),
     ...checkBlocks(payload, labels),
     block(fill(labels.findingsHeading!, { count: payload.findings.length }), 12, { bold: true, gap: 2 }),
-    ...payload.findings.flatMap((f) => findingBlocks(f, labels)),
+    // In the screen's order (what needs a look first, then what passed) and with the screen's numbers: « 3 » is the same finding on paper.
+    ...[...attention, ...passed].flatMap(({ n, finding }) => findingBlocks(n, finding, labels)),
     ...(payload.note ? noteBlocks(payload.note) : []),
     ...guaranteeBlocks(labels),
   ];
@@ -134,8 +145,14 @@ const printable = (text: string, font: PDFFont) => {
   return [...foldToWinAnsi(text.replace(/[\r\n\t]+/g, " "))].map((ch) => (ok.includes(ch.codePointAt(0)!) ? ch : "?")).join("");
 };
 
-/** The text the signature covers: the blocks, printable, with every whitespace removed (wrapping must not matter). */
-export const signedText = (blocks: Block[], font: PDFFont) => blocks.map((b) => printable(b.text, font)).join("").replace(/\s+/g, "");
+/** The blocks in the order the pages print them: the footnotes first (they sit at the foot of the first page, which prints them first), then the body. */
+const inPrintOrder = (blocks: Block[]) => [...blocks.filter((b) => b.footnote), ...blocks.filter((b) => !b.footnote)];
+
+/** What is printed for a block: a footnote is led by its mark. */
+const printedText = (b: Block) => (b.footnote ? `${MARKS[b.footnote - 1]} ${b.text}` : b.text);
+
+/** The text the signature covers: the blocks in print order, printable, with every whitespace removed (wrapping must not matter). The folios are not part of it. */
+export const signedText = (blocks: Block[], font: PDFFont) => inPrintOrder(blocks).map((b) => printable(printedText(b), font)).join("").replace(/\s+/g, "");
 
 function wrap(text: string, font: PDFFont, size: number, width: number): string[] {
   const lines: string[] = [];
@@ -170,47 +187,97 @@ export interface IssuedPdf {
   attestation: Attestation;
 }
 
-/** Lays out, hashes the text, signs, embeds. */
-export async function issuePdf(payload: ReportPayload, labels: ReportLabels, key: SigningKey): Promise<IssuedPdf> {
-  const doc = await PDFDocument.create();
-  const font = await doc.embedFont(StandardFonts.Helvetica);
-  const bold = await doc.embedFont(StandardFonts.HelveticaBold);
-  const mono = await doc.embedFont(StandardFonts.Courier);
-  const blocks = reportBlocks(payload, labels);
+type Face = "regular" | "bold" | "mono";
+/** One printed line: where it goes on its page, and in what face. */
+interface PrintedLine {
+  text: string;
+  size: number;
+  face: Face;
+  y: number;
+}
+
+const LINE_HEIGHT = 1.4;
+/** The folio sits in the bottom margin, centred; the body stops above it. */
+const FOLIO = { size: 8, y: 30 };
+
+/**
+ * Lays blocks out on pages: each wrapped to the width, a new page when the next line would cross the bottom margin. The first page
+ * keeps `reserve` points at its foot for the footnotes. Pure and deterministic: the same blocks give the same pages.
+ */
+function paginate(blocks: ReadonlyArray<{ text: string; size: number; face: Face; gap: number }>, fonts: Record<Face, PDFFont>, reserve: number): PrintedLine[][] {
   const width = PAGE.w - PAGE.margin * 2;
-  let page = doc.addPage([PAGE.w, PAGE.h]);
+  const pages: PrintedLine[][] = [[]];
   let y = PAGE.h - PAGE.margin;
-  const draw = (text: string, size: number, f: PDFFont, gap: number) => {
-    for (const line of wrap(text, f, size, width)) {
-      if (y < PAGE.margin + size) {
-        page = doc.addPage([PAGE.w, PAGE.h]);
+  const floor = () => PAGE.margin + (pages.length === 1 ? reserve : 0);
+  for (const b of blocks) {
+    for (const text of wrap(b.text, fonts[b.face], b.size, width)) {
+      if (y < floor() + b.size) {
+        pages.push([]);
         y = PAGE.h - PAGE.margin;
       }
-      page.drawText(line, { x: PAGE.margin, y, size, font: f, color: rgb(0.08, 0.09, 0.12) });
-      y -= size * 1.4;
+      pages.at(-1)!.push({ text, size: b.size, face: b.face, y });
+      y -= b.size * LINE_HEIGHT;
     }
-    y -= gap;
-  };
-  const faceOf = (b: Block) => {
-    if (b.mono) return mono;
-    return b.bold ? bold : font;
-  };
-  for (const b of blocks) draw(printable(b.text, font), b.size, faceOf(b), b.gap ?? 4);
-  const bodySha256 = sha256(signedText(blocks, font));
+    y -= b.gap;
+  }
+  return pages;
+}
+
+const faceOf = (b: Block): Face => (b.mono ? "mono" : b.bold ? "bold" : "regular");
+
+/** The folio of a page: « 2 / 4 », language-free, so that it can be told from the report's text at verification. */
+export const folio = (page: number, total: number) => `${page} / ${total}`;
+
+/** Lays out, hashes the text, signs, embeds. Each page carries its folio and the first one its footnotes; the findings are numbered as on the screen. */
+export async function issuePdf(payload: ReportPayload, labels: ReportLabels, key: SigningKey): Promise<IssuedPdf> {
+  const doc = await PDFDocument.create();
+  const fonts: Record<Face, PDFFont> = { regular: await doc.embedFont(StandardFonts.Helvetica), bold: await doc.embedFont(StandardFonts.HelveticaBold), mono: await doc.embedFont(StandardFonts.Courier) };
+  const blocks = reportBlocks(payload, labels);
+  const printable_ = (b: Block) => ({ text: printable(printedText(b), fonts.regular), size: b.size, face: faceOf(b), gap: b.gap ?? 4 });
+  const width = PAGE.w - PAGE.margin * 2;
+
+  // The footnotes sit at the foot of the first page: their height is reserved there, the body flows above it.
+  const notes = blocks.filter((b) => b.footnote).map(printable_);
+  const footLines = notes.flatMap((n) => wrap(n.text, fonts[n.face], n.size, width).map((text) => ({ ...n, text })));
+  const reserve = footLines.length ? footLines.reduce((sum, l) => sum + l.size * LINE_HEIGHT, 0) + 10 : 0;
+  const body = paginate(blocks.filter((b) => !b.footnote).map(printable_), fonts, reserve);
+
+  // The signature page: after the pages the signature covers, and not part of the signed text.
+  const bodySha256 = sha256(signedText(blocks, fonts.regular));
   const signature = crypto.sign(null, signedMessage(payload, bodySha256), key.privateKey).toString("base64");
   const attestation: Attestation = { schema: REPORT_SCHEMA, algorithm: "Ed25519", keyId: key.keyId, payload, bodySha256, signature };
+  const line = (text: string, size: number, face: Face, gap: number) => ({ text: printable(text, fonts.regular), size, face, gap });
+  const [signaturePage] = paginate(
+    [
+      line(labels.signatureHeading!, 16, "bold", 8),
+      line(`${labels.signatureAlgorithm}: Ed25519`, 10, "regular", 2),
+      line(`${labels.signatureKey}: ${key.keyId}`, 9, "mono", 2),
+      line(`${labels.documentSha}: ${payload.document.sha256}`, 8, "mono", 2),
+      line(`${labels.runId}: ${payload.check.runId}`, 8, "mono", 2),
+      line(`${labels.signatureBody}: ${bodySha256}`, 8, "mono", 2),
+      line(`${labels.signatureValue}: ${signature}`, 8, "mono", 10),
+      line(labels.signatureNote!, 9, "regular", 4),
+    ],
+    fonts,
+    0,
+  );
+  const pages = [...body, signaturePage!];
 
-  // The visible signature page — after the pages it covers, and not part of the signed text.
-  page = doc.addPage([PAGE.w, PAGE.h]);
-  y = PAGE.h - PAGE.margin;
-  draw(printable(labels.signatureHeading!, font), 16, bold, 8);
-  draw(printable(`${labels.signatureAlgorithm}: Ed25519`, font), 10, font, 2);
-  draw(printable(`${labels.signatureKey}: ${key.keyId}`, font), 9, mono, 2);
-  draw(printable(`${labels.documentSha}: ${payload.document.sha256}`, font), 8, mono, 2);
-  draw(printable(`${labels.runId}: ${payload.check.runId}`, font), 8, mono, 2);
-  draw(printable(`${labels.signatureBody}: ${bodySha256}`, font), 8, mono, 2);
-  draw(printable(`${labels.signatureValue}: ${signature}`, font), 8, mono, 10);
-  draw(printable(labels.signatureNote!, font), 9, font, 4);
+  const ink = rgb(0.08, 0.09, 0.12);
+  for (const [index, lines] of pages.entries()) {
+    const page = doc.addPage([PAGE.w, PAGE.h]);
+    // The folio is drawn first: a page's text always starts with it, which is how verification tells it from the report's words.
+    const label = folio(index + 1, pages.length);
+    page.drawText(label, { x: (PAGE.w - fonts.regular.widthOfTextAtSize(label, FOLIO.size)) / 2, y: FOLIO.y, size: FOLIO.size, font: fonts.regular, color: ink });
+    if (index === 0 && footLines.length) {
+      let y = PAGE.margin + footLines.reduce((sum, l) => sum + l.size * LINE_HEIGHT, 0) - footLines[0]!.size;
+      for (const n of footLines) {
+        page.drawText(n.text, { x: PAGE.margin, y, size: n.size, font: fonts[n.face], color: ink });
+        y -= n.size * LINE_HEIGHT;
+      }
+    }
+    for (const l of lines) page.drawText(l.text, { x: PAGE.margin, y: l.y, size: l.size, font: fonts[l.face], color: ink });
+  }
 
   const finished = new Date(payload.check.finishedAt);
   doc.setTitle(payload.document.title);
@@ -255,7 +322,11 @@ export async function verifyPdf(bytes: Uint8Array, key: Pick<SigningKey, "keyId"
   try {
     const pdf = await getDocumentProxy(new Uint8Array(bytes));
     const pages = (await extractText(pdf, { mergePages: false })).text as string[];
-    text = pages.slice(0, -1).join("").replace(/\s+/g, "");
+    // Each page starts with its folio (« 2 / 4 »): it must be the right one for its place, and it is not part of what was signed.
+    const total = pages.length;
+    const body = pages.slice(0, -1).map((p) => p.replace(/\s+/g, ""));
+    if (body.some((p, i) => !p.startsWith(`${i + 1}/${total}`))) return fail("ALTERED");
+    text = body.map((p, i) => p.slice(`${i + 1}/${total}`.length)).join("");
   } catch {
     return fail("UNREADABLE");
   }

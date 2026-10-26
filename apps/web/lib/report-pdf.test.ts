@@ -1,6 +1,7 @@
 import { PDFDict, PDFDocument, PDFName, PDFString } from "pdf-lib";
 import { describe, expect, it } from "vitest";
 
+import { numberFindings } from "./document-face";
 import { buildPayload, sha256 } from "./report";
 import { generateSigningKeyBase64, parseSigningKey } from "./report-key";
 import { reportLabels } from "./report-labels";
@@ -156,5 +157,71 @@ describe("the report's text blocks, in reading order", () => {
     expect(all.find((t) => t.startsWith(`${labels.ruleset}: `))).not.toContain("rev.");
     expect(all.find((t) => t.startsWith(`${labels.engine}: `))).toMatch(/compliance-check$/);
     expect(texts()).toContain(labels.toReview);
+  });
+});
+
+describe("the signed PDF is paper: folios, findings numbered as on the screen, footnotes (design § 3.2, P13)", () => {
+  const pagesOf = async (bytes: Uint8Array) => {
+    const { extractText, getDocumentProxy } = await import("unpdf");
+    return (await extractText(await getDocumentProxy(new Uint8Array(bytes)), { mergePages: false })).text as string[];
+  };
+  /** A report long enough to run over several pages. */
+  const long = () => {
+    const findings = Array.from({ length: 14 }, (_, i) => ({ ruleId: `QC-LEASE-${100 + i}`, title: `Règle numéro ${i + 1}`, severity: i % 2 ? "MAJOR" : "BLOCKING", verdict: i % 3 === 0 ? "PASS" : "FAIL", citation: "C.c.Q., art. 1904", explanation: "Une explication assez longue pour occuper de la place sur la page. ".repeat(4), quote: i % 2 ? "un passage du bail" : null, method: null }));
+    return { ...payload, findings, summary: { ...payload.summary, rulesEvaluated: findings.length } };
+  };
+
+  it("prints the folio « n / total » first on every page, the signature page included", async () => {
+    const issued = await issuePdf(long(), reportLabels("fr"), signingKey());
+    const pages = await pagesOf(issued.bytes);
+    expect(pages.length).toBeGreaterThanOrEqual(4);
+    pages.forEach((text, i) => expect(text.replace(/\s+/g, "").startsWith(`${i + 1}/${pages.length}`)).toBe(true));
+    expect(pages.at(-1)).toContain("Page de signature");
+  });
+
+  it("numbers the findings in the screen's order — what needs a look first, then what passed — with the screen's numbers", async () => {
+    const issued = await issuePdf(payload, reportLabels("fr"), signingKey());
+    const text = (await pagesOf(issued.bytes)).join(" ").replace(/\s+/g, " ");
+    // The failed rule comes first on the screen, and so on the paper.
+    expect(payload.findings.map((f) => f.verdict)).toEqual(["FAIL", "PASS"]);
+    const screen = numberFindings(payload.findings);
+    const expected = [...screen.attention, ...screen.passed].map(({ n, finding }) => `${n}. ${finding.title}`);
+    expect(expected.length).toBe(2);
+    const positions = expected.map((e) => text.indexOf(e));
+    expect(positions.every((p) => p >= 0)).toBe(true);
+    expect([...positions].sort((a, b) => a - b)).toEqual(positions);
+  });
+
+  it("numbers a long report exactly as the screen does", async () => {
+    const report = long();
+    const screen = numberFindings(report.findings);
+    const text = (await pagesOf((await issuePdf(report, reportLabels("fr"), signingKey())).bytes)).join(" ").replace(/\s+/g, " ");
+    const order = [...screen.attention, ...screen.passed].map(({ n, finding }) => text.indexOf(`${n}. ${finding.title} —`));
+    expect(order.every((p) => p >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+    expect(screen.attention[0]!.n).toBe(1);
+    expect(screen.passed[0]!.n).toBe(screen.attention.length + 1);
+  });
+
+  it("puts the review note at the foot of the first page, pointed to from the summary", async () => {
+    const issued = await issuePdf(payload, reportLabels("fr"), signingKey());
+    const { getDocumentProxy } = await import("unpdf");
+    const first = await (await getDocumentProxy(new Uint8Array(issued.bytes))).getPage(1);
+    const items = (await first.getTextContent()).items.filter((i): i is typeof i & { str: string; transform: number[] } => "str" in i && i.str.trim() !== "");
+    const note = items.find((i) => i.str.startsWith("¹"))!;
+    expect(note.str).toContain("avocat");
+    const lowest = Math.min(...items.filter((i) => !/^\d+ \/ \d+$/.test(i.str)).map((i) => i.transform[5]!));
+    expect(note.transform[5]).toBeLessThanOrEqual(lowest + 12);
+    expect(items.find((i) => i.str.includes("règles") && i.str.endsWith("¹"))).toBeDefined();
+  });
+
+  it("verifies a long report; a page moved to the wrong place fails with ALTERED (the folio says where it belongs)", async () => {
+    const issued = await issuePdf(long(), reportLabels("fr"), signingKey());
+    expect(await verifyPdf(issued.bytes, signingKey())).toMatchObject({ ok: true });
+    const doc2 = await PDFDocument.load(issued.bytes);
+    const moved = doc2.getPage(2);
+    doc2.removePage(2);
+    doc2.insertPage(1, moved);
+    expect(await verifyPdf(await doc2.save(), signingKey())).toMatchObject({ ok: false, reason: "ALTERED" });
   });
 });
