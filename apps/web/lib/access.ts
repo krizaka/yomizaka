@@ -59,6 +59,6 @@ export async function pageSession(): Promise<Session | null> {
 /** The page's administrator — session, role and address — or null (the page answers 404). */
 export async function pageAdmin(): Promise<Session | null> {
   const session = await pageSession();
-  if (!session || session.account.role !== "ADMIN") return null;
+  if (session?.account.role !== "ADMIN") return null;
   return ipAllowed(await headers()) ? session : null;
 }

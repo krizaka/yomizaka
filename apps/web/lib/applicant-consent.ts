@@ -76,7 +76,7 @@ export async function withdrawConsent(screeningId: string, purpose: ConsentPurpo
 export async function assertUploadForApplication(ownerId: string, screeningId: string): Promise<void> {
   if (!isUuid(screeningId)) throw refuse(404, "NOT_FOUND", "No such application");
   const [app] = await query<{ landlord_id: string; status: string }>("SELECT landlord_id, status FROM screenings WHERE id = $1", [screeningId]);
-  if (!app || app.landlord_id !== ownerId) throw refuse(404, "NOT_FOUND", "No such application");
+  if (app?.landlord_id !== ownerId) throw refuse(404, "NOT_FOUND", "No such application");
   if (app.status === APPLICATION_ERASED) throw refuse(410, "APPLICATION_ERASED", "This application was erased");
   await requireConsent(screeningId, CONSENT_PURPOSE.DOCUMENT_CHECK);
 }

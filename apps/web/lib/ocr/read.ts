@@ -12,6 +12,6 @@ export async function readPhotoText(images: readonly Uint8Array[], deps: { ocr: 
   const trusted = local.confidence >= rules.minConfidence && local.text.replace(/\s/g, "").length >= rules.minChars;
   if (trusted) return { text: local.text, source: { kind: "ocr", engine: ocr.name, confidence: Math.round(local.confidence), photos: images.length, lowConfidence: false, origin } };
   const remote = vision ? await vision.read(images, rules.languages).catch(() => null) : null;
-  if (remote && remote.text.trim()) return { text: remote.text, source: { kind: "vision", by: "orazaka", runId: remote.runId, model: remote.model, localConfidence: Math.round(local.confidence), photos: images.length, origin } };
+  if (remote?.text.trim()) return { text: remote.text, source: { kind: "vision", by: "orazaka", runId: remote.runId, model: remote.model, localConfidence: Math.round(local.confidence), photos: images.length, origin } };
   return { text: local.text, source: { kind: "ocr", engine: ocr.name, confidence: Math.round(local.confidence), photos: images.length, lowConfidence: true, origin } };
 }

@@ -1,4 +1,4 @@
-import { refuse } from "../http";
+import { fieldText, refuse } from "../http";
 import type { BatchFile } from "./preview";
 
 /** What a batch request carries, read from its multipart form: the CSV's text, the batch's name and the documents it names. */
@@ -17,7 +17,9 @@ export async function readBatchForm(req: Request): Promise<BatchForm> {
   const manifest = form?.get("manifest");
   if (!(manifest instanceof File) && typeof manifest !== "string") throw refuse(400, "BAD_REQUEST", "A CSV is expected in the field `manifest`");
   const text = typeof manifest === "string" ? manifest : await manifest.text();
-  const name = String(form?.get("name") ?? (manifest instanceof File ? manifest.name.replace(/\.[^.]+$/, "") : ""));
+  const named = form?.get("name");
+  const fromFile = manifest instanceof File ? manifest.name.replace(/\.[^.]+$/, "") : "";
+  const name = typeof named === "string" ? named : fromFile;
   return { name, manifest: text, files: await filesOf(form, "files") };
 }
 
@@ -32,9 +34,9 @@ export async function readCheckForm(req: Request): Promise<BatchForm> {
   const form = await req.formData().catch(() => null);
   const [file] = await filesOf(form, "file");
   if (!file) throw refuse(400, "BAD_REQUEST", "A document is expected in the field `file`");
-  const check = String(form?.get("check") ?? "").trim();
+  const check = fieldText(form, "check").trim();
   if (!check) throw refuse(400, "BAD_REQUEST", "The field `check` names the check to run");
-  const reference = String(form?.get("reference") ?? "").trim();
+  const reference = fieldText(form, "reference").trim();
   const manifest = ["file,check,reference", [file.name, check, reference].map(csvCell).join(",")].join("\n");
   return { name: reference || file.name, manifest, files: [file] };
 }

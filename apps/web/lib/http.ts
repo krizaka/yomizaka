@@ -11,6 +11,15 @@ export class HttpError extends Error {
   }
 }
 
+/** A text field of a multipart form: the string it holds, or "" when it is absent or is a file. */
+export const fieldText = (form: FormData | null, name: string): string => {
+  const value = form?.get(name);
+  return typeof value === "string" ? value : "";
+};
+
+/** The stable code an HttpError answers with, or the fallback when its body names none. */
+export const codeOf = (error: HttpError, fallback: string): string => (typeof error.body.code === "string" ? error.body.code : fallback);
+
 export const refuse = (status: number, code: string, message: string, extra: Record<string, unknown> = {}) => new HttpError(status, message, { code, ...extra });
 
 /** Runs a route handler: an HttpError becomes its JSON answer; anything else is a 500 that leaks nothing. */

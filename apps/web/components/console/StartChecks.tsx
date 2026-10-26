@@ -158,7 +158,7 @@ function ComplianceBody({ doc, offer, running }: Readonly<Pick<StartProps, "doc"
   const detectedKind = doc.insight?.understanding.check?.documentType ?? null;
   const compliancePlan = planCheck({ declared: doc.kind, detected: detectedKind, asOf: localDay(new Date(), LAW_TIME_ZONE) });
   const options = complianceOptions(compliancePlan.mismatch, offeredKinds(offer.rulesets), doc.kind);
-  if (doc.insight && doc.insight.understanding.nature && !doc.insight.understanding.check) return <Alert tone="info">{say("insight.noCheck")}</Alert>;
+  if (doc.insight?.understanding.nature && !doc.insight.understanding.check) return <Alert tone="info">{say("insight.noCheck")}</Alert>;
   if (!doc.hasText) return <Alert tone="info">{say("document.noText")}</Alert>;
   if (compliancePlan.unsupported) return <Alert tone="info">{say("analysis.notVerified")}</Alert>;
   return (

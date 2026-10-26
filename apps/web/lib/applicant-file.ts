@@ -8,7 +8,7 @@ import { audit } from "./audit";
 import { releaseAudit,reserveAudit } from "./billing";
 import { query, withBlockingLock } from "./db";
 import { type AnalysisRow, inspectUpload, isUuid, type StoragePolicy, storeDocument } from "./documents";
-import { HttpError, refuse } from "./http";
+import { codeOf, HttpError, refuse } from "./http";
 import { EXTERNAL, objectKey, purgeIfDone } from "./retention";
 import { addDays, hash, newToken, REQUEST_VALID_DAYS } from "./screening";
 import type { DocumentStore } from "./storage/port";
@@ -127,7 +127,7 @@ export async function applicantFileState(token: string, now: Date) {
 export interface UploadContext {
   store: DocumentStore;
   purgeAfterHours: number;
-  rules?: StoragePolicy["rules"];
+  rules?: NonNullable<StoragePolicy["rules"]>;
   /** The owner's settings allow keeping documents at all (« conserver » is off otherwise, ADR-0007). */
   keepAllowed: boolean;
   auditCaps: Parameters<typeof reserveAudit>[3];
@@ -156,7 +156,7 @@ async function runChecks(ownerId: string, documentId: string, studios: Studio[],
       }
       started.push(studio);
     } catch (error) {
-      skipped.push({ studio, code: error instanceof HttpError ? String(error.body.code ?? "REFUSED") : "UNAVAILABLE" });
+      skipped.push({ studio, code: error instanceof HttpError ? codeOf(error, "REFUSED") : "UNAVAILABLE" });
     }
   }
   return { started, skipped };
@@ -227,7 +227,7 @@ export async function purgeApplicationFiles(ownerId: string, screeningId: string
   );
   for (const d of docs) {
     if (!EXTERNAL.has(d.storage as StorageKind)) continue;
-    if (!store || store.describe().kind !== d.storage) throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds these documents is not available");
+    if (store?.describe().kind !== d.storage) throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds these documents is not available");
     await store.delete(objectKey(ownerId, d.id, d.mime_type));
   }
   const purged = await query<{ id: string }>(

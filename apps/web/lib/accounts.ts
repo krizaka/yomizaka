@@ -17,7 +17,7 @@ export async function checkPassword(email: string, password: string, headers: He
     [address],
   );
   const right = await verifyPassword(password, row?.password_hash ?? (await decoyHash()));
-  if (!row || !row.password_hash || !right) {
+  if (!row?.password_hash || !right) {
     if (row) await audit({ action: "auth.sign_in_refused", actorId: row.id, actorLabel: row.email, targetId: row.id, detail: { reason: "wrong_password" }, headers });
     throw refuse(401, "INVALID_CREDENTIALS", "Wrong e-mail or password");
   }
