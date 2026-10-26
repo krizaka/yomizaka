@@ -322,20 +322,6 @@
   },
   {
     "type": "dependency",
-    "from": "../../packages/core/src/document-store.contract.ts",
-    "to": "../../node_modules/.pnpm/vitest@4.1.11_@types+node@24.19.2_@vitest+coverage-v8@4.1.11_jsdom@30.1.3_@noble+hashes_dafd9f719e172fc5fb6405bbce93df06/node_modules/vitest/dist/index.js",
-    "unresolvedTo": "vitest",
-    "dependencyTypes": [
-      "npm-dev",
-      "import"
-    ],
-    "rule": {
-      "severity": "error",
-      "name": "not-to-dev-dep"
-    }
-  },
-  {
-    "type": "dependency",
     "from": "../../scripts/demo-documents/render.mjs",
     "to": "pdf-lib",
     "unresolvedTo": "pdf-lib",

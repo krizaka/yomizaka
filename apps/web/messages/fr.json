@@ -21,12 +21,10 @@
     "sourceCode": "Code source",
     "contact": "Contact",
     "legal": "Confidentialité",
-    "devNotice": "Environnement de développement : accès sur invitation",
     "preferences": "Préférences",
     "menu": {
       "label": "Menu"
     },
-    "version": "v{version}",
     "terms": "Conditions",
     "download": "Télécharger",
     "openApp": "Ouvrir mes documents",
