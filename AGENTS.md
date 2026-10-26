@@ -28,7 +28,7 @@
 - Reading a file's **text layer** (pdf.js through `unpdf`) is parsing, not analysis: it feeds the compliance Studio and
   search. A scanned PDF has no text layer — the UI says so; reading images would be Orazaka's job. pdf.js never runs in the web
   process: `lib/extraction/isolated.ts` reads the PDF in a `node:worker_threads` worker with its own heap (384 MB), a 10 s deadline
-  and a 150-page ceiling, so a heavy or hostile file ends the worker, not the container (`deploy/docker/smoke/pdf.cjs` proves it in the image). `POST /api/documents` answers **202 Accepted** `QUEUED` for a new PDF or text file: the row is saved at
+  and a 150-page ceiling (one warm worker serves the files one after the other, renewed every 50 files and after any failure; pdf.js loads once), so a heavy or hostile file ends the worker, not the container (`deploy/docker/smoke/pdf.cjs` proves it in the image). `POST /api/documents` answers **202 Accepted** `QUEUED` for a new PDF or text file: the row is saved at
   once (`documents.extraction`: queued → running → done | failed, with `extraction_error`), the worker reads it after the answer, a check waits (`409 EXTRACTING`),
   `@yomizaka/client`'s `uploadDocument` and the web's `startIfSure` wait for `done` (`waitForExtraction`, `packages/core`), the document page polls. A reading left
   queued or running for 3 minutes (the process restarted) shows as failed.

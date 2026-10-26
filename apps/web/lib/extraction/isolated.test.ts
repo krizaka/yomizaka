@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import { extractionRefusal } from "../documents";
 import { textPdf } from "../test-pdf";
-import { ExtractionError, extractPdfText } from "./isolated";
+import { ExtractionError, extractionWorkersStarted, extractPdfText } from "./isolated";
+
+/** Far more than a millisecond of reading: a hundred pages of text. */
+const HEAVY = textPdf(Array.from({ length: 4000 }, (_, i) => `Ligne ${i} du bail, avec assez de texte pour que la lecture prenne du temps.`));
 
 describe("PDF extraction off the web process", () => {
   it("reads the text layer and the page count in a worker", async () => {
@@ -19,12 +22,27 @@ describe("PDF extraction off the web process", () => {
     expect(ticks).toBeGreaterThan(0);
   });
 
+  it("serves a batch of files with one worker, and starts a fresh one after a file that ended it", async () => {
+    const before = extractionWorkersStarted();
+    await extractPdfText(textPdf(["Un"]));
+    for (const n of [1, 2, 3, 4]) await expect(extractPdfText(textPdf([`Fichier ${n}`]))).resolves.toMatchObject({ pages: 1 });
+    expect(extractionWorkersStarted() - before).toBeLessThanOrEqual(1);
+    await expect(extractPdfText(HEAVY, { timeoutMs: 1 })).rejects.toMatchObject({ code: "TIMEOUT" });
+    await expect(extractPdfText(textPdf(["Après"]))).resolves.toMatchObject({ pages: 1 });
+    expect(extractionWorkersStarted() - before).toBeLessThanOrEqual(3);
+  });
+
+  it("reads files that arrive together one after the other, each with its own answer", async () => {
+    const answers = await Promise.all([1, 2, 3].map((n) => extractPdfText(textPdf([`Document numéro ${n}`]))));
+    expect(answers.map((a) => a.text.match(/numéro (\d)/)?.[1])).toEqual(["1", "2", "3"]);
+  });
+
   it("refuses a document over the page ceiling, without reading it", async () => {
     await expect(extractPdfText(textPdf(["Bail"]), { maxPages: 0 })).rejects.toMatchObject({ code: "TOO_MANY_PAGES" });
   });
 
   it("ends the worker at the deadline: the caller gets a TIMEOUT, the process is untouched", async () => {
-    await expect(extractPdfText(textPdf(["Bail"]), { timeoutMs: 1 })).rejects.toMatchObject({ code: "TIMEOUT" });
+    await expect(extractPdfText(HEAVY, { timeoutMs: 1 })).rejects.toMatchObject({ code: "TIMEOUT" });
   });
 
   it("answers FAILED to bytes that are not a PDF", async () => {
