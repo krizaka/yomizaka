@@ -1792,7 +1792,6 @@
         },
         "limits": {
           "included": "Verifications included a month",
-          "overageCents": "Each verification beyond (cents)",
           "founderCap": "Founder places",
           "feeBps": "Fee (basis points)",
           "feeCapCents": "Fee cap (cents)"

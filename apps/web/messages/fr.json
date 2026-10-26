@@ -1792,7 +1792,6 @@
         },
         "limits": {
           "included": "Vérifications incluses par mois",
-          "overageCents": "Chaque vérification au-delà (cents)",
           "founderCap": "Places fondateurs",
           "feeBps": "Frais (points de base)",
           "feeCapCents": "Plafond des frais (cents)"
