@@ -17,10 +17,19 @@ jobs:
   # The pipeline is the org's (krizaka/.github docs/standards/ci-and-deploy.md): the changes gate, the pnpm and Playwright
   # caches, parallel legs, the timeouts and the gate that always reports live there. This file says only what is Yomizaka's.
   ci:
-    uses: krizaka/.github/.github/workflows/node-ci.yml@1d506b702a30ad519ca2561b51bcb981fe680e8e # v1.5.2
+    uses: krizaka/.github/.github/workflows/node-ci.yml@64a03e2a0b2154d153ca20f7d603f627d5fdfad5 # main (SonarCloud after verify, image scan, lcov rebase)
     permissions:
       contents: read
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     with:
+      # SonarCloud CI analysis after the tests, with the coverage of every package (krizaka/.github#237).
+      sonar: true
+      sonar-coverage-paths: |
+        coverage/lcov.info
+        apps/*/coverage/lcov.info
+        packages/*/coverage/lcov.info
+      test-script: test:coverage
       container: true      # the image is built on every PR that can break it (Dockerfile, manifests, lockfiles, COPY paths)
       container-dockerfile: deploy/docker/Dockerfile
       container-image: app:ci

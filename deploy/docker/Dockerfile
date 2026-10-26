@@ -20,6 +20,9 @@ FROM node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18
 WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=8080 HOSTNAME=0.0.0.0
 RUN addgroup -S yomizaka && adduser -S yomizaka -G yomizaka
+# The runtime starts `node` only: npm and corepack (and the dependencies they bundle, flagged by the image scan) are not shipped.
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+    /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack
 COPY --from=build --chown=yomizaka:yomizaka /repo/apps/web/.next/standalone ./
 COPY --from=build --chown=yomizaka:yomizaka /repo/apps/web/.next/static ./apps/web/.next/static
 COPY --from=build --chown=yomizaka:yomizaka /ocr/ ./node_modules/.pnpm/
