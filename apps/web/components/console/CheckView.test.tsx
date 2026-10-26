@@ -151,6 +151,14 @@ describe("« Vérifier un document », B2: the plan strip, the catalogue, the dr
     expect(html.match(/<h1\b/g)).toHaveLength(1);
   });
 
+  it("lets both columns shrink to a phone's width (no horizontal scroll at 360 px): one column, minmax(0) tracks, min-w-0 children", () => {
+    const html = withCatalogue();
+    expect(html).toContain("grid-cols-1");
+    expect(html).toContain("lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]");
+    expect(html).toMatch(/id="depot" class="[^"]*\bmin-w-0\b/);
+    expect(html).toMatch(/<section class="[^"]*\bmin-w-0\b[^"]*"[^>]*aria-labelledby="catalogue-title"/);
+  });
+
   it("puts today's date on the right of the heading", () => {
     expect(readable(withCatalogue())).toContain("dimanche 25 octobre 2026");
   });

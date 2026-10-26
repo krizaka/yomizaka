@@ -119,8 +119,8 @@ export function CheckView({ jurisdictions = ["QC"], catalogue = [], credits = nu
         actions={<Today now={now} />}
       />
       {credits ? <CheckPlanStrip credits={credits} /> : null}
-      <div className={catalogue.length ? "grid gap-8 lg:grid-cols-2 lg:items-start" : "flex max-w-3xl flex-col gap-5"}>
-        <div id="depot" className="flex scroll-mt-24 flex-col gap-5" data-testid="check-drop">
+      <div className={catalogue.length ? "grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-start" : "flex max-w-3xl flex-col gap-5"}>
+        <div id="depot" className="flex min-w-0 scroll-mt-24 flex-col gap-5" data-testid="check-drop">
           <h2 className="m-0 font-display text-lg font-bold text-fg">{say("check.dropTitle")}</h2>
           {kind !== "auto" ? (
             <p className="m-0 text-sm text-fg-secondary" data-testid="check-chosen">

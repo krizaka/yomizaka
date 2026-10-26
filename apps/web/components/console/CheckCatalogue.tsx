@@ -52,7 +52,7 @@ export function CheckCatalogue({ items }: { items: readonly CatalogueItem[] }) {
   const rows = visibleItems(items, { group: filter === "all" ? null : filter, q }, titleOf);
   const chosen = (i: CatalogueItem) => kind !== ROUTE_STATES.checkKind.state.fallback && i.kind === kind;
   return (
-    <section className="flex flex-col gap-4" aria-labelledby="catalogue-title" data-testid="check-catalogue">
+    <section className="flex min-w-0 flex-col gap-4" aria-labelledby="catalogue-title" data-testid="check-catalogue">
       <h2 id="catalogue-title" className="m-0 font-display text-lg font-bold text-fg">
         {say("check.catalogue.title")}
       </h2>
