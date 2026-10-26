@@ -9,19 +9,29 @@ export type HostRoute = { kind: "next" } | { kind: "rewrite"; path: string } | {
 
 const LOCALE = /^\/(en|fr)(?=\/|$)/;
 
+const isConsolePath = (rest: string) => rest === "/console" || rest.startsWith("/console/");
+const isMachineFile = (pathname: string) => pathname === "/robots.txt" || pathname === "/sitemap.xml" || pathname === "/llms.txt";
+/** An address without a language goes to the visitor's choice. */
+const toLocale = (pathname: string, preferred: "en" | "fr"): HostRoute => ({ kind: "redirect", path: `/${preferred}${pathname === "/" ? "" : pathname}` });
+
+/** admin.*: every page is the console (`/en/users` is served by `/en/console/users`), nothing else. */
+function adminRoute(pathname: string, locale: string | undefined, preferred: "en" | "fr"): HostRoute {
+  if (pathname === "/robots.txt") return { kind: "robotsClosed" };
+  if (pathname === "/sitemap.xml" || pathname === "/llms.txt") return { kind: "notFound" };
+  if (!locale) return toLocale(pathname, preferred);
+  const rest = pathname.slice(locale.length + 1);
+  if (isConsolePath(rest)) return { kind: "redirect", path: `/${locale}${rest.slice("/console".length)}` };
+  return { kind: "rewrite", path: `/${locale}/console${rest}` };
+}
+
+/** The product host: the console does not exist there. */
+function productRoute(pathname: string, locale: string | undefined, preferred: "en" | "fr"): HostRoute {
+  if (isMachineFile(pathname)) return { kind: "next" };
+  if (!locale) return toLocale(pathname, preferred);
+  return isConsolePath(pathname.slice(locale.length + 1)) ? { kind: "notFound" } : { kind: "next" };
+}
+
 export function routeFor(host: string | null | undefined, pathname: string, preferred: "en" | "fr"): HostRoute {
   const locale = LOCALE.exec(pathname)?.[1];
-  if (isAdminHost(host)) {
-    if (pathname === "/robots.txt") return { kind: "robotsClosed" };
-    if (pathname === "/sitemap.xml" || pathname === "/llms.txt") return { kind: "notFound" };
-    if (!locale) return { kind: "redirect", path: `/${preferred}${pathname === "/" ? "" : pathname}` };
-    const rest = pathname.slice(locale.length + 1);
-    if (rest === "/console" || rest.startsWith("/console/")) return { kind: "redirect", path: `/${locale}${rest.slice("/console".length)}` };
-    return { kind: "rewrite", path: `/${locale}/console${rest}` };
-  }
-  if (pathname === "/robots.txt" || pathname === "/sitemap.xml" || pathname === "/llms.txt") return { kind: "next" };
-  if (!locale) return { kind: "redirect", path: `/${preferred}${pathname === "/" ? "" : pathname}` };
-  const rest = pathname.slice(locale.length + 1);
-  if (rest === "/console" || rest.startsWith("/console/")) return { kind: "notFound" };
-  return { kind: "next" };
+  return isAdminHost(host) ? adminRoute(pathname, locale, preferred) : productRoute(pathname, locale, preferred);
 }

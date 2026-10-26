@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { isAdminHost, routeFor } from "./lib/host";
+import { type HostRoute, isAdminHost, routeFor } from "./lib/host";
 import { CLOSED_ROBOTS, devRedirect, indexableOn, isDevHost, NOINDEX_HEADER } from "./lib/indexing";
 import { SITE_URL } from "./lib/site";
 
@@ -10,6 +10,37 @@ import { SITE_URL } from "./lib/site";
  * indexed; dev.yomizaka.com never serves it. A deployment with APP_SEARCH_INDEXING=off (lib/indexing.ts) answers noindex on
  * every response — pages, redirects and the API — and a closed robots.txt without a sitemap.
  */
+const isLocale = (value: string | undefined): value is "en" | "fr" => value === "en" || value === "fr";
+const closedRobots = () => new NextResponse(CLOSED_ROBOTS, { headers: { "content-type": "text/plain" } });
+const notFound = () => new NextResponse("Not found", { status: 404 });
+const seal = <T extends NextResponse>(response: T, closed: boolean): T => {
+  if (closed) response.headers.set("x-robots-tag", NOINDEX_HEADER);
+  return response;
+};
+
+/** dev.yomizaka.com (APP_DEV_HOST): robots.txt closes everything; a page goes to www (308); healthz keeps serving. */
+function devResponse(request: NextRequest): NextResponse {
+  if (request.nextUrl.pathname === "/robots.txt") return closedRobots();
+  const to = devRedirect(request.method, request.nextUrl.pathname, request.nextUrl.search, process.env.APP_PUBLIC_URL ?? SITE_URL);
+  return to ? NextResponse.redirect(to, 308) : NextResponse.next();
+}
+
+/** The answers that need no page: a closed robots.txt, a 404, a redirect to the public host (admin.yomizaka.com stays admin.yomizaka.com). */
+function directResponse(request: NextRequest, route: HostRoute, host: string | null): NextResponse | null {
+  switch (route.kind) {
+    case "robotsClosed":
+      return closedRobots();
+    case "notFound":
+      return notFound();
+    case "redirect": {
+      const proto = request.headers.get("x-forwarded-proto") ?? request.nextUrl.protocol.replace(":", "");
+      return NextResponse.redirect(new URL(route.path, host ? `${proto}://${host}` : request.url));
+    }
+    default:
+      return null;
+  }
+}
+
 export function proxy(request: NextRequest) {
   const host = request.headers.get("host");
   const chosen = request.cookies.get("NEXT_LOCALE")?.value === "en" ? "en" : "fr";
@@ -18,46 +49,24 @@ export function proxy(request: NextRequest) {
   // Closed to search engines: the consoles and the dev host always; every other host but the public one (APP_PUBLIC_URL's:
   // www.yomizaka.com) when APP_SEARCH_INDEXING=off.
   const closed = admin || dev || !indexableOn(host);
-  const seal = <T extends NextResponse>(response: T): T => {
-    if (closed) response.headers.set("x-robots-tag", NOINDEX_HEADER);
-    return response;
-  };
+  const pathname = request.nextUrl.pathname;
   // The API (and /.well-known) is not routed by language or host: it only carries the noindex header.
-  if (request.nextUrl.pathname.startsWith("/api/") || request.nextUrl.pathname.startsWith("/.well-known/")) return seal(NextResponse.next());
-  // dev.yomizaka.com (APP_DEV_HOST): robots.txt closes everything; a page goes to www (308); healthz keeps serving.
-  if (dev) {
-    if (request.nextUrl.pathname === "/robots.txt") return seal(new NextResponse(CLOSED_ROBOTS, { headers: { "content-type": "text/plain" } }));
-    const to = devRedirect(request.method, request.nextUrl.pathname, request.nextUrl.search, process.env.APP_PUBLIC_URL ?? SITE_URL);
-    return seal(to ? NextResponse.redirect(to, 308) : NextResponse.next());
-  }
-  const route = routeFor(host, request.nextUrl.pathname, chosen);
-  let response: NextResponse;
-  if (!admin && closed && request.nextUrl.pathname === "/robots.txt") return seal(new NextResponse(CLOSED_ROBOTS, { headers: { "content-type": "text/plain" } }));
-  if (!admin && closed && request.nextUrl.pathname === "/sitemap.xml") return seal(new NextResponse("Not found", { status: 404 }));
+  if (pathname.startsWith("/api/") || pathname.startsWith("/.well-known/")) return seal(NextResponse.next(), closed);
+  if (dev) return seal(devResponse(request), closed);
+  if (!admin && closed && pathname === "/robots.txt") return seal(closedRobots(), closed);
+  if (!admin && closed && pathname === "/sitemap.xml") return seal(notFound(), closed);
+  const route = routeFor(host, pathname, chosen);
+  const direct = directResponse(request, route, host);
+  if (direct) return seal(direct, closed);
   // The language of the address, carried to the page as `x-locale`: the 404 (no route, no params) answers in it (the UX review's Y10).
-  const segment = request.nextUrl.pathname.split("/")[1];
+  const segment = pathname.split("/")[1];
   const forwarded = new Headers(request.headers);
-  forwarded.set("x-locale", segment === "en" || segment === "fr" ? segment : chosen);
-  switch (route.kind) {
-    case "robotsClosed":
-      return seal(new NextResponse(CLOSED_ROBOTS, { headers: { "content-type": "text/plain" } }));
-    case "notFound":
-      return seal(new NextResponse("Not found", { status: 404 }));
-    case "redirect": {
-      // The public host, not the platform's internal one: admin.yomizaka.com stays admin.yomizaka.com.
-      const proto = request.headers.get("x-forwarded-proto") ?? request.nextUrl.protocol.replace(":", "");
-      return seal(NextResponse.redirect(new URL(route.path, host ? `${proto}://${host}` : request.url)));
-    }
-    case "rewrite":
-      response = NextResponse.rewrite(new URL(route.path, request.url), { request: { headers: forwarded } });
-      break;
-    default:
-      response = NextResponse.next({ request: { headers: forwarded } });
-  }
-  if ((segment === "en" || segment === "fr") && request.cookies.get("NEXT_LOCALE")?.value !== segment) {
+  forwarded.set("x-locale", isLocale(segment) ? segment : chosen);
+  const response = route.kind === "rewrite" ? NextResponse.rewrite(new URL(route.path, request.url), { request: { headers: forwarded } }) : NextResponse.next({ request: { headers: forwarded } });
+  if (isLocale(segment) && request.cookies.get("NEXT_LOCALE")?.value !== segment) {
     response.cookies.set("NEXT_LOCALE", segment, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
   }
-  return seal(response);
+  return seal(response, closed);
 }
 
 export const config = {

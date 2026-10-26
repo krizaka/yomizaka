@@ -1,4 +1,4 @@
-import { documentKind, STORAGE_MODE } from "@yomizaka/core";
+import { type DocumentKind, documentKind, STORAGE_MODE } from "@yomizaka/core";
 import { z } from "zod";
 
 import { storeForDocument, storesOf } from "@/app/active-store";
@@ -26,51 +26,72 @@ export function GET(req: Request) {
   });
 }
 
+type Stores = Awaited<ReturnType<typeof storesOf>>;
+type Stored = Awaited<ReturnType<typeof storeDocument>>;
+const stringField = (form: FormData | null, name: string) => {
+  const value = form?.get(name);
+  return typeof value === "string" ? value : null;
+};
+
+/** Where it may be kept is the owner's setting: « conserver » is refused while keeping is switched off (ADR-0007). */
+async function keepRequest(form: FormData | null, accountId: string): Promise<{ keep: boolean; stores: Stores }> {
+  const stores = await storesOf(accountId);
+  const keep = form?.get("keep") === "true";
+  if (keep) await assertFeature("keepDocuments", accountId);
+  if (keep && stores.settings.mode === STORAGE_MODE.none) throw refuse(409, "KEEP_DISABLED", "Keeping documents is switched off for this account");
+  return { keep, stores };
+}
+
+/** Stores the upload (one document, or several photos as one); a file the pre-flight refused is an engine run that did not happen (counted per tenant). */
+async function storeUpload(accountId: string, upload: { files: File[]; bytes: Uint8Array; photos: boolean; kind: DocumentKind | "auto"; keep: boolean; stores: Stores }): Promise<Stored> {
+  const { files, bytes, photos, kind, keep, stores } = upload;
+  const file = files[0]!;
+  const settings = await settingsFor(accountId);
+  try {
+    const policy = { keep, store: stores.write, now: new Date(), purgeAfterHours: settings["limits.purgeAfterHours"].value as number, rules: preflightRulesFrom(YOMIZAKA_RULES, settings) };
+    return photos
+      ? await storePhotos(accountId, await Promise.all(files.map(async (f, i) => ({ name: f.name, type: f.type, bytes: i === 0 ? bytes : new Uint8Array(await f.arrayBuffer()) }))), kind, { policy })
+      : await storeDocument(accountId, { name: file.name, type: file.type, size: file.size }, bytes, kind, policy);
+  } catch (error) {
+    const reason = error instanceof HttpError ? error.body.reason : undefined;
+    if (typeof reason === "string") await recordPreflight(query, accountId, "rejected", reason);
+    throw error;
+  }
+}
+
+/** Uploaded from a collection or a folder: it lands there (ADR-0007). */
+async function placeUpload(accountId: string, documentId: string, form: FormData | null): Promise<void> {
+  const collectionId = stringField(form, "collectionId");
+  const folderId = stringField(form, "folderId");
+  if (collectionId && isId(collectionId)) await placeDocument(query, accountId, documentId, { collectionId, folderId: folderId && isId(folderId) ? folderId : null });
+}
+
 /** One file per request (multipart, field `file`; `kind` optional). 60 uploads per account per hour. */
 export function POST(req: Request) {
   return handle(async () => {
     const session = await requireSession(req);
-    limit("upload", req, session.account.id, [120, 3600], [60, 3600]);
+    const accountId = session.account.id;
+    limit("upload", req, accountId, [120, 3600], [60, 3600]);
     const form = await req.formData().catch(() => null);
     const files = (form?.getAll("file") ?? []).filter((f): f is File => f instanceof File);
     const file = files[0];
     if (!file) throw refuse(400, "BAD_REQUEST", "A file is expected in the field `file`");
     const kind = documentKind.or(z.literal("auto")).catch("auto").parse(form?.get("kind") ?? "auto");
     // A document for an application (« screeningId ») is accepted only with the applicant's consent to the document check (yomizaka#131), before any byte is stored.
-    const screeningId = form?.get("screeningId");
-    if (typeof screeningId === "string") await assertUploadForApplication(session.account.id, screeningId);
+    const screeningId = stringField(form, "screeningId");
+    if (screeningId !== null) await assertUploadForApplication(accountId, screeningId);
     const bytes = new Uint8Array(await file.arrayBuffer());
     // Photos (by their bytes, not their names) are cleaned and read locally, and several make ONE document (ADR-0010).
     const photos = isPhoto(bytes);
     if (files.length > 1 && !photos) throw refuse(400, "BAD_REQUEST", "One PDF or text file per request; several photos make one document");
-    // Where it may be kept is the owner's setting: « conserver » is refused while keeping is switched off (ADR-0007).
-    const stores = await storesOf(session.account.id);
-    const keep = form?.get("keep") === "true";
-    if (keep) await assertFeature("keepDocuments", session.account.id);
-    if (keep && stores.settings.mode === STORAGE_MODE.none) throw refuse(409, "KEEP_DISABLED", "Keeping documents is switched off for this account");
-    const settings = await settingsFor(session.account.id);
-    let stored;
-    try {
-      const policy = { keep, store: stores.write, now: new Date(), purgeAfterHours: settings["limits.purgeAfterHours"].value as number, rules: preflightRulesFrom(YOMIZAKA_RULES, settings) };
-      stored = photos
-        ? await storePhotos(session.account.id, await Promise.all(files.map(async (f, i) => ({ name: f.name, type: f.type, bytes: i === 0 ? bytes : new Uint8Array(await f.arrayBuffer()) }))), kind, { policy })
-        : await storeDocument(session.account.id, { name: file.name, type: file.type, size: file.size }, bytes, kind, policy);
-    } catch (error) {
-      // A file the pre-flight refused: an engine run that did not happen (counted per tenant).
-      const reason = error instanceof HttpError ? error.body.reason : undefined;
-      if (typeof reason === "string") await recordPreflight(query, session.account.id, "rejected", reason);
-      throw error;
+    const { keep, stores } = await keepRequest(form, accountId);
+    const { summary, duplicate } = await storeUpload(accountId, { files, bytes, photos, kind, keep, stores });
+    if (screeningId !== null) await attachToApplication(accountId, summary.id, screeningId, await storeForDocument(accountId, summary.id));
+    if (!duplicate) {
+      await placeUpload(accountId, summary.id, form);
+      await recordPreflight(query, accountId, "accepted");
+      await audit({ action: "document.uploaded", actorId: accountId, actorLabel: session.account.email, targetId: summary.id, detail: { size: summary.sizeBytes, mime: summary.mimeType }, headers: req.headers });
     }
-    const { summary, duplicate } = stored;
-    if (typeof screeningId === "string") await attachToApplication(session.account.id, summary.id, screeningId, await storeForDocument(session.account.id, summary.id));
-    // Uploaded from a collection or a folder: it lands there (ADR-0007).
-    const collectionId = form?.get("collectionId");
-    const folderId = form?.get("folderId");
-    if (!duplicate && typeof collectionId === "string" && isId(collectionId)) {
-      await placeDocument(query, session.account.id, summary.id, { collectionId, folderId: typeof folderId === "string" && isId(folderId) ? folderId : null });
-    }
-    if (!duplicate) await recordPreflight(query, session.account.id, "accepted");
-    if (!duplicate) await audit({ action: "document.uploaded", actorId: session.account.id, actorLabel: session.account.email, targetId: summary.id, detail: { size: summary.sizeBytes, mime: summary.mimeType }, headers: req.headers });
     return Response.json({ document: summary, duplicate }, { status: duplicate ? 200 : 201 });
   });
 }
