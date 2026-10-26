@@ -111,8 +111,9 @@ function stepPlain(s: CsvState, src: string, i: number, delimiter: string): numb
 export function parseCsv(text: string, delimiter = detectDelimiter(text.replace(/^﻿/, "").split(/\r?\n/)[0] ?? "")): string[][] {
   const src = text.replace(/^﻿/, "");
   const state: CsvState = { records: [], record: [], field: "", quoted: false };
-  for (let i = 0; i < src.length; i++) {
-    i = state.quoted ? stepQuoted(state, src, i) : stepPlain(state, src, i, delimiter);
+  let i = 0;
+  while (i < src.length) {
+    i = (state.quoted ? stepQuoted(state, src, i) : stepPlain(state, src, i, delimiter)) + 1;
   }
   if (state.field !== "" || state.record.length) endRecord(state);
   return state.records.filter((r) => r.some((f) => f.trim() !== ""));

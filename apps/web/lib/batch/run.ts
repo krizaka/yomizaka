@@ -162,26 +162,33 @@ async function settleRunning(ownerId: string, items: readonly BatchItemRow[]): P
 }
 
 /** Starts one pending row through the single check path: how many more run because of it, and the reason the batch pauses, if any. */
-async function startItem(account: Account, item: BatchItemRow, now: Date, environment: FlowEnvironment): Promise<{ running: number; pausedBy: string | null }> {
+async function startItem(account: Account, item: BatchItemRow, now: Date, environment: FlowEnvironment): Promise<StartOutcome> {
   for (let attempt = 1; ; attempt++) {
     try {
       const started = await startCheck(account, item.document_id!, item.request!, now, environment);
       await query("UPDATE batch_items SET analysis_id = $2, state = $3, error = NULL WHERE id = $1", [item.id, started.analysis.id, started.reused ? BATCH_ITEM.reused : BATCH_ITEM.running]);
       return { running: started.reused ? 0 : 1, pausedBy: null };
     } catch (error) {
-      const code = codeOf(error);
-      // The same check of the same document is already running (a row of another batch, a page). Bring it up to date — it may have
-      // finished in Orazaka while nobody looked — then the normal rules apply again (reuse its result or start); while it truly
-      // runs, this row waits for it.
-      if (code === ALREADY_RUNNING) {
-        if (attempt < 2 && !(await refreshBlocking(account.id, item.document_id!, item.request!.studio))) continue;
-        return { running: 1, pausedBy: null };
-      }
-      if (pausesBatch(code)) return { running: 0, pausedBy: code };
-      await setState(item.id, BATCH_ITEM.failed, code);
-      return { running: 0, pausedBy: null };
+      const outcome = await outcomeOfRefusal(account, item, codeOf(error), attempt);
+      if (outcome) return outcome;
     }
   }
+}
+
+type StartOutcome = { running: number; pausedBy: string | null };
+
+/** What a refused start means for its row; null when the start should be tried once more. */
+async function outcomeOfRefusal(account: Account, item: BatchItemRow, code: string, attempt: number): Promise<StartOutcome | null> {
+  // The same check of the same document is already running (a row of another batch, a page). Bring it up to date — it may have
+  // finished in Orazaka while nobody looked — then the normal rules apply again (reuse its result or start); while it truly
+  // runs, this row waits for it.
+  if (code === ALREADY_RUNNING) {
+    if (attempt < 2 && !(await refreshBlocking(account.id, item.document_id!, item.request!.studio))) return null;
+    return { running: 1, pausedBy: null };
+  }
+  if (pausesBatch(code)) return { running: 0, pausedBy: code };
+  await setState(item.id, BATCH_ITEM.failed, code);
+  return { running: 0, pausedBy: null };
 }
 
 /** Brings up to date the analyses already running on a document for a Studio; true while one still runs. */
