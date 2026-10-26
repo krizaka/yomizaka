@@ -70,7 +70,8 @@ export async function refresh(row: AnalysisRow, known?: OrazakaRun): Promise<Ana
   const status = fromRunStatus(run.status);
   if (!isTerminal(status)) return toAnalysis(row);
   const report = status === "succeeded" ? reportOf(row.studio, run.outputs) : null;
-  const error = status === "succeeded" ? (report ? null : "Orazaka finished without a report Yomizaka can read") : (run.errorMessage ?? `The run ended ${run.status}`);
+  const noReport = report ? null : "Orazaka finished without a report Yomizaka can read";
+  const error = status === "succeeded" ? noReport : (run.errorMessage ?? `The run ended ${run.status}`);
   const [updated] = await query<AnalysisRow>(
     `UPDATE analyses SET status = $2, report = $3, error = $4, search_text = $5, blueprint_version = coalesce($6, blueprint_version), finished_at = coalesce($7::timestamptz, now())
       WHERE id = $1 RETURNING *`,

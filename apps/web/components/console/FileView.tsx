@@ -54,12 +54,10 @@ export function FileView({
   const facts = useFileFacts();
   const label = (type: string) =>
     types.find((t) => t.id === type)?.label ?? type;
-  const retention = (d: FileDocumentView) =>
-    d.purged
-      ? say("dossiers.detail.purged")
-      : d.retention === "after-decision"
-        ? say("dossiers.detail.kept")
-        : say("dossiers.detail.afterCheck");
+  const retention = (d: FileDocumentView) => {
+    if (d.purged) return say("dossiers.detail.purged");
+    return d.retention === "after-decision" ? say("dossiers.detail.kept") : say("dossiers.detail.afterCheck");
+  };
   const checks = (d: FileDocumentView) => (
     <span className="mt-1 flex flex-wrap gap-1">
       {d.checks.map((c) => {

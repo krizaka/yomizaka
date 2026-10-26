@@ -49,7 +49,8 @@ export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
 export const isSettingsSection = (v: string): v is SettingsSection => (SETTINGS_SECTIONS as readonly string[]).includes(v);
 
 /** A page's `searchParams` as `URLSearchParams` (a repeated key kept, an absent one dropped). */
-export const searchOf = (params: Record<string, string | string[] | undefined>): URLSearchParams => new URLSearchParams(Object.entries(params).flatMap(([k, v]) => (v === undefined ? [] : Array.isArray(v) ? v.map((x) => [k, x] as [string, string]) : [[k, v] as [string, string]])));
+export const searchOf = (params: Record<string, string | string[] | undefined>): URLSearchParams =>
+  new URLSearchParams(Object.entries(params).flatMap(([k, v]) => (v === undefined ? [] : [v].flat().map((x) => [k, x] as [string, string]))));
 
 /** The 308 of an old tab address, its query kept (`/verifications?refused=PAYWALL` → `/rapport?refused=PAYWALL`); null when the tab did not move. */
 export function movedDocumentHref(locale: "en" | "fr", id: string, tab: string, search: string | URLSearchParams = ""): string | null {

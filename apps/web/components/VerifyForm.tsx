@@ -114,10 +114,14 @@ function VerifyResult({ result, labels }: Readonly<{ result: Verification; label
     );
   }
   const { payload } = result;
+  const match = result.documentMatch;
+  let matchWords = labels.documentMatch.no;
+  if (match === null) matchWords = labels.documentMatch.none;
+  else if (match) matchWords = labels.documentMatch.yes;
   return (
     <Card.Root className="flex flex-col gap-4 p-4" data-testid="verify-ok">
       <Alert tone="success" title={labels.okTitle}>
-        {result.documentMatch === null ? labels.documentMatch.none : result.documentMatch ? labels.documentMatch.yes : labels.documentMatch.no}
+        {matchWords}
       </Alert>
       {result.documentMatch === false ? <Alert tone="danger">{labels.documentMatch.no}</Alert> : null}
       <DescriptionList

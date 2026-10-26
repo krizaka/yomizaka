@@ -53,7 +53,8 @@ export function planCheck({ declared, detected, jurisdictions = ["QC"], asOf }: 
 export function afterUpload({ requested, insight, jurisdictions = ["QC"], asOf }: { requested: DocumentKind | "auto"; insight: Understanding | null; jurisdictions?: readonly Jurisdiction[]; asOf: string }): CheckPlan {
   const recognised = insight?.check?.documentType ?? null;
   const sure = insight?.nature?.confidence === "high";
-  return planCheck({ declared: requested, detected: requested === "auto" ? (sure ? recognised : null) : recognised, jurisdictions, asOf });
+  const confirmed = sure ? recognised : null;
+  return planCheck({ declared: requested, detected: requested === "auto" ? confirmed : recognised, jurisdictions, asOf });
 }
 
 /** The checking options (keep the document, photos as pages) are asked once the files are known, never before (the review's B4). */

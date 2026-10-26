@@ -81,7 +81,8 @@ export function ApplicantFile({ token, initial, consents: initialConsents, notic
         <p className="mt-2 text-fg-secondary">{words.file.intro}</p>
         {page.open ? <p className="mt-2 text-sm text-fg-muted">{words.file.expires.replace("{date}", expires)}</p> : null}
       </div>
-      {closed === "LINK_USED" ? <Alert tone="success">{words.file.submitted}</Alert> : closed ? <Alert tone="warning">{say(errors, closed, words.unknown)}</Alert> : null}
+      {closed === "LINK_USED" ? <Alert tone="success">{words.file.submitted}</Alert> : null}
+      {closed && closed !== "LINK_USED" ? <Alert tone="warning">{say(errors, closed, words.unknown)}</Alert> : null}
       {problem ? <Alert tone="danger">{problem}</Alert> : null}
 
       <details className="rounded-lg border border-border-default bg-surface-1 p-4" data-testid="applicant-notice">

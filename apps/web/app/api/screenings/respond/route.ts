@@ -24,8 +24,21 @@ export function POST(req: Request) {
     limit("screening-respond", req, null, [60, 600]);
     const input = await readJson(req, body);
     const now = new Date();
-    const view =
-      input.action === "view" ? await viewForTenant(input.token, now) : input.action === "consent" ? await consent(input.token, now, req.headers) : input.action === "decline" ? await decline(input.token, now, req.headers) : input.action === "share" ? await share(input.token, now, req.headers) : await contest(input.token, input.comment, now, req.headers);
+    const act = () => {
+      switch (input.action) {
+        case "view":
+          return viewForTenant(input.token, now);
+        case "consent":
+          return consent(input.token, now, req.headers);
+        case "decline":
+          return decline(input.token, now, req.headers);
+        case "share":
+          return share(input.token, now, req.headers);
+        default:
+          return contest(input.token, input.comment, now, req.headers);
+      }
+    };
+    const view = await act();
     return Response.json({ screening: view }, { headers: { "Cache-Control": "private, no-store" } });
   });
 }

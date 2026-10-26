@@ -122,7 +122,8 @@ export function LandlordScreening({ initial, undertakingGiven, words, locale }: 
                     </span>
                     <Badge tone={TONE[s.status] ?? "neutral"}>{words.status[s.status]}</Badge>
                   </div>
-                  {s.result ? <ScreeningResultCard result={s.result} words={words.result} demo={s.demo ? words.demo : null} /> : s.status === "consented" ? <p className="m-0 text-xs text-fg-muted">{words.hidden}</p> : null}
+                  {s.result ? <ScreeningResultCard result={s.result} words={words.result} demo={s.demo ? words.demo : null} /> : null}
+                  {!s.result && s.status === "consented" ? <p className="m-0 text-xs text-fg-muted">{words.hidden}</p> : null}
                 </li>
               ))}
             </ul>

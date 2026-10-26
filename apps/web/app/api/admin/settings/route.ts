@@ -33,7 +33,12 @@ export const GET = (req: Request) =>
     const url = new URL(req.url);
     const ref = asRef(scope.parse({ scope: url.searchParams.get("scope") ?? SCOPE.global, id: url.searchParams.get("id") ?? "" }));
     const service = appSettings();
-    const context = ref.scope === SCOPE.user ? { userId: ref.id } : ref.scope === SCOPE.workspace ? { workspaceId: ref.id } : {};
+    const contextOf = () => {
+      if (ref.scope === SCOPE.user) return { userId: ref.id };
+      if (ref.scope === SCOPE.workspace) return { workspaceId: ref.id };
+      return {};
+    };
+    const context = contextOf();
     return Response.json({ definitions: describeSettings(), overrides: await service.overrides(ref), effective: await service.snapshot(context) }, { headers: { "Cache-Control": "private, no-store" } });
   });
 

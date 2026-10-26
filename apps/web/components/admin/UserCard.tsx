@@ -31,6 +31,28 @@ export function UserCard({ initial }: Readonly<{ initial: UserDetail }>) {
     },
     onError: (e) => setProblem(say(`errors.${errorKey(e)}`)),
   });
+  const statusAction = () => {
+    if (user.status !== "ACTIVE") {
+      return (
+        <Button variant="primary" size="sm" loading={change.isPending} onClick={() => change.mutate("restore")}>
+          {say("adminConsole.user.restore")}
+        </Button>
+      );
+    }
+    if (confirming) {
+      return (
+        <Button variant="danger" size="sm" loading={change.isPending} onClick={() => change.mutate("suspend")}>
+          {say("adminConsole.user.suspendConfirm")}
+        </Button>
+      );
+    }
+    return (
+      <Button variant="secondary" size="sm" onClick={() => setConfirming(true)}>
+        {say("adminConsole.user.suspend")}
+      </Button>
+    );
+  };
+  const action = statusAction();
   return (
     <Card.Root className="flex flex-col gap-4 p-4">
       <Link href={`/${locale}/users`} className="text-sm text-fg-muted hover:text-fg">
@@ -38,21 +60,7 @@ export function UserCard({ initial }: Readonly<{ initial: UserDetail }>) {
       </Link>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="break-all font-display text-xl font-extrabold text-fg">{user.email}</h2>
-        {user.status === "ACTIVE" ? (
-          confirming ? (
-            <Button variant="danger" size="sm" loading={change.isPending} onClick={() => change.mutate("suspend")}>
-              {say("adminConsole.user.suspendConfirm")}
-            </Button>
-          ) : (
-            <Button variant="secondary" size="sm" onClick={() => setConfirming(true)}>
-              {say("adminConsole.user.suspend")}
-            </Button>
-          )
-        ) : (
-          <Button variant="primary" size="sm" loading={change.isPending} onClick={() => change.mutate("restore")}>
-            {say("adminConsole.user.restore")}
-          </Button>
-        )}
+        {action}
       </div>
       {problem ? <Alert tone="danger">{problem}</Alert> : null}
       <DescriptionList

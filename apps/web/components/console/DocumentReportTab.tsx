@@ -27,6 +27,41 @@ export function DocumentReportTab({ doc, facts, selection, perspective, startCar
   // The notes at the foot (design § 3.5): the review note first (the verdict points to it, REVIEW_NOTE), then a demo check's note — never a box above the report.
   const shown = latestCompliance && latestReport ? latestCompliance : latestAuthenticity;
   const notes = [...(latestReport?.reviewStatus ? [say("analysis.toReview")] : []), ...(shown && isSeededCheck(shown) ? [say("analysis.seededNote")] : [])];
+  const body = () => {
+    if (latestCompliance && latestReport) {
+      return (
+          <>
+            <VerdictBand report={latestReport} />
+            <FindingList report={latestReport} selection={selection} />
+            {latestAuthenticity?.report && "signals" in latestAuthenticity.report ? <AuthenticitySignals report={latestAuthenticity.report} /> : null}
+            <TechnicalDetails documentId={doc.id} analysis={latestCompliance} />
+            <details className="rounded-lg border border-border-default p-3">
+              <summary className="cursor-pointer text-sm font-semibold text-fg">{say("document.details")}</summary>
+              <div className="mt-3">
+                <ClosingNoteView note={buildNote(noteInputOf(latestReport, noteSourceOf(doc.textSource)), locale)} />
+              </div>
+            </details>
+          </>
+      );
+    }
+    if (latestAuthenticity?.report && "signals" in latestAuthenticity.report) {
+      return (
+          <>
+            <AuthenticitySignals report={latestAuthenticity.report} />
+            <TechnicalDetails documentId={doc.id} analysis={latestAuthenticity} />
+          </>
+      );
+    }
+    return (
+        <>
+          <div>
+            <h2 className="font-display text-lg font-bold text-fg">{say("reportFace.notChecked")}</h2>
+            <p className="text-sm text-fg-secondary">{say(`document.checksLeadBy.${wordingOf(perspective)}`)}</p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">{startCards}</div>
+        </>
+    );
+  };
   return (
     <section aria-label={say("document.tabs.rapport")} className="flex min-w-0 flex-col gap-4" data-testid="tab-rapport">
       {runningStudio ? <CheckSteps steps={checkSteps({ hasText: doc.hasText, analysis: { studio: runningStudio, status: "running" } })} /> : null}
@@ -35,33 +70,7 @@ export function DocumentReportTab({ doc, facts, selection, perspective, startCar
           {a.error}
         </Alert>
       ))}
-      {latestCompliance && latestReport ? (
-        <>
-          <VerdictBand report={latestReport} />
-          <FindingList report={latestReport} selection={selection} />
-          {latestAuthenticity?.report && "signals" in latestAuthenticity.report ? <AuthenticitySignals report={latestAuthenticity.report} /> : null}
-          <TechnicalDetails documentId={doc.id} analysis={latestCompliance} />
-          <details className="rounded-lg border border-border-default p-3">
-            <summary className="cursor-pointer text-sm font-semibold text-fg">{say("document.details")}</summary>
-            <div className="mt-3">
-              <ClosingNoteView note={buildNote(noteInputOf(latestReport, noteSourceOf(doc.textSource)), locale)} />
-            </div>
-          </details>
-        </>
-      ) : latestAuthenticity?.report && "signals" in latestAuthenticity.report ? (
-        <>
-          <AuthenticitySignals report={latestAuthenticity.report} />
-          <TechnicalDetails documentId={doc.id} analysis={latestAuthenticity} />
-        </>
-      ) : (
-        <>
-          <div>
-            <h2 className="font-display text-lg font-bold text-fg">{say("reportFace.notChecked")}</h2>
-            <p className="text-sm text-fg-secondary">{say(`document.checksLeadBy.${wordingOf(perspective)}`)}</p>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2">{startCards}</div>
-        </>
-      )}
+      {body()}
       <p className="m-0 text-xs text-fg-muted">{say("library.informative")}</p>
       {notes.length ? <Footnotes className="[&_ol]:list-decimal" notes={notes} label={say("reportFace.notes")} backLabel={say("reportFace.backToText")} /> : null}
     </section>

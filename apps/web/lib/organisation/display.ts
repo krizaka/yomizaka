@@ -3,5 +3,6 @@ const DEFAULT_NAME = /^(?:My documents|Mes documents)(?: (\d+))?$/;
 
 export function collectionLabel(name: string, isDefault: boolean, mine: string): string {
   const match = isDefault ? DEFAULT_NAME.exec(name) : null;
-  return match ? (match[1] ? `${mine} ${match[1]}` : mine) : name;
+  if (!match) return name;
+  return match[1] ? `${mine} ${match[1]}` : mine;
 }

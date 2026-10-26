@@ -34,7 +34,12 @@ export function checkSteps({ hasText, analysis, studio }: CheckProgress): CheckS
   const needsText = kind === "compliance-check";
   const readFailed = needsText && !hasText;
   const run = analysis?.status;
-  const rules = readFailed ? STEP_STATE.upcoming : run === undefined ? STEP_STATE.upcoming : run === "running" ? STEP_STATE.current : run === "succeeded" ? STEP_STATE.done : STEP_STATE.failed;
+  const ruleState = (): StepState => {
+    if (readFailed || run === undefined) return STEP_STATE.upcoming;
+    if (run === "running") return STEP_STATE.current;
+    return run === "succeeded" ? STEP_STATE.done : STEP_STATE.failed;
+  };
+  const rules = ruleState();
   const state: Record<CheckStepId, StepState> = {
     read: readFailed ? STEP_STATE.failed : STEP_STATE.done,
     preflight: readFailed ? STEP_STATE.upcoming : STEP_STATE.done,

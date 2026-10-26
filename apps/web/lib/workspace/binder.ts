@@ -46,5 +46,9 @@ export function binderPlan(set: StatusSet, tagIds: readonly string[], filters: V
     return { id, on, filters: next.length ? { ...filters, tags: next } : without(filters, "tags"), countFilters: { ...filters, tags: Array.from(new Set([...worn, id])) } };
   });
   const status = filters.status ?? [];
-  return { tabs, chips, activeState: status.length === 0 ? null : status.length === 1 ? status[0]! : "multiple" };
+  const activeOf = () => {
+    if (status.length === 0) return null;
+    return status.length === 1 ? status[0]! : "multiple";
+  };
+  return { tabs, chips, activeState: activeOf() };
 }

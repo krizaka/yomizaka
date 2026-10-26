@@ -191,7 +191,11 @@ export async function issuePdf(payload: ReportPayload, labels: ReportLabels, key
     }
     y -= gap;
   };
-  for (const b of blocks) draw(printable(b.text, font), b.size, b.mono ? mono : b.bold ? bold : font, b.gap ?? 4);
+  const faceOf = (b: Block) => {
+    if (b.mono) return mono;
+    return b.bold ? bold : font;
+  };
+  for (const b of blocks) draw(printable(b.text, font), b.size, faceOf(b), b.gap ?? 4);
   const bodySha256 = sha256(signedText(blocks, font));
   const signature = crypto.sign(null, signedMessage(payload, bodySha256), key.privateKey).toString("base64");
   const attestation: Attestation = { schema: REPORT_SCHEMA, algorithm: "Ed25519", keyId: key.keyId, payload, bodySha256, signature };

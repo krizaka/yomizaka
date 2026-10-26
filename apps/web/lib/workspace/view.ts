@@ -18,7 +18,11 @@ const hasFilters = (f: ViewFilters) => Object.values(f).some((v) => (Array.isArr
 export function resolveView(address: { view: string | null; filters: ViewFilters }, system: readonly SystemView[], saved: readonly SavedView[], locale: "en" | "fr"): ResolvedView {
   const sys = address.view ? system.find((v) => v.key === address.view) : undefined;
   const mine = address.view && !sys ? saved.find((v) => v.id === address.view) : undefined;
-  const found = sys ? { kind: "system" as const, id: sys.key, label: sys.label[locale], filters: sys.filters } : mine ? { kind: "saved" as const, id: mine.id, label: mine.name, filters: mine.filters } : null;
+  const foundOf = () => {
+    if (sys) return { kind: "system" as const, id: sys.key, label: sys.label[locale], filters: sys.filters };
+    return mine ? { kind: "saved" as const, id: mine.id, label: mine.name, filters: mine.filters } : null;
+  };
+  const found = foundOf();
   if (!found) return { active: null, filters: address.filters, modified: false };
   const own = hasFilters(address.filters);
   return { active: { kind: found.kind, id: found.id, label: found.label }, filters: own ? address.filters : found.filters, modified: own && !sameFilters(address.filters, found.filters) };

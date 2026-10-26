@@ -32,7 +32,8 @@ export function POST(req: Request) {
     const { text, pdf, document } = await readVerifyForm(form);
     // A PDF carries its attestation in its Info dictionary; an HTML report in its script block.
     const embedded = pdf ? await attestationOfPdf(pdf) : null;
-    const reference = pdf ? (embedded ? { runId: embedded.payload.check.runId, documentSha256: embedded.payload.document.sha256 } : null) : referenceOf(text);
+    const embeddedReference = embedded ? { runId: embedded.payload.check.runId, documentSha256: embedded.payload.document.sha256 } : null;
+    const reference = pdf ? embeddedReference : referenceOf(text);
     // A file that is not a report holds nothing to protect: it fails like before (NOT_A_REPORT / UNREADABLE).
     const target = reference ? await loadTarget(reference.runId, reference.documentSha256) : null;
     const access = target ? accessTo(target, who, new Date()) : ({ allowed: false } as const);

@@ -16,8 +16,12 @@ export interface Credentials {
 const stamp = (now: Date) => now.toISOString().replace(/[:-]|\.\d{3}/g, "");
 const encode = (s: string) => encodeURIComponent(s).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
 const canonicalPath = (url: URL) => url.pathname.split("/").map((seg) => encode(decodeURIComponent(seg))).join("/") || "/";
+const byNameThenValue = ([a, av]: readonly [string, string], [b, bv]: readonly [string, string]) => {
+  if (a === b) return av < bv ? -1 : 1;
+  return a < b ? -1 : 1;
+};
 const canonicalQuery = (url: URL) =>
-  [...url.searchParams.entries()].map(([k, v]) => [encode(k), encode(v)] as const).sort(([a, av], [b, bv]) => (a === b ? (av < bv ? -1 : 1) : a < b ? -1 : 1)).map(([k, v]) => `${k}=${v}`).join("&");
+  [...url.searchParams.entries()].map(([k, v]) => [encode(k), encode(v)] as const).sort(byNameThenValue).map(([k, v]) => `${k}=${v}`).join("&");
 
 function signingKey(c: Credentials, date: string) {
   return hmac(hmac(hmac(hmac(`AWS4${c.secretAccessKey}`, date), c.region), c.service), "aws4_request");
