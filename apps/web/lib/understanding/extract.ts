@@ -100,8 +100,45 @@ function amounts(text: string): AmountFact[] {
   return out;
 }
 
+type CompiledType = { t: DocumentTypeDef; signals: { re: RegExp; weight: number }[] };
+
+/** The nature's confidence from the best score: under `low` it is unknown. */
+function confidenceOf(best: { score: number } | undefined, { high, medium, low }: UnderstandingConfig["thresholds"]): Confidence {
+  if (!best || best.score < low) return "unknown";
+  if (best.score >= high) return "high";
+  return best.score >= medium ? "medium" : "low";
+}
+
+/** The first capture of each identifier's pattern: the references the text carries. */
+function referencesOf(text: string, ids: readonly { i: IdentifierDef; re: RegExp }[]): ReferenceFact[] {
+  const references: ReferenceFact[] = [];
+  for (const { i, re } of ids) {
+    const found = re.exec(text)?.[1];
+    if (found) references.push({ kind: i.kind, value: found.replace(/\s+/g, " ").trim() });
+  }
+  return references;
+}
+
+/** The people and companies named after a role label (« Locateur : … »), each name once. */
+function partiesOf(text: string, roles: readonly { role: string; re: RegExp }[]): PartyFact[] {
+  const parties: PartyFact[] = [];
+  for (const { role, re } of roles) {
+    const value = re.exec(text)?.[1]?.split(/[,;(]/)[0]?.trim();
+    if (value && value.length >= 2 && !parties.some((p) => p.name === value)) parties.push({ role, name: value });
+  }
+  return parties;
+}
+
+/** The issuer a nature declares, or the last of its issuer patterns that matches. */
+function issuerOf(text: string, type: DocumentTypeDef): string | null {
+  if (type.issuer) return type.issuer;
+  let issuer: string | null = null;
+  for (const p of type.issuerPatterns ?? []) issuer = new RegExp(p, "iu").exec(text)?.[1]?.trim() ?? issuer;
+  return issuer;
+}
+
 export function createUnderstanding(config: UnderstandingConfig): DocumentUnderstanding {
-  const compiled = config.types.map((t) => ({ t, signals: t.signals.map((s) => ({ re: new RegExp(s.pattern, "iu"), weight: s.weight })) }));
+  const compiled: CompiledType[] = config.types.map((t) => ({ t, signals: t.signals.map((s) => ({ re: new RegExp(s.pattern, "iu"), weight: s.weight })) }));
   const ids = config.identifiers.map((i) => ({ i, re: new RegExp(i.pattern, "iu") }));
   const roles = config.partyRoles.map((r) => ({ role: r.role, re: new RegExp(`^[\\s•*-]*(?:${r.pattern})\\s*(?:\\([^)]*\\))?\\s*:\\s*([^\\n]{2,120})$`, "imu") }));
 
@@ -110,37 +147,24 @@ export function createUnderstanding(config: UnderstandingConfig): DocumentUnders
       const scored = compiled.map(({ t, signals }) => ({ t, score: signals.reduce((sum, s) => sum + (s.re.test(text) ? s.weight : 0), 0) })).sort((a, b) => b.score - a.score);
       const best = scored[0];
       const second = scored[1];
-      const { high, medium, low } = config.thresholds;
-      const confidence: Confidence = !best || best.score < low ? "unknown" : best.score >= high ? "high" : best.score >= medium ? "medium" : "low";
+      const confidence = confidenceOf(best, config.thresholds);
       const nature = best && confidence !== "unknown" ? { id: best.t.id, label: best.t.label, confidence, score: best.score } : null;
       const close = !!best && !!second && second.score > 0 && second.score >= best.score * config.alternativeShare;
       const alternative = nature && close && second ? { id: second.t.id, label: second.t.label } : null;
-
-      const references: ReferenceFact[] = [];
-      for (const { i, re } of ids) {
-        const found = re.exec(text)?.[1];
-        if (found) references.push({ kind: i.kind, value: found.replace(/\s+/g, " ").trim() });
-      }
-      const parties: PartyFact[] = [];
-      for (const { role, re } of roles) {
-        const value = re.exec(text)?.[1]?.split(/[,;(]/)[0]?.trim();
-        if (value && value.length >= 2 && !parties.some((p) => p.name === value)) parties.push({ role, name: value });
-      }
-      let issuer: string | null = best?.t.issuer && nature ? best.t.issuer : null;
-      if (!issuer && best && nature) for (const p of best.t.issuerPatterns ?? []) issuer = new RegExp(p, "iu").exec(text)?.[1]?.trim() ?? issuer;
+      const known = nature && best ? best.t : null;
 
       return {
         nature,
         alternative,
         language: language(text),
         pages: context.pages,
-        issuer,
+        issuer: known ? issuerOf(text, known) : null,
         dates: dates(text),
-        parties,
-        references,
+        parties: partiesOf(text, roles),
+        references: referencesOf(text, ids),
         amounts: amounts(text),
-        check: nature && best ? best.t.check : null,
-        authenticity: nature && best ? best.t.authenticity !== false : true,
+        check: known ? known.check : null,
+        authenticity: known ? known.authenticity !== false : true,
         needsModel: confidence === "unknown" || confidence === "low" || (close && confidence !== "high"),
       };
     },
