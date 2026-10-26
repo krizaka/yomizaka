@@ -2,9 +2,9 @@ import { SiteFooter as FamilyFooter, SiteFooterColumn, SiteFooterLink } from "@k
 import { familyLabels } from "@krizaka/ui/sites";
 import Link from "next/link";
 
-import { downloadsOffered } from "@/lib/downloads";
 import { format, getDictionary, type Locale, translator } from "@/lib/i18n";
 import { indexable } from "@/lib/indexing";
+import { isListed } from "@/lib/listed";
 import { uiVersion } from "@/lib/platform";
 import { APP_VERSION, contactHref, pagePath, REPO_URL } from "@/lib/site";
 
@@ -34,7 +34,7 @@ export function SiteFooter({ locale }: Readonly<{ locale: Locale }>) {
       }
     >
       <SiteFooterColumn title="Yomizaka">
-        {downloadsOffered() ? (
+        {isListed("download") ? (
           <SiteFooterLink asChild>
             <Link href={pagePath(locale, "download")}>{t("chrome.download")}</Link>
           </SiteFooterLink>
@@ -42,6 +42,11 @@ export function SiteFooter({ locale }: Readonly<{ locale: Locale }>) {
         <SiteFooterLink asChild>
           <Link href={pagePath(locale, "docs")}>{t("chrome.docs")}</Link>
         </SiteFooterLink>
+        {isListed("pricing") ? (
+          <SiteFooterLink asChild>
+            <Link href={pagePath(locale, "pricing")}>{t("chrome.nav.pricing")}</Link>
+          </SiteFooterLink>
+        ) : null}
         <SiteFooterLink asChild>
           <Link href={pagePath(locale, "privacy")}>{t("chrome.legal")}</Link>
         </SiteFooterLink>

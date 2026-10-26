@@ -1,3 +1,4 @@
+import { isListed } from "./listed";
 import { type PageId, pagePath } from "./site";
 
 /**
@@ -8,10 +9,14 @@ export const MENU = [
   { id: "what", page: "home", hash: "#what" },
   { id: "proof", page: "home", hash: "#proof" },
   { id: "docs", page: "docs", hash: "" },
+  { id: "pricing", page: "pricing", hash: "" },
   { id: "privacy", page: "privacy", hash: "" },
 ] as const satisfies readonly { id: string; page: PageId; hash: string }[];
 
 export type MenuId = (typeof MENU)[number]["id"];
+
+/** The items the bar shows: a page that is parked or held (lib/listed.ts) is not offered. */
+export const menuItems = () => MENU.filter((m) => isListed(m.page));
 
 /** Where a menu item leads in a language. */
 export const menuHref = (locale: "en" | "fr", item: (typeof MENU)[number]): string => `${pagePath(locale, item.page)}${item.hash}`;
