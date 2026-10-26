@@ -51,4 +51,7 @@ export function checkRows(rows: readonly CheckRow[], event: CheckEvent): CheckRo
 export const opensAtOnce = (dropped: number): boolean => dropped === 1;
 
 /** A row's report, a refusal carried in the address for the report tab to say. */
-export const reportHref = (locale: string, row: Pick<CheckRow, "id" | "refused">): string => `/${locale}/app/documents/${row.id}/rapport${row.refused ? `?refused=${encodeURIComponent(row.refused)}` : ""}`;
+export const reportHref = (locale: string, row: Pick<CheckRow, "id" | "refused">): string => {
+  const query = row.refused ? `?refused=${encodeURIComponent(row.refused)}` : "";
+  return `/${locale}/app/documents/${row.id}/rapport${query}`;
+};

@@ -84,8 +84,9 @@ function checkBlocks(payload: ReportPayload, labels: ReportLabels): Block[] {
 function findingBlocks(f: ReportPayload["findings"][number], labels: ReportLabels): Block[] {
   const method = optional(!!f.method, ` · ${f.method}`);
   const passage = f.quote ? `« ${f.quote} »` : labels.noPassage;
+  const verdict = labels[`verdict.${f.verdict}`] ?? f.verdict;
   const blocks = [
-    block(`${f.title ?? f.ruleId} — ${labels[`verdict.${f.verdict}`] ?? f.verdict}`, 10, { bold: true, gap: 1 }),
+    block(`${f.title ?? f.ruleId} — ${verdict}`, 10, { bold: true, gap: 1 }),
     block(f.explanation, 9),
     block(`${labels.rule}: ${f.ruleId} · ${f.severity}${method}`, 8),
   ];

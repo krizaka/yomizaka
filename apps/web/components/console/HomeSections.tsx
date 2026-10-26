@@ -87,16 +87,20 @@ export function ActivityStrip({ figures, period, collection }: { figures: readon
         <PeriodSwitch period={period} collection={collection} />
       </div>
       <StatGrid divided minWidth={8}>
-        {figures.map((f) => (
+        {figures.map((f) => {
+          const figureName = say(`home.activity.${f.id}`);
+          const periodName = say(`home.activity.periods.${period}`);
+          return (
           <Stat
             key={f.id}
-            label={say(`home.activity.${f.id}`)}
+            label={figureName}
             value={new Intl.NumberFormat(INTL[locale]).format(f.total)}
-            hint={say(`home.activity.periods.${period}`)}
+            hint={periodName}
             data-testid={`strip-${f.id}`}
-            chart={<Sparkline data={f.values} variant="area" width={96} height={24} title={say(`home.activity.${f.id}`)} summaryText={`${say(`home.activity.${f.id}`)}, ${say(`home.activity.periods.${period}`)}: ${f.total}`} locale={INTL[locale]} labels={words} />}
+            chart={<Sparkline data={f.values} variant="area" width={96} height={24} title={figureName} summaryText={`${figureName}, ${periodName}: ${f.total}`} locale={INTL[locale]} labels={words} />}
           />
-        ))}
+          );
+        })}
       </StatGrid>
     </section>
   );

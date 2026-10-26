@@ -51,7 +51,8 @@ function s3Defaults(s3: S3Settings) {
 
 function stepOutcome(s: Verification["steps"][number], say: Say): string {
   if (s.ok) return say("settings.storage.stepOk");
-  return `${say("settings.storage.stepFail")}${s.error ? ` (${s.error})` : ""}`;
+  const detail = s.error ? ` (${s.error})` : "";
+  return `${say("settings.storage.stepFail")}${detail}`;
 }
 
 /** What the connection test did, step by step, and where the bucket sits. */

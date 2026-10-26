@@ -149,9 +149,11 @@ function Control({ def, override, effective, say, onSet }: RowProps) {
 function IntegerControl({ def, current, say, onSet }: { def: SettingDescription; current: number; say: Say; onSet: (v: unknown) => Promise<unknown> }) {
   const { locale } = useSay();
   const form = numberForm.useForm({ ...formI18n(say, locale), defaultValues: { value: current }, onSubmit: (v) => onSet(v.value) });
+  const name = say(`adminConfig.settings.${def.key}.label`);
+  const unit = def.unit ? ` (${def.unit})` : "";
   return (
-    <form.Form aria-label={say(`adminConfig.settings.${def.key}.label`)} className="flex flex-wrap items-end gap-3">
-      <form.TextField name="value" label={`${say(`adminConfig.settings.${def.key}.label`)}${def.unit ? ` (${def.unit})` : ""}`} inputMode="numeric" />
+    <form.Form aria-label={name} className="flex flex-wrap items-end gap-3">
+      <form.TextField name="value" label={`${name}${unit}`} inputMode="numeric" />
       <form.Submit size="md">{say("adminConfig.row.save")}</form.Submit>
     </form.Form>
   );
@@ -180,7 +182,11 @@ function History() {
       { id: "when", header: say("adminConfig.history.when"), value: (e) => e.at, cell: (e) => new Intl.DateTimeFormat(locale, { dateStyle: "short", timeStyle: "medium" }).format(new Date(e.at)) },
       { id: "who", header: say("adminConfig.history.who"), value: (e) => e.actorLabel },
       { id: "what", header: say("adminConfig.history.what"), value: (e) => e.key, cell: (e) => <code className="text-xs">{e.key}</code> },
-      { id: "scope", header: say("adminConfig.history.scope"), value: (e) => e.scope, cell: (e) => `${say(`adminConfig.sources.${e.scope}`)}${e.scopeId ? ` ${e.scopeId.slice(0, 8)}` : ""}` },
+      { id: "scope", header: say("adminConfig.history.scope"), value: (e) => e.scope, cell: (e) => {
+          const id = e.scopeId ? ` ${e.scopeId.slice(0, 8)}` : "";
+          const source = say(`adminConfig.sources.${e.scope}`);
+          return `${source}${id}`;
+        } },
       { id: "before", header: say("adminConfig.history.before"), value: (e) => show(e.before), cell: (e) => <code className="text-xs">{e.before === null ? "—" : show(e.before)}</code> },
       { id: "after", header: say("adminConfig.history.after"), value: (e) => show(e.after), cell: (e) => <code className="text-xs">{e.after === null ? "—" : show(e.after)}</code> },
     ],

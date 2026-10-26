@@ -119,7 +119,8 @@ export function canonicalJson(value: unknown): string {
   const entries = Object.entries(value as Record<string, unknown>)
     .filter(([, v]) => v !== undefined)
     .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
-  return `{${entries.map(([k, v]) => `${JSON.stringify(k)}:${canonicalJson(v)}`).join(",")}}`;
+  const members = entries.map(([k, v]) => `${JSON.stringify(k)}:${canonicalJson(v)}`);
+  return `{${members.join(",")}}`;
 }
 
 export const sha256 = (data: string | Uint8Array) => crypto.createHash("sha256").update(data).digest("hex");
@@ -158,12 +159,29 @@ function renderNote(note: NonNullable<ReportPayload["note"]>): string {
 export function renderBody(payload: ReportPayload, labels: ReportLabels): string {
   const c = payload.check;
   const d = payload.document;
+  const pages = d.pages ? ` · ${d.pages} p.` : "";
+  const studioVersion = c.studioVersion ? ` ${esc(c.studioVersion)}` : "";
+  const revision = c.rulesetRevision !== null ? ` (rev. ${c.rulesetRevision})` : "";
   const row = (term: string, details: string) => `<dt>${esc(term)}</dt><dd>${details}</dd>`;
+  const reviewNote = c.reviewStatus ? `<p class="note">${esc(labels.toReview)}</p>` : "";
+  const contractNote = c.rulesetId === "qc-service-contract" ? `<p class="note">${esc(labels.notCheckedServiceContract)}</p>` : "";
+  const sizeCell = `${d.sizeBytes} B${pages}`;
+  const documentShaCell = `<code>${esc(d.sha256)}</code>`;
+  const engineCell = `${esc(c.engine)} · ${esc(c.studio)}${studioVersion}`;
+  const runIdCell = `<code>${esc(c.runId)}</code>`;
+  const rulesetCell = `${esc(c.rulesetId)} · ${esc(c.rulesetVersion)}${revision}`;
+  const verifyUrl = `${SITE_URL}/verify`;
   const findings = payload.findings
     .map(
-      (f) => `<section class="finding"><h3><span>${esc(f.title ?? f.ruleId)}</span><span class="verdict v-${esc(f.verdict)}">${esc(labels[`verdict.${f.verdict}`] ?? f.verdict)}</span></h3>
+      (f) => {
+        const verdict = esc(labels[`verdict.${f.verdict}`] ?? f.verdict);
+        const method = f.method ? ` · ${esc(f.method)}` : "";
+        const ruleCell = `<code>${esc(f.ruleId)}</code> · ${esc(f.severity)}${method}`;
+        const passage = f.quote ? `<blockquote>« ${esc(f.quote)} »</blockquote>` : esc(labels.noPassage);
+        return `<section class="finding"><h3><span>${esc(f.title ?? f.ruleId)}</span><span class="verdict v-${esc(f.verdict)}">${verdict}</span></h3>
 <p>${esc(f.explanation)}</p>
-<dl>${row(labels.rule, `<code>${esc(f.ruleId)}</code> · ${esc(f.severity)}${f.method ? ` · ${esc(f.method)}` : ""}`)}${f.citation ? row(labels.article, esc(f.citation)) : ""}${row(labels.passage, f.quote ? `<blockquote>« ${esc(f.quote)} »</blockquote>` : esc(labels.noPassage))}</dl></section>`,
+<dl>${row(labels.rule, ruleCell)}${f.citation ? row(labels.article, esc(f.citation)) : ""}${row(labels.passage, passage)}</dl></section>`;
+      },
     )
     .join("\n");
   return `<!doctype html>
@@ -180,19 +198,19 @@ export function renderBody(payload: ReportPayload, labels: ReportLabels): string
 <p class="note"><strong>${esc(labels.disclaimer)}</strong></p>
 <h1>${esc(d.title)}</h1>
 <p>${esc(fill(labels.summary, { failures: payload.summary.blockingFailures, rules: payload.summary.rulesEvaluated }))}</p>
-${c.reviewStatus ? `<p class="note">${esc(labels.toReview)}</p>` : ""}
-${c.rulesetId === "qc-service-contract" ? `<p class="note">${esc(labels.notCheckedServiceContract)}</p>` : ""}
+${reviewNote}
+${contractNote}
 <h2>${esc(labels.documentHeading)}</h2>
-<dl>${row(labels.file, esc(d.filename))}${row(labels.size, `${d.sizeBytes} B${d.pages ? ` · ${d.pages} p.` : ""}`)}${row(labels.documentSha, `<code>${esc(d.sha256)}</code>`)}</dl>
+<dl>${row(labels.file, esc(d.filename))}${row(labels.size, sizeCell)}${row(labels.documentSha, documentShaCell)}</dl>
 <h2>${esc(labels.checkHeading)}</h2>
-<dl>${row(labels.engine, `${esc(c.engine)} · ${esc(c.studio)}${c.studioVersion ? ` ${esc(c.studioVersion)}` : ""}`)}${row(labels.runId, `<code>${esc(c.runId)}</code>`)}${row(labels.jurisdiction, esc(c.jurisdiction))}${row(labels.asOf, esc(c.asOf))}${row(labels.ruleset, `${esc(c.rulesetId)} · ${esc(c.rulesetVersion)}${c.rulesetRevision !== null ? ` (rev. ${c.rulesetRevision})` : ""}`)}${row(labels.model, esc(labels.modelValue))}${row(labels.started, esc(c.startedAt))}${row(labels.finished, esc(c.finishedAt))}</dl>
+<dl>${row(labels.engine, engineCell)}${row(labels.runId, runIdCell)}${row(labels.jurisdiction, esc(c.jurisdiction))}${row(labels.asOf, esc(c.asOf))}${row(labels.ruleset, rulesetCell)}${row(labels.model, esc(labels.modelValue))}${row(labels.started, esc(c.startedAt))}${row(labels.finished, esc(c.finishedAt))}</dl>
 <h2>${esc(fill(labels.findingsHeading, { count: payload.findings.length }))}</h2>
 ${findings}
 ${payload.note ? renderNote(payload.note) : ""}
 <h2>${esc(labels.guaranteeHeading)}</h2>
 <p>${esc(labels.guarantees)}</p>
 <p>${esc(labels.notGuaranteed)}</p>
-<p>${esc(fill(labels.howToVerify, { url: `${SITE_URL}/verify` }))}</p>
+<p>${esc(fill(labels.howToVerify, { url: verifyUrl }))}</p>
 <footer>${esc(labels.footer)}</footer>
 ${ATTESTATION_MARKER}
 </body>

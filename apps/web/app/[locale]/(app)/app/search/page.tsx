@@ -6,5 +6,6 @@ import { asLocale } from "@/lib/i18n";
 export default async function OldSearch({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ q?: string }> }) {
   const locale = asLocale((await params).locale);
   const q = (await searchParams).q;
-  redirect(`/${locale}/app/recherche${q ? `?q=${encodeURIComponent(q)}` : ""}`);
+  const query = q ? `?q=${encodeURIComponent(q)}` : "";
+  redirect(`/${locale}/app/recherche${query}`);
 }
