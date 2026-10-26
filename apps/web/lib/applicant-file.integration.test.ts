@@ -149,7 +149,7 @@ describe.runIf(enabled)("the applicant file (yomizaka#127)", () => {
     expect(after).toMatchObject({ content_len: 0, text: "", storage: "none" });
     expect((await applicantFileOf(landlordA.id, made.id, NOW)).status).toBe("closed");
     expect(await codeOf(uploadApplicantDocument(made.token, "pay-stub", await pdf("PAY LATE"), ctx(), NOW))).toBe("410 FILE_CLOSED");
-    expect((await query("SELECT action FROM audit_log WHERE target_id = $1 AND action = 'applicant-file.closed'", [made.id]))).toHaveLength(1);
+    expect((await query("SELECT action FROM audit_log WHERE target_id = $1 AND action = 'applicant_file.closed'", [made.id]))).toHaveLength(1);
   });
 
   it("an identity document is never kept, even with the keeping consent", async () => {

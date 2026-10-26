@@ -85,7 +85,7 @@ describe.runIf(enabled)("the organised workspace (yomizaka#324)", () => {
     const lines = await trail(id, "organize.status_changed");
     expect(lines).toHaveLength(1);
     expect(lines[0]!.detail).toMatchObject({ from: DECISION.toDecide, to: DECISION.notSelected, final: true });
-    expect((await trail(id, "applicant-file.closed"))[0]!.detail).toMatchObject({ purged: 2, decision: DECISION.notSelected });
+    expect((await trail(id, "applicant_file.closed"))[0]!.detail).toMatchObject({ purged: 2, decision: DECISION.notSelected });
   });
 
   it("decides many at once: one audit line per file, and the file already decided is skipped, named", async () => {
@@ -105,7 +105,7 @@ describe.runIf(enabled)("the organised workspace (yomizaka#324)", () => {
     for (const id of [a!, b!]) {
       expect(await stateOf(id)).toBe(DECISION.toDecide);
       expect(await trail(id, "organize.status_changed")).toHaveLength(0);
-      expect(await trail(id, "applicant-file.closed")).toHaveLength(0);
+      expect(await trail(id, "applicant_file.closed")).toHaveLength(0);
     }
     const [open] = await query<{ closed_at: Date | null }>("SELECT closed_at FROM screenings WHERE id = $1", [a]);
     expect(open?.closed_at).toBeNull();
@@ -120,7 +120,7 @@ describe.runIf(enabled)("the organised workspace (yomizaka#324)", () => {
     expect(outcomes.filter((o) => o === "no error")).toHaveLength(1);
     expect(outcomes.filter((o) => o === "STALE")).toHaveLength(outcomes.length - 1);
     expect(await trail(id, "organize.status_changed")).toHaveLength(1);
-    expect(await trail(id, "applicant-file.closed")).toHaveLength(1);
+    expect(await trail(id, "applicant_file.closed")).toHaveLength(1);
   });
 
   it("two people deciding the same file at once, without having looked, still give one decision", async () => {

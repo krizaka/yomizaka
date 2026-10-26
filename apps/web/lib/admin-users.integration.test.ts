@@ -54,13 +54,14 @@ describe.runIf(enabled)("administration of an account", () => {
     await expect(deleteAccount(admin, admin.id, admin.email)).rejects.toMatchObject({ status: 409, body: { code: "SELF_DELETE" } });
     await expect(deleteAccount(admin, person.id, "someone@else.test")).rejects.toMatchObject({ status: 409, body: { code: "CONFIRM_MISMATCH" } });
     expect((await userDetail(person.id)).documents).toBe(1);
-    await query("INSERT INTO audit_log (actor_id, actor_label, action, ip) VALUES ($1, $2, 'auth.sign_in', '203.0.113.7')", [person.id, person.email]);
+    await query("INSERT INTO audit_log (actor_id, actor_label, action, target_id, ip) VALUES ($1, $2, 'auth.sign_in', $3, '203.0.113.7')", [person.id, person.email, `sign-in-${person.id}`]);
     expect(await deleteAccount(admin, person.id, person.email.toUpperCase())).toEqual({ deleted: true, documents: 1 });
     await expect(userDetail(person.id)).rejects.toMatchObject({ status: 404 });
     expect(await query("SELECT 1 FROM documents WHERE owner_id = $1", [person.id])).toEqual([]);
-    const rows = await query<{ actor_label: string; ip: string | null }>("SELECT actor_label, ip FROM audit_log WHERE actor_id = $1", [person.id]);
+    // The package's table clears the actor with the account (ON DELETE SET NULL): the entry is found by its target, no longer by the person.
+    const rows = await query<{ actor_label: string; ip: string | null; actor_id: string | null }>("SELECT actor_label, ip, actor_id FROM audit_log WHERE target_id = $1", [`sign-in-${person.id}`]);
     expect(rows.length).toBeGreaterThan(0);
-    for (const row of rows) expect(row).toEqual({ actor_label: "deleted account", ip: null });
+    for (const row of rows) expect(row).toEqual({ actor_label: "deleted account", ip: null, actor_id: null });
     expect((await query<{ n: string }>("SELECT count(*) AS n FROM audit_log WHERE action = 'admin.account_deleted' AND target_id = $1", [person.id]))[0]!.n).toBe("1");
   });
 

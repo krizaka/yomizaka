@@ -66,7 +66,7 @@ export async function recentErrors(limit = 20): Promise<RecentError[]> {
     "SELECT coalesce(finished_at, created_at) AS at, studio, error, id FROM analyses WHERE status = 'failed' ORDER BY 1 DESC LIMIT $1",
     [limit],
   );
-  const refusals = await query<{ at: Date; detail: { reason?: string }; target_id: string | null }>("SELECT at, detail, target_id FROM audit_log WHERE action = 'auth.sign_in_refused' ORDER BY at DESC LIMIT $1", [limit]);
+  const refusals = await query<{ at: Date; detail: { reason?: string }; target_id: string | null }>("SELECT at, detail, target_id FROM audit.entry WHERE action = 'auth.sign_in_refused' ORDER BY at DESC LIMIT $1", [limit]);
   return [
     ...runs.map((r): RecentError => ({ at: r.at.toISOString(), kind: "run", detail: `${r.studio}: ${r.error ?? "—"}`, target: r.id })),
     ...refusals.map((r): RecentError => ({ at: r.at.toISOString(), kind: "sign-in", detail: r.detail.reason ?? "refused", target: r.target_id })),
