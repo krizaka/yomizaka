@@ -10,7 +10,8 @@
     "nav": {
       "what": "What it does",
       "proof": "A real run",
-      "privacy": "Privacy"
+      "privacy": "Privacy",
+      "docs": "Docs"
     },
     "signIn": "Sign in",
     "themeToggle": "Theme",
@@ -32,7 +33,8 @@
     "tryIt": "Try Yomizaka",
     "account": "Account",
     "settings": "Settings",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "docs": "Documentation"
   },
   "landing": {
     "title": "Read before you sign.",
@@ -2577,6 +2579,56 @@
           "description": "The 2026 maintenance invoices — fictitious specimen documents, one with a wrong total."
         }
       }
+    }
+  },
+  "docs": {
+    "title": "Documentation",
+    "lead": "How a check works, the API to start one from your own tool, and what happens to your data.",
+    "navLabel": "Documentation",
+    "sidebarLabel": "Pages",
+    "tocLabel": "On this page",
+    "breadcrumbLabel": "Breadcrumb",
+    "sections": {
+      "check": "How a check works",
+      "api": "The API",
+      "data": "Your data"
+    },
+    "check": {
+      "intro": "A check reads one document and says what it found. Yomizaka does not judge the document itself: every check is a run of Orazaka, Krizaka's analysis engine, and the run id is kept with the report. Yomizaka verifies documents and screens files; it does not verify anyone's identity.",
+      "kindsTitle": "Two kinds of check",
+      "compliance": "Compliance reads the text of a document against the rules of a jurisdiction (Québec by default for a residential lease).",
+      "authenticity": "Authenticity examines the file itself as a file: its producer, its dates and its successive saves.",
+      "findingTitle": "What a finding cites",
+      "finding": "Each finding names the rule it applies, gives its verdict and severity, quotes the article it relies on and lights the passage of the document it rests on. When the document says nothing on a point, the finding says so.",
+      "levelsTitle": "The three levels of an authenticity signal",
+      "levels": "Signals come in three levels, from the least to the most worrying: {observed}, {unusual}, {inconsistent}. A signal says what it may indicate; it is never a « fake » stamp, and a person decides.",
+      "guaranteesLead": "A report is signed. A member the report's owner gave access to can check it against the signing key:",
+      "limitsLead": "A green result does not guarantee:",
+      "informative": "A check is informative and a triage: it is not legal advice."
+    },
+    "api": {
+      "intro": "A check can be started from your own tool (an ERP, a property-management system, a script). This reference is generated from the OpenAPI document the app serves at {openapi}: it lists every route the API has, and only those.",
+      "accessTitle": "Access",
+      "access": "Every request carries an API key: Authorization: Bearer {prefix}_… . Keys are created in your account, for plans that include the API. A key has scopes ({scopes}), a life of at most {days} days and a per-minute limit; rotating it keeps the old one working for {grace} hours. Never put a key in a repository or a log.",
+      "quickstartTitle": "Start a check, then read it",
+      "quickstartNote": "Poll until the state is done, failed or refused; the report comes with the check once it is done.",
+      "routesTitle": "Routes",
+      "scope": "Scope",
+      "noScope": "No key needed",
+      "parameters": "Parameters",
+      "answers": "Answers",
+      "errorsTitle": "Errors",
+      "errors": "An error is { \"code\": \"…\", \"error\": \"…\" }. The code is stable; the message is for logs.",
+      "webhooksTitle": "Webhooks",
+      "webhooks": "Instead of polling, register an https endpoint in your account and Yomizaka calls it when work finishes. Each request carries an event name, a stable event id (apply an event once) and a signature in x-krizaka-signature: t=UNIX_SECONDS,v1=HEX, where HEX is the HMAC-SHA256, with your endpoint's secret, of \"UNIX_SECONDS.RAW_BODY\". A payload holds ids and states, never a document or a report.",
+      "event": "Event",
+      "openapiLink": "Open the OpenAPI document"
+    },
+    "data": {
+      "intro": "Your account and your checks are kept in a database in Toronto, Canada, visible to your account alone. A document is kept only if you choose it, and its information panel says where.",
+      "retention": "A kept document stays until you delete it; deleting it deletes its file, its text and its results, and closing your account deletes your documents.",
+      "orazaka": "When you ask for a check, the document is sent to Orazaka, Krizaka's analysis engine, over HTTPS. Nothing is sold, shared or used to train a model.",
+      "privacy": "Read the privacy notice"
     }
   }
 }

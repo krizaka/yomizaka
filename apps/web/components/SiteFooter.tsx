@@ -40,6 +40,9 @@ export function SiteFooter({ locale }: Readonly<{ locale: Locale }>) {
           </SiteFooterLink>
         ) : null}
         <SiteFooterLink asChild>
+          <Link href={pagePath(locale, "docs")}>{t("chrome.docs")}</Link>
+        </SiteFooterLink>
+        <SiteFooterLink asChild>
           <Link href={pagePath(locale, "privacy")}>{t("chrome.legal")}</Link>
         </SiteFooterLink>
         <SiteFooterLink asChild>

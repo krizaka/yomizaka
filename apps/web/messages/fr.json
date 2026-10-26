@@ -10,7 +10,8 @@
     "nav": {
       "what": "Ce que ça fait",
       "proof": "Une vraie vérification",
-      "privacy": "Confidentialité"
+      "privacy": "Confidentialité",
+      "docs": "Docs"
     },
     "signIn": "Se connecter",
     "themeToggle": "Thème",
@@ -32,7 +33,8 @@
     "tryIt": "Essayer Yomizaka",
     "account": "Compte",
     "settings": "Réglages",
-    "signOut": "Se déconnecter"
+    "signOut": "Se déconnecter",
+    "docs": "Documentation"
   },
   "landing": {
     "title": "Lisez avant de signer.",
@@ -2577,6 +2579,56 @@
           "description": "Les factures d'entretien de 2026 — documents spécimens fictifs, dont une avec un total inexact."
         }
       }
+    }
+  },
+  "docs": {
+    "title": "Documentation",
+    "lead": "Comment fonctionne une vérification, l'API pour en lancer une depuis votre outil, et ce qu'il advient de vos données.",
+    "navLabel": "Documentation",
+    "sidebarLabel": "Pages",
+    "tocLabel": "Sur cette page",
+    "breadcrumbLabel": "Fil d'Ariane",
+    "sections": {
+      "check": "Comment fonctionne une vérification",
+      "api": "L'API",
+      "data": "Vos données"
+    },
+    "check": {
+      "intro": "Une vérification lit un document et dit ce qu'elle y a trouvé. Yomizaka ne juge pas le document lui-même : chaque vérification est une exécution d'Orazaka, le moteur d'analyse de Krizaka, et son identifiant est conservé avec le rapport. Yomizaka vérifie des documents et examine des dossiers ; il ne vérifie l'identité de personne.",
+      "kindsTitle": "Deux sortes de vérification",
+      "compliance": "La conformité lit le texte d'un document à la lumière des règles d'un territoire (le Québec par défaut pour un bail résidentiel).",
+      "authenticity": "L'authenticité examine le fichier lui-même, en tant que fichier : son producteur, ses dates et ses enregistrements successifs.",
+      "findingTitle": "Ce que cite un constat",
+      "finding": "Chaque constat nomme la règle appliquée, donne son verdict et sa gravité, cite l'article sur lequel il s'appuie et éclaire le passage du document dont il découle. Quand le document ne dit rien sur un point, le constat le dit.",
+      "levelsTitle": "Les trois niveaux d'un signal d'authenticité",
+      "levels": "Les signaux ont trois niveaux, du moins au plus préoccupant : {observed}, {unusual}, {inconsistent}. Un signal dit ce qu'il peut indiquer ; ce n'est jamais un tampon « faux », et une personne décide.",
+      "guaranteesLead": "Un rapport est signé. Un membre à qui le propriétaire du rapport a donné accès peut le vérifier avec la clé de signature :",
+      "limitsLead": "Un résultat vert ne garantit pas :",
+      "informative": "Une vérification est informative et sert au tri : ce n'est pas un avis juridique."
+    },
+    "api": {
+      "intro": "Une vérification peut être lancée depuis votre propre outil (un ERP, un système de gestion immobilière, un script). Cette référence est générée à partir du document OpenAPI que l'application sert à {openapi} : elle liste toutes les routes de l'API, et seulement celles-là.",
+      "accessTitle": "Accès",
+      "access": "Chaque requête porte une clé d'API : Authorization: Bearer {prefix}_… . Les clés se créent dans votre compte, pour les forfaits qui incluent l'API. Une clé a des portées ({scopes}), une durée de vie d'au plus {days} jours et une limite par minute ; la renouveler garde l'ancienne valide {grace} heures. Ne mettez jamais une clé dans un dépôt ou un journal.",
+      "quickstartTitle": "Lancer une vérification, puis la lire",
+      "quickstartNote": "Interrogez jusqu'à ce que l'état soit done, failed ou refused ; le rapport arrive avec la vérification une fois terminée.",
+      "routesTitle": "Routes",
+      "scope": "Portée",
+      "noScope": "Aucune clé requise",
+      "parameters": "Paramètres",
+      "answers": "Réponses",
+      "errorsTitle": "Erreurs",
+      "errors": "Une erreur est { \"code\": \"…\", \"error\": \"…\" }. Le code est stable ; le message sert aux journaux.",
+      "webhooksTitle": "Webhooks",
+      "webhooks": "Plutôt que d'interroger, enregistrez un point d'accès https dans votre compte et Yomizaka l'appelle quand le travail se termine. Chaque requête porte un nom d'événement, un identifiant d'événement stable (appliquez un événement une seule fois) et une signature dans x-krizaka-signature : t=SECONDES_UNIX,v1=HEX, où HEX est le HMAC-SHA256, avec le secret de votre point d'accès, de \"SECONDES_UNIX.CORPS_BRUT\". Une charge contient des identifiants et des états, jamais un document ni un rapport.",
+      "event": "Événement",
+      "openapiLink": "Ouvrir le document OpenAPI"
+    },
+    "data": {
+      "intro": "Votre compte et vos vérifications sont gardés dans une base de données à Toronto, au Canada, visibles par votre seul compte. Un document n'est conservé que si vous le choisissez, et son panneau d'information dit où.",
+      "retention": "Un document conservé reste jusqu'à ce que vous le supprimiez ; le supprimer efface son fichier, son texte et ses résultats, et fermer votre compte supprime vos documents.",
+      "orazaka": "Quand vous demandez une vérification, le document est envoyé à Orazaka, le moteur d'analyse de Krizaka, par HTTPS. Rien n'est vendu, partagé ni utilisé pour entraîner un modèle.",
+      "privacy": "Lire l'avis de confidentialité"
     }
   }
 }
