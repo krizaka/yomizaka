@@ -14,9 +14,9 @@ describe("sitemap.xml", () => {
     urls = entries.map((e) => e.url);
   });
 
-  it("lists the home, download, privacy and terms, in en and fr, and nothing else", () => {
-    for (const locale of ["en", "fr"]) for (const path of ["", "/download", "/privacy", "/terms"]) expect(urls).toContain(`${SITE_URL}/${locale}${path}`);
-    expect(urls).toHaveLength(8);
+  it("lists the home, pricing, download, privacy and terms, in en and fr, and nothing else", () => {
+    for (const locale of ["en", "fr"]) for (const path of ["", "/pricing", "/download", "/privacy", "/terms"]) expect(urls).toContain(`${SITE_URL}/${locale}${path}`);
+    expect(urls).toHaveLength(10);
   });
 
   it("lists none of the removed addresses", () => {

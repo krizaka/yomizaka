@@ -10,7 +10,8 @@
     "nav": {
       "what": "Ce que ça fait",
       "proof": "Une vraie vérification",
-      "privacy": "Confidentialité"
+      "privacy": "Confidentialité",
+      "pricing": "Tarifs"
     },
     "signIn": "Se connecter",
     "themeToggle": "Thème",
@@ -35,7 +36,7 @@
     "signOut": "Se déconnecter"
   },
   "landing": {
-    "title": "Lisez avant de signer.",
+    "title": "Le faux talon de paie, signalé avant de payer l'enquête.",
     "lead": "Déposez un bail, un contrat ou une facture. Yomizaka le lit selon les règles en vigueur et vous montre la ligne exacte derrière chaque constat.",
     "status": {
       "label": "Statut",
@@ -62,12 +63,12 @@
           "text": "Chaque constat nomme la règle, cite l'article de loi et surligne la phrase du bail sur laquelle il repose."
         },
         "file": {
-          "title": "L'examen du PDF lui-même",
+          "title": "Le talon de paie examiné comme fichier",
           "text": "Producteur, dates, enregistrements successifs : trois niveaux (observé, inhabituel, incohérent), jamais un tampon « faux »."
         },
         "find": {
-          "title": "Tout retrouver en une seconde",
-          "text": "Un mot, et tous vos documents et tous leurs constats reviennent, le passage en gras."
+          "title": "Sans abonnement annuel",
+          "text": "Payez au document, ou abonnez-vous au mois et résiliez quand vous voulez. Les prix sont sur la page Tarifs."
         }
       }
     },
@@ -91,6 +92,62 @@
     },
     "visual": {
       "caption": "Une vraie vérification, enregistrée telle qu'elle est revenue"
+    }
+  },
+  "pricing": {
+    "title": "Tarifs",
+    "lead": "Sans abonnement annuel. Payez au document, ou abonnez-vous au mois et résiliez quand vous voulez. Prix en CAD, avant taxes : la TPS et la TVQ s'ajoutent sur la facture.",
+    "offer": {
+      "title": "Ce qui s'achète aujourd'hui",
+      "lead": "Les prix du catalogue de Yomizaka, les mêmes que facture le processeur de paiement."
+    },
+    "preparing": {
+      "title": "En préparation",
+      "lead": "Pas encore offert. Aucun prix n'est promis pour ces options."
+    },
+    "rows": {
+      "document": {
+        "title": "Un document vérifié",
+        "text": "Un bail, un talon de paie, une facture ou un contrat : la vérification documentaire selon des matrices d'extraction documentaire et des gabarits technologiques paramétrables, validés par le conseiller juridique du client ; le fichier PDF examiné.",
+        "value": "{price} par document, plus taxes",
+        "status": "En préparation"
+      },
+      "first": {
+        "title": "Votre première vérification",
+        "text": "Elle ne coûte rien.",
+        "value": "Offerte",
+        "status": "En préparation"
+      },
+      "agency": {
+        "title": "PME",
+        "text": "{included} vérifications incluses par mois, puis {overage} par vérification au-delà, plus taxes. Résiliable en tout temps depuis le portail de facturation.",
+        "value": "{price} par mois, plus taxes",
+        "status": "En préparation"
+      },
+      "firm": {
+        "title": "Études et entreprises",
+        "text": "{included} vérifications incluses par mois, puis {overage} par vérification au-delà, plus taxes. Résiliable en tout temps depuis le portail de facturation.",
+        "value": "{price} par mois, plus taxes",
+        "status": "En préparation"
+      },
+      "fullFile": {
+        "title": "Le dossier complet du locataire",
+        "text": "Le filtrage complet du dossier : les pièces, puis les vérifications au registre (le TAL et le plumitif auprès de SOQUIJ).",
+        "value": "{price}",
+        "status": "En préparation"
+      },
+      "backgroundCheck": {
+        "title": "La vérification des antécédents",
+        "text": "Les dossiers du candidat au TAL et au plumitif, avec son consentement.",
+        "value": "{price}",
+        "status": "En préparation"
+      },
+      "screening": {
+        "title": "Le filtre des pièces seul",
+        "text": "Le premier palier d'un dossier, facturé seulement quand il tourne.",
+        "value": "{price}",
+        "status": "En préparation"
+      }
     }
   },
   "run": {

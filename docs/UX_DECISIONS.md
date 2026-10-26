@@ -633,3 +633,18 @@ Krizaka-ts ADR-003, `@krizaka/organize` 0.4. Yomizaka is the pilot, on « Dossie
   processor charges, « Égal » or « Différent » (sales stop while different). Then every change, who and from when. Composed from
   `SettingsSection` / `SettingsRow` until the price-list block exists (krizaka/krizaka-ui#713).
 - The paywall and « Abonnement et facturation » say the catalogue's prices (`paywallFigures`, « plus taxes »); no message types an amount.
+
+## Prices on their own page, read from the catalogue: what is sold today first, what is not built « In preparation » with no figure (#300)
+
+- **Decision** (2026-10-25, the pricing audit's grid, ADR-009): `/pricing` (« Tarifs ») reads the price catalogue in force
+  (`publicCatalogue`, `lib/prices/page.ts`): one document verified, the first verification offered (`audit.freeFirst`), PME and
+  Études et entreprises by the month with the verifications they include and the price of each one beyond — every price « plus
+  taxes ». Then « En préparation »: the full file screening, background checks, screening alone — a row and its status, no figure.
+  The dedicated API (on quote) is an internal entry: never on the page. The menu gains « Tarifs ».
+- **Problem**: no page said what a verification costs, and the paywall typed its prices in the messages.
+- **Principle**: a price only from the catalogue (the processor charges the same, a test keeps them equal); no amount in a
+  message (`findTypedPrices`); a feature that is not built is said so, once, with its status; prices are before taxes.
+- **Refused**: a figure for what is in preparation; an annual plan; « conforme » or « Loi 25 » as a promise; « identity
+  verification »; the registry names outside an « In preparation » row.
+- **Cost**: the page reads the database at each request (a change scheduled by the administrator shows from its date).
+- **Signal we are wrong**: visitors read « In preparation » as a broken page, or small businesses stop at the monthly price.

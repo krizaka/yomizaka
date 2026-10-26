@@ -10,7 +10,8 @@
     "nav": {
       "what": "What it does",
       "proof": "A real run",
-      "privacy": "Privacy"
+      "privacy": "Privacy",
+      "pricing": "Pricing"
     },
     "signIn": "Sign in",
     "themeToggle": "Theme",
@@ -35,7 +36,7 @@
     "signOut": "Sign out"
   },
   "landing": {
-    "title": "Read before you sign.",
+    "title": "The fake pay stub, flagged before you pay for the screening.",
     "lead": "Drop a lease, a contract or an invoice. Yomizaka reads it against the rules in force and shows you the exact line behind every finding.",
     "status": {
       "label": "Status",
@@ -62,12 +63,12 @@
           "text": "Each finding names the rule, quotes the article of law and lights the sentence of the lease it rests on."
         },
         "file": {
-          "title": "The PDF examined as a file",
+          "title": "The pay stub, examined as a file",
           "text": "Producer, dates, successive saves: three levels (observed, unusual, inconsistent), never a « fake » stamp."
         },
         "find": {
-          "title": "Find everything in a second",
-          "text": "One word, and every document and every finding comes back, the passage in bold."
+          "title": "No annual subscription",
+          "text": "Pay per document, or subscribe by the month and cancel when you like. The prices are on the Pricing page."
         }
       }
     },
@@ -91,6 +92,62 @@
     },
     "visual": {
       "caption": "A real check, recorded as it came back"
+    }
+  },
+  "pricing": {
+    "title": "Pricing",
+    "lead": "No annual subscription. Pay per document, or subscribe by the month and cancel when you like. Prices in CAD, before taxes: GST and QST are added on the invoice.",
+    "offer": {
+      "title": "What you can buy today",
+      "lead": "The prices of Yomizaka's catalogue, the same the payment processor charges."
+    },
+    "preparing": {
+      "title": "In preparation",
+      "lead": "Not offered yet. No price is promised for these."
+    },
+    "rows": {
+      "document": {
+        "title": "One document verified",
+        "text": "A lease, a pay stub, an invoice or a contract: document verification against configurable document-extraction matrices and technology templates, validated by the client's legal counsel; the PDF examined as a file.",
+        "value": "{price} per document, plus taxes",
+        "status": "In preparation"
+      },
+      "first": {
+        "title": "Your first verification",
+        "text": "It costs nothing.",
+        "value": "Free",
+        "status": "In preparation"
+      },
+      "agency": {
+        "title": "Small business",
+        "text": "{included} verifications included a month, then {overage} per verification beyond, plus taxes. Cancel any time from the billing portal.",
+        "value": "{price} a month, plus taxes",
+        "status": "In preparation"
+      },
+      "firm": {
+        "title": "Firms & corporate",
+        "text": "{included} verifications included a month, then {overage} per verification beyond, plus taxes. Cancel any time from the billing portal.",
+        "value": "{price} a month, plus taxes",
+        "status": "In preparation"
+      },
+      "fullFile": {
+        "title": "The full applicant file",
+        "text": "The full file screening: the documents, then the registry checks (the TAL and the plumitif through SOQUIJ).",
+        "value": "{price}",
+        "status": "In preparation"
+      },
+      "backgroundCheck": {
+        "title": "Background checks",
+        "text": "The applicant's records at the TAL and in the plumitif, with their consent.",
+        "value": "{price}",
+        "status": "In preparation"
+      },
+      "screening": {
+        "title": "The document filter alone",
+        "text": "The first stage of a file, charged only when it runs.",
+        "value": "{price}",
+        "status": "In preparation"
+      }
     }
   },
   "run": {
