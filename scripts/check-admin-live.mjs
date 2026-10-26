@@ -13,6 +13,8 @@ import { join } from "node:path";
 
 import { chromium } from "playwright-core";
 
+import { auditContext, loadSettled } from "./lib/settle.mjs";
+
 export const PAGES = ["", "/users", "/documents", "/runs", "/flows", "/flows/new", "/operations", "/audit"];
 export const VIEWS = [
   { tag: "desktop-dark", theme: "dark", viewport: { width: 1440, height: 900 } },
@@ -30,7 +32,7 @@ export async function walk({ base, email, password, shots }) {
   const problems = [];
   const browser = await chromium.launch();
   for (const { tag, theme, viewport } of VIEWS) {
-    const context = await browser.newContext({ viewport, colorScheme: theme });
+    const context = await auditContext(browser, { viewport, colorScheme: theme });
     await context.addInitScript((t) => {
       try {
         localStorage.setItem("kz-theme", t);
@@ -44,7 +46,7 @@ export async function walk({ base, email, password, shots }) {
       if (m.type() === "error" && !/Failed to load resource/.test(m.text())) errors.push(m.text().slice(0, 140));
     });
     page.on("pageerror", (e) => errors.push(String(e).slice(0, 140)));
-    const gate = await page.goto(`${base}/en/sign-in`, { waitUntil: "networkidle" });
+    const gate = await loadSettled(page, `${base}/en/sign-in`, { waitUntil: "networkidle" });
     if (!gate || gate.status() !== 200) {
       problems.push(`${tag}: the sign-in answers ${gate?.status()} — run this from an address of AUTH_ALLOWED_IPS`);
       await context.close();
@@ -62,7 +64,7 @@ export async function walk({ base, email, password, shots }) {
     }
     for (const path of PAGES) {
       errors = [];
-      const response = await page.goto(`${base}/en${path}`, { waitUntil: "networkidle" });
+      const response = await loadSettled(page, `${base}/en${path}`, { waitUntil: "networkidle" });
       const state = await page.evaluate(() => ({
         sideways: document.documentElement.scrollWidth > document.documentElement.clientWidth,
         main: !!document.querySelector("main"),

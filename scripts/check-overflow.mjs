@@ -12,6 +12,7 @@ import { join } from "node:path";
 import { chromium } from "playwright-core";
 
 import { auditPage, problemsOf } from "./lib/page-audit.mjs";
+import { auditContext, loadSettled, resizeSettled } from "./lib/settle.mjs";
 
 export const WIDTHS = [360, 390, 430, 768, 1024, 1440];
 export const THEMES = ["dark", "light"];
@@ -26,7 +27,7 @@ export async function check({ base, shots }) {
   const browser = await chromium.launch();
   const problems = [];
   for (const theme of THEMES) {
-    const context = await browser.newContext({ colorScheme: theme });
+    const context = await auditContext(browser, { colorScheme: theme });
     await context.addInitScript((t) => {
       try {
         localStorage.setItem("kz-theme", t);
@@ -41,12 +42,11 @@ export async function check({ base, shots }) {
     page.on("pageerror", (e) => errors.push(String(e).slice(0, 140)));
     for (const path of PAGES) {
       for (const width of WIDTHS) {
-        await page.setViewportSize({ width, height: 900 });
+        await resizeSettled(page, { width, height: 900 });
         // « load » and the faces, not « networkidle »: Next's router prefetches (one RSC stream per link of the bar) can hold
         // Chromium's six connections to the host open on a re-visit, and the page never goes idle (30 s, CI red) while
         // nothing on screen changes. What is measured below — layout — is final once the page and its fonts are loaded.
-        await page.goto(`${base}${path}`, { waitUntil: "load" });
-        await page.evaluate(() => document.fonts.ready);
+        await loadSettled(page, `${base}${path}`);
         await page.waitForTimeout(300);
         const result = await page.evaluate(auditPage);
         const where = `${path} @${width} ${theme}`;

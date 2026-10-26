@@ -13,6 +13,7 @@ import { join } from "node:path";
 import { chromium } from "playwright-core";
 
 import { auditPage, problemsOf } from "./lib/page-audit.mjs";
+import { auditContext, loadSettled, resizeSettled } from "./lib/settle.mjs";
 
 export const WIDTHS = [360, 390, 1440];
 export const THEMES = ["dark", "light"];
@@ -23,19 +24,9 @@ const arg = (name, fallback) => {
   return i >= 0 ? process.argv[i + 1] : fallback;
 };
 
-/**
- * The browser context of the check. View Transitions race the measure (« Viewport size changed », 0 of 2 h1, yomizaka#354):
- * the check runs with reduced motion emulated, which the app honours (the page change is instant, motion.css of @krizaka/ui).
- */
-export const contextOptions = (theme) => ({ colorScheme: theme, reducedMotion: "reduce" });
-
-/** Resolves once no view transition is running (none starts under reduced motion; this makes the wait explicit). */
-export const settled = (page) =>
-  page.waitForFunction(() => !document.activeViewTransition && !document.documentElement.matches(":active-view-transition"), null, { timeout: 10_000 });
-
 /** Signs in through the form, as a person would; the session cookie then carries the context. */
 export async function signIn(page, base, locale, email, password) {
-  await page.goto(`${base}/${locale}/sign-in`, { waitUntil: "load" });
+  await loadSettled(page, `${base}/${locale}/sign-in`);
   await page.locator("input[type=email]").first().fill(email);
   await page.locator("input[type=password]").first().fill(password);
   await page.locator("form button[type=submit]").first().click();
@@ -44,7 +35,7 @@ export async function signIn(page, base, locale, email, password) {
 
 /** The pages to visit: the fixed list, then one collection and one document found on the library (their tabs). */
 export async function discover(page, base, locale) {
-  await page.goto(`${base}/${locale}/app`, { waitUntil: "load" });
+  await loadSettled(page, `${base}/${locale}/app`);
   const hrefs = await page.$$eval("a[href]", (as) => as.map((a) => a.getAttribute("href")));
   const found = [];
   const collection = hrefs.find((h) => /\/app\/bibliotheque\/[^/]+\/[^/]+$/.test(h ?? ""));
@@ -62,7 +53,7 @@ export async function check({ base, locale = "fr", email, password, shots }) {
   const browser = await chromium.launch();
   const problems = [];
   try {
-    const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" });
+    const context = await auditContext(browser, { viewport: { width: 1440, height: 900 } });
     const probe = await context.newPage();
     await signIn(probe, base, locale, email, password);
     const pages = await discover(probe, base, locale);
@@ -70,7 +61,7 @@ export async function check({ base, locale = "fr", email, password, shots }) {
     const cookies = await context.cookies();
     await context.close();
     for (const theme of THEMES) {
-      const ctx = await browser.newContext(contextOptions(theme));
+      const ctx = await auditContext(browser, { colorScheme: theme });
       await ctx.addCookies(cookies);
       await ctx.addInitScript((t) => {
         try {
@@ -85,10 +76,8 @@ export async function check({ base, locale = "fr", email, password, shots }) {
       page.on("pageerror", (e) => errors.push(String(e).slice(0, 140)));
       for (const path of pages) {
         for (const width of WIDTHS) {
-          await page.setViewportSize({ width, height: width < 600 ? 844 : 900 });
-          await page.goto(`${base}/${locale}${path}`, { waitUntil: "load" });
-          await page.evaluate(() => document.fonts.ready);
-          await settled(page);
+          await resizeSettled(page, { width, height: width < 600 ? 844 : 900 });
+          await loadSettled(page, `${base}/${locale}${path}`);
           await page.waitForTimeout(300);
           const result = await page.evaluate(auditPage);
           const where = `${path} @${width} ${theme}`;

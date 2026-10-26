@@ -1,0 +1,31 @@
+// One way for every browser audit to measure (yomizaka#354): never while a View Transition is swapping the page.
+//
+// The flake: the page was read while a transition was running (« Viewport size changed », 0 of 2 h1). The cure is the
+// same everywhere, so it lives here and nowhere else: the context emulates reduced motion (the app honours it, the page
+// change is instant — motion.css of @krizaka/ui) and every load or resize waits, explicitly, until no transition is
+// active. No retry, no sleep standing in for a condition. `tests/browser-audits.test.mjs` fails a script that
+// opens a context, loads a page or resizes without these.
+
+/** The options of an audit's browser context: the caller's, plus reduced motion. */
+export const auditOptions = (options = {}) => ({ ...options, reducedMotion: "reduce" });
+
+/** A browser context for an audit (reduced motion emulated). */
+export const auditContext = (browser, options) => browser.newContext(auditOptions(options));
+
+/** Resolves once no view transition is running (none starts under reduced motion; this makes the wait explicit). */
+export const settled = (page) =>
+  page.waitForFunction(() => !document.activeViewTransition && !document.documentElement.matches(":active-view-transition"), null, { timeout: 10_000 });
+
+/** Loads a page, then waits for the faces and for the transitions: what is read afterwards is final. Returns the response. */
+export async function loadSettled(page, url, options = { waitUntil: "load" }) {
+  const response = await page.goto(url, options);
+  await page.evaluate(() => document.fonts.ready);
+  await settled(page);
+  return response;
+}
+
+/** Resizes the viewport, then waits for the transitions a resize can start. */
+export async function resizeSettled(page, size) {
+  await page.setViewportSize(size);
+  await settled(page);
+}
