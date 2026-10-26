@@ -145,12 +145,16 @@ export function startableStudios(perspective: Audience | null, doc: Pick<Documen
   return order.filter((s) => offered.includes(s));
 }
 
-/** What starting one check holds: the compliance form (the kind declared and the one Yomizaka read select the ruleset, ADR-089; a mismatch is shown and confirmed in the form) or the authenticity form — or why it cannot run. */
-function StartBody({ studio, doc, offer, examinable, running }: StartProps & { studio: Studio }) {
+function AuthenticityBody({ doc, examinable, running }: Readonly<Pick<StartProps, "doc" | "examinable" | "running">>) {
   const { say } = useSay();
-  if (studio === "document-authenticity") {
-    return doc.textSource ? <PhotoOriginSignals source={doc.textSource} /> : !examinable ? <Alert tone="info">{say("analysis.noPdf")}</Alert> : doc.sizeBytes > AUTHENTICITY_MAX_BYTES ? <Alert tone="info">{say("analysis.tooLarge")}</Alert> : <StartAuthenticity documentId={doc.id} disabled={running("document-authenticity")} />;
-  }
+  if (doc.textSource) return <PhotoOriginSignals source={doc.textSource} />;
+  if (!examinable) return <Alert tone="info">{say("analysis.noPdf")}</Alert>;
+  if (doc.sizeBytes > AUTHENTICITY_MAX_BYTES) return <Alert tone="info">{say("analysis.tooLarge")}</Alert>;
+  return <StartAuthenticity documentId={doc.id} disabled={running("document-authenticity")} />;
+}
+
+function ComplianceBody({ doc, offer, running }: Readonly<Pick<StartProps, "doc" | "offer" | "running">>) {
+  const { say } = useSay();
   const detectedKind = doc.insight?.understanding.check?.documentType ?? null;
   const compliancePlan = planCheck({ declared: doc.kind, detected: detectedKind, asOf: localDay(new Date(), LAW_TIME_ZONE) });
   const options = complianceOptions(compliancePlan.mismatch, offeredKinds(offer.rulesets), doc.kind);
@@ -163,6 +167,12 @@ function StartBody({ studio, doc, offer, examinable, running }: StartProps & { s
       <StartCompliance documentId={doc.id} initialType={isCheckKind(doc.kind) ? doc.kind : (detectedKind ?? "lease")} disabled={running("compliance-check")} jurisdictions={offer.jurisdictions} options={options} />
     </>
   );
+}
+
+/** What starting one check holds: the compliance form (the kind declared and the one Yomizaka read select the ruleset, ADR-089; a mismatch is shown and confirmed in the form) or the authenticity form — or why it cannot run. */
+function StartBody({ studio, doc, offer, examinable, running }: StartProps & { studio: Studio }) {
+  if (studio === "document-authenticity") return <AuthenticityBody doc={doc} examinable={examinable} running={running} />;
+  return <ComplianceBody doc={doc} offer={offer} running={running} />;
 }
 
 const TITLE: Record<Studio, string> = { "compliance-check": "analysis.complianceTitle", "document-authenticity": "analysis.authenticityTitle" };
