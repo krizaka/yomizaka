@@ -37,7 +37,7 @@ const check = (ok, what) => {
   if (!ok) failed += 1;
 };
 
-const app = spawn("pnpm", ["--filter", "@yomizaka/web", "exec", "next", "dev", "-p", String(PORT)], {
+const app = spawn("pnpm", ["--filter", "@yomizaka/web", "exec", "next", "dev", "-p", String(PORT)], { // NOSONAR S4036: a developer-machine script, PATH is the developer's own
   env: { ...process.env, AUTH_ALLOWED_IPS: ALLOWED, ABUSE_CLIENT_IP_HEADER: "do-connecting-ip", APP_SEARCH_INDEXING: "off" },
   stdio: "ignore",
 });

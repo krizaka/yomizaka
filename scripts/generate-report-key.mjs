@@ -5,10 +5,15 @@
 //   node scripts/generate-report-key.mjs <env-file>      (refuses to replace a key already there: rotate on purpose)
 import { existsSync, readFileSync, writeFileSync, chmodSync } from "node:fs";
 import crypto from "node:crypto";
+import { basename, resolve } from "node:path";
 
-const file = process.argv[2];
+/** The only files this script writes are dotenv files (named like `.env.local` or `prod.env`): a mistyped path never overwrites anything else. */
+export const isDotenvFile = (path) => /^(\.env(\.[\w-]+)?|[\w-]+\.env)$/.test(basename(path));
+
+const arg = process.argv[2];
+const file = arg && isDotenvFile(arg) ? resolve(arg) : undefined;
 if (!file) {
-  console.error("usage: node scripts/generate-report-key.mjs <env-file>");
+  console.error("usage: node scripts/generate-report-key.mjs <env-file>   (a file named .env, .env.<name> or <name>.env)");
   process.exit(2);
 }
 const lines = existsSync(file) ? readFileSync(file, "utf8").split("\n") : [];

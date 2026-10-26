@@ -94,6 +94,8 @@ describe.runIf(process.env.YOMIZAKA_DB_IT === "1" && !!process.env.DATABASE_URL)
     const made = await requestScreening(landlord, { tenantName: "Camille Fictif", tenantEmail: `c-${stamp}@exemple.test`, scope: ["payment-history"] }, NOW);
     app = made.id;
     token = made.token;
+    expect(app).toBeTruthy();
+    expect(token).toBeTruthy();
   });
 
   it("refuses an upload for the application without the document-check consent, and an analysis too", async () => {
