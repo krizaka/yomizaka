@@ -5,8 +5,20 @@ import { limit, limitWith, resetRateLimits } from "./limits";
 import { LIMIT_DEFAULTS } from "./settings/limits";
 import { SETTINGS } from "./settings/registry";
 
-// The settings cannot be read here (no database): the defaults apply, which is the behaviour of the old call sites.
-vi.mock("./settings/instance", () => ({ appSettings: () => ({ get: async () => { throw new Error("no database"); } }) }));
+// The settings are read like the real service does: a key the registry does not declare throws, a declared one answers (an override, else the default).
+const settings = vi.hoisted(() => ({ overrides: {} as Record<string, number>, down: false }));
+vi.mock("./settings/instance", async () => {
+  const { SETTINGS } = await import("./settings/registry");
+  return {
+    appSettings: () => ({
+      get: async (key: string) => {
+        if (settings.down) throw new Error("no database");
+        if (!(key in SETTINGS)) throw new TypeError("Cannot read properties of undefined (reading 'scopes')");
+        return settings.overrides[key] ?? (SETTINGS as unknown as Record<string, { default: number }>)[key]!.default;
+      },
+    }),
+  };
+});
 vi.mock("./log", () => ({ logError: () => undefined, logInfo: () => undefined, logWarn: () => undefined }));
 
 const from = (ip: string) => ({ headers: new Headers({ "x-forwarded-for": ip }) });
@@ -20,7 +32,11 @@ const refused = async (run: () => Promise<unknown>) => {
 };
 
 describe("the API's action limits (@krizaka/rate-limit)", () => {
-  beforeEach(() => resetRateLimits());
+  beforeEach(() => {
+    resetRateLimits();
+    settings.overrides = {};
+    settings.down = false;
+  });
 
   it("counts per address and per subject: the 11th sign-in of an address is a 429 with its code and Retry-After", async () => {
     const req = from("203.0.113.7");
@@ -62,6 +78,23 @@ describe("the API's action limits (@krizaka/rate-limit)", () => {
     expect((await refused(() => limit("signUp", attacker, null)))?.status).toBe(429);
     for (let i = 0; i < DEFAULT_MAX_KEYS + 50; i += 1) await limit("showcase", from(`10.${i >> 8}.${i & 255}.1`), null);
     expect((await refused(() => limit("signUp", attacker, null)))?.status).toBe(429);
+  });
+
+  it("reads the administrator's numbers, also for an action that has no per-subject limit", async () => {
+    settings.overrides = { "limits.verify.perIp": 2, "limits.signIn.perSubject": 1 };
+    const req = from("203.0.113.21");
+    await limit("verify", req, null);
+    await limit("verify", req, null);
+    expect((await refused(() => limit("verify", req, null)))?.status).toBe(429);
+    await limit("signIn", from("203.0.113.22"), "x@y.z");
+    expect((await refused(() => limit("signIn", from("203.0.113.22"), "x@y.z")))?.status).toBe(429);
+  });
+
+  it("falls back to today's numbers when the settings cannot be read: a limit is never removed", async () => {
+    settings.down = true;
+    const req = from("203.0.113.23");
+    for (let i = 0; i < 5; i += 1) await limit("signUp", req, null);
+    expect((await refused(() => limit("signUp", req, null)))?.status).toBe(429);
   });
 
   it("has a setting for every number: today's values as defaults, windows included", () => {

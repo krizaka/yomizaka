@@ -7,6 +7,7 @@ import { HttpError } from "./http";
 import { logError } from "./log";
 import { appSettings } from "./settings/instance";
 import { LIMIT_DEFAULTS, type LimitAction } from "./settings/limits";
+import { isSettingKey } from "./settings/registry";
 
 /**
  * The action limits of the API (`@krizaka/rate-limit`): fixed windows per address and per subject, the numbers read from the settings
@@ -16,7 +17,8 @@ import { LIMIT_DEFAULTS, type LimitAction } from "./settings/limits";
  */
 let store = memoryLimitStore();
 
-const read = limitsFromSettings((key) => appSettings().get(key as never) as Promise<number | undefined>);
+// An action has a per-subject setting only if it has a per-subject limit: a key the registry does not declare is "no limit of that kind", not an error.
+const read = limitsFromSettings((key) => (isSettingKey(key) ? (appSettings().get(key) as Promise<number>) : undefined));
 
 async function limitsOf(action: LimitAction) {
   try {
