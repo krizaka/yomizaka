@@ -37,17 +37,17 @@ const SEVERITY_RANK: Record<string, number> = { BLOCKING: 0, MAJOR: 1, MINOR: 2,
 const VERDICT_RANK: Record<string, number> = { FAIL: 0, INSUFFICIENT_EVIDENCE: 1, PASS: 2 };
 
 /** The findings in the order the reader needs: what failed first (blocking before the rest), what could not be checked, then what passed — folded (the review's D1). */
-export function orderFindings(findings: readonly Finding[]): { attention: Finding[]; passed: Finding[] } {
-  const rank = (f: Finding) => (VERDICT_RANK[f.verdict] ?? 9) * 10 + (SEVERITY_RANK[f.severity] ?? 9);
+export function orderFindings<F extends Pick<Finding, "verdict" | "severity">>(findings: readonly F[]): { attention: F[]; passed: F[] } {
+  const rank = (f: F) => (VERDICT_RANK[f.verdict] ?? 9) * 10 + (SEVERITY_RANK[f.severity] ?? 9);
   const sorted = findings.map((f, i) => ({ f, i })).sort((a, b) => rank(a.f) - rank(b.f) || a.i - b.i).map((x) => x.f);
   return { attention: sorted.filter((f) => f.verdict !== "PASS"), passed: sorted.filter((f) => f.verdict === "PASS") };
 }
 
 /** A finding with its number on the report: numbered in reading order, what needs a look from 1, what passed going on from there (the signed PDF numbers them the same way). */
-export interface NumberedFinding { n: number; finding: Finding }
+export interface NumberedFinding<F extends Pick<Finding, "verdict" | "severity"> = Finding> { n: number; finding: F }
 
 /** The findings of `orderFindings`, numbered (the Cahier's order: numbers only for a sequence, design § 3.2). */
-export function numberFindings(findings: readonly Finding[]): { attention: NumberedFinding[]; passed: NumberedFinding[] } {
+export function numberFindings<F extends Pick<Finding, "verdict" | "severity">>(findings: readonly F[]): { attention: NumberedFinding<F>[]; passed: NumberedFinding<F>[] } {
   const { attention, passed } = orderFindings(findings);
   return { attention: attention.map((finding, i) => ({ n: i + 1, finding })), passed: passed.map((finding, i) => ({ n: attention.length + i + 1, finding })) };
 }
