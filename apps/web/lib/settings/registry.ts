@@ -1,4 +1,4 @@
-import { ALL_SCOPES, bilingual, choice, type Def, defineSettings, flag, integer, KIND, type Kind, type Registry, SCOPE, type Scope, SCOPES_BY_SPECIFICITY, subset, WORKSPACE_SCOPES } from "@krizaka/settings";
+import { ALL_SCOPES, bilingual, choice, defineSettings, flag, integer, type Registry, SCOPE, subset, WORKSPACE_SCOPES } from "@krizaka/settings";
 import type { z } from "zod";
 
 /**
@@ -6,13 +6,14 @@ import type { z } from "zod";
  * database (ADR-0009), changed by an administrator without a redeploy; the registry is the one place that says what exists,
  * so the admin forms, the validation and the checks at the server boundary all read the same list.
  */
-export { SCOPE, type Scope, SCOPES_BY_SPECIFICITY };
+export { SCOPE };
+export { type Scope, SCOPES_BY_SPECIFICITY } from "@krizaka/settings";
 
 export const GROUP = { general: "general", features: "features", limits: "limits", plans: "plans" } as const;
 export type Group = (typeof GROUP)[keyof typeof GROUP];
 export const GROUPS = Object.values(GROUP);
 
-export { type Def,KIND, type Kind };
+export { type Def, KIND, type Kind } from "@krizaka/settings";
 
 const ALL = ALL_SCOPES;
 const WORKSPACE = WORKSPACE_SCOPES;

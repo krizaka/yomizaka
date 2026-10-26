@@ -21,7 +21,7 @@ export async function readBatchForm(req: Request): Promise<BatchForm> {
   return { name, manifest: text, files: await filesOf(form, "files") };
 }
 
-const csvCell = (value: string) => (/[",\r\n;]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value);
+const csvCell = (value: string) => (/[",\r\n;]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value);
 
 /**
  * One check over the API (yomizaka#202): `file`, `check` (`compliance`, `audit`… — the batch's names) and an optional

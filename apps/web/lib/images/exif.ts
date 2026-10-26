@@ -5,7 +5,7 @@ import { PHOTO_KIND, type PhotoFacts, type PhotoInput } from "./port";
 
 const NONE: PhotoFacts = { software: null, device: null, takenAt: null, modifiedAt: null, hadGps: false };
 const iso = (value: unknown) => (value instanceof Date && !Number.isNaN(value.getTime()) ? value.toISOString() : null);
-const text = (value: unknown) => (typeof value === "string" && value.trim() ? value.replace(/\0/g, "").trim().slice(0, 80) : null);
+const text = (value: unknown) => (typeof value === "string" && value.trim() ? value.replaceAll("\0", "").trim().slice(0, 80) : null);
 
 /**
  * What the photo's own metadata says about its origin, read BEFORE the metadata is dropped: the software that last saved it,

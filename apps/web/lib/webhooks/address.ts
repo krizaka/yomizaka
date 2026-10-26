@@ -30,7 +30,7 @@ export function isPrivateAddress(ip: string): boolean {
     const lower = ip.toLowerCase();
     const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/.exec(lower);
     if (mapped) return isPrivateAddress(mapped[1]!);
-    const first = parseInt(lower.split(":")[0] || "0", 16);
+    const first = Number.parseInt(lower.split(":")[0] || "0", 16);
     return lower === "::" || lower === "::1" || (first & 0xfe00) === 0xfc00 || (first & 0xffc0) === 0xfe80 || (first & 0xff00) === 0xff00 || lower.startsWith("2001:db8");
   }
   return true; // not an address at all: refuse

@@ -46,7 +46,7 @@ export function bunnyStore(config: BunnyConfig): DocumentStore {
       if (!config.pullHostname || !config.tokenKey) return null;
       const path = `/${config.prefix}/${assertKey(key)}`;
       const expires = Math.floor(config.now().getTime() / 1000) + ttlSeconds;
-      const token = crypto.createHash("sha256").update(`${config.tokenKey}${path}${expires}`).digest("base64").replace(/\n/g, "").replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+      const token = crypto.createHash("sha256").update(`${config.tokenKey}${path}${expires}`).digest("base64").replaceAll("\n", "").replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
       return `https://${config.pullHostname}${path}?token=${token}&expires=${expires}`;
     },
     async delete(key) {

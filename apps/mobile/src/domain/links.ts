@@ -1,4 +1,4 @@
-import { CHECKS_TABS, type ChecksTab, type DocumentTab, movedDocumentTab, parseTagsParam, tagsHref } from "@yomizaka/core";
+import { CHECKS_TABS, type ChecksTab, type DocumentTab, movedDocumentTab, tagsHref } from "@yomizaka/core";
 
 /**
  * The URL is the state (addendum 2026-10-17): every screen has the path the web has, under the language, so a link to the
@@ -25,4 +25,4 @@ export const routes = {
 /** An old document address (`/infos`, `/verifications`…) opens the tab it moved to, the followed run kept (`?analysis=`); an unknown tab opens the report. */
 export const legacyDocumentHref = (locale: Locale, id: string, tab: string, analysis?: string | null): string => `${routes.document(locale, id, movedDocumentTab(tab) ?? "rapport")}${analysis ? `?analysis=${encodeURIComponent(analysis)}` : ""}`;
 
-export { parseTagsParam };
+export { parseTagsParam } from "@yomizaka/core";

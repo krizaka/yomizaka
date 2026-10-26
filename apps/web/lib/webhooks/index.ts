@@ -1,5 +1,4 @@
-import { createWebhooks, type Webhooks } from "@krizaka/webhooks";
-import { type WebhookRules } from "@krizaka/webhooks";
+import { createWebhooks, type WebhookRules, type Webhooks } from "@krizaka/webhooks";
 
 import { entitlementOf } from "../billing";
 import { query } from "../db";

@@ -13,7 +13,7 @@ const STOP = "\u0003";
 
 /** Escapes a passage for HTML, then turns the markers ts_headline put around a match into <b>…</b>. */
 export function passageHtml(raw: string): string {
-  const escaped = raw.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const escaped = raw.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
   return escaped.split(START).join("<b>").split(STOP).join("</b>").replace(/\s+/g, " ").trim();
 }
 

@@ -1,4 +1,4 @@
-import { createFolders, followLinks, keychainStorage, type Listing, setNativeMenu, type TauriBridge } from "@krizaka/app-desktop";
+import { createFolders, keychainStorage, type Listing, type TauriBridge } from "@krizaka/app-desktop";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
@@ -10,7 +10,7 @@ import { listen } from "@tauri-apps/api/event";
 export const bridge: TauriBridge = { invoke, listen };
 export const folders = createFolders(bridge);
 export const keychain = keychainStorage(bridge);
-export { followLinks, setNativeMenu };
+export { followLinks, setNativeMenu } from "@krizaka/app-desktop";
 
 export interface DocumentBytes {
   name: string;
