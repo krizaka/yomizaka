@@ -2,8 +2,8 @@ import { type AuditEntryInput, createAudit } from "@krizaka/audit";
 import type { Query } from "@krizaka/db";
 
 import { systemClock } from "../app/system-clock";
+import { clientAddress } from "./client-address";
 import { query } from "./db";
-import { clientAddress } from "./env";
 import { logError } from "./log";
 
 type Entry = { action: string; actorId: string | null; actorLabel: string; targetId?: string | null; detail?: Record<string, unknown>; headers?: Headers };

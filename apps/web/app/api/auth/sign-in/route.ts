@@ -3,8 +3,8 @@ import { z } from "zod";
 
 import { hostAllowed } from "@/lib/access";
 import { checkPassword } from "@/lib/accounts";
+import { clientAddress } from "@/lib/client-address";
 import { query } from "@/lib/db";
-import { clientAddress } from "@/lib/env";
 import { handle, readJson, refuse } from "@/lib/http";
 import { limit } from "@/lib/limits";
 import { createSession, sessionCookie } from "@/lib/session";

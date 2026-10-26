@@ -1,7 +1,8 @@
 import { ADMIN_REFUSAL, ipAllowed as listed, requireAdmin as adminGate, sessionTokenOf as tokenOf } from "@krizaka/auth";
 import { cookies, headers } from "next/headers";
 
-import { clientAddress, consoleAllowedIps } from "./env";
+import { clientAddress } from "./client-address";
+import { consoleAllowedIps } from "./env";
 import { isAdminHost } from "./host";
 import { refuse } from "./http";
 import { resolveSession, type Session, SESSION_COOKIE } from "./session";

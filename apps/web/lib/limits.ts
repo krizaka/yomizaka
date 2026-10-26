@@ -2,7 +2,7 @@ import { createLimiter, type Limiter, memoryLimitStore, RateLimited } from "@kri
 import { limitsFromSettings } from "@krizaka/rate-limit/settings";
 
 import { systemClock } from "../app/system-clock";
-import { clientAddress } from "./env";
+import { clientAddress } from "./client-address";
 import { HttpError } from "./http";
 import { logError } from "./log";
 import { appSettings } from "./settings/instance";
