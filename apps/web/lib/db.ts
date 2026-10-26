@@ -84,6 +84,7 @@ async function connectionOf(source: pg.Pool): Promise<Connection> {
 }
 
 /** The history table and the lock key of every deployed database: `@krizaka/db`'s runner finds the same ones, so nothing is replayed. */
+// @fixed: the advisory-lock key every deployed instance already takes; changing it would let two instances migrate at once
 export const MIGRATION_LOCK_KEY = 73191;
 
 /** Applies the migrations not applied yet, one transaction each, under an advisory lock (two instances never race). */
