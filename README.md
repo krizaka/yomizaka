@@ -97,7 +97,9 @@ Every variable is declared once in `apps/web/lib/env.ts` (see `.env.example`); a
 | `APP_DEV_HOST` | the development address (dev.yomizaka.com): pages go to www with a 308, the API and /.well-known keep serving, noindex |
 | `APP_SEARCH_INDEXING` | `on` or `off`: `off` answers noindex everywhere |
 | `APP_REPORT_SIGNING_KEY` | the Ed25519 key that signs reports |
-| `DATABASE_URL`, `DATABASE_CA_CERT` | PostgreSQL and its CA |
+| `DATABASE_URL`, `DATABASE_CA_CERT` | PostgreSQL (in production the PgBouncer pool `pool-yomizaka`) and its CA |
+| `DATABASE_DIRECT_URL` | the database reached directly: migrations and session advisory locks need one backend; unset, `DATABASE_URL` |
+| `DATABASE_MAX_CONNECTIONS` | the size of the connection pool (default 5) |
 | `AUTH_SESSION_SECRET` | keys the session hashes (≥ 32 characters in production) |
 | `AUTH_SIGNUP_ENABLED` | sign-up is closed unless `true` **and** the verification e-mail can be sent (the `MAIL_` variables below) |
 | `PAYMENTS_PROVIDER` | the payments vendor, as a value (`stripe`) |

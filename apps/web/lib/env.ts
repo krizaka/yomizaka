@@ -32,6 +32,10 @@ export const envSchema = z.object({
   APP_DEV_HOST: z.string().optional(),
   /** PostgreSQL (the cluster krizaka-dev-pg in dev: database yomizaka_db, role yomizaka_db). */
   DATABASE_URL: z.string().optional(),
+  /** The same database reached directly, not through the PgBouncer pool (`pool-yomizaka`): session advisory locks (migrations, ticks) need one backend for their whole life. Unset: DATABASE_URL. */
+  DATABASE_DIRECT_URL: z.string().optional(),
+  /** Connections the app keeps open on DATABASE_URL (the pool's size; the lock pool keeps its own 4). */
+  DATABASE_MAX_CONNECTIONS: z.coerce.number().int().min(1).max(100).default(5),
   /** The cluster's CA (PEM), to verify its certificate; without it a TLS URL is refused in production. */
   DATABASE_CA_CERT: z.string().optional(),
   /** Keys the session tokens' hashes (≥ 32 characters). */
