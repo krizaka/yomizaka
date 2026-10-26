@@ -244,6 +244,9 @@ importers:
       '@krizaka/auth':
         specifier: 0.5.0
         version: 0.5.0
+      '@krizaka/brief':
+        specifier: ^0.1.0
+        version: 0.1.0
       '@krizaka/charts':
         specifier: 0.6.2
         version: 0.6.2(@krizaka/ui@3.63.0)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)
@@ -1705,6 +1708,10 @@ packages:
 
   '@krizaka/auth@0.5.0':
     resolution: {integrity: sha512-s3y2XI1LnEj7r2Vhj+cGYa24D9LWJz9icOaBGTVLcqsQvL8h4xAQXytp2Or7RGFTti52nR8tClY4TcxcxHv/PA==}
+    engines: {node: '>=22'}
+
+  '@krizaka/brief@0.1.0':
+    resolution: {integrity: sha512-nE8CEbFT1jdREjIHgUZQfVFOBs4oA2swe2VxiYvSMHXkPmgMwxItx+PecGnB/4HSMFpoIRWkykdfGudaH1CWLg==}
     engines: {node: '>=22'}
 
   '@krizaka/charts@0.6.2':
@@ -9741,6 +9748,10 @@ snapshots:
       - react
 
   '@krizaka/auth@0.5.0':
+    dependencies:
+      date-fns: 4.4.0
+
+  '@krizaka/brief@0.1.0':
     dependencies:
       date-fns: 4.4.0
 
