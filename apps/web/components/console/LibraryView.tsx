@@ -13,7 +13,7 @@ import Link from "next/link";
 
 import type { CheckSummary } from "@/lib/checks";
 import { CONSOLE_ROUTES } from "@/lib/console-nav";
-import { binderOf, type CreditsFigure, homeHref, type StripFigure, weekOf } from "@/lib/home-b2";
+import { binderOf, type CreditsFigure, homeHref, type StripFigure } from "@/lib/home-b2";
 import type { ActivityDay, HomePeriod, ToDo } from "@/lib/home-figures";
 import { useSay } from "@/lib/i18n-client";
 import { libraryScreen } from "@/lib/library-screen";
@@ -25,7 +25,7 @@ import { pluralKey } from "@/lib/plural";
 import { CollectionMark } from "./CollectionMark";
 import { STATUS_TONE } from "./DocumentTable";
 import { formatDate } from "./format";
-import { ActivityStrip, BinderTabs, Credits, HomeLead, QuickAccess, WeekChart } from "./HomeSections";
+import { ActivityStrip, BinderTabs, Credits, HomeLead } from "./HomeSections";
 import { LibraryDrop } from "./LibraryDrop";
 import { CreateButton, ItemMenu, type TagOption } from "./OrganisationActions";
 import { TagChips } from "./TagChips";
@@ -40,7 +40,7 @@ export type ExampleDocuments = Record<"tenant" | "landlord", { title: string; fi
  * check. « Récents » left the home (yomizaka#325). A file dropped anywhere on the page is checked (`LibraryDrop`). With
  * nothing yet: the owl, one sentence, the only drop zone, and two examples.
  */
-export function LibraryView({ libraries, documents, latest = [], tags, perspective = null, screening = false, examples, jurisdictions = ["QC"], todo = null, activity = [], strip = [], credits = null, period = "30d", chosen = null, now = new Date().toISOString() }: Readonly<{ libraries: LibraryOverview[]; documents: number; latest?: CheckSummary[]; tags: TagOption[]; perspective?: Audience | null; screening?: boolean; examples?: ExampleDocuments; jurisdictions?: readonly Jurisdiction[]; todo?: ToDo | null; activity?: readonly ActivityDay[]; strip?: readonly StripFigure[]; credits?: CreditsFigure | null; period?: HomePeriod; chosen?: string | null; now?: string }>) {
+export function LibraryView({ libraries, documents, latest = [], tags, perspective = null, screening = false, examples, jurisdictions = ["QC"], todo = null, strip = [], credits = null, period = "30d", chosen = null, now = new Date().toISOString() }: Readonly<{ libraries: LibraryOverview[]; documents: number; latest?: CheckSummary[]; tags: TagOption[]; perspective?: Audience | null; screening?: boolean; examples?: ExampleDocuments; jurisdictions?: readonly Jurisdiction[]; todo?: ToDo | null; activity?: readonly ActivityDay[]; strip?: readonly StripFigure[]; credits?: CreditsFigure | null; period?: HomePeriod; chosen?: string | null; now?: string }>) {
   const { say, locale } = useSay();
   const collections = libraries.flatMap((l) => l.collections);
   const screen = libraryScreen({ documents, screening });
@@ -80,7 +80,7 @@ export function LibraryView({ libraries, documents, latest = [], tags, perspecti
         date={<Today now={now} />}
         description={todo ? <HomeLead todo={todo} /> : say("library.lead")}
         actions={<LibraryActions firstId={first?.id} secondary={screen.secondary} />}
-        side={<LibrarySide screening={screening} strip={strip} period={period} collectionId={selected?.id ?? null} activity={activity} credits={credits} />}
+        side={<LibrarySide strip={strip} period={period} collectionId={selected?.id ?? null} credits={credits} />}
       >
         <Widget title={say("home.binder.title")} span="full" data-testid="binder">
           {tabs.length === 0 ? <p className="m-0 text-sm text-fg-secondary">{say("organisation.noCollections")}</p> : <BinderTabs tabs={tabs} selectedHref={homeHref(locale, { period, collection: selected?.id ?? null })} />}
@@ -93,12 +93,10 @@ export function LibraryView({ libraries, documents, latest = [], tags, perspecti
   );
 }
 
-function LibrarySide({ screening, strip, period, collectionId, activity, credits }: Readonly<{ screening: boolean; strip: readonly StripFigure[]; period: HomePeriod; collectionId: string | null; activity: readonly ActivityDay[]; credits: CreditsFigure | null }>) {
+function LibrarySide({ strip, period, collectionId, credits }: Readonly<{ strip: readonly StripFigure[]; period: HomePeriod; collectionId: string | null; credits: CreditsFigure | null }>) {
   return (
     <>
-      <QuickAccess applicantFiles={screening} />
       {strip.length ? <ActivityStrip figures={strip} period={period} collection={collectionId} /> : null}
-      <WeekChart days={weekOf(activity)} />
       {credits ? <Credits figure={credits} /> : null}
     </>
   );
@@ -170,11 +168,11 @@ function CollectionCard({ libraryId, selected, label, destinations, tags }: Read
   const { say, locale } = useSay();
   const folders = selected.folders > 0 ? ` · ${say(pluralKey("organisation.folders", selected.folders), { count: selected.folders })}` : "";
   return (
-    <div className="relative mt-3 h-full" data-testid="collection-card">
+    <div className="relative mt-3" data-testid="collection-card">
       <LinkCard
         href={libraryPath(locale, libraryId, selected.id)}
         linkAs={Link}
-        className="h-full pr-12"
+        className="pr-12"
         icon={<CollectionMark id={selected.id} name={label} avatar={selected.avatar} />}
         title={label}
         meta={selected.isDefault ? say("organisation.default") : undefined}

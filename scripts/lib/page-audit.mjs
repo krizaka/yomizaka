@@ -43,20 +43,25 @@ export function auditPage() {
     })
     .slice(0, 2)
     .map((el) => (el.textContent || "").trim().slice(0, 24));
+  const emptyHeadings = [...document.querySelectorAll("h1, h2, h3")].filter((h) => !(h.textContent || "").trim() && !h.querySelector("img, svg[aria-label]")).length;
+  const unlabelledFiles = [...document.querySelectorAll("input[type=file]")].filter((i) => !(i.getAttribute("aria-label") || i.getAttribute("aria-labelledby") || i.title || i.labels?.length)).length;
   const segmentError = !!document.querySelector('[data-testid="segment-error"]');
-  return { wrapped, segmentError, h1: document.querySelectorAll("h1").length, scrollWidth: doc.scrollWidth, clientWidth: doc.clientWidth, wide, unnamedButtons, unnamedSamples, headerAction, chips };
+  return { emptyHeadings, unlabelledFiles, wrapped, segmentError, h1: document.querySelectorAll("h1").length, scrollWidth: doc.scrollWidth, clientWidth: doc.clientWidth, wide, unnamedButtons, unnamedSamples, headerAction, chips };
 }
 
 /**
  * The problems of one page × width × theme, in words: console errors, a horizontal overflow (or elements past the edge),
  * not exactly one h1 (when asked), unnamed buttons, the header's action off screen or unnamed (when the page has one).
  */
-export function problemsOf(where, result, { errors = [], h1 = false, headerAction = false } = {}) {
+export function problemsOf(where, result, { errors = [], h1 = false, headerAction = false, fileLabels = false } = {}) {
   const problems = [];
   if (errors.length) problems.push(`${where}: console error — ${errors[0]}`);
   if (result.scrollWidth > result.clientWidth) problems.push(`${where}: scrollWidth ${result.scrollWidth} > ${result.clientWidth} (${result.wide.join(", ")})`);
   else if (result.wide.length) problems.push(`${where}: elements past the edge (${result.wide.join(", ")})`);
   if (result.wrapped?.length) problems.push(`${where}: a token wraps one character per line (${result.wrapped.join(", ")}) — truncate it`);
+  if (result.emptyHeadings) problems.push(`${where}: ${result.emptyHeadings} empty heading(s)`);
+  // Opt-in until `Dropzone` of @krizaka/ui names its hidden input (a prop of the package, not of this repository).
+  if (fileLabels && result.unlabelledFiles) problems.push(`${where}: ${result.unlabelledFiles} file input(s) without a label`);
   if (result.segmentError) problems.push(`${where}: the page rendered its error state (segment-error), e.g. React #441`);
   if (h1 && result.h1 !== 1) problems.push(`${where}: ${result.h1} h1 (expected exactly one)`);
   if (h1 && result.unnamedButtons > 0) problems.push(`${where}: ${result.unnamedButtons} unnamed button(s) ${(result.unnamedSamples ?? []).join(" | ")}`.trimEnd());

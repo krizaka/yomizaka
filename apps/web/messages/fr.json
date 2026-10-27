@@ -104,7 +104,7 @@
   "privacy": {
     "title": "Confidentialité",
     "updated": "Mis à jour le {date}",
-    "body": "Votre compte et vos vérifications sont gardés dans la base de données de Yomizaka à Toronto, au Canada, visibles de votre seul compte. Un document n'est gardé que si vous le choisissez, et son panneau d'information dit où. Quand vous demandez une vérification, le document, son texte, ou le fichier PDF, est envoyé à Orazaka, le moteur d'analyse de Krizaka, en HTTPS, et le résultat est gardé avec l'identifiant du run. Rien n'est vendu, partagé ni utilisé pour entraîner un modèle. Supprimer un document supprime son fichier, son texte et ses analyses. Pour une question ou pour faire effacer vos données, utilisez le formulaire de contact.",
+    "body": "Vos documents vous appartiennent : gardés seulement si vous le choisissez, vérifiés par Orazaka, jamais vendus, jamais utilisés pour entraîner un modèle. Le détail, en courtes sections.",
     "sections": [
       {
         "h": "Qui est responsable",
@@ -119,12 +119,24 @@
         "p": "Votre compte et vos vérifications sont dans une base de données à Toronto, au Canada, hors Québec. Les documents sont envoyés à Orazaka, le moteur d’analyse de Krizaka, par HTTPS pour être vérifiés. Un document gardé est stocké là où son panneau d’information le dit : aujourd’hui, à New York (États-Unis)."
       },
       {
+        "h": "Qui les traite",
+        "p": "Orazaka, le moteur d’analyse de Krizaka, lit un document quand vous demandez une vérification, par HTTPS. Stripe traite le paiement. Notre fournisseur de base de données héberge votre compte à Toronto."
+      },
+      {
+        "h": "Combien de temps nous les gardons",
+        "p": "Un document est gardé jusqu’à ce que vous le supprimiez, et un document supprimé emporte son fichier, son texte et ses résultats. Votre compte et vos vérifications sont gardés jusqu’à la fermeture du compte. Les factures sont conservées comme la loi l’exige."
+      },
+      {
         "h": "Vos droits",
         "p": "Vous pouvez accéder à vos renseignements, les corriger ou les supprimer, retirer votre consentement et récupérer vos données en écrivant au responsable. Supprimer un document supprime son fichier, son texte et ses résultats. Fermer votre compte supprime vos documents. Nous conservons les factures comme la loi l’exige."
       },
       {
         "h": "Incidents",
         "p": "Si un incident de confidentialité présente un risque de préjudice sérieux, nous avisons la Commission d’accès à l’information et les personnes concernées, comme la loi l’exige."
+      },
+      {
+        "h": "Nous joindre",
+        "p": "Pour poser une question, exercer vos droits ou faire retirer vos données, écrivez par le formulaire de contact de krizaka.com. La personne responsable de la protection des renseignements personnels vous répond."
       }
     ]
   },
@@ -1368,6 +1380,7 @@
         "portal": "Gérer l'abonnement et les factures",
         "portalHint": "Mode de paiement, factures (avec TPS et TVQ) et annulation : dans le portail sécurisé de Stripe.",
         "off": "Le paiement n'est pas encore disponible.",
+        "otherOffers": "Autres offres",
         "buy": "Acheter ou s'abonner",
         "testMode": "Mode test : aucune vraie carte n'est débitée.",
         "plans": {
@@ -3298,6 +3311,8 @@
       "quickstartTitle": "Lancer une vérification, puis la lire",
       "quickstartNote": "Interrogez jusqu'à ce que l'état soit done, failed ou refused ; le rapport arrive avec la vérification une fois terminée.",
       "routesTitle": "Routes",
+      "route": "Route",
+      "commonAnswers": "Réponses communes à plusieurs routes",
       "scope": "Portée",
       "noScope": "Aucune clé requise",
       "parameters": "Paramètres",

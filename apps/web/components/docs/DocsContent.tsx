@@ -6,9 +6,23 @@ import Link from "next/link";
 
 import { YOMIZAKA_API_KEY_RULES } from "@/lib/api-keys";
 import { DOCS_SECTIONS, quickstartCode } from "@/lib/docs";
-import { apiOperations, apiWebhooks, OPENAPI_PATH } from "@/lib/docs-api";
+import { type ApiAnswer, type ApiOperation, apiOperations, apiWebhooks, OPENAPI_PATH } from "@/lib/docs-api";
 import { format, getDictionary, type Locale } from "@/lib/i18n";
 import { pagePath, SITE_URL } from "@/lib/site";
+
+import { ApiRoutesTable } from "./ApiRoutesTable";
+
+const answerKey = (a: ApiAnswer) => `${a.status} ${a.description}`;
+
+/** The answers (status and words) that two routes or more give. */
+function sharedAnswers(operations: readonly ApiOperation[]): Map<string, ApiAnswer> {
+  const seen = new Map<string, { answer: ApiAnswer; count: number }>();
+  for (const answer of operations.flatMap((op) => op.answers)) {
+    const entry = seen.get(answerKey(answer));
+    seen.set(answerKey(answer), { answer, count: (entry?.count ?? 0) + 1 });
+  }
+  return new Map([...seen].filter(([, v]) => v.count > 1).map(([k, v]) => [k, v.answer]));
+}
 
 /**
  * The documentation of Yomizaka, on its own site (yomizaka#387): how a check works, the API (generated from the OpenAPI
@@ -21,6 +35,8 @@ export function DocsContent({ locale }: Readonly<{ locale: Locale }>) {
   const levels = t.console.analysis.levels;
   const operations = apiOperations();
   const webhooks = apiWebhooks();
+  // An answer several routes share is said once under the table, never repeated on each route.
+  const commonAnswers = sharedAnswers(operations);
   const rules = YOMIZAKA_API_KEY_RULES;
   const home = pagePath(locale, "home");
   const sections = DOCS_SECTIONS.map((id) => ({ id, label: d.sections[id] }));
@@ -78,37 +94,15 @@ export function DocsContent({ locale }: Readonly<{ locale: Locale }>) {
         <CodeBlock code={quickstartCode(SITE_URL)} language="bash" file="curl" />
         <p>{d.api.quickstartNote}</p>
         <h3>{d.api.routesTitle}</h3>
-        {operations.map((op) => (
-          <section key={op.id} id={op.id} className="scroll-mt-(--kz-anchor-offset,6rem)" data-testid="api-operation">
-            <h4>
-              <code>
-                {op.method} {op.path}
-              </code>
-            </h4>
-            <p>{op.summary}</p>
-            {op.description ? (
-              <p>
-                <Ticks>{op.description}</Ticks>
-              </p>
-            ) : null}
-            <p>
-              {d.api.scope}: <code>{op.scope ?? d.api.noScope}</code>
-              {op.parameters.length ? (
-                <>
-                  {" · "}
-                  {d.api.parameters}: <code>{op.parameters.join(", ")}</code>
-                </>
-              ) : null}
-            </p>
-            <ul aria-label={d.api.answers}>
-              {op.answers.map((answer) => (
-                <li key={answer.status}>
-                  <code>{answer.status}</code> <Ticks>{answer.description}</Ticks>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
+        <ApiRoutesTable operations={operations} shared={[...commonAnswers.keys()]} labels={{ caption: d.api.routesTitle, route: d.api.route, scope: d.api.scope, noScope: d.api.noScope, answers: d.api.answers, parameters: d.api.parameters }} />
+        <h4>{d.api.commonAnswers}</h4>
+        <ul aria-label={d.api.commonAnswers}>
+          {[...commonAnswers.values()].map((answer) => (
+            <li key={answerKey(answer)}>
+              <code>{answer.status}</code> <Ticks>{answer.description}</Ticks>
+            </li>
+          ))}
+        </ul>
         <h3>{d.api.errorsTitle}</h3>
         <p>{d.api.errors}</p>
         <h3>{d.api.webhooksTitle}</h3>
