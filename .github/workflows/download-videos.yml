@@ -57,7 +57,7 @@ jobs:
     if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'
     permissions:
       contents: read
-    uses: krizaka/.github/.github/workflows/mobile-e2e.yml@eabd6ab14d91febe8e0ebd7bfba6be98df5ae492 # main (krizaka/.github#318)
+    uses: krizaka/.github/.github/workflows/mobile-e2e.yml@207717e5fbc0f69eef10668496d6e83f8a4cd89f # main (krizaka/.github#318)
     with:
       app-id: com.krizaka.yomizaka
       app-directory: apps/mobile
@@ -82,7 +82,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    uses: krizaka/.github/.github/workflows/app-videos.yml@d96437b6681524d470ca5050f91c1961a45c5906 # main (krizaka/.github#316)
+    uses: krizaka/.github/.github/workflows/app-videos.yml@4749d988b400b5a184f2e2216946c50f9d9b5e98 # main (krizaka/.github#316)
     with:
       product: yomizaka
       manifest: apps/web/content/app-videos.json
