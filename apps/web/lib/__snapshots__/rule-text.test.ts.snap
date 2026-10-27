@@ -1,0 +1,53 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`the report in en > snapshot of the findings 1`] = `
+[
+  {
+    "citation": "C.c.Q., art. 1904",
+    "explanation": "The lease asks for a security deposit. That is not allowed for a home.",
+    "quote": "dépôt de sécurité de 1 450 $",
+    "ruleId": "QC-LEASE-004",
+    "title": "Security deposit prohibited — only the first month may be demanded in advance",
+  },
+  {
+    "citation": null,
+    "explanation": "The rent is written in figures.",
+    "quote": null,
+    "ruleId": "QC-LEASE-003",
+    "title": "Rent amount",
+  },
+  {
+    "citation": null,
+    "explanation": "Texte propre à ce bail : 3 chèques.",
+    "quote": null,
+    "ruleId": "QC-LEASE-005",
+    "title": "Post-dated cheques prohibited",
+  },
+]
+`;
+
+exports[`the report in fr > snapshot of the findings 1`] = `
+[
+  {
+    "citation": "C.c.Q., art. 1904",
+    "explanation": "Le bail demande un dépôt de garantie. C'est interdit pour un logement.",
+    "quote": "dépôt de sécurité de 1 450 $",
+    "ruleId": "QC-LEASE-004",
+    "title": "Dépôt de garantie interdit — seul le premier mois peut être exigé d'avance",
+  },
+  {
+    "citation": null,
+    "explanation": "Le loyer est écrit en chiffres.",
+    "quote": null,
+    "ruleId": "QC-LEASE-003",
+    "title": "Montant du loyer",
+  },
+  {
+    "citation": null,
+    "explanation": "Texte propre à ce bail : 3 chèques.",
+    "quote": null,
+    "ruleId": "QC-LEASE-005",
+    "title": "Chèques postdatés interdits",
+  },
+]
+`;
