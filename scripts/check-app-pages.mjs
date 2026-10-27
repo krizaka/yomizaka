@@ -38,7 +38,7 @@ export async function signIn(page, base, locale, email, password) {
  * audited, so a new section is never forgotten (« Dossiers » was, and crashed unseen, yomizaka#457). Pure, tested.
  */
 export function railRoutes(hrefs, locale) {
-  const own = new RegExp(`^/${locale}(/app(?:/[^?#]*)?)(?:[?#].*)?$`);
+  const own = new RegExp(`^/${locale.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(/app(?:/[^?#]*)?)(?:[?#].*)?$`);
   return [...new Set(hrefs.map((h) => own.exec(h ?? "")?.[1]).filter(Boolean))].map((p) => p.replace(/\/$/, "") || "/app");
 }
 

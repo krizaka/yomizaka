@@ -12,7 +12,21 @@ import { describe, expect, it } from "vitest";
  * from a client module of `@krizaka/*`: render it, or move the function to a plain module.
  */
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
-const CLIENT = /^\s*(?:\/\*[\s\S]*?\*\/\s*|\/\/[^\n]*\n\s*)*["']use client["']/;
+/** True when the first statement is the `"use client"` directive (comments and blank lines may come before it). Linear scan, no backtracking. */
+const isClientModule = (source: string): boolean => {
+  let rest = source.trimStart();
+  for (;;) {
+    if (rest.startsWith("/*")) {
+      const end = rest.indexOf("*/");
+      if (end < 0) return false;
+      rest = rest.slice(end + 2).trimStart();
+    } else if (rest.startsWith("//")) {
+      const end = rest.indexOf("\n");
+      if (end < 0) return false;
+      rest = rest.slice(end + 1).trimStart();
+    } else return rest.startsWith('"use client"') || rest.startsWith("'use client'");
+  }
+};
 const IMPORT = /^(import|export)\s+(type\s+)?([^;]*?)\s+from\s+["']([^"']+)["']/gm;
 
 const walk = (dir: string): string[] =>
@@ -54,7 +68,7 @@ export const serverGraph = () => {
     if (seen.has(file)) return;
     seen.add(file);
     const source = readFileSync(file, "utf8");
-    if (CLIENT.test(source)) return;
+    if (isClientModule(source)) return;
     for (const { spec, names } of valueImports(source)) {
       if (spec.startsWith("@krizaka/")) {
         if (packageIsClient(spec) && /\b(?:use[A-Z]|read[A-Z]|write[A-Z]|[a-z]\w*(?=\s*[,}]))/.test(names)) offences.push(`${relative(ROOT, file)} imports ${names.trim()} from ${spec} ("use client")`);
