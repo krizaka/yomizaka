@@ -35,7 +35,7 @@ jobs:
   mobile-e2e:
     permissions:
       contents: read
-    uses: krizaka/.github/.github/workflows/mobile-e2e.yml@3909b54f6c23264ebdf33cf025ec5584d5ccc12c # main (krizaka/.github#241, #243)
+    uses: krizaka/.github/.github/workflows/mobile-e2e.yml@74907f4e2cbdd1e49276c37041e8334e2079885a # main (krizaka/.github#241, #243, #300 Maestro retries)
     with:
       app-id: com.krizaka.yomizaka
       app-directory: apps/mobile
