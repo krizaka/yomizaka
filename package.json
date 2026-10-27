@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "@ast-grep/cli": "0.51.0",
+    "@krizaka/a11y-audit": "^0.1.0",
     "@krizaka/i18n": "^0.2.1",
     "@krizaka/intl": "^0.3.0",
     "@vitest/coverage-v8": "4.1.11",
