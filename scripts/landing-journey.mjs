@@ -10,9 +10,13 @@
 // is hidden on screen. Needs a Chromium for playwright-core and ffmpeg. Credentials are read from the environment, never printed.
 import { execFileSync } from "node:child_process";
 import { mkdirSync, renameSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 
-import { chromium, flagReader, hideEmail } from "./lib/recording-kit.mjs";
+import { flagReader, hideEmail } from "./lib/recording-kit.mjs";
+
+const require = createRequire(import.meta.url);
+const { chromium } = require("playwright-core");
 
 const args = process.argv.slice(2);
 const flag = flagReader(args);

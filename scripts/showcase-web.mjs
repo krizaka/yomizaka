@@ -11,9 +11,13 @@
 //
 // Writes <out-dir>/web-binder.webm and <out-dir>/web-report.webm (no audio is recorded), ready for the app-videos action.
 import { mkdirSync, renameSync } from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 
-import { chromium, flagReader, hideEmail } from "./lib/recording-kit.mjs";
+import { flagReader, hideEmail } from "./lib/recording-kit.mjs";
+
+const require = createRequire(import.meta.url);
+const { chromium } = require("playwright-core");
 
 const args = process.argv.slice(2);
 const flag = flagReader(args);

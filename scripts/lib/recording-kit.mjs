@@ -1,9 +1,4 @@
-// Shared by the recording scripts (landing-journey, showcase-web): chromium, the --flag reader and the e-mail hider.
-import { createRequire } from "node:module";
-
-const require = createRequire(import.meta.url);
-export const { chromium } = require("playwright-core");
-
+// Shared by the recording scripts (landing-journey, showcase-web): the --flag reader and the e-mail hider.
 /** Reads `--name value` from the command line, or the fallback. */
 export const flagReader = (args) => (name, fallback) => {
   const i = args.indexOf(`--${name}`);
