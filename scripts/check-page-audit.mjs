@@ -5,7 +5,7 @@ import { chromium } from "playwright-core";
 
 import { auditPage, problemsOf } from "./lib/page-audit.mjs";
 import { auditContext } from "./lib/settle.mjs";
-import { CARD_OVER_NEXT, COLUMN_CUT, FINE, SECTIONS_OVERLAP } from "./lib/page-audit.fixtures.mjs";
+import { CARD_OVER_NEXT, COLUMN_CUT, FINE, HIDDEN_CONTENT, SECTIONS_OVERLAP } from "./lib/page-audit.fixtures.mjs";
 
 const EXPECT = [
   ["a card taller than its panel", CARD_OVER_NEXT, /overflows its panel/],
@@ -23,9 +23,11 @@ try {
     const problems = problemsOf("fixture", await page.evaluate(auditPage));
     if (!problems.some((p) => pattern.test(p))) failures.push(`the audit does not see ${name}: ${problems.join(" | ") || "no problem reported"}`);
   }
-  await page.setContent(FINE);
-  const fine = problemsOf("fixture", await page.evaluate(auditPage));
-  if (fine.length) failures.push(`the audit reports a fine layout: ${fine.join(" | ")}`);
+  for (const [name, html] of [["a fine layout", FINE], ["content that is not drawn (a visually hidden table, a folded details)", HIDDEN_CONTENT]]) {
+    await page.setContent(html);
+    const fine = problemsOf("fixture", await page.evaluate(auditPage));
+    if (fine.length) failures.push(`the audit reports ${name}: ${fine.join(" | ")}`);
+  }
 } finally {
   await browser.close();
 }
@@ -33,4 +35,4 @@ if (failures.length) {
   console.error(`page-audit self-test failed:\n  ${failures.join("\n  ")}`);
   process.exit(1);
 }
-console.log("page-audit self-test: 4 broken layouts seen, the fine one clean");
+console.log("page-audit self-test: 4 broken layouts seen, the fine ones clean");

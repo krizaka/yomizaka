@@ -18,3 +18,7 @@ export const COLUMN_CUT = page(
 export const FINE = page(
   `<div style="display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px"><section data-testid="binder"><h2>Le classeur</h2><div data-testid="collection-card">Mes documents · 0 fichiers</div></section><aside><section data-testid="activity">Activité</section></aside></div><section data-testid="latest-checks"><h2>Dernières vérifications</h2><div style="overflow:auto;width:300px"><div style="width:900px">table</div></div></section>`,
 );
+/** Not drawn, so not a problem: a chart's text version in a visually hidden wrapper, and the content of a folded `<details>` (the browser still gives both a box). */
+export const HIDDEN_CONTENT = page(
+  `<section data-testid="activity" style="height:120px"><h2>Activité</h2><div style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)"><table><tbody>${"<tr><td>21 oct.</td><td>7</td></tr>".repeat(40)}</tbody></table></div></section><section data-testid="report"><details><summary>Détails</summary><div style="height:400px">Texte du rapport</div></details></section>`,
+);

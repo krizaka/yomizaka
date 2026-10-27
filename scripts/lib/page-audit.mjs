@@ -46,7 +46,15 @@ export function auditPage() {
     const out = [...panel.querySelectorAll("*")].find((el) => {
       const r = el.getBoundingClientRect();
       if (r.width === 0 || r.height === 0 || getComputedStyle(el).position === "fixed" || el.closest('[aria-hidden="true"]') || el.closest("[data-radix-popper-content-wrapper]")) return false;
-      for (let n = el.parentElement; n && n !== panel; n = n.parentElement) if (scrolls(n)) return false;
+      // What a folded `<details>` holds is not drawn, though the browser still gives it a box.
+      const folded = el.closest("details:not([open])");
+      if (folded && !el.closest("summary")) return false;
+      // A scroller keeps what runs out of it; a visually hidden wrapper (`sr-only`: a 1 px clipped box, the text version of a chart) shows nothing.
+      for (let n = el.parentElement; n && n !== panel; n = n.parentElement) {
+        if (scrolls(n)) return false;
+        const nb = n.getBoundingClientRect();
+        if ((nb.width <= 2 || nb.height <= 2) && getComputedStyle(n).overflowY !== "visible") return false;
+      }
       return r.bottom > box.bottom + 1.5 || r.right > box.right + 1.5;
     });
     if (out) {
