@@ -1708,6 +1708,16 @@
               "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
             }
           },
+          "verifyContract": {
+            "perIp": {
+              "label": "Limite par adresse : Vérification d'un contrat scellé",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Vérification d'un contrat scellé",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
           "verify": {
             "perIp": {
               "label": "Limite par adresse : Vérification d'un rapport signé",

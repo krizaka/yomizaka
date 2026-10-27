@@ -1708,6 +1708,16 @@
               "hint": "Beyond it the answer is 429 with the time to wait."
             }
           },
+          "verifyContract": {
+            "perIp": {
+              "label": "Limit per address: Verifying a sealed contract",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Verifying a sealed contract",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
           "verify": {
             "perIp": {
               "label": "Limit per address: Verifying a signed report",
