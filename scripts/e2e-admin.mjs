@@ -13,7 +13,7 @@ import { mkdirSync } from "node:fs";
 import { createRequire } from "node:module";
 
 import { accountsFromEnv, hashPassword } from "../apps/web/scripts/qa-accounts.mjs";
-import { auditContext, loadSettled } from "./lib/settle.mjs";
+import { auditContext, loadSettled } from "@krizaka/page-audit";
 
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright-core");

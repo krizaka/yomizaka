@@ -32,6 +32,7 @@
     "@krizaka/config": "^0.13.0",
     "@krizaka/i18n": "^0.2.1",
     "@krizaka/intl": "^0.3.0",
+    "@krizaka/page-audit": "^0.2.0",
     "@vitest/coverage-v8": "4.1.11",
     "dependency-cruiser": "^18.7.0",
     "playwright-core": "1.64.0",
