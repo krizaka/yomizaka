@@ -132,5 +132,39 @@
       }
     }
   },
-  "unknown": {}
+  "unknown": {},
+  "ruleTitles": {
+    "QC-INV-001": {
+      "fr": "Date de la facture",
+      "en": "Invoice date"
+    },
+    "QC-INV-002": {
+      "fr": "Montant total de la facture",
+      "en": "Invoice total amount"
+    },
+    "QC-INV-003": {
+      "fr": "Numéro de TPS du fournisseur",
+      "en": "Supplier's GST number"
+    },
+    "QC-INV-004": {
+      "fr": "Numéro de TPS mal formé",
+      "en": "Malformed GST number"
+    },
+    "QC-INV-005": {
+      "fr": "Numéro de TVQ mal formé",
+      "en": "Malformed QST number"
+    },
+    "QC-INV-006": {
+      "fr": "Numéro de TVQ du fournisseur",
+      "en": "Supplier's QST number"
+    },
+    "QC-INV-007": {
+      "fr": "Taxes indiquées, ou mention qu'elles sont incluses",
+      "en": "Taxes shown, or a statement that they are included"
+    },
+    "QC-INV-008": {
+      "fr": "Conditions de paiement",
+      "en": "Payment terms"
+    }
+  }
 }

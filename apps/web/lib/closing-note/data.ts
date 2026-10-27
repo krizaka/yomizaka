@@ -21,6 +21,8 @@ const compliancePack = z.object({
   scope: bilingual,
   notChecked: z.array(bilingual),
   rules: z.record(z.string(), rulePlain),
+  /** Each rule's name in both languages (French: the ruleset's own words, kept exact). A rule without one fails the parse, so the build. */
+  ruleTitles: z.record(z.string(), bilingual),
   unknown: z.record(z.string(), bilingual),
 });
 export type CompliancePack = z.infer<typeof compliancePack>;
@@ -42,6 +44,7 @@ export const templates = z
 const COMPLIANCE_PACKS = new Map(([lease, invoice, service] as unknown[]).map((raw) => compliancePack.parse(raw)).map((p) => [p.pack, p]));
 export const compliancePackOf = (rulesetId: string): CompliancePack | undefined => COMPLIANCE_PACKS.get(rulesetId);
 export const authenticityData: AuthenticityPack = authenticityPack.parse(authenticity);
+export const allCompliancePacks = (): readonly CompliancePack[] => [...COMPLIANCE_PACKS.values()];
 export const PACKS_WITH_NOTES: readonly string[] = [...COMPLIANCE_PACKS.keys()];
 
 export const template = (key: string): Bilingual => templates[key] as Bilingual;

@@ -12,6 +12,7 @@ import { z } from "zod";
 import { type NumberedFinding, numberFindings, severityOf, verdictOf, type VerdictTone } from "@/lib/document-face";
 import { useSay } from "@/lib/i18n-client";
 import { pluralKey } from "@/lib/plural";
+import { ruleExplanation, ruleTitle } from "@/lib/rule-text";
 
 import { formatDate } from "./format";
 
@@ -61,7 +62,7 @@ export interface FindingSelection {
  * folded and numbered on. The rule's id and the method stay in the technical details.
  */
 export function FindingList({ report, selection }: Readonly<{ report: ComplianceReport; selection?: FindingSelection }>) {
-  const { say } = useSay();
+  const { say, locale } = useSay();
   const { attention, passed } = numberFindings(report.findings);
   const item = ({ n, finding: f }: NumberedFinding) => {
     const s = severityOf(f.severity);
@@ -74,7 +75,7 @@ export function FindingList({ report, selection }: Readonly<{ report: Compliance
         </span>
         <div className="flex min-w-0 flex-col gap-1">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="font-semibold text-fg">{f.title || say("reportFace.rule", { n })}</span>
+            <span className="font-semibold text-fg">{f.title || f.ruleId ? ruleTitle(f.ruleId, locale, f.title) : say("reportFace.rule", { n })}</span>
             {failed ? (
               <span className="flex items-center gap-2">
                 <Badge tone={CHIP[s.tone]}>{say(`analysis.severities.${s.word}`)}</Badge>
@@ -84,7 +85,7 @@ export function FindingList({ report, selection }: Readonly<{ report: Compliance
           </div>
           {f.evidenceSpan?.quote ? <p className="m-0 italic text-fg-secondary">« {f.evidenceSpan.quote} »</p> : null}
           {!f.evidenceSpan?.quote && failed ? <p className="m-0 text-fg-muted">{say("reportFace.noQuote")}</p> : null}
-          <p className="m-0 text-fg-secondary">{f.explanation}</p>
+          <p className="m-0 text-fg-secondary">{ruleExplanation(f.ruleId, locale, f.explanation)}</p>
           <div className="flex flex-wrap items-center gap-3 text-xs text-fg-muted">
             {f.citation ? <span data-testid="finding-citation">{f.citation}</span> : null}
             {selection && f.evidenceSpan?.quote ? (
