@@ -75,7 +75,7 @@ export function FindingList({ report, selection }: Readonly<{ report: Compliance
         </span>
         <div className="flex min-w-0 flex-col gap-1">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="font-semibold text-fg">{f.title || f.ruleId ? ruleTitle(f.ruleId, locale, f.title) : say("reportFace.rule", { n })}</span>
+            <span className="font-semibold text-fg">{f.title ? ruleTitle(f.ruleId, locale, f.title) : say("reportFace.rule", { n })}</span>
             {failed ? (
               <span className="flex items-center gap-2">
                 <Badge tone={CHIP[s.tone]}>{say(`analysis.severities.${s.word}`)}</Badge>
