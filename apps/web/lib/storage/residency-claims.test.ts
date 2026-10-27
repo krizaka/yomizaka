@@ -1,17 +1,17 @@
 import { readFileSync } from "node:fs";
 
+import { countryOf } from "@krizaka/storage";
 import { STORAGE_KIND } from "@yomizaka/core";
 import { describe, expect, it } from "vitest";
 
 import en from "@/messages/en.json";
 import fr from "@/messages/fr.json";
 
-import { countryOf } from "./regions";
 import { storedAs } from "./where";
 
 /**
  * A public message may say « Canada » only when the configured storage region of what it describes is Canadian.
- * The regions come from the deployed spec (deploy/digitalocean/dev.app.yaml), the map from lib/storage/regions.ts.
+ * The regions come from the deployed spec (deploy/digitalocean/dev.app.yaml), the map from `COUNTRY_OF_REGION` of @krizaka/storage.
  */
 
 const SPEC = new URL("../../../../deploy/digitalocean/dev.app.yaml", import.meta.url);

@@ -25,6 +25,11 @@
   `node scripts/dev-deploy.mjs service-account yomizaka --studios compliance-check,document-authenticity --out …`, stored
   in DigitalOcean as a SECRET). `lib/orazaka.ts` is the only client.
 - **Every analysis keeps its Orazaka run id**, shown in the UI: the trace of what ran, on which Studio version.
+- **Photos** (ADR-0010, yomizaka#8): JPEG, PNG and HEIC (several make one document) are cleaned (orientation, skew, crop, EXIF dropped after reading) and
+  held to a **quality gate** (`lib/images/quality.ts`, thresholds as data in `rules.ts`): a blurred, glared or cut-off photo is refused with what to do
+  (`PHOTO_BLURRY`, `PHOTO_GLARE`, `PHOTO_CUT_OFF`) before anything is stored or read. The text is read locally (Tesseract) and the recognised words are laid
+  invisibly on each photo in the stored PDF, so a finding's passage is lit on the photo by the same viewer as on a text PDF. `documents.sha256` is the file
+  kept; `source_sha256` is the assembled photos, so the same photos sent again are still one document.
 - Reading a file's **text layer** (pdf.js through `unpdf`) is parsing, not analysis: it feeds the compliance Studio and
   search. A scanned PDF has no text layer — the UI says so; reading images would be Orazaka's job. pdf.js never runs in the web
   process: `lib/extraction/isolated.ts` reads the PDF in a `node:worker_threads` worker with its own heap (384 MB), a 10 s deadline
@@ -86,6 +91,13 @@
   vendor; each is declared once in `apps/web/lib/env.ts`.
 
 - **The live DO spec must equal `deploy/digitalocean/dev.app.yaml`** (the repository is the intent; `doctl apps update` is not run by CI). The sitemap was a 404 because the live app still had `APP_SEARCH_INDEXING=off` while the file said `on`: after any spec change, run `node scripts/check-seo-family.mjs --base https://www.yomizaka.com --host https://www.yomizaka.com`. **`dev.*` is never indexed** (www is production; dev redirects to it today and becomes a separate dev environment later): `indexableOn` is false for any `dev.*` host, tested in `lib/indexing.test.ts`.
+
+- **Sealed contracts** (`lib/contracts/`, yomizaka#71): `POST /api/v1/contracts/seal` (API key, scope `contracts:seal`) renders a partner's contract — its content,
+  its parties, the framework the partner *names* — as a PDF signed like a report (folios, signature page, Ed25519 attestation embedded; `lib/pdf-layout.ts` is the
+  layout both share). It seals; it verifies no identity, no age and no law, and says so on the file. The same request is the same contract (id by content: a retry
+  is 200, nothing sealed twice). The file is kept in the database (Toronto): `X-Data-Residency-Zone` is answered only for a zone the file is in (`CA`, `CA-ON`),
+  `CA-QC` is refused (`ZONE_UNAVAILABLE`) until a store there exists. `/verify/contract/<sha256>` (308 to `/api/verify/contract/…`) is public and shows who sealed it
+  and when, never a name, an account or the content.
 
 ## 5. Storage and cost
 
@@ -168,3 +180,7 @@ These are the defects code review found most often on 2026-10-23. Check them you
 
 **Repository layout:** the root follows [krizaka/.github `docs/standards/repo-layout.md`](https://github.com/krizaka/.github/blob/main/docs/standards/repo-layout.md); the CI guard `check-repo-layout` fails on a stray root file, and a justified extra is declared in `.repo-layout.json` with its why.
 - **Default media** (avatars, banners, logos): their URLs come from the Krizaka org JSON (`@krizaka/org`: `listDefaults(kind)`, `defaultFor(kind, seed)`) — never hard-coded or bundled in this repository; a folder is never given a person (`scripts/lib/default-media.test.mjs`). [Standard](https://github.com/krizaka/.github/blob/main/docs/standards/default-media.md).
+
+## Storage (ADR-010)
+
+Kept documents go through `@krizaka/storage` (`apps/web/lib/storage/adapter.ts` wraps its `ObjectStore` as the `DocumentStore` port of `@yomizaka/core`). Keys and signed-link shapes never change (`krizaka-storage.test.ts` proves it on an existing key). The admin picks the provider in the `storage.*` settings; encryption at rest, the vault and the region table (`regions.ts`, `where.ts`) stay here until the package ships them. No local SigV4, Bunny or endpoint copy: change the package.

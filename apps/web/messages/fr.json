@@ -809,6 +809,9 @@
       "IMAGE_TOO_LARGE": "Cette photo est trop grande. Réduisez sa résolution et réessayez.",
       "TOO_MANY_PHOTOS": "Un document peut compter 12 photos au plus.",
       "UNREADABLE_IMAGE": "Cette photo ne peut pas être lue. Reprenez-la ou choisissez un autre fichier.",
+      "PHOTO_BLURRY": "Cette photo est floue : le texte ne peut pas être lu. Tenez le téléphone stable, laissez la mise au point se faire et reprenez-la.",
+      "PHOTO_GLARE": "Un reflet cache une partie de la page. Éloignez-vous de la lumière ou de la fenêtre, inclinez un peu la page et reprenez la photo.",
+      "PHOTO_CUT_OFF": "La page est coupée par le bord de la photo. Reprenez-la avec toute la page dans le cadre.",
       "OCR_FAILED": "Le texte de cette photo n'a pas pu être lu. Reprenez la photo, bien éclairée et à plat.",
       "PHOTO_AUTHENTICITY": "Ce document vient de photos : son authenticité ne peut pas se juger sur un fichier.",
       "DEFAULT_COLLECTION": "La collection par défaut ne peut pas être supprimée. Choisissez-en une autre comme collection par défaut d'abord.",
@@ -1606,6 +1609,14 @@
           "webhooks": {
             "label": "Webhooks",
             "hint": "Désactivé : aucun webhook n'est envoyé ni enregistré, quel que soit le forfait."
+          },
+          "screeningBilling": {
+            "label": "Facturation des vérifications de dossier",
+            "hint": "Facture chaque vérification de dossier (coût plus marge, taxes comprises). Désactivée : rien n'est facturé. Mode test seulement tant que la grille de conformité n'est pas ouverte."
+          },
+          "screeningLive": {
+            "label": "Vérifications de dossier en direct",
+            "hint": "Vrais fournisseurs, vraies personnes. Refusé tant que chaque point de la grille de conformité n'est pas fait, preuve à l'appui. À garder désactivé."
           }
         },
         "limits": {
@@ -1708,6 +1719,16 @@
             },
             "windowSeconds": {
               "label": "Fenêtre : Demande d'accès à une vérification",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "verifyContract": {
+            "perIp": {
+              "label": "Limite par adresse : Vérification d'un contrat scellé",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Vérification d'un contrat scellé",
               "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
             }
           },
@@ -3068,9 +3089,6 @@
       "title": "Une demande de vérification de votre dossier",
       "lead": "{landlord} demande votre accord pour vérifier votre dossier de candidature. Vous décidez : rien n'est vérifié sans votre consentement.",
       "whatTitle": "Ce qui serait vérifié",
-      "scope": {
-        "payment-history": "Votre historique de paiement"
-      },
       "provider": "Fournisseur : {provider}",
       "why": "Pourquoi : le propriétaire évalue votre candidature à un logement.",
       "notAsked": "Ce qui n'est jamais demandé : numéro d'assurance sociale, coordonnées bancaires, employeur, salaire, casier judiciaire.",
@@ -3095,18 +3113,30 @@
       "resultTitle": "Votre résultat",
       "band": {
         "no-concern": "Rien à signaler",
-        "review": "À examiner"
+        "review": "À examiner",
+        "incomplete": "Pas encore complet"
       },
-      "item": {
-        "payment-history": "Historique de paiement",
-        "identity-match": "Identité"
-      },
+      "item": {},
       "outcome": {
         "clear": "rien à signaler",
-        "review": "à examiner"
+        "review": "à examiner",
+        "pending": "en cours",
+        "unavailable": "indisponible pour le moment",
+        "soon": "bientôt disponible"
       },
       "deleteOn": "Supprimé le {date}.",
-      "contested": "Votre contestation : « {comment} »"
+      "contested": "Votre contestation : « {comment} »",
+      "incompleteNote": "Certaines vérifications n'ont pas répondu. Rien ici n'est un résultat pour celles-ci : elles sont montrées telles qu'elles en sont.",
+      "copy": "Obtenir une copie de mon résultat",
+      "quoteTitle": "Prix et qui paie",
+      "quoteLine": "{check} : {price}",
+      "quoteFree": "sans frais",
+      "quotePayer": {
+        "firm": "Payé par la société de gestion immobilière.",
+        "owner": "Payé par le propriétaire de l'immeuble.",
+        "applicant": "Payé par vous."
+      },
+      "quoteTaxes": "Les taxes (TPS/TVQ) s'ajoutent lorsqu'elles s'appliquent."
     },
     "landlord": {
       "title": "Dossier du locataire",
@@ -3119,9 +3149,6 @@
       "name": "Nom du candidat",
       "email": "Courriel du candidat",
       "scope": "Ce qui sera vérifié",
-      "scopeItem": {
-        "payment-history": "Historique de paiement"
-      },
       "request": "Demander son consentement",
       "created": "Remettez ce lien au candidat (il ne sera plus affiché) :",
       "copy": "Copier le lien",
@@ -3138,7 +3165,17 @@
       "shownTitle": "Résultat transmis",
       "hidden": "Le résultat n'est visible qu'une fois transmis par le candidat.",
       "demo": "Fournisseur de démonstration : données fictives.",
-      "reviewNote": "« À examiner » n'est pas un verdict : parlez-en au candidat avant toute décision."
+      "reviewNote": "« À examiner » n'est pas un verdict : parlez-en au candidat avant toute décision.",
+      "noneOffered": "Aucune vérification ne vous est offerte pour le moment.",
+      "payer": {
+        "label": "Who pays for the checks",
+        "firm": "La société de gestion immobilière",
+        "owner": "Le propriétaire de l'immeuble",
+        "applicant": "Le candidat (seulement là où c'est permis)"
+      }
+    },
+    "invoice": {
+      "line": "Vérification : {check} — service Krizaka"
     }
   },
   "terms": {
@@ -3359,5 +3396,26 @@
   "stage": {
     "title": "Version de développement",
     "message": "Les données peuvent être réinitialisées à tout moment. Ce n'est pas encore une offre commerciale."
+  },
+  "contractSeal": {
+    "eyebrow": "Yomizaka — sceau d’un contrat",
+    "partner": "Partenaire",
+    "contractId": "Contrat",
+    "documentType": "Type de document",
+    "ruleset": "Cadre indiqué par le partenaire",
+    "parties": "Parties",
+    "partyRole": "Rôle",
+    "partyName": "Nom",
+    "partyUser": "Compte",
+    "partyAttestation": "Attestation du partenaire",
+    "partySignedAt": "Signé le",
+    "payloadHeading": "Contenu scellé",
+    "payloadSha": "SHA-256 du contenu",
+    "sealedAt": "Scellé le",
+    "zone": "Zone des données",
+    "guaranteeHeading": "Ce que ce sceau dit",
+    "guarantees": "Ce fichier est scellé avec la clé de Yomizaka (Ed25519, détenue par Krizaka) : il atteste que ce contenu, ces parties et ces dates existaient sous cette forme au moment du scellement et n’ont pas été modifiés depuis.",
+    "notGuaranteed": "Il ne vérifie ni l’identité de quiconque, ni l’âge de quiconque, ni la validité du contrat en droit, ni les déclarations du partenaire : Yomizaka vérifie des documents, il ne décide pas. Informatif, pas un avis juridique.",
+    "verify": "Pour vérifier une copie, prenez son SHA-256 et ouvrez {url} suivi de cette valeur : la réponse dit si Yomizaka l’a scellée et quand, sans montrer aucun renseignement personnel."
   }
 }
