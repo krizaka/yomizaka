@@ -153,7 +153,10 @@ export interface IssuedPdf {
   attestation: Attestation;
 }
 
-const faceOf = (b: Block): Face => (b.mono ? "mono" : b.bold ? "bold" : "regular");
+const faceOf = (b: Block): Face => {
+  if (b.mono) return "mono";
+  return b.bold ? "bold" : "regular";
+};
 
 /** Lays out, hashes the text, signs, embeds. Each page carries its folio and the first one its footnotes; the findings are numbered as on the screen. */
 export async function issuePdf(payload: ReportPayload, labels: ReportLabels, key: SigningKey): Promise<IssuedPdf> {
