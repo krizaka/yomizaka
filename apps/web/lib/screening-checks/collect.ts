@@ -1,4 +1,4 @@
-import { addMinutes } from "date-fns";
+import { addMinutes } from "@krizaka/time";
 
 import { audit } from "../audit";
 import { query } from "../db";

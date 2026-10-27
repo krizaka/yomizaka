@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 
-import { addMinutes } from "date-fns";
+import { addMinutes } from "@krizaka/time";
 import { z } from "zod";
 
 import { CONSENT_MEANS, grantConsent, NOTICE_VERSION, purposesOfTypes, requireConsent } from "./applicant-consent";
