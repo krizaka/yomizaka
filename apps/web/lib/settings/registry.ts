@@ -2,6 +2,7 @@ import { authSettings } from "@krizaka/auth/settings";
 import { couponSettings } from "@krizaka/coupons/settings";
 import { creditsSettings } from "@krizaka/credits/settings";
 import { ALL_SCOPES, bilingual, choice, defineSettings, flag, integer, type Registry, SCOPE, subset, WORKSPACE_SCOPES } from "@krizaka/settings";
+import { storageSettings } from "@krizaka/storage/settings";
 import type { z } from "zod";
 
 import { LIMIT_SETTINGS } from "./limits";
@@ -50,6 +51,8 @@ export const SETTINGS = {
   "audit.freeValidDays": integer(GROUP.general, 3650, { min: 1, max: 36500, unit: "days" }),
   // The credits ledger's knobs (the zone days and months are counted in, how long a hold keeps credits back): @krizaka/credits'.
   ...inGroup(GROUP.general, creditsSettings),
+  // Where kept documents live (ADR-010): the provider and its coordinates, chosen by the admin. `local` (the default) follows the deployment's environment.
+  ...inGroup(GROUP.general, storageSettings),
   // Features: each can be switched off for everyone, a workspace or one person (a beta).
   "features.documentInsight": flag(GROUP.features, true, ALL),
   "features.personalInfo": flag(GROUP.features, true, WORKSPACE),
@@ -64,6 +67,10 @@ export const SETTINGS = {
   "features.batches": flag(GROUP.features, true, WORKSPACE),
   /** Signed webhooks when a batch or a check finishes (yomizaka#241): the global switch; what a plan holds is below. */
   "features.webhooks": flag(GROUP.features, true, WORKSPACE),
+  /** Per-check billing of the screening checks (yomizaka#133): OFF. Nothing is charged while it is off; it also needs a payments port that can charge a check. */
+  /** Live screening checks (real providers, real people): Oussama's switch only, OFF. Refused at start, and at every call, unless every blocker of the compliance gate is done (yomizaka#135). */
+  "features.screeningLive": flag(GROUP.features, false),
+  "features.screeningBilling": flag(GROUP.features, false),
   "features.avatarSet": subset(GROUP.features, AVATAR_SEED_CHOICES, [...AVATAR_SEED_CHOICES]),
   // Limits: what one document and one account may do.
   "limits.maxFileMb": integer(GROUP.limits, PLATFORM_MAX_FILE_MB, { min: 1, max: PLATFORM_MAX_FILE_MB, unit: "MB" }, WORKSPACE),

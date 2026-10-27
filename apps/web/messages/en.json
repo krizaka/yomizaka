@@ -809,6 +809,9 @@
       "IMAGE_TOO_LARGE": "This photo is too large. Lower its resolution and try again.",
       "TOO_MANY_PHOTOS": "A document can have 12 photos at most.",
       "UNREADABLE_IMAGE": "This photo cannot be read. Take it again or choose another file.",
+      "PHOTO_BLURRY": "This photo is blurred: the text cannot be read. Hold the phone steady, let it focus, and take it again.",
+      "PHOTO_GLARE": "A glare hides part of this page. Move away from the light or the window, tilt the page a little, and take it again.",
+      "PHOTO_CUT_OFF": "The page is cut off by the edge of the photo. Take it again with the whole page in view.",
       "OCR_FAILED": "The text of this photo could not be read. Take it again, well lit and flat.",
       "PHOTO_AUTHENTICITY": "This document comes from photos: its authenticity cannot be judged from a file.",
       "DEFAULT_COLLECTION": "The default collection cannot be deleted. Make another collection the default first.",
@@ -1606,6 +1609,14 @@
           "webhooks": {
             "label": "Webhooks",
             "hint": "Off: no webhook is sent and none can be registered, whatever the plan."
+          },
+          "screeningBilling": {
+            "label": "Screening checks billing",
+            "hint": "Charges each screening check (cost plus margin, with taxes). Off: nothing is charged. Test mode only until the compliance gate is open."
+          },
+          "screeningLive": {
+            "label": "Live screening checks",
+            "hint": "Real providers, real people. Refused unless every blocker of the compliance gate is done with evidence. Keep OFF."
           }
         },
         "limits": {
@@ -1708,6 +1719,16 @@
             },
             "windowSeconds": {
               "label": "Window: Asking for access to a verification",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "verifyContract": {
+            "perIp": {
+              "label": "Limit per address: Verifying a sealed contract",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: Verifying a sealed contract",
               "hint": "Beyond it the answer is 429 with the time to wait."
             }
           },
@@ -3068,9 +3089,6 @@
       "title": "A request to check your application",
       "lead": "{landlord} asks your agreement to check your rental application. You decide: nothing is checked without your consent.",
       "whatTitle": "What would be checked",
-      "scope": {
-        "payment-history": "Your payment history"
-      },
       "provider": "Provider: {provider}",
       "why": "Why: the landlord is assessing your application for a dwelling.",
       "notAsked": "Never asked: social insurance number, bank details, employer, salary, criminal record.",
@@ -3095,18 +3113,30 @@
       "resultTitle": "Your result",
       "band": {
         "no-concern": "Nothing to report",
-        "review": "To review"
+        "review": "To review",
+        "incomplete": "Not complete yet"
       },
-      "item": {
-        "payment-history": "Payment history",
-        "identity-match": "Identity"
-      },
+      "item": {},
       "outcome": {
         "clear": "nothing to report",
-        "review": "to review"
+        "review": "to review",
+        "pending": "in progress",
+        "unavailable": "not available right now",
+        "soon": "not available yet"
       },
       "deleteOn": "Deleted on {date}.",
-      "contested": "Your contestation: « {comment} »"
+      "contested": "Your contestation: « {comment} »",
+      "incompleteNote": "Some checks have not answered. Nothing here is a result for those: they are shown as they stand.",
+      "copy": "Get a copy of my result",
+      "quoteTitle": "Price and who pays",
+      "quoteLine": "{check}: {price}",
+      "quoteFree": "no charge",
+      "quotePayer": {
+        "firm": "Paid by the property-management firm.",
+        "owner": "Paid by the building owner.",
+        "applicant": "Paid by you."
+      },
+      "quoteTaxes": "Taxes (GST/QST) are added where they apply."
     },
     "landlord": {
       "title": "Tenant application",
@@ -3119,9 +3149,6 @@
       "name": "Applicant's name",
       "email": "Applicant's e-mail",
       "scope": "What will be checked",
-      "scopeItem": {
-        "payment-history": "Payment history"
-      },
       "request": "Ask for their consent",
       "created": "Hand this link to the applicant (it will not be shown again):",
       "copy": "Copy the link",
@@ -3138,7 +3165,17 @@
       "shownTitle": "Result passed on",
       "hidden": "The result is visible only once the applicant passes it on.",
       "demo": "Demonstration provider: fictitious data.",
-      "reviewNote": "« To review » is not a verdict: talk to the applicant before any decision."
+      "reviewNote": "« To review » is not a verdict: talk to the applicant before any decision.",
+      "noneOffered": "No check is available to you yet.",
+      "payer": {
+        "label": "Who pays for the checks",
+        "firm": "The property-management firm",
+        "owner": "The building owner",
+        "applicant": "The applicant (only where allowed)"
+      }
+    },
+    "invoice": {
+      "line": "Check: {check} — a Krizaka service"
     }
   },
   "terms": {
@@ -3359,5 +3396,26 @@
   "stage": {
     "title": "Development version",
     "message": "Data can be reset at any time. This is not a commercial offer yet."
+  },
+  "contractSeal": {
+    "eyebrow": "Yomizaka — seal of a contract",
+    "partner": "Partner",
+    "contractId": "Contract",
+    "documentType": "Document type",
+    "ruleset": "Framework named by the partner",
+    "parties": "Parties",
+    "partyRole": "Role",
+    "partyName": "Name",
+    "partyUser": "Account",
+    "partyAttestation": "Partner's attestation",
+    "partySignedAt": "Signed on",
+    "payloadHeading": "Content sealed",
+    "payloadSha": "SHA-256 of the content",
+    "sealedAt": "Sealed on",
+    "zone": "Data zone",
+    "guaranteeHeading": "What this seal says",
+    "guarantees": "This file is sealed with Yomizaka's key (Ed25519, held by Krizaka): it attests that this content, these parties and these dates existed in this form at the time of sealing and have not been changed since.",
+    "notGuaranteed": "It does not verify anyone's identity, the age of anyone, the validity of the contract in law or the partner's statements: Yomizaka checks documents, it does not decide. Informative, not legal advice.",
+    "verify": "To check a copy, take its SHA-256 and open {url} followed by that value: the answer says whether Yomizaka sealed it and when, and shows no personal information."
   }
 }

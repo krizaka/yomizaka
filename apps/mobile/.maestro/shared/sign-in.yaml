@@ -2,6 +2,10 @@
 # reinstall, so a session may already exist.
 appId: com.krizaka.yomizaka
 ---
+# A blank first frame must not read as "signed in": wait for the sign-in or the signed-in screen before reading which.
+- extendedWaitUntil:
+    visible: "Se connecter|Sign in|Vérifier un document|Check a document"
+    timeout: 30000
 - runFlow:
     when:
       visible:

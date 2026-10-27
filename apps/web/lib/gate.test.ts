@@ -33,6 +33,7 @@ const PUBLIC: Record<string, string> = {
   "webhooks/mail": "signed by the mail vendor (bounces, complaints), refused without its signature (yomizaka#48)",
   "batches/template": "the CSV template: a static file",
   "v1/openapi.json": "the public contract of the API",
+  "verify/contract/[id]": "the public check of a sealed contract by its SHA-256 (yomizaka#71): who sealed it and when, no name, no account, no content",
 };
 
 const walk = (dir: string): string[] => readdirSync(dir).flatMap((n) => (statSync(join(dir, n)).isDirectory() ? walk(join(dir, n)) : [join(dir, n)]));
