@@ -1,6 +1,8 @@
 // The demo data set of a persona (krizaka/yomizaka#274): an account, its collections, its fictitious documents and a few finished checks.
 // Idempotent (a re-run changes nothing; `reset` starts over) and refused on production. The checks are SEEDED, not run: their run id
 // starts with `seeded-` and their inputs say so — no paid run, no call to the engine.
+import { createHash } from "node:crypto";
+
 import { generateDocument, PERSONA_ERIC, AS_OF, DEFAULT_SEED } from "../demo-documents/index.mjs";
 
 export const PERSONAS = { eric: PERSONA_ERIC };
@@ -8,6 +10,29 @@ export const DEFAULT_EMAILS = { eric: "eric@demo.yomizaka.test" };
 export const SEEDED_RUN_PREFIX = "seeded-";
 /** What a seeded check carries in its inputs — the same marker `@yomizaka/core` reads (`isSeededCheck`). */
 export const SEEDED_INPUTS = { seeded: "true" };
+
+/** The demo tokens of the owner link of a persona's seeded file (yomizaka#128): one that opens, one that was revoked. Demo values, never a real link. */
+export const demoOwnerTokens = (persona) => ({ live: `demo-owner-live-${persona}-0123456789abcdef`, revoked: `demo-owner-revoked-${persona}-0123456789abcdef` });
+const sha256 = (value) => createHash("sha256").update(value).digest("hex");
+
+/** A fictitious applicant file with its two owner links, so the public report page can be audited (idempotent: the links are renewed). */
+async function seedOwnerFile(q, owner, persona) {
+  const [file] = await q(
+    `INSERT INTO screenings (landlord_id, tenant_name, tenant_email, scope, provider, token_hash, expires_at, flow, requested_types)
+     VALUES ($1, 'Camille Fictif', 'camille@demo.yomizaka.test', '{}', 'applicant-file', $2, now() + interval '30 days', 'file', '{}')
+     ON CONFLICT (token_hash) DO UPDATE SET expires_at = EXCLUDED.expires_at RETURNING id`,
+    [owner, sha256(`demo-file-${persona}`)],
+  );
+  const tokens = demoOwnerTokens(persona);
+  for (const [name, revoked] of [["live", false], ["revoked", true]]) {
+    await q(
+      `INSERT INTO file_report_shares (screening_id, landlord_id, recipient, token_hash, expires_at, revoked_at)
+       VALUES ($1, $2, 'Demo', $3, now() + interval '30 days', ${revoked ? "now()" : "NULL"})
+       ON CONFLICT (token_hash) DO UPDATE SET expires_at = EXCLUDED.expires_at, revoked_at = ${revoked ? "coalesce(file_report_shares.revoked_at, now())" : "NULL"}`,
+      [file.id, owner, sha256(tokens[name])],
+    );
+  }
+}
 
 /** The seed works on dev and local only: anything that says it is production is refused, and so is a value it does not know. */
 export function assertNotProduction(env) {
@@ -116,5 +141,6 @@ async function seedInTransaction(q, def, { persona, address, locale, messagesByL
     const [count] = await q("SELECT count(*)::int AS n FROM documents WHERE collection_id = $1", [row.id]);
     counts[name] = count.n;
   }
+  await seedOwnerFile(q, owner, persona);
   return { owner, email: address, name: account.name, collections: counts };
 }

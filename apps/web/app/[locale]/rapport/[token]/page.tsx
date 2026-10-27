@@ -4,6 +4,7 @@ import { PageHero } from "@krizaka/ui/page-hero";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
 import { DISPLAY_TIME_ZONE, INTL } from "@/components/console/format";
 import { SiteHeader } from "@/components/SiteChrome";
@@ -26,18 +27,9 @@ export default async function OwnerReportPage({ params }: Readonly<{ params: Pro
   await limit("applicant", { headers: h }, null);
   const now = new Date();
   const report = await openShare(token, now, h);
+  // One answer for an unknown, expired or revoked link: 404, nothing leaks (yomizaka#128).
+  if (!report) notFound();
   const back = { href: pagePath(locale, "home"), label: t.meta.siteName };
-  if (!report) {
-    return (
-      <>
-        <SiteHeader locale={locale} current="home" />
-        <main id="content">
-          <PageHero back={back} linkAs={Link} title={w.expiredTitle} backdrop="plain" lead={w.expiredBody} />
-        </main>
-        <SiteFooter locale={locale} />
-      </>
-    );
-  }
   const date = new Date(report.issuedAt).toLocaleDateString(INTL[locale], { dateStyle: "long", timeZone: DISPLAY_TIME_ZONE });
   const verdicts: Record<string, string> = w.verdict;
   return (

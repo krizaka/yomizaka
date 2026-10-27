@@ -12,6 +12,7 @@ import { join } from "node:path";
 
 import { chromium } from "playwright-core";
 
+import { demoOwnerTokens } from "./demo-seed/seed.mjs";
 import { auditPage, problemsOf } from "./lib/page-audit.mjs";
 import { auditContext, loadSettled, resizeSettled } from "./lib/settle.mjs";
 
@@ -52,6 +53,10 @@ export async function discover(page, base, locale) {
   if (collection) found.push(collection.replace(/^\/(en|fr)/, ""));
   // Every tab of the binder, the empty folders included: the open folder's card is audited in each state (yomizaka#435).
   for (const h of new Set(hrefs.filter((x) => /[?&]collection=/.test(x ?? "")))) found.push(h.replace(/^\/(en|fr)/, ""));
+  // The applicant file's page (it carries the owner-link block, yomizaka#128).
+  await loadSettled(page, `${base}/${locale}/app/dossiers`);
+  const dossier = (await page.$$eval("a[href]", (as) => as.map((a) => a.getAttribute("href")))).find((h) => /\/app\/dossiers\/[0-9a-f-]{36}$/.test(h ?? ""));
+  if (dossier) found.push(dossier.replace(/^\/(en|fr)/, ""));
   const document = hrefs.find((h) => /\/app\/documents\/[^/]+(\/|$)/.test(h ?? ""));
   if (document) {
     const id = document.match(/\/app\/documents\/([^/?#]+)/)[1];
@@ -59,6 +64,10 @@ export async function discover(page, base, locale) {
   }
   return [...new Set([...PAGES, ...found])];
 }
+
+/** The public owner report (yomizaka#128) opens on the seeded demo token, and the revoked demo token answers 404 (never the report). */
+export const ownerReportPath = (persona = "eric") => `/rapport/${demoOwnerTokens(persona).live}`;
+export const revokedReportPath = (persona = "eric") => `/rapport/${demoOwnerTokens(persona).revoked}`;
 
 export async function check({ base, locale = "fr", email, password, shots }) {
   if (!email || !password) throw new Error("E2E_EMAIL and E2E_PASSWORD are required (the seeded persona)");
@@ -69,6 +78,8 @@ export async function check({ base, locale = "fr", email, password, shots }) {
     const probe = await context.newPage();
     await signIn(probe, base, locale, email, password);
     const pages = await discover(probe, base, locale);
+    const revoked = await probe.request.get(`${base}/${locale}${revokedReportPath()}`);
+    if (revoked.status() !== 404) problems.push(`${revokedReportPath()}: a revoked link must answer 404, got ${revoked.status()}`);
     await probe.close();
     const cookies = await context.cookies();
     await context.close();
@@ -86,14 +97,15 @@ export async function check({ base, locale = "fr", email, password, shots }) {
         if (m.type() === "error" && !/Failed to load resource/.test(m.text())) errors.push(m.text().slice(0, 140));
       });
       page.on("pageerror", (e) => errors.push(String(e).slice(0, 140)));
-      for (const path of pages) {
+      for (const path of [...pages, ownerReportPath()]) {
+        const publicPage = path.startsWith("/rapport/");
         for (const width of WIDTHS) {
           await resizeSettled(page, { width, height: width < 600 ? 844 : 900 });
           await loadSettled(page, `${base}/${locale}${path}`);
           await page.waitForTimeout(300);
           const result = await page.evaluate(auditPage);
-          const where = `${path} @${width} ${theme}`;
-          problems.push(...problemsOf(where, result, { errors, h1: true, headerAction: true }));
+          const where = `${publicPage ? "/rapport/<demo token>" : path} @${width} ${theme}`;
+          problems.push(...problemsOf(where, result, { errors, h1: true, headerAction: !publicPage }));
           errors = [];
           if (shots) {
             mkdirSync(shots, { recursive: true });
@@ -103,7 +115,7 @@ export async function check({ base, locale = "fr", email, password, shots }) {
       }
       await ctx.close();
     }
-    return { problems, pages };
+    return { problems, pages: [...pages, ownerReportPath()] };
   } finally {
     await browser.close();
   }

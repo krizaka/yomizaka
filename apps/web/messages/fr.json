@@ -2785,6 +2785,31 @@
         "decided": "Décision prise : {state}",
         "none": "Aucune action possible."
       },
+      "share": {
+        "title": "Lien pour le propriétaire de l'immeuble",
+        "lead": "Un rapport en lecture seule : empreintes et constats seulement, ni nom ni document. Vous choisissez la durée d'ouverture, 30 jours au plus.",
+        "expiry": "Ouvert pendant",
+        "days": "{count} jours",
+        "create": "Créer un lien",
+        "creating": "Création…",
+        "created": "Lien prêt. Il n'est montré qu'une fois : copiez-le maintenant.",
+        "copy": "Copier le lien",
+        "copied": "Lien copié",
+        "linkLabel": "Lien à envoyer",
+        "none": "Aucun lien pour l'instant.",
+        "active": "Liens actifs",
+        "views": "{count} consultations",
+        "viewsOne": "{count} consultation",
+        "expires": "jusqu'au {date}",
+        "revoke": "Révoquer",
+        "revoked": "Lien révoqué.",
+        "state": {
+          "live": "Actif",
+          "expired": "Expiré",
+          "revoked": "Révoqué"
+        },
+        "loading": "Chargement des liens…"
+      },
       "tagsEdit": {
         "title": "Étiquettes",
         "edit": "Modifier les étiquettes",
@@ -3462,8 +3487,6 @@
       "PASS": "Aucun problème signalé",
       "FAIL": "Problème signalé",
       "INSUFFICIENT_EVIDENCE": "Preuves insuffisantes"
-    },
-    "expiredTitle": "Ce lien n'est plus disponible",
-    "expiredBody": "Le lien a expiré ou a été retiré. Demandez-en un nouveau au gestionnaire."
+    }
   }
 }
