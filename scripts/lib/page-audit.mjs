@@ -1,100 +1,154 @@
 // What a rendered page is measured on, in a real browser (Playwright `page.evaluate(auditPage)`), and what counts as a problem.
 // Shared by the responsive guard of the public pages (check-overflow.mjs) and the signed-in pages' check (check-app-pages.mjs).
 
-/** Runs in the page: the h1 count, the horizontal overflow and who pokes out, the unnamed buttons, the header's action, the audience chips. */
-export function auditPage() {
-  const doc = document.documentElement;
-  // An element that pokes out only matters when nothing clips it: decorative layers (aria-hidden) and anything inside a
-  // clipping or scrolling ancestor (overflow hidden / clip / auto / scroll) are meant to extend.
-  const clipped = (el) => {
-    for (let n = el; n && n !== document.body; n = n.parentElement) {
-      if (n.getAttribute("aria-hidden") === "true") return true;
-      if (n !== el && ["hidden", "clip", "auto", "scroll"].includes(getComputedStyle(n).overflowX)) return true;
-    }
-    return false;
-  };
-  const wide = [...document.querySelectorAll("body *")]
+// The probes below run in the page, so each uses only the browser's globals and the other probes (all of them are serialised together
+// into `auditPage`). They are small on purpose: one measure each, proven on its own fixture (check-page-audit.mjs).
+
+const ARIA_HIDDEN = '[aria-hidden="true"]';
+const className = (el, n) => String(el.className).split(" ").filter(Boolean).slice(0, n).join(".");
+const nameOf = (el) => `${el.tagName.toLowerCase()}${el.getAttribute("data-testid") ? `[${el.getAttribute("data-testid")}]` : ""}.${className(el, 2)}`;
+const scrolls = (el) => ["auto", "scroll"].includes(getComputedStyle(el).overflowY) || ["auto", "scroll"].includes(getComputedStyle(el).overflowX);
+const meets = (ra, rb) => Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left) > 2 && Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top) > 2;
+const apart = (a, b) => !a.contains(b) && !b.contains(a);
+
+/** An element that pokes out only matters when nothing clips it: decorative layers (aria-hidden) and anything inside a clipping or scrolling ancestor are meant to extend. */
+function clipped(el) {
+  for (let n = el; n && n !== document.body; n = n.parentElement) {
+    if (n.getAttribute("aria-hidden") === "true") return true;
+    if (n !== el && ["hidden", "clip", "auto", "scroll"].includes(getComputedStyle(n).overflowX)) return true;
+  }
+  return false;
+}
+
+function wideOf(doc) {
+  return [...document.querySelectorAll("body *")]
     .filter((el) => {
       const r = el.getBoundingClientRect();
       return r.width > 0 && (r.right > doc.clientWidth + 1 || r.left < -1) && !clipped(el);
     })
     .slice(0, 3)
     .map((el) => `${el.tagName.toLowerCase()}.${String(el.className).split(" ").slice(0, 3).join(".")}`);
-  // A button's accessible name: its text, aria-label, aria-labelledby, title — or a <label for> pointing at it (a checkbox, a switch).
-  const named = (b) => !!((b.textContent || "").trim() || b.getAttribute("aria-label") || b.getAttribute("aria-labelledby") || b.title || (b.id && document.querySelector(`label[for="${CSS.escape(b.id)}"]`)));
+}
+
+/** A button's accessible name: its text, aria-label, aria-labelledby, title — or a <label for> pointing at it (a checkbox, a switch). */
+function named(b) {
+  const labelled = !!b.id && !!document.querySelector(`label[for="${CSS.escape(b.id)}"]`);
+  return !!((b.textContent || "").trim() || b.getAttribute("aria-label") || b.getAttribute("aria-labelledby") || b.title || labelled);
+}
+
+function unnamedOf() {
   const unnamed = [...document.querySelectorAll("button")].filter((b) => !named(b));
-  const unnamedButtons = unnamed.length;
-  const unnamedSamples = unnamed.slice(0, 2).map((b) => b.outerHTML.slice(0, 160).replace(/\s+/g, " "));
+  return { unnamedButtons: unnamed.length, unnamedSamples: unnamed.slice(0, 2).map((b) => b.outerHTML.slice(0, 160).replace(/\s+/g, " ")) };
+}
+
+function headerActionOf(doc) {
   const action = document.querySelector('[data-testid="header-check"]');
-  const box = action?.getBoundingClientRect();
-  const headerAction = action
-    ? { visible: !!box && box.width > 0 && box.height > 0 && box.left >= 0 && box.right <= doc.clientWidth + 1 && box.top >= 0, named: !!((action.getAttribute("aria-label") || action.textContent || "").trim()) }
-    : null;
-  // Layout: what the horizontal-overflow check above cannot see (yomizaka#435).
-  // - `overflowing`: a panel's content that runs out of the panel (a card taller than its panel, over the next section);
-  // - `overlaps`: two sections that are not nested and cover each other;
-  // - `cutColumns`: a section or a column cut by a clipping ancestor (overflow hidden / clip), which hides part of its content.
-  // Decorative layers (aria-hidden), fixed elements and anything inside a scroller (overflow auto / scroll) are left out.
-  const panels = [...document.querySelectorAll("[data-panel], main section, main [role=region]")].filter((el) => !el.closest('[aria-hidden="true"]'));
-  const nameOf = (el) => `${el.tagName.toLowerCase()}${el.getAttribute("data-testid") ? `[${el.getAttribute("data-testid")}]` : ""}.${String(el.className).split(" ").filter(Boolean).slice(0, 2).join(".")}`;
-  const scrolls = (el) => ["auto", "scroll"].includes(getComputedStyle(el).overflowY) || ["auto", "scroll"].includes(getComputedStyle(el).overflowX);
+  if (!action) return null;
+  const box = action.getBoundingClientRect();
+  const visible = box.width > 0 && box.height > 0 && box.left >= 0 && box.right <= doc.clientWidth + 1 && box.top >= 0;
+  return { visible, named: !!(action.getAttribute("aria-label") || action.textContent || "").trim() };
+}
+
+/** What a folded `<details>` holds is not drawn, though the browser still gives it a box (its summary is). */
+function folded(el) {
+  return !!el.closest("details:not([open])") && !el.closest("summary");
+}
+
+/** Whether an ancestor between the element and the panel keeps what runs out of it: a scroller, or a visually hidden wrapper (`sr-only`: a 1 px clipped box, the text version of a chart). */
+function keptBetween(el, panel) {
+  for (let n = el.parentElement; n && n !== panel; n = n.parentElement) {
+    if (scrolls(n)) return true;
+    const nb = n.getBoundingClientRect();
+    if ((nb.width <= 2 || nb.height <= 2) && getComputedStyle(n).overflowY !== "visible") return true;
+  }
+  return false;
+}
+
+function notDrawn(el, r) {
+  return r.width === 0 || r.height === 0 || getComputedStyle(el).position === "fixed" || !!el.closest(ARIA_HIDDEN) || !!el.closest("[data-radix-popper-content-wrapper]") || folded(el);
+}
+
+function runsOut(el, panel, box) {
+  const r = el.getBoundingClientRect();
+  if (notDrawn(el, r) || keptBetween(el, panel)) return false;
+  return r.bottom > box.bottom + 1.5 || r.right > box.right + 1.5;
+}
+
+/** `overflowing`: a panel's content that runs out of the panel (a card taller than its panel, over the next section). `spill` holds those elements. */
+function spillOf(panels) {
   const overflowing = [];
   const spill = [];
   for (const panel of panels) {
     if (scrolls(panel) || ["hidden", "clip"].includes(getComputedStyle(panel).overflowY)) continue;
     const box = panel.getBoundingClientRect();
-    const out = [...panel.querySelectorAll("*")].find((el) => {
-      const r = el.getBoundingClientRect();
-      if (r.width === 0 || r.height === 0 || getComputedStyle(el).position === "fixed" || el.closest('[aria-hidden="true"]') || el.closest("[data-radix-popper-content-wrapper]")) return false;
-      // What a folded `<details>` holds is not drawn, though the browser still gives it a box.
-      const folded = el.closest("details:not([open])");
-      if (folded && !el.closest("summary")) return false;
-      // A scroller keeps what runs out of it; a visually hidden wrapper (`sr-only`: a 1 px clipped box, the text version of a chart) shows nothing.
-      for (let n = el.parentElement; n && n !== panel; n = n.parentElement) {
-        if (scrolls(n)) return false;
-        const nb = n.getBoundingClientRect();
-        if ((nb.width <= 2 || nb.height <= 2) && getComputedStyle(n).overflowY !== "visible") return false;
-      }
-      return r.bottom > box.bottom + 1.5 || r.right > box.right + 1.5;
-    });
-    if (out) {
-      overflowing.push(`${nameOf(out)} out of ${nameOf(panel)}`);
-      spill.push(out);
-    }
+    const out = [...panel.querySelectorAll("*")].find((el) => runsOut(el, panel, box));
+    if (!out) continue;
+    overflowing.push(`${nameOf(out)} out of ${nameOf(panel)}`);
+    spill.push(out);
   }
-  const overlaps = [];
-  const meets = (ra, rb) => Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left) > 2 && Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top) > 2;
-  // What ran out of its panel may land on another section: that is the card covering « Dernières vérifications ».
-  for (const el of spill) {
-    for (const other of panels) if (!other.contains(el) && !el.contains(other)) if (meets(el.getBoundingClientRect(), other.getBoundingClientRect())) overlaps.push(`${nameOf(el)} over ${nameOf(other)}`);
-  }
-  for (let i = 0; i < panels.length; i++) {
-    for (let j = i + 1; j < panels.length; j++) {
-      const [a, b] = [panels[i], panels[j]];
-      if (a.contains(b) || b.contains(a)) continue;
-      const ra = a.getBoundingClientRect();
-      const rb = b.getBoundingClientRect();
-      if (meets(ra, rb)) overlaps.push(`${nameOf(a)} over ${nameOf(b)}`);
-    }
-  }
-  const cutColumns = [];
-  for (const el of document.querySelectorAll("main section, main aside, main [data-testid], [data-panel]")) {
-    if (el.closest('[aria-hidden="true"]')) continue;
-    const r = el.getBoundingClientRect();
-    if (r.width === 0 || r.height === 0) continue;
-    for (let n = el.parentElement; n && n !== document.documentElement; n = n.parentElement) {
-      const style = getComputedStyle(n);
-      if (["auto", "scroll"].includes(style.overflowX)) break;
-      if (["hidden", "clip"].includes(style.overflowX)) {
-        const c = n.getBoundingClientRect();
-        if (r.right > c.right + 2 || r.left < c.left - 2) cutColumns.push(`${nameOf(el)} cut by ${nameOf(n)}`);
-        break;
-      }
-    }
-  }
-  const chips = [...document.querySelectorAll('[data-testid="audience-picker"] a')].map((a) => Math.round(a.getBoundingClientRect().height));
-  return { h1: document.querySelectorAll("h1").length, scrollWidth: doc.scrollWidth, clientWidth: doc.clientWidth, wide, unnamedButtons, unnamedSamples, headerAction, chips, overflowing: overflowing.slice(0, 3), overlaps: overlaps.slice(0, 3), cutColumns: [...new Set(cutColumns)].slice(0, 3) };
+  return { overflowing, spill };
 }
+
+/** `overlaps`: two sections that are not nested and cover each other, or what ran out of its panel and lands on another section (the card covering « Dernières vérifications »). */
+function overlapsOf(panels, spill) {
+  const overlaps = [];
+  for (const el of spill) {
+    for (const other of panels) if (apart(el, other) && meets(el.getBoundingClientRect(), other.getBoundingClientRect())) overlaps.push(`${nameOf(el)} over ${nameOf(other)}`);
+  }
+  panels.forEach((a, i) => {
+    for (const b of panels.slice(i + 1)) if (apart(a, b) && meets(a.getBoundingClientRect(), b.getBoundingClientRect())) overlaps.push(`${nameOf(a)} over ${nameOf(b)}`);
+  });
+  return overlaps;
+}
+
+/** The clipping ancestor that cuts an element sideways (overflow hidden / clip), or null; a scroller stops the search (it keeps what runs out of it). */
+function cutBy(el, r) {
+  for (let n = el.parentElement; n && n !== document.documentElement; n = n.parentElement) {
+    const style = getComputedStyle(n);
+    if (["auto", "scroll"].includes(style.overflowX)) return null;
+    if (!["hidden", "clip"].includes(style.overflowX)) continue;
+    const c = n.getBoundingClientRect();
+    return r.right > c.right + 2 || r.left < c.left - 2 ? n : null;
+  }
+  return null;
+}
+
+/** `cutColumns`: a section or a column cut by a clipping ancestor, which hides part of its content. */
+function cutColumnsOf() {
+  const cut = [];
+  for (const el of document.querySelectorAll("main section, main aside, main [data-testid], [data-panel]")) {
+    const r = el.getBoundingClientRect();
+    if (el.closest(ARIA_HIDDEN) || r.width === 0 || r.height === 0) continue;
+    const by = cutBy(el, r);
+    if (by) cut.push(`${nameOf(el)} cut by ${nameOf(by)}`);
+  }
+  return [...new Set(cut)].slice(0, 3);
+}
+
+/** The whole measure of a page. Decorative layers (aria-hidden), fixed elements and anything inside a scroller are left out of the layout probes (yomizaka#435). */
+function measurePage() {
+  const doc = document.documentElement;
+  const panels = [...document.querySelectorAll("[data-panel], main section, main [role=region]")].filter((el) => !el.closest(ARIA_HIDDEN));
+  const { overflowing, spill } = spillOf(panels);
+  const chips = [...document.querySelectorAll('[data-testid="audience-picker"] a')].map((a) => Math.round(a.getBoundingClientRect().height));
+  return {
+    h1: document.querySelectorAll("h1").length,
+    scrollWidth: doc.scrollWidth,
+    clientWidth: doc.clientWidth,
+    wide: wideOf(doc),
+    ...unnamedOf(),
+    headerAction: headerActionOf(doc),
+    chips,
+    overflowing: overflowing.slice(0, 3),
+    overlaps: overlapsOf(panels, spill).slice(0, 3),
+    cutColumns: cutColumnsOf(),
+  };
+}
+
+const PROBES = [className, nameOf, scrolls, meets, apart, clipped, wideOf, named, unnamedOf, headerActionOf, folded, keptBetween, notDrawn, runsOut, spillOf, overlapsOf, cutBy, cutColumnsOf, measurePage];
+
+/** The expression Playwright runs in the page (`page.evaluate(auditPage)`): the probes, serialised together, then the measure. */
+export const auditPage = `(() => {\nconst ARIA_HIDDEN = ${JSON.stringify(ARIA_HIDDEN)};\n${PROBES.map((f) => `const ${f.name} = ${f.toString()};`).join("\n")}\nreturn measurePage();\n})()`;
 
 /**
  * The problems of one page × width × theme, in words: console errors, a horizontal overflow (or elements past the edge),
