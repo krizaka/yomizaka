@@ -104,7 +104,7 @@
   "privacy": {
     "title": "Confidentialité",
     "updated": "Mis à jour le {date}",
-    "body": "Votre compte et vos vérifications sont gardés dans la base de données de Yomizaka à Toronto, au Canada, visibles de votre seul compte. Un document n'est gardé que si vous le choisissez, et son panneau d'information dit où. Quand vous demandez une vérification, le document, son texte, ou le fichier PDF, est envoyé à Orazaka, le moteur d'analyse de Krizaka, en HTTPS, et le résultat est gardé avec l'identifiant du run. Rien n'est vendu, partagé ni utilisé pour entraîner un modèle. Supprimer un document supprime son fichier, son texte et ses analyses. Pour une question ou pour faire effacer vos données, utilisez le formulaire de contact.",
+    "body": "Vos documents vous appartiennent : gardés seulement si vous le choisissez, vérifiés par Orazaka, jamais vendus, jamais utilisés pour entraîner un modèle. Le détail, en courtes sections.",
     "sections": [
       {
         "h": "Qui est responsable",
@@ -119,12 +119,24 @@
         "p": "Votre compte et vos vérifications sont dans une base de données à Toronto, au Canada, hors Québec. Les documents sont envoyés à Orazaka, le moteur d’analyse de Krizaka, par HTTPS pour être vérifiés. Un document gardé est stocké là où son panneau d’information le dit : aujourd’hui, à New York (États-Unis)."
       },
       {
+        "h": "Qui les traite",
+        "p": "Orazaka, le moteur d’analyse de Krizaka, lit un document quand vous demandez une vérification, par HTTPS. Stripe traite le paiement. Notre fournisseur de base de données héberge votre compte à Toronto."
+      },
+      {
+        "h": "Combien de temps nous les gardons",
+        "p": "Un document est gardé jusqu’à ce que vous le supprimiez, et un document supprimé emporte son fichier, son texte et ses résultats. Votre compte et vos vérifications sont gardés jusqu’à la fermeture du compte. Les factures sont conservées comme la loi l’exige."
+      },
+      {
         "h": "Vos droits",
         "p": "Vous pouvez accéder à vos renseignements, les corriger ou les supprimer, retirer votre consentement et récupérer vos données en écrivant au responsable. Supprimer un document supprime son fichier, son texte et ses résultats. Fermer votre compte supprime vos documents. Nous conservons les factures comme la loi l’exige."
       },
       {
         "h": "Incidents",
         "p": "Si un incident de confidentialité présente un risque de préjudice sérieux, nous avisons la Commission d’accès à l’information et les personnes concernées, comme la loi l’exige."
+      },
+      {
+        "h": "Nous joindre",
+        "p": "Pour poser une question, exercer vos droits ou faire retirer vos données, écrivez par le formulaire de contact de krizaka.com. La personne responsable de la protection des renseignements personnels vous répond."
       }
     ]
   },
@@ -287,7 +299,8 @@
         "title": "Le classeur",
         "label": "Collections",
         "open": "Ouvrir cette collection",
-        "empty": "Aucun fichier dans cette collection pour l’instant."
+        "empty": "Aucun fichier dans cette collection pour l’instant.",
+        "add": "Ajouter un document"
       },
       "quick": {
         "label": "Accès rapide",
@@ -390,6 +403,7 @@
       "title": "Bibliothèque",
       "dropTitle": "Déposez vos documents ici",
       "browse": "Choisir des fichiers",
+      "inputLabel": "Choisir les fichiers à vérifier",
       "hint": "PDF, Word (.docx), OpenDocument (.odt), texte ou photo (PNG, JPEG, HEIC), jusqu'à 10 Mo chacun. Un bail, un contrat, une facture.",
       "refusedSize": "{name} : plus de 10 Mo",
       "refusedType": "{name} : seulement des PDF, des fichiers texte et des photos",
@@ -1290,6 +1304,8 @@
         "set": "Avatars de la série",
         "upload": "Une image à vous",
         "uploadHint": "PNG, JPEG ou HEIC, {size} Ko au plus. L'image est recadrée en carré et ses données (position, appareil) sont retirées.",
+          "browse": "Choisir une image",
+          "tone": "Avatar {n}",
         "off": "Les avatars sont désactivés."
       },
       "defaultName": "Mes documents",
@@ -1368,6 +1384,7 @@
         "portal": "Gérer l'abonnement et les factures",
         "portalHint": "Mode de paiement, factures (avec TPS et TVQ) et annulation : dans le portail sécurisé de Stripe.",
         "off": "Le paiement n'est pas encore disponible.",
+        "otherOffers": "Autres offres",
         "buy": "Acheter ou s'abonner",
         "testMode": "Mode test : aucune vraie carte n'est débitée.",
         "plans": {
@@ -1926,6 +1943,20 @@
             },
             "windowSeconds": {
               "label": "Fenêtre : Partage d'un rapport",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "reportMail": {
+            "perIp": {
+              "label": "Limite par adresse : Envoi d'un lien de rapport par courriel",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "perSubject": {
+              "label": "Limite par compte : Envoi d'un lien de rapport par courriel",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Envoi d'un lien de rapport par courriel",
               "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
             }
           },
@@ -2566,6 +2597,7 @@
       "title": "Vérifier un lot de documents",
       "lead": "Un fichier CSV (une ligne par document) et les documents qu'il nomme, déposés ensemble. Avant tout lancement, l'aperçu dit ce qui sera vérifié, réutilisé ou refusé, et ce que ça coûte.",
       "drop": "Déposez le CSV et ses documents",
+      "inputLabel": "Choisir le CSV et ses documents",
       "hint": "CSV + PDF, Word ou texte — jusqu'à 10 Mo par document",
       "template": "Télécharger le modèle CSV",
       "received": "{csv} · {count} document(s)",
@@ -2768,6 +2800,42 @@
         "final": "Une décision est définitive : le dossier se ferme et ses documents sont effacés ; ses rapports restent.",
         "decided": "Décision prise : {state}",
         "none": "Aucune action possible."
+      },
+      "share": {
+        "title": "Lien pour le propriétaire de l'immeuble",
+        "lead": "Un rapport en lecture seule : empreintes et constats seulement, ni nom ni document. Vous choisissez la durée d'ouverture, 30 jours au plus.",
+        "expiry": "Ouvert pendant",
+        "days": "{count} jours",
+        "create": "Créer un lien",
+        "creating": "Création…",
+        "created": "Lien prêt. Il n'est montré qu'une fois : copiez-le maintenant.",
+        "copy": "Copier le lien",
+        "copied": "Lien copié",
+        "linkLabel": "Lien à envoyer",
+        "none": "Aucun lien pour l'instant.",
+        "active": "Liens actifs",
+        "views": "{count} consultations",
+        "viewsOne": "{count} consultation",
+        "expires": "jusqu'au {date}",
+        "revoke": "Révoquer",
+        "revoked": "Lien révoqué.",
+        "state": {
+          "live": "Actif",
+          "expired": "Expiré",
+          "revoked": "Révoqué"
+        },
+        "email": {
+          "title": "Envoyer par courriel",
+          "address": "Adresse courriel du propriétaire",
+          "message": "Un court mot (facultatif)",
+          "language": "Langue du courriel",
+          "hint": "Le courriel contient le lien, sa date de fin et votre mot : rien du rapport. L'adresse n'est gardée que tant que le lien vit.",
+          "send": "Envoyer par courriel",
+          "sending": "Envoi…",
+          "sent": "Envoyé à {email}.",
+          "sentTo": "Envoyé à {email}"
+        },
+        "loading": "Chargement des liens…"
       },
       "tagsEdit": {
         "title": "Étiquettes",
@@ -3065,6 +3133,7 @@
       "consentFirst": "Consentez à la vérification ci-dessus pour envoyer vos documents.",
       "dropTitle": "Déposez le PDF ici",
       "browse": "Choisir un PDF",
+      "inputLabel": "Choisir le PDF à envoyer",
       "hint": "PDF seulement, jusqu'à 10 Mo.",
       "received": "Reçu",
       "sending": "Envoi",
@@ -3262,6 +3331,14 @@
         "invoices": {
           "name": "Factures 2026",
           "description": "Les factures d'entretien de 2026 — documents spécimens fictifs, dont une avec un total inexact."
+        },
+        "empty-a": {
+          "name": "À classer",
+          "description": "Dossier prêt pour les prochains documents."
+        },
+        "empty-b": {
+          "name": "Archives 2025",
+          "description": "Dossier vide, pour les documents de l'an dernier."
         }
       }
     }
@@ -3298,6 +3375,8 @@
       "quickstartTitle": "Lancer une vérification, puis la lire",
       "quickstartNote": "Interrogez jusqu'à ce que l'état soit done, failed ou refused ; le rapport arrive avec la vérification une fois terminée.",
       "routesTitle": "Routes",
+      "route": "Route",
+      "commonAnswers": "Réponses communes à plusieurs routes",
       "scope": "Portée",
       "noScope": "Aucune clé requise",
       "parameters": "Paramètres",
@@ -3408,5 +3487,34 @@
     "guarantees": "Ce fichier est scellé avec la clé de Yomizaka (Ed25519, détenue par Krizaka) : il atteste que ce contenu, ces parties et ces dates existaient sous cette forme au moment du scellement et n’ont pas été modifiés depuis.",
     "notGuaranteed": "Il ne vérifie ni l’identité de quiconque, ni l’âge de quiconque, ni la validité du contrat en droit, ni les déclarations du partenaire : Yomizaka vérifie des documents, il ne décide pas. Informatif, pas un avis juridique.",
     "verify": "Pour vérifier une copie, prenez son SHA-256 et ouvrez {url} suivi de cette valeur : la réponse dit si Yomizaka l’a scellée et quand, sans montrer aucun renseignement personnel."
+  },
+  "ownerReport": {
+    "title": "Rapport de vérification",
+    "lead": "Ce qui a été examiné dans le dossier d'un candidat, pour le propriétaire de l'immeuble. Des empreintes seulement : aucun document, aucun nom, aucun passage cité.",
+    "reference": "Référence du dossier {ref}",
+    "issued": "Émis le {date}",
+    "notice": "Vérification informative, ce n'est pas un avis juridique. Une personne décide ; ce rapport ne décide de rien et ne classe personne.",
+    "documents": "Documents examinés",
+    "document": "Document {n}",
+    "type": "Type",
+    "typeUnknown": "Non précisé",
+    "sha": "Empreinte SHA-256 du document",
+    "pages": "Pages",
+    "signals": "Signaux observés",
+    "noSignals": "Aucun signal n'a été observé sur ce document.",
+    "findings": "Règles vérifiées",
+    "noFindings": "Aucune règle n'a été vérifiée sur ce document.",
+    "notExamined": "Non examiné",
+    "runs": "Exécutions Orazaka",
+    "run": "{studio}, exécution {runId}, version {version}",
+    "versionNone": "non précisée",
+    "ruleset": "Jeu de règles {id} version {version} ({jurisdiction})",
+    "reviewStatus": "État de relecture du jeu de règles : {status}. Il doit être relu par un avocat avant qu'on s'y fie.",
+    "limits": "Ce que ce rapport ne montre pas : les documents eux-mêmes, le nom ou les coordonnées de la personne, tout pointage ou classement. Les signaux sont des observations sur un fichier, jamais un jugement sur une personne.",
+    "verdict": {
+      "PASS": "Aucun problème signalé",
+      "FAIL": "Problème signalé",
+      "INSUFFICIENT_EVIDENCE": "Preuves insuffisantes"
+    }
   }
 }

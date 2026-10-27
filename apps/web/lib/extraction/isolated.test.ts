@@ -15,11 +15,13 @@ describe("PDF extraction off the web process", () => {
   });
 
   it("leaves the event loop free while the worker reads", async () => {
-    let ticks = 0;
-    const timer = setInterval(() => ticks++, 1);
-    await extractPdfText(textPdf(["Bail"]));
-    clearInterval(timer);
-    expect(ticks).toBeGreaterThan(0);
+    // Order, not duration: a turn of the loop (setImmediate) comes before the answer, which needs a round trip to the worker.
+    // A read done on the web process itself would answer before the loop turned. No timer, no threshold: load cannot flip it.
+    const order: string[] = [];
+    const read = extractPdfText(textPdf(["Bail"])).then(() => order.push("read"));
+    setImmediate(() => order.push("loop"));
+    await read;
+    expect(order).toEqual(["loop", "read"]);
   });
 
   it("serves a batch of files with one worker, and starts a fresh one after a file that ended it", async () => {

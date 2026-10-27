@@ -104,7 +104,7 @@
   "privacy": {
     "title": "Privacy",
     "updated": "Updated {date}",
-    "body": "Your account and your checks are kept in Yomizaka's database in Toronto, Canada, visible to your account alone. A document is kept only if you choose it, and its information panel says where. When you ask for a check, the document, its text, or the PDF file, is sent to Orazaka, Krizaka's analysis engine, over HTTPS, and the result is kept with the run's id. Nothing is sold, shared or used to train a model. Deleting a document deletes its file, its text and its analyses. To ask a question or have your data removed, use the contact form.",
+    "body": "Your documents are yours: kept only if you choose, checked by Orazaka, never sold, never used to train a model. The details, in short sections.",
     "sections": [
       {
         "h": "Who is responsible",
@@ -119,12 +119,24 @@
         "p": "Your account and your checks are in a database in Toronto, Canada, outside Québec. Documents are sent to Orazaka, Krizaka's analysis engine, over HTTPS to be checked. A kept document is stored where its information panel says: today, in New York (United States)."
       },
       {
+        "h": "Who processes it",
+        "p": "Orazaka, Krizaka's analysis engine, reads a document when you ask for a check, over HTTPS. Stripe handles payment. Our database provider hosts your account in Toronto."
+      },
+      {
+        "h": "How long we keep it",
+        "p": "A document is kept until you delete it, and a deleted document takes its file, its text and its results with it. Your account and checks are kept until you close the account. Invoices are kept as the law requires."
+      },
+      {
         "h": "Your rights",
         "p": "You can access, correct or delete your information, withdraw your consent and download your data by writing to the privacy officer. Deleting a document deletes its file, its text and its results. Closing your account deletes your documents. We keep invoices as the law requires."
       },
       {
         "h": "Incidents",
         "p": "If a confidentiality incident presents a risk of serious harm, we notify the Commission d'accès à l'information and the people concerned, as the law requires."
+      },
+      {
+        "h": "Contact",
+        "p": "To ask a question, use your rights or have your data removed, write through the contact form of krizaka.com. The person in charge of the protection of personal information answers."
       }
     ]
   },
@@ -287,7 +299,8 @@
         "title": "The binder",
         "label": "Collections",
         "open": "Open this collection",
-        "empty": "No file in this collection yet."
+        "empty": "No file in this collection yet.",
+        "add": "Add a document"
       },
       "quick": {
         "label": "Quick access",
@@ -390,6 +403,7 @@
       "title": "Library",
       "dropTitle": "Drop your documents here",
       "browse": "Choose files",
+      "inputLabel": "Choose files to check",
       "hint": "PDF, Word (.docx), OpenDocument (.odt), text or photo (PNG, JPEG, HEIC), up to 10 MB each. A lease, a contract, an invoice.",
       "refusedSize": "{name}: larger than 10 MB",
       "refusedType": "{name}: only PDF, text files and photos",
@@ -1290,6 +1304,8 @@
         "set": "Avatars of the set",
         "upload": "An image of your own",
         "uploadHint": "PNG, JPEG or HEIC, up to {size} KB. The image is cropped square and its data (position, device) is removed.",
+          "browse": "Choose an image",
+          "tone": "Avatar {n}",
         "off": "Avatars are switched off."
       },
       "defaultName": "My documents",
@@ -1368,6 +1384,7 @@
         "portal": "Manage the subscription and invoices",
         "portalHint": "Payment method, invoices (with GST and QST) and cancellation: in Stripe's secure portal.",
         "off": "Payment is not available yet.",
+        "otherOffers": "Other offers",
         "buy": "Buy or subscribe",
         "testMode": "Test mode: no real card is charged.",
         "plans": {
@@ -1926,6 +1943,20 @@
             },
             "windowSeconds": {
               "label": "Window: Sharing a report",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "reportMail": {
+            "perIp": {
+              "label": "Limit per address: E-mailing a report link",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "perSubject": {
+              "label": "Limit per account: E-mailing a report link",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: E-mailing a report link",
               "hint": "Beyond it the answer is 429 with the time to wait."
             }
           },
@@ -2566,6 +2597,7 @@
       "title": "Check a batch of documents",
       "lead": "A CSV file (one row per document) and the documents it names, dropped together. Before anything starts, the preview says what will be checked, reused or refused, and what it costs.",
       "drop": "Drop the CSV and its documents",
+      "inputLabel": "Choose the CSV and its documents",
       "hint": "CSV + PDF, Word or text — up to 10 MB per document",
       "template": "Download the CSV template",
       "received": "{csv} · {count} document(s)",
@@ -2768,6 +2800,42 @@
         "final": "A decision is final: the file closes and its documents are erased; its reports stay.",
         "decided": "Decision made: {state}",
         "none": "No action possible."
+      },
+      "share": {
+        "title": "Link for the building owner",
+        "lead": "A read-only report: hashes and findings only, no name, no document. You choose how long it opens, 30 days at most.",
+        "expiry": "Opens for",
+        "days": "{count} days",
+        "create": "Create a link",
+        "creating": "Creating…",
+        "created": "Link ready. It is shown once: copy it now.",
+        "copy": "Copy the link",
+        "copied": "Link copied",
+        "linkLabel": "Link to send",
+        "none": "No link yet.",
+        "active": "Active links",
+        "views": "{count} views",
+        "viewsOne": "{count} view",
+        "expires": "until {date}",
+        "revoke": "Revoke",
+        "revoked": "Link revoked.",
+        "state": {
+          "live": "Active",
+          "expired": "Expired",
+          "revoked": "Revoked"
+        },
+        "email": {
+          "title": "Send by e-mail",
+          "address": "Owner's e-mail address",
+          "message": "A short note (optional)",
+          "language": "Language of the e-mail",
+          "hint": "The e-mail holds the link, its end date and your note: nothing from the report. The address is kept only while the link lives.",
+          "send": "Send by e-mail",
+          "sending": "Sending…",
+          "sent": "Sent to {email}.",
+          "sentTo": "Sent to {email}"
+        },
+        "loading": "Loading the links…"
       },
       "tagsEdit": {
         "title": "Tags",
@@ -3065,6 +3133,7 @@
       "consentFirst": "Consent to the check above to send your documents.",
       "dropTitle": "Drop the PDF here",
       "browse": "Choose a PDF",
+      "inputLabel": "Choose the PDF to send",
       "hint": "PDF only, up to 10 MB.",
       "received": "Received",
       "sending": "Sending",
@@ -3262,6 +3331,14 @@
         "invoices": {
           "name": "Invoices 2026",
           "description": "The 2026 maintenance invoices — fictitious specimen documents, one with a wrong total."
+        },
+        "empty-a": {
+          "name": "To file",
+          "description": "A folder ready for the next documents."
+        },
+        "empty-b": {
+          "name": "Archive 2025",
+          "description": "An empty folder for last year's documents."
         }
       }
     }
@@ -3298,6 +3375,8 @@
       "quickstartTitle": "Start a check, then read it",
       "quickstartNote": "Poll until the state is done, failed or refused; the report comes with the check once it is done.",
       "routesTitle": "Routes",
+      "route": "Route",
+      "commonAnswers": "Answers shared by several routes",
       "scope": "Scope",
       "noScope": "No key needed",
       "parameters": "Parameters",
@@ -3408,5 +3487,34 @@
     "guarantees": "This file is sealed with Yomizaka's key (Ed25519, held by Krizaka): it attests that this content, these parties and these dates existed in this form at the time of sealing and have not been changed since.",
     "notGuaranteed": "It does not verify anyone's identity, the age of anyone, the validity of the contract in law or the partner's statements: Yomizaka checks documents, it does not decide. Informative, not legal advice.",
     "verify": "To check a copy, take its SHA-256 and open {url} followed by that value: the answer says whether Yomizaka sealed it and when, and shows no personal information."
+  },
+  "ownerReport": {
+    "title": "Verification report",
+    "lead": "What was examined on an applicant's file, for the building owner. Hashes only: no document, no name, no quoted passage.",
+    "reference": "File reference {ref}",
+    "issued": "Issued on {date}",
+    "notice": "Informative verification, not legal advice. A person decides; this report decides nothing and ranks no one.",
+    "documents": "Documents examined",
+    "document": "Document {n}",
+    "type": "Type",
+    "typeUnknown": "Not specified",
+    "sha": "SHA-256 of the document",
+    "pages": "Pages",
+    "signals": "Signals observed",
+    "noSignals": "No signal was observed on this document.",
+    "findings": "Rules checked",
+    "noFindings": "No rule was checked on this document.",
+    "notExamined": "Not examined",
+    "runs": "Orazaka runs",
+    "run": "{studio}, run {runId}, version {version}",
+    "versionNone": "unspecified",
+    "ruleset": "Ruleset {id} version {version} ({jurisdiction})",
+    "reviewStatus": "Ruleset review status: {status}. It is to be read by a lawyer before it is relied upon.",
+    "limits": "What this report does not show: the documents themselves, the person's name or contact, any score or ranking. The signals are observations about a file, never a judgement of a person.",
+    "verdict": {
+      "PASS": "No issue reported",
+      "FAIL": "Issue reported",
+      "INSUFFICIENT_EVIDENCE": "Not enough evidence"
+    }
   }
 }

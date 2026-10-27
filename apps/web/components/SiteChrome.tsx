@@ -27,8 +27,10 @@ export function SiteHeader({ locale, current, provider = true }: Readonly<{ loca
   const home = pagePath(locale, "home");
   const items = menuItems().map((m) => ({ ...m, href: menuHref(locale, m), label: t(`chrome.nav.${m.id}`), active: m.page === current && !m.hash }));
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-3 z-50 px-3" data-site-bar>
+    <div className="pointer-events-none sticky top-0 z-50 h-0 px-3" data-site-bar>
       <Root>
+      {/* 12 px under the notice (or the top): an offset that takes no room in the flow, so nothing moves below it. */}
+      <div className="relative top-3">
       <NavBar.Root label={t("chrome.navLabel")} className="pointer-events-auto mx-auto max-w-(--kz-page-max,72rem)">
         <NavBar.Brand asChild>
           <Link href={home} aria-label={t("chrome.brandHome")}>
@@ -68,6 +70,7 @@ export function SiteHeader({ locale, current, provider = true }: Readonly<{ loca
           </NavBar.Mobile>
         </NavBar.Actions>
       </NavBar.Root>
+      </div>
       </Root>
     </div>
   );

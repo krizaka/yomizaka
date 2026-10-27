@@ -10,7 +10,7 @@ describe("pre-commit hook", () => {
     expect(() => accessSync(hook, constants.X_OK)).not.toThrow();
   });
   it("runs the ast-grep ratchet and never advises --no-verify as a way through", () => {
-    expect(text()).toContain("node scripts/sg-ratchet.mjs");
+    expect(text()).toContain("krizaka-sg-ratchet");
     expect(text()).toContain("never --no-verify");
   });
   it("is skipped when no TypeScript file is staged", () => {

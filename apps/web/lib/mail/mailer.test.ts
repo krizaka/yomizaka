@@ -104,3 +104,26 @@ describe("the links of @krizaka/auth", () => {
     expect(() => fromAuthMail(base)).toThrow("no link");
   });
 });
+
+describe("the owner-report link (yomizaka#130)", () => {
+  const link: AccountMail = { kind: "reportLink", to: "owner@example.test", locale: "fr", url: "https://www.yomizaka.com/fr/rapport/sc1.abc", senderName: "Eric", expiresOn: "2026-11-03", message: "Bonjour" };
+
+  it("is the shareLink template in the owner's language: the link, the expiry and the note, nothing of the report", async () => {
+    const w = world();
+    await w.mail(link);
+    const text = w.sent[0]!.form.get("text") ?? "";
+    const html = w.sent[0]!.form.get("html") ?? "";
+    expect(w.sent[0]!.form.get("to")).toBe("owner@example.test");
+    expect(html).toContain("/fr/rapport/sc1.abc");
+    expect(text + html).toContain("Bonjour");
+    expect(text + html).toContain("Eric");
+    expect(text + html).not.toMatch(/empreinte|sha-?256|constat|hash|finding/i);
+  });
+
+  it("is sent once per link", async () => {
+    const w = world();
+    await w.mail(link);
+    await w.mail(link);
+    expect(w.sent).toHaveLength(1);
+  });
+});

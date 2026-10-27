@@ -115,7 +115,7 @@ export function BatchImport() {
       <Card.Root className="p-4">
         <h2 className="mb-1 font-display text-lg font-bold text-fg">{say("batch.title")}</h2>
         <p className="mb-3 text-sm text-fg-secondary">{say("batch.lead")}</p>
-        <Dropzone title={say("batch.drop")} browseLabel={say("library.browse")} hint={say("batch.hint")} multiple maxFiles={500} onFiles={onFiles} />
+        <Dropzone title={say("batch.drop")} browseLabel={say("library.browse")} inputLabel={say("batch.inputLabel")} hint={say("batch.hint")} multiple maxFiles={500} onFiles={onFiles} />
         <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
           <a className="font-semibold text-fg-accent underline-offset-2 hover:underline" href="/api/batches/template" download>
             {say("batch.template")}
