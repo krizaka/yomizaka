@@ -87,7 +87,7 @@ export async function openIncident(actor: Actor, input: Omit<IncidentInput, "sco
 export type IncidentStep =
   | { action: "assess"; assessment: AssessmentInput }
   | { action: "measure"; text: string }
-  | { action: "notice"; target: NoticeTarget; channel: string; reference?: string | undefined }
+  | { action: "notice"; target: NoticeTarget; channel: string; reference?: string }
   | { action: "drill"; drill: boolean }
   | { action: "close" };
 
@@ -101,7 +101,7 @@ export async function stepIncident(actor: Actor, id: string, step: IncidentStep,
       case "measure":
         return register.recordMeasure(query, INCIDENT_SCOPE, id, step.text, by);
       case "notice":
-        return register.recordNotice(query, INCIDENT_SCOPE, id, step.target, { channel: step.channel, reference: step.reference }, by);
+        return register.recordNotice(query, INCIDENT_SCOPE, id, step.target, { channel: step.channel, ...(step.reference === undefined ? {} : { reference: step.reference }) }, by);
       case "drill":
         return register.markDrill(query, INCIDENT_SCOPE, id, step.drill, by);
       case "close":

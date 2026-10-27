@@ -90,12 +90,18 @@ export function IncidentsView() {
   );
 }
 
+function riskLabel(say: Say, i: AdminIncident): string {
+  if (!i.assessment) return "—";
+  const key = i.assessment.seriousInjury ? "serious" : "notSerious";
+  return say(`adminConsole.incidents.${key}`);
+}
+
 function incidentColumns(say: Say, locale: Lang, open: (id: string) => void): DataTableColumn<AdminIncident>[] {
   return [
     { id: "awareAt", header: say("adminConsole.incidents.awareAt"), sortable: true, value: (i) => i.awareAt, cell: (i) => formatDate(i.awareAt, locale, true) },
     { id: "kind", header: say("adminConsole.incidents.kind"), value: (i) => i.kind, filter: "facet", cell: (i) => say(`adminConsole.incidents.kinds.${i.kind}`) },
     { id: "status", header: say("adminConsole.incidents.status"), value: (i) => i.status, filter: "facet", cell: (i) => <Badge tone={TONE[i.status]}>{say(`adminConsole.incidents.statuses.${i.status}`)}</Badge> },
-    { id: "risk", header: say("adminConsole.incidents.risk"), cell: (i) => (i.assessment ? say(`adminConsole.incidents.${i.assessment.seriousInjury ? "serious" : "notSerious"}`) : "—") },
+    { id: "risk", header: say("adminConsole.incidents.risk"), cell: (i) => riskLabel(say, i) },
     { id: "drill", header: say("adminConsole.incidents.drill"), cell: (i) => (i.drill ? <Badge tone="neutral">{say("adminConsole.incidents.drillBadge")}</Badge> : "") },
     { id: "description", header: say("adminConsole.incidents.description"), card: "title", value: (i) => i.description },
     { id: "open", header: say("adminConsole.incidents.details"), cell: (i) => <Button variant="ghost" size="sm" onClick={() => open(i.id)}>{say("adminConsole.incidents.details")}</Button> },
@@ -157,8 +163,8 @@ function IncidentPanel({ incident, onClose }: Readonly<{ incident: AdminIncident
     return step.mutateAsync({ path, json });
   };
   const levels = LEVELS.map((value) => ({ value, label: say(`adminConsole.incidents.levels.${value}`) }));
-  const assess = assessForm.useForm({ ...formI18n(say, locale), onSubmit: async (values) => void (await act({ action: "assess", assessment: values })) });
-  const notice = noticeForm.useForm({ ...formI18n(say, locale), onSubmit: async (values) => void (await act({ action: "notice", target: values.target, channel: values.channel, reference: values.reference || undefined })) });
+  const assess = assessForm.useForm({ ...formI18n(say, locale), onSubmit: async (values) => { await act({ action: "assess", assessment: values }); } });
+  const notice = noticeForm.useForm({ ...formI18n(say, locale), onSubmit: async (values) => { await act({ action: "notice", target: values.target, channel: values.channel, ...(values.reference ? { reference: values.reference } : {}) }); } });
   const measure = measureForm.useForm({ ...formI18n(say, locale), onSubmit: async (values) => { await act({ action: "measure", text: values.text }); measure.reset(); } });
   const closed = incident.status === "closed";
   return (
