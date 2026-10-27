@@ -17,7 +17,7 @@ import { auditContext, loadSettled, resizeSettled } from "./lib/settle.mjs";
 
 export const WIDTHS = [360, 390, 1440];
 export const THEMES = ["dark", "light"];
-export const PAGES = ["/app", "/app/documents", "/app/check", "/app/verifications", "/app/verifications?tab=lots", "/app/verifications?q=bail&result=attention,checked&kind=lease&period=year", "/app/search", "/app/settings/profil", "/app/settings/apparence", "/app/settings/securite", "/app/settings/facturation", "/app/settings/stockage", "/app/settings/donnees"];
+export const PAGES = ["/app", "/app/documents", "/app/dossiers", "/app/screening", "/app/check", "/app/verifications", "/app/verifications?tab=lots", "/app/verifications?q=bail&result=attention,checked&kind=lease&period=year", "/app/search", "/app/settings/profil", "/app/settings/apparence", "/app/settings/securite", "/app/settings/facturation", "/app/settings/stockage", "/app/settings/donnees"];
 
 const arg = (name, fallback) => {
   const i = process.argv.indexOf(`--${name}`);
@@ -33,11 +33,21 @@ export async function signIn(page, base, locale, email, password) {
   await page.waitForURL(/\/app(\/|\?|$)/, { timeout: 60_000 });
 }
 
-/** The pages to visit: the fixed list, then one collection and one document found on the library (their tabs). */
+/**
+ * The routes of the sidebar (the `nav` of the shell), without their query and language: a page the rail offers is a page that is
+ * audited, so a new section is never forgotten (« Dossiers » was, and crashed unseen, yomizaka#457). Pure, tested.
+ */
+export function railRoutes(hrefs, locale) {
+  const own = new RegExp(`^/${locale}(/app(?:/[^?#]*)?)(?:[?#].*)?$`);
+  return [...new Set(hrefs.map((h) => own.exec(h ?? "")?.[1]).filter(Boolean))].map((p) => p.replace(/\/$/, "") || "/app");
+}
+
+/** The pages to visit: the fixed list, the rail's routes, then one collection and one document found on the library (their tabs). */
 export async function discover(page, base, locale) {
   await loadSettled(page, `${base}/${locale}/app`);
   const hrefs = await page.$$eval("a[href]", (as) => as.map((a) => a.getAttribute("href")));
-  const found = [];
+  const rail = await page.$$eval("nav a[href]", (as) => as.map((a) => a.getAttribute("href")));
+  const found = railRoutes(rail, locale).filter((p) => !PAGES.includes(p));
   const collection = hrefs.find((h) => /\/app\/library\/[^/]+\/[^/]+$/.test(h ?? ""));
   if (collection) found.push(collection.replace(/^\/(en|fr)/, ""));
   const document = hrefs.find((h) => /\/app\/documents\/[^/]+(\/|$)/.test(h ?? ""));
@@ -45,7 +55,7 @@ export async function discover(page, base, locale) {
     const id = document.match(/\/app\/documents\/([^/?#]+)/)[1];
     found.push(`/app/documents/${id}/rapport`, `/app/documents/${id}/document`);
   }
-  return [...PAGES, ...found];
+  return [...new Set([...PAGES, ...found])];
 }
 
 export async function check({ base, locale = "fr", email, password, shots }) {

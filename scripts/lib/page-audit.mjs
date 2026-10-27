@@ -31,7 +31,8 @@ export function auditPage() {
     ? { visible: !!box && box.width > 0 && box.height > 0 && box.left >= 0 && box.right <= doc.clientWidth + 1 && box.top >= 0, named: !!((action.getAttribute("aria-label") || action.textContent || "").trim()) }
     : null;
   const chips = [...document.querySelectorAll('[data-testid="audience-picker"] a')].map((a) => Math.round(a.getBoundingClientRect().height));
-  return { h1: document.querySelectorAll("h1").length, scrollWidth: doc.scrollWidth, clientWidth: doc.clientWidth, wide, unnamedButtons, unnamedSamples, headerAction, chips };
+  const segmentError = !!document.querySelector('[data-testid="segment-error"]');
+  return { segmentError, h1: document.querySelectorAll("h1").length, scrollWidth: doc.scrollWidth, clientWidth: doc.clientWidth, wide, unnamedButtons, unnamedSamples, headerAction, chips };
 }
 
 /**
@@ -43,6 +44,7 @@ export function problemsOf(where, result, { errors = [], h1 = false, headerActio
   if (errors.length) problems.push(`${where}: console error — ${errors[0]}`);
   if (result.scrollWidth > result.clientWidth) problems.push(`${where}: scrollWidth ${result.scrollWidth} > ${result.clientWidth} (${result.wide.join(", ")})`);
   else if (result.wide.length) problems.push(`${where}: elements past the edge (${result.wide.join(", ")})`);
+  if (result.segmentError) problems.push(`${where}: the page rendered its error state (segment-error), e.g. React #441`);
   if (h1 && result.h1 !== 1) problems.push(`${where}: ${result.h1} h1 (expected exactly one)`);
   if (h1 && result.unnamedButtons > 0) problems.push(`${where}: ${result.unnamedButtons} unnamed button(s) ${(result.unnamedSamples ?? []).join(" | ")}`.trimEnd());
   if (headerAction) {
