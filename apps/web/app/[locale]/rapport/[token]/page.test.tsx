@@ -9,7 +9,7 @@ vi.mock("@/components/SiteFooter", () => ({ SiteFooter: () => null }));
 
 import OwnerReportPage from "./page";
 
-const params = (token: string) => ({ params: Promise.resolve({ locale: "fr", token }) });
+const params = (token: string) => ({ params: Promise.resolve({ locale: "fr", token }), searchParams: Promise.resolve({}) });
 
 beforeEach(() => {
   open.report = null;

@@ -1305,8 +1305,8 @@
         "set": "Avatars de la série",
         "upload": "Une image à vous",
         "uploadHint": "PNG, JPEG ou HEIC, {size} Ko au plus. L'image est recadrée en carré et ses données (position, appareil) sont retirées.",
-          "browse": "Choisir une image",
-          "tone": "Avatar {n}",
+        "browse": "Choisir une image",
+        "tone": "Avatar {n}",
         "off": "Les avatars sont désactivés."
       },
       "defaultName": "Mes documents",
@@ -2930,7 +2930,8 @@
     "signatureBody": "SHA-256 du texte du rapport (pages précédentes)",
     "signatureValue": "Signature (base64)",
     "signatureNote": "L'attestation — le contenu signé, l'empreinte du texte et cette signature — est aussi intégrée au fichier PDF. Un membre à qui le propriétaire a donné accès la vérifie en donnant ce fichier à la page de vérification ; tout changement au texte des pages précédentes la fait échouer.",
-    "notCheckedServiceContract": "Non vérifié : droit de résiliation, art. 2125 C.c.Q., et le reste du Code civil du Québec sur le contrat de service (art. 2098 et suiv.). À faire relire par un avocat."
+    "notCheckedServiceContract": "Non vérifié : droit de résiliation, art. 2125 C.c.Q., et le reste du Code civil du Québec sur le contrat de service (art. 2098 et suiv.). À faire relire par un avocat.",
+    "languageNote": "Langue d'origine des règles : le français. Le texte anglais est la traduction fournie avec les règles ; les passages cités et les références aux articles restent tels quels, jamais traduits."
   },
   "verify": {
     "title": "Vérifier un rapport",
@@ -3525,6 +3526,12 @@
       "PASS": "Aucun problème signalé",
       "FAIL": "Problème signalé",
       "INSUFFICIENT_EVIDENCE": "Preuves insuffisantes"
-    }
+    },
+    "language": "Langue",
+    "languageName": {
+      "en": "English",
+      "fr": "Français"
+    },
+    "languageNote": "Les règles sont rédigées en français ; les noms anglais viennent avec le jeu de règles. Les références aux articles sont données telles que citées."
   }
 }
