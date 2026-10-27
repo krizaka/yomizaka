@@ -11,17 +11,12 @@
 //
 // Writes <out-dir>/web-binder.webm and <out-dir>/web-report.webm (no audio is recorded), ready for the app-videos action.
 import { mkdirSync, renameSync } from "node:fs";
-import { createRequire } from "node:module";
 import path from "node:path";
 
-const require = createRequire(import.meta.url);
-const { chromium } = require("playwright-core");
+import { chromium, flagReader, hideEmail } from "./lib/recording-kit.mjs";
 
 const args = process.argv.slice(2);
-const flag = (name, fallback) => {
-  const i = args.indexOf(`--${name}`);
-  return i >= 0 ? args[i + 1] : fallback;
-};
+const flag = flagReader(args);
 const outDir = path.resolve(args[0] ?? "showcase-web");
 const base = flag("base", "http://localhost:3000");
 const locale = flag("locale", "en");
@@ -33,19 +28,6 @@ mkdirSync(outDir, { recursive: true });
 
 const VIEWPORT = { width: 1280, height: 800 };
 const browser = await chromium.launch();
-
-/** Hides any element that shows an e-mail address (the sidebar's « Signed in as »): nothing personal on screen. */
-const hideEmail = () => {
-  const hide = () => {
-    for (const el of document.querySelectorAll("body *")) {
-      if (el.childElementCount === 0 && /@[a-z0-9.-]+\.[a-z]{2,}/i.test(el.textContent ?? "")) el.style.visibility = "hidden";
-    }
-  };
-  document.addEventListener("DOMContentLoaded", () => {
-    hide();
-    new MutationObserver(hide).observe(document.body, { childList: true, subtree: true, characterData: true });
-  });
-};
 
 async function signIn(page, { slow }) {
   await page.goto(`${base}/${locale}/sign-in`, { waitUntil: "networkidle" });

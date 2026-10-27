@@ -10,17 +10,12 @@
 // is hidden on screen. Needs a Chromium for playwright-core and ffmpeg. Credentials are read from the environment, never printed.
 import { execFileSync } from "node:child_process";
 import { mkdirSync, renameSync, writeFileSync } from "node:fs";
-import { createRequire } from "node:module";
 import path from "node:path";
 
-const require = createRequire(import.meta.url);
-const { chromium } = require("playwright-core");
+import { chromium, flagReader, hideEmail } from "./lib/recording-kit.mjs";
 
 const args = process.argv.slice(2);
-const flag = (name, fallback) => {
-  const i = args.indexOf(`--${name}`);
-  return i >= 0 ? args[i + 1] : fallback;
-};
+const flag = flagReader(args);
 const outRoot = path.resolve(args[0] ?? "journey");
 const device = flag("device", "phone");
 const locale = flag("locale", "en");
@@ -49,19 +44,6 @@ await signIn.locator('form button[type="submit"]').first().click();
 await signIn.waitForURL(/\/app/, { timeout: 30_000 });
 const storageState = await auth.storageState();
 await auth.close();
-
-/** Hides any element that shows the account's e-mail (the sidebar's « Signed in as »): nothing personal on screen. */
-const hideEmail = () => {
-  const hide = () => {
-    for (const el of document.querySelectorAll("body *")) {
-      if (el.childElementCount === 0 && /@[a-z0-9.-]+\.[a-z]{2,}/i.test(el.textContent ?? "")) el.style.visibility = "hidden";
-    }
-  };
-  document.addEventListener("DOMContentLoaded", () => {
-    hide();
-    new MutationObserver(hide).observe(document.body, { childList: true, subtree: true, characterData: true });
-  });
-};
 
 const evidence = { device, locale, base: BASE, recordedAt: new Date().toISOString(), steps: {} };
 
