@@ -1305,8 +1305,8 @@
         "set": "Avatars of the set",
         "upload": "An image of your own",
         "uploadHint": "PNG, JPEG or HEIC, up to {size} KB. The image is cropped square and its data (position, device) is removed.",
-          "browse": "Choose an image",
-          "tone": "Avatar {n}",
+        "browse": "Choose an image",
+        "tone": "Avatar {n}",
         "off": "Avatars are switched off."
       },
       "defaultName": "My documents",
@@ -2930,7 +2930,8 @@
     "signatureBody": "SHA-256 of the report's text (pages before this one)",
     "signatureValue": "Signature (base64)",
     "signatureNote": "The attestation — the payload, the text fingerprint and this signature — is also embedded in the PDF file. A member the owner gave access to checks it by giving this file to the verification page; any change to the text of the earlier pages makes it fail.",
-    "notCheckedServiceContract": "Not checked: the right to terminate (art. 2125 C.c.Q.) and the rest of the Civil Code of Québec on service contracts (art. 2098 and following). To be reviewed by a lawyer."
+    "notCheckedServiceContract": "Not checked: the right to terminate (art. 2125 C.c.Q.) and the rest of the Civil Code of Québec on service contracts (art. 2098 and following). To be reviewed by a lawyer.",
+    "languageNote": "Original wording of the rules: French. The English text is the ruleset's own translation; quoted passages and article references are given as they stand, never translated."
   },
   "verify": {
     "title": "Verify a report",
@@ -3516,6 +3517,12 @@
       "PASS": "No issue reported",
       "FAIL": "Issue reported",
       "INSUFFICIENT_EVIDENCE": "Not enough evidence"
-    }
+    },
+    "language": "Language",
+    "languageName": {
+      "en": "English",
+      "fr": "Français"
+    },
+    "languageNote": "The rules are written in French; the English names come with the ruleset. Article references are given as cited."
   }
 }
