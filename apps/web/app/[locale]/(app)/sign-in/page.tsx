@@ -47,7 +47,7 @@ export default async function SignInPage({ params, searchParams }: Readonly<{ pa
       }
       legal={
         <>
-          {t.legalPrefix}
+          {t.legalPrefix}{" "}
           <Link className="underline" href={`/${locale}/privacy`}>
             {t.privacy}
           </Link>

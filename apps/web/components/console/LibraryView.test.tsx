@@ -153,10 +153,8 @@ describe("the library home (yomizaka#275, the UX review's Y3)", () => {
     const at = (id: string) => html.indexOf(`data-testid="${id}"`);
     expect(at("binder")).toBeGreaterThan(-1);
     expect(at("binder")).toBeLessThan(at("latest-checks"));
-    expect(at("latest-checks")).toBeLessThan(at("quick-access"));
-    expect(at("quick-access")).toBeLessThan(at("activity"));
-    expect(at("activity")).toBeLessThan(at("week"));
-    expect(at("week")).toBeLessThan(at("credits"));
+    expect(at("latest-checks")).toBeLessThan(at("activity"));
+    expect(at("activity")).toBeLessThan(at("credits"));
   });
 
   it("the binder: a tab per collection with its count, the address choosing the open one", () => {
@@ -174,30 +172,19 @@ describe("the library home (yomizaka#275, the UX review's Y3)", () => {
     expect(binder).not.toContain('href="/fr/app/library/l1/c1"');
   });
 
-  it("the side column: quick access (the request only with the applicant-file flow), the strip, the week and the credits", () => {
+  it("the side column: the strip and the credits only — no tiles repeating the sidebar, no second chart (yomizaka#457)", () => {
     const strip = [
       { id: "checks", total: 5, values: [1, 4] },
       { id: "toReview", total: 2, values: [0, 2] },
       { id: "documents", total: 3, values: [1, 2] },
     ];
     const activity = [{ day: "2026-10-24", checks: 1 }, { day: "2026-10-25", checks: 4 }];
-    const html = render({ strip, activity, credits: { kind: "credits", left: 3 }, screening: false });
-    const quick = html.slice(html.indexOf('data-testid="quick-access"'), html.indexOf('data-testid="activity"'));
-    expect(quick).toContain('href="/fr/app/documents"');
-    expect(quick).not.toContain('href="/fr/app/dossiers"');
-    expect(readable(quick)).not.toContain("Vérifier un document");
-    expect(render({ screening: true })).toMatch(/data-testid="quick-access"[\s\S]*href="\/fr\/app\/dossiers"/);
+    const html = render({ strip, activity, credits: { kind: "credits", left: 3 }, screening: true });
+    expect(html).not.toContain('data-testid="quick-access"');
+    expect(html).not.toContain('data-testid="week"');
     for (const id of ["checks", "toReview", "documents"]) expect(html).toContain(`data-testid="strip-${id}"`);
     expect(html).not.toContain('data-testid="strip-files"');
     expect(readable(html.slice(html.indexOf('data-testid="credits"')))).toContain("3 vérifications restantes");
-  });
-
-  it("the week chart has its table alternative in the page, in French", () => {
-    const html = render({ activity: [{ day: "2026-10-24", checks: 1 }, { day: "2026-10-25", checks: 4 }] });
-    const week = html.slice(html.indexOf('data-testid="week"'), html.indexOf('data-testid="credits"') > 0 ? html.indexOf('data-testid="credits"') : undefined);
-    expect(week).toContain("<table");
-    expect(readable(week)).toContain("Vérifications");
-    expect(readable(week)).not.toMatch(/View as table|Show data/);
   });
 
   it("the activity of the period: its total from the days, and the 7 · 30 · 90 d switch in the address", () => {

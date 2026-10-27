@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { KrizakaQueryProvider } from "@krizaka/query";
-import { act } from "react";
+import { AppHeaderSearch } from "@krizaka/ui/app-header/search";
+import { act, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
@@ -17,6 +18,17 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push, replace() {}, refr
 const DOC = "11111111-1111-4111-8111-111111111111";
 const MESSAGES = { en: { console: en.console }, fr: { console: fr.console } } as const;
 
+/** What the frame (`AppFrame`) does around the palette: the trigger and the shortcut, the open state. */
+function Harness() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <AppHeaderSearch label={fr.console.shell.palette.label} onOpen={() => setOpen(true)} />
+      <ConsoleSearch open={open} onOpenChange={setOpen} />
+    </>
+  );
+}
+
 let root: Root | null = null;
 const mount = async () => {
   const host = document.createElement("div");
@@ -26,7 +38,7 @@ const mount = async () => {
     root!.render(
       <I18nProvider locale="fr" messages={MESSAGES.fr as never}>
         <KrizakaQueryProvider>
-          <ConsoleSearch />
+          <Harness />
         </KrizakaQueryProvider>
       </I18nProvider>,
     );

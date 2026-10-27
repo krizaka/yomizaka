@@ -22,3 +22,8 @@ export const FINE = page(
 export const HIDDEN_CONTENT = page(
   `<section data-testid="activity" style="height:120px"><h2>Activité</h2><div style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)"><table><tbody>${"<tr><td>21 oct.</td><td>7</td></tr>".repeat(40)}</tbody></table></div></section><section data-testid="report"><details><summary>Détails</summary><div style="height:400px">Texte du rapport</div></details></section>`,
 );
+
+/** The report tab: a section inside a folded details (the closing note) beside sections it must not be taken to cover. */
+export const FOLDED_SECTION = page(
+  `<div style="display:flex;flex-direction:column"><section data-testid="facts" style="height:80px">Faits</section><details><summary>Détails</summary><section data-testid="closing-note" style="padding:16px">Ce que nous avons vérifié</section></details><section data-testid="other" style="height:80px">Autres</section></div>`,
+);
