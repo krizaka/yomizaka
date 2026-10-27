@@ -1305,8 +1305,8 @@
         "set": "Avatars of the set",
         "upload": "An image of your own",
         "uploadHint": "PNG, JPEG or HEIC, up to {size} KB. The image is cropped square and its data (position, device) is removed.",
-          "browse": "Choose an image",
-          "tone": "Avatar {n}",
+        "browse": "Choose an image",
+        "tone": "Avatar {n}",
         "off": "Avatars are switched off."
       },
       "defaultName": "My documents",
@@ -2930,7 +2930,8 @@
     "signatureBody": "SHA-256 of the report's text (pages before this one)",
     "signatureValue": "Signature (base64)",
     "signatureNote": "The attestation — the payload, the text fingerprint and this signature — is also embedded in the PDF file. A member the owner gave access to checks it by giving this file to the verification page; any change to the text of the earlier pages makes it fail.",
-    "notCheckedServiceContract": "Not checked: the right to terminate (art. 2125 C.c.Q.) and the rest of the Civil Code of Québec on service contracts (art. 2098 and following). To be reviewed by a lawyer."
+    "notCheckedServiceContract": "Not checked: the right to terminate (art. 2125 C.c.Q.) and the rest of the Civil Code of Québec on service contracts (art. 2098 and following). To be reviewed by a lawyer.",
+    "languageNote": "Original wording of the rules: French. The English text is the ruleset's own translation; quoted passages and article references are given as they stand, never translated."
   },
   "verify": {
     "title": "Verify a report",
@@ -2951,6 +2952,7 @@
       "BAD_SIGNATURE": "The signature does not match the content: the report was modified or signed by another key.",
       "ALTERED": "The signature is valid for the original report, but the file is not that report any more: something was changed after signing.",
       "UNKNOWN_KEY": "It was signed by a key that is not this server's.",
+      "UNKNOWN_SCHEMA": "This report uses a format Yomizaka does not verify.",
       "SPECIMEN": "This report is a specimen: it proves nothing."
     },
     "facts": {
@@ -2961,7 +2963,9 @@
       "ruleset": "Rules",
       "checked": "Check finished",
       "findings": "Findings",
-      "jurisdiction": "Jurisdiction"
+      "jurisdiction": "Jurisdiction",
+      "issued": "Issued",
+      "expires": "Link valid until"
     },
     "documentMatch": {
       "yes": "The document you gave is the one that was checked.",
@@ -3533,10 +3537,22 @@
     "ruleset": "Ruleset {id} version {version} ({jurisdiction})",
     "reviewStatus": "Ruleset review status: {status}. It is to be read by a lawyer before it is relied upon.",
     "limits": "What this report does not show: the documents themselves, the person's name or contact, any score or ranking. The signals are observations about a file, never a judgement of a person.",
+    "download": "Download the signed PDF",
+    "expires": "This link is valid until {date}.",
+    "guarantees": "This PDF is signed with Yomizaka's key (Ed25519, held by Krizaka). The signature covers every item of this report (documents, signals, rules checked, runs, versions), the link's expiry and the full text of the pages. If a single character changes, verification fails.",
+    "notGuaranteed": "It does not prove that the signals or findings are right, nor who holds the file: it shows no name, contact, file name or quoted passage. Informative, not legal advice; a person decides.",
+    "signatureNote": "The attestation (payload, text fingerprint and signature) is embedded in the PDF. Any change to the text of the earlier pages makes verification fail.",
+    "footer": "Yomizaka, a Krizaka product — analysis by Orazaka.",
     "verdict": {
       "PASS": "No issue reported",
       "FAIL": "Issue reported",
       "INSUFFICIENT_EVIDENCE": "Not enough evidence"
-    }
+    },
+    "language": "Language",
+    "languageName": {
+      "en": "English",
+      "fr": "Français"
+    },
+    "languageNote": "The rules are written in French; the English names come with the ruleset. Article references are given as cited."
   }
 }

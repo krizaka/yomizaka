@@ -1305,8 +1305,8 @@
         "set": "Avatars de la série",
         "upload": "Une image à vous",
         "uploadHint": "PNG, JPEG ou HEIC, {size} Ko au plus. L'image est recadrée en carré et ses données (position, appareil) sont retirées.",
-          "browse": "Choisir une image",
-          "tone": "Avatar {n}",
+        "browse": "Choisir une image",
+        "tone": "Avatar {n}",
         "off": "Les avatars sont désactivés."
       },
       "defaultName": "Mes documents",
@@ -2930,7 +2930,8 @@
     "signatureBody": "SHA-256 du texte du rapport (pages précédentes)",
     "signatureValue": "Signature (base64)",
     "signatureNote": "L'attestation — le contenu signé, l'empreinte du texte et cette signature — est aussi intégrée au fichier PDF. Un membre à qui le propriétaire a donné accès la vérifie en donnant ce fichier à la page de vérification ; tout changement au texte des pages précédentes la fait échouer.",
-    "notCheckedServiceContract": "Non vérifié : droit de résiliation, art. 2125 C.c.Q., et le reste du Code civil du Québec sur le contrat de service (art. 2098 et suiv.). À faire relire par un avocat."
+    "notCheckedServiceContract": "Non vérifié : droit de résiliation, art. 2125 C.c.Q., et le reste du Code civil du Québec sur le contrat de service (art. 2098 et suiv.). À faire relire par un avocat.",
+    "languageNote": "Langue d'origine des règles : le français. Le texte anglais est la traduction fournie avec les règles ; les passages cités et les références aux articles restent tels quels, jamais traduits."
   },
   "verify": {
     "title": "Vérifier un rapport",
@@ -2951,6 +2952,7 @@
       "BAD_SIGNATURE": "La signature ne correspond pas au contenu : le rapport a été modifié ou signé par une autre clé.",
       "ALTERED": "La signature est valide pour le rapport d’origine, mais le fichier n’est plus ce rapport : quelque chose a été changé après la signature.",
       "UNKNOWN_KEY": "Il a été signé par une clé qui n’est pas celle de ce serveur.",
+      "UNKNOWN_SCHEMA": "Ce rapport est dans un format que Yomizaka ne vérifie pas.",
       "SPECIMEN": "Ce rapport est un spécimen : il ne prouve rien."
     },
     "facts": {
@@ -2961,7 +2963,9 @@
       "ruleset": "Règles",
       "checked": "Vérification terminée",
       "findings": "Constats",
-      "jurisdiction": "Juridiction"
+      "jurisdiction": "Juridiction",
+      "issued": "Émis le",
+      "expires": "Lien valide jusqu'au"
     },
     "documentMatch": {
       "yes": "Le document que vous avez donné est bien celui qui a été vérifié.",
@@ -3533,10 +3537,22 @@
     "ruleset": "Jeu de règles {id} version {version} ({jurisdiction})",
     "reviewStatus": "État de relecture du jeu de règles : {status}. Il doit être relu par un avocat avant qu'on s'y fie.",
     "limits": "Ce que ce rapport ne montre pas : les documents eux-mêmes, le nom ou les coordonnées de la personne, tout pointage ou classement. Les signaux sont des observations sur un fichier, jamais un jugement sur une personne.",
+    "download": "Télécharger le PDF signé",
+    "expires": "Ce lien est valable jusqu’au {date}.",
+    "guarantees": "Ce PDF est signé avec la clé de Yomizaka (Ed25519, détenue par Krizaka). La signature couvre chaque élément de ce rapport (documents, signaux, règles vérifiées, exécutions, versions), l’expiration du lien et le texte complet des pages. Si un seul caractère change, la vérification échoue.",
+    "notGuaranteed": "Elle ne prouve pas que les signaux ou les constats sont justes, ni qui détient le dossier : elle n’affiche aucun nom, aucune coordonnée, aucun nom de fichier ni aucun extrait cité. Informatif, pas un avis juridique ; une personne décide.",
+    "signatureNote": "L’attestation (contenu, empreinte du texte et signature) est intégrée au PDF. Toute modification du texte des pages précédentes fait échouer la vérification.",
+    "footer": "Yomizaka, un produit Krizaka — analyse par Orazaka.",
     "verdict": {
       "PASS": "Aucun problème signalé",
       "FAIL": "Problème signalé",
       "INSUFFICIENT_EVIDENCE": "Preuves insuffisantes"
-    }
+    },
+    "language": "Langue",
+    "languageName": {
+      "en": "English",
+      "fr": "Français"
+    },
+    "languageNote": "Les règles sont rédigées en français ; les noms anglais viennent avec le jeu de règles. Les références aux articles sont données telles que citées."
   }
 }
