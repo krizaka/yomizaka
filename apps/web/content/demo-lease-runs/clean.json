@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-10-24T03:19:39.697Z",
+  "recordedAt": "2026-10-27T02:16:09.749Z",
   "source": "https://dev.orazaka.com/edge",
   "studio": "compliance-check",
   "generator": {
@@ -9,14 +9,14 @@
   "document": {
     "title": "Bail — Rosemont, logement 1 (conforme)",
     "language": "fr",
-    "text": "DOCUMENT FICTIF — bail de logement\nJeu de données de démonstration Yomizaka : personnes, adresses et montants inventés.\n\nBAIL DE LOGEMENT\nLogement : 3956, rue du Modèle, Montréal (Québec) H7D 4D4\nLocateur : Thierry Imaginaire-Roy (fictif), domicilié au 3743, chemin des Inventés, Montréal (Québec) H1D 7D2\nLocataire : Samuel Exemple-Lavoie (fictif), domicilié à Montréal.\nDurée : 12 mois, du 1er juillet 2026 au 30 juin 2027.\nLoyer mensuel : 1 225,00 $, payable le premier jour du mois.\nLe loyer le plus bas payé au cours des douze derniers mois précédant le début du bail était de 1 200,00 $ par mois.\nLe loyer comprend le chauffage et l'eau chaude.\nLe locataire a droit au maintien dans les lieux à la fin du bail.\nLe locateur peut proposer une hausse de loyer selon les règles du Tribunal administratif du logement.\n\nLe locateur remet au locataire l'avis « Renseignements au nouveau locataire d'un logement » du Tribunal administratif du logement (TAL).\n\nSigné à Montréal le 15 juin 2026 : Thierry Imaginaire-Roy (fictif) et Samuel Exemple-Lavoie (fictif)."
+    "text": "DOCUMENT FICTIF — bail de logement\nJeu de données de démonstration Yomizaka : personnes, adresses et montants inventés.\n\nBAIL DE LOGEMENT\nLogement : 3956, rue du Modèle, Montréal (Québec) H7D 4D4\nLocateur : Thierry Imaginaire-Roy (fictif), domicilié au 3743, chemin des Inventés, Montréal (Québec) H1D 7D2\nLocataire : Samuel Exemple-Lavoie (fictif), domicilié à Montréal.\nDurée : 12 mois, du 1er juillet 2026 au 30 juin 2027.\nLoyer mensuel : 1 225,00 $, payable le premier jour du mois.\nLe loyer le plus bas payé au cours des douze derniers mois précédant le début du bail était de 1 200,00 $ par mois.\nLe loyer comprend le chauffage et l'eau chaude.\nLe locataire a droit au maintien dans les lieux à la fin du bail.\nLe locateur peut proposer une hausse de loyer selon les règles du Tribunal administratif du logement.\nLe présent bail est établi sur le formulaire obligatoire du Tribunal administratif du logement (TAL), qui est joint au bail.\n\nLe locateur remet au locataire l'avis « Renseignements au nouveau locataire d'un logement » du Tribunal administratif du logement (TAL).\n\nSigné à Montréal le 15 juin 2026 : Thierry Imaginaire-Roy (fictif) et Samuel Exemple-Lavoie (fictif)."
   },
   "inputs": {
     "jurisdiction": "QC",
     "asOf": "2026-10-23"
   },
   "run": {
-    "id": "f239d52e-d1b5-4ec9-bb92-0610ed906de7",
+    "id": "31e6f8a6-044e-48f7-af4c-6f75d8973bba",
     "installationId": "3c21b3e5-5f30-4b82-9c63-13af790557ac",
     "studioKey": "compliance-check",
     "blueprintVersion": "1.4.0",
@@ -38,39 +38,39 @@
       }
     ],
     "errorMessage": null,
-    "startedAt": "2026-10-24T03:19:26.466865Z",
-    "finishedAt": "2026-10-24T03:19:39.261478Z",
+    "startedAt": "2026-10-27T02:16:02.795186Z",
+    "finishedAt": "2026-10-27T02:16:07.859043Z",
     "steps": [
       {
         "stepId": "screen",
         "ordinal": 0,
-        "jobId": "9e4baa55-6645-4d3a-b044-eebfb691d32c",
+        "jobId": "1ecb25de-b1f9-4a3b-b4e0-1c2d71d9dc80",
         "status": "SUCCEEDED",
         "attempts": 1,
         "error": null,
-        "startedAt": "2026-10-24T03:19:26.466865Z",
+        "startedAt": "2026-10-27T02:16:02.795186Z",
         "estimateMs": null,
         "estimateSamples": 0
       },
       {
         "stepId": "judge",
         "ordinal": 0,
-        "jobId": "579b11b0-ff5f-425a-9d7f-a2be85a527a0",
+        "jobId": "8738e465-46b2-41d6-a45b-e4046a6387f7",
         "status": "SUCCEEDED",
         "attempts": 1,
         "error": null,
-        "startedAt": "2026-10-24T03:19:26.978508Z",
+        "startedAt": "2026-10-27T02:16:03.428179Z",
         "estimateMs": null,
         "estimateSamples": 0
       },
       {
         "stepId": "report",
         "ordinal": 0,
-        "jobId": "2f157c88-f91e-4265-99e7-2b8ebf3adf2e",
+        "jobId": "4080b9b3-d6d8-435e-810c-a23e10dfd73f",
         "status": "SUCCEEDED",
         "attempts": 1,
         "error": null,
-        "startedAt": "2026-10-24T03:19:39.143441Z",
+        "startedAt": "2026-10-27T02:16:07.676476Z",
         "estimateMs": null,
         "estimateSamples": 0
       }

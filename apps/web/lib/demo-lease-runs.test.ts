@@ -47,6 +47,13 @@ describe("the fictitious leases, checked by the Québec lease pack on dev", () =
     expect(report.findings.filter((f) => f.verdict === "FAIL")).toEqual([]);
   });
 
+  it("clean: says the TAL form is attached, and QC-LEASE-014 (C.c.Q. 1895) is judged on that sentence, not failed", () => {
+    const { text, report } = reportOfRecording("clean");
+    expect(text).toContain("formulaire obligatoire du Tribunal administratif du logement");
+    const rule = report.findings.find((f) => f.ruleId === "QC-LEASE-014");
+    expect(rule?.verdict).not.toBe("FAIL");
+  });
+
   it("errors: exactly the expected FAILs, each with its passage and the article it cites", () => {
     const { report } = reportOfRecording("errors");
     const fails = report.findings.filter((f) => f.verdict === "FAIL");

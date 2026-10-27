@@ -46,6 +46,8 @@ function lease(rng, flaw) {
     "Le loyer comprend le chauffage et l'eau chaude.",
     "Le locataire a droit au maintien dans les lieux à la fin du bail.",
     "Le locateur peut proposer une hausse de loyer selon les règles du Tribunal administratif du logement.",
+    // The mandatory form (C.c.Q. art. 1895, QC-LEASE-014): a lease that does not say it is on the TAL form is not clean.
+    "Le présent bail est établi sur le formulaire obligatoire du Tribunal administratif du logement (TAL), qui est joint au bail.",
     "",
   ];
   const findings = [];
