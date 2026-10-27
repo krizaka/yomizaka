@@ -170,17 +170,26 @@ function CollectionCard({ libraryId, selected, label, destinations, tags }: Read
   const { say, locale } = useSay();
   const folders = selected.folders > 0 ? ` · ${say(pluralKey("organisation.folders", selected.folders), { count: selected.folders })}` : "";
   return (
-    <div className="relative mt-3 h-full" data-testid="collection-card">
+    <div className="relative mt-3" data-testid="collection-card">
       <LinkCard
         href={libraryPath(locale, libraryId, selected.id)}
         linkAs={Link}
-        className="h-full pr-12"
+        className="pr-12"
         icon={<CollectionMark id={selected.id} name={label} avatar={selected.avatar} />}
         title={label}
         meta={selected.isDefault ? say("organisation.default") : undefined}
         description={`${say(pluralKey("organisation.files", selected.files), { count: selected.files })}${folders}`}
         extra={<LastCheckExtra selected={selected} />}
       />
+      {/* An empty folder: one compact line and one action, never a tall box (yomizaka#435). The card's height is its content's. */}
+      {selected.files === 0 && selected.folders === 0 ? (
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-dashed border-border-default px-3 py-2" data-testid="collection-empty">
+          <span className="min-w-0 text-sm text-fg-secondary">{say("home.binder.empty")}</span>
+          <Button asChild variant="secondary" size="sm">
+            <Link href={libraryPath(locale, libraryId, selected.id)}>{say("home.binder.add")}</Link>
+          </Button>
+        </div>
+      ) : null}
       {/* The card is one link; its menu sits beside it, over the corner, never inside the anchor. */}
       <span className="absolute right-2 top-2">
         <ItemMenu kind="collection" id={selected.id} name={label} avatar={selected.avatar} isDefault={selected.isDefault} collections={destinations} tags={tags} current={selected.tags.map((t) => t.id)} />

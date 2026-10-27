@@ -25,6 +25,12 @@ describe("what counts as a problem on a rendered page", () => {
     assert.match(problemsOf("x", { ...fine, headerAction: { visible: false, named: true } }, { headerAction: true })[0], /off screen/);
     assert.match(problemsOf("x", { ...fine, headerAction: { visible: true, named: false } }, { headerAction: true })[0], /no accessible name/);
   });
+  it("a card out of its panel, two sections covering each other, a column cut off (yomizaka#435)", () => {
+    assert.match(problemsOf("x", { ...fine, overflowing: ["div[collection-card] out of section[binder]"] })[0], /overflows its panel \(div\[collection-card\]/);
+    assert.match(problemsOf("x", { ...fine, overlaps: ["section[binder] over section[latest-checks]"] })[0], /covers a neighbouring section/);
+    assert.match(problemsOf("x", { ...fine, cutColumns: ["aside[activity] cut by div.grid"] })[0], /is cut off/);
+    assert.deepEqual(problemsOf("x", { ...fine, overflowing: [], overlaps: [], cutColumns: [] }), []);
+  });
   it("a console error, and a chip under 44 px", () => {
     assert.match(problemsOf("x", fine, { errors: ["React error #418"] })[0], /console error — React error #418/);
     assert.match(problemsOf("x", { ...fine, chips: [40, 48] })[0], /40 px tall/);

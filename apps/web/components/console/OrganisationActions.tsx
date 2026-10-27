@@ -2,6 +2,7 @@
 
 import { MoreIcon } from "@krizaka/icons";
 import { krizakaFetch, useMutation } from "@krizaka/query";
+import { AVATAR_NONE, AvatarPicker } from "@krizaka/ui/account-settings";
 import { Alert } from "@krizaka/ui/alert";
 import { Button, IconButton } from "@krizaka/ui/button";
 import { Dialog } from "@krizaka/ui/dialog";
@@ -14,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { type ReactNode, useState } from "react";
 import { z } from "zod";
 
+import { folderAvatarOptions } from "@/components/console/collection-avatar-options";
 import { CollectionAvatar } from "@/components/console/CollectionAvatar";
 import { useAppConfig } from "@/lib/app-config-client";
 import { errorKey } from "@/lib/client";
@@ -127,7 +129,7 @@ export function CreateButton({ kind, parentId, variant = "secondary", tagsOf }: 
 
 /**
  * Chooses a collection's avatar: one of the set the administrator offers, or an image of one's own (when a storage is configured),
- * or none. (Krizaka UI's `AvatarPicker` replaces the grid when the account-settings blocks are published.)
+ * or none — Krizaka UI's `AvatarPicker` of kind `folder`: the tile is the radio, and a folder is never offered a person.
  */
 function AvatarDialog({ id, name, avatar, onClose }: Readonly<{ id: string; name: string; avatar: CollectionAvatarData | null; onClose: () => void }>) {
   const { say } = useSay();
@@ -139,47 +141,31 @@ function AvatarDialog({ id, name, avatar, onClose }: Readonly<{ id: string; name
     body.set("file", file);
     return krizakaFetch(`${api}/avatar`, { method: "POST", body });
   }, onClose);
-  const current = avatar?.kind === AVATAR_KIND.set ? avatar.seed : "";
-  const seeds = config?.avatars.seeds ?? [];
+  const current = avatar?.kind === AVATAR_KIND.set ? avatar.seed : avatar ? "" : AVATAR_NONE;
+  const options = folderAvatarOptions(config?.avatars.seeds ?? [], (n) => say("organisation.avatar.tone", { n }));
   const problem = pick.problem ?? upload.problem;
+  const on = config?.avatars.enabled !== false;
   return (
     <Frame open onOpenChange={onClose} title={say("organisation.avatar.title", { name })} description={say("organisation.avatar.ask")}>
       <div className="flex items-center gap-3">
         <CollectionAvatar id={id} name={name} avatar={avatar} size="lg" />
-        <Button size="md" variant="ghost" disabled={!avatar} loading={pick.pending} onClick={() => pick.go(null)}>
-          {say("organisation.avatar.none")}
-        </Button>
+        <span className="text-sm text-fg-secondary">{name}</span>
       </div>
       {config?.avatars.enabled === false ? <Alert tone="info">{say("organisation.avatar.off")}</Alert> : null}
-      {seeds.length > 0 && config?.avatars.enabled !== false ? (
-        <RadioGroup.Root label={say("organisation.avatar.set")} value={current} onValueChange={(seed: string) => void pick.go(seed)}>
-          <div className="flex flex-wrap gap-3">
-            {seeds.map((seed) => (
-              <RadioGroup.Item key={seed} value={seed} aria-label={`${say("organisation.avatar.set")} ${seed}`}>
-                <CollectionAvatar id={id} name={name} avatar={{ kind: "set", seed }} size="lg" />
-              </RadioGroup.Item>
-            ))}
-          </div>
-        </RadioGroup.Root>
-      ) : null}
-      {config?.avatars.canUpload && config.avatars.enabled ? (
-        <div className="flex flex-col gap-2">
-          <label htmlFor={`avatar-file-${id}`} className="text-sm font-semibold text-fg">
-            {say("organisation.avatar.upload")}
-          </label>
-          <input
-            id={`avatar-file-${id}`}
-            type="file"
-            accept="image/png,image/jpeg,image/heic,image/heif,.png,.jpg,.jpeg,.heic,.heif"
-            className="text-sm"
-            data-testid="avatar-file"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) void upload.go(file);
-            }}
-          />
-          <p className="m-0 text-xs text-fg-secondary">{say("organisation.avatar.uploadHint", { size: Math.floor(config.avatars.maxBytes / 1024) })}</p>
-        </div>
+      {on ? (
+        <AvatarPicker
+          label={say("organisation.avatar.set")}
+          kind="folder"
+          noneLabel={say("organisation.avatar.none")}
+          options={options}
+          value={current}
+          onValueChange={(value) => void pick.go(value === AVATAR_NONE ? null : value)}
+          uploadFile={
+            config?.avatars.canUpload
+              ? { title: say("organisation.avatar.upload"), browseLabel: say("organisation.avatar.browse"), hint: say("organisation.avatar.uploadHint", { size: Math.floor(config.avatars.maxBytes / 1024) }), accept: "image/png,image/jpeg,image/heic,image/heif,.png,.jpg,.jpeg,.heic,.heif", maxSize: config.avatars.maxBytes, disabled: upload.pending, onFile: (file) => void upload.go(file) }
+              : undefined
+          }
+        />
       ) : null}
       {problem ? <Alert tone="danger">{problem}</Alert> : null}
     </Frame>
