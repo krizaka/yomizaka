@@ -10,7 +10,7 @@ if [ ! -x node_modules/.bin/ast-grep ]; then
   exit 0
 fi
 echo "pre-commit: ast-grep ratchet"
-node scripts/sg-ratchet.mjs || {
+krizaka-sg-ratchet || {
   echo "pre-commit: a rule found a new violation. Fix the code (npx ast-grep scan shows it); never --no-verify."
   exit 1
 }

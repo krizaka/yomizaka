@@ -194,7 +194,7 @@ function unlabelledFilesOf() {
 
 function measurePage() {
   const doc = document.documentElement;
-  const panels = [...document.querySelectorAll("[data-panel], main section, main [role=region]")].filter((el) => !el.closest(ARIA_HIDDEN));
+  const panels = [...document.querySelectorAll("[data-panel], main section, main [role=region]")].filter((el) => !el.closest(ARIA_HIDDEN) && !folded(el));
   const { overflowing, spill } = spillOf(panels);
   const chips = [...document.querySelectorAll('[data-testid="audience-picker"] a')].map((a) => Math.round(a.getBoundingClientRect().height));
   return {

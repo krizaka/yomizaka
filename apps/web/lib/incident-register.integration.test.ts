@@ -6,10 +6,10 @@ import { describe, expect, it } from "vitest";
 import { MIGRATION_LOCK_KEY } from "./db";
 import { MIGRATIONS } from "./migrations";
 
-/** Migration 0053 creates the incident register; each scope sees only its own entries, and an entry stays until its retention ends (skipped without YOMIZAKA_DB_IT=1 and a database). */
+/** Migration 0055 creates the incident register; each scope sees only its own entries, and an entry stays until its retention ends (skipped without YOMIZAKA_DB_IT=1 and a database). */
 const enabled = process.env.YOMIZAKA_DB_IT === "1" && !!process.env.DATABASE_URL;
 
-describe.runIf(enabled)("0053_privacy_incident_register", () => {
+describe.runIf(enabled)("0055_privacy_incident_register", () => {
   it("keeps one register per scope on the real database", async () => {
     const admin = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 1 });
     const name = `b53_incident_${Date.now()}`;

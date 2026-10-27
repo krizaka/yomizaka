@@ -87,7 +87,7 @@ export async function openIncident(actor: Actor, input: Omit<IncidentInput, "sco
 export type IncidentStep =
   | { action: "assess"; assessment: AssessmentInput }
   | { action: "measure"; text: string }
-  | { action: "notice"; target: NoticeTarget; channel: string; reference?: string | undefined }
+  | { action: "notice"; target: NoticeTarget; channel: string; reference?: string }
   | { action: "drill"; drill: boolean }
   | { action: "close" };
 
