@@ -116,7 +116,7 @@
       "owner": {
         "title": "A report the owner can open",
         "text": "A read-only page by link, with an expiry: the file's fingerprint, the findings and the run that produced them.",
-        "summary": "The owner's page: the document fingerprint, the findings with their articles, and the Orazaka run id."
+        "summary": "The owner's page: the document fingerprint, the findings with their articles, and the run id."
       }
     }
   },

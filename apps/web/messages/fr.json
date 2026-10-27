@@ -116,7 +116,7 @@
       "owner": {
         "title": "Un rapport que le propriétaire peut ouvrir",
         "text": "Une page en lecture seule, par lien, avec une échéance : l'empreinte du fichier, les constats et l'exécution qui les a produits.",
-        "summary": "La page du propriétaire : l'empreinte du document, les constats avec leurs articles et l'identifiant d'exécution Orazaka."
+        "summary": "La page du propriétaire : l'empreinte du document, les constats avec leurs articles et l'identifiant d'exécution."
       }
     }
   },
