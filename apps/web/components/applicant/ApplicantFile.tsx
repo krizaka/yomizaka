@@ -200,7 +200,7 @@ function TypeRow({ token, row, words, locale, canUpload, onSent }: Readonly<{ to
           ))}
         </ul>
       ) : null}
-      <Dropzone title={page.dropTitle} browseLabel={page.browse} hint={page.hint} accept="application/pdf,.pdf" maxSize={MAX_FILE_BYTES} multiple={false} disabled={!canUpload} onFiles={(files) => queue.add(files)} refusalLabel={() => errors.FILE_NOT_ACCEPTED ?? words.unknown} />
+      <Dropzone title={page.dropTitle} browseLabel={page.browse} inputLabel={page.inputLabel} hint={page.hint} accept="application/pdf,.pdf" maxSize={MAX_FILE_BYTES} multiple={false} disabled={!canUpload} onFiles={(files) => queue.add(files)} refusalLabel={() => errors.FILE_NOT_ACCEPTED ?? words.unknown} />
       {pending.length > 0 ? (
         <UploadList
           items={pending}
