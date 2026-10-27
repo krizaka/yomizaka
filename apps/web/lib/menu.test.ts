@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import config from "../next.config.mjs";
-import { DOWNLOADS, downloadsOffered } from "./downloads";
+import { downloadPageOpen } from "./downloads";
 import { HOME_ANCHORS, MENU, menuHref, signInPath } from "./nav";
 import { ALIAS_RULES, OLD_AUDIENCE_SLUGS, PARKED_PAGES, redirectRules } from "./removed-urls.mjs";
 import { pagePath, PAGES } from "./site";
@@ -137,13 +137,15 @@ describe("every removed address redirects (308) to its new home", () => {
     }
   });
 
-  it("/download is parked while no app can be downloaded: 308 to the home, out of the footer and the sitemap; it comes back with the first link", async () => {
+  it("/download is parked while it has no app and no video: 308 to the home, out of the footer and the sitemap; it comes back with the first link or video", async () => {
     const parked = PARKED_PAGES.includes("/download");
-    expect(parked).toBe(!downloadsOffered());
-    expect(DOWNLOADS.every((d) => d.href === null)).toBe(parked);
-    for (const prefix of ["/en", "/fr"]) expect(rules).toContainEqual({ source: `${prefix}/download`, destination: prefix, permanent: true });
+    expect(parked).toBe(!downloadPageOpen());
+    for (const prefix of ["/en", "/fr"]) {
+      if (parked) expect(rules).toContainEqual({ source: `${prefix}/download`, destination: prefix, permanent: true });
+      else expect(rules.some((r) => r.source === `${prefix}/download`)).toBe(false);
+    }
     const { default: sitemap } = await import("../app/sitemap");
-    expect(sitemap().filter((e) => e.url.includes("/download"))).toEqual([]);
+    expect(sitemap().some((e) => e.url.includes("/download"))).toBe(!parked);
     expect(readFileSync(join(ROOT, "components/SiteFooter.tsx"), "utf8")).toContain('isListed("download")');
   });
 

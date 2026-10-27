@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 /** @typedef {{ source: string, destination: string, permanent: true }} RemovedRule */
 
 /**
@@ -39,10 +41,18 @@ const RENAMED_APP = [
 ];
 
 /**
- * `/download` lists no download while no app ships: it answers 308 to the home and is out of the footer and the sitemap.
- * Remove this line (and set a link in lib/downloads.ts) the day an app ships; lib/menu.test.ts keeps the two in step.
+ * `/download` is parked while it has nothing to show: no app to download and no video of one. It then answers 308 to the home and is out
+ * of the footer and the sitemap. It comes back with the first store link (lib/downloads.ts) or the first video recorded by the e2e tests
+ * (content/app-videos.json, krizaka/.github#315); lib/menu.test.ts keeps this list, `downloadPageOpen` and the manifest in step.
  */
-export const PARKED_PAGES = ["/download"];
+const hasVideos = (() => {
+  try {
+    return (JSON.parse(readFileSync(new URL("../content/app-videos.json", import.meta.url), "utf8")).videos ?? []).length > 0;
+  } catch {
+    return false;
+  }
+})();
+export const PARKED_PAGES = hasVideos ? [] : ["/download"];
 
 /**
  * Short addresses that are served by a route of the API, not removed pages: the public check of a sealed contract

@@ -78,3 +78,55 @@ jobs:
       - run: bash scripts/ci-s3.sh
       - run: pnpm install --frozen-lockfile --prefer-offline
       - run: pnpm --filter @yomizaka/web exec vitest run lib/storage/s3.test.ts
+
+  # The web videos of the download page (krizaka/.github#315), recorded by the e2e tests themselves on the seeded persona Éric:
+  # the same throwaway backend as the phone's flows, the showcase journeys of scripts/showcase-web.mjs (the binder, the report),
+  # then the org's `app-videos` workflow transcodes, uploads to Bunny and opens one PR with apps/web/content/app-videos.json.
+  # On main only, after the checks are green; a failure here never blocks a merge (it is not a required check).
+  showcase-web:
+    name: Showcase videos (web)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --prefer-offline
+      - run: pnpm exec playwright-core install --with-deps chromium
+      - name: The demo persona (masked, for this run only) and its backend
+        run: |
+          password="$(openssl rand -hex 16)"
+          echo "::add-mask::$password"
+          echo "DEMO_ACCOUNT_EMAIL=eric@demo.yomizaka.test" >> "$GITHUB_ENV"
+          echo "DEMO_ACCOUNT_PASSWORD=$password" >> "$GITHUB_ENV"
+          DEMO_ACCOUNT_EMAIL=eric@demo.yomizaka.test DEMO_ACCOUNT_PASSWORD="$password" bash scripts/ci-mobile-backend.sh
+      - name: Record the journeys
+        run: E2E_EMAIL="$DEMO_ACCOUNT_EMAIL" E2E_PASSWORD="$DEMO_ACCOUNT_PASSWORD" node scripts/showcase-web.mjs showcase-web --base http://localhost:3000 --locale fr
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: showcase-web
+          path: showcase-web
+          retention-days: 7
+
+  app-videos:
+    name: Download page videos
+    needs: showcase-web
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: krizaka/.github/.github/workflows/app-videos.yml@caa28825e7f046b7c019ea9ed075b8fb22ad8c52 # main (krizaka/.github#316)
+    with:
+      product: yomizaka
+      manifest: apps/web/content/app-videos.json
+      artifacts: |
+        showcase-web
+    secrets: inherit

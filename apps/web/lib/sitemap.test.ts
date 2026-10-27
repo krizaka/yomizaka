@@ -3,6 +3,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 
 import sitemap from "../app/sitemap";
 import { proxy } from "../proxy";
+import { downloadPageOpen } from "./downloads";
 import { SITE_URL } from "./site";
 
 /** The sitemap lists every indexable page in both languages, each the other's hreflang alternate — and is served when indexing is on. */
@@ -14,9 +15,9 @@ describe("sitemap.xml", () => {
     urls = entries.map((e) => e.url);
   });
 
-  it("lists the home, docs, privacy and terms, in en and fr, and nothing else (no /download while no app ships)", () => {
-    for (const locale of ["en", "fr"]) for (const path of ["", "/docs", "/privacy", "/terms"]) expect(urls).toContain(`${SITE_URL}/${locale}${path}`);
-    expect(urls).toHaveLength(8);
+  it("lists the home, docs, privacy and terms, in en and fr, and /download only while it has an app or a video, nothing else", () => {
+    for (const locale of ["en", "fr"]) for (const path of ["", "/docs", "/privacy", "/terms", ...(downloadPageOpen() ? ["/download"] : [])]) expect(urls).toContain(`${SITE_URL}/${locale}${path}`);
+    expect(urls).toHaveLength(downloadPageOpen() ? 10 : 8);
   });
 
   it("lists none of the removed addresses", () => {
@@ -31,8 +32,8 @@ describe("sitemap.xml", () => {
     for (const e of entries) expect(e.alternates?.languages?.["x-default"]).toBe(e.alternates?.languages?.fr);
   });
 
-  it("does not list the report checker (in the app, not public) nor the parked /download", () => {
-    expect(urls.filter((u) => u.includes("/verify") || u.includes("/download"))).toEqual([]);
+  it("does not list the report checker (in the app, not public) nor a parked /download", () => {
+    expect(urls.filter((u) => u.includes("/verify") || (!downloadPageOpen() && u.includes("/download")))).toEqual([]);
   });
 });
 
