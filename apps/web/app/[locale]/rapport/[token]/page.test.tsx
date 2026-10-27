@@ -21,7 +21,7 @@ describe("/rapport/<token> (yomizaka#128)", () => {
   });
 
   it("a live link renders the report", async () => {
-    open.report = { reference: "DOS-1", issuedAt: "2026-10-27T12:00:00.000Z", documents: [], rulesets: [] };
+    open.report = { reference: "DOS-1", issuedAt: "2026-10-27T12:00:00.000Z", expiresAt: "2026-11-03T12:00:00.000Z", documents: [], rulesets: [] };
     await expect(OwnerReportPage(params("live-token"))).resolves.toBeTruthy();
   });
 });
