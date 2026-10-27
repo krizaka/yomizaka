@@ -92,6 +92,32 @@
     },
     "visual": {
       "caption": "Une vraie vérification, enregistrée telle qu'elle est revenue"
+    },
+    "showcase": {
+      "title": "L'app, telle qu'elle est",
+      "lead": "Trois écrans de Yomizaka, dessinés avec ses propres composants sur des données fictives. Rien ici n'est une capture d'écran.",
+      "demo": "Données fictives",
+      "findings": {
+        "title": "Chaque constat cite sa ligne",
+        "text": "La règle, la phrase du bail sur laquelle elle repose et l'article de loi, dans l'ordre de lecture.",
+        "summary": "Le rapport d'une vérification : le verdict, puis chaque constat avec le passage cité du bail et son article."
+      },
+      "screening": {
+        "title": "Une vérification que le locataire accepte",
+        "text": "Le candidat voit le résultat en premier; une vérification de registre qui n'est pas prête le dit au lieu de deviner.",
+        "summary": "Le résultat d'une vérification avec les contrôles demandés et, pour chacun, son issue : rien à signaler, ou pas encore disponible.",
+        "title2": "Résultat",
+        "items": {
+          "payment-history": "Historique de paiement",
+          "credit": "Rapport de crédit",
+          "registry": "Registre du tribunal"
+        }
+      },
+      "owner": {
+        "title": "Un rapport que le propriétaire peut ouvrir",
+        "text": "Une page en lecture seule, par lien, avec une échéance : l'empreinte du fichier, les constats et l'exécution qui les a produits.",
+        "summary": "La page du propriétaire : l'empreinte du document, les constats avec leurs articles et l'identifiant d'exécution Orazaka."
+      }
     }
   },
   "run": {
@@ -1304,8 +1330,8 @@
         "set": "Avatars de la série",
         "upload": "Une image à vous",
         "uploadHint": "PNG, JPEG ou HEIC, {size} Ko au plus. L'image est recadrée en carré et ses données (position, appareil) sont retirées.",
-          "browse": "Choisir une image",
-          "tone": "Avatar {n}",
+        "browse": "Choisir une image",
+        "tone": "Avatar {n}",
         "off": "Les avatars sont désactivés."
       },
       "defaultName": "Mes documents",

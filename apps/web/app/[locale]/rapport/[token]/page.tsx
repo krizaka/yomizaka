@@ -1,4 +1,3 @@
-import { Badge } from "@krizaka/ui/badge";
 import { Page, Section } from "@krizaka/ui/page";
 import { PageHero } from "@krizaka/ui/page-hero";
 import type { Metadata } from "next";
@@ -7,6 +6,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { DISPLAY_TIME_ZONE, INTL } from "@/components/console/format";
+import { OwnerReportDocument } from "@/components/OwnerReportDocument";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
 import { asLocale, format, getDictionary } from "@/lib/i18n";
@@ -31,8 +31,7 @@ export default async function OwnerReportPage({ params }: Readonly<{ params: Pro
   if (!report) notFound();
   const back = { href: pagePath(locale, "home"), label: t.meta.siteName };
   const date = new Date(report.issuedAt).toLocaleDateString(INTL[locale], { dateStyle: "long", timeZone: DISPLAY_TIME_ZONE });
-  const verdicts: Record<string, string> = w.verdict;
-  return (
+    return (
     <>
       <SiteHeader locale={locale} current="home" />
       <main id="content">
@@ -45,31 +44,7 @@ export default async function OwnerReportPage({ params }: Readonly<{ params: Pro
             <h2 className="text-xl font-semibold">{w.documents}</h2>
             <ol className="mt-4 grid gap-4">
               {report.documents.map((d, i) => (
-                <li key={d.sha256} className="flex flex-col gap-3 rounded-lg border border-border-default p-5">
-                  <h3 className="text-lg font-semibold">{format(w.document, { n: String(i + 1) })}</h3>
-                  <dl className="grid gap-1 text-sm">
-                    <div><dt className="text-fg-secondary">{w.type}</dt><dd>{d.typeId ?? w.typeUnknown}</dd></div>
-                    <div><dt className="text-fg-secondary">{w.sha}</dt><dd className="break-all font-mono">{d.sha256}</dd></div>
-                    {d.pages ? <div><dt className="text-fg-secondary">{w.pages}</dt><dd>{d.pages}</dd></div> : null}
-                  </dl>
-                  <h4 className="font-medium">{w.signals}</h4>
-                  {d.signals.length === 0 ? <p className="text-sm text-fg-secondary">{w.noSignals}</p> : (
-                    <ul className="grid gap-1 text-sm">
-                      {d.signals.map((s) => <li key={`${s.id}-${s.observation}`}><Badge>{s.level}</Badge> {s.observation}</li>)}
-                    </ul>
-                  )}
-                  <h4 className="font-medium">{w.findings}</h4>
-                  {d.findings.length === 0 ? <p className="text-sm text-fg-secondary">{w.noFindings}</p> : (
-                    <ul className="grid gap-1 text-sm">
-                      {d.findings.map((f) => <li key={f.ruleId}><Badge>{verdicts[f.verdict] ?? f.verdict}</Badge> {f.ruleId}{f.citation ? `, ${f.citation}` : ""}</li>)}
-                    </ul>
-                  )}
-                  {d.notExamined.length > 0 ? <p className="text-sm"><b>{w.notExamined}</b> {d.notExamined.join(", ")}</p> : null}
-                  <h4 className="font-medium">{w.runs}</h4>
-                  <ul className="grid gap-1 font-mono text-xs">
-                    {d.runs.map((r) => <li key={r.runId}>{format(w.run, { studio: r.studio, runId: r.runId, version: r.studioVersion ?? w.versionNone })}</li>)}
-                  </ul>
-                </li>
+                <OwnerReportDocument key={d.sha256} doc={d} n={i + 1} words={w} />
               ))}
             </ol>
             {report.rulesets.map((r) => (
