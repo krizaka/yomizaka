@@ -71,7 +71,7 @@ export function ownerReportOf(file: ApplicantFileView, hashes: ReadonlyMap<strin
       if (isAuthenticity(c.report)) {
         doc.signals.push(...c.report.signals.map((s) => ({ id: s.signalId, level: s.level, observation: s.observation })));
         const ne = c.report.notExamined;
-        doc.notExamined.push(...(Array.isArray(ne) ? ne : ne ? [ne] : []));
+        doc.notExamined.push(...asList(ne));
       } else if (isCompliance(c.report)) {
         doc.findings.push(...c.report.findings.map((f) => ({ ruleId: f.ruleId, verdict: f.verdict, severity: f.severity, citation: f.citation ?? null })));
         rulesets.set(`${c.report.rulesetId}@${c.report.rulesetVersion}`, { jurisdiction: c.report.jurisdiction, rulesetId: c.report.rulesetId, rulesetVersion: c.report.rulesetVersion, reviewStatus: c.report.reviewStatus ?? null });
@@ -82,9 +82,18 @@ export function ownerReportOf(file: ApplicantFileView, hashes: ReadonlyMap<strin
   return { reference: referenceOf(file.id), issuedAt: issuedAt.toISOString(), documents, rulesets: [...rulesets.values()] };
 }
 
+/** Nothing, one value or a list → a list. */
+const asList = <T,>(v: T | T[] | null | undefined): T[] => {
+  if (Array.isArray(v)) return v;
+  return v ? [v] : [];
+};
+
 /** A share's state as of now. Pure. */
 export type ShareState = "live" | "expired" | "revoked";
-export const shareState = (s: { expiresAt: Date; revokedAt: Date | null }, now: Date): ShareState => (s.revokedAt ? "revoked" : s.expiresAt.getTime() <= now.getTime() ? "expired" : "live");
+export const shareState = (s: { expiresAt: Date; revokedAt: Date | null }, now: Date): ShareState => {
+  if (s.revokedAt) return "revoked";
+  return s.expiresAt.getTime() <= now.getTime() ? "expired" : "live";
+};
 
 /** Days asked → days kept: a number in 1..SHARE_MAX_DAYS, the default otherwise. */
 export const shareDays = (asked: number | undefined) => (asked && Number.isInteger(asked) && asked >= 1 && asked <= SHARE_MAX_DAYS ? asked : SHARE_DEFAULT_DAYS);
