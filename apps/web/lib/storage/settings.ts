@@ -4,9 +4,8 @@ import type { QueryResultRow } from "pg";
 import { refuse } from "../http";
 import { noneStore } from "./none";
 import type { DocumentStore } from "./port";
-import { residencyOf } from "./regions";
-import { s3Store } from "./s3";
 import { open, seal } from "./vault";
+import { ownBucketStore } from "./verify";
 
 /**
  * Where an owner's kept documents live (ADR-0007): `none` (nothing can be kept), `krizaka` (the store this deployment
@@ -91,7 +90,7 @@ export async function saveSettings(q: Query, owner: string, input: SettingsInput
 export async function ownS3Store(q: Query, owner: string, key: Buffer | null, now: () => Date): Promise<DocumentStore | null> {
   const [row] = await q<Row>(`SELECT ${COLUMNS} FROM storage_settings WHERE owner_id = $1`, [owner]);
   if (!row || row.mode !== STORAGE_MODE.s3 || !row.s3_endpoint || !row.s3_secret_sealed || !key) return null;
-  return s3Store({ endpoint: row.s3_endpoint, region: row.s3_region ?? "", bucket: row.s3_bucket ?? "", accessKeyId: row.s3_access_key_id ?? "", secretAccessKey: open(row.s3_secret_sealed, key), prefix: "yomizaka", residency: residencyOf(row.s3_region ?? ""), owner: "workspace", now });
+  return ownBucketStore({ endpoint: row.s3_endpoint, region: row.s3_region ?? "", bucket: row.s3_bucket ?? "", accessKeyId: row.s3_access_key_id ?? "", secretAccessKey: open(row.s3_secret_sealed, key) }, now);
 }
 
 /** The store an owner's documents use: nothing (kept off), the deployment's own (Krizaka), or the owner's S3. */

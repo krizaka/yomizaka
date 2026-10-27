@@ -2,6 +2,7 @@ import { authSettings } from "@krizaka/auth/settings";
 import { couponSettings } from "@krizaka/coupons/settings";
 import { creditsSettings } from "@krizaka/credits/settings";
 import { ALL_SCOPES, bilingual, choice, defineSettings, flag, integer, type Registry, SCOPE, subset, WORKSPACE_SCOPES } from "@krizaka/settings";
+import { storageSettings } from "@krizaka/storage/settings";
 import type { z } from "zod";
 
 import { LIMIT_SETTINGS } from "./limits";
@@ -50,6 +51,8 @@ export const SETTINGS = {
   "audit.freeValidDays": integer(GROUP.general, 3650, { min: 1, max: 36500, unit: "days" }),
   // The credits ledger's knobs (the zone days and months are counted in, how long a hold keeps credits back): @krizaka/credits'.
   ...inGroup(GROUP.general, creditsSettings),
+  // Where kept documents live (ADR-010): the provider and its coordinates, chosen by the admin. `local` (the default) follows the deployment's environment.
+  ...inGroup(GROUP.general, storageSettings),
   // Features: each can be switched off for everyone, a workspace or one person (a beta).
   "features.documentInsight": flag(GROUP.features, true, ALL),
   "features.personalInfo": flag(GROUP.features, true, WORKSPACE),

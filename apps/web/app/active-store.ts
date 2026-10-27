@@ -1,7 +1,9 @@
+import { readStorageSettings } from "@krizaka/storage/settings";
 import { type CloudOwner, STORAGE_OWNER } from "@yomizaka/core";
 
 import { query } from "@/lib/db";
 import { env } from "@/lib/env";
+import { appSettings } from "@/lib/settings/instance";
 import { storageFrom } from "@/lib/storage/config";
 import { noneStore } from "@/lib/storage/none";
 import type { DocumentStore, StoreDescriptor } from "@/lib/storage/port";
@@ -14,8 +16,8 @@ export const settingsKey = () => {
   return k ? parseSettingsKey(k) : null;
 };
 
-/** The documents store this deployment configures (Krizaka's). The edge reads the environment and the clock; the domain receives them. */
-export const krizakaStore = () => storageFrom(env(), () => new Date());
+/** The documents store this deployment configures (Krizaka's): the admin's choice in the settings (`storage.*`) over the environment's. The edge reads both and the clock; the domain receives them. */
+export const krizakaStore = async () => storageFrom(env(), () => new Date(), await readStorageSettings((key) => appSettings().get(key) as Promise<string | number>));
 
 export interface OwnerStores {
   /** Where new kept documents go: nothing, Krizaka's store or the owner's own cloud, from their settings. */
@@ -30,7 +32,7 @@ export interface OwnerStores {
 export async function storesOf(ownerId: string): Promise<OwnerStores> {
   const now = () => new Date();
   const key = settingsKey();
-  const krizaka = krizakaStore();
+  const krizaka = await krizakaStore();
   const own = await ownS3Store(query, ownerId, key, now);
   const { store: write, settings } = await storeForOwner(query, ownerId, key, krizaka, now).catch(() => ({ store: noneStore(), settings: { mode: "none", keepDefault: false, s3: null, testedAt: null } as StorageSettings }));
   const of = (o: CloudOwner) => (o === STORAGE_OWNER.workspace ? own : krizaka);
