@@ -4,8 +4,7 @@ appId: com.krizaka.yomizaka
 tags:
   - ci
 ---
-- launchApp:
-    clearState: true
+- runFlow: shared/launch.yaml
 - runFlow: shared/sign-in.yaml
 - assertVisible: "Vérifier un document|Check a document"
 - takeScreenshot: smoke-verify

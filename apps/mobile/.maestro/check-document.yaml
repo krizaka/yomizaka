@@ -5,8 +5,7 @@ appId: com.krizaka.yomizaka
 tags:
   - manual
 ---
-- launchApp:
-    clearState: true
+- runFlow: shared/launch.yaml
 - runFlow: shared/sign-in.yaml
 - assertVisible: "Vérifier un document"
 - tapOn: "Choisir un PDF"
