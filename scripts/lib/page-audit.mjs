@@ -182,6 +182,16 @@ function wrappedOf() {
 }
 
 /** The whole measure of a page. Decorative layers (aria-hidden), fixed elements and anything inside a scroller are left out of the layout probes (yomizaka#435). */
+/** A heading with no text (and no image or labelled icon) says nothing to a screen reader. */
+function emptyHeadingsOf() {
+  return [...document.querySelectorAll("h1, h2, h3")].filter((h) => !(h.textContent || "").trim() && !h.querySelector("img, svg[aria-label]")).length;
+}
+
+/** A file input that no label, `aria-label` or title names. */
+function unlabelledFilesOf() {
+  return [...document.querySelectorAll("input[type=file]")].filter((i) => !(i.getAttribute("aria-label") || i.getAttribute("aria-labelledby") || i.title || i.labels?.length)).length;
+}
+
 function measurePage() {
   const doc = document.documentElement;
   const panels = [...document.querySelectorAll("[data-panel], main section, main [role=region]")].filter((el) => !el.closest(ARIA_HIDDEN));
@@ -200,12 +210,14 @@ function measurePage() {
     cutColumns: cutColumnsOf(),
     chromeOverlaps: chromeOverlapsOf(doc).slice(0, 3),
     clips: clipsOf(),
+    emptyHeadings: emptyHeadingsOf(),
+    unlabelledFiles: unlabelledFilesOf(),
     wrapped: wrappedOf(),
     segmentError: !!document.querySelector('[data-testid="segment-error"]'),
   };
 }
 
-const PROBES = [tooTall, wrappedOf, className, nameOf, scrolls, meets, apart, clipped, wideOf, named, unnamedOf, headerActionOf, folded, keptBetween, notDrawn, runsOut, spillOf, overlapsOf, cutBy, cutColumnsOf, topBoxOf, isTopBar, chromeOverlapsOf, clipsOf, measurePage];
+const PROBES = [tooTall, wrappedOf, className, nameOf, scrolls, meets, apart, clipped, wideOf, named, unnamedOf, headerActionOf, folded, keptBetween, notDrawn, runsOut, spillOf, overlapsOf, cutBy, cutColumnsOf, topBoxOf, isTopBar, chromeOverlapsOf, clipsOf, emptyHeadingsOf, unlabelledFilesOf, measurePage];
 
 /** The expression Playwright runs in the page (`page.evaluate(auditPage)`): the probes, serialised together, then the measure. */
 export const auditPage = `(() => {\nconst ARIA_HIDDEN = ${JSON.stringify(ARIA_HIDDEN)};\n${PROBES.map((f) => `const ${f.name} = ${f.toString()};`).join("\n")}\nreturn measurePage();\n})()`;
@@ -214,13 +226,22 @@ export const auditPage = `(() => {\nconst ARIA_HIDDEN = ${JSON.stringify(ARIA_HI
  * The problems of one page × width × theme, in words: console errors, a horizontal overflow (or elements past the edge),
  * not exactly one h1 (when asked), unnamed buttons, the header's action off screen or unnamed (when the page has one).
  */
-export function problemsOf(where, result, { errors = [], h1 = false, headerAction = false } = {}) {
+/** Empty headings; file inputs without a label (opt-in until `Dropzone` of @krizaka/ui names its hidden input, a prop of the package). */
+function accessibilityProblems(where, result, fileLabels) {
+  const problems = [];
+  if (result.emptyHeadings) problems.push(`${where}: ${result.emptyHeadings} empty heading(s)`);
+  if (fileLabels && result.unlabelledFiles) problems.push(`${where}: ${result.unlabelledFiles} file input(s) without a label`);
+  return problems;
+}
+
+export function problemsOf(where, result, { errors = [], h1 = false, headerAction = false, fileLabels = false } = {}) {
   return [
     ...errorsOf(where, errors),
     ...layoutProblems(where, result),
     ...(h1 ? namingProblems(where, result) : []),
     ...(headerAction ? headerActionProblems(where, result.headerAction) : []),
     ...chipProblems(where, result.chips ?? []),
+    ...accessibilityProblems(where, result, fileLabels),
   ];
 }
 
