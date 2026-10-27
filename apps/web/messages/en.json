@@ -287,7 +287,8 @@
         "title": "The binder",
         "label": "Collections",
         "open": "Open this collection",
-        "empty": "No file in this collection yet."
+        "empty": "No file in this collection yet.",
+        "add": "Add a document"
       },
       "quick": {
         "label": "Quick access",
@@ -1287,6 +1288,8 @@
         "set": "Avatars of the set",
         "upload": "An image of your own",
         "uploadHint": "PNG, JPEG or HEIC, up to {size} KB. The image is cropped square and its data (position, device) is removed.",
+          "browse": "Choose an image",
+          "tone": "Avatar {n}",
         "off": "Avatars are switched off."
       },
       "defaultName": "My documents",
@@ -3223,6 +3226,14 @@
         "invoices": {
           "name": "Invoices 2026",
           "description": "The 2026 maintenance invoices — fictitious specimen documents, one with a wrong total."
+        },
+        "empty-a": {
+          "name": "To file",
+          "description": "A folder ready for the next documents."
+        },
+        "empty-b": {
+          "name": "Archive 2025",
+          "description": "An empty folder for last year's documents."
         }
       }
     }
