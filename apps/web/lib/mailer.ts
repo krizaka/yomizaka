@@ -11,11 +11,11 @@ import { pgIdempotency, pgSuppression } from "./mail/store";
  * the recipient and never the address.
  */
 export interface MailConfig {
-  MAIL_PROVIDER?: string | undefined;
-  MAIL_API_KEY?: string | undefined;
-  MAIL_DOMAIN?: string | undefined;
+  MAIL_PROVIDER?: string;
+  MAIL_API_KEY?: string;
+  MAIL_DOMAIN?: string;
   MAIL_API_URL: string;
-  MAIL_FROM?: string | undefined;
+  MAIL_FROM?: string;
 }
 
 /** The three links Yomizaka mails: confirm an address, reset a password, confirm a changed address. */
@@ -50,7 +50,7 @@ export const mailEnvOf = (e: MailConfig): MailEnv => ({
 });
 
 /** One key per intention: the same link is mailed once (a double click, a retry), a new link is a new intention. */
-export const intentionOf = (mail: AccountMail): string => `${mail.kind}:${crypto.createHash("sha256").update(`${mail.to.toLowerCase()}\n${mail.url}`).digest("hex").slice(0, 32)}`;
+export const intentionOf = (mail: AccountMail): string => mail.kind + ":" + crypto.createHash("sha256").update(mail.to.toLowerCase() + "\n" + mail.url).digest("hex").slice(0, 32);
 
 type Options = Parameters<typeof sendEmail>[2];
 
@@ -92,10 +92,6 @@ export const mailerFor = (e: MailConfig, deps: MailDeps = {}): Mailer => async (
     ...(deps.now ? { now: deps.now } : {}),
   };
   const result = await send(mail, options);
-  switch (result.status) {
-    case "failed":
-      throw new Error(`Mail provider failed: ${result.error}`);
-    default:
-      return; // sent, or not sent on purpose (suppressed, already mailed): the same answer
-  }
+  // sent, or not sent on purpose (suppressed, already mailed): the same answer
+  if ("error" in result) throw new Error("Mail provider failed: " + result.error);
 };
