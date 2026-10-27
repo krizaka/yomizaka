@@ -24,17 +24,17 @@
     "localTableOrForm": 0,
     "retiredImport": 0,
     "routeStateSelection": 0,
-    "pageTemplate": 47,
+    "cognitiveComplexity": 0,
     "sonar": 27,
-    "sonarjs/no-nested-template-literals": 6,
     "sonarjs/no-nested-conditional": 9,
     "sonarjs/no-redundant-optional": 4,
+    "sonarjs/no-nested-template-literals": 6,
     "sonarjs/no-small-switch": 1,
     "sonarjs/sql-queries": 2,
     "sonarjs/duplicates-in-character-class": 1,
     "sonarjs/anchor-precedence": 1,
     "sonarjs/regex-complexity": 2,
     "sonarjs/super-linear-regex": 1,
-    "cognitiveComplexity": 0
+    "pageTemplate": 47
   }
 }
