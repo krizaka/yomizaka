@@ -24,6 +24,7 @@ import { pluralKey } from "@/lib/plural";
 import { BatchImport } from "./BatchImport";
 import { STATUS_TONE } from "./DocumentTable";
 import { formatDate } from "./format";
+import { RunId } from "./RunId";
 import { tableLabels } from "./table-labels";
 
 type Say = ReturnType<typeof useSay>["say"];
@@ -47,8 +48,8 @@ function checkColumns(say: Say, locale: Lang): DataTableColumn<CheckSummary>[] {
     { id: "kind", header: say("checks.columns.kind"), priority: 2, value: (c) => c.kind, cell: (c) => say(`kinds.${c.kind}`) },
     { id: "studio", header: say("checks.columns.check"), priority: 3, value: (c) => c.studio, cell: (c) => say(`batch.studios.${c.studio}`) },
     { id: "result", header: say("checks.columns.result"), type: "status", value: (c) => c.result, cell: (c) => <Badge tone={STATUS_TONE[c.result]}>{say(`statuses.${c.result}`)}</Badge> },
-    { id: "at", header: say("checks.columns.when"), priority: 2, align: "end", value: (c) => c.at, cell: (c) => formatDate(c.at, locale) },
-    { id: "run", header: say("checks.columns.run"), priority: 3, value: (c) => c.runId ?? "", cell: (c) => <code className="break-all font-sans text-xs tabular-nums text-fg-muted">{c.runId ?? "—"}</code> },
+    { id: "at", header: say("checks.columns.when"), priority: 2, align: "end", value: (c) => c.at, cell: (c) => <span className="whitespace-nowrap">{formatDate(c.at, locale)}</span> },
+    { id: "run", header: say("checks.columns.run"), priority: 3, value: (c) => c.runId ?? "", cell: (c) => <RunId id={c.runId} /> },
   ];
 }
 
