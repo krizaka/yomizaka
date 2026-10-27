@@ -15,8 +15,8 @@ import { useRouter } from "next/navigation";
 import { type ReactNode, useState } from "react";
 import { z } from "zod";
 
-import { CollectionAvatar } from "@/components/console/CollectionAvatar";
 import { folderAvatarOptions } from "@/components/console/collection-avatar-options";
+import { CollectionAvatar } from "@/components/console/CollectionAvatar";
 import { useAppConfig } from "@/lib/app-config-client";
 import { errorKey } from "@/lib/client";
 import { useSay } from "@/lib/i18n-client";
