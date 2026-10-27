@@ -92,7 +92,7 @@
 ## 6. Checks — local first, CI always
 
 - **Before every push**, the local check: `pnpm run check` (lint · typecheck · tests). The pre-push hook
-  (`.githooks/pre-push`, installed by `pnpm install`) runs it; never push "to see what CI says".
+  (`.githooks/pre-push`, installed by `pnpm install`) runs it, and `.githooks/pre-commit` runs the ast-grep ratchet on staged TypeScript; never push "to see what CI says".
 - CI (`.github/workflows/ci.yml`): lint (ESLint, i18n catalogues), typecheck, unit tests, production build, the SEO family
   guard on the built site, and CodeQL. Never merge with a pending or red check.
 - **No test, not done**: every feature and every fix ships with its tests (a fix starts with a failing test). Pure logic
@@ -156,3 +156,5 @@ These are the defects code review found most often on 2026-10-23. Check them you
 7. **Naming:** environment variables follow `<CONTEXT>_<THING>` (`APP_`, `DATABASE_`, `AUTH_`, `MEDIA_`, `MAIL_`, `PAYMENTS_`, `AI_`…) and are declared once.
 8. **Words:** every user-facing string is in the FR and EN messages, and no colour is hard-coded.
 9. **Review threads:** answer every one. Fix it test-first, or reply with the reason, then resolve it.
+
+- **A bug means a missing guard** ([standard](https://github.com/krizaka/.github/blob/main/docs/standards/bug-means-missing-guard.md)): the fix PR first adds a guard that fails on `main`, then fixes the bug; the bug issue says why the guards missed it.
