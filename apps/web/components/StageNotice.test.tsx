@@ -9,6 +9,10 @@ describe("the development-version notice (yomizaka#364)", () => {
     expect(renderToStaticMarkup(<StageNotice locale="en" stage="dev" />)).toContain("Development version");
   });
 
+  it("marks itself as top chrome, which the first-screen check counts above the page", () => {
+    expect(renderToStaticMarkup(<StageNotice locale="en" stage="dev" />)).toContain("data-top-chrome");
+  });
+
   it("renders nothing in production", () => {
     expect(renderToStaticMarkup(<StageNotice locale="fr" stage="prod" />)).toBe("");
   });

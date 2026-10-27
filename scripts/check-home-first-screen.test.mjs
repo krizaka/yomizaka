@@ -11,8 +11,14 @@ describe("the home's first screen (the UX review's Y9)", () => {
     assert.deepEqual(problemsOf(measure({ contentTop: 68 + GAP_PX + 5 })), []);
     assert.deepEqual(problemsOf(measure({ width: 1440, height: 900, showcaseTop: 1200 })), []);
   });
+  it("counts the 24 px from the bottom of the top chrome: the bar plus the notice when it is shown, and still refuses a void", () => {
+    assert.deepEqual(problemsOf(measure({ chromeHeight: 37, contentTop: 68 + 37 + GAP_PX })), []);
+    assert.match(problemsOf(measure({ chromeHeight: 37, contentTop: 68 + 37 + 80 }))[0], /starts 80 px under the top chrome, not 24/);
+    // the notice's height is not forgiven when it is absent: 61 px under a bar with no notice is a void
+    assert.match(problemsOf(measure({ chromeHeight: 0, contentTop: 68 + 61 }))[0], /starts 61 px under the top chrome, not 24/);
+  });
   it("names a void above the hero, a visual below the first screen, and a page without a bar", () => {
-    assert.match(problemsOf(measure({ contentTop: 68 + 80 }))[0], /starts 80 px under the bar, not 24/);
+    assert.match(problemsOf(measure({ contentTop: 68 + 80 }))[0], /starts 80 px under the top chrome, not 24/);
     assert.match(problemsOf(measure({ showcaseTop: 900 }))[0], /not on the first screen \(top 900 of 844\)/);
     assert.match(problemsOf(measure({ showcaseTop: null }))[0], /top none/);
     assert.match(problemsOf(measure({ barBottom: null }))[0], /no bar or no hero frame/);
