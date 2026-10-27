@@ -1256,4 +1256,12 @@ CREATE TABLE file_report_views (
 CREATE INDEX file_report_views_share ON file_report_views(share_id, viewed_at DESC);
 `,
   },
+  {
+    version: "0054_file_report_share_emailed_to",
+    // yomizaka#130: the address a link was e-mailed to, kept minimally to show "sent to" and cleared when the link is revoked or expires;
+    // the row's deletion removes it too. The audit log holds a hash of it, never the address.
+    sql: `
+ALTER TABLE file_report_shares ADD COLUMN emailed_to text CHECK (emailed_to IS NULL OR length(emailed_to) <= 254);
+`,
+  },
 ];

@@ -21,7 +21,7 @@
     "@krizaka/coupons": "0.1.1",
     "@krizaka/credits": "0.1.0",
     "@krizaka/db": "0.2.0",
-    "@krizaka/email": "0.2.0",
+    "@krizaka/email": "0.3.0",
     "@krizaka/fonts": "0.3.0",
     "@krizaka/i18n": "^0.2.1",
     "@krizaka/icons": "^0.7.0",
