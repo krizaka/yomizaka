@@ -26,6 +26,12 @@ describe("the 404 (the UX review's Y10)", () => {
     expect(html).toContain('href="/fr"');
     expect(html.indexOf('href="/fr/app"')).toBeLessThan(html.indexOf('href="/fr"'));
   });
+  it("sits in one main landmark: no content outside a landmark (axe region, landmark-one-main)", async () => {
+    const html = renderToStaticMarkup(await NotFound());
+    expect(html.match(/<main\b/g)).toHaveLength(1);
+    expect(html.indexOf("<main")).toBeLessThan(html.indexOf("<h1"));
+    expect(html.indexOf("</main>")).toBeGreaterThan(html.lastIndexOf("</a>"));
+  });
   it("every unmatched address under a language reaches it: the catch-all beside it calls notFound()", () => {
     const catchAll = readFileSync(new URL("./[...rest]/page.tsx", import.meta.url), "utf8");
     expect(catchAll).toContain('from "next/navigation"');
