@@ -3486,6 +3486,12 @@
     "ruleset": "Ruleset {id} version {version} ({jurisdiction})",
     "reviewStatus": "Ruleset review status: {status}. It is to be read by a lawyer before it is relied upon.",
     "limits": "What this report does not show: the documents themselves, the person's name or contact, any score or ranking. The signals are observations about a file, never a judgement of a person.",
+    "download": "Download the signed PDF",
+    "expires": "This link is valid until {date}.",
+    "guarantees": "This PDF is signed with Yomizaka's key (Ed25519, held by Krizaka). The signature covers every item of this report (documents, signals, rules checked, runs, versions), the link's expiry and the full text of the pages. If a single character changes, verification fails.",
+    "notGuaranteed": "It does not prove that the signals or findings are right, nor who holds the file: it shows no name, contact, file name or quoted passage. Informative, not legal advice; a person decides.",
+    "signatureNote": "The attestation (payload, text fingerprint and signature) is embedded in the PDF. Any change to the text of the earlier pages makes verification fail.",
+    "footer": "Yomizaka, a Krizaka product — analysis by Orazaka.",
     "verdict": {
       "PASS": "No issue reported",
       "FAIL": "Issue reported",

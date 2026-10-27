@@ -63,8 +63,11 @@ export async function revokeShare(owner: { id: string; email: string }, fileId: 
   await audit({ action: "report.share_revoked", actorId: owner.id, actorLabel: owner.email, targetId: fileId, detail: { shareId }, headers });
 }
 
+/** An owner report with the expiry of the link that opened it. */
+export type SharedOwnerReport = OwnerReport & { expiresAt: string };
+
 /** What the owner link opens: the redacted report, or null when the link is unknown, expired or revoked (one answer, nothing leaks). Each opening is recorded. */
-export async function openShare(token: string, now: Date, headers?: Headers): Promise<OwnerReport | null> {
+export async function openShare(token: string, now: Date, headers?: Headers): Promise<SharedOwnerReport | null> {
   const [row] = await query<{ id: string; screening_id: string; landlord_id: string; expires_at: Date; revoked_at: Date | null }>(
     "SELECT id, screening_id, landlord_id, expires_at, revoked_at FROM file_report_shares WHERE token_hash = $1",
     [hash(token)],
@@ -74,5 +77,5 @@ export async function openShare(token: string, now: Date, headers?: Headers): Pr
   const hashes = new Map((await query<{ id: string; sha256: string }>("SELECT id, sha256 FROM documents WHERE owner_id = $1 AND screening_id = $2", [row.landlord_id, row.screening_id])).map((d) => [d.id, d.sha256]));
   await query("INSERT INTO file_report_views (share_id, viewed_at, ip) VALUES ($1, $2, $3)", [row.id, now, headers ? clientAddress(headers) : null]);
   await audit({ action: "report.viewed", actorId: null, actorLabel: "owner-link", targetId: row.screening_id, detail: { shareId: row.id }, headers });
-  return ownerReportOf(file, hashes, now);
+  return { ...ownerReportOf(file, hashes, now), expiresAt: row.expires_at.toISOString() };
 }

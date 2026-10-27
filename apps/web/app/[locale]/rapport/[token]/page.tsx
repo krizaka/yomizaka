@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { ButtonLink } from "@/components/ButtonLink";
 import { DISPLAY_TIME_ZONE, INTL } from "@/components/console/format";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -39,6 +40,8 @@ export default async function OwnerReportPage({ params }: Readonly<{ params: Pro
         <PageHero back={back} linkAs={Link} title={w.title} backdrop="plain" lead={w.lead}>
           <p>{format(w.reference, { ref: report.reference })} · {format(w.issued, { date })}</p>
           <p>{w.notice}</p>
+          <p>{format(w.expires, { date: new Date(report.expiresAt).toLocaleDateString(INTL[locale], { dateStyle: "long", timeZone: DISPLAY_TIME_ZONE }) })}</p>
+          <ButtonLink href={`/api/rapport/${encodeURIComponent(token)}/pdf?locale=${locale}`} variant="secondary">{w.download}</ButtonLink>
         </PageHero>
         <Page>
           <Section>
