@@ -26,7 +26,7 @@ describe("the adopted Krizaka modules", () => {
 
   it("privacy v2 (the incident register, yomizaka#418) is the text `emitMigration` prints today, in its own migration", () => {
     const privacy = EMITTED.find(({ schema }) => schema.module === "privacy")!;
-    const migration = MIGRATIONS.find((m) => m.version === "0053_privacy_incident_register");
+    const migration = MIGRATIONS.find((m) => m.version === "0054_privacy_incident_register");
     expect(migration).toBeDefined();
     expect(migration!.sql).toContain(emitMigration(privacy.schema, 2, privacy.context).trim());
   });
