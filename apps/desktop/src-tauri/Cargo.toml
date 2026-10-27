@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Yomizaka for the Mac: a library in a folder of your Mac, documents checked and never kept elsewhere"
 authors = ["Krizaka"]
 edition = "2021"
-license = "Apache-2.0"
+license = "FSL-1.1-ALv2"
 rust-version = "1.80"
 
 [lib]

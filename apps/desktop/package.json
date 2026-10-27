@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Yomizaka for the Mac (Tauri 2): a library in a folder of your Mac, documents checked and never kept elsewhere.",
   "type": "module",
-  "license": "Apache-2.0",
+  "license": "FSL-1.1-ALv2",
   "scripts": {
     "dev": "vite",
     "build:ui": "tsc --noEmit && vite build",
