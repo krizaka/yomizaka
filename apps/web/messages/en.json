@@ -2785,6 +2785,31 @@
         "decided": "Decision made: {state}",
         "none": "No action possible."
       },
+      "share": {
+        "title": "Link for the building owner",
+        "lead": "A read-only report: hashes and findings only, no name, no document. You choose how long it opens, 30 days at most.",
+        "expiry": "Opens for",
+        "days": "{count} days",
+        "create": "Create a link",
+        "creating": "Creating…",
+        "created": "Link ready. It is shown once: copy it now.",
+        "copy": "Copy the link",
+        "copied": "Link copied",
+        "linkLabel": "Link to send",
+        "none": "No link yet.",
+        "active": "Active links",
+        "views": "{count} views",
+        "viewsOne": "{count} view",
+        "expires": "until {date}",
+        "revoke": "Revoke",
+        "revoked": "Link revoked.",
+        "state": {
+          "live": "Active",
+          "expired": "Expired",
+          "revoked": "Revoked"
+        },
+        "loading": "Loading the links…"
+      },
       "tagsEdit": {
         "title": "Tags",
         "edit": "Edit tags",
@@ -3462,8 +3487,6 @@
       "PASS": "No issue reported",
       "FAIL": "Issue reported",
       "INSUFFICIENT_EVIDENCE": "Not enough evidence"
-    },
-    "expiredTitle": "This link is no longer available",
-    "expiredBody": "The link expired or was withdrawn. Ask the property manager for a new one."
+    }
   }
 }
