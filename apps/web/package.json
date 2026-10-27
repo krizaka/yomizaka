@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . --max-warnings 0 && krizaka-server-client-boundary && krizaka-known-violations check app components lib proxy.ts instrumentation.ts instrumentation-node.ts",
+    "lint": "eslint . --max-warnings 27 && krizaka-server-client-boundary && krizaka-ratchet && krizaka-known-violations check app components lib proxy.ts instrumentation.ts instrumentation-node.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "qa-accounts": "node scripts/qa-accounts.mjs"
@@ -57,7 +57,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@krizaka/config": "^0.10.0",
+    "@krizaka/config": "^0.12.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^24.19.2",
     "@types/pg": "^8.15.6",
