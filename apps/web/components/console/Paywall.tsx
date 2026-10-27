@@ -6,22 +6,24 @@ import { Button } from "@krizaka/ui/button";
 import { useState } from "react";
 import { z } from "zod";
 
+import { PromoCode } from "@/components/console/PromoCode";
 import { errorKey } from "@/lib/client";
 import { useSay } from "@/lib/i18n-client";
 import { paywallFigures, type SoldPrice } from "@/lib/prices/paywall";
 import type { SoldKind } from "@/lib/pricing";
 
 const price = z.object({ key: z.string(), amountCents: z.number().nullable(), limits: z.record(z.string(), z.number()) });
-const summary = z.object({ paymentsOn: z.boolean(), paymentsDisplay: z.string().optional(), fairUsePerMonth: z.number(), prices: z.array(price) });
+const summary = z.object({ paymentsOn: z.boolean(), couponsOn: z.boolean().default(false), paymentsDisplay: z.string().optional(), fairUsePerMonth: z.number(), prices: z.array(price) });
 const redirect = z.object({ url: z.string().url() });
 
 /** The second audit: pay for this document or subscribe — at the catalogue's prices. Without payment configured it says so — no button that leads nowhere. */
 export function Paywall({ reason }: { reason: "PAYWALL" | "FAIR_USE" }) {
   const { say, locale } = useSay();
   const [problem, setProblem] = useState<string | null>(null);
+  const [code, setCode] = useState<string | null>(null);
   const info = useQuery({ queryKey: ["billing"], queryFn: () => krizakaFetch("/api/billing", { schema: summary }) });
   const go = useMutation({
-    mutationFn: (kind: SoldKind) => krizakaFetch("/api/billing/checkout", { method: "POST", json: { kind }, schema: redirect }),
+    mutationFn: (kind: SoldKind) => krizakaFetch("/api/billing/checkout", { method: "POST", json: { kind, ...(code && { code }) }, schema: redirect }),
     onSuccess: ({ url }) => globalThis.location.assign(url),
     onError: (error) => setProblem(say(`errors.${errorKey(error)}`)),
   });
@@ -30,6 +32,11 @@ export function Paywall({ reason }: { reason: "PAYWALL" | "FAIR_USE" }) {
   return (
     <Alert tone="info" title={say("paywall.title")}>
       <p>{say("paywall.text")}</p>
+      {info.data?.paymentsOn && info.data.couponsOn ? (
+        <div className="mt-3">
+          <PromoCode kind="document" onCode={setCode} onRedeemed={() => globalThis.location.reload()} />
+        </div>
+      ) : null}
       {info.data?.paymentsOn ? (
         <div className="mt-3 flex flex-wrap gap-3">
           <Button size="md" disabled={go.isPending} onClick={() => go.mutate("document")}>

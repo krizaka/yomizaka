@@ -1,4 +1,5 @@
 import { authSettings } from "@krizaka/auth/settings";
+import { couponSettings } from "@krizaka/coupons/settings";
 import { creditsSettings } from "@krizaka/credits/settings";
 import { ALL_SCOPES, bilingual, choice, defineSettings, flag, integer, type Registry, SCOPE, subset, WORKSPACE_SCOPES } from "@krizaka/settings";
 import type { z } from "zod";
@@ -93,6 +94,8 @@ export const SETTINGS = {
   "plans.free.webhookEndpoints": integer(GROUP.plans, 0, { min: 0, max: 100, unit: "endpoints" }, WORKSPACE),
   "plans.pro.webhookEndpoints": integer(GROUP.plans, 3, { min: 0, max: 100, unit: "endpoints" }, WORKSPACE),
   "plans.pro.auditsPerDay": integer(GROUP.plans, 0, { min: 0, max: 5000, unit: "audits" }, WORKSPACE),
+  // Coupons (ADR-002, yomizaka#262): off until the owner turns them on; the codes themselves are data, managed at /config/coupons.
+  ...inGroup(GROUP.plans, couponSettings),
 } as const satisfies Registry;
 
 const settings = defineSettings(SETTINGS);
