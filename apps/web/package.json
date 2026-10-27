@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . --max-warnings 0 && krizaka-known-violations check app components lib proxy.ts instrumentation.ts instrumentation-node.ts",
+    "lint": "eslint . --max-warnings 0 && krizaka-server-client-boundary && krizaka-known-violations check app components lib proxy.ts instrumentation.ts instrumentation-node.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "qa-accounts": "node scripts/qa-accounts.mjs"
@@ -34,10 +34,10 @@
     "@krizaka/rate-limit": "0.1.0",
     "@krizaka/settings": "0.5.0",
     "@krizaka/storage": "0.3.0",
-    "@krizaka/tailwind": "^3.63.0",
+    "@krizaka/tailwind": "^3.66.0",
     "@krizaka/time": "0.1.0",
-    "@krizaka/tokens": "^3.63.0",
-    "@krizaka/ui": "^3.63.0",
+    "@krizaka/tokens": "^3.66.0",
+    "@krizaka/ui": "^3.66.0",
     "@krizaka/webhooks": "0.3.0",
     "@tesseract.js-data/eng": "^1.0.0",
     "@tesseract.js-data/fra": "^1.0.0",
@@ -57,7 +57,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@krizaka/config": "^0.9.1",
+    "@krizaka/config": "^0.10.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^24.19.2",
     "@types/pg": "^8.15.6",

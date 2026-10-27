@@ -197,3 +197,22 @@ describe("the library home (yomizaka#275, the UX review's Y3)", () => {
     expect(section).toMatch(/aria-current="page"[^>]*href="\/fr\/app\?period=7d&amp;collection=c1"|href="\/fr\/app\?period=7d&amp;collection=c1"[^>]*aria-current="page"/);
   });
 });
+
+describe("an empty folder's card (yomizaka#435)", () => {
+  const empty = () => ({ libraries: [{ id: "l1", name: "Ma bibliothèque", collections: [collection({ files: 0, folders: 0, lastCheck: null }), collection({ id: "c2", name: "Archives", isDefault: false, files: 3 })] }], documents: 3, chosen: "c1" });
+
+  it("follows its content: no fixed or full height, and one compact line with one action", () => {
+    const html = render(empty());
+    const card = html.slice(html.indexOf('data-testid="collection-card"'), html.indexOf('data-testid="collection-empty"') + 600);
+    expect(card).not.toMatch(/\bh-full\b|\bmin-h-|\bh-\[/);
+    expect(readable(html)).toContain("Aucun fichier dans cette collection pour l’instant.");
+    expect(html.match(/data-testid="collection-empty"/g)).toHaveLength(1);
+    expect(readable(html)).toContain("Ajouter un document");
+  });
+
+  it("is said in English too, and a folder that holds files has no empty line", () => {
+    expect(readable(render(empty(), "en"))).toContain("Add a document");
+    expect(render({ chosen: "c1" })).not.toContain("collection-empty");
+  });
+});
+
