@@ -1,9 +1,10 @@
-import { readFilterParams, writeFilterParams } from "@krizaka/ui/filter-bar";
 import { DOCUMENT_KINDS, DOCUMENT_STATUSES, type DocumentKind, type DocumentStatus } from "@yomizaka/core";
 import { differenceInMinutes, isBefore, subHours, subMinutes } from "date-fns";
 
 import { DISPLAY_TIME_ZONE } from "@/components/console/format";
 import type { CheckSummary } from "@/lib/checks";
+
+import { readFilterParams, writeFilterParams } from "./filter-params";
 
 /** The filters of the Vérifications list, each a key in the address (`?q=bail&result=attention,failed&kind=lease&period=30d`) — the URL is the state (§ 7). */
 export const CHECK_FILTER_KEYS = ["q", "result", "kind", "period"] as const;

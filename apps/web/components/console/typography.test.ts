@@ -5,9 +5,9 @@ import { describe, expect, it } from "vitest";
 
 /**
  * Plain typography in the app (design § 3.4, P5, yomizaka#322): the sans for everything, a mono only for code and identifiers
- * inside « Détails techniques ». A `font-mono` class is allowed only in the components that draw those details.
+ * inside « Détails techniques » — and a run id cut to one line in a table (`RunId`, yomizaka#457). A `font-mono` class is allowed only in the components that draw those details.
  */
-const TECHNICAL_DETAILS: Record<string, readonly string[]> = { "ReportFace.tsx": ["TechnicalDetails"], "DocumentFileTab.tsx": ["FileTechnicalDetails"] };
+const TECHNICAL_DETAILS: Record<string, readonly string[]> = { "ReportFace.tsx": ["TechnicalDetails"], "DocumentFileTab.tsx": ["FileTechnicalDetails"], "RunId.tsx": ["RunId"] };
 const DIRS = [join(__dirname), join(__dirname, "../../../desktop/src/components")];
 
 /** Each `font-mono` of a source file, with the function it sits in (the nearest declaration above it). */

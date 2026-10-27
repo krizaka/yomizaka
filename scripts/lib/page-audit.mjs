@@ -161,6 +161,23 @@ function clipsOf() {
     .map(nameOf);
 }
 
+/** A long token (an id, an address) that wraps character by character: a cell taller than two lines for text without a space. */
+function tooTall(el) {
+  const text = (el.textContent || "").trim();
+  if (text.length < 12 || /\s/.test(text) || el.children.length > 1) return false;
+  const cs = getComputedStyle(el);
+  const lh = Number.parseFloat(cs.lineHeight) || Number.parseFloat(cs.fontSize) * 1.4;
+  const content = el.getBoundingClientRect().height - Number.parseFloat(cs.paddingTop) - Number.parseFloat(cs.paddingBottom);
+  return content > lh * 2.5;
+}
+
+function wrappedOf() {
+  return [...document.querySelectorAll("td, th, code, [role=cell]")]
+    .filter(tooTall)
+    .slice(0, 2)
+    .map((el) => (el.textContent || "").trim().slice(0, 24));
+}
+
 /** The whole measure of a page. Decorative layers (aria-hidden), fixed elements and anything inside a scroller are left out of the layout probes (yomizaka#435). */
 function measurePage() {
   const doc = document.documentElement;
@@ -180,10 +197,12 @@ function measurePage() {
     cutColumns: cutColumnsOf(),
     chromeOverlaps: chromeOverlapsOf(doc).slice(0, 3),
     clips: clipsOf(),
+    wrapped: wrappedOf(),
+    segmentError: !!document.querySelector('[data-testid="segment-error"]'),
   };
 }
 
-const PROBES = [className, nameOf, scrolls, meets, apart, clipped, wideOf, named, unnamedOf, headerActionOf, folded, keptBetween, notDrawn, runsOut, spillOf, overlapsOf, cutBy, cutColumnsOf, topBoxOf, isTopBar, chromeOverlapsOf, clipsOf, measurePage];
+const PROBES = [tooTall, wrappedOf, className, nameOf, scrolls, meets, apart, clipped, wideOf, named, unnamedOf, headerActionOf, folded, keptBetween, notDrawn, runsOut, spillOf, overlapsOf, cutBy, cutColumnsOf, topBoxOf, isTopBar, chromeOverlapsOf, clipsOf, measurePage];
 
 /** The expression Playwright runs in the page (`page.evaluate(auditPage)`): the probes, serialised together, then the measure. */
 export const auditPage = `(() => {\nconst ARIA_HIDDEN = ${JSON.stringify(ARIA_HIDDEN)};\n${PROBES.map((f) => `const ${f.name} = ${f.toString()};`).join("\n")}\nreturn measurePage();\n})()`;
