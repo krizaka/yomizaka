@@ -909,6 +909,14 @@ ALTER TABLE application_consents ADD COLUMN currency text;
 ALTER TABLE application_consents ADD COLUMN payer text CHECK (payer IS NULL OR payer IN ('firm', 'owner', 'applicant'));`,
   },
   {
+    version: "0044_document_source_sha",
+    // yomizaka#8: a photo document keeps its recognised words as an invisible text layer, so its file is no longer the bytes first assembled.
+    // `sha256` is the file kept (what the report names); `source_sha256` is the assembled photos, so the same photos sent again are still recognised.
+    sql: `ALTER TABLE documents ADD COLUMN source_sha256 text;
+CREATE INDEX documents_source_sha256 ON documents (owner_id, source_sha256) WHERE source_sha256 IS NOT NULL;
+`,
+  },
+  {
     version: "0045_sealed_contracts",
     // yomizaka#71: the contracts a partner platform has sealed. The file is the evidence (bytes kept as sealed, content and parties
     // inside it); the columns hold no personal information, so the public check can answer from them.
