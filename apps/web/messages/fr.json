@@ -3260,6 +3260,10 @@
         "web-report": {
           "name": "Sur le web : le rapport",
           "body": "Un document de la bibliothèque et son rapport : chaque constat cite la ligne sur laquelle il repose."
+        },
+        "android-documents": {
+          "name": "Sur Android : l’application",
+          "body": "Vos collections et leurs documents, puis les vérifications et leurs lots, sur le téléphone."
         }
       }
     }

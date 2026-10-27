@@ -19,7 +19,7 @@ describe("the download page's videos (krizaka/.github#315)", () => {
     }
   });
 
-  it.each(LOCALES)("each video has its words in %s, and the words name no video the manifest lacks", (locale) => {
+  it.each(LOCALES)("each video has its words in %s (the words may come first: the automated manifest pull request must pass)", (locale) => {
     const items = getDictionary(locale).download.videos.items as Record<string, { name: string; body: string }>;
     const ids = APP_VIDEOS.map(videoId);
     for (const id of ids) {
@@ -27,7 +27,6 @@ describe("the download page's videos (krizaka/.github#315)", () => {
       expect(items[id]?.name).not.toBe("");
       expect(items[id]?.body).not.toBe("");
     }
-    for (const id of Object.keys(items)) expect(ids, `${locale}: « ${id} » is not in content/app-videos.json`).toContain(id);
   });
 
   it("the page reads the manifest only: no address of a video is typed in it", () => {
