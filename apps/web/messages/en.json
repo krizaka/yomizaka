@@ -2925,6 +2925,7 @@
       "BAD_SIGNATURE": "The signature does not match the content: the report was modified or signed by another key.",
       "ALTERED": "The signature is valid for the original report, but the file is not that report any more: something was changed after signing.",
       "UNKNOWN_KEY": "It was signed by a key that is not this server's.",
+      "UNKNOWN_SCHEMA": "This report uses a format Yomizaka does not verify.",
       "SPECIMEN": "This report is a specimen: it proves nothing."
     },
     "facts": {
@@ -2935,7 +2936,9 @@
       "ruleset": "Rules",
       "checked": "Check finished",
       "findings": "Findings",
-      "jurisdiction": "Jurisdiction"
+      "jurisdiction": "Jurisdiction",
+      "issued": "Issued",
+      "expires": "Link valid until"
     },
     "documentMatch": {
       "yes": "The document you gave is the one that was checked.",
