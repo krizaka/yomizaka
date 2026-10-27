@@ -18,11 +18,12 @@ export interface MailConfig {
   MAIL_FROM?: string;
 }
 
-/** The three links Yomizaka mails: confirm an address, reset a password, confirm a changed address. */
+/** The links Yomizaka mails: confirm an address, reset a password, confirm a changed address, and the owner-report link a manager sends (link, expiry and the manager's note only; never report content). */
 export type AccountMail =
   | { kind: "confirmEmail"; to: string; locale: "en" | "fr"; url: string; hours: number }
   | { kind: "passwordReset"; to: string; locale: "en" | "fr"; url: string; minutes: number }
-  | { kind: "emailChange"; to: string; locale: "en" | "fr"; url: string; hours: number };
+  | { kind: "emailChange"; to: string; locale: "en" | "fr"; url: string; hours: number }
+  | { kind: "reportLink"; to: string; locale: "en" | "fr"; url: string; senderName: string; expiresOn: string; message?: string };
 
 export type Mailer = (mail: AccountMail) => Promise<void>;
 
@@ -64,6 +65,8 @@ function send(mail: AccountMail, options: Options) {
       return sendEmail("passwordReset", { brand, resetUrl: mail.url, minutes: mail.minutes }, options);
     case "emailChange":
       return sendEmail("emailChange", { brand, confirmUrl: mail.url, hours: mail.hours }, options);
+    case "reportLink":
+      return sendEmail("shareLink", { brand, senderName: mail.senderName, shareUrl: mail.url, expiresOn: mail.expiresOn, ...(mail.message ? { message: mail.message } : {}) }, options);
   }
 }
 

@@ -1972,6 +1972,20 @@
               "hint": "Beyond it the answer is 429 with the time to wait."
             }
           },
+          "reportMail": {
+            "perIp": {
+              "label": "Limit per address: E-mailing a report link",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "perSubject": {
+              "label": "Limit per account: E-mailing a report link",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: E-mailing a report link",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
           "report": {
             "perIp": {
               "label": "Limit per address: Reading a report",
@@ -2835,6 +2849,17 @@
           "live": "Active",
           "expired": "Expired",
           "revoked": "Revoked"
+        },
+        "email": {
+          "title": "Send by e-mail",
+          "address": "Owner's e-mail address",
+          "message": "A short note (optional)",
+          "language": "Language of the e-mail",
+          "hint": "The e-mail holds the link, its end date and your note: nothing from the report. The address is kept only while the link lives.",
+          "send": "Send by e-mail",
+          "sending": "Sending…",
+          "sent": "Sent to {email}.",
+          "sentTo": "Sent to {email}"
         },
         "loading": "Loading the links…"
       },
