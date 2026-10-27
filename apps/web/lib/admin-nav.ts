@@ -2,7 +2,7 @@
  * The administration's navigation: seven pages in three groups (the Dev preview bar asks for about five top-level
  * sections — `admin.ux-review`). One list for the shell and its test; the words are `adminConsole.shell.*`.
  */
-export type AdminPage = { key: "overview" | "users" | "documents" | "flows" | "runs" | "config" | "operations" | "audit"; path: string };
+export type AdminPage = { key: "overview" | "users" | "documents" | "flows" | "runs" | "config" | "operations" | "incidents" | "audit"; path: string };
 export type AdminGroup = { key: "people" | "engine" | "app" | "operations"; pages: AdminPage[] };
 
 export const ADMIN_GROUPS: AdminGroup[] = [
@@ -29,6 +29,7 @@ export const ADMIN_GROUPS: AdminGroup[] = [
     key: "operations",
     pages: [
       { key: "operations", path: "/operations" },
+      { key: "incidents", path: "/incidents" },
       { key: "audit", path: "/audit" },
     ],
   },
