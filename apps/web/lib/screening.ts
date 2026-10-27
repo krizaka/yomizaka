@@ -45,7 +45,10 @@ export function itemOf(key: string, result: Pick<CheckResult, "outcome" | "refus
   return { key, outcome: state };
 }
 /** Pure: the band of a set of lines. A line to review wins; otherwise any check not answered keeps the whole « incomplete » — never « nothing to report ». */
-export const bandOf = (items: readonly { outcome: string }[]): ScreeningResult["band"] => (items.some((i) => i.outcome === "review") ? "review" : items.every((i) => i.outcome === "clear") ? "no-concern" : "incomplete");
+export const bandOf = (items: readonly { outcome: string }[]): ScreeningResult["band"] => {
+  if (items.some((i) => i.outcome === "review")) return "review";
+  return items.every((i) => i.outcome === "clear") ? "no-concern" : "incomplete";
+};
 
 /** « Camille Fictif » → first name, last name (the rest). The engine searches by names; Yomizaka keeps no more than the application already holds. */
 export function namesOf(fullName: string): { firstName: string; lastName: string } {
@@ -137,9 +140,10 @@ export const landlordView = (row: Row, now: Date): LandlordView => {
   const visible = state.status === SCREENING_STATUS.shared && state.resultAlive;
   return { id: row.id, tenantName: row.tenant_name, tenantEmail: row.tenant_email, status: state.status, createdAt: row.created_at.toISOString(), expiresAt: row.expires_at.toISOString(), result: visible ? parseResult(row.result) : null, provider: row.provider, demo: row.provider === DEMO_PROVIDER };
 };
-export const tenantView = (row: Row, now: Date, quote: TenantView["quote"] = { lines: [], totalCents: 0, payer: row.payer ?? PAYER.owner }, retentionDays = 0): TenantView => {
+export const tenantView = (row: Row, now: Date, quote?: TenantView["quote"], retentionDays = 0): TenantView => {
+  const chosenQuote = quote ?? { lines: [], totalCents: 0, payer: row.payer ?? PAYER.owner };
   const state = effectiveState(row, now);
-  return { status: state.status, landlord: row.landlord_email ?? "", tenantName: row.tenant_name, scope: row.scope, provider: row.provider, demo: row.provider === DEMO_PROVIDER, expiresAt: row.expires_at.toISOString(), retentionDays, result: state.resultAlive ? parseResult(row.result) : null, resultExpiresAt: row.result_expires_at?.toISOString() ?? null, contestComment: row.contest_comment, quote };
+  return { status: state.status, landlord: row.landlord_email ?? "", tenantName: row.tenant_name, scope: row.scope, provider: row.provider, demo: row.provider === DEMO_PROVIDER, expiresAt: row.expires_at.toISOString(), retentionDays, result: state.resultAlive ? parseResult(row.result) : null, resultExpiresAt: row.result_expires_at?.toISOString() ?? null, contestComment: row.contest_comment, quote: chosenQuote };
 };
 
 type Landlord = { id: string; email: string };

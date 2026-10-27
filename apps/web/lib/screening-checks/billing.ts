@@ -8,7 +8,7 @@ import { CHECK_STATE, type CheckState } from "./model";
  * the payer chosen for the request, with the taxes (GST/QST) computed by Stripe Tax and an invoice line that names the check as a
  * service by Krizaka. It is OFF (`features.screeningBilling`) and test-mode only: nothing here calls a live processor.
  *
- * TODO(krizaka-ts#132, B48): `@krizaka/payments` sells plans by lookup key; it has no ad-hoc per-check charge with Stripe Tax, an
+ * Waiting on krizaka-ts#132 (B48): `@krizaka/payments` sells plans by lookup key; it has no ad-hoc per-check charge with Stripe Tax, an
  * invoice description and a refund. `BillingPort` below is the seam: when the package offers them (issue krizaka-ts "payments:
  * one-off charge + refund"), the adapter is written there and bound here. No local Stripe copy.
  */
