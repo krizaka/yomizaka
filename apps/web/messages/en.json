@@ -2943,7 +2943,7 @@
   },
   "terms": {
     "title": "Terms of use",
-    "status": "Draft: the refund policy and the limitation of liability are not final until a member of the Barreau du Québec has reviewed this text.",
+    "status": "Written in good faith from the law, awaiting review by the lawyer before Yomizaka opens to the public; the refund policy for a single audit is not final. If in doubt, French prevails.",
     "sections": [
       {
         "h": "What Yomizaka is",
@@ -2966,8 +2966,28 @@
         "p": "Your documents are kept in your account only and are sent to Orazaka, Krizaka's analysis engine, to be checked. See the privacy notice for retention, your rights and how to reach our privacy officer."
       },
       {
-        "h": "Limits of liability and governing law",
-        "p": "Limitation of liability, governing law and venue (Québec): draft, not written yet."
+        "h": "Intellectual property and your right to use the service",
+        "p": "Yomizaka, its software, its sets of verification rules, the layout of its reports, its names, its birds and its marks belong to Technologies Krizaka Inc. or its licensors; these terms assign you none of those rights (Copyright Act, R.S.C. 1985, c. C-42). For the length of your subscription only, you receive a personal, non-exclusive, non-transferable, non-sublicensable right to use the hosted service; the free audit and single audits give you the same right over the result you obtain. Your documents stay yours: you only authorise us to process them to provide the check. Yomizaka's source code is published under its own licence, stated in its repository: these terms govern the hosted service, that licence governs the code, and nothing here removes what the licence allows you."
+      },
+      {
+        "h": "Prohibited uses",
+        "p": "Without a written agreement with Krizaka, you may not: resell, rent, sublicense or offer the hosted service or its reports to third parties as a service, or present it under another brand (white label); use it to build or improve a competing service; extract its content or results by automated means; circumvent an account's limits, the free audit, the billing or the security measures; access another account's data; or decompile or disassemble the parts of the hosted service that are not published, except to the extent the law allows despite this clause. A breach may lead to suspended access, after written notice where the situation allows."
+      },
+      {
+        "h": "Names and marks",
+        "p": "The names and logos of Yomizaka and Krizaka, and their birds, are marks of Technologies Krizaka Inc. (Trademarks Act, R.S.C. 1985, c. T-13). These terms, like the code licence, grant no right to those marks; their use is governed by the policy published at https://github.com/krizaka/.github/blob/main/TRADEMARKS.md."
+      },
+      {
+        "h": "Limitation of liability",
+        "p": "We answer for our faults. Yomizaka provides an informative check: we are not responsible for a decision you make or do not make from a result (signing, refusing or amending a lease, accepting or refusing a tenant), for an inaccurate or incomplete document you give us, or for an interruption of the service that is not our fault. Except for intentional or gross fault, our total liability to you for a single event is limited to the amounts you paid Yomizaka in the 12 months before the event, and we are not liable for indirect damage (loss of profit, loss of opportunity). None of these limits applies to intentional or gross fault, or to bodily or moral injury (art. 1474 C.c.Q.), or to what a consumer cannot waive (art. 10 of the Consumer Protection Act). They apply to the extent the law allows, notably arts. 1435 to 1437 C.c.Q. on the clauses of a contract of adhesion."
+      },
+      {
+        "h": "Governing law and courts",
+        "p": "These terms are governed by the laws of Québec and the federal laws that apply there. Subject to what follows, the courts of the judicial district of Montréal alone have jurisdiction. A consumer may always sue in the district where they live and cannot waive that right in advance (art. 3149 C.c.Q.; art. 33 of the Code of Civil Procedure)."
+      },
+      {
+        "h": "Language",
+        "p": "These terms are written in French, which is the reference version, as the Charter of the French language requires (art. 55). The English version is a courtesy translation; where they differ, French prevails."
       }
     ]
   },

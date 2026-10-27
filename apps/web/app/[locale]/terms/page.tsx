@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return pageMetadata(asLocale((await params).locale), "terms");
 }
 
-/** The terms of use. A draft: the clauses marked for the lawyer are placeholders until a member of the Barreau has read them. */
+/** The terms of use, written in good faith from the law; the French text is the reference. Marked `data-lawyer-review` until the single lawyer review (krizaka/.github#250). */
 export default async function Terms({ params }: Readonly<{ params: Promise<{ locale: string }> }>) {
   const locale = asLocale((await params).locale);
   const t = getDictionary(locale);
@@ -23,7 +23,7 @@ export default async function Terms({ params }: Readonly<{ params: Promise<{ loc
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
       <SiteHeader locale={locale} current="terms" />
-      <main id="content">
+      <main id="content" data-lawyer-review="pending">
         <PageHero back={{ href: pagePath(locale, "home"), label: t.meta.siteName }} linkAs={Link} title={t.terms.title} backdrop="plain" lead={TERMS_VERSION} />
         <Page>
           <Alert tone="warning">{t.terms.status}</Alert>

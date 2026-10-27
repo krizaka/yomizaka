@@ -16,7 +16,7 @@ import { tokenHash } from "./session";
 // @fixed: the lifetime of a verification link, a security parameter
 export const VERIFY_TTL_HOURS = 24;
 /** The version of the terms and privacy notice the person accepted: change it when either text changes. */
-export const TERMS_VERSION = "2026-10-21-draft";
+export const TERMS_VERSION = "2026-10-27-draft";
 
 export const signUpBody = z.object({
   email: z.string().trim().toLowerCase().email().max(320),
