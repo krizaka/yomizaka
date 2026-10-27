@@ -8,7 +8,7 @@
     "start": "expo start",
     "ios": "expo run:ios",
     "android": "expo run:android",
-    "lint": "eslint . --max-warnings 0 && krizaka-known-violations check app src plugins",
+    "lint": "eslint . --max-warnings 0 && krizaka-server-client-boundary && krizaka-known-violations check app src plugins",
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "export": "expo export --platform ios --platform android"
@@ -45,7 +45,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@krizaka/config": "^0.9.1",
+    "@krizaka/config": "^0.10.0",
     "@testing-library/react-native": "^14.1.0",
     "@types/jest": "^30.0.0",
     "@types/react": "^19.3.0",
