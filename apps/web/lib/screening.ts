@@ -246,14 +246,17 @@ export async function consent(token: string, now: Date, headers?: Headers): Prom
   return tenantView({ ...updated, landlord_email: row.landlord_email }, now);
 }
 
+/** « 2026-10-27 », the day in UTC. */
+const isoDay = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: "UTC" }).format(d);
+
 /** The applicant's copy of their result (Loi 25: access): what was asked, when, what each check said, how long it is kept. Plain text, no score. Audited. */
 export async function copyForTenant(token: string, labels: Readonly<Record<string, string>>, say: Readonly<{ outcome: Record<string, string>; band: Record<string, string>; keptUntil: string; title: string }>, now: Date, headers?: Headers): Promise<{ fileName: string; text: string }> {
   const row = await screeningRow(token);
   const state = effectiveState(row, now);
   const result = state.resultAlive ? parseResult(row.result) : null;
   if (!result) throw refuse(404, "NOT_FOUND", "There is no result to copy");
-  const lines = [say.title, `${row.created_at.toISOString().slice(0, 10)} — ${row.landlord_email ?? ""}`, "", `${say.band[result.band]}`, ...result.items.map((i) => `- ${labels[i.key] ?? i.key}: ${say.outcome[i.outcome] ?? i.outcome}`)];
-  if (row.result_expires_at) lines.push("", say.keptUntil.replace("{date}", row.result_expires_at.toISOString().slice(0, 10)));
+  const lines = [say.title, `${isoDay(row.created_at)} — ${row.landlord_email ?? ""}`, "", `${say.band[result.band]}`, ...result.items.map((i) => `- ${labels[i.key] ?? i.key}: ${say.outcome[i.outcome] ?? i.outcome}`)];
+  if (row.result_expires_at) lines.push("", say.keptUntil.replace("{date}", isoDay(row.result_expires_at)));
   await audit({ ...actor(row), action: "screening.copy", targetId: row.id, headers });
   return { fileName: `result-${row.id.slice(0, 8)}.txt`, text: `${lines.join("\n")}\n` };
 }

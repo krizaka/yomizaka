@@ -28,12 +28,12 @@ export interface Due {
   poll_max: number;
 }
 
-export type Next = { kind: "settle"; result: CheckResult } | { kind: "later"; at: Date } | { kind: "give-up" };
+export type Next = { settle: CheckResult } | { later: Date } | { giveUp: true };
 
 /** Pure: what follows a poll. An answer settles; a pending one is asked again later, until the provider's tries are spent, then given up (never kept pending for good). */
 export function decide(result: CheckResult, polls: number, pollMax: number, pollMinutes: number, now: Date): Next {
-  if (result.outcome !== CHECK_OUTCOME.PENDING) return { kind: "settle", result };
-  return polls + 1 >= pollMax ? { kind: "give-up" } : { kind: "later", at: addMinutes(now, pollMinutes) };
+  if (result.outcome !== CHECK_OUTCOME.PENDING) return { settle: result };
+  return polls + 1 >= pollMax ? { giveUp: true } : { later: addMinutes(now, pollMinutes) };
 }
 
 const GAVE_UP: CheckResult = { outcome: CHECK_OUTCOME.TIMEOUT, refusal: null, category: "NONE", providerRef: null };
@@ -74,11 +74,11 @@ export async function collectOne(due: Due, provider: CheckProvider, now: Date): 
     polled = { outcome: CHECK_OUTCOME.PENDING, refusal: null, category: "NONE", providerRef: due.provider_ref };
   }
   const next = decide(polled, due.polls, due.poll_max, due.poll_minutes, now);
-  if (next.kind === "later") {
-    await query("UPDATE screening_checks SET polls = polls + 1, next_poll_at = $2 WHERE id = $1 AND state = 'pending'", [due.id, next.at]);
+  if ("later" in next) {
+    await query("UPDATE screening_checks SET polls = polls + 1, next_poll_at = $2 WHERE id = $1 AND state = 'pending'", [due.id, next.later]);
     return false;
   }
-  const final = next.kind === "settle" ? next.result : GAVE_UP;
+  const final = "settle" in next ? next.settle : GAVE_UP;
   const state = stateOf(final);
   const settled = await query<{ id: string }>(
     "UPDATE screening_checks SET state = $2, outcome = $3, refusal = $4, category = $5, provider_ref = COALESCE($6, provider_ref), polls = polls + 1, next_poll_at = NULL, answered_at = $7 WHERE id = $1 AND state = 'pending' RETURNING id",

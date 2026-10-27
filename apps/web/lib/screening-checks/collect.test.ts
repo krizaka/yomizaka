@@ -9,13 +9,13 @@ const result = (outcome: CheckResult["outcome"]): CheckResult => ({ outcome, ref
 
 describe("what follows a poll (yomizaka#134)", () => {
   it("settles on any answer, including an error or a timeout", () => {
-    for (const o of ["MATCH", "NO_MATCH", "PROVIDER_ERROR", "TIMEOUT", "REFUSED"] as const) expect(decide(result(o), 0, 96, 15, NOW)).toEqual({ kind: "settle", result: result(o) });
+    for (const o of ["MATCH", "NO_MATCH", "PROVIDER_ERROR", "TIMEOUT", "REFUSED"] as const) expect(decide(result(o), 0, 96, 15, NOW)).toEqual({ settle: result(o) });
   });
   it("asks again after the provider's interval while it is still pending", () => {
-    expect(decide(result("PENDING"), 3, 96, 15, NOW)).toEqual({ kind: "later", at: new Date("2026-10-27T12:15:00Z") });
+    expect(decide(result("PENDING"), 3, 96, 15, NOW)).toEqual({ later: new Date("2026-10-27T12:15:00Z") });
   });
   it("gives up when the provider's tries are spent, never keeping a check pending for good", () => {
-    expect(decide(result("PENDING"), 95, 96, 15, NOW)).toEqual({ kind: "give-up" });
+    expect(decide(result("PENDING"), 95, 96, 15, NOW)).toEqual({ giveUp: true });
   });
 });
 
