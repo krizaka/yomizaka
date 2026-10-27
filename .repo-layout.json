@@ -1,0 +1,5 @@
+{
+  "allow": [
+    { "path": ".pre-commit-config.yaml", "why": "pre-commit reads its config only from the repository root (org hooks gitleaks and zizmor, krizaka/.github#324)" }
+  ]
+}

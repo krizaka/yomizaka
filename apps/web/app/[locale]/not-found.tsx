@@ -18,28 +18,30 @@ export default async function NotFound() {
   // On admin.yomizaka.com every address is the console: the way back is the console's home, not the product's library.
   const admin = isAdminHost(h.get("host"));
   return (
-    <ErrorPage
-      code="404"
-      mascot={<Mascot bird="owl" mood="empty" size={120} />}
-      title={t.title}
-      text={t.text}
-      actions={
-        admin ? (
-          <ButtonLink href={`/${locale}`} variant="primary" size="lg" shape="cut" data-testid="not-found-console">
-            {t.console}
-          </ButtonLink>
-        ) : (
-          <>
-            <ButtonLink href={`/${locale}/app`} variant="primary" size="lg" shape="cut">
-              {t.library}
+    <main id="content">
+      <ErrorPage
+        code="404"
+        mascot={<Mascot bird="owl" mood="empty" size={120} />}
+        title={t.title}
+        text={t.text}
+        actions={
+          admin ? (
+            <ButtonLink href={`/${locale}`} variant="primary" size="lg" shape="cut" data-testid="not-found-console">
+              {t.console}
             </ButtonLink>
-            <ButtonLink href={`/${locale}`} variant="secondary" size="lg">
-              {t.home}
-            </ButtonLink>
-          </>
-        )
-      }
-      data-testid="not-found"
-    />
+          ) : (
+            <>
+              <ButtonLink href={`/${locale}/app`} variant="primary" size="lg" shape="cut">
+                {t.library}
+              </ButtonLink>
+              <ButtonLink href={`/${locale}`} variant="secondary" size="lg">
+                {t.home}
+              </ButtonLink>
+            </>
+          )
+        }
+        data-testid="not-found"
+      />
+    </main>
   );
 }

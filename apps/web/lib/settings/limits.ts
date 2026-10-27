@@ -26,6 +26,7 @@ export const LIMIT_DEFAULTS = {
   analysis: { perIp: 60, perSubject: 30, windowSeconds: 3600 },
   redacted: { perIp: 60, windowSeconds: 3600 },
   reportGrant: { perIp: 60, perSubject: 30, windowSeconds: 3600 },
+  reportMail: { perIp: 10, perSubject: 10, windowSeconds: 3600 },
   report: { perIp: 120, perSubject: 60, windowSeconds: 3600 },
   applicant: { perIp: 60, windowSeconds: 600 },
   applicantUpload: { perIp: 60, windowSeconds: 3600 },

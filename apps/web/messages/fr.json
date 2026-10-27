@@ -403,6 +403,7 @@
       "title": "Bibliothèque",
       "dropTitle": "Déposez vos documents ici",
       "browse": "Choisir des fichiers",
+      "inputLabel": "Choisir les fichiers à vérifier",
       "hint": "PDF, Word (.docx), OpenDocument (.odt), texte ou photo (PNG, JPEG, HEIC), jusqu'à 10 Mo chacun. Un bail, un contrat, une facture.",
       "refusedSize": "{name} : plus de 10 Mo",
       "refusedType": "{name} : seulement des PDF, des fichiers texte et des photos",
@@ -523,6 +524,7 @@
       "added": "Ajouté",
       "fingerprint": "SHA-256",
       "viewer": "Le document",
+      "viewerRegion": "Aperçu du document",
       "text": "Son texte",
       "noText": "Ce PDF n'a pas de couche texte : la vérification au regard de la loi n'a pas pu lire ses clauses. L'examen du fichier, lui, a lieu.",
       "openFile": "Ouvrir le fichier",
@@ -1945,6 +1947,20 @@
               "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
             }
           },
+          "reportMail": {
+            "perIp": {
+              "label": "Limite par adresse : Envoi d'un lien de rapport par courriel",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "perSubject": {
+              "label": "Limite par compte : Envoi d'un lien de rapport par courriel",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Envoi d'un lien de rapport par courriel",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
           "report": {
             "perIp": {
               "label": "Limite par adresse : Lecture d'un rapport",
@@ -2582,6 +2598,7 @@
       "title": "Vérifier un lot de documents",
       "lead": "Un fichier CSV (une ligne par document) et les documents qu'il nomme, déposés ensemble. Avant tout lancement, l'aperçu dit ce qui sera vérifié, réutilisé ou refusé, et ce que ça coûte.",
       "drop": "Déposez le CSV et ses documents",
+      "inputLabel": "Choisir le CSV et ses documents",
       "hint": "CSV + PDF, Word ou texte — jusqu'à 10 Mo par document",
       "template": "Télécharger le modèle CSV",
       "received": "{csv} · {count} document(s)",
@@ -2784,6 +2801,42 @@
         "final": "Une décision est définitive : le dossier se ferme et ses documents sont effacés ; ses rapports restent.",
         "decided": "Décision prise : {state}",
         "none": "Aucune action possible."
+      },
+      "share": {
+        "title": "Lien pour le propriétaire de l'immeuble",
+        "lead": "Un rapport en lecture seule : empreintes et constats seulement, ni nom ni document. Vous choisissez la durée d'ouverture, 30 jours au plus.",
+        "expiry": "Ouvert pendant",
+        "days": "{count} jours",
+        "create": "Créer un lien",
+        "creating": "Création…",
+        "created": "Lien prêt. Il n'est montré qu'une fois : copiez-le maintenant.",
+        "copy": "Copier le lien",
+        "copied": "Lien copié",
+        "linkLabel": "Lien à envoyer",
+        "none": "Aucun lien pour l'instant.",
+        "active": "Liens actifs",
+        "views": "{count} consultations",
+        "viewsOne": "{count} consultation",
+        "expires": "jusqu'au {date}",
+        "revoke": "Révoquer",
+        "revoked": "Lien révoqué.",
+        "state": {
+          "live": "Actif",
+          "expired": "Expiré",
+          "revoked": "Révoqué"
+        },
+        "email": {
+          "title": "Envoyer par courriel",
+          "address": "Adresse courriel du propriétaire",
+          "message": "Un court mot (facultatif)",
+          "language": "Langue du courriel",
+          "hint": "Le courriel contient le lien, sa date de fin et votre mot : rien du rapport. L'adresse n'est gardée que tant que le lien vit.",
+          "send": "Envoyer par courriel",
+          "sending": "Envoi…",
+          "sent": "Envoyé à {email}.",
+          "sentTo": "Envoyé à {email}"
+        },
+        "loading": "Chargement des liens…"
       },
       "tagsEdit": {
         "title": "Étiquettes",
@@ -3081,6 +3134,7 @@
       "consentFirst": "Consentez à la vérification ci-dessus pour envoyer vos documents.",
       "dropTitle": "Déposez le PDF ici",
       "browse": "Choisir un PDF",
+      "inputLabel": "Choisir le PDF à envoyer",
       "hint": "PDF seulement, jusqu'à 10 Mo.",
       "received": "Reçu",
       "sending": "Envoi",
@@ -3434,5 +3488,34 @@
     "guarantees": "Ce fichier est scellé avec la clé de Yomizaka (Ed25519, détenue par Krizaka) : il atteste que ce contenu, ces parties et ces dates existaient sous cette forme au moment du scellement et n’ont pas été modifiés depuis.",
     "notGuaranteed": "Il ne vérifie ni l’identité de quiconque, ni l’âge de quiconque, ni la validité du contrat en droit, ni les déclarations du partenaire : Yomizaka vérifie des documents, il ne décide pas. Informatif, pas un avis juridique.",
     "verify": "Pour vérifier une copie, prenez son SHA-256 et ouvrez {url} suivi de cette valeur : la réponse dit si Yomizaka l’a scellée et quand, sans montrer aucun renseignement personnel."
+  },
+  "ownerReport": {
+    "title": "Rapport de vérification",
+    "lead": "Ce qui a été examiné dans le dossier d'un candidat, pour le propriétaire de l'immeuble. Des empreintes seulement : aucun document, aucun nom, aucun passage cité.",
+    "reference": "Référence du dossier {ref}",
+    "issued": "Émis le {date}",
+    "notice": "Vérification informative, ce n'est pas un avis juridique. Une personne décide ; ce rapport ne décide de rien et ne classe personne.",
+    "documents": "Documents examinés",
+    "document": "Document {n}",
+    "type": "Type",
+    "typeUnknown": "Non précisé",
+    "sha": "Empreinte SHA-256 du document",
+    "pages": "Pages",
+    "signals": "Signaux observés",
+    "noSignals": "Aucun signal n'a été observé sur ce document.",
+    "findings": "Règles vérifiées",
+    "noFindings": "Aucune règle n'a été vérifiée sur ce document.",
+    "notExamined": "Non examiné",
+    "runs": "Exécutions Orazaka",
+    "run": "{studio}, exécution {runId}, version {version}",
+    "versionNone": "non précisée",
+    "ruleset": "Jeu de règles {id} version {version} ({jurisdiction})",
+    "reviewStatus": "État de relecture du jeu de règles : {status}. Il doit être relu par un avocat avant qu'on s'y fie.",
+    "limits": "Ce que ce rapport ne montre pas : les documents eux-mêmes, le nom ou les coordonnées de la personne, tout pointage ou classement. Les signaux sont des observations sur un fichier, jamais un jugement sur une personne.",
+    "verdict": {
+      "PASS": "Aucun problème signalé",
+      "FAIL": "Problème signalé",
+      "INSUFFICIENT_EVIDENCE": "Preuves insuffisantes"
+    }
   }
 }

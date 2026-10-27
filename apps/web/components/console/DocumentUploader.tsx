@@ -120,7 +120,7 @@ export function DocumentUploader({ kindRef, placement, onUploaded, onDrop, defau
     </>
   );
   const dropzone = (
-    <Dropzone title={say("library.dropTitle")} browseLabel={say("library.browse")} hint={say("library.hint")} accept={ACCEPT} maxSize={app?.maxFileBytes ?? MAX_FILE_BYTES} maxFiles={20} multiple onFiles={onFiles} refusalLabel={refusal} disabled={grouped} />
+    <Dropzone title={say("library.dropTitle")} browseLabel={say("library.browse")} inputLabel={say("library.inputLabel")} hint={say("library.hint")} accept={ACCEPT} maxSize={app?.maxFileBytes ?? MAX_FILE_BYTES} maxFiles={20} multiple onFiles={onFiles} refusalLabel={refusal} disabled={grouped} />
   );
   return (
     <>
