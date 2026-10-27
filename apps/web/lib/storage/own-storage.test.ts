@@ -1,12 +1,12 @@
 import crypto from "node:crypto";
 
+import { residencyOf } from "@krizaka/storage";
+import { open, parseVaultKey as parseSettingsKey, seal } from "@krizaka/storage";
 import { describe, expect, it } from "vitest";
 
 import { testConnection } from "./connection-test";
-import { checkEndpoint, isPrivateAddress } from "./endpoint";
 import { memoryStore } from "./memory";
-import { residencyOf } from "./regions";
-import { open, parseSettingsKey, seal } from "./vault";
+import { checkOwnEndpoint as checkEndpoint } from "./verify";
 
 describe("a workspace's own endpoint is a request to an address a user chose", () => {
   const publicHost = async () => ["93.184.216.34"];
@@ -28,12 +28,6 @@ describe("a workspace's own endpoint is a request to an address a user chose", (
   it("lets a local test server through over http in development only", async () => {
     expect(await checkEndpoint("http://localhost:9000", { allowLocal: true })).toBe("http://localhost:9000");
     await expect(checkEndpoint("http://localhost:9000", { allowLocal: false })).rejects.toMatchObject({ code: "ENDPOINT_INVALID" });
-  });
-  it("knows the private ranges", () => {
-    expect(isPrivateAddress("100.64.0.1")).toBe(true);
-    expect(isPrivateAddress("fd00::1")).toBe(true);
-    expect(isPrivateAddress("::ffff:10.0.0.1")).toBe(true);
-    expect(isPrivateAddress("93.184.216.34")).toBe(false);
   });
 });
 

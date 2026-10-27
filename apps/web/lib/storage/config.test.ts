@@ -46,4 +46,22 @@ describe("the documents store is chosen here, from configuration", () => {
     expect(from({ ...S3, MEDIA_DOCUMENTS_ENCRYPTION_KEY: key }).describe().encrypted).toBe(true);
     expect(() => from({ ...S3, MEDIA_DOCUMENTS_ENCRYPTION_KEY: "short" })).toThrow(/32 bytes/);
   });
+
+  it("follows the admin's settings over the environment, for documents and for avatars alike (`resolveStorage`)", () => {
+    const admin = { provider: "s3", maxMegabytes: 25, signedUrlSeconds: 60, endpoint: "https://ca-central-1.example.com", region: "ca-central-1", bucket: "other", zone: "", prefix: "ignored", pullHostname: "", publicBaseUrl: "https://public.example.com" } as const;
+    const d = storageFrom(readEnv({ APP_ENVIRONMENT: "prod", ...S3 }), () => new Date(), admin).describe();
+    expect(d).toMatchObject({ kind: "s3", endpoint: "ca-central-1.example.com", region: "ca-central-1" });
+    const avatars = storageFrom(readEnv({ APP_ENVIRONMENT: "prod", ...S3, MEDIA_DOCUMENTS_PREFIX: "yomizaka-avatars" }), () => new Date(), admin);
+    expect(avatars.describe().endpoint).toBe("ca-central-1.example.com");
+  });
+
+  it("claims Canada only when the region and the endpoint agree", () => {
+    expect(from({ ...S3, MEDIA_S3_ENDPOINT: "https://nyc3.digitaloceanspaces.com" }).describe()).toMatchObject({ residency: "elsewhere" });
+    expect(from(S3).describe()).toMatchObject({ residency: "canada" });
+  });
+
+  it("keeps nothing when the admin chose a provider but the deployment keeps nothing", () => {
+    const admin = { provider: "s3", maxMegabytes: 25, signedUrlSeconds: 60, endpoint: "https://tor1.digitaloceanspaces.com", region: "tor1", bucket: "b", zone: "", prefix: "", pullHostname: "", publicBaseUrl: "" } as const;
+    expect(storageFrom(readEnv({ APP_ENVIRONMENT: "prod" }), () => new Date(), admin).describe()).toMatchObject({ kind: "none" });
+  });
 });

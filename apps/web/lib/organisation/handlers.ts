@@ -47,7 +47,7 @@ export function containerHandlers(kind: keyof typeof CONTAINER) {
         if (avatar !== undefined && kind === "collection") {
           const settings = await settingsFor(owner);
           await assertFeature("collectionAvatars", owner);
-          await setSetAvatar(q, owner, id, avatar?.seed ?? null, settings["features.avatarSet"].value as string[], avatarStore() ?? undefined);
+          await setSetAvatar(q, owner, id, avatar?.seed ?? null, settings["features.avatarSet"].value as string[], (await avatarStore()) ?? undefined);
           result = await ownedCollection(q, owner, id);
         }
         return { [kind]: result };
@@ -60,7 +60,7 @@ export function containerHandlers(kind: keyof typeof CONTAINER) {
         const before = kind === "collection" ? await ownedCollection(q, owner, id).catch(() => null) : null;
         await c.remove(q, owner, id, choice);
         // a stored avatar image goes with its collection
-        await forgetAvatarImage(avatarStore() ?? undefined, owner, id, before?.avatar ?? null);
+        await forgetAvatarImage((await avatarStore()) ?? undefined, owner, id, before?.avatar ?? null);
         await note(c.audit, { id, files: choice.files });
       }),
   };

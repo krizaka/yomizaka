@@ -1,4 +1,4 @@
-import { COUNTRY_OF_REGION } from "../storage/regions";
+import { COUNTRY_OF_REGION } from "@krizaka/storage";
 
 /**
  * The data zone a sealed contract is kept in (`X-Data-Residency-Zone`): `CA` (Canada) or a province, `CA-QC`. A region not listed

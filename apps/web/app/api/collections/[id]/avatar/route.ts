@@ -24,7 +24,7 @@ export function GET(req: Request, { params }: Params) {
     const session = await requireSession(req);
     const owner = session.account.id;
     const id = (await params).id;
-    const store = avatarStore();
+    const store = (await avatarStore());
     if (!store) throw refuse(404, "NOT_FOUND", "No avatar image");
     const collection = await ownedCollection(query, owner, id);
     if (collection.avatar?.kind !== AVATAR_KIND.image) throw refuse(404, "NOT_FOUND", "No avatar image");
@@ -39,7 +39,7 @@ export const POST = (req: Request, { params }: Params) =>
   act(req, async ({ owner, q, note }) => {
     await limit("avatar", req, owner);
     await assertFeature("collectionAvatars", owner);
-    const store = avatarStore();
+    const store = (await avatarStore());
     if (!store) throw refuse(503, "AVATAR_STORAGE_OFF", "No storage is configured for avatar images");
     const form = await req.formData().catch(() => null);
     const file = form?.get("file");
@@ -55,7 +55,7 @@ export const POST = (req: Request, { params }: Params) =>
 export const DELETE = (req: Request, { params }: Params) =>
   act(req, async ({ owner, q, note }) => {
     const id = (await params).id;
-    await removeAvatar(q, owner, id, avatarStore() ?? undefined);
+    await removeAvatar(q, owner, id, (await avatarStore()) ?? undefined);
     await note("collection.avatar_removed", { id });
   });
 
