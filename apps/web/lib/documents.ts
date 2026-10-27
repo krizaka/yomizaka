@@ -305,6 +305,12 @@ async function moveToStore(policy: StoragePolicy, ownerId: string, id: string, m
   await query("UPDATE documents SET content = ''::bytea, storage_owner = $2 WHERE id = $1", [id, policy.store.describe().owner === "workspace" ? "workspace" : "krizaka"]);
 }
 
+/** Where the saved bytes go once the row exists: a keep is a consent (the day is recorded), and an external store receives the bytes. */
+async function placeDocument(policy: StoragePolicy, where: ReturnType<typeof storageFor>, doc: { ownerId: string; id: string; mimeType: AcceptedType; bytes: Uint8Array }): Promise<void> {
+  if (where !== "none") await query("UPDATE documents SET keep_consent_at = COALESCE(keep_consent_at, $2) WHERE id = $1", [doc.id, policy.now]);
+  if (EXTERNAL.has(where)) await moveToStore(policy, doc.ownerId, doc.id, doc.mimeType, doc.bytes);
+}
+
 export async function storeDocument(ownerId: string, file: { name: string; type: string; size: number }, bytes: Uint8Array, requested: DocumentKind | "auto", policy?: StoragePolicy, textOf?: TextReader, options: { defer?: boolean } = {}): Promise<{ summary: DocumentSummary; duplicate: boolean; finish?: () => Promise<void> }> {
   const { mimeType, sha256, pages } = await checkUpload(file, bytes, policy?.rules);
   const where = policy ? storageFor(policy.keep, policy.store.describe()) : "database";
@@ -319,9 +325,7 @@ export async function storeDocument(ownerId: string, file: { name: string; type:
   const kind = requested !== "auto" ? requested : deferred ? "other" : kindFromNature(understanding.understand(read.text, { pages: read.pages }).nature?.id ?? null);
   // The bytes sit in the database until the document is placed (and, if not kept, until its check has run).
   const row = await saveDocumentRow({ ownerId, existingId: existing?.id ?? null, file: { filename, mimeType, kind, sha256, pages: read.pages }, bytes, text: read.text, where, deadline, source, extraction: deferred ? "queued" : "done" });
-  // Kept by the owner's choice: the day is recorded (a keep is a consent, with a date).
-  if (policy && where !== "none") await query("UPDATE documents SET keep_consent_at = COALESCE(keep_consent_at, $2) WHERE id = $1", [row.id, policy.now]);
-  if (policy && EXTERNAL.has(where)) await moveToStore(policy, ownerId, row.id, mimeType, bytes);
+  if (policy) await placeDocument(policy, where, { ownerId, id: row.id, mimeType, bytes });
   return { summary: summary(row), duplicate: false, ...(deferred ? { finish: () => finishExtraction({ ownerId, id: row.id, filename, mimeType, requested, bytes }) } : {}) };
 }
 
