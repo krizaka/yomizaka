@@ -1,11 +1,13 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { applyPaymentEvent, entitlementOf, recordCheckout, refundFailedAudit, releaseAudit, reserveAudit } from "./billing";
-import { migrate, query } from "./db";
+import { migrate, query, transaction } from "./db";
 
 /** The entitlements against a real PostgreSQL (skipped without YOMIZAKA_DB_IT=1 and DATABASE_URL, like db.integration.test.ts). */
 const enabled = process.env.YOMIZAKA_DB_IT === "1" && !!process.env.DATABASE_URL;
 const NOW = new Date("2026-10-22T12:00:00Z");
+/** The facts every paid event carries; a test sets the ones it is about. */
+const FACTS = { checkoutRef: null, paymentRef: null, invoiceRef: null, amountTotal: null, amountDiscount: 0, currency: null, metadata: {} } as const;
 const caps = (perMonth = 100, perDay = 0, freeFirst = true) => () => ({ perMonth, perDay, freeFirst });
 
 describe.runIf(enabled)("billing", () => {
@@ -23,17 +25,38 @@ describe.runIf(enabled)("billing", () => {
     const id = await account();
     expect(await reserveAudit(query, id, NOW, caps())).toBe("free");
     await expect(reserveAudit(query, id, NOW, caps())).rejects.toMatchObject({ status: 402, body: { code: "PAYWALL" } });
-    expect(await applyPaymentEvent(query, { id: `evt-${id}`, type: "payment_paid", kind: "audit", accountId: id, customerId: `cus-${id}` })).toBe("applied");
+    expect(await applyPaymentEvent(transaction, { id: `evt-${id}`, type: "payment_paid", kind: "audit", accountId: id, customerId: `cus-${id}`, ...FACTS })).toBe("applied");
     expect(await reserveAudit(query, id, NOW, caps())).toBe("credit");
     await expect(reserveAudit(query, id, NOW, caps())).rejects.toMatchObject({ status: 402 });
   });
   it("a payment notification is idempotent: the same event credits once", async () => {
     const id = await account();
     await reserveAudit(query, id, NOW, caps());
-    const event = { id: `evt-dup-${id}`, type: "payment_paid", kind: "audit", accountId: id, customerId: null } as const;
-    expect(await applyPaymentEvent(query, event)).toBe("applied");
-    expect(await applyPaymentEvent(query, event)).toBe("duplicate");
+    const event = { id: `evt-dup-${id}`, type: "payment_paid", kind: "audit", accountId: id, customerId: null, ...FACTS } as const;
+    expect(await applyPaymentEvent(transaction, event)).toBe("applied");
+    expect(await applyPaymentEvent(transaction, event)).toBe("duplicate");
     expect((await entitlementOf(query, id, NOW)).credits).toBe(1);
+  });
+  it("a handler that fails leaves no trace: the event id is not recorded, the credits are unchanged, and the retry applies it once (yomizaka#257)", async () => {
+    const taken = await account();
+    const id = await account();
+    await query("UPDATE accounts SET payment_customer_id = $2 WHERE id = $1", [taken, `cus-shared-${taken}`]);
+    // the processor's customer is already another account's (UNIQUE): the handler throws after the event id was written
+    const event = { id: `evt-fail-${id}`, type: "payment_paid", kind: "audit", accountId: id, customerId: `cus-shared-${taken}`, ...FACTS } as const;
+    await expect(applyPaymentEvent(transaction, event)).rejects.toThrow();
+    expect(await query("SELECT 1 FROM payment_events WHERE id = $1", [event.id])).toHaveLength(0);
+    expect((await entitlementOf(query, id, NOW)).credits).toBe(0);
+    // the retry, once the conflict is gone, applies the very same event; a third delivery is a duplicate
+    await query("UPDATE accounts SET payment_customer_id = NULL WHERE id = $1", [taken]);
+    expect(await applyPaymentEvent(transaction, event)).toBe("applied");
+    expect(await applyPaymentEvent(transaction, event)).toBe("duplicate");
+    expect((await entitlementOf(query, id, NOW)).credits).toBe(1);
+  });
+  it("an event whose handler answers « ignored » (an unknown kind) credits nothing and is still recorded as seen", async () => {
+    const id = await account();
+    const outcome = await applyPaymentEvent(transaction, { id: `evt-kind-${id}`, type: "payment_paid", kind: "mystery", accountId: id, customerId: null, ...FACTS });
+    expect(outcome).toBe("ignored");
+    expect((await entitlementOf(query, id, NOW)).credits).toBe(0);
   });
   it("the free audit is given back when the run cannot start", async () => {
     const id = await account();
@@ -49,14 +72,14 @@ describe.runIf(enabled)("billing", () => {
   it("Pro: unlimited under the cap, then FAIR_USE; cancelled, back to the paywall", async () => {
     const id = await account();
     await reserveAudit(query, id, NOW, caps());
-    await applyPaymentEvent(query, { id: `evt-s1-${id}`, type: "subscription_started", accountId: id, customerId: `cus-${id}`, subscriptionId: `sub-${id}` });
-    await applyPaymentEvent(query, { id: `evt-s2-${id}`, type: "subscription_changed", accountId: id, customerId: `cus-${id}`, subscriptionId: `sub-${id}`, status: "active", active: true, periodEnd: Math.floor(NOW.getTime() / 1000) + 86_400 * 30 });
+    await applyPaymentEvent(transaction, { id: `evt-s1-${id}`, type: "subscription_started", accountId: id, customerId: `cus-${id}`, subscriptionId: `sub-${id}`, ...FACTS });
+    await applyPaymentEvent(transaction, { id: `evt-s2-${id}`, type: "subscription_changed", accountId: id, customerId: `cus-${id}`, subscriptionId: `sub-${id}`, status: "active", active: true, periodEnd: Math.floor(NOW.getTime() / 1000) + 86_400 * 30 });
     expect((await entitlementOf(query, id, NOW)).pro).toBe(true);
     expect(await reserveAudit(query, id, NOW, caps())).toBe("pro");
     const [doc] = await query<{ id: string }>("INSERT INTO documents (owner_id, title, filename, mime_type, size_bytes, sha256, content, text) VALUES ($1, 't', 'a.txt', 'text/plain', 1, $2, 'x', 'x') RETURNING id", [id, `h-${id}`]);
     await query("INSERT INTO analyses (document_id, studio, status) VALUES ($1, 'compliance-check', 'succeeded')", [doc!.id]);
     await expect(reserveAudit(query, id, NOW, caps(1))).rejects.toMatchObject({ status: 429, body: { code: "FAIR_USE" } });
-    await applyPaymentEvent(query, { id: `evt-s3-${id}`, type: "subscription_changed", accountId: id, customerId: `cus-${id}`, subscriptionId: `sub-${id}`, status: "canceled", active: false, periodEnd: null });
+    await applyPaymentEvent(transaction, { id: `evt-s3-${id}`, type: "subscription_changed", accountId: id, customerId: `cus-${id}`, subscriptionId: `sub-${id}`, status: "canceled", active: false, periodEnd: null });
     expect((await entitlementOf(query, id, NOW)).pro).toBe(false);
     await expect(reserveAudit(query, id, NOW, caps())).rejects.toMatchObject({ status: 402 });
   });
@@ -87,10 +110,10 @@ describe.runIf(enabled)("billing", () => {
   it("a subscription keeps the catalogue version it was sold at (recorded at checkout, kept when it starts) — ADR-009", async () => {
     const id = await account();
     await recordCheckout(query, id, { key: "yomizaka.firm", versionId: "seed:yomizaka.firm" });
-    await applyPaymentEvent(query, { id: `evt-sub-${id}`, type: "subscription_started", accountId: id, customerId: `cus-sub-${id}`, subscriptionId: `sub-${id}` });
+    await applyPaymentEvent(transaction, { id: `evt-sub-${id}`, type: "subscription_started", accountId: id, customerId: `cus-sub-${id}`, subscriptionId: `sub-${id}`, ...FACTS });
     expect(await entitlementOf(query, id, NOW)).toMatchObject({ planKey: "yomizaka.firm", priceVersionId: "seed:yomizaka.firm" });
     await recordCheckout(query, id, { key: "yomizaka.agency", versionId: "7" });
-    await applyPaymentEvent(query, { id: `evt-chg-${id}`, type: "subscription_changed", accountId: id, customerId: `cus-sub-${id}`, subscriptionId: `sub-${id}`, status: "active", active: true, periodEnd: null });
+    await applyPaymentEvent(transaction, { id: `evt-chg-${id}`, type: "subscription_changed", accountId: id, customerId: `cus-sub-${id}`, subscriptionId: `sub-${id}`, status: "active", active: true, periodEnd: null });
     expect(await entitlementOf(query, id, NOW)).toMatchObject({ planKey: "yomizaka.firm", priceVersionId: "seed:yomizaka.firm" });
   });
 });
