@@ -2494,6 +2494,8 @@
         "text": "Déposez un bail, une fiche de paie ou une facture : Yomizaka le lit selon les règles du Québec et le résultat arrive ici."
       },
       "caption": "Vos vérifications",
+      "runCopy": "Copier le run {id}",
+      "runCopied": "Copié",
       "columns": {
         "document": "Document",
         "kind": "Type",

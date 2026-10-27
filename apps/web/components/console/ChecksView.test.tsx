@@ -38,7 +38,9 @@ describe("the Vérifications destination (the UX review's § 4.1)", () => {
     expect(text).toContain("Bail — Rosemont, logement 1");
     expect(text).toContain("À regarder");
     expect(text).toContain("Vérifié");
-    expect(text).toContain("seeded-bail-2");
+    // The run id is cut to one mono line; the whole id is its title and what « copy » takes.
+    expect(text).toContain("seeded-b…");
+    expect(html).toContain('title="seeded-bail-2"');
     expect(readable(render({ checks: [check(1, "attention")], batches: false }, "en"))).toContain("To look at");
   });
 
