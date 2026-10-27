@@ -1,3 +1,5 @@
+import { createHash, randomBytes } from "node:crypto";
+
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { POST as rotateRoute } from "@/app/api/me/api-keys/[id]/rotate/route";
@@ -84,6 +86,25 @@ describe.runIf(enabled)("api keys", () => {
     const narrow = await (await createRoute(as(token, "POST", "/api/me/api-keys", { name: "Lecture", scopes: ["reports:read"], expiresInDays: 30 }))).json();
     expect(await status(requireApiKey(withKey(narrow.key), "checks:write", systemClock))).toBe(403);
     expect(await requireApiKey(withKey(narrow.key), "reports:read", systemClock)).toMatchObject({ ownerId: owner });
+  });
+
+  it("a key issued before the package (a row of migration 0021, its secret hashed with SHA-256) still authenticates, and the package rotates and revokes it (yomizaka#202)", async () => {
+    resetRateLimits();
+    // what the product's own code wrote: `yzk_<12 hex>_<base64url secret>`, only the SHA-256 of the secret kept; written here by hand, not by the package
+    const publicId = randomBytes(6).toString("hex");
+    const secret = randomBytes(32).toString("base64url");
+    const legacy = `yzk_${publicId}_${secret}`;
+    const [row] = await query<{ id: string }>(
+      "INSERT INTO api_keys (id, owner_id, name, public_id, secret_hash, scopes, expires_at, created_at) VALUES (gen_random_uuid(), $1, 'Clé historique', $2, $3, ARRAY['checks:write'], now() + interval '90 days', now() - interval '60 days') RETURNING id",
+      [owner, publicId, createHash("sha256").update(secret).digest("hex")],
+    );
+    expect(await requireApiKey(withKey(legacy), "checks:write", systemClock)).toMatchObject({ ownerId: owner });
+    expect(await status(requireApiKey(withKey(`yzk_${publicId}_${randomBytes(32).toString("base64url")}`), "checks:write", systemClock))).toBe(401);
+    const rotated = await (await rotateRoute(as(token, "POST", `/api/me/api-keys/${row!.id}/rotate`), params(row!.id))).json();
+    expect(await requireApiKey(withKey(legacy), "checks:write", systemClock)).toMatchObject({ ownerId: owner });
+    expect(await requireApiKey(withKey(rotated.key), "checks:write", systemClock)).toMatchObject({ ownerId: owner });
+    expect((await revokeRoute(as(token, "DELETE", `/api/me/api-keys/${row!.id}`), params(row!.id))).status).toBeLessThan(300);
+    expect(await status(requireApiKey(withKey(legacy), "checks:write", systemClock))).toBe(401);
   });
 
   it("is rate-limited per key by the plan's setting", async () => {
