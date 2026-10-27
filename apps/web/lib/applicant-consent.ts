@@ -23,9 +23,8 @@ export { APPLICATION_ERASED };
 /** How consent was given: the applicant's own form, on the link they received. */
 export const CONSENT_MEANS = { WEB_FORM: "web-form" } as const;
 
-/** Which purpose a screening scope needs: the payment history is the Québec rental history (court records). */
-export const SCOPE_PURPOSES: Record<string, ConsentPurpose> = { "payment-history": CONSENT_PURPOSE.COURT_RECORDS };
-export const purposesOfScope = (scope: readonly string[]): ConsentPurpose[] => [...new Set(scope.map((s) => SCOPE_PURPOSES[s]).filter((p): p is ConsentPurpose => !!p))];
+/** The consent purposes a set of check types needs: each type names the engine purpose it runs under (data, yomizaka#132). */
+export const purposesOfTypes = (types: readonly { purpose: string }[]): ConsentPurpose[] => [...new Set(types.map((t) => t.purpose).filter((p): p is ConsentPurpose => p === CONSENT_PURPOSE.COURT_RECORDS || p === CONSENT_PURPOSE.CREDIT))];
 
 /** Pure: is a purpose granted in a list of active purposes? */
 export const hasConsent = (active: readonly string[], purpose: ConsentPurpose): boolean => active.includes(purpose);
@@ -43,13 +42,13 @@ export async function activeConsents(screeningId: string): Promise<ConsentPurpos
 }
 
 /** Records a consent. The notice version must be the current one; a repeat of an active consent changes nothing. */
-export async function grantConsent(screeningId: string, purpose: ConsentPurpose, input: { noticeVersion: string; means: string }, now: Date, headers?: Headers): Promise<boolean> {
+export async function grantConsent(screeningId: string, purpose: ConsentPurpose, input: { noticeVersion: string; means: string; priceCents?: number; currency?: string; payer?: string }, now: Date, headers?: Headers): Promise<boolean> {
   if (input.noticeVersion !== NOTICE_VERSION) throw refuse(409, "NOTICE_CHANGED", "The notice changed: read it again before consenting", { noticeVersion: NOTICE_VERSION });
   const rows = await query<{ id: string }>(
-    "INSERT INTO application_consents (screening_id, purpose, notice_version, means, granted_at) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (screening_id, purpose) WHERE withdrawn_at IS NULL DO NOTHING RETURNING id",
-    [screeningId, purpose, input.noticeVersion, input.means, now],
+    "INSERT INTO application_consents (screening_id, purpose, notice_version, means, granted_at, price_cents, currency, payer) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (screening_id, purpose) WHERE withdrawn_at IS NULL DO NOTHING RETURNING id",
+    [screeningId, purpose, input.noticeVersion, input.means, now, input.priceCents ?? null, input.currency ?? null, input.payer ?? null],
   );
-  if (rows.length) await audit({ action: "consent.granted", actorId: null, actorLabel: "applicant", targetId: screeningId, detail: { purpose, noticeVersion: input.noticeVersion, means: input.means }, headers });
+  if (rows.length) await audit({ action: "consent.granted", actorId: null, actorLabel: "applicant", targetId: screeningId, detail: { purpose, noticeVersion: input.noticeVersion, means: input.means, priceCents: input.priceCents ?? null, payer: input.payer ?? null }, headers });
   return rows.length > 0;
 }
 
@@ -64,6 +63,7 @@ export async function withdrawConsent(screeningId: string, purpose: ConsentPurpo
   if (purpose === CONSENT_PURPOSE.COURT_RECORDS || purpose === CONSENT_PURPOSE.CREDIT) {
     await query("UPDATE screenings SET status = 'declined' WHERE id = $1 AND status = 'requested'", [screeningId]);
     await query("UPDATE screenings SET result = NULL, result_expires_at = NULL, contest_comment = NULL, purged_at = $2 WHERE id = $1 AND result IS NOT NULL", [screeningId, now]);
+    await query("DELETE FROM screening_checks WHERE screening_id = $1", [screeningId]);
   }
   await audit({ action: "consent.withdrawn", actorId: null, actorLabel: "applicant", targetId: screeningId, detail: { purpose }, headers });
   return true;
@@ -109,6 +109,7 @@ export async function eraseApplication(screeningId: string, ownerId: string, sto
     "UPDATE screenings SET status = 'erased', tenant_name = '', tenant_email = $2, result = NULL, result_expires_at = NULL, contest_comment = NULL, purged_at = $3 WHERE id = $1 AND status <> 'erased'",
     [screeningId, `erased+${screeningId}@erased.invalid`, now],
   );
+  await query("DELETE FROM screening_checks WHERE screening_id = $1", [screeningId]);
   await audit({ action: "applicant.erased", actorId: null, actorLabel: "applicant", targetId: screeningId, detail: { documents: docs.length }, headers });
   return { documents: docs.length };
 }

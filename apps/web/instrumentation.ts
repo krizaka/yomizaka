@@ -32,6 +32,9 @@ async function start() {
   const { query } = await import("./lib/db");
   await assertModules(query, MODULES);
   const { seedDatabase } = await import("./lib/flows");
+  // Live screening is refused at start unless the compliance gate is open (yomizaka#135).
+  const { assertLiveGate } = await import("./lib/screening-checks/gate");
+  await assertLiveGate();
   const seeded = await seedDatabase();
   if (seeded.length) logInfo(`[yomizaka] flows seeded: ${seeded.join(", ")}`);
   // The organised workspace's defaults (the decision set, the system views, the tag rules): written once, then the database is the source of truth (yomizaka#324).
@@ -60,6 +63,17 @@ async function start() {
       const { sweepCoupons } = await import("./lib/coupons/sweep");
       const freed = await sweepCoupons();
       if (freed) logInfo(`[yomizaka] coupons: ${freed} unpaid reservation(s) released`);
+      // The retention sweep (yomizaka#125): documents past their window, screening results past their policy's days.
+      const { purgeExpired: purgeDocuments } = await import("./lib/retention");
+      const { purgeExpired: purgeResults } = await import("./lib/screening");
+      const { query: sweepQuery } = await import("./lib/db");
+      const purgedDocuments = await purgeDocuments(sweepQuery, new Date());
+      const purgedResults = await purgeResults(new Date());
+      if (purgedDocuments || purgedResults) logInfo(`[yomizaka] retention: ${purgedDocuments} documents, ${purgedResults} results purged`);
+      // The screening checks a provider accepted without answering are collected on the same look (yomizaka#134).
+      const { collectPending } = await import("./lib/screening-checks/collect");
+      const collected = await collectPending(new Date());
+      if (collected.polled) logInfo(`[yomizaka] screening checks: ${collected.polled} polled, ${collected.settled} settled`);
       // The webhooks queued by closed batches ride the same tick (yomizaka#241).
       const sent = await deliverWebhooks(sessionSecret(), new Date(), { timeoutMs: 8000 });
       if (sent && (sent.delivered || sent.retried || sent.failed)) logInfo(`[yomizaka] webhooks: ${sent.delivered} delivered, ${sent.retried} to retry, ${sent.failed} given up`);

@@ -1606,6 +1606,14 @@
           "webhooks": {
             "label": "Webhooks",
             "hint": "Off: no webhook is sent and none can be registered, whatever the plan."
+          },
+          "screeningBilling": {
+            "label": "Screening checks billing",
+            "hint": "Charges each screening check (cost plus margin, with taxes). Off: nothing is charged. Test mode only until the compliance gate is open."
+          },
+          "screeningLive": {
+            "label": "Live screening checks",
+            "hint": "Real providers, real people. Refused unless every blocker of the compliance gate is done with evidence. Keep OFF."
           }
         },
         "limits": {
@@ -3078,9 +3086,6 @@
       "title": "A request to check your application",
       "lead": "{landlord} asks your agreement to check your rental application. You decide: nothing is checked without your consent.",
       "whatTitle": "What would be checked",
-      "scope": {
-        "payment-history": "Your payment history"
-      },
       "provider": "Provider: {provider}",
       "why": "Why: the landlord is assessing your application for a dwelling.",
       "notAsked": "Never asked: social insurance number, bank details, employer, salary, criminal record.",
@@ -3105,18 +3110,30 @@
       "resultTitle": "Your result",
       "band": {
         "no-concern": "Nothing to report",
-        "review": "To review"
+        "review": "To review",
+        "incomplete": "Not complete yet"
       },
-      "item": {
-        "payment-history": "Payment history",
-        "identity-match": "Identity"
-      },
+      "item": {},
       "outcome": {
         "clear": "nothing to report",
-        "review": "to review"
+        "review": "to review",
+        "pending": "in progress",
+        "unavailable": "not available right now",
+        "soon": "not available yet"
       },
       "deleteOn": "Deleted on {date}.",
-      "contested": "Your contestation: « {comment} »"
+      "contested": "Your contestation: « {comment} »",
+      "incompleteNote": "Some checks have not answered. Nothing here is a result for those: they are shown as they stand.",
+      "copy": "Get a copy of my result",
+      "quoteTitle": "Price and who pays",
+      "quoteLine": "{check}: {price}",
+      "quoteFree": "no charge",
+      "quotePayer": {
+        "firm": "Paid by the property-management firm.",
+        "owner": "Paid by the building owner.",
+        "applicant": "Paid by you."
+      },
+      "quoteTaxes": "Taxes (GST/QST) are added where they apply."
     },
     "landlord": {
       "title": "Tenant application",
@@ -3129,9 +3146,6 @@
       "name": "Applicant's name",
       "email": "Applicant's e-mail",
       "scope": "What will be checked",
-      "scopeItem": {
-        "payment-history": "Payment history"
-      },
       "request": "Ask for their consent",
       "created": "Hand this link to the applicant (it will not be shown again):",
       "copy": "Copy the link",
@@ -3148,7 +3162,17 @@
       "shownTitle": "Result passed on",
       "hidden": "The result is visible only once the applicant passes it on.",
       "demo": "Demonstration provider: fictitious data.",
-      "reviewNote": "« To review » is not a verdict: talk to the applicant before any decision."
+      "reviewNote": "« To review » is not a verdict: talk to the applicant before any decision.",
+      "noneOffered": "No check is available to you yet.",
+      "payer": {
+        "label": "Who pays for the checks",
+        "firm": "The property-management firm",
+        "owner": "The building owner",
+        "applicant": "The applicant (only where allowed)"
+      }
+    },
+    "invoice": {
+      "line": "Check: {check} — a Krizaka service"
     }
   },
   "terms": {

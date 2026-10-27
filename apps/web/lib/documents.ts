@@ -307,6 +307,12 @@ async function moveToStore(policy: StoragePolicy, ownerId: string, id: string, m
   await query("UPDATE documents SET content = ''::bytea, storage_owner = $2 WHERE id = $1", [id, policy.store.describe().owner === "workspace" ? "workspace" : "krizaka"]);
 }
 
+/** Where the saved bytes go once the row exists: a keep is a consent (the day is recorded), and an external store receives the bytes. */
+async function placeDocument(policy: StoragePolicy, where: ReturnType<typeof storageFor>, doc: { ownerId: string; id: string; mimeType: AcceptedType; bytes: Uint8Array }): Promise<void> {
+  if (where !== "none") await query("UPDATE documents SET keep_consent_at = COALESCE(keep_consent_at, $2) WHERE id = $1", [doc.id, policy.now]);
+  if (EXTERNAL.has(where)) await moveToStore(policy, doc.ownerId, doc.id, doc.mimeType, doc.bytes);
+}
+
 /** The kind asked for; for « auto », what the text turns out to be — « other » while a deferred document's text is still to be read. */
 function chooseKind(requested: DocumentKind | "auto", deferred: boolean, read: { text: string; pages: number | null }): DocumentKind {
   if (requested !== "auto") return requested;
@@ -330,7 +336,7 @@ export async function storeDocument(ownerId: string, file: { name: string; type:
   const kind = chooseKind(requested, deferred, read);
   // The bytes sit in the database until the document is placed (and, if not kept, until its check has run).
   const row = await saveDocumentRow({ ownerId, existingId: existing?.id ?? null, file: { filename, mimeType, kind, sha256: kept ? createHash("sha256").update(kept).digest("hex") : sha256, sourceSha256: kept ? sha256 : null, pages: read.pages }, bytes: content, text: read.text, where, deadline, source, extraction: deferred ? "queued" : "done" });
-  if (policy && EXTERNAL.has(where)) await moveToStore(policy, ownerId, row.id, mimeType, content);
+  if (policy) await placeDocument(policy, where, { ownerId, id: row.id, mimeType, bytes: content });
   return { summary: summary(row), duplicate: false, ...(deferred ? { finish: () => finishExtraction({ ownerId, id: row.id, filename, mimeType, requested, bytes }) } : {}) };
 }
 

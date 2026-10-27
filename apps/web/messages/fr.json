@@ -1606,6 +1606,14 @@
           "webhooks": {
             "label": "Webhooks",
             "hint": "Désactivé : aucun webhook n'est envoyé ni enregistré, quel que soit le forfait."
+          },
+          "screeningBilling": {
+            "label": "Facturation des vérifications de dossier",
+            "hint": "Facture chaque vérification de dossier (coût plus marge, taxes comprises). Désactivée : rien n'est facturé. Mode test seulement tant que la grille de conformité n'est pas ouverte."
+          },
+          "screeningLive": {
+            "label": "Vérifications de dossier en direct",
+            "hint": "Vrais fournisseurs, vraies personnes. Refusé tant que chaque point de la grille de conformité n'est pas fait, preuve à l'appui. À garder désactivé."
           }
         },
         "limits": {
@@ -3078,9 +3086,6 @@
       "title": "Une demande de vérification de votre dossier",
       "lead": "{landlord} demande votre accord pour vérifier votre dossier de candidature. Vous décidez : rien n'est vérifié sans votre consentement.",
       "whatTitle": "Ce qui serait vérifié",
-      "scope": {
-        "payment-history": "Votre historique de paiement"
-      },
       "provider": "Fournisseur : {provider}",
       "why": "Pourquoi : le propriétaire évalue votre candidature à un logement.",
       "notAsked": "Ce qui n'est jamais demandé : numéro d'assurance sociale, coordonnées bancaires, employeur, salaire, casier judiciaire.",
@@ -3105,18 +3110,30 @@
       "resultTitle": "Votre résultat",
       "band": {
         "no-concern": "Rien à signaler",
-        "review": "À examiner"
+        "review": "À examiner",
+        "incomplete": "Pas encore complet"
       },
-      "item": {
-        "payment-history": "Historique de paiement",
-        "identity-match": "Identité"
-      },
+      "item": {},
       "outcome": {
         "clear": "rien à signaler",
-        "review": "à examiner"
+        "review": "à examiner",
+        "pending": "en cours",
+        "unavailable": "indisponible pour le moment",
+        "soon": "bientôt disponible"
       },
       "deleteOn": "Supprimé le {date}.",
-      "contested": "Votre contestation : « {comment} »"
+      "contested": "Votre contestation : « {comment} »",
+      "incompleteNote": "Certaines vérifications n'ont pas répondu. Rien ici n'est un résultat pour celles-ci : elles sont montrées telles qu'elles en sont.",
+      "copy": "Obtenir une copie de mon résultat",
+      "quoteTitle": "Prix et qui paie",
+      "quoteLine": "{check} : {price}",
+      "quoteFree": "sans frais",
+      "quotePayer": {
+        "firm": "Payé par la société de gestion immobilière.",
+        "owner": "Payé par le propriétaire de l'immeuble.",
+        "applicant": "Payé par vous."
+      },
+      "quoteTaxes": "Les taxes (TPS/TVQ) s'ajoutent lorsqu'elles s'appliquent."
     },
     "landlord": {
       "title": "Dossier du locataire",
@@ -3129,9 +3146,6 @@
       "name": "Nom du candidat",
       "email": "Courriel du candidat",
       "scope": "Ce qui sera vérifié",
-      "scopeItem": {
-        "payment-history": "Historique de paiement"
-      },
       "request": "Demander son consentement",
       "created": "Remettez ce lien au candidat (il ne sera plus affiché) :",
       "copy": "Copier le lien",
@@ -3148,7 +3162,17 @@
       "shownTitle": "Résultat transmis",
       "hidden": "Le résultat n'est visible qu'une fois transmis par le candidat.",
       "demo": "Fournisseur de démonstration : données fictives.",
-      "reviewNote": "« À examiner » n'est pas un verdict : parlez-en au candidat avant toute décision."
+      "reviewNote": "« À examiner » n'est pas un verdict : parlez-en au candidat avant toute décision.",
+      "noneOffered": "Aucune vérification ne vous est offerte pour le moment.",
+      "payer": {
+        "label": "Who pays for the checks",
+        "firm": "La société de gestion immobilière",
+        "owner": "Le propriétaire de l'immeuble",
+        "applicant": "Le candidat (seulement là où c'est permis)"
+      }
+    },
+    "invoice": {
+      "line": "Vérification : {check} — service Krizaka"
     }
   },
   "terms": {

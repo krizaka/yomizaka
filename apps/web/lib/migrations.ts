@@ -761,6 +761,154 @@ INSERT INTO public.krizaka_module_versions (module, version, checksum) VALUES
 ON CONFLICT (module, version) DO NOTHING;`,
   },
   {
+    version: "0039_screening_providers",
+    // yomizaka#132: the screening providers, the check types and what each owner may request are DATA. A provider row names an
+    // adapter (demo, or the engine's door); a check type names a provider and the engine purpose it needs, its labels, its price
+    // as cost + margin, and the consent notice version. Adding a type or switching a provider is a row, no deploy.
+    // screening_checks keeps one check's honest outcome: a closed outcome, the provider's opaque reference and the engine run id —
+    // never a raw report (yomizaka#134).
+    sql: `
+CREATE TABLE screening_provider (
+  id       text PRIMARY KEY CHECK (id ~ '^[a-z][a-z0-9-]{1,39}$'),
+  adapter  text NOT NULL CHECK (adapter IN ('demo', 'engine')),
+  label    text NOT NULL,
+  region   text NOT NULL DEFAULT 'CA',
+  enabled  boolean NOT NULL DEFAULT false,
+  note     text
+);
+CREATE TABLE check_type (
+  key                    text PRIMARY KEY CHECK (key ~ '^[a-z][a-z0-9-]{1,39}$'),
+  provider_id            text NOT NULL REFERENCES screening_provider(id),
+  purpose                text NOT NULL CHECK (purpose IN ('COURT_RECORDS', 'CREDIT')),
+  label_fr               text NOT NULL,
+  label_en               text NOT NULL,
+  provider_cost_cents    integer NOT NULL DEFAULT 0 CHECK (provider_cost_cents >= 0),
+  margin_cents           integer NOT NULL DEFAULT 0 CHECK (margin_cents >= 0),
+  currency               text NOT NULL DEFAULT 'CAD' CHECK (currency = 'CAD'),
+  region                 text NOT NULL DEFAULT 'QC',
+  consent_notice_version text NOT NULL,
+  enabled                boolean NOT NULL DEFAULT false,
+  default_on             boolean NOT NULL DEFAULT false,
+  requires_lawyer        text,
+  note                   text
+);
+CREATE TABLE tenant_check_setting (
+  owner_id   uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  check_type text NOT NULL REFERENCES check_type(key),
+  allowed    boolean NOT NULL,
+  PRIMARY KEY (owner_id, check_type)
+);
+CREATE TABLE screening_checks (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  screening_id uuid NOT NULL REFERENCES screenings(id) ON DELETE CASCADE,
+  check_type   text NOT NULL REFERENCES check_type(key),
+  state        text NOT NULL CHECK (state IN ('answered', 'pending', 'unavailable', 'soon')),
+  outcome      text NOT NULL CHECK (outcome IN ('MATCH', 'NO_MATCH', 'PENDING', 'PROVIDER_ERROR', 'TIMEOUT', 'REFUSED')),
+  refusal      text CHECK (refusal IN ('NO_CONSENT', 'NO_KEY', 'BUDGET_EXHAUSTED', 'NOT_CONFIGURED')),
+  category     text NOT NULL DEFAULT 'NONE' CHECK (category IN ('TAL_NON_PAYMENT', 'TAL_OTHER', 'CRIMINAL', 'CIVIL', 'NONE')),
+  provider_ref text,
+  run_id       uuid NOT NULL,
+  submitted_at timestamptz NOT NULL DEFAULT now(),
+  answered_at  timestamptz,
+  UNIQUE (screening_id, check_type)
+);
+INSERT INTO screening_provider (id, adapter, label, enabled, note) VALUES
+  ('demo', 'demo', 'Demonstration', true, 'Fictitious data, deterministic.'),
+  ('engine', 'engine', 'Orazaka external checks', true, 'Routes to the vendors by data. Every call answers NOT_CONFIGURED until a provider account exists and the compliance gate is open.');
+INSERT INTO check_type (key, provider_id, purpose, label_fr, label_en, consent_notice_version, enabled, default_on, requires_lawyer, note) VALUES
+  ('payment-history', 'demo', 'COURT_RECORDS', 'Historique de paiement', 'Payment history', '2026-10-24.2', true, true, NULL, 'Demonstration only until a provider agreement is signed.'),
+  ('credit', 'engine', 'CREDIT', 'Rapport de crédit', 'Credit report', '2026-10-24.2', true, false, NULL, 'Price to be set when the provider agreement is signed. Offered to an owner by a tenant_check_setting row.'),
+  ('criminal-record', 'engine', 'COURT_RECORDS', 'Antécédents judiciaires', 'Criminal record', '2026-10-24.2', false, false, 'criminal-records-lawful', 'OFF. Not offered to Québec landlords until a lawyer confirms it is lawful for rental (Charter, CDPDJ).');`,
+  },
+  {
+    version: "0040_screening_polling",
+    // yomizaka#134: a PENDING check is collected by polling its provider (webhooks later, yomizaka#426). The interval and the number of
+    // tries are DATA on the provider row; a check that never answers is given up as « unavailable », never kept pending for good.
+    sql: `
+ALTER TABLE screening_provider ADD COLUMN poll_minutes integer NOT NULL DEFAULT 15 CHECK (poll_minutes BETWEEN 1 AND 1440);
+ALTER TABLE screening_provider ADD COLUMN poll_max integer NOT NULL DEFAULT 96 CHECK (poll_max BETWEEN 1 AND 1000);
+ALTER TABLE screening_checks ADD COLUMN next_poll_at timestamptz;
+ALTER TABLE screening_checks ADD COLUMN polls integer NOT NULL DEFAULT 0;
+CREATE INDEX screening_checks_due ON screening_checks(next_poll_at) WHERE state = 'pending';`,
+  },
+  {
+    version: "0041_screening_charges",
+    // yomizaka#133: per-check billing. The payer is chosen per request (the applicant pays only where the check type allows it:
+    // C.c.Q. art. 1904 limits the fees a tenant may be charged, a lawyer decides). A charge snapshots cost + margin and the invoice
+    // line, so a later price change never rewrites what was billed. Nothing is written while features.screeningBilling is off.
+    sql: `
+ALTER TABLE screenings ADD COLUMN payer text NOT NULL DEFAULT 'owner' CHECK (payer IN ('firm', 'owner', 'applicant'));
+ALTER TABLE check_type ADD COLUMN applicant_may_pay boolean NOT NULL DEFAULT false;
+CREATE TABLE screening_charge (
+  id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  screening_id        uuid NOT NULL REFERENCES screenings(id) ON DELETE CASCADE,
+  check_type          text NOT NULL REFERENCES check_type(key),
+  payer               text NOT NULL CHECK (payer IN ('firm', 'owner', 'applicant')),
+  provider_cost_cents integer NOT NULL CHECK (provider_cost_cents >= 0),
+  margin_cents        integer NOT NULL CHECK (margin_cents >= 0),
+  amount_cents        integer NOT NULL CHECK (amount_cents = provider_cost_cents + margin_cents),
+  currency            text NOT NULL DEFAULT 'CAD',
+  description         text NOT NULL,
+  state               text NOT NULL CHECK (state IN ('charged', 'refunded', 'failed')),
+  charge_ref          text,
+  created_at          timestamptz NOT NULL DEFAULT now(),
+  refunded_at         timestamptz,
+  UNIQUE (screening_id, check_type)
+);`,
+  },
+  {
+    version: "0042_retention_rules",
+    // yomizaka#125: retention is DATA. A policy is a row (after-check, after-decision, or a number of days); a document type points
+    // at one (0031); an owner may override it, and a non-document subject (the screening result) has its global default here.
+    // The day a document was kept by the owner's choice is recorded. Changing a row changes the behaviour, no deploy.
+    sql: `
+ALTER TABLE retention_policies DROP CONSTRAINT IF EXISTS retention_policies_purge_on_check;
+ALTER TABLE retention_policies ADD CONSTRAINT retention_policies_purge_on_check CHECK (purge_on IN ('after-check', 'after-decision', 'days'));
+ALTER TABLE retention_policies ADD COLUMN days integer CHECK (days IS NULL OR days BETWEEN 1 AND 3650);
+ALTER TABLE retention_policies ADD CONSTRAINT retention_policies_days_iff_days CHECK ((purge_on = 'days') = (days IS NOT NULL));
+INSERT INTO retention_policies (id, purge_on, days) VALUES ('thirty-days', 'days', 30);
+
+CREATE TABLE retention_rule (
+  id        uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id  uuid REFERENCES accounts(id) ON DELETE CASCADE,
+  subject   text NOT NULL CHECK (subject ~ '^[a-z0-9-]{2,40}$'),
+  policy_id text NOT NULL REFERENCES retention_policies(id)
+);
+-- One rule per owner and subject; owner_id NULL is the global default.
+CREATE UNIQUE INDEX retention_rule_owner ON retention_rule(owner_id, subject) WHERE owner_id IS NOT NULL;
+CREATE UNIQUE INDEX retention_rule_global ON retention_rule(subject) WHERE owner_id IS NULL;
+INSERT INTO retention_rule (subject, policy_id) VALUES ('screening-result', 'thirty-days');
+
+ALTER TABLE documents ADD COLUMN keep_consent_at timestamptz;`,
+  },
+  {
+    version: "0043_compliance_gate",
+    // yomizaka#135: the blockers before any live screening resale. Each is a row, open until Oussama marks it done WITH the date of its
+    // evidence. the setting features.screeningLive is refused unless every required row is done. The consent logs the price and the payer it showed.
+    sql: `
+CREATE TABLE compliance_gate (
+  blocker       text PRIMARY KEY CHECK (blocker ~ '^[a-z][a-z0-9-]{2,60}$'),
+  label         text NOT NULL,
+  required_live boolean NOT NULL DEFAULT true,
+  status        text NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'done')),
+  evidence_on   date,
+  evidence_ref  text,
+  CONSTRAINT compliance_gate_done_has_evidence CHECK (status = 'open' OR (evidence_on IS NOT NULL AND length(coalesce(evidence_ref, '')) > 0))
+);
+INSERT INTO compliance_gate (blocker, label, required_live) VALUES
+  ('reseller-agreements', 'Signed reseller/partner agreement with each provider (permissible purpose, resale)', true),
+  ('lawyer-credit-for-rental', 'Lawyer sign-off on credit checks for rental', true),
+  ('efvp', 'Privacy impact assessment (EFVP, Loi 25) completed and filed', true),
+  ('consent-text', 'Per-check consent text (specific, written; logged with version, price and payer) reviewed by the lawyer', true),
+  ('provider-residency', 'Provider data residency verified as Canada', true),
+  ('adverse-action-wording', 'Adverse-action wording reviewed by a lawyer', true),
+  ('criminal-records-lawful', 'A lawyer confirms criminal-record checks are lawful for rental (only for that check type; not needed for credit)', false);
+
+ALTER TABLE application_consents ADD COLUMN price_cents integer CHECK (price_cents IS NULL OR price_cents >= 0);
+ALTER TABLE application_consents ADD COLUMN currency text;
+ALTER TABLE application_consents ADD COLUMN payer text CHECK (payer IS NULL OR payer IN ('firm', 'owner', 'applicant'));`,
+  },
+  {
     version: "0044_document_source_sha",
     // yomizaka#8: a photo document keeps its recognised words as an invisible text layer, so its file is no longer the bytes first assembled.
     // `sha256` is the file kept (what the report names); `source_sha256` is the assembled photos, so the same photos sent again are still recognised.
