@@ -2925,6 +2925,7 @@
       "BAD_SIGNATURE": "La signature ne correspond pas au contenu : le rapport a été modifié ou signé par une autre clé.",
       "ALTERED": "La signature est valide pour le rapport d’origine, mais le fichier n’est plus ce rapport : quelque chose a été changé après la signature.",
       "UNKNOWN_KEY": "Il a été signé par une clé qui n’est pas celle de ce serveur.",
+      "UNKNOWN_SCHEMA": "Ce rapport est dans un format que Yomizaka ne vérifie pas.",
       "SPECIMEN": "Ce rapport est un spécimen : il ne prouve rien."
     },
     "facts": {
@@ -2935,7 +2936,9 @@
       "ruleset": "Règles",
       "checked": "Vérification terminée",
       "findings": "Constats",
-      "jurisdiction": "Juridiction"
+      "jurisdiction": "Juridiction",
+      "issued": "Émis le",
+      "expires": "Lien valide jusqu'au"
     },
     "documentMatch": {
       "yes": "Le document que vous avez donné est bien celui qui a été vérifié.",
