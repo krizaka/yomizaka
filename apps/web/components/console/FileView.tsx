@@ -15,6 +15,7 @@ import { pluralKey } from "@/lib/plural";
 import { DecisionActions } from "../organise/DecisionActions";
 import { FileTags } from "../organise/FileTags";
 import { useFileFacts } from "./FilesView";
+import { OwnerShare } from "./OwnerShare";
 import type { AskableType } from "./RequestDocuments";
 
 /** One line of the file: a document asked, with the one received for it (or none yet). */
@@ -122,6 +123,7 @@ export function FileView({
           }
         />
       </section>
+      <OwnerShare fileId={file.id} />
     </DetailLayout>
   );
 }

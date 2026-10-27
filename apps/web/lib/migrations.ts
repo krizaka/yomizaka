@@ -1231,4 +1231,29 @@ INSERT INTO public.krizaka_module_versions (module, version, checksum) VALUES
 ON CONFLICT (module, version) DO NOTHING;
 `,
   },
+  {
+    version: "0053_file_report_shares",
+    // yomizaka#128: the report of an applicant file, shared with the building owner by a link. Only the token's hash is kept; the
+    // link expires (days as data on the row), is revoked by the file's manager, and each opening is a row of file_report_views.
+    sql: `
+CREATE TABLE file_report_shares (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  screening_id uuid NOT NULL REFERENCES screenings(id) ON DELETE CASCADE,
+  landlord_id  uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  recipient    text NOT NULL DEFAULT '' CHECK (length(recipient) <= 120),
+  token_hash   text NOT NULL UNIQUE,
+  created_at   timestamptz NOT NULL DEFAULT now(),
+  expires_at   timestamptz NOT NULL,
+  revoked_at   timestamptz
+);
+CREATE INDEX file_report_shares_file ON file_report_shares(screening_id, created_at DESC);
+CREATE TABLE file_report_views (
+  id        uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  share_id  uuid NOT NULL REFERENCES file_report_shares(id) ON DELETE CASCADE,
+  viewed_at timestamptz NOT NULL DEFAULT now(),
+  ip        text
+);
+CREATE INDEX file_report_views_share ON file_report_views(share_id, viewed_at DESC);
+`,
+  },
 ];
