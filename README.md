@@ -13,7 +13,7 @@ know exactly which run produced each finding.
 
 [![CI](https://github.com/krizaka/yomizaka/actions/workflows/ci.yml/badge.svg)](https://github.com/krizaka/yomizaka/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/krizaka/yomizaka/badge)](https://scorecard.dev/viewer/?uri=github.com/krizaka/yomizaka)
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+[![License: FSL-1.1-ALv2](https://img.shields.io/badge/license-FSL--1.1--ALv2-blue.svg)](LICENSE.md)
 [![dev.yomizaka.com](https://img.shields.io/badge/dev.yomizaka.com-Yomizaka-3c38b2)](https://dev.yomizaka.com)
 [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=krizaka_yomizaka&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=krizaka_yomizaka) [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=krizaka_yomizaka&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=krizaka_yomizaka) [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=krizaka_yomizaka&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=krizaka_yomizaka) [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=krizaka_yomizaka&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=krizaka_yomizaka) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=krizaka_yomizaka&metric=coverage)](https://sonarcloud.io/summary/new_code?id=krizaka_yomizaka)
 
@@ -127,8 +127,8 @@ Rules for contributors and agents: [AGENTS.md](AGENTS.md). Security: [SECURITY.m
 
 ## License
 
-[Apache-2.0](LICENSE) © Krizaka
-
----
-
-A [Krizaka](https://www.krizaka.com) product · Made in Montréal · Apache-2.0
+[FSL-1.1-ALv2](LICENSE.md) (Functional Source License, Apache-2.0 future licence) © Technologies Krizaka Inc. — read,
+run, modify and self-host it for any purpose except offering a competing service; each version becomes Apache-2.0 two
+years after its release. Commits before the licence change remain [Apache-2.0](LICENSE-APACHE) — see [NOTICE](NOTICE)
+and [ADR-011](https://github.com/krizaka/.github/blob/main/docs/adr/ADR-011-licensing-libraries-open-products-fair-source.md).
+The Krizaka names and birds are not licensed: [trademark policy](https://github.com/krizaka/.github/blob/main/TRADEMARKS.md).
