@@ -1,0 +1,13 @@
+# Shared step: a cold app (state cleared) that has painted its first screen. After clearState the old task is still being removed
+# on a slow emulator and can kill the process just launched ("failed to attach": a blank screen, whatever the flow). So the launch is
+# retried until the app is there, signed out (its sign-in) or signed in (its first tab).
+appId: com.krizaka.yomizaka
+---
+- retry:
+    maxRetries: 3
+    commands:
+      - launchApp:
+          clearState: true
+      - extendedWaitUntil:
+          visible: "Se connecter|Sign in|Vérifier un document|Check a document"
+          timeout: 25000
