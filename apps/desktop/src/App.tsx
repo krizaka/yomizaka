@@ -20,6 +20,7 @@ import { APP_VERSION, queries, stage, yomizaka } from "./lib/config";
 import { bridge, folders, followLinks, setNativeMenu } from "./lib/desktop";
 import { macSections, MENU_IDS, menuSpec } from "./lib/menu";
 import { hashOf, type Route, routeOfLink, sectionOf } from "./lib/route";
+import { stopAll } from "./lib/subscriptions";
 import { AUTH, useAuth } from "./lib/use-auth";
 import { useRoute } from "./lib/use-route";
 
@@ -68,7 +69,7 @@ function Gate({ onLocale }: Readonly<{ onLocale: (locale: Locale) => void }>) {
       [MENU_IDS.settings]: () => go({ screen: "settings" }),
     };
     const stops = [setNativeMenu(bridge, menuSpec(messages), handlers), followLinks(bridge, (link) => go(routeOfLink(link)))];
-    return () => void Promise.all(stops).then((all) => all.forEach((stop) => stop()));
+    return stopAll(stops);
   }, [status, messages, addFolder, go]);
 
   if (status === AUTH.loading) return null;

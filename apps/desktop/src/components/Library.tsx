@@ -11,6 +11,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useI18n } from "../i18n";
 import { folders, yomizakaNative } from "../lib/desktop";
 import { inbox } from "../lib/inbox-store";
+import { stopAll } from "../lib/subscriptions";
 import { refusalText } from "../lib/refusal";
 import { type Route } from "../lib/route";
 import { sizeOf } from "../lib/size";
@@ -26,8 +27,10 @@ type Listing = Awaited<ReturnType<typeof yomizakaNative.listDocuments>>;
 
 /** Whether the folder on screen is watched, kept in step with the folder shown. */
 function useWatched(folder: string | null) {
-  const [watched, setWatched] = useState(() => (folder ? inbox.isWatched(folder) : false));
-  useEffect(() => setWatched(folder ? inbox.isWatched(folder) : false), [folder]);
+  const [chosen, choose] = useState<{ folder: string | null; on: boolean } | null>(null);
+  // A choice made on one folder never carries to the next: the state is read for the folder shown, else from the store.
+  const watched = chosen && chosen.folder === folder ? chosen.on : folder ? inbox.isWatched(folder) : false;
+  const setWatched = useCallback((on: boolean) => choose({ folder, on }), [folder]);
   return [watched, setWatched] as const;
 }
 
@@ -44,7 +47,7 @@ function useWindowDrop(checkOne: (path: string) => void, checkMany: (input: { na
         else if (paths.length > 1) checkMany({ name: t("batch.nameOfDrop", { date: dropDate() }), paths });
       }),
     ];
-    return () => void Promise.all(stops).then((all) => all.forEach((stop) => stop()));
+    return stopAll(stops);
   }, [checkOne, checkMany, t, dropDate]);
   return dragging;
 }
