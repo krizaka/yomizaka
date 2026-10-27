@@ -761,6 +761,24 @@ INSERT INTO public.krizaka_module_versions (module, version, checksum) VALUES
 ON CONFLICT (module, version) DO NOTHING;`,
   },
   {
+    version: "0045_sealed_contracts",
+    // yomizaka#71: the contracts a partner platform has sealed. The file is the evidence (bytes kept as sealed, content and parties
+    // inside it); the columns hold no personal information, so the public check can answer from them.
+    sql: `CREATE TABLE sealed_contracts (
+  id            text PRIMARY KEY,
+  owner_id      uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  partner_id    text NOT NULL,
+  document_type text NOT NULL,
+  sha256        text NOT NULL UNIQUE,
+  zone          text NOT NULL,
+  key_id        text NOT NULL,
+  sealed_at     timestamptz NOT NULL,
+  content       bytea NOT NULL
+);
+CREATE INDEX sealed_contracts_owner ON sealed_contracts (owner_id, sealed_at DESC);
+`,
+  },
+  {
     version: "0046_mail",
     // yomizaka#48: what the mail layer remembers. `mail_suppressions`: addresses the provider reported (a hard bounce, a complaint, an
     // unsubscribe), never mailed again. `mail_intentions`: one row per link already mailed (a retry sends nothing twice).
