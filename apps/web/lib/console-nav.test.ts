@@ -113,7 +113,10 @@ describe("tabs are routes: the URL is the state", () => {
   it("the rail has no local active state", () => {
     const shell = read("components/console/ConsoleShell.tsx");
     expect(shell).toContain("activeNav(path)");
-    expect(shell).not.toMatch(/useState/);
+    // The one state of the shell is whether the search palette is open; which entry is active is never kept.
+    expect([...shell.matchAll(/useState/g)]).toHaveLength(2);
+    expect(shell).toMatch(/const \[searching, setSearching\] = useState\(false\)/);
+    expect(shell).toMatch(/currentId=\{active \?\? undefined\}/);
   });
 });
 
@@ -135,14 +138,12 @@ describe("the settings' sections are routes", () => {
 
 describe("the shell follows Orazaka's pattern (krizaka/yomizaka#278, the UX review's Y1)", () => {
   const shell = read("components/console/ConsoleShell.tsx");
-  const railItems = shell.match(/<RailNav\.Item\b/g) ?? [];
   it("the rail holds the section map's destinations only (yomizaka#319) — no footer, no « + » action, no settings cog", () => {
-    expect(railItems).toHaveLength(1);
+    // The rail is the frame's (`AppFrame`, yomizaka#429): the shell gives it the section map and nothing at the foot.
     expect(shell).toContain('sectionsFor("web", { applicantFiles })');
-    expect(shell).toContain("<Link href={href(section.path)} />");
-    expect(shell).not.toContain("footer={");
-    expect(shell).not.toMatch(/<RailNav\.Item[^>]*PlusIcon/);
-    expect(shell).not.toMatch(/<RailNav\.Item[^>]*SettingsIcon/);
+    expect(shell).toContain("href: href(section.path)");
+    expect(shell).not.toContain('place: "foot"');
+    expect(shell).not.toMatch(/RailNav|PlusIcon\s*size=\{22\}/);
   });
   it("the header names the product, carries the DEV chip, and « Vérifier un document » as its gradient cut button, in the `primary` slot (B2, P14)", () => {
     expect(shell).toContain('name="Yomizaka"');
@@ -151,13 +152,11 @@ describe("the shell follows Orazaka's pattern (krizaka/yomizaka#278, the UX revi
     expect(shell).toMatch(/<ButtonLink\b(?=[^>]*\bvariant="gradient")(?=[^>]*\bshape="cut")(?=[^>]*aria-label=\{say\("shell\.checkAction"\)\})[^>]*data-testid="header-check"/);
   });
   it("the account menu has profile, settings, credits and usage, a labelled theme row and sign out; the name shows only when there is one; nothing sends the owner elsewhere", () => {
-    for (const id of ["profile", "settings", "billing"]) expect(shell).toContain(`id: "${id}"`);
-    // The language moved to the bar (`LanguageSwitch`, krizaka-ui#640): the account menu no longer carries it.
-    expect(shell).not.toContain("language={{");
-    expect(shell).toContain("<LanguageSwitch");
-    expect(shell).toContain('data-testid="theme-row"');
-    expect(shell).toContain("signOut={{");
-    expect(shell).toContain('showName={name ? "lg" : false}');
+    for (const id of ["profile", "settings", "billing"]) expect(shell).toMatch(new RegExp(`${id}: \\{`));
+    // The frame draws the account menu in its order (language, theme and sign out under the places): the shell gives it the data.
+    expect(shell).toContain("language={{");
+    expect(shell).toContain("onSignOut:");
+    expect(shell).not.toMatch(/AccountMenu|LanguageSwitch|ThemeToggle/);
     expect(shell).not.toContain("name ?? email}");
     for (const l of ["en", "fr"]) {
       const m = JSON.parse(read(`messages/${l}.json`));

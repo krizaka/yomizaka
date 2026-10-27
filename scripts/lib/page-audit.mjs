@@ -128,6 +128,42 @@ function cutColumnsOf() {
   return [...new Set(cut)].slice(0, 3);
 }
 
+/** The top chrome never overlaps (yomizaka#449): the in-flow blocks above the page (`[data-top-chrome]`, e.g. the development-version notice) and a bar that is fixed or sticky at the top of the viewport. Two of them that share pixels hide one another. */
+function topBoxOf(el) {
+  return el.getBoundingClientRect().height === 0 && el.firstElementChild ? el.firstElementChild : el;
+}
+
+/** A bar is whatever is fixed or sticky across the top of the viewport (a wrapper, whatever its tag): wide, short, near the top. The site's bar stands in a sticky wrapper of zero height, so what it holds is measured. */
+function isTopBar(el, width) {
+  const pos = getComputedStyle(el).position;
+  if (pos !== "fixed" && pos !== "sticky") return false;
+  const r = topBoxOf(el).getBoundingClientRect();
+  return r.width > width * 0.5 && r.height > 8 && r.height < 200 && r.top < 160 && r.bottom > 0 && !el.closest("[data-top-chrome]");
+}
+
+function chromeOverlapsOf(doc) {
+  const chrome = [...document.querySelectorAll("[data-top-chrome]")].filter((el) => el.getBoundingClientRect().height > 0);
+  const bars = [...document.querySelectorAll("body *")].filter((el) => isTopBar(el, doc.clientWidth)).map(topBoxOf);
+  const stack = [...chrome, ...bars];
+  const found = [];
+  stack.forEach((a, i) => {
+    for (const b of stack.slice(i + 1)) if (apart(a, b) && meets(a.getBoundingClientRect(), b.getBoundingClientRect())) found.push(`${nameOf(a)} / ${nameOf(b)}`);
+  });
+  return found;
+}
+
+/** « Never overflows »: a control or a card that clips its own content (overflow hidden / clip with more content than room) cuts a word. */
+function clipsOf() {
+  return [...document.querySelectorAll("button, a, [role=button], [data-testid], [class*=badge], [class*=chip]")]
+    .filter((el) => {
+      const r = el.getBoundingClientRect();
+      const style = getComputedStyle(el);
+      return r.width > 4 && r.height > 4 && ["hidden", "clip"].includes(style.overflowX) && style.textOverflow !== "ellipsis" && el.scrollWidth > el.clientWidth + 1 && !clipped(el);
+    })
+    .slice(0, 3)
+    .map(nameOf);
+}
+
 /** A long token (an id, an address) that wraps character by character: a cell taller than two lines for text without a space. */
 function tooTall(el) {
   const text = (el.textContent || "").trim();
@@ -162,12 +198,14 @@ function measurePage() {
     overflowing: overflowing.slice(0, 3),
     overlaps: overlapsOf(panels, spill).slice(0, 3),
     cutColumns: cutColumnsOf(),
+    chromeOverlaps: chromeOverlapsOf(doc).slice(0, 3),
+    clips: clipsOf(),
     wrapped: wrappedOf(),
     segmentError: !!document.querySelector('[data-testid="segment-error"]'),
   };
 }
 
-const PROBES = [tooTall, wrappedOf, className, nameOf, scrolls, meets, apart, clipped, wideOf, named, unnamedOf, headerActionOf, folded, keptBetween, notDrawn, runsOut, spillOf, overlapsOf, cutBy, cutColumnsOf, measurePage];
+const PROBES = [tooTall, wrappedOf, className, nameOf, scrolls, meets, apart, clipped, wideOf, named, unnamedOf, headerActionOf, folded, keptBetween, notDrawn, runsOut, spillOf, overlapsOf, cutBy, cutColumnsOf, topBoxOf, isTopBar, chromeOverlapsOf, clipsOf, measurePage];
 
 /** The expression Playwright runs in the page (`page.evaluate(auditPage)`): the probes, serialised together, then the measure. */
 export const auditPage = `(() => {\nconst ARIA_HIDDEN = ${JSON.stringify(ARIA_HIDDEN)};\n${PROBES.map((f) => `const ${f.name} = ${f.toString()};`).join("\n")}\nreturn measurePage();\n})()`;
@@ -201,6 +239,8 @@ function layoutProblems(where, result) {
   }
   if (result.wrapped?.length) problems.push(`${where}: a token wraps one character per line (${result.wrapped.join(", ")}) — truncate it`);
   if (result.segmentError) problems.push(`${where}: the page rendered its error state (segment-error), e.g. React #441`);
+  if (result.chromeOverlaps?.length) problems.push(`${where}: the top chrome chromeOverlaps (${result.chromeOverlaps.slice(0, 2).join(", ")})`);
+  if (result.clips?.length) problems.push(`${where}: content cut inside its box (${result.clips.join(", ")})`);
   return problems;
 }
 
