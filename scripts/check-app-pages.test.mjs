@@ -15,4 +15,9 @@ describe("the signed-in pages crawl (yomizaka#457: « Dossiers » crashed unseen
     assert.deepEqual(problemsOf("/app/dossiers @1440 dark", ok, { h1: true }), []);
     assert.match(problemsOf("/app/dossiers @1440 dark", { ...ok, segmentError: true }, { h1: true })[0], /error state/);
   });
+  it("a run id wrapped a character per line is a problem (the Checks table)", () => {
+    const ok = { h1: 1, scrollWidth: 400, clientWidth: 400, wide: [], unnamedButtons: 0, wrapped: [] };
+    assert.deepEqual(problemsOf("/app/verifications @390 dark", ok, { h1: true }), []);
+    assert.match(problemsOf("/app/verifications @390 dark", { ...ok, wrapped: ["0198f2ab-7c1d-7e"] }, { h1: true })[0], /one character per line/);
+  });
 });

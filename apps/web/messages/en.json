@@ -2494,6 +2494,8 @@
         "text": "Drop a lease, a pay stub or an invoice: Yomizaka reads it against Québec's rules and the result lands here."
       },
       "caption": "Your checks",
+      "runCopy": "Copy run {id}",
+      "runCopied": "Copied",
       "columns": {
         "document": "Document",
         "kind": "Kind",
