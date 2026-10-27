@@ -7,8 +7,25 @@ import { accessTo, loadTarget, referenceOf } from "@/lib/report-access";
 import { attestationOfPdf, verifyPdf } from "@/lib/report-pdf";
 import { signingKey } from "@/lib/report-signer";
 import { MAX_BODY_BYTES, readVerifyForm } from "@/lib/verify";
+import { kindOfSchema, pdfSchemaId, verifyOwnerPdfView } from "@/lib/verify-dispatch";
 
 export const dynamic = "force-dynamic";
+
+/** True for an owner-report PDF; refuses a schema Yomizaka does not verify; false for a compliance PDF or a file with no attestation. */
+async function ownerKindOrRefuse(pdf: Uint8Array | null) {
+  if (!pdf) return false;
+  const kind = kindOfSchema(await pdfSchemaId(pdf));
+  if (kind === "unknown") throw refuse(422, "UNKNOWN_SCHEMA", "This report uses a format Yomizaka does not verify");
+  return kind === "owner";
+}
+
+async function verifyOwner(input: Uint8Array | null, who: { id: string; email: string }, req: Request) {
+  const pdf = input && (await ownerKindOrRefuse(input)) ? input : null;
+  if (!pdf) return null;
+  const result = await verifyOwnerPdfView(pdf, signingKey());
+  await audit({ action: "report.verified", actorId: who.id, actorLabel: who.email, targetId: null, detail: { runId: null, schema: "owner-report", ok: result.ok, ...(result.ok ? {} : { reason: result.reason }), via: "none", fileSha256: result.fileSha256 }, headers: req.headers });
+  return Response.json({ result }, { headers: { "Cache-Control": "no-store" } });
+}
 
 /**
  * Checks a Yomizaka audit report (multipart: `report` file or `reportText`, optionally the original `document`).
@@ -30,6 +47,9 @@ export function POST(req: Request) {
       throw refuse(400, "BAD_REQUEST", "Expected a multipart form");
     }
     const { text, pdf, document } = await readVerifyForm(form);
+    // The payload's schema id picks the verifier. An owner report holds no analysis to look up: it is checked by its signature only.
+    const ownerAnswer = await verifyOwner(pdf, who, req);
+    if (ownerAnswer) return ownerAnswer;
     // A PDF carries its attestation in its Info dictionary; an HTML report in its script block.
     const embedded = pdf ? await attestationOfPdf(pdf) : null;
     const embeddedReference = embedded ? { runId: embedded.payload.check.runId, documentSha256: embedded.payload.document.sha256 } : null;
