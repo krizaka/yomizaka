@@ -22,9 +22,22 @@ const isPrivate = (src: string) => /requireSession|requireAdmin|apiCaller/.test(
  */
 const CONTRACT_CHECK = join(API, "verify/contract/[sha256]/route.ts");
 
+/**
+ * The owner link's PDF (yomizaka#481): not public — the token of a live, unrevoked link the manager created is the credential, each download is logged,
+ * and what it signs is the redacted owner report of that one file. It is the only route outside a session that may sign; no specimen of it exists.
+ */
+const OWNER_PDF = join(API, "rapport/[token]/pdf/route.ts");
+
 describe("no public route serves a signed artifact", () => {
+  it("the owner link's PDF is delivered only through a live link (openShare), as an attachment that is never cached", () => {
+    const src = readFileSync(OWNER_PDF, "utf8");
+    expect(src).toContain("openShare(");
+    expect(src).toContain("no-store");
+    expect(src).not.toMatch(/issueReport|recordedReport|showcaseReport|reportFor|specimen/i);
+  });
+
   it("every route that is not behind a session leaves the signing code alone", () => {
-    const publicRoutes = routes(API).filter((f) => !isPrivate(readFileSync(f, "utf8")) && f !== CONTRACT_CHECK);
+    const publicRoutes = routes(API).filter((f) => !isPrivate(readFileSync(f, "utf8")) && f !== CONTRACT_CHECK && f !== OWNER_PDF);
     expect(publicRoutes.length).toBeGreaterThan(0);
     for (const f of publicRoutes) {
       // A vendor's webhook checks the vendor's signature (a payment, a bounce): the word is theirs, not a report's. It still never touches ours.

@@ -116,6 +116,11 @@ export async function check({ base, locale = "fr", email, password, shots }) {
     const pages = await discover(probe, base, locale);
     const revoked = await probe.request.get(`${base}/${locale}${revokedReportPath()}`);
     if (revoked.status() !== 404) problems.push(`${revokedReportPath()}: a revoked link must answer 404, got ${revoked.status()}`);
+    // The signed PDF of the owner report (yomizaka#481): a PDF on the live link, nothing on the revoked one.
+    const pdf = await probe.request.get(`${base}/api/rapport/${demoOwnerTokens("eric").live}/pdf?locale=${locale}`);
+    if (pdf.status() !== 200 || !String(pdf.headers()["content-type"]).startsWith("application/pdf")) problems.push(`/api/rapport/<demo token>/pdf: expected a PDF, got ${pdf.status()}`);
+    const noPdf = await probe.request.get(`${base}/api/rapport/${demoOwnerTokens("eric").revoked}/pdf`);
+    if (noPdf.status() !== 404) problems.push(`/api/rapport/<revoked token>/pdf: a revoked link must answer 404, got ${noPdf.status()}`);
     await probe.close();
     const cookies = await context.cookies();
     await context.close();
