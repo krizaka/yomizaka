@@ -177,11 +177,12 @@ export function Credits({ figure }: Readonly<{ figure: CreditsFigure }>) {
 export function BinderTabs({ tabs, selectedHref }: Readonly<{ tabs: readonly BinderTab[]; selectedHref: string }>) {
   const { say } = useSay();
   return (
-    <Tabs.Nav label={say("home.binder.label")} current={selectedHref} variant="binder">
+    <Tabs.Nav label={say("home.binder.label")} current={selectedHref} variant="binder" className="max-sm:flex-wrap max-sm:gap-y-1 max-sm:overflow-visible max-sm:[mask-image:none]">
       {tabs.map((t) => (
         <Tabs.NavLink key={t.id} href={t.href} hue={t.hue} exact asChild>
-          <Link href={t.href} scroll={false}>
-            {t.name} <span className="tabular-nums" data-testid="binder-count">{t.count}</span>
+          <Link href={t.href} scroll={false} title={t.name}>
+            <span className="max-w-[11rem] truncate sm:max-w-[16rem]" data-testid="binder-name">{t.name}</span>
+            <span className="tabular-nums" data-testid="binder-count">{t.count}</span>
           </Link>
         </Tabs.NavLink>
       ))}
