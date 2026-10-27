@@ -24,8 +24,12 @@ describe("the home's first screen (the UX review's Y9)", () => {
     assert.match(problemsOf(measure({ barBottom: null }))[0], /no bar or no hero frame/);
     assert.match(problemsOf(measure({ visualClipped: true }))[0], /clips its text/);
   });
+  it("names a fixed bar that covers the notice (yomizaka#449)", () => {
+    assert.match(problemsOf(measure({ chromeOverlaps: ["div.kz-environment-notice / div.fixed.top-3"] }))[0], /top chrome overlaps/);
+    assert.deepEqual(problemsOf(measure({ chromeOverlaps: [] })), []);
+  });
   it("walks both languages, a phone and a desktop", () => {
     assert.deepEqual(PAGES, ["/fr", "/en"]);
-    assert.deepEqual(VIEWPORTS.map((v) => v.width), [390, 1440]);
+    assert.deepEqual(VIEWPORTS.map((v) => v.width), [390, 1280, 1600]);
   });
 });

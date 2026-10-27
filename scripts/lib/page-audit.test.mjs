@@ -3,7 +3,7 @@ import { describe, it } from "vitest";
 
 import { problemsOf } from "./page-audit.mjs";
 
-const fine = { h1: 1, scrollWidth: 360, clientWidth: 360, wide: [], unnamedButtons: 0, headerAction: { visible: true, named: true }, chips: [48] };
+const fine = { h1: 1, scrollWidth: 360, clientWidth: 360, wide: [], unnamedButtons: 0, headerAction: { visible: true, named: true }, chips: [48], chromeOverlaps: [], clips: [] };
 
 describe("what counts as a problem on a rendered page", () => {
   it("nothing, when the page fits, has one h1, named buttons and its action on screen", () => {
@@ -28,5 +28,12 @@ describe("what counts as a problem on a rendered page", () => {
   it("a console error, and a chip under 44 px", () => {
     assert.match(problemsOf("x", fine, { errors: ["React error #418"] })[0], /console error — React error #418/);
     assert.match(problemsOf("x", { ...fine, chips: [40, 48] })[0], /40 px tall/);
+  });
+  it("the top chrome that chromeOverlaps: the fixed bar over the notice (yomizaka#449)", () => {
+    assert.match(problemsOf("/fr @390 dark", { ...fine, chromeOverlaps: ["div.kz-environment-notice / header.fixed.top-3"] })[0], /top chrome chromeOverlaps \(div.kz-environment-notice \/ header.fixed.top-3\)/);
+    assert.deepEqual(problemsOf("x", fine), []);
+  });
+  it("a box that cuts its own content (never overflows)", () => {
+    assert.match(problemsOf("x", { ...fine, clips: ["button[header-check].truncate"] })[0], /content cut inside its box \(button\[header-check\]/);
   });
 });

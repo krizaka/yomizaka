@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 // The home's first screen (the UX review's Y9 — F6, F8): the page starts 24 px under the fixed bar (no void above the hero), and
-// at 390 × 844 the product's visual is inside the first screen — both languages, both themes, in a real browser.
+// at 390 × 844 the product's visual is inside the first screen, and no two blocks of the top chrome (the notice, the fixed bar) overlap
+// at 390, 1280 and 1600 px (yomizaka#449) — both languages, both themes, in a real browser.
 //
 //   node scripts/check-home-first-screen.mjs --base http://localhost:3000
 //
 // Exits 1 listing every page × viewport × theme with a problem.
 import { chromium } from "playwright-core";
 
+import { auditPage } from "./lib/page-audit.mjs";
 import { auditContext, loadSettled } from "./lib/settle.mjs";
 
 // @fixed: the gap between the bar and the page (`--kz-hero-top` = the bar's bottom + this), the family's « One frame for every page »
@@ -14,7 +16,8 @@ export const GAP_PX = 24;
 export const TOLERANCE_PX = 6;
 export const VIEWPORTS = [
   { width: 390, height: 844 },
-  { width: 1440, height: 900 },
+  { width: 1280, height: 800 },
+  { width: 1600, height: 900 },
 ];
 export const PAGES = ["/fr", "/en"];
 export const THEMES = ["dark", "light"];
@@ -40,6 +43,7 @@ export function problemsOf(m) {
   const gap = m.contentTop - m.barBottom - (m.chromeHeight ?? 0);
   if (Math.abs(gap - GAP_PX) > TOLERANCE_PX) out.push(`${where}: the page starts ${Math.round(gap)} px under the top chrome, not ${GAP_PX}`);
   if (m.width < 600 && (m.showcaseTop === null || m.showcaseTop >= m.height)) out.push(`${where}: the product's visual is not on the first screen (top ${m.showcaseTop === null ? "none" : Math.round(m.showcaseTop)} of ${m.height})`);
+  if ((m.chromeOverlaps ?? []).length) out.push(`${where}: the top chrome overlaps (${m.chromeOverlaps.slice(0, 2).join(", ")})`);
   if (m.visualClipped) out.push(`${where}: the product's visual clips its text (the finding and its article must stay readable)`);
   return out;
 }
@@ -62,7 +66,8 @@ export async function check({ base }) {
         for (const path of PAGES) {
           await loadSettled(page, `${base}${path}`, { waitUntil: "networkidle", timeout: 90000 });
           const m = await page.evaluate(MEASURE);
-          problems.push(...problemsOf({ ...m, path, theme, ...viewport }));
+          const { chromeOverlaps } = await page.evaluate(auditPage);
+          problems.push(...problemsOf({ ...m, chromeOverlaps, path, theme, ...viewport }));
         }
         await ctx.close();
       }
