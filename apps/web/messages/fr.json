@@ -550,6 +550,7 @@
       "added": "Ajouté",
       "fingerprint": "SHA-256",
       "viewer": "Le document",
+      "viewerRegion": "Aperçu du document",
       "text": "Son texte",
       "noText": "Ce PDF n'a pas de couche texte : la vérification au regard de la loi n'a pas pu lire ses clauses. L'examen du fichier, lui, a lieu.",
       "openFile": "Ouvrir le fichier",

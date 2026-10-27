@@ -550,6 +550,7 @@
       "added": "Added",
       "fingerprint": "SHA-256",
       "viewer": "The document",
+      "viewerRegion": "Document preview",
       "text": "Its text",
       "noText": "This PDF has no text layer: the check against the law could not read its clauses. The file itself is still examined.",
       "openFile": "Open the file",
