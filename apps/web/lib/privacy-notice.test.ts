@@ -16,6 +16,6 @@ describe("the privacy notice", () => {
     });
   }
   it("has the same sections in both languages", () => {
-    expect(getDictionary("en").privacy.sections.length).toBe(getDictionary("fr").privacy.sections.length);
+    expect(getDictionary("en").privacy.sections).toHaveLength(getDictionary("fr").privacy.sections.length);
   });
 });
