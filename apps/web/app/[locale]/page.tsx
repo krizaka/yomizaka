@@ -1,12 +1,10 @@
 import { CheckIcon, EyeIcon, SearchIcon } from "@krizaka/icons";
 import { LandingPage } from "@krizaka/ui/landing-page";
-import { MascotQuote } from "@krizaka/ui/mascot-quote";
 import { Section } from "@krizaka/ui/page";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { BarQueryRoot, ClosingActions, ClosingBody, HeroActions } from "@/components/BarSession";
-import { ButtonLink } from "@/components/ButtonLink";
+import { BarQueryRoot, ClosingBody, HeroActions } from "@/components/BarSession";
 import { BeforeAfter } from "@/components/home/BeforeAfter";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -43,7 +41,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
       <BarQueryRoot>
         <SiteHeader locale={locale} current="home" provider={false} />
-        {/* The bar is fixed: the hero's frame starts 24 px under it (`--kz-hero-top`, F6) — no void above the hero, nothing added on main. */}
+        {/* The bar floats (a zero-height sticky wrapper): the hero's frame starts 24 px under it (`--kz-hero-top`, F6) — no void above the hero, nothing added on main. */}
         <main id="content" data-landing>
           <LandingPage
             title={d.title}
@@ -75,13 +73,14 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               title: d.closing.title,
               /* The closing call follows the same session answer as the hero (F0): signed in, the way to the documents; signed out, the way in. */
               body: <ClosingBody signedOut={d.closing.body} signedIn={d.closing.bodyIn} />,
+              /* One way in on the page (the hero's); the closing says what happens to the documents and links the notice. */
               actions: (
-                <>
-                  <ClosingActions locale={locale} />
-                  <ButtonLink href={pagePath(locale, "privacy")} variant="ghost" size="lg">
+                <span className="flex max-w-[70ch] flex-col gap-2 text-sm text-fg-secondary" data-testid="closing-data">
+                  <span>{d.what.trust}</span>
+                  <Link href={pagePath(locale, "privacy")} className="text-fg-accent underline underline-offset-4">
                     {d.what.privacy}
-                  </ButtonLink>
-                </>
+                  </Link>
+                </span>
               ),
             }}
           >
@@ -90,21 +89,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <p className="mt-1 text-xs text-fg-muted" data-testid="proof-meta">
                 {d.proof.runLabel} {run.runId} · {d.proof.dateLabel} {new Date(run.recordedAt).toLocaleDateString(DATE[locale], { dateStyle: "long", timeZone: "America/Toronto" })} · {d.proof.rulesetLabel} {run.report.rulesetId} {run.report.rulesetVersion}
               </p>
-              {/* The owl's caption is read, not shown: the blocks draw it in the mono (P10). */}
-              <MascotQuote bird="owl" variant="callout" label={<span className="sr-only">{d.proof.owlLabel}</span>} className="mt-8">
-                {d.what.items.line.text}
-              </MascotQuote>
               <p className="mt-6 text-xs text-fg-muted" data-testid="powered-by">
                 {d.proof.powered}
               </p>
             </Section>
             <Section id="who" title={d.who.title} lead={d.what.who} spacing="sm" divider>
-              <p className="max-w-[70ch] text-sm text-fg-secondary">{d.what.trust}</p>
-              <p className="mt-1 text-sm">
-                <Link href={pagePath(locale, "privacy")} className="text-fg-accent underline underline-offset-4">
-                  {d.what.privacy}
-                </Link>
-              </p>
             </Section>
           </LandingPage>
         </main>

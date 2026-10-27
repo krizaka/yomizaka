@@ -145,7 +145,7 @@ export function LibraryDrop({ zone = false, examples, jurisdictions = ["QC"], pl
   const items = queueItemsOf(queue.items, say, queue.retry, pages);
   const zoneNode = (
     <div data-testid="library-dropzone">
-      <Dropzone title={say("library.dropTitle")} browseLabel={say("library.browse")} hint={say("library.hint")} accept={ACCEPT} maxSize={app?.maxFileBytes ?? MAX_FILE_BYTES} maxFiles={20} multiple onFiles={(files) => add(files)} refusalLabel={refusal} />
+      <Dropzone title={say("library.dropTitle")} browseLabel={say("library.browse")} inputLabel={say("library.inputLabel")} hint={say("library.hint")} accept={ACCEPT} maxSize={app?.maxFileBytes ?? MAX_FILE_BYTES} maxFiles={20} multiple onFiles={(files) => add(files)} refusalLabel={refusal} />
     </div>
   );
   return (

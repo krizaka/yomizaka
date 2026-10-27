@@ -27,17 +27,17 @@ describe("the home is one short page: who it is for, one real check, one way in"
     expect(island).toContain('t("landing.openApp")');
   });
 
-  it("is the landing block with the product's answer beside the words (Y9): the recorded check in a browser frame, the three things as a bento, the owl once; no figures row under the hero (P10); no counter, no glow, no grid, no void above the hero", () => {
+  it("is the landing block with the product's answer beside the words (Y9): the recorded check in a browser frame, the three things as a bento, no repeated owl quote; no figures row under the hero (P10); no counter, no glow, no grid, no void above the hero", () => {
     expect(home).toMatch(/<LandingPage\b/);
     expect(home).toContain('data-testid="home-visual"');
     expect(home).not.toMatch(/DeviceFrame/);
     expect(home.match(/<BeforeAfter\b/g) ?? []).toHaveLength(1);
-    // The closing call follows the session like the hero (F0): its islands, no sign-in link typed on the page.
-    expect(home).toContain("<ClosingActions locale={locale} />");
+    // One way in (the hero's island, which follows the session, F0): the closing repeats none (yomizaka#457).
+    expect(home).not.toContain("<ClosingActions");
     expect(home).toContain("<ClosingBody signedOut=");
     expect(home).not.toContain("/sign-in`");
     expect(home).not.toContain("proofs=");
-    expect(home.match(/<MascotQuote\b/g) ?? []).toHaveLength(1);
+    expect(home.match(/<MascotQuote\b/g) ?? []).toHaveLength(0);
     expect(home).not.toMatch(/NumberTicker|GlowCard|Sparkle|shimmer|grid\b/);
     expect(home).not.toContain("pt-20");
     expect(home).toContain("<main id=\"content\" data-landing>");

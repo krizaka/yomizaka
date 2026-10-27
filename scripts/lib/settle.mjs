@@ -9,8 +9,22 @@
 /** The options of an audit's browser context: the caller's, plus reduced motion. */
 export const auditOptions = (options = {}) => ({ ...options, reducedMotion: "reduce" });
 
-/** A browser context for an audit (reduced motion emulated). */
-export const auditContext = (browser, options) => browser.newContext(auditOptions(options));
+/**
+ * Runs before any page script: the browser offers no View Transition, so PageTransition (@krizaka/ui) changes the page
+ * at once. Reduced motion alone is not enough: the transition still starts, and a resize or a load under it, or a slow
+ * runner, makes the browser log « Transition was aborted » / « DOM update timed out » as a console error that has
+ * nothing to do with the page (main and two PRs, 2026-10-27). An audit measures layout, not motion.
+ */
+export const withoutViewTransitions = () => {
+  Object.defineProperty(Document.prototype, "startViewTransition", { value: undefined, configurable: true });
+};
+
+/** A browser context for an audit (reduced motion emulated, no View Transition). */
+export async function auditContext(browser, options) {
+  const context = await browser.newContext(auditOptions(options));
+  await context.addInitScript(withoutViewTransitions);
+  return context;
+}
 
 /** Resolves once no view transition is running (none starts under reduced motion; this makes the wait explicit). */
 export const settled = (page) =>

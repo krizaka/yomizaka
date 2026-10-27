@@ -24,7 +24,13 @@ export default async function Privacy({ params }: Readonly<{ params: Promise<{ l
       <main id="content">
         <PageHero back={{ href: pagePath(locale, "home"), label: t.meta.siteName }} linkAs={Link} title={t.privacy.title} backdrop="plain" lead={format(t.privacy.updated, { date: PRIVACY_UPDATED })} />
         <Page>
-          <p className="max-w-3xl text-base leading-relaxed text-fg-secondary">{t.privacy.body}</p>
+          <p className="max-w-3xl text-lg leading-relaxed text-fg">{t.privacy.body}</p>
+          {t.privacy.sections.map((s) => (
+            <section key={s.h} className="mt-8 max-w-3xl">
+              <h2 className="text-xl font-semibold">{s.h}</h2>
+              <p className="mt-2 text-base leading-relaxed text-fg-secondary">{s.p}</p>
+            </section>
+          ))}
         </Page>
       </main>
       <SiteFooter locale={locale} />

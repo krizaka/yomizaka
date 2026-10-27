@@ -98,9 +98,10 @@ describe("the demo documents generator", () => {
     }
   });
 
-  it("fills the persona's three collections with 4 to 8 documents each, of the right kinds", () => {
-    expect(PERSONA_ERIC.collections.map((c: { key: string }) => c.key)).toEqual(["rosemont", "villeray", "invoices"]);
-    for (const c of PERSONA_ERIC.collections as { key: string; documents: string[] }[]) {
+  it("fills the persona's three collections with 4 to 8 documents each, of the right kinds; two folders stay empty (yomizaka#435)", () => {
+    expect(PERSONA_ERIC.collections.map((c: { key: string }) => c.key)).toEqual(["rosemont", "villeray", "invoices", "empty-a", "empty-b"]);
+    const empty = new Set(["empty-a", "empty-b"]);
+    for (const c of (PERSONA_ERIC.collections as { key: string; documents: string[] }[]).filter((c) => !empty.has(c.key))) {
       expect(c.documents.length).toBeGreaterThanOrEqual(4);
       expect(c.documents.length).toBeLessThanOrEqual(8);
     }

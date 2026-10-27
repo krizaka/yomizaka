@@ -33,15 +33,13 @@ const railLinks = (html: string) => [...html.matchAll(/<a [^>]*data-rail-item[^>
 const headerOf = (html: string) => html.slice(html.indexOf("<header"), html.indexOf("</header>"));
 
 describe("the signed-in shell, B2 (P14)", () => {
-  it("the rail holds Accueil · Documents · Vérifications from the one section map, the active one from the route, the collapse control alone at its foot", () => {
+  it("the rail holds Accueil · Documents · Vérifications from the one section map, the active one from the route", () => {
     const html = render();
     const links = railLinks(html);
     expect(links.map((l) => l.match(/href="([^"]+)"/)![1])).toEqual(["/fr/app", "/fr/app/documents", "/fr/app/verifications"]);
     expect(links[2]).toContain('aria-current="page"');
     expect(links[0]).not.toContain("aria-current");
     expect(html).not.toMatch(/<a [^>]*data-rail-item[^>]*href="\/fr\/app\/(settings|check|search)"/);
-    expect((html.match(/<button [^>]*data-rail-item[^>]*>/g) ?? [])).toHaveLength(1);
-    expect(html).toContain(fr.console.shell.expand);
   });
 
   it("is the section map of core, in its order, for the people offered the applicant files: Accueil · Dossiers · Documents · Vérifications", () => {
@@ -68,11 +66,11 @@ describe("the signed-in shell, B2 (P14)", () => {
     expect(chip).toMatch(/class="[^"]*\bhidden\b[^"]*\bsm:inline-flex\b/);
   });
 
-  it("the header has ⌘K search, the language, the one gradient action and the account — and no messages, no notifications", () => {
+  it("the header has ⌘K search, the one gradient action and the account — and no messages, no notifications; the language is under the avatar", () => {
     const header = headerOf(render({ name: "Éric Tremblay" }));
     expect(header).toMatch(/data-slot="search"[^>]*><button[^>]*aria-keyshortcuts="Meta\+K Control\+K"/);
     expect(header).toContain(`>${fr.console.shell.palette.label}<`);
-    expect(header).toContain(`aria-label="${fr.console.shell.language}: Français"`);
+    expect(header).not.toContain(`aria-label="${fr.console.shell.language}: `);
     const action = header.match(/<a [^>]*data-testid="header-check"[^>]*>/)![0];
     expect(action).toContain('aria-label="Vérifier un document"');
     expect(action).toContain('href="/fr/app/check"');
@@ -82,17 +80,20 @@ describe("the signed-in shell, B2 (P14)", () => {
     expect(headerOf(render({}, "en"))).toContain('aria-label="Check a document"');
   });
 
-  it("orders the bar's slots: search, language, the action, the account", () => {
+  it("orders the bar's slots: search, the action, the account", () => {
     const header = headerOf(render({ name: "Éric Tremblay" }));
     const at = (needle: string) => header.indexOf(needle);
     expect(at('data-slot="search"')).toBeGreaterThan(-1);
-    expect(at('data-slot="search"')).toBeLessThan(at(`aria-label="${fr.console.shell.language}: `));
-    expect(at(`aria-label="${fr.console.shell.language}: `)).toBeLessThan(at('data-testid="header-check"'));
+    expect(at('data-slot="search"')).toBeLessThan(at('data-testid="header-check"'));
     expect(at('data-testid="header-check"')).toBeLessThan(at("data-name="));
   });
 
-  it("keeps the language out of the account menu now that the bar has it", () => {
-    expect(readFileSync(new URL("./ConsoleShell.tsx", import.meta.url), "utf8")).not.toMatch(/language=\{\{/);
+  it("is the family's frame: Krizaka UI's AppFrame, no hand-made rail or header, the language and the settings home under the avatar (yomizaka#429)", () => {
+    const source = readFileSync(new URL("./ConsoleShell.tsx", import.meta.url), "utf8");
+    expect(source).toMatch(/from "@krizaka\/ui\/app-frame"/);
+    expect(source).not.toMatch(/RailNav|AppHeader|AccountMenu|LanguageSwitch/);
+    expect(source).toMatch(/language=\{\{/);
+    expect(source).toMatch(/settings: \{\s*href: href\(CONSOLE_ROUTES\.account\),/);
   });
 
   it("shows the person's name beside the avatar when there is one, and never the raw e-mail address", () => {
@@ -100,8 +101,8 @@ describe("the signed-in shell, B2 (P14)", () => {
     expect(named).toContain('data-name="Éric Tremblay"');
     expect(named).not.toContain(EMAIL);
     const anonymous = render();
-    expect(anonymous).not.toContain("data-name=");
-    expect(anonymous).not.toContain(EMAIL);
+    expect(anonymous).toContain(`data-name="${fr.console.shell.account}"`);
+    expect(anonymous).not.toContain(`data-name="${EMAIL}"`);
   });
 
   it("keeps the skip link and the content landmark", () => {
