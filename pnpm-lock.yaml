@@ -212,8 +212,8 @@ importers:
         version: 4.6.7
     devDependencies:
       '@krizaka/config':
-        specifier: ^0.10.0
-        version: 0.10.0(eslint-config-next@16.4.1(@typescript-eslint/parser@8.72.0(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.5(jiti@2.7.0))(prettier@3.9.10)(typescript@6.0.3)
+        specifier: ^0.12.0
+        version: 0.12.0(eslint-config-next@16.4.1(@typescript-eslint/parser@8.72.0(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.5(jiti@2.7.0))(prettier@3.9.10)(typescript@6.0.3)
       '@testing-library/react-native':
         specifier: ^14.1.0
         version: 14.1.0(jest@30.5.2(@types/node@24.19.2))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)(test-renderer@1.3.0(@types/react@19.3.0)(react@19.3.1))
@@ -369,8 +369,8 @@ importers:
         version: 4.6.7
     devDependencies:
       '@krizaka/config':
-        specifier: ^0.11.1
-        version: 0.11.1(eslint-config-next@16.4.1(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.5(jiti@2.7.0))(prettier@3.9.10)(typescript@5.9.3)
+        specifier: ^0.12.0
+        version: 0.12.0(eslint-config-next@16.4.1(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.5(jiti@2.7.0))(prettier@3.9.10)(typescript@5.9.3)
       '@tailwindcss/postcss':
         specifier: ^4.3.3
         version: 4.3.3
@@ -1779,23 +1779,8 @@ packages:
       react-native-svg:
         optional: true
 
-  '@krizaka/config@0.10.0':
-    resolution: {integrity: sha512-xpHal4FyLygp5A6Z6DB0kKcmAaGbc2FNAC0iJIiN5k3nwD8Rpbpgpa3bO5q19k51Cvgzl7NXxDfZx7OMgeAoow==}
-    engines: {node: '>=22'}
-    hasBin: true
-    peerDependencies:
-      eslint: ^9 || ^10
-      eslint-config-next: '>=16'
-      prettier: ^3
-      typescript: ^5
-    peerDependenciesMeta:
-      eslint-config-next:
-        optional: true
-      prettier:
-        optional: true
-
-  '@krizaka/config@0.11.1':
-    resolution: {integrity: sha512-EG4yTj/+9/X3PNRQkOSYknhAZ9A28AflMdVvhiJ3tnxdXxFpVs1w/b5KgiP+lM693nE+Vi2j8+iAYjGSojE06w==}
+  '@krizaka/config@0.12.0':
+    resolution: {integrity: sha512-j3jPlncOzoIxVagD4HMqy9RZwIZLh1KI2ClGM+TeJzMRPqNEMi6HAk581jro/9GOSzGT6Ix4TI7gUTUQ8efCZQ==}
     engines: {node: '>=22'}
     hasBin: true
     peerDependencies:
@@ -10212,13 +10197,14 @@ snapshots:
       react-native: 0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1)
       react-native-svg: 15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)
 
-  '@krizaka/config@0.10.0(eslint-config-next@16.4.1(@typescript-eslint/parser@8.72.0(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.5(jiti@2.7.0))(prettier@3.9.10)(typescript@6.0.3)':
+  '@krizaka/config@0.12.0(eslint-config-next@16.4.1(@typescript-eslint/parser@8.72.0(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.5(jiti@2.7.0))(prettier@3.9.10)(typescript@6.0.3)':
     dependencies:
       '@eslint/js': 10.0.1(eslint@9.39.5(jiti@2.7.0))
       dependency-cruiser: 18.7.0
       eslint: 9.39.5(jiti@2.7.0)
       eslint-plugin-react-hooks: 7.1.1(eslint@9.39.5(jiti@2.7.0))
       eslint-plugin-simple-import-sort: 14.0.0(eslint@9.39.5(jiti@2.7.0))
+      eslint-plugin-sonarjs: 4.2.2(eslint@9.39.5(jiti@2.7.0))
       globals: 17.13.0
       tinyglobby: 0.2.17
       typescript: 6.0.3
@@ -10229,7 +10215,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@krizaka/config@0.11.1(eslint-config-next@16.4.1(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.5(jiti@2.7.0))(prettier@3.9.10)(typescript@5.9.3)':
+  '@krizaka/config@0.12.0(eslint-config-next@16.4.1(eslint@9.39.5(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.5(jiti@2.7.0))(prettier@3.9.10)(typescript@5.9.3)':
     dependencies:
       '@eslint/js': 10.0.1(eslint@9.39.5(jiti@2.7.0))
       dependency-cruiser: 18.7.0
