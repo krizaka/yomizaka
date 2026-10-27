@@ -141,7 +141,9 @@ function AvatarDialog({ id, name, avatar, onClose }: Readonly<{ id: string; name
     body.set("file", file);
     return krizakaFetch(`${api}/avatar`, { method: "POST", body });
   }, onClose);
-  const current = avatar?.kind === AVATAR_KIND.set ? avatar.seed : avatar ? "" : AVATAR_NONE;
+  let current = AVATAR_NONE;
+  if (avatar?.kind === AVATAR_KIND.set) current = avatar.seed;
+  else if (avatar) current = "";
   const options = folderAvatarOptions(config?.avatars.seeds ?? [], (n) => say("organisation.avatar.tone", { n }));
   const problem = pick.problem ?? upload.problem;
   const on = config?.avatars.enabled !== false;

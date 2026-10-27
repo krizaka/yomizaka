@@ -6,7 +6,10 @@
 
 const ARIA_HIDDEN = '[aria-hidden="true"]';
 const className = (el, n) => String(el.className).split(" ").filter(Boolean).slice(0, n).join(".");
-const nameOf = (el) => `${el.tagName.toLowerCase()}${el.getAttribute("data-testid") ? `[${el.getAttribute("data-testid")}]` : ""}.${className(el, 2)}`;
+const nameOf = (el) => {
+  const id = el.dataset?.testid;
+  return el.tagName.toLowerCase() + (id ? "[" + id + "]" : "") + "." + className(el, 2);
+};
 const scrolls = (el) => ["auto", "scroll"].includes(getComputedStyle(el).overflowY) || ["auto", "scroll"].includes(getComputedStyle(el).overflowX);
 const meets = (ra, rb) => Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left) > 2 && Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top) > 2;
 const apart = (a, b) => !a.contains(b) && !b.contains(a);
@@ -174,22 +177,50 @@ export const auditPage = `(() => {\nconst ARIA_HIDDEN = ${JSON.stringify(ARIA_HI
  * not exactly one h1 (when asked), unnamed buttons, the header's action off screen or unnamed (when the page has one).
  */
 export function problemsOf(where, result, { errors = [], h1 = false, headerAction = false } = {}) {
+  return [
+    ...errorsOf(where, errors),
+    ...layoutProblems(where, result),
+    ...(h1 ? namingProblems(where, result) : []),
+    ...(headerAction ? headerActionProblems(where, result.headerAction) : []),
+    ...chipProblems(where, result.chips ?? []),
+  ];
+}
+
+function errorsOf(where, errors) {
+  return errors.length ? [`${where}: console error — ${errors[0]}`] : [];
+}
+
+/** Overflow, elements past the edge, boxes that cover or cut one another, a token wrapped per character, the error state. */
+function layoutProblems(where, result) {
   const problems = [];
-  if (errors.length) problems.push(`${where}: console error — ${errors[0]}`);
   if (result.scrollWidth > result.clientWidth) problems.push(`${where}: scrollWidth ${result.scrollWidth} > ${result.clientWidth} (${result.wide.join(", ")})`);
   else if (result.wide.length) problems.push(`${where}: elements past the edge (${result.wide.join(", ")})`);
-  for (const [list, words] of [[result.overflowing, "overflows its panel"], [result.overlaps, "covers a neighbouring section"], [result.cutColumns, "is cut off"]]) {
+  const lists = [[result.overflowing, "overflows its panel"], [result.overlaps, "covers a neighbouring section"], [result.cutColumns, "is cut off"]];
+  for (const [list, words] of lists) {
     if (list?.length) problems.push(`${where}: ${words} (${list.join(", ")})`);
   }
   if (result.wrapped?.length) problems.push(`${where}: a token wraps one character per line (${result.wrapped.join(", ")}) — truncate it`);
   if (result.segmentError) problems.push(`${where}: the page rendered its error state (segment-error), e.g. React #441`);
-  if (h1 && result.h1 !== 1) problems.push(`${where}: ${result.h1} h1 (expected exactly one)`);
-  if (h1 && result.unnamedButtons > 0) problems.push(`${where}: ${result.unnamedButtons} unnamed button(s) ${(result.unnamedSamples ?? []).join(" | ")}`.trimEnd());
-  if (headerAction) {
-    if (!result.headerAction) problems.push(`${where}: no header action`);
-    else if (!result.headerAction.visible) problems.push(`${where}: the header's action is off screen`);
-    else if (!result.headerAction.named) problems.push(`${where}: the header's action has no accessible name`);
-  }
-  if ((result.chips ?? []).some((h) => h < 44)) problems.push(`${where}: a chip is ${Math.min(...result.chips)} px tall (< 44)`);
   return problems;
+}
+
+/** Exactly one h1 and every button named. */
+function namingProblems(where, result) {
+  const problems = [];
+  if (result.h1 !== 1) problems.push(`${where}: ${result.h1} h1 (expected exactly one)`);
+  if (result.unnamedButtons > 0) {
+    const samples = (result.unnamedSamples ?? []).join(" | ");
+    problems.push(`${where}: ${result.unnamedButtons} unnamed button(s) ${samples}`.trimEnd());
+  }
+  return problems;
+}
+
+function headerActionProblems(where, action) {
+  if (!action) return [`${where}: no header action`];
+  if (!action.visible) return [`${where}: the header's action is off screen`];
+  return action.named ? [] : [`${where}: the header's action has no accessible name`];
+}
+
+function chipProblems(where, chips) {
+  return chips.some((h) => h < 44) ? [`${where}: a chip is ${Math.min(...chips)} px tall (< 44)`] : [];
 }
