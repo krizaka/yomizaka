@@ -1,7 +1,7 @@
 import { PaymentsError } from "@krizaka/payments";
 
 import { applyPaymentEvent } from "@/lib/billing";
-import { query } from "@/lib/db";
+import { transaction } from "@/lib/db";
 import { env } from "@/lib/env";
 import { handle, refuse } from "@/lib/http";
 import { paymentsFrom } from "@/lib/payments/config";
@@ -16,7 +16,7 @@ export function POST(req: Request) {
     const raw = await req.text();
     let outcome: Awaited<ReturnType<typeof applyPaymentEvent>>;
     try {
-      outcome = await applyPaymentEvent(query, port.parseWebhook(raw, req.headers, Math.floor(Date.now() / 1000)));
+      outcome = await applyPaymentEvent(transaction, port.parseWebhook(raw, req.headers, Math.floor(Date.now() / 1000)));
     } catch (error) {
       if (error instanceof PaymentsError) throw refuse(400, "BAD_NOTIFICATION", "Notification not accepted");
       throw error;

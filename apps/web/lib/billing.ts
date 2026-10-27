@@ -1,4 +1,4 @@
-import { applyOnce, type PaymentEvent, pgEventStore } from "@krizaka/payments";
+import { applyOnceInTransaction, type PaymentEvent, type Transaction } from "@krizaka/payments";
 import type { QueryResultRow } from "pg";
 
 import { refuse } from "./http";
@@ -94,32 +94,43 @@ export async function recordCheckout(query: Query, accountId: string, sold: { ke
   await query("UPDATE accounts SET checkout_price_key = $2, checkout_price_version = $3 WHERE id = $1", [accountId, sold.key, sold.versionId]);
 }
 
-/** Applies a verified payment event once (the shared package records its id first in `payment_events`; a replay changes nothing). */
-export async function applyPaymentEvent(query: Query, event: PaymentEvent): Promise<"applied" | "duplicate" | "ignored"> {
-  return applyOnce(pgEventStore((text, values) => query(text, values)), event, {
-    payment_paid: async (e) => {
-      const credits = CREDITS_PER_KIND[e.kind];
-      if (!credits) return "ignored";
-      if (e.customerId) await query("UPDATE accounts SET payment_customer_id = COALESCE(payment_customer_id, $2) WHERE id = $1", [e.accountId, e.customerId]);
-      await query("UPDATE accounts SET audit_credits = audit_credits + $2 WHERE id = $1", [e.accountId, credits]);
-      return undefined;
+/** The record of applied notifications: the table this product has had since migration 0009 (the payments module's shape). */
+const EVENT_TABLE = { schema: "public", table: "payment_events" } as const;
+
+/**
+ * Applies a verified payment event once, in ONE transaction: the event's id is recorded and its effect written together, so a handler that
+ * fails rolls the id back with it and the processor's retry applies the event (nothing is lost, nothing is counted twice). A replay changes nothing.
+ */
+export async function applyPaymentEvent(transaction: Transaction, event: PaymentEvent): Promise<"applied" | "duplicate" | "ignored"> {
+  return applyOnceInTransaction(
+    transaction,
+    event,
+    {
+      payment_paid: async (e, tx) => {
+        const credits = CREDITS_PER_KIND[e.kind];
+        if (!credits) return "ignored";
+        if (e.customerId) await tx("UPDATE accounts SET payment_customer_id = COALESCE(payment_customer_id, $2) WHERE id = $1", [e.accountId, e.customerId]);
+        await tx("UPDATE accounts SET audit_credits = audit_credits + $2 WHERE id = $1", [e.accountId, credits]);
+        return undefined;
+      },
+      subscription_started: async (e, tx) => {
+        if (e.customerId) await tx("UPDATE accounts SET payment_customer_id = COALESCE(payment_customer_id, $2) WHERE id = $1", [e.accountId, e.customerId]);
+        await tx(
+          `UPDATE accounts SET plan = 'PRO', payment_subscription_id = $2, subscription_status = COALESCE(subscription_status, 'active'),
+             subscription_price_key = checkout_price_key, subscription_price_version = checkout_price_version WHERE id = $1`,
+          [e.accountId, e.subscriptionId],
+        );
+      },
+      subscription_changed: async (e, tx) => {
+        const rows = await tx(
+          `UPDATE accounts SET plan = $3, subscription_status = $4, payment_subscription_id = $5, current_period_end = to_timestamp($6),
+             subscription_price_key = COALESCE(subscription_price_key, checkout_price_key), subscription_price_version = COALESCE(subscription_price_version, checkout_price_version)
+             WHERE payment_customer_id = $1 OR id::text = $2 RETURNING id`,
+          [e.customerId, e.accountId, e.active ? "PRO" : "FREE", e.status, e.subscriptionId, e.periodEnd],
+        );
+        return rows.length ? undefined : "ignored";
+      },
     },
-    subscription_started: async (e) => {
-      if (e.customerId) await query("UPDATE accounts SET payment_customer_id = COALESCE(payment_customer_id, $2) WHERE id = $1", [e.accountId, e.customerId]);
-      await query(
-        `UPDATE accounts SET plan = 'PRO', payment_subscription_id = $2, subscription_status = COALESCE(subscription_status, 'active'),
-           subscription_price_key = checkout_price_key, subscription_price_version = checkout_price_version WHERE id = $1`,
-        [e.accountId, e.subscriptionId],
-      );
-    },
-    subscription_changed: async (e) => {
-      const rows = await query(
-        `UPDATE accounts SET plan = $3, subscription_status = $4, payment_subscription_id = $5, current_period_end = to_timestamp($6),
-           subscription_price_key = COALESCE(subscription_price_key, checkout_price_key), subscription_price_version = COALESCE(subscription_price_version, checkout_price_version)
-           WHERE payment_customer_id = $1 OR id::text = $2 RETURNING id`,
-        [e.customerId, e.accountId, e.active ? "PRO" : "FREE", e.status, e.subscriptionId, e.periodEnd],
-      );
-      return rows.length ? undefined : "ignored";
-    },
-  });
+    { table: EVENT_TABLE },
+  );
 }
