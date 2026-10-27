@@ -181,6 +181,8 @@ export function problemsOf(where, result, { errors = [], h1 = false, headerActio
   for (const [list, words] of [[result.overflowing, "overflows its panel"], [result.overlaps, "covers a neighbouring section"], [result.cutColumns, "is cut off"]]) {
     if (list?.length) problems.push(`${where}: ${words} (${list.join(", ")})`);
   }
+  if (result.wrapped?.length) problems.push(`${where}: a token wraps one character per line (${result.wrapped.join(", ")}) — truncate it`);
+  if (result.segmentError) problems.push(`${where}: the page rendered its error state (segment-error), e.g. React #441`);
   if (h1 && result.h1 !== 1) problems.push(`${where}: ${result.h1} h1 (expected exactly one)`);
   if (h1 && result.unnamedButtons > 0) problems.push(`${where}: ${result.unnamedButtons} unnamed button(s) ${(result.unnamedSamples ?? []).join(" | ")}`.trimEnd());
   if (headerAction) {
