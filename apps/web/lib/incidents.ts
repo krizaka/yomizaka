@@ -101,7 +101,7 @@ export async function stepIncident(actor: Actor, id: string, step: IncidentStep,
       case "measure":
         return register.recordMeasure(query, INCIDENT_SCOPE, id, step.text, by);
       case "notice":
-        return register.recordNotice(query, INCIDENT_SCOPE, id, step.target, { channel: step.channel, reference: step.reference }, by);
+        return register.recordNotice(query, INCIDENT_SCOPE, id, step.target, { channel: step.channel, ...(step.reference === undefined ? {} : { reference: step.reference }) }, by);
       case "drill":
         return register.markDrill(query, INCIDENT_SCOPE, id, step.drill, by);
       case "close":
