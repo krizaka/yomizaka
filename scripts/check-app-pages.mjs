@@ -65,6 +65,41 @@ export async function discover(page, base, locale) {
   return [...new Set([...PAGES, ...found])];
 }
 
+async function auditTheme({ browser, theme, cookies, pages, base, locale, shots, a11y }) {
+  const problems = [];
+    const ctx = await auditContext(browser, { colorScheme: theme });
+    await ctx.addCookies(cookies);
+    await ctx.addInitScript((t) => {
+      try {
+        localStorage.setItem("kz-theme", t);
+      } catch {}
+    }, theme);
+    const page = await ctx.newPage();
+    let errors = [];
+    page.on("console", (m) => {
+      if (m.type() === "error" && !/Failed to load resource/.test(m.text())) errors.push(m.text().slice(0, 140));
+    });
+    page.on("pageerror", (e) => errors.push(String(e).slice(0, 140)));
+    for (const path of pages) {
+      for (const width of WIDTHS) {
+        await resizeSettled(page, { width, height: width < 600 ? 844 : 900 });
+        await loadSettled(page, `${base}/${locale}${path}`);
+        await page.waitForTimeout(300);
+        const result = await page.evaluate(auditPage);
+        const where = `${path} @${width} ${theme}`;
+        problems.push(...problemsOf(where, result, { errors, h1: true, headerAction: true }));
+        if (A11Y_WIDTHS.includes(width)) a11y.add({ route: path, theme }, await auditA11y(page));
+        errors = [];
+        if (shots) {
+          mkdirSync(shots, { recursive: true });
+          await page.screenshot({ path: join(shots, `${path.replace(/[^a-z0-9]+/gi, "_")}-${width}-${theme}.png`), fullPage: false });
+        }
+      }
+    }
+  await ctx.close();
+  return problems;
+}
+
 export async function check({ base, locale = "fr", email, password, shots }) {
   if (!email || !password) throw new Error("E2E_EMAIL and E2E_PASSWORD are required (the seeded persona)");
   const browser = await chromium.launch();
@@ -78,38 +113,7 @@ export async function check({ base, locale = "fr", email, password, shots }) {
     await probe.close();
     const cookies = await context.cookies();
     await context.close();
-    for (const theme of THEMES) {
-      const ctx = await auditContext(browser, { colorScheme: theme });
-      await ctx.addCookies(cookies);
-      await ctx.addInitScript((t) => {
-        try {
-          localStorage.setItem("kz-theme", t);
-        } catch {}
-      }, theme);
-      const page = await ctx.newPage();
-      let errors = [];
-      page.on("console", (m) => {
-        if (m.type() === "error" && !/Failed to load resource/.test(m.text())) errors.push(m.text().slice(0, 140));
-      });
-      page.on("pageerror", (e) => errors.push(String(e).slice(0, 140)));
-      for (const path of pages) {
-        for (const width of WIDTHS) {
-          await resizeSettled(page, { width, height: width < 600 ? 844 : 900 });
-          await loadSettled(page, `${base}/${locale}${path}`);
-          await page.waitForTimeout(300);
-          const result = await page.evaluate(auditPage);
-          const where = `${path} @${width} ${theme}`;
-          problems.push(...problemsOf(where, result, { errors, h1: true, headerAction: true }));
-          if (A11Y_WIDTHS.includes(width)) a11y.add({ route: path, theme }, await auditA11y(page));
-          errors = [];
-          if (shots) {
-            mkdirSync(shots, { recursive: true });
-            await page.screenshot({ path: join(shots, `${path.replace(/[^a-z0-9]+/gi, "_")}-${width}-${theme}.png`), fullPage: false });
-          }
-        }
-      }
-      await ctx.close();
-    }
+    for (const theme of THEMES) problems.push(...(await auditTheme({ browser, theme, cookies, pages, base, locale, shots, a11y })));
     const guard = finish(a11y, { baseline: A11Y_BASELINE });
     for (const note of guard.notes) console.log(note);
     problems.push(...guard.problems);
