@@ -3434,5 +3434,36 @@
     "guarantees": "Ce fichier est scellé avec la clé de Yomizaka (Ed25519, détenue par Krizaka) : il atteste que ce contenu, ces parties et ces dates existaient sous cette forme au moment du scellement et n’ont pas été modifiés depuis.",
     "notGuaranteed": "Il ne vérifie ni l’identité de quiconque, ni l’âge de quiconque, ni la validité du contrat en droit, ni les déclarations du partenaire : Yomizaka vérifie des documents, il ne décide pas. Informatif, pas un avis juridique.",
     "verify": "Pour vérifier une copie, prenez son SHA-256 et ouvrez {url} suivi de cette valeur : la réponse dit si Yomizaka l’a scellée et quand, sans montrer aucun renseignement personnel."
+  },
+  "ownerReport": {
+    "title": "Rapport de vérification",
+    "lead": "Ce qui a été examiné dans le dossier d'un candidat, pour le propriétaire de l'immeuble. Des empreintes seulement : aucun document, aucun nom, aucun passage cité.",
+    "reference": "Référence du dossier {ref}",
+    "issued": "Émis le {date}",
+    "notice": "Vérification informative, ce n'est pas un avis juridique. Une personne décide ; ce rapport ne décide de rien et ne classe personne.",
+    "documents": "Documents examinés",
+    "document": "Document {n}",
+    "type": "Type",
+    "typeUnknown": "Non précisé",
+    "sha": "Empreinte SHA-256 du document",
+    "pages": "Pages",
+    "signals": "Signaux observés",
+    "noSignals": "Aucun signal n'a été observé sur ce document.",
+    "findings": "Règles vérifiées",
+    "noFindings": "Aucune règle n'a été vérifiée sur ce document.",
+    "notExamined": "Non examiné",
+    "runs": "Exécutions Orazaka",
+    "run": "{studio}, exécution {runId}, version {version}",
+    "versionNone": "non précisée",
+    "ruleset": "Jeu de règles {id} version {version} ({jurisdiction})",
+    "reviewStatus": "État de relecture du jeu de règles : {status}. Il doit être relu par un avocat avant qu'on s'y fie.",
+    "limits": "Ce que ce rapport ne montre pas : les documents eux-mêmes, le nom ou les coordonnées de la personne, tout pointage ou classement. Les signaux sont des observations sur un fichier, jamais un jugement sur une personne.",
+    "verdict": {
+      "PASS": "Aucun problème signalé",
+      "FAIL": "Problème signalé",
+      "INSUFFICIENT_EVIDENCE": "Preuves insuffisantes"
+    },
+    "expiredTitle": "Ce lien n'est plus disponible",
+    "expiredBody": "Le lien a expiré ou a été retiré. Demandez-en un nouveau au gestionnaire."
   }
 }

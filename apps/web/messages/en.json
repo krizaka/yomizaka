@@ -3434,5 +3434,36 @@
     "guarantees": "This file is sealed with Yomizaka's key (Ed25519, held by Krizaka): it attests that this content, these parties and these dates existed in this form at the time of sealing and have not been changed since.",
     "notGuaranteed": "It does not verify anyone's identity, the age of anyone, the validity of the contract in law or the partner's statements: Yomizaka checks documents, it does not decide. Informative, not legal advice.",
     "verify": "To check a copy, take its SHA-256 and open {url} followed by that value: the answer says whether Yomizaka sealed it and when, and shows no personal information."
+  },
+  "ownerReport": {
+    "title": "Verification report",
+    "lead": "What was examined on an applicant's file, for the building owner. Hashes only: no document, no name, no quoted passage.",
+    "reference": "File reference {ref}",
+    "issued": "Issued on {date}",
+    "notice": "Informative verification, not legal advice. A person decides; this report decides nothing and ranks no one.",
+    "documents": "Documents examined",
+    "document": "Document {n}",
+    "type": "Type",
+    "typeUnknown": "Not specified",
+    "sha": "SHA-256 of the document",
+    "pages": "Pages",
+    "signals": "Signals observed",
+    "noSignals": "No signal was observed on this document.",
+    "findings": "Rules checked",
+    "noFindings": "No rule was checked on this document.",
+    "notExamined": "Not examined",
+    "runs": "Orazaka runs",
+    "run": "{studio}, run {runId}, version {version}",
+    "versionNone": "unspecified",
+    "ruleset": "Ruleset {id} version {version} ({jurisdiction})",
+    "reviewStatus": "Ruleset review status: {status}. It is to be read by a lawyer before it is relied upon.",
+    "limits": "What this report does not show: the documents themselves, the person's name or contact, any score or ranking. The signals are observations about a file, never a judgement of a person.",
+    "verdict": {
+      "PASS": "No issue reported",
+      "FAIL": "Issue reported",
+      "INSUFFICIENT_EVIDENCE": "Not enough evidence"
+    },
+    "expiredTitle": "This link is no longer available",
+    "expiredBody": "The link expired or was withdrawn. Ask the property manager for a new one."
   }
 }
