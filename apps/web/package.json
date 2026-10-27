@@ -36,7 +36,7 @@
     "@krizaka/tailwind": "^3.63.0",
     "@krizaka/time": "0.1.0",
     "@krizaka/tokens": "^3.63.0",
-    "@krizaka/ui": "^3.63.0",
+    "@krizaka/ui": "^3.64.0",
     "@krizaka/webhooks": "0.3.0",
     "@tesseract.js-data/eng": "^1.0.0",
     "@tesseract.js-data/fra": "^1.0.0",

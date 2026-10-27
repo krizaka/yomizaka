@@ -21,7 +21,7 @@
     "@krizaka/icons": "^0.7.0",
     "@krizaka/query": "^0.2.2",
     "@krizaka/tokens": "^3.63.0",
-    "@krizaka/ui": "^3.63.0",
+    "@krizaka/ui": "^3.64.0",
     "@shopify/flash-list": "2.3.2",
     "@yomizaka/client": "workspace:*",
     "@yomizaka/core": "workspace:*",
