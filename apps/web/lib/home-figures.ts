@@ -1,11 +1,11 @@
 import { localDay } from "@krizaka/intl";
-import { readFilterParams, writeFilterParams } from "@krizaka/ui/filter-bar";
 
 import { DISPLAY_TIME_ZONE } from "@/components/console/format";
 
 import { LINK, type LinkState } from "./applicant-file-rules";
 import { NO_CHECK_FILTERS, writeCheckFilters } from "./check-filters";
 import { CONSOLE_ROUTES } from "./console-nav";
+import { readFilterParams, writeFilterParams } from "./filter-params";
 
 /*
  * The home's figures (yomizaka#325, P8 of the design direction § 5.1), pure: the browser reads them too. Each figure of
