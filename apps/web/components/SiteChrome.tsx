@@ -27,7 +27,7 @@ export function SiteHeader({ locale, current, provider = true }: Readonly<{ loca
   const home = pagePath(locale, "home");
   const items = menuItems().map((m) => ({ ...m, href: menuHref(locale, m), label: t(`chrome.nav.${m.id}`), active: m.page === current && !m.hash }));
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-[calc(0.75rem+var(--kz-top-chrome,0px))] z-50 px-3" data-site-bar>
+    <div className="pointer-events-none sticky top-3 z-50 h-0 px-3" data-site-bar>
       <Root>
       <NavBar.Root label={t("chrome.navLabel")} className="pointer-events-auto mx-auto max-w-(--kz-page-max,72rem)">
         <NavBar.Brand asChild>

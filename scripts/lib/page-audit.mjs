@@ -35,12 +35,14 @@ export function auditPage() {
   // notice) and a bar that is fixed or sticky at the top of the viewport. Two of them that share pixels hide one another.
   const label = (el) => `${el.tagName.toLowerCase()}${el.dataset.testid ? `[${el.dataset.testid}]` : ""}.${String(el.className).split(" ").slice(0, 2).join(".")}`;
   // A bar is whatever is fixed or sticky across the top of the viewport (a wrapper, whatever its tag): wide, short, near the top.
+  // The site's bar stands in a sticky wrapper of zero height (the bar itself overflows it): measure what it holds.
+  const boxOf = (el) => (el.getBoundingClientRect().height === 0 && el.firstElementChild ? el.firstElementChild : el);
   const topBars = [...document.querySelectorAll("body *")].filter((el) => {
     const pos = getComputedStyle(el).position;
     if (pos !== "fixed" && pos !== "sticky") return false;
-    const r = el.getBoundingClientRect();
+    const r = boxOf(el).getBoundingClientRect();
     return r.width > doc.clientWidth * 0.5 && r.height > 8 && r.height < 200 && r.top < 160 && r.bottom > 0 && !el.closest("[data-top-chrome]");
-  });
+  }).map(boxOf);
   const chrome = [...document.querySelectorAll("[data-top-chrome]")].filter((el) => el.getBoundingClientRect().height > 0);
   const share = (a, b) => {
     const x = Math.min(a.right, b.right) - Math.max(a.left, b.left);

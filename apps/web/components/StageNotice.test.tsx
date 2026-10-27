@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
@@ -19,5 +21,13 @@ describe("the development-version notice (yomizaka#364)", () => {
 
   it("shows when the stage is forgotten, so a deployment that does not say it is production is seen", () => {
     expect(renderToStaticMarkup(<StageNotice locale="en" stage="" />)).toContain("Development version");
+  });
+
+  it("is cleared by the site bar with CSS only: a zero-height sticky wrapper after it, no layout listener (yomizaka#449)", () => {
+    const bar = readFileSync(new URL("./SiteChrome.tsx", import.meta.url), "utf8");
+    expect(bar).toMatch(/className="[^"]*\bsticky\b[^"]*\btop-3\b[^"]*\bh-0\b[^"]*" data-site-bar/);
+    expect(bar).not.toMatch(/\bfixed\b|kz-top-chrome/);
+    const notice = readFileSync(new URL("./StageNotice.tsx", import.meta.url), "utf8");
+    expect(notice).not.toMatch(/use client|useEffect|addEventListener|ResizeObserver|TopChromeOffset/);
   });
 });
