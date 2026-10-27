@@ -36,11 +36,11 @@ describe("the browser audits settle View Transitions before they measure (yomiza
 });
 
 describe("the helper", () => {
-  it("emulates reduced motion whatever the caller passes, and keeps the caller's options", () => {
+  it("emulates reduced motion whatever the caller passes, and keeps the caller's options", async () => {
     assert.deepEqual(auditOptions(), { reducedMotion: "reduce" });
     assert.deepEqual(auditOptions({ colorScheme: "light", reducedMotion: "no-preference" }), { colorScheme: "light", reducedMotion: "reduce" });
     let seen;
-    auditContext({ newContext: (o) => (seen = o) }, { viewport: { width: 360, height: 800 } });
+    await auditContext({ newContext: async (o) => { seen = o; return { addInitScript: async () => {} }; } }, { viewport: { width: 360, height: 800 } });
     assert.deepEqual(seen, { viewport: { width: 360, height: 800 }, reducedMotion: "reduce" });
   });
   it("loads, waits for the faces, then waits for the transition to end, in that order", async () => {
