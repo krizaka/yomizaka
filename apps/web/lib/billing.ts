@@ -5,6 +5,7 @@ import { applyOnceInTransaction, type PaymentEvent, type Transaction } from "@kr
 import type { QueryResultRow } from "pg";
 
 import { addPurchased, ensureFreeAudit, FREE_AUDIT_SOURCE, giveBackAudit, spendAudit } from "./audit-credits";
+import { confirmCoupon, refundCoupon, releaseCoupon } from "./coupons/events";
 import { transaction } from "./db";
 import { refuse } from "./http";
 import type { AuditCaps } from "./settings/boundary";
@@ -119,8 +120,8 @@ export async function recordCheckout(query: Query, accountId: string, sold: { ke
   await query("UPDATE accounts SET checkout_price_key = $2, checkout_price_version = $3 WHERE id = $1", [accountId, sold.key, sold.versionId]);
 }
 
-/** The record of applied notifications: the table this product has had since migration 0009 (the payments module's shape). */
-const EVENT_TABLE = { schema: "public", table: "payment_events" } as const;
+/** The record of applied notifications: `payments.event`, the table this product has had since migration 0009, moved into the payments module's schema by 0052. */
+const EVENT_TABLE = { schema: "payments", table: "event" } as const;
 
 /**
  * Applies a verified payment event once, in ONE transaction: the event's id is recorded and its effect written together, so a handler that
@@ -132,6 +133,7 @@ export async function applyPaymentEvent(transaction: Transaction, event: Payment
     event,
     {
       payment_paid: async (e, tx) => {
+        await confirmCoupon(tx, e);
         const credits = CREDITS_PER_KIND[e.kind];
         if (!credits) return "ignored";
         if (e.customerId) await tx("UPDATE accounts SET payment_customer_id = COALESCE(payment_customer_id, $2) WHERE id = $1", [e.accountId, e.customerId]);
@@ -139,6 +141,7 @@ export async function applyPaymentEvent(transaction: Transaction, event: Payment
         return undefined;
       },
       subscription_started: async (e, tx) => {
+        await confirmCoupon(tx, e);
         if (e.customerId) await tx("UPDATE accounts SET payment_customer_id = COALESCE(payment_customer_id, $2) WHERE id = $1", [e.accountId, e.customerId]);
         await tx(
           `UPDATE accounts SET plan = 'PRO', payment_subscription_id = $2, subscription_status = COALESCE(subscription_status, 'active'),
@@ -146,6 +149,8 @@ export async function applyPaymentEvent(transaction: Transaction, event: Payment
           [e.accountId, e.subscriptionId],
         );
       },
+      checkout_expired: (e, tx) => releaseCoupon(tx, e),
+      payment_refunded: (e, tx) => refundCoupon(tx, e),
       subscription_changed: async (e, tx) => {
         const rows = await tx(
           `UPDATE accounts SET plan = $3, subscription_status = $4, payment_subscription_id = $5, current_period_end = to_timestamp($6),

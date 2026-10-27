@@ -7,7 +7,7 @@ const state = vi.hoisted(() => ({ session: null as null | { id: string; account:
 
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => undefined, delete: () => undefined }) }));
 vi.mock("../session", async (orig) => ({ ...(await orig<typeof import("../session")>()), resolveSession: async () => state.session }));
-vi.mock("../audit", () => ({ audit: async () => undefined }));
+vi.mock("../audit", () => ({ audit: async () => undefined, trail: { record: async () => undefined } }));
 vi.mock("../db", () => ({ query: async () => [] }));
 vi.mock("@/app/accounts-edge", () => ({ accountService: () => state.service, mailConfigured: () => state.mail }));
 

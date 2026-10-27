@@ -44,7 +44,7 @@ describe.runIf(enabled)("billing", () => {
     // the processor's customer is already another account's (UNIQUE): the handler throws after the event id was written
     const event = { id: `evt-fail-${id}`, type: "payment_paid", kind: "audit", accountId: id, customerId: `cus-shared-${taken}`, ...FACTS } as const;
     await expect(applyPaymentEvent(transaction, event)).rejects.toThrow();
-    expect(await query("SELECT 1 FROM payment_events WHERE id = $1", [event.id])).toHaveLength(0);
+    expect(await query("SELECT 1 FROM payments.event WHERE id = $1", [event.id])).toHaveLength(0);
     expect((await entitlementOf(query, id, NOW)).credits).toBe(0);
     // the retry, once the conflict is gone, applies the very same event; a third delivery is a duplicate
     await query("UPDATE accounts SET payment_customer_id = NULL WHERE id = $1", [taken]);
