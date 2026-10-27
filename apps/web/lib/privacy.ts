@@ -60,6 +60,20 @@ const contributors = (deps: { stores: StoresOf; now: Date }, privacy: () => Priv
     },
   },
   {
+    name: "coupons",
+    // the codes the person used: what, when, how much. An accounting record: erasing the account leaves the row under no one (`coupons.redemption.account_id` is set to NULL), so the uses and the partner's revenue stay.
+    async exportFor(q, subject) {
+      return q(
+        `SELECT r.id, c.code, r.status, r.amount_paid_minor, r.amount_discount_minor, r.amount_refunded_minor, r.currency, r.created_at, r.confirmed_at
+           FROM coupons.redemption r JOIN coupons.coupon c ON c.id = r.coupon_id WHERE r.account_id = $1 ORDER BY r.created_at`,
+        [subject.id],
+      );
+    },
+    async eraseFor() {
+      // the link to the account is cut by the identity's deletion below (ON DELETE SET NULL)
+    },
+  },
+  {
     name: "consents",
     async exportFor(q, subject) {
       return privacy().consentHistory(q, subject);

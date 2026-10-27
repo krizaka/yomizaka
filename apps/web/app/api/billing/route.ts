@@ -10,6 +10,7 @@ import { capsFor } from "@/lib/prices/caps";
 import { appPrices } from "@/lib/prices/catalogue";
 import { SOLD, SOLD_KINDS } from "@/lib/pricing";
 import { settingsFor } from "@/lib/settings/guards";
+import { appSettings } from "@/lib/settings/instance";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,7 @@ export function GET(req: Request) {
     const caps = await capsFor(settings, now)("pro", entitlement);
     const prices = publicCatalogue(await appPrices().catalogue(now)).filter((p) => SOLD_KEYS.has(p.key));
     return Response.json(
-      { entitlement, paymentsOn: paymentsFrom(env()) !== null && settings["payments.enabled"].value === true, paymentsDisplay: settings["payments.display"].value, fairUsePerMonth: caps.perMonth, prices },
+      { entitlement, paymentsOn: paymentsFrom(env()) !== null && settings["payments.enabled"].value === true, couponsOn: (await appSettings().get("coupons.enabled")) === true, paymentsDisplay: settings["payments.display"].value, fairUsePerMonth: caps.perMonth, prices },
       { headers: { "Cache-Control": "private, no-store" } },
     );
   });

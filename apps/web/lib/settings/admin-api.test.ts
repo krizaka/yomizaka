@@ -58,7 +58,7 @@ describe("the configuration API is the administration's only", () => {
 
 describe("the configuration pages", () => {
   it("are the setting groups then the price catalogue, the packs, Orazaka and the organisation, each a route", () => {
-    expect(CONFIG_PAGES).toEqual(["general", "features", "limits", "plans", "prices", "packs", "orazaka", "organisation"]);
+    expect(CONFIG_PAGES).toEqual(["general", "features", "limits", "plans", "prices", "coupons", "packs", "orazaka", "organisation"]);
     expect(isSettingsGroup(CONFIG_PAGE.prices)).toBe(false);
     expect(isConfigPage("limits")).toBe(true);
     expect(isConfigPage("secrets")).toBe(false);

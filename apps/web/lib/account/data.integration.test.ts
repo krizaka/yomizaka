@@ -78,7 +78,7 @@ describe.runIf(enabled)("export and erasure (Loi 25)", () => {
     expect((await query<{ n: number }>('SELECT count(*)::int AS n FROM credits."grant" WHERE account_id = $1', [owner]))[0]!.n).toBe(2);
   });
 
-  it("the export lists every module's data: the person's part, screenings, credits, consents and the trail (yomizaka#264)", async () => {
+  it("the export lists every module's data: the person's part, screenings, credits, coupons, consents and the trail (yomizaka#264, #262)", async () => {
     const owner = await account();
     const label = `${owner}@yomizaka.test`;
     const store = dev();
@@ -88,7 +88,7 @@ describe.runIf(enabled)("export and erasure (Loi 25)", () => {
     await grantConsent({ id: owner, email: label }, "screening-landlord-undertaking", undefined, "flow@1");
     await query(`INSERT INTO audit.entry (at, actor_id, actor_label, action) VALUES (now(), $1, '${label}', 'document.uploaded')`, [owner]);
     const out = await privacyFor({ stores: () => store, purposes: await purposesOf(owner), now: NOW }).exportSubject(query, accountSubject(owner));
-    expect(Object.keys(out.modules).sort()).toEqual(["audit", "consents", "credits", "identity", "screenings", "yomizaka"]);
+    expect(Object.keys(out.modules).sort()).toEqual(["audit", "consents", "coupons", "credits", "identity", "screenings", "yomizaka"]);
     const mine = out.modules.yomizaka as { documents: unknown[]; profile: { id: string } };
     expect(mine.profile.id).toBe(owner);
     expect(mine.documents).toHaveLength(1);

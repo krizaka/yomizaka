@@ -843,7 +843,31 @@
       "NOT_ON_SALE": "Cette offre n’est pas en vente.",
       "PRICE_MISMATCH": "Ce prix est en cours de mise à jour. Réessayez dans un instant.",
       "UNKNOWN_PRICE": "Prix inconnu.",
-      "BAD_DATE": "Un prix change à partir d’aujourd’hui ou plus tard, jamais dans le passé."
+      "BAD_DATE": "Un prix change à partir d’aujourd’hui ou plus tard, jamais dans le passé.",
+      "COUPON_UNKNOWN": "Ce code n'existe pas. Vérifiez l'orthographe.",
+      "COUPON_NOT_STARTED": "Ce code n'est pas encore valable.",
+      "COUPON_EXPIRED": "Ce code a pris fin.",
+      "COUPON_PAUSED": "Ce code n'est pas disponible pour le moment.",
+      "COUPON_EXHAUSTED": "Ce code a atteint son nombre d'utilisations.",
+      "COUPON_ACCOUNT_LIMIT": "Vous avez déjà utilisé ce code.",
+      "COUPON_NEW_CUSTOMERS_ONLY": "Ce code est réservé aux nouveaux clients.",
+      "COUPON_NOT_FOR_PLAN": "Ce code ne s'applique pas à cette offre.",
+      "COUPON_MINIMUM": "Ce code demande un achat plus important.",
+      "COUPON_CURRENCY": "Ce code ne peut pas être utilisé ici.",
+      "COUPON_TOO_LARGE": "Ce code ne peut pas être utilisé ici.",
+      "COUPON_KIND": "Ce code ne peut pas être utilisé ici.",
+      "COUPON_PROVIDER": "Ce code ne peut pas être utilisé ici.",
+      "COUPON_RATE_LIMITED": "Trop d'essais. Réessayez dans un moment.",
+      "COUPON_DISABLED": "Les codes promo ne sont pas encore disponibles.",
+      "COUPON_BAD_INPUT": "Ce coupon n'est pas valide : vérifiez ses conditions.",
+      "COUPON_CODE_TAKEN": "Ce code existe déjà.",
+      "COUPON_TERMS_LOCKED": "Ce code a été utilisé : ses conditions ne peuvent plus changer. Créez-en un nouveau.",
+      "COUPON_NOT_FOUND": "Ce coupon n'existe pas.",
+      "COUPON_REDEMPTION_NOT_FOUND": "Cette utilisation n'existe pas.",
+      "COUPON_PARTNER_NOT_FOUND": "Ce partenaire n'existe pas.",
+      "COUPON_KEY_REUSED": "Réessayez.",
+      "COUPON_NOT_REVOCABLE": "Cette utilisation ne peut pas être révoquée.",
+      "COUPON_BAD_SETTINGS": "Les réglages des coupons ne sont pas valides."
     },
     "adminConsole": {
       "shell": {
@@ -1457,7 +1481,8 @@
         "prices": "Prix",
         "packs": "Ensembles de règles",
         "orazaka": "Orazaka",
-        "organisation": "Organisation"
+        "organisation": "Organisation",
+        "coupons": "Coupons"
       },
       "scope": {
         "label": "Portée",
@@ -2095,6 +2120,40 @@
               "hint": "Nombre de points de terminaison. 0 : le forfait n'a pas de webhooks."
             }
           }
+        },
+        "coupons": {
+          "enabled": {
+            "label": "Codes promo activés",
+            "hint": "Affiche le champ du code promo et accepte les codes. Désactivé par défaut ; les coupons se gèrent dans l'onglet Coupons."
+          },
+          "reservationMinutes": {
+            "label": "Réservation au paiement",
+            "hint": "Minutes pendant lesquelles un code est réservé pour un paiement en cours. De 40 à 1440 (la fenêtre de la page de paiement)."
+          },
+          "attemptsPerAccountPerHour": {
+            "label": "Essais par compte et par heure",
+            "hint": "Combien de codes un compte peut essayer en une heure."
+          },
+          "attemptsPerIpPerHour": {
+            "label": "Essais par adresse et par heure",
+            "hint": "Combien de codes une adresse peut essayer en une heure."
+          },
+          "minCodeLength": {
+            "label": "Code le plus court",
+            "hint": "Le moins de caractères qu'un administrateur peut saisir pour un code."
+          },
+          "generatedCodeLength": {
+            "label": "Longueur d'un code généré",
+            "hint": "Caractères d'un code généré (lettres et chiffres, sans I, L, O ni U)."
+          },
+          "maxPercentOff": {
+            "label": "Rabais maximal",
+            "hint": "Le pourcentage le plus élevé qu'un rabais peut retirer. Une offre gratuite est un code de crédits plafonné, jamais un rabais de 100 %."
+          },
+          "refundRestoresUse": {
+            "label": "Un remboursement complet rend l'utilisation",
+            "hint": "Désactivé par défaut, pour qu'un remboursement ne remette pas un code à usage unique en jeu."
+          }
         }
       },
       "history": {
@@ -2255,6 +2314,131 @@
           "backgroundCheck": "Vérification des antécédents",
           "screening": "Filtre seul"
         }
+      },
+      "coupons": {
+        "title": "Coupons",
+        "lead": "Des codes de rabais et de crédits pour les partenaires, les promotions et les démos. Notre base de données fait foi : la page de paiement ne fait qu'appliquer le rabais selon nos conditions. Un code de crédits a toujours une échéance et, le plus souvent, un plafond par jour ou par mois.",
+        "off": "Les codes promo sont désactivés : les clients ne voient pas le champ. Activez-les dans Forfaits, « Codes promo activés ».",
+        "new": "Nouveau coupon",
+        "create": "Créer",
+        "cancel": "Annuler",
+        "close": "Fermer",
+        "empty": "Aucun coupon pour l'instant.",
+        "kind": "Type",
+        "kinds": {
+          "discount": "Rabais",
+          "credit": "Crédits"
+        },
+        "code": "Code",
+        "codeHint": "Lettres et chiffres, lus sans tenir compte de la casse, des espaces ni des traits d'union.",
+        "generate": "Générer",
+        "purpose": "Objet",
+        "purposes": {
+          "promo": "Promotion",
+          "partner": "Partenaire",
+          "demo": "Démo",
+          "support": "Soutien"
+        },
+        "partner": "Partenaire",
+        "partnerHint": "Obligatoire pour l'objet Partenaire.",
+        "noPartner": "Aucun",
+        "startsAt": "Début",
+        "endsAt": "Fin",
+        "endsAtHint": "Vide : pas de date de fin.",
+        "zone": "Jours à l'heure de Montréal.",
+        "maxRedemptions": "Utilisations au total",
+        "maxRedemptionsHint": "Vide : sans limite.",
+        "maxPerAccount": "Utilisations par compte",
+        "newCustomersOnly": "Nouveaux clients seulement",
+        "discountType": "Rabais",
+        "types": {
+          "percent": "Un pourcentage",
+          "amount": "Un montant fixe"
+        },
+        "percent": "Pourcentage de rabais",
+        "percentHint": "Jusqu'au rabais maximal des Forfaits. 100 % n'est jamais permis.",
+        "amountOff": "Montant du rabais",
+        "amountOffHint": "Toujours inférieur au prix.",
+        "duration": "Pendant combien de temps",
+        "durations": {
+          "once": "Ce paiement seulement",
+          "repeating": "Plusieurs mois",
+          "forever": "Chaque mois"
+        },
+        "durationMonths": "Mois",
+        "minimum": "Achat minimal",
+        "minimumHint": "Zéro : aucun minimum.",
+        "credits": "Crédits accordés",
+        "creditsValidDays": "Valables (jours)",
+        "creditsValidDaysHint": "Tout octroi a une échéance.",
+        "capPerDay": "Plafond par jour",
+        "capPerMonth": "Plafond par mois",
+        "capHint": "Vide : pas de plafond de ce type.",
+        "onExhausted": "Quand ils sont épuisés",
+        "onExhaustedHint": "S'arrêter, ou passer à l'offre payante.",
+        "exhausted": {
+          "stop": "S'arrêter",
+          "fallback_paid": "Proposer l'offre payante"
+        },
+        "terms": "Conditions",
+        "creditTerms": "{credits} crédits, {days} jours",
+        "discountTerms": {
+          "percent": "−{value} % {duration}",
+          "amount": "−{value} {duration}"
+        },
+        "window": "Période",
+        "uses": "Utilisations",
+        "state": "État",
+        "actions": "Actions",
+        "states": {
+          "active": "Actif",
+          "paused": "En pause",
+          "archived": "Archivé",
+          "notStarted": "Pas commencé",
+          "expired": "Terminé"
+        },
+        "pause": "Mettre en pause",
+        "resume": "Reprendre",
+        "archive": "Archiver",
+        "restore": "Rétablir",
+        "erase": "Effacer",
+        "export": "Exporter",
+        "revoke": "Révoquer",
+        "redemptions": "Utilisations",
+        "redemptionsOf": "Utilisations de {code}",
+        "redemptionsNote": "Les comptes apparaissent par identifiant seulement. Un paiement tardif est honoré et signalé.",
+        "noRedemptions": "Aucune utilisation pour l'instant.",
+        "redemptionStates": {
+          "reserved": "Réservée",
+          "confirmed": "Confirmée",
+          "released": "Libérée",
+          "revoked": "Révoquée"
+        },
+        "when": "Quand",
+        "account": "Compte",
+        "deletedAccount": "supprimé",
+        "paid": "Payé",
+        "discount": "Rabais",
+        "refunded": "Remboursé",
+        "late": "Tardif",
+        "overLimit": "Hors limite",
+        "partners": "Partenaires",
+        "partnersLead": "Les personnes qui vendent avec un code. Un nom et un courriel facultatif, vus des administrateurs seulement, pour attribuer les ventes. La commission n'est pas calculée ici.",
+        "addPartner": "Ajouter un partenaire",
+        "noPartners": "Aucun partenaire pour l'instant.",
+        "partnerName": "Nom",
+        "partnerEmail": "Courriel (facultatif)",
+        "partnerStates": {
+          "active": "Actif",
+          "archived": "Archivé",
+          "erased": "Effacé"
+        },
+        "erased": "effacé",
+        "report": "Rapport",
+        "reportOf": "{name} : ventes par code",
+        "reportNote": "Utilisations, rabais accordé et revenu (payé moins remboursé) par code. Jamais un client. Chaque consultation est journalisée.",
+        "revenue": "Revenu",
+        "creditsGranted": "Crédits accordés"
       }
     },
     "steps": {
@@ -2598,6 +2782,19 @@
       "lead": "Tous vos documents, du plus récent au plus ancien, dans toutes vos collections.",
       "caption": "Tous vos documents, les plus récents d'abord",
       "empty": "Aucun document pour l'instant"
+    },
+    "promo": {
+      "label": "Code promo",
+      "hint": "Un rabais s'applique à votre prochain paiement. Un code qui donne des crédits les ajoute aussitôt à votre compte.",
+      "apply": "Appliquer",
+      "remove": "Retirer",
+      "applied": "{code} appliqué : −{discount} {duration}",
+      "credited": "{credits} crédits ajoutés, valables jusqu'au {date}",
+      "duration": {
+        "once": "sur ce paiement",
+        "repeating": "pendant {months} mois",
+        "forever": "chaque mois"
+      }
     }
   },
   "report": {

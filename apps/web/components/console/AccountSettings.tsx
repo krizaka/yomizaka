@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { z } from "zod";
 
+import { PromoCode } from "@/components/console/PromoCode";
 import { errorKey } from "@/lib/client";
 import { formI18n } from "@/lib/form-i18n";
 import { useSay } from "@/lib/i18n-client";
@@ -89,6 +90,7 @@ export function SecuritySection({ email, pendingEmail, notice }: { email: string
 const billing = z.object({
   entitlement: z.object({ credits: z.number(), pro: z.boolean(), proUntil: z.string().nullable(), freeAuditUsed: z.boolean(), selfServe: z.boolean(), hasCustomer: z.boolean(), planKey: z.string().nullable() }),
   paymentsOn: z.boolean(),
+  couponsOn: z.boolean().default(false),
   paymentsDisplay: z.string().optional(),
 });
 const redirect = z.object({ url: z.string().url() });
@@ -112,7 +114,8 @@ export function BillingSection() {
   const { say, locale } = useSay();
   const info = useQuery({ queryKey: ["billing-settings"], queryFn: () => krizakaFetch("/api/billing", { schema: billing }) });
   const portal = useCall<null>(async () => globalThis.location.assign((await krizakaFetch("/api/billing/portal", { method: "POST", schema: redirect })).url));
-  const buy = useCall<SoldKind>(async (kind) => globalThis.location.assign((await krizakaFetch("/api/billing/checkout", { method: "POST", json: { kind }, schema: redirect })).url));
+  const [code, setCode] = useState<string | null>(null);
+  const buy = useCall<SoldKind>(async (kind) => globalThis.location.assign((await krizakaFetch("/api/billing/checkout", { method: "POST", json: { kind, ...(code && { code }) }, schema: redirect })).url));
   const e = info.data?.entitlement;
   const date = (iso: string) => new Intl.DateTimeFormat(locale, { dateStyle: "long" }).format(new Date(iso));
   return (
@@ -157,6 +160,11 @@ export function BillingSection() {
             </SettingsRow>
           ))
         : null}
+      {info.data?.paymentsOn && info.data.couponsOn ? (
+        <SettingsRow label={say("promo.label")} description={say("promo.hint")}>
+          <PromoCode kind="agency" onCode={setCode} onRedeemed={() => void info.refetch()} />
+        </SettingsRow>
+      ) : null}
       {info.data && !info.data.paymentsOn ? <Alert tone="info">{say("settings.billing.off")}</Alert> : null}
       {info.data?.paymentsOn && info.data.paymentsDisplay === "test" ? <Alert tone="warning">{say("settings.billing.testMode")}</Alert> : null}
       {portal.problem || buy.problem ? <Alert tone="danger">{portal.problem ?? buy.problem}</Alert> : null}

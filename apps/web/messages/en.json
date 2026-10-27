@@ -843,7 +843,31 @@
       "NOT_ON_SALE": "This offer is not on sale.",
       "PRICE_MISMATCH": "This price is being updated. Try again in a moment.",
       "UNKNOWN_PRICE": "No such price.",
-      "BAD_DATE": "A price changes from today or later, never in the past."
+      "BAD_DATE": "A price changes from today or later, never in the past.",
+      "COUPON_UNKNOWN": "This code doesn't exist. Check the spelling.",
+      "COUPON_NOT_STARTED": "This code is not valid yet.",
+      "COUPON_EXPIRED": "This code has ended.",
+      "COUPON_PAUSED": "This code is not available right now.",
+      "COUPON_EXHAUSTED": "This code has been used as many times as it can.",
+      "COUPON_ACCOUNT_LIMIT": "You have already used this code.",
+      "COUPON_NEW_CUSTOMERS_ONLY": "This code is for new customers.",
+      "COUPON_NOT_FOR_PLAN": "This code doesn't apply to this offer.",
+      "COUPON_MINIMUM": "This code needs a bigger purchase.",
+      "COUPON_CURRENCY": "This code can't be used here.",
+      "COUPON_TOO_LARGE": "This code can't be used here.",
+      "COUPON_KIND": "This code can't be used here.",
+      "COUPON_PROVIDER": "This code can't be used here.",
+      "COUPON_RATE_LIMITED": "Too many tries. Try again in a while.",
+      "COUPON_DISABLED": "Promo codes are not available yet.",
+      "COUPON_BAD_INPUT": "That coupon is not valid: check its terms.",
+      "COUPON_CODE_TAKEN": "This code already exists.",
+      "COUPON_TERMS_LOCKED": "This code has been used: its terms can no longer change. Create a new one.",
+      "COUPON_NOT_FOUND": "No such coupon.",
+      "COUPON_REDEMPTION_NOT_FOUND": "No such redemption.",
+      "COUPON_PARTNER_NOT_FOUND": "No such partner.",
+      "COUPON_KEY_REUSED": "Try again.",
+      "COUPON_NOT_REVOCABLE": "This redemption can't be revoked.",
+      "COUPON_BAD_SETTINGS": "The coupon settings are not valid."
     },
     "adminConsole": {
       "shell": {
@@ -1457,7 +1481,8 @@
         "prices": "Prices",
         "packs": "Rules packs",
         "orazaka": "Orazaka",
-        "organisation": "Organisation"
+        "organisation": "Organisation",
+        "coupons": "Coupons"
       },
       "scope": {
         "label": "Scope",
@@ -2095,6 +2120,40 @@
               "hint": "Number of endpoints. 0: the plan has no webhooks."
             }
           }
+        },
+        "coupons": {
+          "enabled": {
+            "label": "Promo codes on",
+            "hint": "Shows the promo code field and accepts codes. Off by default; the coupons themselves are managed in the Coupons tab."
+          },
+          "reservationMinutes": {
+            "label": "Checkout hold",
+            "hint": "Minutes a code is held for a checkout in progress. From 40 to 1440 (the payment page's own window)."
+          },
+          "attemptsPerAccountPerHour": {
+            "label": "Tries per account and hour",
+            "hint": "How many codes one account may try in an hour."
+          },
+          "attemptsPerIpPerHour": {
+            "label": "Tries per address and hour",
+            "hint": "How many codes one address may try in an hour."
+          },
+          "minCodeLength": {
+            "label": "Shortest code",
+            "hint": "The fewest characters an administrator may type for a code."
+          },
+          "generatedCodeLength": {
+            "label": "Generated code length",
+            "hint": "Characters in a generated code (letters and digits without I, L, O or U)."
+          },
+          "maxPercentOff": {
+            "label": "Largest discount",
+            "hint": "The highest percentage a discount may take off. A free offer is a capped credit code, never a 100 % discount."
+          },
+          "refundRestoresUse": {
+            "label": "A full refund gives the use back",
+            "hint": "Off by default, so a refund cannot reset a single-use code."
+          }
         }
       },
       "history": {
@@ -2255,6 +2314,131 @@
           "backgroundCheck": "Background checks",
           "screening": "Screening alone"
         }
+      },
+      "coupons": {
+        "title": "Coupons",
+        "lead": "Discount and credit codes for partners, promotions and demos. Our database is the source of truth: the payment page only applies the discount from our terms. A credit code always has an expiry and, usually, a daily or monthly cap.",
+        "off": "Promo codes are off: customers don't see the field. Turn them on in Plans, « Promo codes on ».",
+        "new": "New coupon",
+        "create": "Create",
+        "cancel": "Cancel",
+        "close": "Close",
+        "empty": "No coupon yet.",
+        "kind": "Kind",
+        "kinds": {
+          "discount": "Discount",
+          "credit": "Credits"
+        },
+        "code": "Code",
+        "codeHint": "Letters and digits, read without case, spaces or hyphens.",
+        "generate": "Generate",
+        "purpose": "Purpose",
+        "purposes": {
+          "promo": "Promotion",
+          "partner": "Partner",
+          "demo": "Demo",
+          "support": "Support"
+        },
+        "partner": "Partner",
+        "partnerHint": "Required for the Partner purpose.",
+        "noPartner": "None",
+        "startsAt": "Starts",
+        "endsAt": "Ends",
+        "endsAtHint": "Empty: no end date.",
+        "zone": "Days of Montréal time.",
+        "maxRedemptions": "Uses overall",
+        "maxRedemptionsHint": "Empty: no limit.",
+        "maxPerAccount": "Uses per account",
+        "newCustomersOnly": "New customers only",
+        "discountType": "Discount",
+        "types": {
+          "percent": "A percentage",
+          "amount": "A fixed amount"
+        },
+        "percent": "Percent off",
+        "percentHint": "Up to the largest discount in Plans. 100 % is never allowed.",
+        "amountOff": "Amount off",
+        "amountOffHint": "Always less than the price.",
+        "duration": "For how long",
+        "durations": {
+          "once": "This payment only",
+          "repeating": "Several months",
+          "forever": "Every month"
+        },
+        "durationMonths": "Months",
+        "minimum": "Minimum purchase",
+        "minimumHint": "Zero: no minimum.",
+        "credits": "Credits granted",
+        "creditsValidDays": "Valid for (days)",
+        "creditsValidDaysHint": "Every grant expires.",
+        "capPerDay": "Cap per day",
+        "capPerMonth": "Cap per month",
+        "capHint": "Empty: no cap of this kind.",
+        "onExhausted": "When they run out",
+        "onExhaustedHint": "Stop, or fall back to the paid plan.",
+        "exhausted": {
+          "stop": "Stop",
+          "fallback_paid": "Offer the paid plan"
+        },
+        "terms": "Terms",
+        "creditTerms": "{credits} credits, {days} days",
+        "discountTerms": {
+          "percent": "−{value} % {duration}",
+          "amount": "−{value} {duration}"
+        },
+        "window": "Window",
+        "uses": "Uses",
+        "state": "State",
+        "actions": "Actions",
+        "states": {
+          "active": "Active",
+          "paused": "Paused",
+          "archived": "Archived",
+          "notStarted": "Not started",
+          "expired": "Ended"
+        },
+        "pause": "Pause",
+        "resume": "Resume",
+        "archive": "Archive",
+        "restore": "Restore",
+        "erase": "Erase",
+        "export": "Export",
+        "revoke": "Revoke",
+        "redemptions": "Redemptions",
+        "redemptionsOf": "Redemptions of {code}",
+        "redemptionsNote": "Accounts appear by identifier only. A late payment is honoured and flagged.",
+        "noRedemptions": "No redemption yet.",
+        "redemptionStates": {
+          "reserved": "Reserved",
+          "confirmed": "Confirmed",
+          "released": "Released",
+          "revoked": "Revoked"
+        },
+        "when": "When",
+        "account": "Account",
+        "deletedAccount": "deleted",
+        "paid": "Paid",
+        "discount": "Discount",
+        "refunded": "Refunded",
+        "late": "Late",
+        "overLimit": "Over the limit",
+        "partners": "Partners",
+        "partnersLead": "The people who sell with a code. A name and an optional e-mail, seen by administrators only, used to attribute sales. Commission is not computed here.",
+        "addPartner": "Add a partner",
+        "noPartners": "No partner yet.",
+        "partnerName": "Name",
+        "partnerEmail": "E-mail (optional)",
+        "partnerStates": {
+          "active": "Active",
+          "archived": "Archived",
+          "erased": "Erased"
+        },
+        "erased": "erased",
+        "report": "Report",
+        "reportOf": "{name}: sales by code",
+        "reportNote": "Uses, discount given and revenue (paid minus refunded) per code. Never a customer. Each reading is logged.",
+        "revenue": "Revenue",
+        "creditsGranted": "Credits granted"
       }
     },
     "steps": {
@@ -2598,6 +2782,19 @@
       "lead": "All your documents, newest first, across all your collections.",
       "caption": "All your documents, newest first",
       "empty": "No document yet"
+    },
+    "promo": {
+      "label": "Promo code",
+      "hint": "A discount applies to your next payment. A code that gives credits is added to your account at once.",
+      "apply": "Apply",
+      "remove": "Remove",
+      "applied": "{code} applied: −{discount} {duration}",
+      "credited": "{credits} credits added, valid until {date}",
+      "duration": {
+        "once": "on this payment",
+        "repeating": "for {months} months",
+        "forever": "every month"
+      }
     }
   },
   "report": {
