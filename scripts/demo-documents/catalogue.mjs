@@ -258,7 +258,7 @@ export function buildDocument(spec, seed = DEFAULT_SEED) {
   return { ...spec, filename: `${spec.id}.pdf`, lines, findings };
 }
 
-/** The persona Éric (property manager): his display name, his three collections and the documents each one holds. */
+/** The persona Éric (property manager): his display name, his collections and the documents each one holds. */
 export const PERSONA_ERIC = {
   key: "eric",
   /** Shown by the app's header instead of the e-mail address (the review's A4); the account keeps a name the person chose. */
@@ -267,6 +267,9 @@ export const PERSONA_ERIC = {
     { key: "rosemont", documents: SPECS.filter((s) => /rosemont/.test(s.id)).map((s) => s.id) },
     { key: "villeray", documents: SPECS.filter((s) => /villeray/.test(s.id)).map((s) => s.id) },
     { key: "invoices", documents: SPECS.filter((s) => /^facture-2026/.test(s.id)).map((s) => s.id) },
+    // Two folders with nothing in them (and the default one stays empty): the empty state of the open folder's card is rendered and audited (yomizaka#435).
+    { key: "empty-a", documents: [] },
+    { key: "empty-b", documents: [] },
   ],
   /** The documents that carry a finished check (seeded, marked as such). */
   checked: ["bail-rosemont-1-conforme", "bail-rosemont-4-sans-avis-tal", "bail-rosemont-5-clause-illegale", "paie-villeray-2-totaux-faux", "banque-villeray-2-solde-modifie", "emploi-villeray-2-expiree", "facture-2026-04-total-faux"],

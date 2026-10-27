@@ -49,8 +49,8 @@ function claimHolds(store: Store, env: Environment): boolean {
 const CLAIMS: Record<string, Store> = {
   "docs.data.intro": "database",
   "landing.what.trust": "database",
-  "privacy.body": "database",
   "privacy.sections.2.p": "database",
+  "privacy.sections.3.p": "database",
   "console.document.where.krizakaCanadaEncrypted": "database",
   "console.document.where.krizakaCanada": "configured",
   "console.settings.storage.whereCanada": "configured",

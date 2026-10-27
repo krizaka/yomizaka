@@ -1,17 +1,13 @@
 "use client";
 
-import { BarChart } from "@krizaka/charts/bar";
 import { Sparkline } from "@krizaka/charts/sparkline";
-import { CheckIcon, KnowledgeIcon, SearchIcon, UsersIcon } from "@krizaka/icons";
-import { CardGrid } from "@krizaka/ui/card-grid";
-import { LinkCard } from "@krizaka/ui/link-card";
 import { Meter } from "@krizaka/ui/meter";
 import { Stat, StatGrid } from "@krizaka/ui/stat";
 import { Tabs } from "@krizaka/ui/tabs";
 import Link from "next/link";
 
-import { type BinderTab, type CreditsFigure, homeHref, leadParts, type QuickId, quickLinks, type StripFigure } from "@/lib/home-b2";
-import { type ActivityDay, HOME_PERIODS, type HomePeriod, type ToDo } from "@/lib/home-figures";
+import { type BinderTab, type CreditsFigure, homeHref, leadParts, type StripFigure } from "@/lib/home-b2";
+import { HOME_PERIODS, type HomePeriod, type ToDo } from "@/lib/home-figures";
 import { useSay } from "@/lib/i18n-client";
 import { pluralKey } from "@/lib/plural";
 import { atOffsets } from "@/lib/text-parts";
@@ -27,7 +23,6 @@ import { formatDate, INTL } from "./format";
  * Waiting on krizaka-ui#641: the credits meter, the period switch and the usage chart become `@krizaka/ui/usage` when it ships.
  */
 
-const QUICK_ICONS: Record<QuickId, typeof CheckIcon> = { request: UsersIcon, documents: KnowledgeIcon, checks: CheckIcon, search: SearchIcon };
 
 /** The sentence under the heading: « Vous avez 6 vérifications à regarder, … », each figure a link to the view it counts. */
 export function HomeLead({ todo }: Readonly<{ todo: ToDo }>) {
@@ -104,48 +99,6 @@ export function ActivityStrip({ figures, period, collection }: Readonly<{ figure
         })}
       </StatGrid>
     </section>
-  );
-}
-
-/** The checks of the last seven days, as bars; its table is in the page (the chart's own data table, for screen readers and « Voir les données »). */
-export function WeekChart({ days }: Readonly<{ days: readonly ActivityDay[] }>) {
-  const { say, locale } = useSay();
-  return (
-    <section className="flex flex-col gap-2" aria-label={say("home.week.title")} data-testid="week">
-      <h2 className="m-0 font-display text-base font-bold text-fg">{say("home.week.title")}</h2>
-      <BarChart
-        data={days}
-        x="day"
-        y="checks"
-        yLabel={say("home.week.checks")}
-        xLabel={say("home.week.day")}
-        hideTitle
-        title={say("home.week.summary")}
-        height={140}
-        locale={INTL[locale]}
-        labels={chartWords(say)}
-        exportable={false}
-        actionsMenu={false}
-        summaryText={`${say("home.week.summary")}: ${days.reduce((n, d) => n + d.checks, 0)}`}
-      />
-    </section>
-  );
-}
-
-/** Where the person goes most, two by two. */
-export function QuickAccess({ applicantFiles }: Readonly<{ applicantFiles: boolean }>) {
-  const { say, locale } = useSay();
-  return (
-    <nav aria-label={say("home.quick.label")} data-testid="quick-access">
-      <CardGrid as="ul" min={132} reveal={false}>
-        {quickLinks(locale, applicantFiles).map((q) => {
-          const Icon = QUICK_ICONS[q.id];
-          return (
-            <LinkCard key={q.id} href={q.href} linkAs={Link} icon={<Icon size={20} />} title={say(`home.quick.${q.id}.title`)} description={say(`home.quick.${q.id}.hint`)} titleAs="span" layout="stack" />
-          );
-        })}
-      </CardGrid>
-    </nav>
   );
 }
 

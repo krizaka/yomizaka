@@ -20,7 +20,7 @@ const onOneConnection = async <T>(work: (q: (sql: string, values?: unknown[]) =>
   }
 };
 const run = (email: string, options: { reset?: boolean; locale?: string } = {}) => onOneConnection((q) => seedPersona(q, { persona: "eric", email, messagesByLocale, ...options }));
-const expected = { "Immeuble Rosemont": 6, "Candidats — 4½ Villeray": 6, "Factures 2026": 4 };
+const expected = { "Immeuble Rosemont": 6, "Candidats — 4½ Villeray": 6, "Factures 2026": 4, "À classer": 0, "Archives 2025": 0 };
 
 describe.runIf(enabled)("the demo seed (Éric)", () => {
   beforeAll(async () => {
@@ -33,7 +33,7 @@ describe.runIf(enabled)("the demo seed (Éric)", () => {
     expect(a.owner).toBe(b.owner);
     expect(a.collections).toEqual(expected);
     expect(b.collections).toEqual(expected);
-    expect(await snapshot(a.owner)).toEqual({ documents: 16, analyses: PERSONA_ERIC.checked.length, collections: 4 });
+    expect(await snapshot(a.owner)).toEqual({ documents: 16, analyses: PERSONA_ERIC.checked.length, collections: 6 });
   });
   const fresh = () => `eric-${Math.random().toString(36).slice(2)}@demo.yomizaka.test`;
   const snapshot = async (owner: string) => ({
@@ -48,7 +48,7 @@ describe.runIf(enabled)("the demo seed (Éric)", () => {
     const overview = await org.overview(query, owner);
     const counts = Object.fromEntries(overview.flatMap((l) => l.collections.map((c) => [c.name, c.files])));
     for (const [name, n] of Object.entries(expected)) expect(counts[name], name).toBe(n);
-    expect(PERSONA_ERIC.collections).toHaveLength(3);
+    expect(PERSONA_ERIC.collections).toHaveLength(5);
     const checks = await query<{ run_id: string; blueprint_version: string | null; inputs: Record<string, string> }>("SELECT a.run_id, a.blueprint_version, a.inputs FROM analyses a JOIN documents d ON d.id = a.document_id WHERE d.owner_id = $1", [owner]);
     expect(checks).toHaveLength(PERSONA_ERIC.checked.length);
     for (const c of checks) {
@@ -90,6 +90,6 @@ describe.runIf(enabled)("the demo seed (Éric)", () => {
 
   it("takes the account's language for the collections' names", async () => {
     const { collections } = await run(fresh(), { locale: "en" });
-    expect(Object.keys(collections).sort()).toEqual(["Candidates — 4½ Villeray", "Invoices 2026", "Rosemont building"]);
+    expect(Object.keys(collections).sort()).toEqual(["Archive 2025", "Candidates — 4½ Villeray", "Invoices 2026", "Rosemont building", "To file"]);
   });
 });

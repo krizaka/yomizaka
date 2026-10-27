@@ -28,4 +28,4 @@ jobs:
     with:
       working-directory: apps/desktop
       product-name: Yomizaka
-    secrets: inherit
+    secrets: inherit # zizmor: ignore[secrets-inherit] the org's own reusable workflow, pinned by SHA, needs the signing secrets

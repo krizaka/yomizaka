@@ -41,7 +41,7 @@ export function SettingsShell({ section, account, children }: Readonly<{ section
     <SettingsLayout
       variant="flat"
       navLabel={say("settings.label")}
-      nav={nav}
+      nav={[{ id: "account", label: say("settings.label"), items: nav }]}
       linkAs={Link}
       header={
         <AccountProfileCard
