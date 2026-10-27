@@ -287,7 +287,8 @@
         "title": "Le classeur",
         "label": "Collections",
         "open": "Ouvrir cette collection",
-        "empty": "Aucun fichier dans cette collection pour l’instant."
+        "empty": "Aucun fichier dans cette collection pour l’instant.",
+        "add": "Ajouter un document"
       },
       "quick": {
         "label": "Accès rapide",
@@ -1290,6 +1291,8 @@
         "set": "Avatars de la série",
         "upload": "Une image à vous",
         "uploadHint": "PNG, JPEG ou HEIC, {size} Ko au plus. L'image est recadrée en carré et ses données (position, appareil) sont retirées.",
+          "browse": "Choisir une image",
+          "tone": "Avatar {n}",
         "off": "Les avatars sont désactivés."
       },
       "defaultName": "Mes documents",
@@ -3262,6 +3265,14 @@
         "invoices": {
           "name": "Factures 2026",
           "description": "Les factures d'entretien de 2026 — documents spécimens fictifs, dont une avec un total inexact."
+        },
+        "empty-a": {
+          "name": "À classer",
+          "description": "Dossier prêt pour les prochains documents."
+        },
+        "empty-b": {
+          "name": "Archives 2025",
+          "description": "Dossier vide, pour les documents de l'an dernier."
         }
       }
     }

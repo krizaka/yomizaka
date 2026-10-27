@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // The signed-in pages, rendered in a real browser as the seeded persona (never a real account): every app page has exactly
-// one h1, no horizontal overflow at 360, 390 and 1440 px in both themes, no unnamed button, the header's one action on
+// one h1, no horizontal overflow at 360, 390, 1280, 1440 and 1600 px in both themes, no card out of its panel, no section covering another, no column cut off (yomizaka#435), no unnamed button, the header's one action on
 // screen and named, no console error (the UX review of October 2026, Y1).
 //
 //   E2E_EMAIL=… E2E_PASSWORD=… node scripts/check-app-pages.mjs --base http://localhost:3000 [--locale fr] [--shots <dir>]
@@ -15,7 +15,7 @@ import { chromium } from "playwright-core";
 import { auditPage, problemsOf } from "./lib/page-audit.mjs";
 import { auditContext, loadSettled, resizeSettled } from "./lib/settle.mjs";
 
-export const WIDTHS = [360, 390, 1440];
+export const WIDTHS = [360, 390, 1280, 1440, 1600];
 export const THEMES = ["dark", "light"];
 export const PAGES = ["/app", "/app/documents", "/app/dossiers", "/app/screening", "/app/check", "/app/verifications", "/app/verifications?tab=lots", "/app/verifications?q=bail&result=attention,checked&kind=lease&period=year", "/app/search", "/app/settings/profil", "/app/settings/apparence", "/app/settings/securite", "/app/settings/facturation", "/app/settings/stockage", "/app/settings/donnees"];
 
@@ -50,6 +50,8 @@ export async function discover(page, base, locale) {
   const found = railRoutes(rail, locale).filter((p) => !PAGES.includes(p));
   const collection = hrefs.find((h) => /\/app\/library\/[^/]+\/[^/]+$/.test(h ?? ""));
   if (collection) found.push(collection.replace(/^\/(en|fr)/, ""));
+  // Every tab of the binder, the empty folders included: the open folder's card is audited in each state (yomizaka#435).
+  for (const h of new Set(hrefs.filter((x) => /[?&]collection=/.test(x ?? "")))) found.push(h.replace(/^\/(en|fr)/, ""));
   const document = hrefs.find((h) => /\/app\/documents\/[^/]+(\/|$)/.test(h ?? ""));
   if (document) {
     const id = document.match(/\/app\/documents\/([^/?#]+)/)[1];
