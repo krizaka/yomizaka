@@ -55,7 +55,8 @@ function headerBlocks(payload: ReportPayload, labels: ReportLabels): Block[] {
   return [
     block(labels.eyebrow!, 8, { gap: 2 }),
     block(payload.document.title, 18, { bold: true, gap: 6 }),
-    block(labels.disclaimer!, 10, { bold: true, gap: 8 }),
+    block(labels.disclaimer!, 10, { bold: true, gap: 4 }),
+    block(labels.languageNote!, 8, { gap: 8 }),
     block(`${fill(labels.summary!, { failures: payload.summary.blockingFailures, rules: payload.summary.rulesEvaluated })}${marks}`, 10, { gap: 8 }),
     ...notes,
   ];

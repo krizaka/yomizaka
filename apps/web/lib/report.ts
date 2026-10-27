@@ -26,6 +26,7 @@ export const REPORT_SCHEMA = "yomizaka.report/1";
 
 import { buildNote, closingNote, noteInputOf, noteSourceOf } from "./closing-note/build";
 import { LINE, noteLines } from "./closing-note/render";
+import { ruleExplanation, ruleTitle } from "./rule-text";
 
 const payloadFinding = z.object({
   ruleId: z.string(),
@@ -101,12 +102,12 @@ export function buildPayload(doc: Pick<DocumentDetail, "sha256" | "filename" | "
     note: buildNote(noteInputOf(report, noteSourceOf(doc.textSource)), lang),
     findings: report.findings.map((f) => ({
       ruleId: f.ruleId,
-      title: f.title ?? null,
+      title: ruleTitle(f.ruleId, lang, f.title),
       severity: f.severity,
       verdict: f.verdict,
       citation: f.citation ?? null,
       quote: f.evidenceSpan?.quote ?? null,
-      explanation: f.explanation,
+      explanation: ruleExplanation(f.ruleId, lang, f.explanation),
       method: f.method ?? null,
     })),
   };
@@ -201,6 +202,7 @@ export function renderBody(payload: ReportPayload, labels: ReportLabels): string
 <body>
 <p class="eyebrow">${esc(labels.eyebrow)}</p>
 <p class="note"><strong>${esc(labels.disclaimer)}</strong></p>
+<p class="note">${esc(labels.languageNote)}</p>
 <h1>${esc(d.title)}</h1>
 <p>${esc(fill(labels.summary, { failures: payload.summary.blockingFailures, rules: payload.summary.rulesEvaluated }))}</p>
 ${reviewNote}
