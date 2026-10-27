@@ -6,7 +6,7 @@ import { POST as sealRoute } from "@/app/api/v1/contracts/seal/route";
 import { GET as verifyRoute } from "@/app/api/verify/contract/[sha256]/route";
 
 import { migrate, query } from "../db";
-import { resetRateLimits } from "../rate-limit";
+import { resetRateLimits } from "../limits";
 import { createSession, SESSION_COOKIE } from "../session";
 
 /** The seal of a contract through its routes: a key with the scope, the same request twice, the file, the public check. Against PostgreSQL (CI's service; locally YOMIZAKA_DB_IT=1 DATABASE_URL=…). */

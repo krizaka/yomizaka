@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { verifySeal } from "@/lib/contracts/seal";
 import { sealedBySha } from "@/lib/contracts/store";
 import { handle, refuse } from "@/lib/http";
-import { limit } from "@/lib/rate-limit";
+import { limit } from "@/lib/limits";
 import { signingKey } from "@/lib/report-signer";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +17,7 @@ const sha256Of = (bytes: Buffer) => createHash("sha256").update(bytes).digest("h
  */
 export function GET(req: Request, { params }: { params: Promise<{ sha256: string }> }) {
   return handle(async () => {
-    limit("verify-contract", req, null, [60, 60]);
+    await limit("verifyContract", req, null);
     const { sha256 } = await params;
     const row = /^[0-9a-f]{64}$/.test(sha256) ? await sealedBySha(sha256) : null;
     if (!row) throw refuse(404, "UNKNOWN_SEAL", "Yomizaka has no seal with this SHA-256");

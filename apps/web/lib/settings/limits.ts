@@ -10,6 +10,7 @@ export const LIMIT_DEFAULTS = {
   batchExport: { perIp: 20, perSubject: 10, windowSeconds: 3600 },
   verifyRequest: { perIp: 30, perSubject: 10, windowSeconds: 3600 },
   verify: { perIp: 60, windowSeconds: 600 },
+  verifyContract: { perIp: 60, windowSeconds: 60 },
   consent: { perIp: 60, perSubject: 30, windowSeconds: 3600 },
   signUp: { perIp: 5, perSubject: 3, windowSeconds: 3600 },
   verifyEmail: { perIp: 30, windowSeconds: 3600 },
