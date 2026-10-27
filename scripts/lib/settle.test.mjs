@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it } from "vitest";
 
-import { auditContext, auditOptions, loadSettled, resizeSettled } from "./settle.mjs";
+import { auditContext, auditOptions, loadSettled, resizeSettled, withoutViewTransitions } from "./settle.mjs";
 
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
 
@@ -36,11 +36,11 @@ describe("the browser audits settle View Transitions before they measure (yomiza
 });
 
 describe("the helper", () => {
-  it("emulates reduced motion whatever the caller passes, and keeps the caller's options", () => {
+  it("emulates reduced motion whatever the caller passes, and keeps the caller's options", async () => {
     assert.deepEqual(auditOptions(), { reducedMotion: "reduce" });
     assert.deepEqual(auditOptions({ colorScheme: "light", reducedMotion: "no-preference" }), { colorScheme: "light", reducedMotion: "reduce" });
     let seen;
-    auditContext({ newContext: (o) => (seen = o) }, { viewport: { width: 360, height: 800 } });
+    await auditContext({ newContext: async (o) => { seen = o; return { addInitScript: async () => {} }; } }, { viewport: { width: 360, height: 800 } });
     assert.deepEqual(seen, { viewport: { width: 360, height: 800 }, reducedMotion: "reduce" });
   });
   it("loads, waits for the faces, then waits for the transition to end, in that order", async () => {
@@ -76,5 +76,27 @@ describe("the helper", () => {
     assert.match(String(predicate), /activeViewTransition/);
     assert.match(String(predicate), /:active-view-transition/);
     assert.ok(opts.timeout > 0);
+  });
+});
+
+describe("the audit context offers no View Transition (a transition aborted by a resize is a console error)", () => {
+  it("installs the init script on the context it opens", async () => {
+    const scripts = [];
+    const context = { addInitScript: async (fn) => scripts.push(fn) };
+    const got = await auditContext({ newContext: async () => context }, {});
+    assert.equal(got, context);
+    assert.deepEqual(scripts, [withoutViewTransitions]);
+  });
+
+  it("makes document.startViewTransition undefined", () => {
+    const saved = globalThis.Document;
+    globalThis.Document = class {};
+    Document.prototype.startViewTransition = () => ({});
+    try {
+      withoutViewTransitions();
+      assert.equal(new Document().startViewTransition, undefined);
+    } finally {
+      globalThis.Document = saved;
+    }
   });
 });
