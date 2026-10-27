@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it } from "vitest";
 
-import { auditContext, auditOptions, loadSettled, resizeSettled } from "./settle.mjs";
+import { auditContext, auditOptions, loadSettled, resizeSettled, withoutViewTransitions } from "./settle.mjs";
 
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
 
@@ -76,5 +76,27 @@ describe("the helper", () => {
     assert.match(String(predicate), /activeViewTransition/);
     assert.match(String(predicate), /:active-view-transition/);
     assert.ok(opts.timeout > 0);
+  });
+});
+
+describe("the audit context offers no View Transition (a transition aborted by a resize is a console error)", () => {
+  it("installs the init script on the context it opens", async () => {
+    const scripts = [];
+    const context = { addInitScript: async (fn) => scripts.push(fn) };
+    const got = await auditContext({ newContext: async () => context }, {});
+    assert.equal(got, context);
+    assert.deepEqual(scripts, [withoutViewTransitions]);
+  });
+
+  it("makes document.startViewTransition undefined", () => {
+    const saved = globalThis.Document;
+    globalThis.Document = class {};
+    Document.prototype.startViewTransition = () => ({});
+    try {
+      withoutViewTransitions();
+      assert.equal(new Document().startViewTransition, undefined);
+    } finally {
+      globalThis.Document = saved;
+    }
   });
 });
