@@ -49,6 +49,9 @@ const nextConfig = {
   poweredByHeader: false,
   env: { NEXT_PUBLIC_APP_VERSION: appVersion },
   transpilePackages: ["@yomizaka/core"],
+  // `@krizaka/storage/settings` (the admin's setting definitions, read by the config screen) shares a chunk with the package's folder store
+  // (`fs/promises`): the browser gets an empty module for it, and never calls it.
+  turbopack: { resolveAlias: { "fs/promises": { browser: "./lib/browser-empty.ts" } } },
   // The pool, the PDF reader and the photo stack (image library, HEIC decoder, OCR with its worker thread) stay Node modules, required at run time
   // (the OCR's own files are carried into the image by the Dockerfile: the tracer cannot see a worker thread's requires — ADR-0010).
   serverExternalPackages: ["@krizaka/email", "pg", "unpdf", "sharp", "heic-decode", "tesseract.js", "tesseract.js-core"],

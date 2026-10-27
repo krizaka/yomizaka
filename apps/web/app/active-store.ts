@@ -1,3 +1,4 @@
+import { parseVaultKey } from "@krizaka/storage";
 import { readStorageSettings } from "@krizaka/storage/settings";
 import { type CloudOwner, STORAGE_OWNER } from "@yomizaka/core";
 
@@ -8,16 +9,17 @@ import { storageFrom } from "@/lib/storage/config";
 import { noneStore } from "@/lib/storage/none";
 import type { DocumentStore, StoreDescriptor } from "@/lib/storage/port";
 import { ownS3Store, type StorageSettings, storeForOwner } from "@/lib/storage/settings";
-import { parseSettingsKey } from "@/lib/storage/vault";
 
 /** The key that seals a workspace's S3 credentials (null when the deployment has none: storing credentials is then unavailable). */
 export const settingsKey = () => {
   const k = env().APP_SETTINGS_ENCRYPTION_KEY;
-  return k ? parseSettingsKey(k) : null;
+  return k ? parseVaultKey(k) : null;
 };
 
 /** The documents store this deployment configures (Krizaka's): the admin's choice in the settings (`storage.*`) over the environment's. The edge reads both and the clock; the domain receives them. */
-export const krizakaStore = async () => storageFrom(env(), () => new Date(), await readStorageSettings((key) => appSettings().get(key) as Promise<string | number>));
+const adminStorage = () => readStorageSettings((key) => appSettings().get(key) as Promise<string | number>);
+
+export const krizakaStore = async () => storageFrom(env(), () => new Date(), await adminStorage());
 
 export interface OwnerStores {
   /** Where new kept documents go: nothing, Krizaka's store or the owner's own cloud, from their settings. */
@@ -46,12 +48,13 @@ export async function storeForDocument(ownerId: string, documentId: string): Pro
   return stores.of(row?.storage_owner ?? "krizaka") ?? undefined;
 }
 
-/** Where uploaded avatars live: the same provider as the documents, under a prefix of their own (`<prefix>-avatars`); null when no store is configured (avatars are then picked from the set only). */
-export function avatarStore(): DocumentStore | null {
+/** Where uploaded avatars live: the same provider as the documents (the admin's settings first, through `resolveStorage`), under a prefix of their own (`<prefix>-avatars`); null when no store is configured (avatars are then picked from the set only). */
+export async function avatarStore(): Promise<DocumentStore | null> {
   const e = env();
   if (e.MEDIA_DOCUMENTS_PROVIDER === "none") return null;
   try {
-    return storageFrom({ ...e, MEDIA_DOCUMENTS_PREFIX: `${e.MEDIA_DOCUMENTS_PREFIX}-avatars` }, () => new Date());
+    const store = storageFrom({ ...e, MEDIA_DOCUMENTS_PREFIX: `${e.MEDIA_DOCUMENTS_PREFIX}-avatars` }, () => new Date(), await adminStorage());
+    return store.describe().kind === "none" ? null : store;
   } catch {
     return null;
   }

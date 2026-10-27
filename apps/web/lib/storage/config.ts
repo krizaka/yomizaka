@@ -1,12 +1,12 @@
-import { type FetchLike } from "@krizaka/storage";
-import { type StorageSettings as AdminStorage, storeFromSettings } from "@krizaka/storage/settings";
+import { describeStore, type FetchLike, STORAGE_CODE, StorageError } from "@krizaka/storage";
+import { type DeploymentStorage, openResolved, resolveStorage } from "@krizaka/storage/resolve";
+import { type StorageSettings as AdminStorage } from "@krizaka/storage/settings";
 import { STORAGE_KIND, type StorageProvider } from "@yomizaka/core";
 
 import { documentStoreOver } from "./adapter";
-import { encrypted, parseEncryptionKey } from "./encrypted";
 import { noneStore } from "./none";
-import type { DocumentStore, StoreDescriptor } from "./port";
-import { residencyOf } from "./regions";
+import type { DocumentStore } from "./port";
+import { asDescriptor } from "./where";
 
 /** The settings the store needs from the environment — read by the edge, passed in (lib/env.ts's `Env` satisfies it). */
 export interface StorageEnv {
@@ -33,34 +33,21 @@ export type AdminChoice = AdminStorage | null;
 // @fixed: a link to personal data that outlives a reading session is a leak
 export const MAX_SIGNED_URL_SECONDS = 900;
 
-/** The provider that applies: the admin's when they chose one, else the environment's (`none` = keeping is off, and only the environment can say so). */
-function effective(e: StorageEnv, admin: AdminChoice): { provider: "none" | "http" | "s3"; settings: AdminStorage } {
-  const env: "none" | "http" | "s3" = e.MEDIA_DOCUMENTS_PROVIDER === STORAGE_KIND.bunny ? "http" : e.MEDIA_DOCUMENTS_PROVIDER === STORAGE_KIND.s3 ? "s3" : "none";
-  const provider = env === "none" ? "none" : admin && admin.provider !== "local" ? admin.provider : env;
-  const pick = (own: string | undefined, fallback: string | undefined) => (own ? own : (fallback ?? ""));
-  const http = provider === "http";
+/** What the deployment's environment says about the documents (read by the edge, passed in): the shape `resolveStorage` takes. */
+export function deploymentOf(e: StorageEnv): DeploymentStorage {
+  const provider = e.MEDIA_DOCUMENTS_PROVIDER === STORAGE_KIND.bunny ? "http" : e.MEDIA_DOCUMENTS_PROVIDER === STORAGE_KIND.s3 ? "s3" : "none";
   return {
+    environment: e.APP_ENVIRONMENT,
     provider,
-    settings: {
-      provider: provider === "none" ? "local" : provider,
-      maxMegabytes: admin?.maxMegabytes ?? 25,
-      signedUrlSeconds: Math.min(admin?.signedUrlSeconds ?? MAX_SIGNED_URL_SECONDS, MAX_SIGNED_URL_SECONDS),
-      endpoint: http ? pick(admin?.endpoint, e.MEDIA_STORAGE_ENDPOINT) : pick(admin?.endpoint, e.MEDIA_S3_ENDPOINT),
-      region: pick(admin?.region, e.MEDIA_S3_REGION),
-      bucket: pick(admin?.bucket, e.MEDIA_S3_BUCKET),
-      zone: pick(admin?.zone, e.MEDIA_STORAGE_ZONE),
-      prefix: e.MEDIA_DOCUMENTS_PREFIX,
-      pullHostname: pick(admin?.pullHostname, e.MEDIA_DOCUMENTS_PULL_HOSTNAME),
-      publicBaseUrl: "",
-    },
+    prefix: e.MEDIA_DOCUMENTS_PREFIX,
+    encryptionKey: e.MEDIA_DOCUMENTS_ENCRYPTION_KEY,
+    http: { endpoint: e.MEDIA_STORAGE_ENDPOINT, zone: e.MEDIA_STORAGE_ZONE, accessKey: e.MEDIA_STORAGE_API_KEY, pullHostname: e.MEDIA_DOCUMENTS_PULL_HOSTNAME, tokenKey: e.MEDIA_DOCUMENTS_TOKEN_KEY },
+    s3: { endpoint: e.MEDIA_S3_ENDPOINT, region: e.MEDIA_S3_REGION, bucket: e.MEDIA_S3_BUCKET, accessKeyId: e.MEDIA_S3_ACCESS_KEY_ID, secretAccessKey: e.MEDIA_S3_SECRET_ACCESS_KEY },
   };
 }
 
-/** Where the files are, said from the configuration alone (the region table decides « Canada »; an unmapped region is « elsewhere », never a guess). */
-export function describeConfigured(provider: "http" | "s3", s: AdminStorage): StoreDescriptor {
-  if (provider === "http") return { kind: STORAGE_KIND.bunny, endpoint: s.endpoint, region: null, residency: "elsewhere", encrypted: false, owner: "krizaka", devOnly: true };
-  return { kind: STORAGE_KIND.s3, endpoint: new URL(s.endpoint).host, region: s.region, residency: residencyOf(s.region), encrypted: false, owner: "krizaka", devOnly: false };
-}
+/** The admin's choice as this product applies it: the prefix is the deployment's (the keys of the kept documents never move) and a document is never public. */
+const adminOf = (admin: AdminChoice): AdminChoice => (admin ? { ...admin, prefix: "", publicBaseUrl: "" } : null);
 
 const need = (provider: string, values: Record<string, string | undefined>) => {
   const missing = Object.entries(values).filter(([, v]) => !v).map(([k]) => k);
@@ -72,18 +59,29 @@ const need = (provider: string, values: Record<string, string | undefined>) => {
  * provider; Bunny (the `http` zone) is refused outside development. Credentials stay in the environment.
  */
 export function storageFrom(e: StorageEnv, now: () => Date, admin: AdminChoice = null, call: FetchLike = fetch as unknown as FetchLike): DocumentStore {
-  const { provider, settings } = effective(e, admin);
-  if (provider === "none") return noneStore();
+  const env = deploymentOf(e);
+  const chosen = adminOf(admin);
+  const provider = env.provider === "none" ? "none" : chosen && chosen.provider !== "local" ? chosen.provider : env.provider;
+  // What is missing is said by its environment name before the package looks at the values (it would only say « invalid address »).
   if (provider === "http") {
     if (e.APP_ENVIRONMENT === "prod") throw new Error("Bunny has no Canadian region: it is for development and fictional data only");
-    need("bunny", { MEDIA_STORAGE_ZONE: settings.zone, MEDIA_STORAGE_API_KEY: e.MEDIA_STORAGE_API_KEY });
-  } else need("s3", { MEDIA_S3_ENDPOINT: settings.endpoint, MEDIA_S3_REGION: settings.region, MEDIA_S3_BUCKET: settings.bucket, MEDIA_S3_ACCESS_KEY_ID: e.MEDIA_S3_ACCESS_KEY_ID, MEDIA_S3_SECRET_ACCESS_KEY: e.MEDIA_S3_SECRET_ACCESS_KEY });
-  const objects = storeFromSettings(
-    settings,
-    { accessKeyId: e.MEDIA_S3_ACCESS_KEY_ID, secretAccessKey: e.MEDIA_S3_SECRET_ACCESS_KEY, accessKey: e.MEDIA_STORAGE_API_KEY, tokenKey: e.MEDIA_DOCUMENTS_TOKEN_KEY },
-    { fetch: call, clock: { now }, allowLocalEndpoint: e.APP_ENVIRONMENT === "dev" },
-  );
-  const sealed = !!e.MEDIA_DOCUMENTS_ENCRYPTION_KEY;
-  const store = documentStoreOver(objects, describeConfigured(provider, settings), settings.signedUrlSeconds);
-  return sealed ? encrypted(store, parseEncryptionKey(e.MEDIA_DOCUMENTS_ENCRYPTION_KEY!)) : store;
+    need("bunny", { MEDIA_STORAGE_ZONE: chosen?.zone || e.MEDIA_STORAGE_ZONE, MEDIA_STORAGE_API_KEY: e.MEDIA_STORAGE_API_KEY });
+  } else if (provider === "s3") {
+    need("s3", { MEDIA_S3_ENDPOINT: chosen?.endpoint || e.MEDIA_S3_ENDPOINT, MEDIA_S3_REGION: chosen?.region || e.MEDIA_S3_REGION, MEDIA_S3_BUCKET: chosen?.bucket || e.MEDIA_S3_BUCKET, MEDIA_S3_ACCESS_KEY_ID: e.MEDIA_S3_ACCESS_KEY_ID, MEDIA_S3_SECRET_ACCESS_KEY: e.MEDIA_S3_SECRET_ACCESS_KEY });
+  }
+  let resolved;
+  try {
+    resolved = resolveStorage(env, chosen, { maxSignedSeconds: MAX_SIGNED_URL_SECONDS });
+  } catch (error) {
+    // The admin chose a provider on a deployment that keeps nothing: the environment wins, nothing is kept (the settings screen refuses it earlier).
+    if (error instanceof StorageError && error.code === STORAGE_CODE.keepingOff) return noneStore();
+    throw error;
+  }
+  if (resolved.provider === "none") return noneStore();
+  const { settings } = resolved;
+  const opened = openResolved(resolved, env, { fetch: call, clock: { now } });
+  if (!opened) return noneStore();
+  // The product's name for the Bunny-shaped zone is `bunny` (it is recorded with each document); Canada is claimed only when the region and the endpoint agree.
+  const descriptor = describeStore({ provider: resolved.provider, endpoint: settings.endpoint, region: settings.region }, { encrypted: !!e.MEDIA_DOCUMENTS_ENCRYPTION_KEY, httpKind: STORAGE_KIND.bunny });
+  return documentStoreOver(opened.store, asDescriptor(descriptor), settings.signedUrlSeconds);
 }

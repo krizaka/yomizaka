@@ -9,5 +9,5 @@ export const dynamic = "force-dynamic";
 export const GET = (req: Request) => accountAct(req, "app-config", async (s) => {
   const config = clientConfigOf(await settingsFor(s.account.id));
   // An uploaded avatar needs a store behind it (Bunny in development, a Canadian bucket later): the server knows, the browser only reflects.
-  return { config: { ...config, avatars: { ...config.avatars, canUpload: avatarStore() !== null } } };
+  return { config: { ...config, avatars: { ...config.avatars, canUpload: (await avatarStore()) !== null } } };
 });

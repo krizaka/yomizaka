@@ -1,14 +1,14 @@
 import { lookup } from "node:dns/promises";
 import net from "node:net";
 
-import { bucketStore, checkEndpoint as checkEndpointSyntax, type FetchLike } from "@krizaka/storage";
+import { bucketStore, checkEndpoint as checkEndpointSyntax, describeStore, type FetchLike, residencyOfConfig } from "@krizaka/storage";
 
 import { isPrivateAddress } from "../webhooks/address";
 import { documentStoreOver } from "./adapter";
 import { MAX_SIGNED_URL_SECONDS } from "./config";
 import { testConnection, type TestStep } from "./connection-test";
 import type { DocumentStore } from "./port";
-import { residencyOf } from "./regions";
+import { asDescriptor } from "./where";
 
 /**
  * A workspace names its own S3 endpoint, and the server then calls it: a request to an address a user chose must never reach
@@ -49,10 +49,10 @@ export async function checkOwnEndpoint(raw: string, options: { allowLocal: boole
   return url.origin;
 }
 
-/** A workspace's own bucket as a DocumentStore: Yomizaka's keys under `yomizaka/`, the region table says where it is, the workspace owns it. */
+/** A workspace's own bucket as a DocumentStore: Yomizaka's keys under `yomizaka/`, the shared region table says where it is, only when the region and the endpoint agree, the workspace owns it. */
 export function ownBucketStore(c: S3Candidate & { endpoint: string }, now: () => Date, call: FetchLike = fetch as unknown as FetchLike): DocumentStore {
   const objects = bucketStore({ endpoint: c.endpoint, region: c.region, bucket: c.bucket, accessKeyId: c.accessKeyId, secretAccessKey: c.secretAccessKey, prefix: "yomizaka", fetch: call, clock: { now } });
-  return documentStoreOver(objects, { kind: "s3", endpoint: new URL(c.endpoint).host, region: c.region, residency: residencyOf(c.region), encrypted: false, owner: "workspace", devOnly: false }, MAX_SIGNED_URL_SECONDS);
+  return documentStoreOver(objects, asDescriptor(describeStore({ provider: "s3", endpoint: c.endpoint, region: c.region }, { encrypted: false, owner: "workspace" })), MAX_SIGNED_URL_SECONDS);
 }
 
 export interface S3Candidate {
@@ -78,11 +78,20 @@ export interface Verification {
  * Verifies a workspace's own S3 before it is used or saved: the endpoint must be a public https address (never Krizaka's own
  * network), then a probe object is written, read back and deleted. Says what it found, including where the data would live.
  */
+/** Canada only when the region and the endpoint agree (the shared table); an endpoint that cannot be read claims nothing. */
+function residencyOfEndpoint(endpoint: string, region: string) {
+  try {
+    return residencyOfConfig({ provider: "s3", endpoint, region });
+  } catch {
+    return "elsewhere" as const;
+  }
+}
+
 export async function verifyS3(
   candidate: S3Candidate,
   deps: { allowLocal: boolean; resolve?: Resolver; now: () => Date; probeId: string; makeStore?: (c: S3Candidate & { endpoint: string }) => DocumentStore },
 ): Promise<Verification> {
-  const base = { steps: [] as TestStep[], region: candidate.region, residency: residencyOf(candidate.region), origin: null, host: null };
+  const base = { steps: [] as TestStep[], region: candidate.region, residency: residencyOfEndpoint(candidate.endpoint, candidate.region), origin: null, host: null };
   let origin: string;
   try {
     origin = await checkOwnEndpoint(candidate.endpoint, { allowLocal: deps.allowLocal, resolve: deps.resolve });
@@ -92,5 +101,5 @@ export async function verifyS3(
   }
   const store = (deps.makeStore ?? ((c) => ownBucketStore(c, deps.now)))({ ...candidate, endpoint: origin });
   const out = await testConnection(store, deps.probeId, () => deps.now().getTime());
-  return { ok: out.ok, steps: out.steps, origin, host: new URL(origin).host, region: candidate.region, residency: residencyOf(candidate.region), error: null };
+  return { ok: out.ok, steps: out.steps, origin, host: new URL(origin).host, region: candidate.region, residency: residencyOfEndpoint(origin, candidate.region), error: null };
 }

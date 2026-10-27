@@ -1,4 +1,4 @@
-import { type ObjectStore, StorageError as PackageError } from "@krizaka/storage";
+import { type ObjectStore, STORAGE_CODE, StorageError as PackageError } from "@krizaka/storage";
 
 import type { DocumentStore, StoreDescriptor } from "./port";
 import { assertKey, StorageError } from "./port";
@@ -13,6 +13,7 @@ export function documentStoreOver(objects: ObjectStore, descriptor: StoreDescrip
     try {
       return await run();
     } catch (error) {
+      if (error instanceof PackageError && error.code === STORAGE_CODE.unreadable) throw new StorageError(500, "The stored object failed its integrity check");
       if (error instanceof PackageError) throw new StorageError(502, `Storage refused the request (${error.code})`);
       throw error;
     }

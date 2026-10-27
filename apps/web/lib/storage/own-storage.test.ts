@@ -1,11 +1,11 @@
 import crypto from "node:crypto";
 
+import { residencyOf } from "@krizaka/storage";
+import { open, parseVaultKey as parseSettingsKey, seal } from "@krizaka/storage";
 import { describe, expect, it } from "vitest";
 
 import { testConnection } from "./connection-test";
 import { memoryStore } from "./memory";
-import { residencyOf } from "./regions";
-import { open, parseSettingsKey, seal } from "./vault";
 import { checkOwnEndpoint as checkEndpoint } from "./verify";
 
 describe("a workspace's own endpoint is a request to an address a user chose", () => {

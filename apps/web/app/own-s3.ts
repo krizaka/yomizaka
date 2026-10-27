@@ -1,9 +1,9 @@
+import { open } from "@krizaka/storage";
 import { z } from "zod";
 
 import { settingsKey } from "@/app/active-store";
 import { query } from "@/lib/db";
 import { refuse } from "@/lib/http";
-import { open } from "@/lib/storage/vault";
 
 export const s3Body = z.object({ endpoint: z.string().trim().max(300), region: z.string().trim().min(1).max(60), bucket: z.string().trim().min(1).max(100), accessKeyId: z.string().trim().min(1).max(200), secretAccessKey: z.string().max(400).optional() });
 
