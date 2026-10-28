@@ -89,3 +89,12 @@ Technologies Krizaka Inc. operates a House of Brands architecture with distinct 
 - **Positive:** Orochia sheds direct liability by relying on signed cryptographic audit attestations.
 - **Positive:** Yomizaka establishes commercial viability as a sovereign B2B trust product for Quebec PropTech and FinTech.
 - **Negative / Operational Cost:** Multi-region S3 routing and per-zone KMS key rotation must be configured and monitored.
+
+## Amendment (2026-10-28, yomizaka#130): what runs, and what does not
+
+The text above is the target. This is what the code does today; the product claims only this.
+
+- **Runs:** an uploaded document is **purged after its check** (file and text; the hash, the report and the audit row stay), unless the person consents to keep it (`lib/retention.ts`, ADR-0007); an identity document is never kept. The owner of a building receives only the redacted report by a link that expires (7 days by default, 30 at most) and can be revoked; each view is audited (`lib/owner-report-shares.ts`). The whole flow is proven by `lib/owner-flow.integration.test.ts`.
+- **Runs:** documents kept by consent live in Canada (Spaces `tor1` or the workspace's own Canadian bucket); a store outside Canada is refused in production (`lib/env.ts`, `lib/storage/config.ts`).
+- **Runs on the contracts API only:** the `X-Data-Residency-Zone` header (`CA` by default, a province allowed) is read and checked by `lib/contracts/zone.ts`.
+- **Does not run:** the header on the document checks, the `EU-CENTRAL` / `US-EAST` zones, per-zone KMS keys, and the « 60-second zeroize »: the purge happens when the check ends (seconds to minutes, a database delete, not a cryptographic wipe). No page or message says otherwise.
