@@ -109,7 +109,7 @@ export function DocumentView({ initial, tab, place = null, perspective = null, b
   // The lit finding is in the address (`?finding=`): « Voir dans le fichier » opens the document tab on it; back returns to the report.
   const [activeId, setActiveId] = useState<string | null>(params.get("finding"));
   const [found, setFound] = useState<Record<string, Located | null>>({});
-  const viewerRef = useRef<HTMLElement>(null);
+  const viewerRef = useRef<HTMLDivElement>(null);
   const fileUrl = `/api/documents/${doc.id}/file`;
   // The history can open an earlier run's report (`?run=`): its findings, its download and its sharing follow it.
   const facts = documentFacts(doc, { run: params.get("run"), locale });
