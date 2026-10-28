@@ -3,6 +3,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { migrate, query } from "./db";
 import { deleteDocument, documentStorage, getDocument, getFile, type StoragePolicy, storeDocument } from "./documents";
 import { purgeExpired, purgeIfDone } from "./retention";
+import { localStore } from "./storage/local";
 import { memoryStore } from "./storage/memory";
 import { noneStore } from "./storage/none";
 
@@ -16,6 +17,8 @@ describe.runIf(enabled)("keep or purge (ADR-0007)", () => {
     await migrate();
   });
   const account = async () => (await query<{ id: string }>("INSERT INTO accounts (email, password_hash, email_verified_at) VALUES ($1, 'x', now()) RETURNING id", [`r-${Math.random().toString(36).slice(2)}@yomizaka.test`]))[0]!.id;
+  /** Where the bytes of a document that is not kept wait for their purge (ADR-0012). */
+  const work = async () => localStore();
   const bytes = (n: string) => new TextEncoder().encode(`${LEASE}${n}`);
   const file = { name: "bail.txt", type: "text/plain", size: 100 };
   const dev = () => memoryStore({ kind: "bunny", devOnly: true, owner: "krizaka", residency: "elsewhere" });
@@ -29,7 +32,7 @@ describe.runIf(enabled)("keep or purge (ADR-0007)", () => {
     const owner = await account();
     const { summary } = await storeDocument(owner, file, bytes("audit"), "lease", policy(false));
     await finish(summary.id);
-    expect(await purgeIfDone(query, summary.id)).toBe(true);
+    expect(await purgeIfDone(query, summary.id, work)).toBe(true);
     const [row] = await query<{ n: number; t: string }>("SELECT octet_length(content) AS n, text AS t FROM documents WHERE id = $1", [summary.id]);
     expect(row).toEqual({ n: 0, t: "" });
     expect(await query("SELECT 1 FROM audit_log WHERE action = 'document.purged' AND target_id = $1", [summary.id])).toHaveLength(1);
@@ -58,7 +61,7 @@ describe.runIf(enabled)("keep or purge (ADR-0007)", () => {
     expect(before).toMatchObject({ storage: { kind: "none" }, purged: false });
     expect(before.retainUntil).toBe("2026-10-23T12:00:00.000Z");
     await finish(summary.id);
-    expect(await purgeIfDone(query, summary.id)).toBe(true);
+    expect(await purgeIfDone(query, summary.id, work)).toBe(true);
     const after = await documentStorage(owner, summary.id, () => noneStore().describe());
     expect(after).toMatchObject({ storage: { kind: "none" }, purged: true, retainUntil: null });
     const detail = await getDocument(owner, summary.id);
@@ -66,14 +69,14 @@ describe.runIf(enabled)("keep or purge (ADR-0007)", () => {
     expect(detail.insight).toBeUndefined();
     expect(detail.analyses).toHaveLength(1);
     expect(detail.sha256).toHaveLength(64);
-    await expect(getFile(owner, summary.id)).rejects.toMatchObject({ status: 409, body: { code: "NOT_KEPT" } });
+    await expect(getFile(owner, summary.id, localStore())).rejects.toMatchObject({ status: 409, body: { code: "NOT_KEPT" } });
   });
 
   it("does not purge while another check of the document is still running", async () => {
     const owner = await account();
     const { summary } = await storeDocument(owner, file, bytes("b"), "lease", policy(false));
     await query("INSERT INTO analyses (document_id, studio, status, run_id) VALUES ($1, 'document-authenticity', 'running', gen_random_uuid())", [summary.id]);
-    expect(await purgeIfDone(query, summary.id)).toBe(false);
+    expect(await purgeIfDone(query, summary.id, work)).toBe(false);
     expect((await documentStorage(owner, summary.id, () => noneStore().describe())).purged).toBe(false);
   });
 
@@ -90,7 +93,7 @@ describe.runIf(enabled)("keep or purge (ADR-0007)", () => {
     expect((await getFile(owner, summary.id, store)).content.toString()).toContain("1 450");
     expect((await getDocument(owner, summary.id)).text).toContain("Loyer mensuel");
     await finish(summary.id);
-    expect(await purgeIfDone(query, summary.id)).toBe(false);
+    expect(await purgeIfDone(query, summary.id, work)).toBe(false);
     await deleteDocument(owner, summary.id, store);
     expect(store.size()).toBe(0);
   });
@@ -99,7 +102,7 @@ describe.runIf(enabled)("keep or purge (ADR-0007)", () => {
     const owner = await account();
     const { summary } = await storeDocument(owner, file, bytes("d"), "lease", policy(true));
     expect((await documentStorage(owner, summary.id, () => noneStore().describe())).storage).toMatchObject({ kind: "database", residency: "canada" });
-    expect((await getFile(owner, summary.id)).content.toString()).toContain("Loyer");
+    expect((await getFile(owner, summary.id, localStore())).content.toString()).toContain("Loyer");
   });
 
   it("when the store does not answer, the upload fails cleanly and nothing is left", async () => {
@@ -118,7 +121,7 @@ describe.runIf(enabled)("keep or purge (ADR-0007)", () => {
     const owner = await account();
     const first = await storeDocument(owner, file, bytes("f"), "lease", policy(false));
     await finish(first.summary.id);
-    await purgeIfDone(query, first.summary.id);
+    await purgeIfDone(query, first.summary.id, work);
     const again = await storeDocument(owner, file, bytes("f"), "lease", policy(false));
     expect(again).toMatchObject({ duplicate: true, summary: { id: first.summary.id } });
     const restored = await storeDocument(owner, file, bytes("f"), "lease", policy(true));
@@ -131,8 +134,8 @@ describe.runIf(enabled)("keep or purge (ADR-0007)", () => {
   it("the sweep purges a not-kept document that was never checked, once its deadline has passed", async () => {
     const owner = await account();
     const { summary } = await storeDocument(owner, file, bytes("g"), "lease", policy(false));
-    expect(await purgeExpired(query, new Date("2026-10-22T13:00:00Z"))).toBe(0);
-    expect(await purgeExpired(query, new Date("2026-10-23T12:00:01Z"))).toBeGreaterThanOrEqual(1);
+    expect(await purgeExpired(query, new Date("2026-10-22T13:00:00Z"), work)).toBe(0);
+    expect(await purgeExpired(query, new Date("2026-10-23T12:00:01Z"), work)).toBeGreaterThanOrEqual(1);
     expect((await documentStorage(owner, summary.id, () => noneStore().describe())).purged).toBe(true);
   });
 });

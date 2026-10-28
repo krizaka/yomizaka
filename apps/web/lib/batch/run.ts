@@ -1,6 +1,6 @@
 import { ANALYSIS_STATUS, type Audience, BATCH_ITEM, type BatchItemState, type FlowEnvironment, readBatchManifest, type StartAnalysis } from "@yomizaka/core";
 
-import { storesOf } from "@/app/active-store";
+import { storesOf, workingStore } from "@/app/active-store";
 
 import { getAnalysis } from "../analyses";
 import { startCheck } from "../checks";
@@ -60,7 +60,7 @@ export async function createBatch(account: Account, name: string, manifestText: 
   if (!preview.rows.length) throw refuse(422, "BATCH_EMPTY", "The CSV has no row to check");
   const [batch] = await query<{ id: string }>("INSERT INTO batches (owner_id, name) VALUES ($1, $2) RETURNING id", [account.id, name.trim().slice(0, 200) || "Lot"]);
   const stores = await storesOf(account.id);
-  const policy = { keep: false, store: stores.write, now, purgeAfterHours: settings["limits.purgeAfterHours"].value as number, rules: preflightRulesFrom(YOMIZAKA_RULES, settings) };
+  const policy = { keep: false, store: stores.write, working: await workingStore(), now, purgeAfterHours: settings["limits.purgeAfterHours"].value as number, rules: preflightRulesFrom(YOMIZAKA_RULES, settings) };
   const byName = new Map(files.map((f) => [f.name.toLowerCase(), f]));
   const manifestRows = new Map(readBatchManifest(manifestText).rows.map((r) => [r.line, r]));
   for (const row of preview.rows) {

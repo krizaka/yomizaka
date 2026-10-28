@@ -1,7 +1,7 @@
 import { STORAGE_MODE } from "@yomizaka/core";
 import { z } from "zod";
 
-import { storesOf } from "@/app/active-store";
+import { storesOf, workingStore } from "@/app/active-store";
 import { fileByToken, uploadApplicantDocument } from "@/lib/applicant-file";
 import { handle, refuse } from "@/lib/http";
 import { limit } from "@/lib/limits";
@@ -37,6 +37,7 @@ export function POST(req: Request) {
       { name: file.name, type: file.type, size: file.size, bytes: new Uint8Array(await file.arrayBuffer()) },
       {
         store: stores.write,
+        working: await workingStore(),
         purgeAfterHours: settings["limits.purgeAfterHours"].value as number,
         rules: preflightRulesFrom(YOMIZAKA_RULES, settings),
         keepAllowed: stores.settings.mode !== STORAGE_MODE.none,

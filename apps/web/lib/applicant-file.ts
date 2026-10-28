@@ -1,7 +1,7 @@
 import { filterSql, type StatusSet, type ViewFilters } from "@krizaka/organize";
 import type { Analysis, StartAnalysis, StorageKind,Studio } from "@yomizaka/core";
 
-import { holderOf as documentHolder } from "@/app/active-store";
+import { holderOf as documentHolder, storeForDocument } from "@/app/active-store";
 
 import { refresh, startAnalysis } from "./analyses";
 import { activeConsents, assertUploadForApplication, attachToApplication, CONSENT_PURPOSE, type ConsentPurpose, hasConsent } from "./applicant-consent";
@@ -130,6 +130,8 @@ export async function applicantFileState(token: string, now: Date) {
 /** Upload-time settings the route reads from the owner's account (where documents go, the retention window, the pre-flight). */
 export interface UploadContext {
   store: DocumentStore;
+  /** Where the bytes of a document that is not kept wait for their purge (ADR-0012); the folder of a laptop when absent, none in production without a store. */
+  working?: DocumentStore | null;
   purgeAfterHours: number;
   rules?: NonNullable<StoragePolicy["rules"]>;
   /** The owner's settings allow keeping documents at all (« conserver » is off otherwise, ADR-0007). */
@@ -153,7 +155,7 @@ async function runChecks(ownerId: string, documentId: string, studios: Studio[],
     try {
       const via = await reserveAudit(query, ownerId, now, ctx.auditCaps);
       try {
-        await startAnalysis(ownerId, documentId, request, null, via, ctx.store);
+        await startAnalysis(ownerId, documentId, request, null, via, await storeForDocument(ownerId, documentId));
       } catch (error) {
         await releaseAudit(query, ownerId, via);
         throw error;
@@ -187,7 +189,7 @@ export async function uploadApplicantDocument(token: string, typeId: string, fil
     if ((count?.n ?? 0) >= MAX_DOCUMENTS_PER_FILE) throw refuse(409, "TOO_MANY_DOCUMENTS", "This file holds as many documents as it can");
     const { fileKind } = await inspectUpload({ name: file.name, type: file.type, size: file.size }, file.bytes, ctx.rules);
     if (!type.acceptedKinds.includes(fileKind)) throw refuse(415, "FILE_NOT_ACCEPTED", "This document must be sent as a PDF", { type: typeId });
-    const { summary, duplicate } = await storeDocument(link.landlord_id, { name: file.name, type: file.type, size: file.size }, file.bytes, "other", { keep, store: ctx.store, now, purgeAfterHours: ctx.purgeAfterHours, rules: ctx.rules });
+    const { summary, duplicate } = await storeDocument(link.landlord_id, { name: file.name, type: file.type, size: file.size }, file.bytes, "other", { keep, store: ctx.store, working: ctx.working, now, purgeAfterHours: ctx.purgeAfterHours, rules: ctx.rules });
     if (duplicate) throw refuse(409, "DUPLICATE_DOCUMENT", "This file was already sent");
     // Linked to the application, then the consent is checked again: a withdrawal during the upload deletes it.
     await attachToApplication(link.landlord_id, summary.id, link.id, ctx.store);

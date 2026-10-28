@@ -29,7 +29,7 @@ describe.runIf(enabled)("export and erasure (Loi 25)", () => {
     const kept = await storeDocument(owner, file, bytes("k"), "lease", policy(true, store));
     const gone = await storeDocument(owner, file, bytes("g"), "lease", policy(false, store));
     await query("INSERT INTO analyses (document_id, studio, status, run_id, report) VALUES ($1, 'compliance-check', 'succeeded', gen_random_uuid(), '{\"findings\":[]}')", [gone.summary.id]);
-    await query("UPDATE documents SET content = ''::bytea, text = '' WHERE id = $1", [gone.summary.id]);
+    await query("UPDATE documents SET content = ''::bytea, text = '', object_key = NULL WHERE id = $1", [gone.summary.id]);
     const [lib] = await query<{ id: string }>("INSERT INTO libraries (owner_id, name) VALUES ($1, 'Ma bibliothèque') RETURNING id", [owner]);
     await query("INSERT INTO collections (library_id, name) VALUES ($1, 'Baux')", [lib!.id]);
     const out = await exportData(query, owner, () => store, NOW);

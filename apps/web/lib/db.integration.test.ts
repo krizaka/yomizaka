@@ -10,6 +10,7 @@ import { zipOf } from "./preflight/fixtures";
 import { search } from "./search";
 import { createSession, resolveSession, revokeSession } from "./session";
 import { getShowcase, setSample, setShowcase, showcaseFile } from "./showcase";
+import { localStore } from "./storage/local";
 
 /**
  * The SQL against a real PostgreSQL 16 (CI's service; locally `YOMIZAKA_DB_IT=1 DATABASE_URL=… pnpm test`): the
@@ -41,7 +42,7 @@ describe.runIf(enabled)("database", () => {
     const again = await storeDocument(owner!.id, file, new TextEncoder().encode(LEASE), "other");
     expect(again).toMatchObject({ duplicate: true, summary: { id: first.summary.id } });
     expect((await listDocuments(owner!.id)).map((d) => d.id)).toContain(first.summary.id);
-    expect((await getFile(owner!.id, first.summary.id)).content.toString()).toBe(LEASE);
+    expect((await getFile(owner!.id, first.summary.id, localStore())).content.toString()).toBe(LEASE);
   });
 
   it("stores OpenDocument text after widening the MIME constraint, and makes its text searchable", async () => {
@@ -53,10 +54,10 @@ describe.runIf(enabled)("database", () => {
     try {
       expect(stored.summary).toMatchObject({ mimeType: ODT_MIME, hasText: true, pages: null });
       expect((await getDocument(owner!.id, stored.summary.id)).text).toBe("OpenDocument locataire");
-      expect((await getFile(owner!.id, stored.summary.id)).content).toEqual(Buffer.from(bytes));
+      expect((await getFile(owner!.id, stored.summary.id, localStore())).content).toEqual(Buffer.from(bytes));
       expect((await search(owner!.id, "locataire")).some((hit) => hit.documentId === stored.summary.id)).toBe(true);
     } finally {
-      await deleteDocument(owner!.id, stored.summary.id);
+      await deleteDocument(owner!.id, stored.summary.id, localStore());
     }
   });
 
