@@ -1,6 +1,7 @@
 import { refuse } from "../http";
+import { checksDoor } from "../orazaka";
 import { liveGate } from "./gate";
-import { CHECK_OUTCOME, CHECK_REFUSAL, type CheckCall, type CheckPurpose, type CheckResult } from "./model";
+import { CHECK_OUTCOME, type CheckCall, type CheckPurpose, type CheckResult, type ChecksDoor, closedDoor, NOT_CONFIGURED } from "./model";
 
 /**
  * A screening provider behind one port. Yomizaka never speaks to a credit bureau or a court-records vendor: it asks
@@ -17,19 +18,7 @@ export interface CheckProvider {
 
 const result = (outcome: CheckResult["outcome"], extra: Partial<CheckResult> = {}): CheckResult => ({ outcome, refusal: null, category: "NONE", providerRef: null, ...extra });
 
-/** What the engine answers while no provider account exists: a refusal that says « not configured », never a result. */
-export const NOT_CONFIGURED: CheckResult = result(CHECK_OUTCOME.REFUSED, { refusal: CHECK_REFUSAL.NOT_CONFIGURED });
-
-/**
- * The engine's door. The wire format is provisional and no provider account exists: until Orazaka exposes the door to
- * products (a client call to run the checks and to `collect`), every call answers NOT_CONFIGURED. The transport is injected,
- * so the day the door exists only this seam changes.
- */
-export interface ChecksDoor {
-  submit(purpose: CheckPurpose, call: CheckCall): Promise<CheckResult>;
-  collect(purpose: CheckPurpose, call: CheckCall, providerRef: string): Promise<CheckResult>;
-}
-export const closedDoor: ChecksDoor = { submit: async () => NOT_CONFIGURED, collect: async () => NOT_CONFIGURED };
+export { type ChecksDoor, closedDoor, NOT_CONFIGURED };
 
 /**
  * A live adapter is wrapped by the compliance gate (yomizaka#135): while the gate is closed the door is never reached and the
@@ -58,7 +47,7 @@ export const demoProvider: CheckProvider = {
 };
 
 /** The adapters by key: a provider row names one. Adding a vendor is a row for the engine; a new adapter is code only for a new kind of door. */
-export const ADAPTERS: Record<string, () => CheckProvider> = { demo: () => demoProvider, engine: () => engineProvider() };
+export const ADAPTERS: Record<string, () => CheckProvider> = { demo: () => demoProvider, engine: () => engineProvider(checksDoor()) };
 
 export function adapterFor(key: string): CheckProvider {
   const make = ADAPTERS[key];
