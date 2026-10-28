@@ -6,6 +6,7 @@ import { refundFailedAudit } from "./billing";
 import { query } from "./db";
 import { type AnalysisRow, declaredKindOf, isUuid, needsAttention, readBytes, toAnalysis } from "./documents";
 import { refuse } from "./http";
+import { withLines } from "./lease-lines";
 import { orazaka } from "./orazaka";
 import { purgeIfDone } from "./retention";
 import { LAW_TIME_ZONE } from "./rulesets";
@@ -72,7 +73,9 @@ export async function refresh(row: AnalysisRow, known?: OrazakaRun): Promise<Ana
   const run = known ?? (await orazaka().getRun(row.run_id));
   const status = fromRunStatus(run.status);
   if (!isTerminal(status)) return toAnalysis(row);
-  const report = status === "succeeded" ? reportOf(row.studio, run.outputs) : null;
+  const read = status === "succeeded" ? reportOf(row.studio, run.outputs) : null;
+  // The line of each finding is read now: the text is purged once the check has run (yomizaka#129).
+  const report = read && "findings" in read ? withLines(read, (await query<{ text: string }>("SELECT text FROM documents WHERE id = $1", [row.document_id]))[0]?.text ?? "") : read;
   const noReport = report ? null : "Orazaka finished without a report Yomizaka can read";
   const error = status === "succeeded" ? noReport : (run.errorMessage ?? `The run ended ${run.status}`);
   const [updated] = await query<AnalysisRow>(
