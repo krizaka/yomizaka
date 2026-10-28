@@ -38,7 +38,7 @@ describe.runIf(enabled)("administration of an account", () => {
     expect((await setUserPlan(admin, person.id, "FREE", "dev")).plan).toBe("FREE");
     expect((await entitlementOf(query, person.id, new Date())).pro).toBe(false);
     expect((await auditLog(10, person.id)).filter((e) => e.action === "admin.user_plan_changed")).toHaveLength(2);
-    await expect(setUserPlan(admin, person.id, "PRO", "prod")).rejects.toMatchObject({ status: 403, code: "PLAN_BY_HAND_IN_PRODUCTION" });
+    await expect(setUserPlan(admin, person.id, "PRO", "prod")).rejects.toMatchObject({ status: 403, message: expect.stringContaining("development environment") });
     await expect(setUserPlan(admin, "not-an-id", "PRO", "dev")).rejects.toMatchObject({ status: 404 });
   });
 
