@@ -68,6 +68,10 @@ pnpm dev                                   # http://localhost:3000
 pnpm run check                             # lint · typecheck · tests (what the hook and CI run)
 ```
 
+## Tests
+
+Unit tests (`pnpm test`), the page audit (`scripts/check-app-pages.mjs`) and the **page journeys** (`apps/web/e2e/visual/journeys.visual.mjs`, pixels of whole pages as the seeded cast, taken in CI only). To update a baseline run Actions > *Update visual baselines* on your branch; how the layers work and how to read a diff: [krizaka/.github docs/standards/ui-testing.md](https://github.com/krizaka/.github/blob/main/docs/standards/ui-testing.md).
+
 ## Inside
 
 | Path | |

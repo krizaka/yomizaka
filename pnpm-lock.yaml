@@ -27,8 +27,8 @@ importers:
         specifier: ^0.3.1
         version: 0.3.1
       '@krizaka/page-audit':
-        specifier: ^0.5.0
-        version: 0.5.0(@krizaka/a11y-audit@0.2.0)(playwright-core@1.64.0)
+        specifier: ^0.5.1
+        version: 0.5.1(@krizaka/a11y-audit@0.2.0)(playwright-core@1.64.0)
       '@playwright/test':
         specifier: 1.64.0
         version: 1.64.0
@@ -1962,8 +1962,8 @@ packages:
       react:
         optional: true
 
-  '@krizaka/page-audit@0.5.0':
-    resolution: {integrity: sha512-LW/TQS0QY5nUalAf57nM0O2lETU3R03LM70YeOe71UIiVdsoGONAsfIUD8CCcOqyCupIpfzIy8v3d4CUO8uRcQ==}
+  '@krizaka/page-audit@0.5.1':
+    resolution: {integrity: sha512-JmInjEn2BulmBuLZEj5n61yJbfvqum66NrlRvA64JIP/2kECjlkC8Ybka+9EHubgzjb+euUvKhqRDTd9r1DQGQ==}
     engines: {node: '>=22'}
     hasBin: true
     peerDependencies:
@@ -10417,7 +10417,7 @@ snapshots:
     optionalDependencies:
       react: 19.3.1
 
-  '@krizaka/page-audit@0.5.0(@krizaka/a11y-audit@0.2.0)(playwright-core@1.64.0)':
+  '@krizaka/page-audit@0.5.1(@krizaka/a11y-audit@0.2.0)(playwright-core@1.64.0)':
     dependencies:
       playwright-core: 1.64.0
     optionalDependencies:
