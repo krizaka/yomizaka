@@ -30,6 +30,14 @@ export function UserActions({ user, onChange }: Readonly<{ user: UserDetail; onC
     },
     onError: fail,
   });
+  const plan = useMutation({
+    mutationFn: () => krizakaFetch(`/api/admin/users/${user.id}/plan`, { method: "POST", json: { plan: user.plan === "PRO" ? "FREE" : "PRO" } }) as Promise<{ user: UserDetail }>,
+    onSuccess: (r) => {
+      onChange(r.user);
+      setProblem(null);
+    },
+    onError: fail,
+  });
   const revoke = useMutation({
     mutationFn: () => krizakaFetch(`/api/admin/users/${user.id}/sessions`, { method: "DELETE" }) as Promise<{ revoked: number; user: UserDetail }>,
     onSuccess: (r) => {
@@ -51,6 +59,9 @@ export function UserActions({ user, onChange }: Readonly<{ user: UserDetail; onC
       <div className="flex flex-wrap gap-2">
         <Button variant="secondary" size="sm" loading={role.isPending} onClick={() => role.mutate()}>
           {say(user.role === "ADMIN" ? "adminConsole.user.makeUser" : "adminConsole.user.makeAdmin")}
+        </Button>
+        <Button variant="secondary" size="sm" loading={plan.isPending} onClick={() => plan.mutate()}>
+          {say(user.plan === "PRO" ? "adminConsole.user.makeFree" : "adminConsole.user.makePro")}
         </Button>
         <Button variant="secondary" size="sm" loading={revoke.isPending} onClick={() => revoke.mutate()}>
           {say("adminConsole.user.revokeSessions")}

@@ -139,7 +139,7 @@ function issuerOf(text: string, type: DocumentTypeDef): string | null {
 export function createUnderstanding(config: UnderstandingConfig): DocumentUnderstanding {
   const compiled: CompiledType[] = config.types.map((t) => ({ t, signals: t.signals.map((s) => ({ re: new RegExp(s.pattern, "iu"), weight: s.weight })) }));
   const ids = config.identifiers.map((i) => ({ i, re: new RegExp(i.pattern, "iu") }));
-  const roles = config.partyRoles.map((r) => ({ role: r.role, re: new RegExp(`^[\\s•*-]*(?:${r.pattern})\\s*(?:\\([^)]*\\))?\\s*:\\s*([^\\n]{2,120})$`, "imu") }));
+  const roles = config.partyRoles.map((r) => ({ role: r.role, re: new RegExp(String.raw`^[\s•*-]*(?:${r.pattern})\s*(?:\([^)]*\))?\s*:\s*([^\n]{2,120})$`, "imu") }));
 
   return {
     understand(text, context): Understanding {

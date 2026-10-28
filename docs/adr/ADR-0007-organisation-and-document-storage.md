@@ -1,6 +1,6 @@
 # ADR-0007 — Organising documents, and where they live (two modules, two ports)
 
-Status: accepted (2026-10-22). Issues: krizaka/yomizaka#163 (organisation), #153 (storage), #164 (info panel), #154 and #155 (Mac, mobile).
+Status: accepted (2026-10-22); decision 2 extended by ADR-0012 (bytes out of the database). Issues: krizaka/yomizaka#163 (organisation), #153 (storage), #164 (info panel), #154 and #155 (Mac, mobile).
 
 ## Context
 Today a document is a row with its bytes in the database, in a flat list. People need to organise what they keep, and to

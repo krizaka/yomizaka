@@ -1,6 +1,6 @@
 {
   "product": "yomizaka",
-  "cdn": "https://krizaka-assets.b-cdn.net/site",
+  "cdn": "https://krizaka-assets.b-cdn.net",
   "videos": [
     {
       "platform": "web",
@@ -8,9 +8,9 @@
       "seconds": 15.7,
       "capturedAt": "2026-10-27T13:15:58.113Z",
       "files": {
-        "webm": "products/yomizaka/download/web-binder.d9ac1d112f.webm",
-        "mp4": "products/yomizaka/download/web-binder.062af1c472.mp4",
-        "poster": "products/yomizaka/download/web-binder.c4cc963d20.jpg"
+        "webm": "sites/yomizaka/download/web-binder.d9ac1d112f.webm",
+        "mp4": "sites/yomizaka/download/web-binder.062af1c472.mp4",
+        "poster": "sites/yomizaka/download/web-binder.c4cc963d20.jpg"
       }
     },
     {
@@ -19,9 +19,9 @@
       "seconds": 10.6,
       "capturedAt": "2026-10-27T13:16:04.736Z",
       "files": {
-        "webm": "products/yomizaka/download/web-report.8b227856d1.webm",
-        "mp4": "products/yomizaka/download/web-report.2813a67179.mp4",
-        "poster": "products/yomizaka/download/web-report.29da143cd7.jpg"
+        "webm": "sites/yomizaka/download/web-report.8b227856d1.webm",
+        "mp4": "sites/yomizaka/download/web-report.2813a67179.mp4",
+        "poster": "sites/yomizaka/download/web-report.29da143cd7.jpg"
       }
     }
   ]

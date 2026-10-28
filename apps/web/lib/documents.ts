@@ -136,13 +136,22 @@ export async function declaredKindOf(ownerId: string, id: string): Promise<Docum
 /** Where a document lives and until when (the info panel, ADR-0007), from its row and the store configured now. */
 export async function documentStorage(ownerId: string, id: string, describe: (owner: CloudOwner) => StoreDescriptor): Promise<{ storage: StoreDescriptor; retainUntil: string | null; purged: boolean }> {
   if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such document");
-  const [row] = await query<{ storage: StorageKind; storage_owner: CloudOwner; retain_until: Date | null; purged: boolean }>("SELECT storage, storage_owner, retain_until, (storage = 'none' AND octet_length(content) = 0 AND text = '') AS purged FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, id]);
+  const [row] = await query<{ storage: StorageKind; storage_owner: CloudOwner; retain_until: Date | null; purged: boolean }>("SELECT storage, storage_owner, retain_until, (storage = 'none' AND object_key IS NULL AND octet_length(content) = 0 AND text = '') AS purged FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, id]);
   if (!row) throw refuse(404, "NOT_FOUND", "No such document");
   return { storage: storedAs(row.storage, describe(row.storage_owner)), retainUntil: row.retain_until?.toISOString() ?? null, purged: row.purged };
 }
 
-/** The bytes of a document, from where it lives: the database, or the external store that holds it. A purged document has none (409 NOT_KEPT). */
-export async function readBytes(row: { mime_type: string; content: Buffer; storage: StorageKind }, ids: { ownerId: string; id: string }, store?: DocumentStore): Promise<Buffer> {
+/**
+ * The bytes of a document (ADR-0012, dual read): from the store by the row's `object_key`; else from the external store that holds
+ * a legacy kept document; else from the legacy column; a purged document has none (409 NOT_KEPT).
+ */
+export async function readBytes(row: { mime_type: string; content: Buffer; storage: StorageKind; object_key?: string | null }, ids: { ownerId: string; id: string }, store?: DocumentStore): Promise<Buffer> {
+  if (row.object_key) {
+    if (!store) throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds this document is not available");
+    const found = await store.get(row.object_key);
+    if (!found) throw refuse(404, "NOT_FOUND", "No such document");
+    return Buffer.from(found.bytes);
+  }
   if (EXTERNAL.has(row.storage)) {
     if (!store || store.describe().kind !== row.storage) throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds this document is not available");
     const found = await store.get(objectKey(ids.ownerId, ids.id, row.mime_type));
@@ -155,17 +164,20 @@ export async function readBytes(row: { mime_type: string; content: Buffer; stora
 
 export async function getFile(ownerId: string, id: string, store?: DocumentStore): Promise<{ filename: string; mimeType: string; content: Buffer }> {
   if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such document");
-  const [row] = await query<{ filename: string; mime_type: string; content: Buffer; storage: StorageKind }>("SELECT filename, mime_type, content, storage FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, id]);
+  const [row] = await query<{ filename: string; mime_type: string; content: Buffer; storage: StorageKind; object_key: string | null }>("SELECT filename, mime_type, content, storage, object_key FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, id]);
   if (!row) throw refuse(404, "NOT_FOUND", "No such document");
   return { filename: row.filename, mimeType: row.mime_type, content: await readBytes(row, { ownerId, id }, store) };
 }
 
-/** Deletes a document at once: its file on the external store first, then the row (its reports go with it). */
+/** Deletes a document at once: its file on the store first, then the row (its reports go with it). */
 export async function deleteDocument(ownerId: string, id: string, store?: DocumentStore): Promise<void> {
   if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such document");
-  const [row] = await query<{ mime_type: string; storage: StorageKind }>("SELECT mime_type, storage FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, id]);
+  const [row] = await query<{ mime_type: string; storage: StorageKind; object_key: string | null }>("SELECT mime_type, storage, object_key FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, id]);
   if (!row) throw refuse(404, "NOT_FOUND", "No such document");
-  if (EXTERNAL.has(row.storage)) {
+  if (row.object_key) {
+    if (!store) throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds this document is not available");
+    await store.delete(row.object_key);
+  } else if (EXTERNAL.has(row.storage)) {
     if (!store || store.describe().kind !== row.storage) throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds this document is not available");
     await store.delete(objectKey(ownerId, id, row.mime_type));
   }
@@ -323,7 +335,7 @@ function chooseKind(requested: DocumentKind | "auto", deferred: boolean, read: {
 export async function storeDocument(ownerId: string, file: { name: string; type: string; size: number }, bytes: Uint8Array, requested: DocumentKind | "auto", policy?: StoragePolicy, textOf?: TextReader, options: { defer?: boolean } = {}): Promise<{ summary: DocumentSummary; duplicate: boolean; finish?: () => Promise<void> }> {
   const { mimeType, sha256, pages } = await checkUpload(file, bytes, policy?.rules);
   const where = policy ? storageFor(policy.keep, policy.store.describe()) : "database";
-  const [existing] = await query<DocumentRow & { purged: boolean }>(`SELECT ${SUMMARY_COLUMNS}, (d.storage = 'none' AND octet_length(d.content) = 0 AND d.text = '') AS purged FROM documents d WHERE d.owner_id = $1 AND (d.sha256 = $2 OR d.source_sha256 = $2)`, [ownerId, sha256]);
+  const [existing] = await query<DocumentRow & { purged: boolean }>(`SELECT ${SUMMARY_COLUMNS}, (d.storage = 'none' AND d.object_key IS NULL AND octet_length(d.content) = 0 AND d.text = '') AS purged FROM documents d WHERE d.owner_id = $1 AND (d.sha256 = $2 OR d.source_sha256 = $2)`, [ownerId, sha256]);
   // The same file again: reused as it is — unless it was purged and the person now keeps it, then it is restored below; or its reading failed, then it is read again.
   if (existing && existing.extraction !== "failed" && !(existing.purged && where !== "none")) return { summary: summary(existing), duplicate: true };
   const filename = safeFilename(file.name);

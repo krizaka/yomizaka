@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { roleChangeRefusal } from "./admin";
+import { planChangeRefusal, roleChangeRefusal } from "./admin";
 
 describe("who may change a role", () => {
   it("never your own", () => {
@@ -15,5 +15,12 @@ describe("who may change a role", () => {
   });
   it("treats a change to the role already held as nothing to refuse", () => {
     expect(roleChangeRefusal("a", "a", "ADMIN", 1, "ADMIN")).toBeNull();
+  });
+});
+
+describe("who may put an account on a plan by hand (yomizaka#252)", () => {
+  it("only a development environment: in production the plan follows the subscription", () => {
+    expect(planChangeRefusal("prod")).toMatchObject({ code: "PLAN_BY_HAND_IN_PRODUCTION" });
+    expect(planChangeRefusal("dev")).toBeNull();
   });
 });

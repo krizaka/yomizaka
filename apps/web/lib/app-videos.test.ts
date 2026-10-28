@@ -7,7 +7,7 @@ import { APP_VIDEOS, MAX_AGE_DAYS, staleVideos, videoId } from "./app-videos";
 import { getDictionary, LOCALES } from "./i18n";
 
 const ROOT = join(__dirname, "..");
-const PATH = /^products\/yomizaka\/download\/(web|android|ios|mac)-[a-z0-9-]+\.[0-9a-f]{10}\.(webm|mp4|jpg)$/;
+const PATH = /^sites\/yomizaka\/download\/(web|android|ios|mac)-[a-z0-9-]+\.[0-9a-f]{10}\.(webm|mp4|jpg)$/;
 
 describe("the download page's videos (krizaka/.github#315)", () => {
   it("are known to the manifest with a file of each kind, hashed, under the product's download folder", () => {
@@ -17,6 +17,12 @@ describe("the download page's videos (krizaka/.github#315)", () => {
       for (const path of Object.values(v.files)) expect(path, videoId(v)).toMatch(PATH);
       expect(v.seconds, videoId(v)).toBeLessThanOrEqual(30);
     }
+  });
+
+  it("names only Bunny layout v2 (ADR-014): the manifest is the media root and no path starts with the legacy site/ or products/", () => {
+    const manifest = JSON.parse(readFileSync(join(ROOT, "content/app-videos.json"), "utf8")) as { cdn: string };
+    expect(manifest.cdn).toBe("https://krizaka-assets.b-cdn.net");
+    for (const v of APP_VIDEOS) for (const path of Object.values(v.files)) expect(path).not.toMatch(/^(site|products)\//);
   });
 
   it.each(LOCALES)("each video has its words in %s (the words may come first: the automated manifest pull request must pass)", (locale) => {
@@ -32,7 +38,7 @@ describe("the download page's videos (krizaka/.github#315)", () => {
   it("the page reads the manifest only: no address of a video is typed in it", () => {
     const page = readFileSync(join(ROOT, "app/[locale]/download/page.tsx"), "utf8");
     expect(page).toContain("APP_VIDEOS");
-    expect(page).not.toMatch(/b-cdn|products\/yomizaka|\.(mp4|webm|jpg)["'`]/);
+    expect(page).not.toMatch(/b-cdn|(?:site|sites)\/|products\/yomizaka|\.(mp4|webm|jpg)["'`]/);
   });
 
   it(`none is older than ${MAX_AGE_DAYS} days: a stale recording means the e2e job stopped publishing`, () => {

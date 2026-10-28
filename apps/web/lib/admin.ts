@@ -120,6 +120,7 @@ export interface UserDetail {
   email: string;
   role: "USER" | "ADMIN";
   status: "ACTIVE" | "SUSPENDED";
+  plan: "FREE" | "PRO";
   createdAt: string;
   lastSeenAt: string | null;
   documents: number;
@@ -128,15 +129,15 @@ export interface UserDetail {
 
 export async function userDetail(id: string): Promise<UserDetail> {
   if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such account");
-  const [r] = await query<{ id: string; email: string; role: "USER" | "ADMIN"; status: "ACTIVE" | "SUSPENDED"; created_at: Date; last_seen_at: Date | null; documents: string; sessions: string }>(
-    `SELECT a.id, a.email, a.role, a.status, a.created_at, a.last_seen_at,
+  const [r] = await query<{ id: string; email: string; role: "USER" | "ADMIN"; status: "ACTIVE" | "SUSPENDED"; plan: "FREE" | "PRO"; created_at: Date; last_seen_at: Date | null; documents: string; sessions: string }>(
+    `SELECT a.id, a.email, a.role, a.status, a.plan, a.created_at, a.last_seen_at,
             (SELECT count(*) FROM documents d WHERE d.owner_id = a.id) AS documents,
             (SELECT count(*) FROM sessions s WHERE s.account_id = a.id AND s.expires_at > now()) AS sessions
        FROM accounts a WHERE a.id = $1`,
     [id],
   );
   if (!r) throw refuse(404, "NOT_FOUND", "No such account");
-  return { id: r.id, email: r.email, role: r.role, status: r.status, createdAt: r.created_at.toISOString(), lastSeenAt: r.last_seen_at?.toISOString() ?? null, documents: Number(r.documents), sessions: Number(r.sessions) };
+  return { id: r.id, email: r.email, role: r.role, status: r.status, plan: r.plan, createdAt: r.created_at.toISOString(), lastSeenAt: r.last_seen_at?.toISOString() ?? null, documents: Number(r.documents), sessions: Number(r.sessions) };
 }
 
 /** Suspends (every session ends at once) or restores an account. An administrator never suspends their own account. */
@@ -168,6 +169,28 @@ export async function setUserRole(actor: { id: string; email: string }, id: stri
     await query("UPDATE accounts SET role = $2 WHERE id = $1", [id, to]);
     await audit({ action: "admin.user_role_changed", actorId: actor.id, actorLabel: actor.email, targetId: id, detail: { from: current.role, to }, headers });
   }
+  return userDetail(id);
+}
+
+/** The plan an administrator may set by hand, and where: a QA account has no card, so only a development environment accepts it (yomizaka#252). */
+export function planChangeRefusal(environment: "dev" | "prod"): { code: string; message: string } | null {
+  return environment === "prod" ? { code: "PLAN_BY_HAND_IN_PRODUCTION", message: "A plan is set by hand in a development environment only; in production it follows the subscription" } : null;
+}
+
+/** Puts an account on Pro without a card (a live subscription row with no end), or back on Free. Audited; refused in production. */
+export async function setUserPlan(actor: { id: string; email: string }, id: string, to: "FREE" | "PRO", environment: "dev" | "prod", headers?: Headers): Promise<UserDetail> {
+  const refusal = planChangeRefusal(environment);
+  if (refusal) throw refuse(403, refusal.code, refusal.message);
+  if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such account");
+  const [before] = await query<{ plan: string }>("SELECT plan FROM accounts WHERE id = $1", [id]);
+  if (!before) throw refuse(404, "NOT_FOUND", "No such account");
+  await query(
+    to === "PRO"
+      ? "UPDATE accounts SET plan = 'PRO', subscription_status = 'active', current_period_end = NULL WHERE id = $1"
+      : "UPDATE accounts SET plan = 'FREE', subscription_status = NULL, current_period_end = NULL WHERE id = $1",
+    [id],
+  );
+  await audit({ action: "admin.user_plan_changed", actorId: actor.id, actorLabel: actor.email, targetId: id, detail: { from: before.plan, to }, headers });
   return userDetail(id);
 }
 

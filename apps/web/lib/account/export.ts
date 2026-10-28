@@ -1,6 +1,8 @@
 import type { CloudOwner, StorageKind } from "@yomizaka/core";
 import type { QueryResultRow } from "pg";
 
+import { holderOf as documentHolder } from "@/app/active-store";
+
 import { ledgerState } from "../billing";
 import { refuse } from "../http";
 import { EXTERNAL, objectKey } from "../retention";
@@ -66,12 +68,17 @@ export async function exportData(q: Query, accountId: string, stores: StoresOf, 
   const docTagRows = await q<{ target: string; tag: string }>("SELECT w.entity_id AS target, t.name AS tag FROM organize.document_tag w JOIN organize.tag t ON t.id = w.tag_id WHERE t.scope_id = $1 AND t.kind = 'document'", [accountId]);
   const docTags = new Map<string, string[]>();
   for (const r of docTagRows) docTags.set(r.target, [...(docTags.get(r.target) ?? []), r.tag]);
-  const docs = await q<{ id: string; title: string; filename: string; mime_type: string; kind: string; size_bytes: number; sha256: string; pages: number | null; created_at: Date; storage: StorageKind; storage_owner: CloudOwner; retain_until: Date | null; collection_id: string | null; folder_id: string | null; text: string; content: Buffer }>(
-    "SELECT id, title, filename, mime_type, kind, size_bytes, sha256, pages, created_at, storage, storage_owner, retain_until, collection_id, folder_id, text, content FROM documents WHERE owner_id = $1 ORDER BY created_at",
+  const docs = await q<{ id: string; title: string; filename: string; mime_type: string; kind: string; size_bytes: number; sha256: string; pages: number | null; created_at: Date; storage: StorageKind; storage_owner: CloudOwner; retain_until: Date | null; collection_id: string | null; folder_id: string | null; text: string; content: Buffer; object_key: string | null }>(
+    "SELECT id, title, filename, mime_type, kind, size_bytes, sha256, pages, created_at, storage, storage_owner, retain_until, collection_id, folder_id, text, content, object_key FROM documents WHERE owner_id = $1 ORDER BY created_at",
     [accountId],
   );
   const analyses = await q<{ id: string; document_id: string; studio: string; status: string; run_id: string | null; created_at: Date; report: unknown }>("SELECT a.id, a.document_id, a.studio, a.status, a.run_id, a.created_at, a.report FROM analyses a JOIN documents d ON d.id = a.document_id WHERE d.owner_id = $1 ORDER BY a.created_at", [accountId]);
   const fileOf = async (d: (typeof docs)[number]) => {
+    // A file in the store (ADR-0012) is read by its key from whoever holds it.
+    if (d.object_key) {
+      const held = await (await documentHolder({ owner_id: accountId, storage: d.storage, storage_owner: d.storage_owner, object_key: d.object_key }))?.get(d.object_key);
+      return held ? { contentType: d.mime_type, base64: Buffer.from(held.bytes).toString("base64") } : null;
+    }
     const store = stores(d.storage_owner);
     if (EXTERNAL.has(d.storage) && store && store.describe().kind === d.storage) {
       const found = await store.get(objectKey(accountId, d.id, d.mime_type));

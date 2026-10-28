@@ -80,7 +80,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    uses: krizaka/.github/.github/workflows/app-videos.yml@4749d988b400b5a184f2e2216946c50f9d9b5e98 # main (krizaka/.github#316)
+    uses: krizaka/.github/.github/workflows/app-videos.yml@7b3a4f39e5e49aa404ad9c73208c10b0fedfcdd1 # main (krizaka/.github#374: sites/<product>/download)
     with:
       product: yomizaka
       manifest: apps/web/content/app-videos.json
