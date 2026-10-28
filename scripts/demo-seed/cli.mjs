@@ -7,6 +7,7 @@
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 
+import { matchesRecorded } from "./cast.mjs";
 import { assertNotProduction, PERSONAS, seedCast, seedPersona } from "./seed.mjs";
 
 const arg = (name) => {
@@ -42,8 +43,9 @@ async function main() {
       console.log(`fingerprint: ${run.fingerprint}`);
       if (process.argv.includes("--check")) {
         const expected = JSON.parse(readFileSync(new URL("./fingerprint.json", import.meta.url), "utf8")).fingerprint;
-        if (run.fingerprint !== expected) throw new Error(`the seeded data differs from the recorded fingerprint\n  expected ${expected}\n  got      ${run.fingerprint}`);
-        console.log("fingerprint: matches the recorded one");
+        const exact = ["localhost", "127.0.0.1", "::1", "[::1]", "postgres", "db"].includes(url.hostname);
+        if (!matchesRecorded(run.fingerprint, expected, exact)) throw new Error(`the seeded data differs from the recorded fingerprint\n  expected ${expected}\n  got      ${run.fingerprint}`);
+        console.log(exact ? "fingerprint: matches the recorded one" : "fingerprint: everything recorded is there (this database is lived in: counts may exceed it)");
       }
       return;
     }

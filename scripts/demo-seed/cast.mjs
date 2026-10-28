@@ -56,3 +56,14 @@ export async function fingerprintOf(q, ownerIds) {
   for (const [table, sql] of Object.entries(FINGERPRINT_QUERIES)) counts[table] = (await q(sql, [ownerIds]))[0].n;
   return { counts, fingerprint: seedFingerprint(counts) };
 }
+
+/**
+ * Whether a database holds the recorded cast. A local or CI database is the seed's alone: the fingerprint is exact. The shared dev
+ * database is lived in (analyses and documents made in the app, other tests), so there the check is « everything recorded is
+ * there »: the accounts exactly, every other count at least.
+ */
+export function matchesRecorded(fingerprint, expected, exact) {
+  const counts = (text) => Object.fromEntries(text.split(";").map((pair) => pair.split("=")).map(([k, v]) => [k, Number(v)]));
+  const got = counts(fingerprint);
+  return Object.entries(counts(expected)).every(([table, n]) => (exact || table === "accounts" ? got[table] === n : got[table] >= n));
+}

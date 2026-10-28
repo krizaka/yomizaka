@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
 import { castOf } from "@krizaka/org";
 
 import { accountsFromEnv, QA_PERSONAS } from "../apps/web/scripts/qa-accounts.mjs";
-import { castAccounts, CAST_ADMIN, CAST_MEMBER, LOCAL_PASSWORD } from "./demo-seed/cast.mjs";
+import { castAccounts, CAST_ADMIN, CAST_MEMBER, LOCAL_PASSWORD, matchesRecorded } from "./demo-seed/cast.mjs";
 import { PERSONAS } from "./demo-seed/seed.mjs";
 
 const files = execFileSync("git", ["ls-files", "*.ts", "*.tsx", "*.mjs", "*.json"], { encoding: "utf8", cwd: new URL("..", import.meta.url) })
@@ -41,5 +41,15 @@ describe("the cast is the only source of the personas", () => {
     const local = castAccounts({ DATABASE_URL: "postgres://u:p@localhost:5432/x" });
     expect(local.map((a) => a.password)).toEqual([LOCAL_PASSWORD, LOCAL_PASSWORD, LOCAL_PASSWORD]);
     expect(local.map((a) => a.email)).toEqual(["eric@demo.yomizaka.test", "mira@demo.yomizaka.test", "camille@demo.yomizaka.test"]);
+  });
+
+  it("compares a local database exactly, and the lived-in dev one by « everything recorded is there » (accounts still exact)", () => {
+    const recorded = "accounts=3;analyses=7;collections=8;documents=16;file_report_shares=2;screenings=1";
+    expect(matchesRecorded(recorded, recorded, true)).toBe(true);
+    const lived = "accounts=3;analyses=13;collections=8;documents=25;file_report_shares=2;screenings=1";
+    expect(matchesRecorded(lived, recorded, true)).toBe(false);
+    expect(matchesRecorded(lived, recorded, false)).toBe(true);
+    expect(matchesRecorded("accounts=3;analyses=6;collections=8;documents=16;file_report_shares=2;screenings=1", recorded, false)).toBe(false);
+    expect(matchesRecorded("accounts=4;analyses=7;collections=8;documents=16;file_report_shares=2;screenings=1", recorded, false)).toBe(false);
   });
 });
