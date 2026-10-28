@@ -152,7 +152,7 @@ async function seedInTransaction(q, def, { persona, address, locale, messagesByL
  * set of `seedPersona`; the administrator gets an account named after its persona. Idempotent; the caller refuses production
  * (`assertNotProduction`) before it connects. Returns the fingerprint of what is there for the cast's accounts.
  */
-export async function seedCast(q, { env, hashPassword, locale, messagesByLocale, reset = false }) {
+export async function seedCast(q, { env, hashPassword, locale = undefined, messagesByLocale, reset = false }) {
   const [member, admin, camille] = castAccounts(env);
   const result = await seedPersona(q, { persona: member.persona.id, email: member.email, locale: locale ?? member.persona.locale, messagesByLocale, reset, passwordHash: await hashPassword(member.password) });
   // The other accounts keep the name the person chose; the role and the credentials follow the environment.
