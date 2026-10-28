@@ -550,7 +550,7 @@
       "added": "Ajouté",
       "fingerprint": "SHA-256",
       "viewer": "Le document",
-      "viewerRegion": "Aperçu du document",
+      "viewerRegion": "Pages du document",
       "text": "Son texte",
       "noText": "Ce PDF n'a pas de couche texte : la vérification au regard de la loi n'a pas pu lire ses clauses. L'examen du fichier, lui, a lieu.",
       "openFile": "Ouvrir le fichier",
@@ -560,7 +560,6 @@
       "checks": "Vérifications",
       "checksLead": "Chaque vérification est un run du moteur de Yomizaka (Orazaka) ; son identifiant est la trace de ce qui a tourné.",
       "passageOf": "Passage cité par {rule}",
-      "viewerRegion": "Pages du document",
       "loadingPdf": "Chargement du document…",
       "pdfFailed": "Le fichier n’a pas pu être affiché. Ouvrez-le avec le bouton ci-dessus.",
       "pageLabel": "Page {page} sur {total}",
@@ -918,7 +917,15 @@
       "COUPON_PARTNER_NOT_FOUND": "Ce partenaire n'existe pas.",
       "COUPON_KEY_REUSED": "Réessayez.",
       "COUPON_NOT_REVOCABLE": "Cette utilisation ne peut pas être révoquée.",
-      "COUPON_BAD_SETTINGS": "Les réglages des coupons ne sont pas valides."
+      "COUPON_BAD_SETTINGS": "Les réglages des coupons ne sont pas valides.",
+      "STORAGE_VAULT_MISSING": "Le stockage des clés n'est pas disponible : la clé du coffre n'est pas déployée.",
+      "STORAGE_PROVIDER_NOT_FOUND": "Ce fournisseur n'existe plus.",
+      "STORAGE_PROVIDER_IN_USE": "Le fournisseur est un défaut, ou des documents y sont encore.",
+      "STORAGE_PROVIDER_NOT_VERIFIED": "Testez d'abord le fournisseur : seul un fournisseur vérifié peut servir.",
+      "STORAGE_BAD_CONFIG": "Le fournisseur n'est pas bien configuré pour ce type ou cet environnement.",
+      "STORAGE_BAD_ENDPOINT": "L'adresse est refusée : utilisez une adresse https publique.",
+      "STORAGE_BAD_SECRET_KEY": "La clé n'est pas valide.",
+      "STORAGE_TEST_FAILED": "Le test de connexion a échoué : rien n'a été enregistré."
     },
     "adminConsole": {
       "shell": {
@@ -940,7 +947,8 @@
           "operations": "Exploitation",
           "app": "Application"
         },
-        "config": "Configuration"
+        "config": "Configuration",
+        "storage": "Stockage"
       },
       "overview": {
         "health": "Santé",
@@ -1198,6 +1206,62 @@
           "draft": "Brouillon",
           "published": "Publié",
           "retired": "Retiré"
+        }
+      },
+      "storage": {
+        "title": "Stockage",
+        "lead": "Où sont gardés les documents et les avatars. Les fournisseurs et leurs clés sont dans la base de données, scellés ; l'environnement ne garde que la clé du coffre. Un fournisseur est testé avant d'être utilisé, et chaque changement est dans le journal d'audit.",
+        "none": "Aucun fournisseur n'est défini : rien n'est gardé, et les dépôts répondent que le stockage n'est pas configuré.",
+        "providers": "Fournisseurs",
+        "kind": "Type",
+        "preset": "Modèle",
+        "residency": "Où sont les fichiers",
+        "untested": "Pas encore testé",
+        "lastTest": "Dernier test",
+        "testOk": "Réussi",
+        "testFailed": "Échoué",
+        "keySet": "définie",
+        "keyNotSet": "non définie",
+        "fromEnvironment": "Importé de l'environnement",
+        "devOnly": "développement seulement",
+        "defaultFor": "Par défaut pour {kind}",
+        "makeDefault": "Utiliser pour {kind}",
+        "test": "Tester la connexion",
+        "changeKey": "Changer une clé",
+        "disable": "Désactiver",
+        "whichKey": "Quelle clé",
+        "newKey": "Nouvelle clé",
+        "newKeyHint": "Saisie une fois, scellée, jamais réaffichée. Elle est testée avant tout enregistrement.",
+        "saveKey": "Tester et enregistrer la clé",
+        "add": "Ajouter un fournisseur",
+        "addLead": "Le fournisseur est enregistré en brouillon et testé aussitôt. Il ne peut servir qu'une fois le test réussi. Les fichiers sont chiffrés avant de partir, avec une clé générée ici.",
+        "addSubmit": "Ajouter et tester",
+        "cancel": "Annuler",
+        "label": "Nom",
+        "enteredOnce": "Saisie une fois, scellée, jamais réaffichée.",
+        "statuses": {
+          "draft": "Brouillon",
+          "verified": "Vérifié",
+          "active": "Utilisé",
+          "retiring": "En retrait",
+          "disabled": "Désactivé"
+        },
+        "dataKinds": {
+          "documents": "les documents",
+          "avatars": "les avatars"
+        },
+        "fields": {
+          "endpoint": "Adresse",
+          "region": "Région",
+          "bucket": "Seau",
+          "zone": "Zone",
+          "pullHostname": "Hôte de la pull zone",
+          "prefix": "Préfixe",
+          "accessKey": "Mot de passe de la zone",
+          "tokenKey": "Clé des liens",
+          "accessKeyId": "Identifiant de clé d'accès",
+          "secretAccessKey": "Clé d'accès secrète",
+          "encryptionKey": "Clé de chiffrement des objets"
         }
       }
     },
