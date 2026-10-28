@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // A signed-in person never sees the public side first (krizaka-ui#827), proven in a real browser as the seeded persona:
 //   1. `/` and `/<locale>` land on the home (`/<locale>/app`), server-side, with no page of the landing in between;
-//   2. a public page that stays reachable signed in (pricing) never draws « Sign in » in the bar — not at the first paint,
+//   2. a public page that stays reachable signed in (terms) never draws « Sign in » in the bar — not at the first paint,
 //      not for an instant while `/api/me` answers (a MutationObserver from document start records any sign-in link of the header);
 //   3. the same public page signed out still offers « Sign in » (the guard is not vacuous).
 //
@@ -39,9 +39,9 @@ export async function check({ base, locale = "fr", email, password }) {
     await context.addInitScript(watchSignInLink);
     const page = await context.newPage();
     // Signed out first: the public page does offer « Sign in » (so the next checks mean something).
-    await loadSettled(page, `${base}/${locale}/pricing`);
+    await loadSettled(page, `${base}/${locale}/terms`);
     await page.waitForFunction(() => document.querySelector('header a[href$="/sign-in"], nav a[href$="/sign-in"]') !== null, null, { timeout: 15_000 }).catch(() => {
-      problems.push(`/${locale}/pricing signed out: no « Sign in » link in the bar (the guard would pass for nothing)`);
+      problems.push(`/${locale}/terms signed out: no « Sign in » link in the bar (the guard would pass for nothing)`);
     });
     await signIn(page, base, locale, email, password);
     for (const from of ["/", `/${locale}`]) {
@@ -53,9 +53,9 @@ export async function check({ base, locale = "fr", email, password }) {
     if (raw.status() !== 307) problems.push(`/${locale} signed in: expected a 307 from the server, got ${raw.status()}`);
     if (raw.headers()["cache-control"] !== "private, no-store") problems.push(`/${locale} signed in: Cache-Control must be « private, no-store », got ${raw.headers()["cache-control"]}`);
     if (!/cookie/i.test(raw.headers().vary ?? "")) problems.push(`/${locale} signed in: Vary must name Cookie, got ${raw.headers().vary}`);
-    await loadSettled(page, `${base}/${locale}/pricing`);
+    await loadSettled(page, `${base}/${locale}/terms`);
     await page.waitForFunction(() => document.querySelector('header button, nav button, header [data-state]') !== null, null, { timeout: 15_000 }).catch(() => {});
-    if (await page.evaluate(() => window.__sawSignIn)) problems.push(`/${locale}/pricing signed in: the bar drew « Sign in » for an instant`);
+    if (await page.evaluate(() => window.__sawSignIn)) problems.push(`/${locale}/terms signed in: the bar drew « Sign in » for an instant`);
     await context.close();
   } finally {
     await browser.close();
