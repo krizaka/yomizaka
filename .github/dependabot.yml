@@ -1,37 +1,45 @@
-# Dependabot — the Krizaka model (monthly, quiet; DEPS 2026-10-13, krizaka/.github).
-# Once a month (the 1st, 06:00 Paris), ONE grouped pull request per ecosystem — every update, majors included — and at
-# most one open per ecosystem. Security fixes stay on and arrive grouped apart, as soon as an advisory is published.
-# The ignore rules below are decisions, not oversights: Node LTS only (22/24), PostgreSQL 16 (parity with the
-# DigitalOcean databases), TypeScript 7 / ESLint 10 only once @krizaka/config supports them (krizaka/krizaka-ui#141),
-# the Expo SDK pins its own toolchain, and each deferred major names its tracking issue.
-# A grouped pull request is merged when CI is green; a major that breaks it gets an ignore rule here and an issue.
+# Dependabot — the Krizaka model (weekly, grouped; krizaka/.github#332, Oussama 2026-10-28).
+# Every Monday (06:00 Paris): ONE pull request for the family (`krizaka`: @krizaka/* and com.krizaka*, minor and
+# patch), ONE for every other minor and patch (`minor-patch`); a major is its own pull request (never grouped,
+# never auto-merged). Security fixes stay on and arrive grouped apart, as soon as an advisory is published.
+# Auto-merge is the shared workflow of krizaka/.github (dependabot-automerge.yml): minor and patch only, once CI is green.
+# The ignore rules below are decisions, not oversights: Node LTS only (22/24), TypeScript 7 / ESLint 10 only once
+# @krizaka/config supports them (krizaka/krizaka-ui#141), and each deferred major names its tracking issue.
 version: 2
 updates:
+
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval: monthly
+      interval: weekly
+      day: monday
       time: "06:00"
       timezone: Europe/Paris
     groups:
-      all:
+      minor-patch:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
     commit-message:
       prefix: "ci(deps)"
     labels: ["area:deps"]
-    open-pull-requests-limit: 1
+    open-pull-requests-limit: 5
     cooldown:
       default-days: 7
 
   - package-ecosystem: npm
     directory: "/"
     schedule:
-      interval: monthly
+      interval: weekly
+      day: monday
       time: "06:00"
       timezone: Europe/Paris
     groups:
-      all:
+      krizaka:
+        patterns: ["@krizaka/*"]
+        update-types: ["minor", "patch"]
+      minor-patch:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
       security:
         applies-to: security-updates
         patterns: ["*"]
@@ -49,19 +57,21 @@ updates:
       prefix: "chore(deps)"
       prefix-development: "chore(deps-dev)"
     labels: ["area:deps"]
-    open-pull-requests-limit: 1
+    open-pull-requests-limit: 5
     cooldown:
       default-days: 7
 
   - package-ecosystem: docker
     directory: "/deploy/docker"
     schedule:
-      interval: monthly
+      interval: weekly
+      day: monday
       time: "06:00"
       timezone: Europe/Paris
     groups:
-      all:
+      minor-patch:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
       security:
         applies-to: security-updates
         patterns: ["*"]
@@ -72,6 +82,6 @@ updates:
     commit-message:
       prefix: "chore(deps)"
     labels: ["area:deps"]
-    open-pull-requests-limit: 1
+    open-pull-requests-limit: 5
     cooldown:
       default-days: 7
