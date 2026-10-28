@@ -14,7 +14,6 @@ import { asLocale, format, getDictionary } from "@/lib/i18n";
 import { limit } from "@/lib/limits";
 import { pickReportLang } from "@/lib/owner-report-lang";
 import { openShare } from "@/lib/owner-report-shares";
-import { ruleTitle } from "@/lib/rule-text";
 import { pagePath } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -36,7 +35,6 @@ export default async function OwnerReportPage({ params, searchParams }: Readonly
   if (!report) notFound();
   const back = { href: pagePath(locale, "home"), label: t.meta.siteName };
   const date = new Date(report.issuedAt).toLocaleDateString(INTL[lang], { dateStyle: "long", timeZone: DISPLAY_TIME_ZONE });
-  const verdicts: Record<string, string> = w.verdict;
   return (
     <>
       <SiteHeader locale={locale} current="home" />
