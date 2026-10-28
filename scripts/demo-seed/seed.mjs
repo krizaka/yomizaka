@@ -113,6 +113,8 @@ async function seedInTransaction(q, def, { persona, address, locale, messagesByL
 
   const [library] = await q("SELECT id FROM libraries WHERE owner_id = $1 ORDER BY created_at, id LIMIT 1", [owner]);
   const counts = {};
+  // Each report is stamped one minute after the previous one: a list ordered by date reads the same on every run (ties made the visual baselines flicker).
+  let minute = 0;
   for (const collection of def.collections) {
     const { name, description } = words(collection.key);
     const [row] = await q(
@@ -134,9 +136,9 @@ async function seedInTransaction(q, def, { persona, address, locale, messagesByL
         const runId = `${SEEDED_RUN_PREFIX}${id}`;
         await q(
           `INSERT INTO analyses (document_id, studio, status, run_id, blueprint_version, inputs, report, search_text, finished_at)
-           SELECT $1, $2, 'succeeded', $3, NULL, $4, $5, $6, now()
+           SELECT $1, $2, 'succeeded', $3, NULL, $4, $5, $6, now() - make_interval(mins => $7)
             WHERE NOT EXISTS (SELECT 1 FROM analyses WHERE document_id = $1 AND run_id = $3)`,
-          [stored.id, studio, runId, JSON.stringify(SEEDED_INPUTS), JSON.stringify({ ...report, attention: needsAttention(report) }), searchTextOf(report)],
+          [stored.id, studio, runId, JSON.stringify(SEEDED_INPUTS), JSON.stringify({ ...report, attention: needsAttention(report) }), searchTextOf(report), def.collections.reduce((n, c) => n + c.documents.length, 0) - minute++],
         );
       }
     }

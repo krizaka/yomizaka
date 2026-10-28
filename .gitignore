@@ -29,3 +29,7 @@ docs/screenshots/
 
 # Generated demo documents (scripts/demo-documents): rebuilt, never committed
 demo-documents-out/
+.visual-now
+web-visual.log
+test-results/
+playwright-report/
