@@ -170,8 +170,10 @@ function tooTall(el) {
   if (text.length < 12 || /\s/.test(text) || el.children.length > 1) return false;
   const cs = getComputedStyle(el);
   const lh = Number.parseFloat(cs.lineHeight) || Number.parseFloat(cs.fontSize) * 1.4;
-  const content = el.getBoundingClientRect().height - Number.parseFloat(cs.paddingTop) - Number.parseFloat(cs.paddingBottom);
-  return content > lh * 2.5;
+  // The text's own height, not the cell's: a cell stretched by a taller neighbour is tall without any wrapping.
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  return range.getBoundingClientRect().height > lh * 2.5;
 }
 
 function wrappedOf() {
