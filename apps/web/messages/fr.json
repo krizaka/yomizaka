@@ -3427,6 +3427,27 @@
         "name": "Mac",
         "body": "Gardez une bibliothèque dans un dossier de votre Mac, glissez-y des documents depuis le Finder. Vos documents ne quittent jamais le dossier."
       }
+    },
+    "videos": {
+      "title": "Voyez-le fonctionner",
+      "lead": "De courts enregistrements faits par nos tests automatiques, sur un personnage de démonstration fictif et des données de démonstration, dans la version en développement. Ils sont refaits à chaque changement : ils montrent l'application telle qu'elle est aujourd'hui.",
+      "play": "Lire",
+      "recorded": "Enregistré le {date}",
+      "seconds": "{seconds} s, sans son",
+      "items": {
+        "web-binder": {
+          "name": "Sur le web : le classeur",
+          "body": "Connexion, puis le classeur : vos collections et les vérifications à regarder, puis une collection et ses documents."
+        },
+        "web-report": {
+          "name": "Sur le web : le rapport",
+          "body": "Un document de la bibliothèque et son rapport : chaque constat cite la ligne sur laquelle il repose."
+        },
+        "android-documents": {
+          "name": "Sur Android : l’application",
+          "body": "Vos collections et leurs documents, puis les vérifications et leurs lots, sur le téléphone."
+        }
+      }
     }
   },
   "demo": {

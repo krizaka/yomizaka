@@ -3427,6 +3427,27 @@
         "name": "Mac",
         "body": "Keep a library in a folder on your Mac, drag documents in from Finder. Your documents never leave the folder."
       }
+    },
+    "videos": {
+      "title": "See it work",
+      "lead": "Short recordings made by our automated tests, on a fictitious demo persona and demo data, in the development build. They are re-recorded on every change, so they show the app as it is today.",
+      "play": "Play",
+      "recorded": "Recorded {date}",
+      "seconds": "{seconds} s, no sound",
+      "items": {
+        "web-binder": {
+          "name": "On the web: the binder",
+          "body": "Sign in, then the binder: your collections and the checks to look at, then a collection and its documents."
+        },
+        "web-report": {
+          "name": "On the web: the report",
+          "body": "A document of the library and its report: every finding cites the line it rests on."
+        },
+        "android-documents": {
+          "name": "On Android: the app",
+          "body": "Your collections and the documents in them, then the checks and their batches, on the phone."
+        }
+      }
     }
   },
   "demo": {

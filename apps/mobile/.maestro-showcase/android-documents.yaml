@@ -1,0 +1,28 @@
+# The phone video of the download page (krizaka/.github#315): the signed-in space as the demo persona Éric, ~20 s.
+# NOT a required flow: it lives in .maestro-showcase, run by the « Download page videos » jobs of mobile-ci.yml on main, after
+# mobile-e2e is green. The sign-in happens before the recording starts (nothing typed is filmed); the persona's data is the CI seed.
+# « Run a check » needs the Orazaka engine, which the CI backend does not have: it is not shown, and the page does not claim it.
+appId: com.krizaka.yomizaka
+---
+- runFlow: ../.maestro/shared/launch.yaml
+- runFlow: ../.maestro/shared/sign-in.yaml
+- assertVisible: "Vérifier un document|Check a document"
+- tapOn: "Accueil|Home"
+- extendedWaitUntil:
+    visible: "Immeuble Rosemont"
+    timeout: 30000
+- startRecording: android-documents
+- waitForAnimationToEnd
+- scroll
+- scrollUntilVisible:
+    element: "Factures 2026"
+- tapOn: "Vérifications|Checks"
+- extendedWaitUntil:
+    visible: "Lots|Batches"
+    timeout: 30000
+- waitForAnimationToEnd
+- tapOn: "Lots|Batches"
+- waitForAnimationToEnd
+- tapOn: "Accueil|Home"
+- waitForAnimationToEnd
+- stopRecording

@@ -1,3 +1,5 @@
+import { APP_VIDEOS, type AppVideo } from "./app-videos";
+
 /**
  * Where the apps can be downloaded: structure only (the words are `download.platforms.<id>`). A platform shows « soon »
  * until its link exists: TestFlight or the App Store for iOS, a release asset for Android and the Mac. Never a dead button.
@@ -24,3 +26,6 @@ export const downloadState = (download: Download): DownloadState => (download.hr
 
 /** Whether any app can be downloaded. While none can, `/download` answers 308 to the home and is in neither the footer nor the sitemap (yomizaka#389). */
 export const downloadsOffered = (downloads: readonly Download[] = DOWNLOADS): boolean => downloads.some((d) => downloadState(d) === DOWNLOAD_STATE.available);
+
+/** Whether `/download` is public: an app can be downloaded, or the e2e tests recorded a video of one (krizaka/.github#315). Parked otherwise. */
+export const downloadPageOpen = (downloads: readonly Download[] = DOWNLOADS, videos: readonly AppVideo[] = APP_VIDEOS): boolean => downloadsOffered(downloads) || videos.length > 0;

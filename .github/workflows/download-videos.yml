@@ -1,0 +1,95 @@
+# The videos of the download page (krizaka/.github#315): every night, and on demand, the showcase journeys are recorded on main and
+# the org's app-videos workflow transcodes, uploads to Bunny and opens one PR (reviewed and CI-gated like any other). Never required,
+# so it cannot block a merge. No workflow_run trigger (it runs with secrets after code it did not choose) and no secrets: inherit;
+# kept out of mobile-ci.yml, whose jobs are all unconditional (scripts/ci-mobile-e2e.test.mjs).
+name: Download videos
+
+on:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # The web videos of the download page (krizaka/.github#315), recorded by the e2e tests themselves on the seeded persona Éric:
+  # the same throwaway backend as the phone's flows, the showcase journeys of scripts/showcase-web.mjs (the binder, the report),
+  # then the org's `app-videos` workflow transcodes, uploads to Bunny and opens one PR with apps/web/content/app-videos.json.
+  # Run by this workflow on main; never a required check.
+  showcase-web:
+    name: Showcase videos (web)
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: main
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --prefer-offline
+      - run: pnpm exec playwright-core install --with-deps chromium
+      - name: The demo persona (masked, for this run only), its backend and the journeys
+        run: |
+          password="$(openssl rand -hex 16)"
+          echo "::add-mask::$password"
+          DEMO_ACCOUNT_EMAIL=eric@demo.yomizaka.test DEMO_ACCOUNT_PASSWORD="$password" bash scripts/ci-mobile-backend.sh
+          E2E_EMAIL=eric@demo.yomizaka.test E2E_PASSWORD="$password" node scripts/showcase-web.mjs showcase-web --base http://localhost:3000 --locale fr
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: showcase-web
+          path: showcase-web
+          retention-days: 7
+
+  # The phone's video: a second call of the Maestro workflow, never required, so it can not block `mobile-e2e / gate`. Its flows are
+  # in apps/mobile/.maestro-showcase (startRecording / stopRecording); the whole-run recorder is off (two recorders fight).
+  mobile-showcase:
+    name: Showcase video (phone)
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+    uses: krizaka/.github/.github/workflows/mobile-e2e.yml@207717e5fbc0f69eef10668496d6e83f8a4cd89f # main (krizaka/.github#318)
+    with:
+      app-id: com.krizaka.yomizaka
+      app-directory: apps/mobile
+      flows-directory: .maestro-showcase
+      artifact-name: maestro-showcase
+      screen-recording: false
+      package-manager: pnpm
+      lockfile-directory: .
+      install-command: pnpm install --frozen-lockfile
+      demo-email: eric@demo.yomizaka.test
+      setup-command: bash scripts/ci-mobile-backend.sh
+      reverse-ports: "3000"
+      allow-cleartext: true
+      env: |
+        EXPO_PUBLIC_APP_URL=http://localhost:3000
+        EXPO_PUBLIC_APP_ENV=dev
+
+  app-videos:
+    name: Download page videos
+    needs: [showcase-web, mobile-showcase]
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: krizaka/.github/.github/workflows/app-videos.yml@4749d988b400b5a184f2e2216946c50f9d9b5e98 # main (krizaka/.github#316)
+    with:
+      product: yomizaka
+      manifest: apps/web/content/app-videos.json
+      artifacts: |
+        showcase-web
+        maestro-showcase
+    secrets:
+      MEDIA_STORAGE_API_KEY: ${{ secrets.MEDIA_STORAGE_API_KEY }}
+      MEDIA_STORAGE_ZONE: ${{ secrets.MEDIA_STORAGE_ZONE }}
+      MEDIA_STORAGE_ENDPOINT: ${{ secrets.MEDIA_STORAGE_ENDPOINT }}
+      MEDIA_CDN_HOSTNAME: ${{ secrets.MEDIA_CDN_HOSTNAME }}
+      RELEASE_APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
