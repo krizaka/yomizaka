@@ -11,6 +11,10 @@
     {
       "path": "a11y-baseline.app.json",
       "why": "the axe baseline of the signed-in pages (ratchet: only goes down), read by scripts/check-app-pages.mjs (yomizaka#462)"
+    },
+    {
+      "path": "osv-scanner.toml",
+      "why": "osv-scanner reads its dated ignore list only from the repository root (the shared osv-scan, krizaka/.github#372)"
     }
   ]
 }

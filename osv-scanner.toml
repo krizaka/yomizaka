@@ -1,0 +1,17 @@
+# Known vulnerabilities we accept for now (krizaka/.github#372). Each entry has a reason and a date: the ignore EXPIRES, then CI
+# fails again (the shared osv-scan workflow fails on high/critical). Never extend a date without checking for a fix first.
+
+[[IgnoredVulns]]
+id = "GHSA-86w9-cpqp-85rv"
+ignoreUntil = 2026-12-15
+reason = "node-forge via Expo CLI: Build-time only (Expo CLI, never shipped); no fixed release exists upstream"
+
+[[IgnoredVulns]]
+id = "GHSA-mrhx-c7xc-m3w5"
+ignoreUntil = 2026-12-15
+reason = "zod 3.x via @expo/cli (needs zod 3 API): build-time only, never shipped"
+
+[[IgnoredVulns]]
+id = "GHSA-gcqx-w48m-w2h4"
+ignoreUntil = 2026-12-15
+reason = "deepmerge 4.3.1 via @expo/config: Build-time only (Expo CLI, never shipped); no fixed release exists upstream"
