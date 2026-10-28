@@ -24,6 +24,8 @@ export const envSchema = z.object({
   APP_SEARCH_INDEXING: z.enum(["on", "off"]).default("on"),
   /** Which environment this deployment is: a flow is enabled per environment (ADR-0003). */
   APP_ENVIRONMENT: z.enum(["dev", "prod"]).default("dev"),
+  /** The backfill of ADR-0012: the bytes still in `documents.content` move to the store (`on`), are only counted (`dry-run`), or stay (`off`). */
+  APP_DOCUMENTS_BACKFILL: z.enum(["on", "dry-run", "off"]).default("on"),
   /** The public origin of the site (canonical URLs, sitemap, llms.txt). */
   APP_PUBLIC_URL: z.string().url().default("https://www.yomizaka.com"),
   /** Optional credentials for the dev/local demo persona seed. */
