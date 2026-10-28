@@ -43,7 +43,7 @@ describe("the download page's videos (krizaka/.github#315)", () => {
     const now = new Date("2026-11-20T00:00:00Z");
     const v = (capturedAt: string) => ({ platform: "web", flow: "x", seconds: 5, capturedAt, files: { webm: "", mp4: "", poster: "" } });
     expect(staleVideos(now, [v("2026-11-07T00:00:01Z")])).toEqual([]);
-    expect(staleVideos(now, [v("2026-11-05T00:00:00Z")]).length).toBe(1);
+    expect(staleVideos(now, [v("2026-11-05T00:00:00Z")])).toHaveLength(1);
   });
 
   it("the page says nothing of stores or availability beyond the platform cards", () => {

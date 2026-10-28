@@ -107,7 +107,7 @@ await record(
     await firstDocument(page).click();
     await page.waitForLoadState("networkidle");
     await page.waitForTimeout(1800);
-    const href = new URL(page.url()).pathname.match(/\/app\/documents\/[^/?#]+/)?.[0];
+    const href = /\/app\/documents\/[^/?#]+/.exec(new URL(page.url()).pathname)?.[0];
     if (!href) throw new Error("no document in the library: the demo data is missing");
     await page.goto(`${base}/${locale}${href}/rapport`, { waitUntil: "networkidle" });
     await page.waitForTimeout(2200);
