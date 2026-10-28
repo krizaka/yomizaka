@@ -18,7 +18,7 @@ const notFound = () => new NextResponse("Not found", { status: 404 });
 /** krizaka-ui#827: a signed-in person never sees the public landing page; the cookie is a hint, the app and the API still resolve the session. */
 const LANDING = ["/", "/fr", "/en"] as const;
 const hinted = <T extends NextResponse>(response: T, request: NextRequest): T => sessionHint(response, request, { cookie: SESSION_COOKIE, secure: process.env.NODE_ENV === "production" });
-const seal = <T extends NextResponse>(response: T, closed: boolean): T => {
+const seal = <T extends Response>(response: T, closed: boolean): T => {
   if (closed) response.headers.set("x-robots-tag", NOINDEX_HEADER);
   return response;
 };
