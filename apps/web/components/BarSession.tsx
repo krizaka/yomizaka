@@ -5,7 +5,7 @@ import { HomeIcon, LogoutIcon, SettingsIcon } from "@krizaka/icons";
 import { krizakaFetch, KrizakaQueryProvider, useMutation, useQuery, useQueryClient } from "@krizaka/query";
 import { AccountMenu } from "@krizaka/ui/account-menu";
 import { Button } from "@krizaka/ui/button";
-import { type NavSession, ProductBarActions, sessionKey, useNavSession } from "@krizaka/ui/nav-bar";
+import { type NavSession, ProductBarActions, sessionKey, useNavSession, useSessionHint } from "@krizaka/ui/nav-bar";
 import Link from "next/link";
 import { z } from "zod";
 
@@ -91,6 +91,7 @@ const signupStatus = z.object({ open: z.boolean() });
 export function BarActions({ locale, placement }: Readonly<{ locale: Locale; placement: "bar" | "panel" }>) {
   const client = useQueryClient();
   const { pending, me } = useMe();
+  const hinted = useSessionHint();
   const signup = useQuery({
     queryKey: ["signup-status"],
     queryFn: () => krizakaFetch("/api/auth/sign-up/status", { schema: signupStatus }).then((r) => r.open, () => false),
@@ -100,7 +101,8 @@ export function BarActions({ locale, placement }: Readonly<{ locale: Locale; pla
   });
   const signOut = useMutation({ mutationFn: () => signOutAndForget(client, () => krizakaFetch("/api/auth/sign-out", { method: "POST" })) });
   // Neither « Sign in » nor the avatar until the session is known: a signed-in person never sees the bar flash signed out.
-  if (pending) return <span data-testid="bar-session" data-session="pending" aria-hidden="true" className="inline-block h-9 min-w-24" />;
+  // With the proxy's hint (a session cookie exists, krizaka-ui#827) the reserved place is the account's own size.
+  if (pending) return <span data-testid="bar-session" data-session="pending" data-hint={hinted ? "signed-in" : undefined} aria-hidden="true" className={hinted ? "inline-block size-9 rounded-full bg-fg-secondary/20" : "inline-block h-9 min-w-24"} />;
   return <BarActionsView locale={locale} placement={placement} me={me} signupOpen={signup.data ?? false} onSignOut={() => signOut.mutate()} />;
 }
 
