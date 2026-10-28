@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { auditLog, deleteAccount, exportAccount, revokeUserSessions, setUserRole, userDetail } from "./admin";
+import { auditLog, deleteAccount, exportAccount, revokeUserSessions, setUserPlan, setUserRole, userDetail } from "./admin";
+import { entitlementOf } from "./billing";
 import { migrate, pool, query } from "./db";
 import { databaseBudget, poolUsage, queue, recentErrors, rulesetsInUse } from "./operations";
 import { createSession } from "./session";
@@ -29,6 +30,16 @@ describe.runIf(enabled)("administration of an account", () => {
     expect((await setUserRole(admin, person.id, "ADMIN")).role).toBe("ADMIN");
     expect((await setUserRole(admin, person.id, "USER")).role).toBe("USER");
     expect((await auditLog(10, person.id)).filter((e) => e.action === "admin.user_role_changed")).toHaveLength(2);
+  });
+
+  it("puts an account on Pro without a card and back on Free, says so in the audit log, and the entitlement follows (yomizaka#252)", async () => {
+    expect((await setUserPlan(admin, person.id, "PRO", "dev")).plan).toBe("PRO");
+    expect((await entitlementOf(query, person.id, new Date())).pro).toBe(true);
+    expect((await setUserPlan(admin, person.id, "FREE", "dev")).plan).toBe("FREE");
+    expect((await entitlementOf(query, person.id, new Date())).pro).toBe(false);
+    expect((await auditLog(10, person.id)).filter((e) => e.action === "admin.user_plan_changed")).toHaveLength(2);
+    await expect(setUserPlan(admin, person.id, "PRO", "prod")).rejects.toMatchObject({ status: 403, message: expect.stringContaining("development environment") });
+    await expect(setUserPlan(admin, "not-an-id", "PRO", "dev")).rejects.toMatchObject({ status: 404 });
   });
 
   it("ends every session without suspending the account", async () => {
