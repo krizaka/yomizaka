@@ -834,6 +834,7 @@
       "LAST_LIBRARY": "The last library cannot be deleted.",
       "NOT_KEPT": "This document is not kept: only its report stays. Upload it again with “Keep my documents” to check it again.",
       "STORAGE_UNAVAILABLE": "The storage that keeps documents did not answer.",
+      "STORAGE_NOT_CONFIGURED": "Document storage is not set up: an administrator must choose a provider.",
       "WRONG_PASSWORD": "The password is not right.",
       "PASSWORD_TOO_SHORT": "The password must be at least 12 characters.",
       "PASSWORD_TOO_LONG": "The password is too long.",

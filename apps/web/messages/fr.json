@@ -834,6 +834,7 @@
       "LAST_LIBRARY": "La dernière bibliothèque ne peut pas être supprimée.",
       "NOT_KEPT": "Ce document n'est pas conservé : seul son rapport reste. Déposez-le de nouveau avec « Conserver mes documents » pour le revérifier.",
       "STORAGE_UNAVAILABLE": "Le stockage des documents n'a pas répondu.",
+      "STORAGE_NOT_CONFIGURED": "Le stockage des documents n'est pas configuré : un administrateur doit choisir un fournisseur.",
       "WRONG_PASSWORD": "Le mot de passe n'est pas le bon.",
       "PASSWORD_TOO_SHORT": "Le mot de passe doit faire au moins 12 caractères.",
       "PASSWORD_TOO_LONG": "Le mot de passe est trop long.",

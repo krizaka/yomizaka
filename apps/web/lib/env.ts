@@ -25,8 +25,8 @@ export const envSchema = z.object({
   APP_SEARCH_INDEXING: z.enum(["on", "off"]).default("on"),
   /** Which environment this deployment is: a flow is enabled per environment (ADR-0003). */
   APP_ENVIRONMENT: z.enum(["dev", "prod"]).default("dev"),
-  /** Where the bytes of a document that is not kept live (ADR-0012): `database` (a deployed environment without a bucket), `folder` (a laptop and the tests; a deployed app refuses to start with it), `spaces` (the deployment's bucket, `MEDIA_DOCUMENTS_PROVIDER`). */
-  APP_DOCUMENTS_STORE: z.enum(DOCUMENTS_STORES).default("folder"),
+  /** What holds the bytes of a document when no provider is configured (ADR-0012): `none` (the default: uploads are refused with a clear message, the app starts) or `folder` (opt-in: a laptop and the tests; a deployed app refuses to start with it). Document bytes never go to PostgreSQL. */
+  APP_DOCUMENTS_STORE: z.enum(DOCUMENTS_STORES).default("none"),
   /** The backfill of ADR-0012: the bytes still in `documents.content` move to the store (`on`), are only counted (`dry-run`), or stay (`off`). */
   APP_DOCUMENTS_BACKFILL: z.enum(["on", "dry-run", "off"]).default("on"),
   /** The public origin of the site (canonical URLs, sitemap, llms.txt). */
@@ -127,8 +127,7 @@ export function productionProblems(env: Env): string[] {
       problems.push((error as Error).message);
     }
   if (env.APP_ENVIRONMENT === "prod" && env.MEDIA_DOCUMENTS_PROVIDER === STORAGE_KIND.bunny) problems.push("MEDIA_DOCUMENTS_PROVIDER=bunny has no Canadian region: development and fictional data only");
-  if (env.APP_DOCUMENTS_STORE === "folder") problems.push("APP_DOCUMENTS_STORE=folder loses every document at a redeploy: a deployed app uses database or spaces");
-  if (env.APP_DOCUMENTS_STORE === "spaces" && env.MEDIA_DOCUMENTS_PROVIDER === STORAGE_KIND.none) problems.push("APP_DOCUMENTS_STORE=spaces needs MEDIA_DOCUMENTS_PROVIDER (a bucket)");
+  if (env.APP_DOCUMENTS_STORE === "folder") problems.push("APP_DOCUMENTS_STORE=folder loses every document at a redeploy: a deployed app configures a storage provider");
   if (env.DATABASE_URL && /sslmode=(require|verify)/.test(env.DATABASE_URL) && !env.DATABASE_CA_CERT) problems.push("DATABASE_CA_CERT is required for a TLS database");
   return problems;
 }

@@ -1,45 +1,39 @@
 import { describe, expect, it } from "vitest";
 
+import { readEnv } from "../env";
 import { memoryStore } from "./memory";
 import { DOCUMENTS_STORES, workingStoreFor } from "./working";
 
-const opened = () => {
+const opened = (configured: ReturnType<typeof memoryStore> | null = null) => {
   const calls: string[] = [];
-  const mk = (name: string) => () => {
-    calls.push(name);
-    return memoryStore();
-  };
-  return {
-    calls,
-    stores: {
-      spaces: async () => {
-        mk("spaces")();
-        return null;
-      },
-      database: mk("database"),
-      folder: mk("folder"),
-    },
-  };
+  return { calls, stores: { configured: async () => configured, folder: () => (calls.push("folder"), memoryStore()) } };
 };
 
 describe("workingStoreFor (APP_DOCUMENTS_STORE)", () => {
-  it("opens only the store that was chosen", async () => {
-    for (const mode of ["database", "folder"] as const) {
-      const { calls, stores } = opened();
-      expect(await workingStoreFor(mode, stores)).not.toBeNull();
-      expect(calls).toEqual([mode]);
-    }
-  });
-
-  it("spaces answers the deployment's bucket, or null when it has none (uploads are then refused)", async () => {
-    const bucket = memoryStore();
-    expect(await workingStoreFor("spaces", { ...opened().stores, spaces: async () => bucket })).toBe(bucket);
+  it("with no variable and no provider there is no store: uploads are refused, nothing is written anywhere", async () => {
+    const mode = readEnv({}).APP_DOCUMENTS_STORE;
+    expect(mode).toBe("none");
     const { calls, stores } = opened();
-    expect(await workingStoreFor("spaces", stores)).toBeNull();
-    expect(calls).toEqual(["spaces"]);
+    expect(await workingStoreFor(mode, stores)).toBeNull();
+    expect(calls).toEqual([]);
   });
 
-  it("knows exactly three modes", () => {
-    expect([...DOCUMENTS_STORES]).toEqual(["database", "folder", "spaces"]);
+  it("folder (opt-in) opens the local folder only when no provider is configured", async () => {
+    const { calls, stores } = opened();
+    expect(await workingStoreFor("folder", stores)).not.toBeNull();
+    expect(calls).toEqual(["folder"]);
+    const bucket = memoryStore();
+    const withProvider = opened(bucket);
+    expect(await workingStoreFor("folder", withProvider.stores)).toBe(bucket);
+    expect(withProvider.calls).toEqual([]);
+  });
+
+  it("a configured provider wins over the default", async () => {
+    const bucket = memoryStore();
+    expect(await workingStoreFor("none", opened(bucket).stores)).toBe(bucket);
+  });
+
+  it("knows exactly two modes", () => {
+    expect([...DOCUMENTS_STORES]).toEqual(["none", "folder"]);
   });
 });

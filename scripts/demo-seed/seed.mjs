@@ -10,24 +10,24 @@ import { generateDocument, PERSONA_ERIC, AS_OF, DEFAULT_SEED } from "../demo-doc
 import { CAST_MEMBER, castAccounts, fingerprintOf } from "./cast.mjs";
 
 /**
- * Where the seeded bytes go: the working store the app is configured with (`APP_DOCUMENTS_STORE`, apps/web/lib/env.ts; ADR-0012). `database`
- * (the dev deployment, CI) writes the `document_blobs` table like the app's database adapter (apps/web/lib/storage/database.ts: the seed
- * cannot import TypeScript, the guard names both); `folder` (a laptop, the default) writes the folder of apps/web/lib/storage/local.ts.
- * A bucket (`spaces`) is not seeded from here.
+ * Where the seeded bytes go: the working store the app is configured with (`APP_DOCUMENTS_STORE`, apps/web/lib/env.ts; ADR-0012).
+ * `folder` (opt-in, a laptop and the tests) writes the folder of apps/web/lib/storage/local.ts. Anywhere else (`none`, the default: a
+ * deployed environment) the seed keeps the metadata and skips the bytes, and says why: no document bytes go to PostgreSQL and the
+ * server's disk is not a place for them. The provider (Bunny, admin-configured) comes with krizaka-ts#216.
  */
 const workingFolder = () => join(tmpdir(), "yomizaka-documents");
-export function bytesWriter(env, q) {
-  const mode = env.APP_DOCUMENTS_STORE ?? "folder";
-  if (mode === "database") {
-    return (key, bytes) =>
-      q("INSERT INTO document_blobs (object_key, content_type, bytes) VALUES ($1, 'application/pdf', $2) ON CONFLICT (object_key) DO UPDATE SET content_type = EXCLUDED.content_type, bytes = EXCLUDED.bytes", [key, Buffer.from(bytes)]);
+export function bytesWriter(env, log = console.warn) {
+  const mode = env.APP_DOCUMENTS_STORE ?? "none";
+  if (mode === "folder") {
+    const write = async (key, bytes) => {
+      const path = join(workingFolder(), key);
+      await mkdir(dirname(path), { recursive: true });
+      await writeFile(path, bytes);
+    };
+    return Object.assign(write, { stores: true });
   }
-  if (mode !== "folder") throw new Error(`the demo seed writes APP_DOCUMENTS_STORE=database or folder, not ${mode}`);
-  return async (key, bytes) => {
-    const path = join(workingFolder(), key);
-    await mkdir(dirname(path), { recursive: true });
-    await writeFile(path, bytes);
-  };
+  log(`demo:seed: APP_DOCUMENTS_STORE=${mode}: the documents' metadata is seeded, their bytes are not (no storage provider here yet)`);
+  return Object.assign(async () => {}, { stores: false });
 }
 
 /** The persona's name comes from the cast; this file adds what the cast does not hold: the collections and documents. */
@@ -135,6 +135,7 @@ async function seedInTransaction(q, def, { persona, address, locale, messagesByL
     await q("DELETE FROM collections WHERE owner_id = $1 AND NOT is_default AND name = ANY($2)", [owner, names]);
   }
 
+  const writer = bytesWriter(process.env);
   const [library] = await q("SELECT id FROM libraries WHERE owner_id = $1 ORDER BY created_at, id LIMIT 1", [owner]);
   const counts = {};
   for (const collection of def.collections) {
@@ -148,15 +149,15 @@ async function seedInTransaction(q, def, { persona, address, locale, messagesByL
       const doc = await generateDocument(id, seed);
       // The bytes go to the working store (a folder here), the row only names them (ADR-0012): the same shape the upload writes.
       const docId = randomUUID();
-      const key = `${owner}/${docId}/original.pdf`;
+      const key = writer.stores ? `${owner}/${docId}/original.pdf` : null;
       const inserted = await q(
         `INSERT INTO documents (id, owner_id, title, filename, mime_type, kind, size_bytes, sha256, pages, content, object_key, text, collection_id)
          VALUES ($1, $2, $3, $4, 'application/pdf', $5, $6, $7, $8, ''::bytea, $9, $10, $11) ON CONFLICT (owner_id, sha256) DO NOTHING RETURNING id`,
         [docId, owner, doc.title, doc.filename, doc.kind, doc.bytes.length, doc.sha256, doc.pages, key, doc.text, row.id],
       );
       const [stored] = await q("SELECT id, object_key FROM documents WHERE owner_id = $1 AND sha256 = $2", [owner, doc.sha256]);
-      // Written again on a re-run (same bytes, same key): a store that lost its files (a folder after a redeploy) heals.
-      if (stored.object_key || inserted.length > 0) await bytesWriter(process.env, q)(stored.object_key ?? key, doc.bytes);
+      // Written again on a re-run (same bytes, same key): a folder that lost its files heals.
+      if (writer.stores && (stored.object_key || inserted.length > 0)) await writer(stored.object_key ?? key, doc.bytes);
       if (def.checked.includes(id)) {
         const report = seededReport(doc);
         const studio = doc.family === "lease" ? "compliance-check" : "document-authenticity";

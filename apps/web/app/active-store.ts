@@ -8,7 +8,6 @@ import { env } from "@/lib/env";
 import { EXTERNAL } from "@/lib/retention";
 import { appSettings } from "@/lib/settings/instance";
 import { storageFrom } from "@/lib/storage/config";
-import { databaseStore } from "@/lib/storage/database";
 import { localStore } from "@/lib/storage/local";
 import { noneStore } from "@/lib/storage/none";
 import type { DocumentStore, StoreDescriptor } from "@/lib/storage/port";
@@ -47,17 +46,17 @@ export async function storesOf(ownerId: string): Promise<OwnerStores> {
 }
 
 /**
- * The store that holds the bytes of every document that is not kept in a store of its own (ADR-0012), chosen by `APP_DOCUMENTS_STORE`:
- * the database for a deployed environment without a bucket, the deployment's bucket (`spaces`; none configured: null, uploads are refused),
- * or a folder on disk on a laptop and in the tests (a deployed app refuses to start with it).
+ * The store that holds the bytes of every document that is not kept in a store of its own (ADR-0012): the one a provider configures,
+ * else, opt-in on a laptop and in the tests, a folder (`APP_DOCUMENTS_STORE=folder`; a deployed app refuses to start with it). None
+ * configured: null, uploads are refused (STORAGE_NOT_CONFIGURED) and the app still starts. The web never writes the server's disk when
+ * deployed and never document bytes to PostgreSQL.
  */
 export async function workingStore(): Promise<DocumentStore | null> {
   return workingStoreFor(env().APP_DOCUMENTS_STORE, {
-    spaces: async () => {
+    configured: async () => {
       const krizaka = await krizakaStore();
       return krizaka.describe().kind === "none" ? null : krizaka;
     },
-    database: () => databaseStore(query),
     folder: () => localStore(),
   });
 }

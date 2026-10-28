@@ -34,16 +34,14 @@ Extends ADR-0007 (the `DocumentStore` port, decision 2). Issues: krizaka/yomizak
    row carries `object_key` (nullable text): set means « the bytes are in the store under this key », null means « no bytes ».
    `storage` keeps its meaning (where a *kept* document lives, what the info panel says); `none` now means « not kept, the
    bytes are in the store until the purge ». `storage = 'database'` is no longer written; existing rows are backfilled.
-2. **Every deployment has a store, chosen by `APP_DOCUMENTS_STORE`** (`database` | `folder` | `spaces`, declared in `lib/env.ts`).
-   `spaces`: the deployment's bucket (production: Spaces `tor1`; CI: SeaweedFS, `scripts/ci-s3.sh`); a production start without
-   one refuses uploads (fails closed, 503), as Bunny is already refused there. `folder`: `@krizaka/storage`'s folder store, for
-   a laptop and the tests only; **the app refuses to start with it when it runs deployed** (`NODE_ENV=production`,
-   `productionProblems`), because App Platform's filesystem is lost at each redeploy and not shared between instances.
-   `database`: the interim for a deployed environment without a bucket (**the dev deployment until Oussama creates the Spaces
-   bucket**): a dedicated table `document_blobs` (migration 0058) behind the same port (`lib/storage/database.ts`). It is the
-   only code that writes bytes to PostgreSQL, named as the adapter in `lib/document-bytes-guard.test.ts` (with the demo seed,
-   which cannot import TypeScript); `documents.content` stays empty. The *keeping* choice
-   (admin mode `none`, per-user « keep my history ») is unchanged: it decides how long the bytes stay, not whether a store exists.
+2. **Where the bytes go is a provider's job; PostgreSQL never holds them** (founder, 2026-10-28: it does not scale). The provider
+   (Bunny, S3, a user's own cloud) is chosen by an admin in the admin settings (krizaka-ts#216, follow-up ADR); the web never
+   writes a deployed server's disk. Until then `APP_DOCUMENTS_STORE` (`lib/env.ts`) says what holds the bytes when no provider is
+   configured: `none` (**default**): uploads are refused with `STORAGE_NOT_CONFIGURED` (503, « Le stockage des documents n'est pas
+   configuré : un administrateur doit choisir un fournisseur ») and the app still starts; rows already written keep reading through the
+   dual read. `folder`: `@krizaka/storage`'s folder store, for a laptop and the tests only (opt-in: `.env.example`, the vitest
+   config); **the app refuses to start with it when it runs deployed** (`NODE_ENV=production`, `productionProblems`). The
+   *keeping* choice (admin mode `none`, per-user « keep my history ») is unchanged: it decides how long the bytes stay, not whether a store exists.
 3. **One key per document, never moved**: `objectKey(owner, document, mime)` as today (`<owner>/<document>/original.<ext>`
    under `MEDIA_DOCUMENTS_PREFIX`). Choosing to keep a document later changes its row, not its key.
 4. **Order of writes, so no object is ever unowned**: insert the row with its `object_key` (extraction pending) → `put` → if
@@ -98,12 +96,9 @@ Extends ADR-0007 (the `DocumentStore` port, decision 2). Issues: krizaka/yomizak
 - Tests stay free of paid services: the contract kit on memory, folder and SeaweedFS; the backfill and the purge against a
   real PostgreSQL plus SeaweedFS in CI.
 
-- **The interim `database` store** keeps dev honest without a paid bucket: uploads and the seeded demo PDFs survive a redeploy and
-  are served by every instance, and the purge deletes the row. The cost is that the database grows with the files (dev holds
-  fictional data only); the move to `spaces` is one setting (`APP_DOCUMENTS_STORE=spaces` + the bucket's `MEDIA_S3_*`) followed by
-  a copy of `document_blobs` into the bucket, then dropping the table. Retiring the interim is part of creating the bucket.
-- The demo seed writes to the configured store (`database` or `folder`) and re-writes its bytes on a re-run, so a store that lost
-  them is healed. CI runs the production build with `APP_DOCUMENTS_STORE=database`, which exercises the adapter end to end.
+- **No interim store in the database.** A deployed environment with no provider refuses uploads, clearly and in the person's language;
+  it never falls back to PostgreSQL or to the server's disk. The demo seed on such an environment seeds the metadata, skips the bytes and
+  logs why. The dev deployment keeps its Bunny zone (`MEDIA_DOCUMENTS_PROVIDER`) until the admin settings replace it.
 
 ## Slices (the build)
 - **#17 — web: bytes out of the database, the purge deletes the object.** Decisions 1–8, migration steps 1–6 on dev, the

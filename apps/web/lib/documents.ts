@@ -340,7 +340,7 @@ function chooseKind(requested: DocumentKind | "auto", deferred: boolean, read: {
 function storeForBytes(policy: StoragePolicy | undefined, where: StorageKind): DocumentStore {
   const working = policy?.working === undefined ? localStore() : policy.working;
   const target = EXTERNAL.has(where) && policy ? policy.store : working;
-  if (!target) throw refuse(503, "STORAGE_UNAVAILABLE", "No storage is configured for documents");
+  if (!target) throw refuse(503, "STORAGE_NOT_CONFIGURED", "No storage is configured for documents");
   return target;
 }
 

@@ -77,7 +77,7 @@ describe.runIf(enabled)("the write path puts bytes in the store (ADR-0012)", () 
 
   it("production without a store refuses uploads (503) before anything is written", async () => {
     const owner = await account();
-    await expect(storeDocument(owner, file, bytes("f"), "lease", policy(false, null))).rejects.toMatchObject({ status: 503, body: { code: "STORAGE_UNAVAILABLE" } });
+    await expect(storeDocument(owner, file, bytes("f"), "lease", policy(false, null))).rejects.toMatchObject({ status: 503, body: { code: "STORAGE_NOT_CONFIGURED" } });
     expect(await query("SELECT 1 FROM documents WHERE owner_id = $1", [owner])).toHaveLength(0);
   });
 

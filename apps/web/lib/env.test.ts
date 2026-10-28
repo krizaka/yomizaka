@@ -10,7 +10,6 @@ const PROD = {
   AUTH_SESSION_SECRET: "a".repeat(40),
   AI_API_KEY: "oz_live_key",
   APP_REPORT_SIGNING_KEY: generateSigningKeyBase64(),
-  APP_DOCUMENTS_STORE: "database",
 };
 
 describe("env", () => {
@@ -48,7 +47,6 @@ describe("env", () => {
       "AUTH_SESSION_SECRET must be at least 32 characters",
       "AI_API_KEY must be an Orazaka key (oz_…)",
       "APP_REPORT_SIGNING_KEY is not set",
-      "APP_DOCUMENTS_STORE=folder loses every document at a redeploy: a deployed app uses database or spaces",
       "DATABASE_CA_CERT is required for a TLS database",
     ]);
     expect(problems.join(" ")).not.toContain("sk-not-orazaka");
@@ -56,12 +54,11 @@ describe("env", () => {
   });
 
   it("refuses to start deployed with the documents in a folder: they would be lost at every redeploy (ADR-0012)", () => {
-    expect(readEnv({}).APP_DOCUMENTS_STORE).toBe("folder");
-    expect(productionProblems(readEnv({ ...PROD, APP_DOCUMENTS_STORE: "folder" }))).toEqual(["APP_DOCUMENTS_STORE=folder loses every document at a redeploy: a deployed app uses database or spaces"]);
-    expect(() => assertProductionEnv({ ...PROD, APP_DOCUMENTS_STORE: undefined })).toThrow(/APP_DOCUMENTS_STORE=folder/);
-    expect(productionProblems(readEnv({ ...PROD, APP_DOCUMENTS_STORE: "database" }))).toEqual([]);
-    expect(productionProblems(readEnv({ ...PROD, APP_DOCUMENTS_STORE: "spaces" }))).toEqual(["APP_DOCUMENTS_STORE=spaces needs MEDIA_DOCUMENTS_PROVIDER (a bucket)"]);
-    expect(productionProblems(readEnv({ ...PROD, APP_DOCUMENTS_STORE: "spaces", MEDIA_DOCUMENTS_PROVIDER: "s3" }))).toEqual([]);
+    expect(readEnv({}).APP_DOCUMENTS_STORE).toBe("none");
+    expect(productionProblems(readEnv({ ...PROD, APP_DOCUMENTS_STORE: "folder" }))).toEqual(["APP_DOCUMENTS_STORE=folder loses every document at a redeploy: a deployed app configures a storage provider"]);
+    expect(() => assertProductionEnv({ ...PROD, APP_DOCUMENTS_STORE: undefined })).not.toThrow();
+    expect(() => assertProductionEnv({ ...PROD, APP_DOCUMENTS_STORE: "folder" })).toThrow(/APP_DOCUMENTS_STORE=folder/);
+    expect(productionProblems(readEnv({ ...PROD, APP_DOCUMENTS_STORE: "none" }))).toEqual([]);
     // A laptop and the tests may use the folder.
     expect(productionProblems(readEnv({ NODE_ENV: "development" }))).toEqual([]);
   });

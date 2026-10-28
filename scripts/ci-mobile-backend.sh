@@ -24,7 +24,6 @@ export APP_REPORT_SIGNING_KEY
 
 pnpm --filter @yomizaka/web build
 export NODE_ENV=production
-export APP_DOCUMENTS_STORE=database
 trap 'tail -100 web-mobile-e2e.log || true' ERR
 (cd apps/web && nohup npx next start -p 3000 > ../../web-mobile-e2e.log 2>&1 &)
 for _ in $(seq 1 90); do curl -sf http://localhost:3000/api/healthz >/dev/null && break; sleep 1; done

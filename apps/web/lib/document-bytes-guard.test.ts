@@ -8,12 +8,6 @@ import { describe, expect, it } from "vitest";
  * writes to `documents` and refuses a write of anything but `''::bytea` into that column. KNOWN is empty: the demo seed puts its bytes in the working store and the e2e fixture writes none; a file added there needs a reason.
  */
 const KNOWN = new Set<string>([]);
-/**
- * The one adapter that may write document bytes to PostgreSQL, into its own table `document_blobs` (the `database` working store for
- * a deployed environment without a bucket), and its twin: the demo seed cannot import TypeScript, so it writes the same table with the
- * same statement. Anything else that writes `document_blobs` is a second adapter and fails here.
- */
-const ADAPTERS = new Set(["apps/web/lib/storage/database.ts", "scripts/demo-seed/seed.mjs"]);
 const EMPTY = "''::bytea";
 
 /** Splits a SQL list on its top-level commas (parentheses and quotes respected). */
@@ -71,18 +65,6 @@ export function byteWrites(source: string): string[] {
   return found;
 }
 
-/** The writes to the adapter's table in a piece of source. */
-export const blobWrites = (source: string): string[] => [...source.matchAll(/(?:INSERT INTO|UPDATE)\s+document_blobs\b/g)].map((m) => m[0]);
-
-describe("blobWrites (the adapter's table)", () => {
-  it("sees an insert or an update of document_blobs, and nothing else", () => {
-    expect(blobWrites("INSERT INTO document_blobs (object_key, bytes) VALUES ($1, $2)")).toHaveLength(1);
-    expect(blobWrites("UPDATE document_blobs SET bytes = $2 WHERE object_key = $1")).toHaveLength(1);
-    expect(blobWrites("SELECT bytes FROM document_blobs WHERE object_key = $1")).toEqual([]);
-    expect(blobWrites("DELETE FROM document_blobs WHERE object_key = $1")).toEqual([]);
-  });
-});
-
 describe("byteWrites (the rule)", () => {
   it("refuses bytes written to the column, by insert or update", () => {
     expect(byteWrites("INSERT INTO documents (owner_id, content, text) VALUES ($1, $2, $3)")).toHaveLength(1);
@@ -119,11 +101,5 @@ describe("no new write of document bytes to PostgreSQL (ADR-0012)", () => {
   it("the known list holds only files that still write bytes (it only goes down)", () => {
     const offending = new Set(files.map((f) => [relative(root, f), byteWrites(readFileSync(f, "utf8"))] as const).filter(([, w]) => w.length > 0).map(([f]) => f));
     expect([...KNOWN].filter((f) => !offending.has(f))).toEqual([]);
-  });
-
-  it("only the adapter (and its seed twin) writes document_blobs, and both still do", () => {
-    const writers = new Set(files.filter((f) => blobWrites(readFileSync(f, "utf8")).length > 0).map((f) => relative(root, f)));
-    expect([...writers].filter((f) => !ADAPTERS.has(f))).toEqual([]);
-    expect([...ADAPTERS].filter((f) => !writers.has(f))).toEqual([]);
   });
 });

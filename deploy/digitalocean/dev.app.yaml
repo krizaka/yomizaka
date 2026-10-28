@@ -48,8 +48,6 @@ services:
       - { key: APP_PUBLIC_URL, scope: RUN_AND_BUILD_TIME, value: "https://www.yomizaka.com" }
       # The stage (yomizaka#364): `dev` shows the « development version » notice on every screen; `prod` hides it. Read at build too (the pages are static).
       - { key: APP_ENVIRONMENT, scope: RUN_AND_BUILD_TIME, value: "dev" }
-      # Where the bytes of uploaded and seeded documents live (ADR-0012, yomizaka#17): the filesystem of App Platform is lost at each redeploy and not shared between instances, so the database until the Spaces bucket exists (then `spaces`). The app refuses to start deployed with `folder`.
-      - { key: APP_DOCUMENTS_STORE, scope: RUN_TIME, value: "database" }
       - { key: APP_DEV_HOST, scope: RUN_TIME, value: "dev.yomizaka.com" }
       # www is indexed (krizaka-com AGENTS §2.4): robots allows, sitemap, no noindex. dev. and admin. are closed by host (lib/indexing.ts).
       - { key: APP_SEARCH_INDEXING, scope: RUN_AND_BUILD_TIME, value: "on" }

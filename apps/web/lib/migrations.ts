@@ -1338,16 +1338,4 @@ ALTER TABLE documents ADD COLUMN object_key text;
 CREATE INDEX documents_object_key ON documents(object_key) WHERE object_key IS NOT NULL;
 `,
   },
-  {
-    version: "0058_document_blobs",
-    // ADR-0012 (yomizaka#17): the `database` working store, for a deployed environment without a bucket. One row per object, keyed like the store's objects; the purge deletes the row.
-    sql: `
-CREATE TABLE document_blobs (
-  object_key text PRIMARY KEY,
-  content_type text NOT NULL,
-  bytes bytea NOT NULL,
-  created_at timestamptz NOT NULL DEFAULT now()
-);
-`,
-  },
 ];
