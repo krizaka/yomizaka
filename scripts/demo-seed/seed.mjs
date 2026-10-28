@@ -4,9 +4,11 @@
 import { createHash } from "node:crypto";
 
 import { generateDocument, PERSONA_ERIC, AS_OF, DEFAULT_SEED } from "../demo-documents/index.mjs";
+import { CAST_MEMBER, castAccounts, fingerprintOf } from "./cast.mjs";
 
-export const PERSONAS = { eric: PERSONA_ERIC };
-export const DEFAULT_EMAILS = { eric: "eric@demo.yomizaka.test" };
+/** The persona's name comes from the cast; this file adds what the cast does not hold: the collections and documents. */
+export const PERSONAS = { [CAST_MEMBER.id]: { ...PERSONA_ERIC, key: CAST_MEMBER.id, name: CAST_MEMBER.displayName } };
+export const DEFAULT_EMAILS = { [CAST_MEMBER.id]: `${CAST_MEMBER.id}@demo.yomizaka.test` };
 export const SEEDED_RUN_PREFIX = "seeded-";
 /** What a seeded check carries in its inputs — the same marker `@yomizaka/core` reads (`isSeededCheck`). */
 export const SEEDED_INPUTS = { seeded: "true" };
@@ -15,12 +17,12 @@ export const SEEDED_INPUTS = { seeded: "true" };
 export const demoOwnerTokens = (persona) => ({ live: `demo-owner-live-${persona}-0123456789abcdef`, revoked: `demo-owner-revoked-${persona}-0123456789abcdef` });
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 
-/** A fictitious applicant file with its two owner links, so the public report page can be audited (idempotent: the links are renewed). */
+/** A fictitious applicant file with its two owner links, so the public report page can be audited (idempotent: the links are renewed). The tokens are fixed, so the seed that ran last owns them: two seeds in one database (tests, the cast) never leave the file with the wrong landlord. */
 async function seedOwnerFile(q, owner, persona) {
   const [file] = await q(
     `INSERT INTO screenings (landlord_id, tenant_name, tenant_email, scope, provider, token_hash, expires_at, flow, requested_types)
      VALUES ($1, 'Camille Fictif', 'camille@demo.yomizaka.test', '{}', 'applicant-file', $2, now() + interval '30 days', 'file', '{}')
-     ON CONFLICT (token_hash) DO UPDATE SET expires_at = EXCLUDED.expires_at RETURNING id`,
+     ON CONFLICT (token_hash) DO UPDATE SET landlord_id = EXCLUDED.landlord_id, expires_at = EXCLUDED.expires_at RETURNING id`,
     [owner, sha256(`demo-file-${persona}`)],
   );
   const tokens = demoOwnerTokens(persona);
@@ -28,7 +30,7 @@ async function seedOwnerFile(q, owner, persona) {
     await q(
       `INSERT INTO file_report_shares (screening_id, landlord_id, recipient, token_hash, expires_at, revoked_at)
        VALUES ($1, $2, 'Demo', $3, now() + interval '30 days', ${revoked ? "now()" : "NULL"})
-       ON CONFLICT (token_hash) DO UPDATE SET expires_at = EXCLUDED.expires_at, revoked_at = ${revoked ? "coalesce(file_report_shares.revoked_at, now())" : "NULL"}`,
+       ON CONFLICT (token_hash) DO UPDATE SET screening_id = EXCLUDED.screening_id, landlord_id = EXCLUDED.landlord_id, expires_at = EXCLUDED.expires_at, revoked_at = ${revoked ? "coalesce(file_report_shares.revoked_at, now())" : "NULL"}`,
       [file.id, owner, sha256(tokens[name])],
     );
   }
@@ -143,4 +145,27 @@ async function seedInTransaction(q, def, { persona, address, locale, messagesByL
   }
   await seedOwnerFile(q, owner, persona);
   return { owner, email: address, name: account.name, collections: counts };
+}
+
+/**
+ * `seed --cast`: the whole Yomizaka cast, the same on a laptop, a CI runner and the dev deployment. The member gets the demo data
+ * set of `seedPersona`; the administrator gets an account named after its persona. Idempotent; the caller refuses production
+ * (`assertNotProduction`) before it connects. Returns the fingerprint of what is there for the cast's accounts.
+ */
+export async function seedCast(q, { env, hashPassword, locale = undefined, messagesByLocale, reset = false }) {
+  const [member, admin, camille] = castAccounts(env);
+  const result = await seedPersona(q, { persona: member.persona.id, email: member.email, locale: locale ?? member.persona.locale, messagesByLocale, reset, passwordHash: await hashPassword(member.password) });
+  // The other accounts keep the name the person chose; the role and the credentials follow the environment.
+  const upsert = async (a) =>
+    (
+      await q(
+        `INSERT INTO accounts (email, locale, email_verified_at, password_hash, perspective, name, role) VALUES ($1, $2, now(), $3, 'landlord', $4, $5)
+         ON CONFLICT (email) DO UPDATE SET role = EXCLUDED.role, status = 'ACTIVE', password_hash = EXCLUDED.password_hash, name = coalesce(accounts.name, EXCLUDED.name)
+         RETURNING id`,
+        [a.email, a.persona.locale, await hashPassword(a.password), a.persona.displayName, a.role],
+      )
+    )[0].id;
+  const others = [await upsert(admin), await upsert(camille)];
+  const print = await fingerprintOf(q, [result.owner, ...others]);
+  return { ...print, member: result, admin: { email: admin.email, name: admin.persona.displayName }, camille: { email: camille.email, name: camille.persona.displayName } };
 }

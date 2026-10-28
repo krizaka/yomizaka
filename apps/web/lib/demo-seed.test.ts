@@ -2,7 +2,8 @@ import { authenticityReport, complianceReport, isSeededCheck, SEEDED_INPUTS } fr
 import { describe, expect, it } from "vitest";
 
 import { generateDocument, PERSONA_ERIC } from "../../../scripts/demo-documents/index.mjs";
-import { assertNotProduction, collectionWords, SEEDED_INPUTS as SEED_MARKER, seededReport } from "../../../scripts/demo-seed/seed.mjs";
+import { CAST_MEMBER } from "../../../scripts/demo-seed/cast.mjs";
+import { assertNotProduction, collectionWords, PERSONAS, SEEDED_INPUTS as SEED_MARKER, seededReport } from "../../../scripts/demo-seed/seed.mjs";
 import en from "../messages/en.json";
 import fr from "../messages/fr.json";
 
@@ -23,8 +24,8 @@ describe("the demo seed", () => {
   });
 
   it("gives the persona a display name the header can show instead of the address (A4), within the column's limit", () => {
-    expect(PERSONA_ERIC.name).toBe("Éric Tremblay");
-    expect(PERSONA_ERIC.name.length).toBeLessThanOrEqual(80);
+    expect(PERSONAS.eric.name).toBe(CAST_MEMBER.displayName);
+    expect(PERSONAS.eric.name.length).toBeLessThanOrEqual(80);
   });
 
   it("names the three collections in French and in English, through the messages", () => {

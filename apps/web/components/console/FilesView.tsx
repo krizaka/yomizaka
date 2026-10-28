@@ -73,6 +73,8 @@ export function useFileFacts() {
     date,
   };
 }
+// The link's state is a priority-1 column: on a phone the list puts it in the row's detail, whole. At priority 2 it became the one-line
+// « facts » under the name, truncated beside the decision chip and the toggle, and the layout audit saw it cut off (yomizaka#496).
 function fileColumns(say: Say, base: string, facts: ReturnType<typeof useFileFacts>, workspace: FilesWorkspace | undefined, locale: Lang): DataTableColumn<FileSummary>[] {
   return [
     {
@@ -88,7 +90,7 @@ function fileColumns(say: Say, base: string, facts: ReturnType<typeof useFileFac
         </Link>
       ),
     },
-    { id: "link", header: say("dossiers.columns.link"), priority: 2, value: (f) => f.status, cell: (f) => <span data-testid="file-link">{facts.link(f)}</span> },
+    { id: "link", header: say("dossiers.columns.link"), value: (f) => f.status, cell: (f) => <span data-testid="file-link">{facts.link(f)}</span> },
     ...(workspace
       ? [
           {
