@@ -4,7 +4,7 @@ import { hashPassword } from "@krizaka/auth";
 import { personaByRole } from "@krizaka/org";
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { seedCast } from "../../../scripts/demo-seed/seed.mjs";
+import { seedCast, seedPersona } from "../../../scripts/demo-seed/seed.mjs";
 import en from "../messages/en.json";
 import fr from "../messages/fr.json";
 import { migrate, query } from "./db";
@@ -26,6 +26,8 @@ describe.runIf(enabled)("the cast seed", () => {
 
   it("is idempotent, names the accounts after the cast, and leaves the recorded data set", async () => {
     const run = () => seedCast(q as never, { env, hashPassword, messagesByLocale: { fr, en } });
+    // Another seed ran first in this database (tests share it): the file's fixed tokens belong to the cast's member all the same.
+    await seedPersona(q as never, { email: `earlier-${Date.now()}@demo.yomizaka.test`, messagesByLocale: { fr, en } });
     const first = await run();
     const second = await run();
     expect(second.fingerprint).toBe(first.fingerprint);

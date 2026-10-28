@@ -17,12 +17,12 @@ export const SEEDED_INPUTS = { seeded: "true" };
 export const demoOwnerTokens = (persona) => ({ live: `demo-owner-live-${persona}-0123456789abcdef`, revoked: `demo-owner-revoked-${persona}-0123456789abcdef` });
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 
-/** A fictitious applicant file with its two owner links, so the public report page can be audited (idempotent: the links are renewed). */
+/** A fictitious applicant file with its two owner links, so the public report page can be audited (idempotent: the links are renewed). The tokens are fixed, so the seed that ran last owns them: two seeds in one database (tests, the cast) never leave the file with the wrong landlord. */
 async function seedOwnerFile(q, owner, persona) {
   const [file] = await q(
     `INSERT INTO screenings (landlord_id, tenant_name, tenant_email, scope, provider, token_hash, expires_at, flow, requested_types)
      VALUES ($1, 'Camille Fictif', 'camille@demo.yomizaka.test', '{}', 'applicant-file', $2, now() + interval '30 days', 'file', '{}')
-     ON CONFLICT (token_hash) DO UPDATE SET expires_at = EXCLUDED.expires_at RETURNING id`,
+     ON CONFLICT (token_hash) DO UPDATE SET landlord_id = EXCLUDED.landlord_id, expires_at = EXCLUDED.expires_at RETURNING id`,
     [owner, sha256(`demo-file-${persona}`)],
   );
   const tokens = demoOwnerTokens(persona);
@@ -30,7 +30,7 @@ async function seedOwnerFile(q, owner, persona) {
     await q(
       `INSERT INTO file_report_shares (screening_id, landlord_id, recipient, token_hash, expires_at, revoked_at)
        VALUES ($1, $2, 'Demo', $3, now() + interval '30 days', ${revoked ? "now()" : "NULL"})
-       ON CONFLICT (token_hash) DO UPDATE SET expires_at = EXCLUDED.expires_at, revoked_at = ${revoked ? "coalesce(file_report_shares.revoked_at, now())" : "NULL"}`,
+       ON CONFLICT (token_hash) DO UPDATE SET screening_id = EXCLUDED.screening_id, landlord_id = EXCLUDED.landlord_id, expires_at = EXCLUDED.expires_at, revoked_at = ${revoked ? "coalesce(file_report_shares.revoked_at, now())" : "NULL"}`,
       [file.id, owner, sha256(tokens[name])],
     );
   }
