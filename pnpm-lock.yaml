@@ -27,8 +27,11 @@ importers:
         specifier: ^0.3.1
         version: 0.3.1
       '@krizaka/page-audit':
-        specifier: ^0.3.1
-        version: 0.3.1(@krizaka/a11y-audit@0.2.0)(playwright-core@1.64.0)
+        specifier: ^0.5.0
+        version: 0.5.0(@krizaka/a11y-audit@0.2.0)(playwright-core@1.64.0)
+      '@playwright/test':
+        specifier: 1.64.0
+        version: 1.64.0
       '@vitest/coverage-v8':
         specifier: 4.1.11
         version: 4.1.11(vitest@4.1.11)
@@ -351,7 +354,7 @@ importers:
         version: 2.1.0
       next:
         specifier: ^16.4.1
-        version: 16.4.1(@babel/core@7.29.7)(@types/node@24.19.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        version: 16.4.1(@babel/core@7.29.7)(@playwright/test@1.64.0)(@types/node@24.19.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       pdf-lib:
         specifier: 1.17.1
         version: 1.17.1
@@ -1959,8 +1962,8 @@ packages:
       react:
         optional: true
 
-  '@krizaka/page-audit@0.3.1':
-    resolution: {integrity: sha512-d1+VBjoKFMk1NnWFLsCKd9bMghp9v9b0+KnZo5YzDJDcM20/VthLYh4mF8eEV2oq+6ROG6T607u3DhlJDRgvnQ==}
+  '@krizaka/page-audit@0.5.0':
+    resolution: {integrity: sha512-LW/TQS0QY5nUalAf57nM0O2lETU3R03LM70YeOe71UIiVdsoGONAsfIUD8CCcOqyCupIpfzIy8v3d4CUO8uRcQ==}
     engines: {node: '>=22'}
     hasBin: true
     peerDependencies:
@@ -2509,6 +2512,11 @@ packages:
   '@pkgr/core@0.3.6':
     resolution: {integrity: sha512-SEeaJLb3qBNF/OaXnaR1NmmBbFYk1zC0ZH/52fATcRPLFg/p791YrcyFFy44Bo9sLaGuSuLp5Q6axbb/O+v/RA==}
     engines: {node: ^14.18.0 || >=16.0.0}
+
+  '@playwright/test@1.64.0':
+    resolution: {integrity: sha512-oTN9FNYuN6bqQMwiho6jJKLCG2/QOYCixGXuCjRmzOq23eODeukuY2XiAVoVpAECbuezMt1MHQjAiQxK8F+Y+g==}
+    engines: {node: '>=20'}
+    hasBin: true
 
   '@protomaps/basemaps@5.7.2':
     resolution: {integrity: sha512-K1Yk6bWdULulYg+R2QRVXx4NzJZan5YQhpejEG0c1/sXruJrfPIPZuakpf3jwAgVmjIRVQwAv+yRafDeN0aaUQ==}
@@ -7017,6 +7025,11 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
+  playwright@1.64.0:
+    resolution: {integrity: sha512-kVzTnYFYEyQ9RGzBjNCd2+yEqWmVbxl3AHPynv3qQ6JTjv4a+kwRcnqQwIpuP3NnrnIrE/Q6wWAIAvMfIE2/Yg==}
+    engines: {node: '>=20'}
+    hasBin: true
+
   plist@3.1.1:
     resolution: {integrity: sha512-ZIfcLJC+7E7FBFnDxm9MPmt7D+DidyQ26lewieO75AdhA2ayMtsJSES0iWzqJQbcVRSrTufQoy0DR94xHue0oA==}
     engines: {node: '>=10.4.0'}
@@ -10404,7 +10417,7 @@ snapshots:
     optionalDependencies:
       react: 19.3.1
 
-  '@krizaka/page-audit@0.3.1(@krizaka/a11y-audit@0.2.0)(playwright-core@1.64.0)':
+  '@krizaka/page-audit@0.5.0(@krizaka/a11y-audit@0.2.0)(playwright-core@1.64.0)':
     dependencies:
       playwright-core: 1.64.0
     optionalDependencies:
@@ -10834,6 +10847,10 @@ snapshots:
     optional: true
 
   '@pkgr/core@0.3.6': {}
+
+  '@playwright/test@1.64.0':
+    dependencies:
+      playwright: 1.64.0
 
   '@protomaps/basemaps@5.7.2': {}
 
@@ -16022,7 +16039,7 @@ snapshots:
     dependencies:
       content-type: 2.1.0
 
-  next@16.4.1(@babel/core@7.29.7)(@types/node@24.19.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
+  next@16.4.1(@babel/core@7.29.7)(@playwright/test@1.64.0)(@types/node@24.19.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
     dependencies:
       '@next/env': 16.4.1
       '@swc/helpers': 0.5.23
@@ -16041,6 +16058,7 @@ snapshots:
       '@next/swc-linux-x64-musl': 16.4.1
       '@next/swc-win32-arm64-msvc': 16.4.1
       '@next/swc-win32-x64-msvc': 16.4.1
+      '@playwright/test': 1.64.0
       babel-plugin-react-compiler: 1.0.0
       sharp: 0.35.5(@types/node@24.19.2)
     transitivePeerDependencies:
@@ -16342,6 +16360,10 @@ snapshots:
       find-up: 4.1.0
 
   playwright-core@1.64.0: {}
+
+  playwright@1.64.0:
+    dependencies:
+      playwright-core: 1.64.0
 
   plist@3.1.1:
     dependencies:

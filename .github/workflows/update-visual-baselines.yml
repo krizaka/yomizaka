@@ -1,0 +1,32 @@
+name: Update visual baselines
+
+# Takes the baselines in the official Playwright container and commits the changed ones on the branch (never main).
+#   Actions > Update visual baselines > Run workflow > branch   (or: gh workflow run update-visual-baselines.yml -f branch=<branch>)
+# Manual only, on purpose: a comment trigger would run a branch's code in a job holding the App key.
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: Branch to update (never main or production)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    uses: krizaka/.github/.github/workflows/visual-regression.yml@208fa4aacc32a1da45676306bb1d0ace7fd4255c # main
+    permissions:
+      contents: read
+    secrets: inherit
+    with:
+      update: true
+      branch: ${{ github.event.inputs.branch }}
+      package-manager: pnpm
+      start-script: scripts/ci-visual-start.sh
+      test-command: pnpm exec playwright test -c apps/web/e2e/visual/playwright.config.mjs
+      snapshot-paths: apps/web/e2e/visual/__screenshots__
+      env: |
+        E2E_EMAIL=eric@demo.yomizaka.test
+        E2E_PASSWORD=ci-only-demo-password-0123

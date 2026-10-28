@@ -1,0 +1,24 @@
+name: Visual regression
+
+# The main journeys (landing, pricing, sign-in, signed-in home, a document report; desktop + phone, light + dark, and the first
+# paint of a signed-in page) compared to their Linux baselines, as the seeded cast (krizaka/.github#375). The pipeline is the org's.
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  visual:
+    uses: krizaka/.github/.github/workflows/visual-regression.yml@208fa4aacc32a1da45676306bb1d0ace7fd4255c # main
+    permissions:
+      contents: read
+    with:
+      package-manager: pnpm
+      start-script: scripts/ci-visual-start.sh
+      test-command: pnpm exec playwright test -c apps/web/e2e/visual/playwright.config.mjs
+      snapshot-paths: apps/web/e2e/visual/__screenshots__
+      env: |
+        E2E_EMAIL=eric@demo.yomizaka.test
+        E2E_PASSWORD=ci-only-demo-password-0123

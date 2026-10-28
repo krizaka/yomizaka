@@ -26,7 +26,8 @@
     "check:overflow": "node scripts/check-overflow.mjs",
     "check:admin-live": "node scripts/check-admin-live.mjs",
     "payments:setup": "pnpm --filter @yomizaka/web exec krizaka-payments-setup --catalogue ../../deploy/payments-catalogue.json",
-    "check:app-links": "pnpm --filter @yomizaka/web exec vitest run lib/app-links.test.ts"
+    "check:app-links": "pnpm --filter @yomizaka/web exec vitest run lib/app-links.test.ts",
+    "test:visual": "playwright test -c apps/web/e2e/visual/playwright.config.mjs"
   },
   "devDependencies": {
     "@ast-grep/cli": "0.51.0",
@@ -35,7 +36,8 @@
     "@krizaka/i18n": "^0.2.1",
     "@krizaka/intl": "^0.3.0",
     "@krizaka/org": "^0.3.1",
-    "@krizaka/page-audit": "^0.3.1",
+    "@krizaka/page-audit": "^0.5.0",
+    "@playwright/test": "1.64.0",
     "@vitest/coverage-v8": "4.1.11",
     "dependency-cruiser": "^18.7.0",
     "playwright-core": "1.64.0",
