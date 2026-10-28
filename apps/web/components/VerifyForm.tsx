@@ -12,6 +12,7 @@ import { z } from "zod";
 import { ClosingNoteView } from "@/components/ClosingNoteView";
 import type { Locale } from "@/lib/i18n";
 import type { Verification } from "@/lib/report";
+import type { OwnerVerificationView } from "@/lib/verify-dispatch";
 
 /** The words of the verify page, passed from the server (members only: the page redirects a signed-out visitor to sign-in). */
 export interface VerifyLabels {
@@ -25,7 +26,7 @@ export interface VerifyLabels {
   okTitle: string;
   failTitle: string;
   reasons: Record<string, string>;
-  facts: Record<"fileSha" | "keyId" | "documentSha" | "runId" | "ruleset" | "checked" | "findings" | "jurisdiction", string>;
+  facts: Record<"fileSha" | "keyId" | "documentSha" | "runId" | "ruleset" | "checked" | "findings" | "jurisdiction" | "issued" | "expires", string>;
   documentMatch: Record<"yes" | "no" | "none", string>;
   noAccess: { title: string; text: string; request: string; requested: string };
   drop: { reportTitle: string; documentTitle: string; browse: string; remove: string; hint: string };
@@ -41,7 +42,7 @@ export function VerifyForm({ labels, locale }: Readonly<{ labels: VerifyLabels; 
   const [problem, setProblem] = useState<string | null>(null);
   const [denied, setDenied] = useState<{ runId: string; documentSha256: string } | null>(null);
   const [asked, setAsked] = useState(false);
-  const [result, setResult] = useState<Verification | null>(null);
+  const [result, setResult] = useState<Verification | OwnerVerificationView | null>(null);
   const f = form.useForm({
     i18n: { t: () => labels.empty, locale },
     onSubmit: async (values) => {
@@ -61,7 +62,7 @@ export function VerifyForm({ labels, locale }: Readonly<{ labels: VerifyLabels; 
           if (refusal?.code === "NO_ACCESS" && refusal.runId && refusal.documentSha256) return setDenied({ runId: refusal.runId, documentSha256: refusal.documentSha256 });
         }
         if (!res.ok) return setProblem(res.status === 413 ? labels.tooLarge : labels.empty);
-        setResult(((await res.json()) as { result: Verification }).result);
+        setResult(((await res.json()) as { result: Verification | OwnerVerificationView }).result);
       } catch {
         setProblem(labels.empty);
       }
@@ -102,7 +103,8 @@ export function VerifyForm({ labels, locale }: Readonly<{ labels: VerifyLabels; 
   );
 }
 
-function VerifyResult({ result, labels }: Readonly<{ result: Verification; labels: VerifyLabels }>) {
+function VerifyResult({ result, labels }: Readonly<{ result: Verification | OwnerVerificationView; labels: VerifyLabels }>) {
+  if (result.ok && "kind" in result) return <OwnerResult result={result} labels={labels} />;
   if (!result.ok) {
     return (
       <Alert tone="danger" title={labels.failTitle} data-testid="verify-failed">
@@ -137,6 +139,24 @@ function VerifyResult({ result, labels }: Readonly<{ result: Verification; label
         ]}
       />
       {payload.note ? <ClosingNoteView note={payload.note} /> : null}
+    </Card.Root>
+  );
+}
+
+function OwnerResult({ result, labels }: Readonly<{ result: Extract<OwnerVerificationView, { ok: true }>; labels: VerifyLabels }>) {
+  const findings = Object.entries(result.summary.findings).map(([verdict, n]) => `${verdict}: ${n}`).join(" · ") || "0";
+  return (
+    <Card.Root className="flex flex-col gap-4 p-4" data-testid="verify-ok">
+      <Alert tone="success" title={labels.okTitle} />
+      <DescriptionList
+        items={[
+          { term: labels.facts.fileSha, details: <code className="break-all font-mono text-xs">{result.fileSha256}</code> },
+          { term: labels.facts.keyId, details: <code className="font-mono text-xs">{result.keyId}</code> },
+          { term: labels.facts.issued, details: result.issuedAt },
+          { term: labels.facts.expires, details: result.expiresAt },
+          { term: labels.facts.findings, details: findings },
+        ]}
+      />
     </Card.Root>
   );
 }

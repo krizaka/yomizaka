@@ -127,7 +127,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                     <p className="sr-only">{d.showcase.owner.summary}</p>
                     <LiveScreen testId="screen-owner">
                       <ol className="m-0 list-none p-4">
-                        <OwnerReportDocument doc={demoOwnerDocument(run)} n={1} words={dict.ownerReport} />
+                        <OwnerReportDocument doc={demoOwnerDocument(run)} n={1} words={dict.ownerReport} lang={locale} />
                       </ol>
                     </LiveScreen>
                   </Card.Body>

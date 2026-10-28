@@ -114,3 +114,29 @@ describe.runIf(enabled)("the owner link of a report (yomizaka#128)", () => {
     for (const bad of ["", "a", "a@b", "Eric <a@b.test>", "a@b.test,c@d.test", "a b@c.test"]) expect(cleanAddress(bad), bad).toBeNull();
   });
 });
+
+describe.runIf(enabled)("the owner report's expiry and isolation (yomizaka#481)", () => {
+  it("carries the link's expiry, and a link opens only its own manager's file", async () => {
+    const stamp2 = Date.now();
+    const mk = async (who: string) => {
+      const [row] = await query<{ id: string }>("INSERT INTO accounts (email) VALUES ($1) RETURNING id", [`pdf-${who}-${stamp2}@yomizaka.test`]);
+      return { id: row!.id, email: `pdf-${who}-${stamp2}@yomizaka.test` };
+    };
+    await migrate();
+    const [x, y] = [await mk("x"), await mk("y")];
+    try {
+      const fx = (await requestApplicantFile(x, { candidateName: "Xavier Fictif", candidateEmail: `x-${stamp2}@exemple.test`, types: ["pay-stub"] }, NOW)).id;
+      const fy = (await requestApplicantFile(y, { candidateName: "Yves Fictif", candidateEmail: `y-${stamp2}@exemple.test`, types: ["pay-stub"] }, NOW)).id;
+      const sx = await createShare(x, fx, { days: 3 }, NOW);
+      const sy = await createShare(y, fy, { days: 5 }, NOW);
+      const rx = await openShare(sx.token, NOW);
+      const ry = await openShare(sy.token, NOW);
+      expect(rx?.expiresAt).toBe(sx.expiresAt);
+      expect(rx?.reference).not.toBe(ry?.reference);
+      // Another manager cannot make a link on, or revoke through, a file that is not theirs: 404.
+      await expect(createShare(y, fx, {}, NOW)).rejects.toMatchObject({ status: 404 });
+    } finally {
+      await query("DELETE FROM accounts WHERE id = ANY($1)", [[x.id, y.id]]);
+    }
+  });
+});

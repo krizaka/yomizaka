@@ -1,10 +1,11 @@
 import { Badge } from "@krizaka/ui/badge";
 
-import { format, type Messages } from "@/lib/i18n";
+import { format, type Locale, type Messages } from "@/lib/i18n";
 import type { OwnerDocument } from "@/lib/owner-report";
+import { ruleTitle } from "@/lib/rule-text";
 
 /** One document of the owner's report (yomizaka#128): read by the public page, and drawn — inert, with demo data — on the home. */
-export function OwnerReportDocument({ doc: d, n, words: w }: Readonly<{ doc: OwnerDocument; n: number; words: Messages["ownerReport"] }>) {
+export function OwnerReportDocument({ doc: d, n, words: w, lang }: Readonly<{ doc: OwnerDocument; n: number; words: Messages["ownerReport"]; lang: Locale }>) {
   const verdicts: Record<string, string> = w.verdict;
   return (
   <li className="flex flex-col gap-3 rounded-lg border border-border-default p-5">
@@ -23,7 +24,7 @@ export function OwnerReportDocument({ doc: d, n, words: w }: Readonly<{ doc: Own
     <h4 className="font-medium">{w.findings}</h4>
     {d.findings.length === 0 ? <p className="text-sm text-fg-secondary">{w.noFindings}</p> : (
       <ul className="grid gap-1 text-sm">
-        {d.findings.map((f) => <li key={f.ruleId}><Badge>{verdicts[f.verdict] ?? f.verdict}</Badge> {f.ruleId}{f.citation ? `, ${f.citation}` : ""}</li>)}
+        {d.findings.map((f) => <li key={f.ruleId}><Badge>{verdicts[f.verdict] ?? f.verdict}</Badge> {ruleTitle(f.ruleId, lang, null)} ({f.ruleId}){f.citation ? `, ${f.citation}` : ""}</li>)}
       </ul>
     )}
     {d.notExamined.length > 0 ? <p className="text-sm"><b>{w.notExamined}</b> {d.notExamined.join(", ")}</p> : null}

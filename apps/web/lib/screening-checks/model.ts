@@ -58,3 +58,16 @@ export function stateOf(result: Pick<CheckResult, "outcome" | "refusal">): Check
       return CHECK_STATE.unavailable;
   }
 }
+
+/** What the engine answers while no provider account exists: a refusal that says « not configured », never a result. */
+export const NOT_CONFIGURED: CheckResult = { outcome: CHECK_OUTCOME.REFUSED, refusal: CHECK_REFUSAL.NOT_CONFIGURED, category: "NONE", providerRef: null };
+
+/**
+ * The engine's door for external checks (`/api/v1/checks`, orazaka-ai-engine#105). The transport is injected: `engine-door.ts` is the
+ * live one, `closedDoor` answers NOT_CONFIGURED to everything (tests, and a product without the door).
+ */
+export interface ChecksDoor {
+  submit(purpose: CheckPurpose, call: CheckCall): Promise<CheckResult>;
+  collect(purpose: CheckPurpose, call: CheckCall, providerRef: string): Promise<CheckResult>;
+}
+export const closedDoor: ChecksDoor = { submit: async () => NOT_CONFIGURED, collect: async () => NOT_CONFIGURED };

@@ -165,5 +165,55 @@
       "fr": "Nous n'avons pas pu juger si une clause est abusive. Seule une personne peut en décider.",
       "en": "We could not tell whether a clause is unfair. Only a person can decide that."
     }
+  },
+  "ruleTitles": {
+    "QC-LEASE-001": {
+      "fr": "Identification du locateur",
+      "en": "Identification of the landlord"
+    },
+    "QC-LEASE-002": {
+      "fr": "Identification du locataire",
+      "en": "Identification of the tenant"
+    },
+    "QC-LEASE-003": {
+      "fr": "Montant du loyer",
+      "en": "Rent amount"
+    },
+    "QC-LEASE-004": {
+      "fr": "Dépôt de garantie interdit — seul le premier mois peut être exigé d'avance",
+      "en": "Security deposit prohibited — only the first month may be demanded in advance"
+    },
+    "QC-LEASE-005": {
+      "fr": "Chèques postdatés interdits",
+      "en": "Post-dated cheques prohibited"
+    },
+    "QC-LEASE-006": {
+      "fr": "Refus des enfants — sans effet",
+      "en": "Refusal of children — without effect"
+    },
+    "QC-LEASE-007": {
+      "fr": "Renonciation au droit au maintien dans les lieux — sans effet",
+      "en": "Waiver of the right to remain in the premises — without effect"
+    },
+    "QC-LEASE-008": {
+      "fr": "Avis du loyer le plus bas des douze derniers mois",
+      "en": "Notice of the lowest rent in the last twelve months"
+    },
+    "QC-LEASE-009": {
+      "fr": "Renonciation anticipée aux règles de l'augmentation de loyer — sans effet",
+      "en": "Advance waiver of the rent increase rules — without effect"
+    },
+    "QC-LEASE-010": {
+      "fr": "Peines et frais de retard — appréciation contextuelle",
+      "en": "Late penalties and fees — assessed in context"
+    },
+    "QC-LEASE-011": {
+      "fr": "Règlement de l'immeuble — remise avant la conclusion du bail",
+      "en": "Building rules — handed over before the lease is concluded"
+    },
+    "QC-LEASE-020": {
+      "fr": "Clause abusive",
+      "en": "Abusive clause"
+    }
   }
 }

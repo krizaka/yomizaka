@@ -33,6 +33,7 @@ const PUBLIC: Record<string, string> = {
   "webhooks/mail": "signed by the mail vendor (bounces, complaints), refused without its signature (yomizaka#48)",
   "batches/template": "the CSV template: a static file",
   "v1/openapi.json": "the public contract of the API",
+  "rapport/[token]/pdf": "the signed PDF of the owner report (yomizaka#481): the token of a live owner link is the credential, 404 otherwise, each download logged",
   "verify/contract/[id]": "the public check of a sealed contract by its SHA-256 (yomizaka#71): who sealed it and when, no name, no account, no content",
 };
 

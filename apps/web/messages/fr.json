@@ -766,6 +766,12 @@
       "RATE_LIMITED": "Trop de tentatives. Réessayez dans un instant.",
       "UNAUTHENTICATED": "Votre session a pris fin. Reconnectez-vous.",
       "FORBIDDEN": "Non autorisé.",
+      "INCIDENT_BAD_INPUT": "L'incident est incomplet ou invalide.",
+      "INCIDENT_UNKNOWN": "Cet incident n'existe pas.",
+      "INCIDENT_CLOSED": "Cet incident est fermé et ne peut plus changer.",
+      "INCIDENT_NOT_ASSESSED": "Évaluez d'abord le risque.",
+      "INCIDENT_NO_NOTICE_DUE": "Aucun avis n'est requis : le risque de préjudice sérieux n'a pas été retenu.",
+      "INCIDENT_NOTICES_MISSING": "Les deux avis doivent être consignés avant la fermeture.",
       "IP_NOT_ALLOWED": "Pas depuis cette adresse.",
       "NOT_FOUND": "Introuvable.",
       "FILE_TOO_LARGE": "Le fichier dépasse 10 Mo.",
@@ -925,6 +931,7 @@
         "signOut": "Se déconnecter",
         "openSite": "Ouvrir dev.yomizaka.com",
         "operations": "Exploitation",
+        "incidents": "Incidents",
         "flows": "Parcours",
         "groups": {
           "people": "Personnes et fichiers",
@@ -1017,6 +1024,81 @@
         "asideFooter": "Administrateurs seulement, depuis une adresse autorisée.",
         "title": "Administration",
         "description": "Connectez-vous avec un compte administrateur."
+      },
+      "incidents": {
+        "title": "Incidents de confidentialité",
+        "lead": "Le registre exigé par la Loi 25 (art. 3.5 à 3.8) : tous les incidents, graves ou non, conservés cinq ans. Il contient des faits et des catégories de renseignements, jamais les données d'une personne. Évaluez le risque de préjudice sérieux ; s'il existe, avisez la Commission d'accès à l'information et les personnes concernées, puis fermez.",
+        "exportCsv": "Exporter en CSV",
+        "exportJson": "Exporter en JSON",
+        "register": "Registre",
+        "empty": "Aucun incident consigné.",
+        "awareAt": "Constaté le",
+        "kind": "Ce qui s'est passé",
+        "status": "Statut",
+        "risk": "Risque de préjudice sérieux",
+        "serious": "Sérieux",
+        "notSerious": "Non sérieux",
+        "drill": "Exercice",
+        "drillBadge": "Exercice",
+        "description": "Ce qui s'est passé, en faits",
+        "details": "Détails",
+        "hide": "Masquer",
+        "kinds": {
+          "access": "Accès non autorisé",
+          "use": "Utilisation non autorisée",
+          "communication": "Communication non autorisée",
+          "loss": "Perte"
+        },
+        "statuses": {
+          "open": "Ouvert",
+          "assessed": "Évalué",
+          "closed": "Fermé"
+        },
+        "levels": {
+          "low": "Faible",
+          "medium": "Moyen",
+          "high": "Élevé"
+        },
+        "open": "Ouvrir un incident",
+        "openSubmit": "Ouvrir",
+        "cancel": "Annuler",
+        "descriptionHint": "Des faits seulement. Ni nom, ni courriel, ni contenu de document.",
+        "information": "Catégories de renseignements concernés",
+        "informationHint": "Séparées par des virgules, p. ex. bail, talon de paie. Jamais le renseignement lui-même.",
+        "persons": "Personnes concernées (si connu)",
+        "drillLabel": "Il s'agit d'un exercice",
+        "markDrill": "Marquer comme exercice",
+        "unmarkDrill": "Pas un exercice",
+        "assess": "Évaluer le risque",
+        "assessSubmit": "Enregistrer l'évaluation",
+        "sensitivity": "Sensibilité des renseignements",
+        "consequences": "Gravité des conséquences",
+        "likelihood": "Probabilité d'utilisation malveillante",
+        "seriousInjury": "Risque de préjudice sérieux",
+        "rationale": "Motifs de la décision",
+        "measure": "Mesures prises",
+        "measureText": "Une mesure pour réduire le risque ou éviter un nouvel incident",
+        "measureSubmit": "Consigner la mesure",
+        "notice": "Consigner un avis envoyé",
+        "target": "Envoyé à",
+        "targets": {
+          "cai": "Commission d'accès à l'information",
+          "persons": "Personnes concernées"
+        },
+        "channel": "Comment",
+        "channels": {
+          "form": "Formulaire de la Commission",
+          "email": "Courriel",
+          "letter": "Lettre",
+          "public": "Avis public"
+        },
+        "reference": "Référence de l'accusé de réception (s'il y a lieu)",
+        "noticeSubmit": "Consigner l'avis",
+        "caiNotice": "Avis à la Commission",
+        "personsNotice": "Avis aux personnes concernées",
+        "retain": "Conservé au registre jusqu'au {date}.",
+        "close": "Fermer l'incident",
+        "closedNote": "Cette entrée est fermée. Elle reste au registre et n'est plus jamais modifiée."
       },
       "operations": {
         "database": "Base de données",
@@ -2956,7 +3038,8 @@
     "signatureBody": "SHA-256 du texte du rapport (pages précédentes)",
     "signatureValue": "Signature (base64)",
     "signatureNote": "L'attestation — le contenu signé, l'empreinte du texte et cette signature — est aussi intégrée au fichier PDF. Un membre à qui le propriétaire a donné accès la vérifie en donnant ce fichier à la page de vérification ; tout changement au texte des pages précédentes la fait échouer.",
-    "notCheckedServiceContract": "Non vérifié : droit de résiliation, art. 2125 C.c.Q., et le reste du Code civil du Québec sur le contrat de service (art. 2098 et suiv.). À faire relire par un avocat."
+    "notCheckedServiceContract": "Non vérifié : droit de résiliation, art. 2125 C.c.Q., et le reste du Code civil du Québec sur le contrat de service (art. 2098 et suiv.). À faire relire par un avocat.",
+    "languageNote": "Langue d'origine des règles : le français. Le texte anglais est la traduction fournie avec les règles ; les passages cités et les références aux articles restent tels quels, jamais traduits."
   },
   "verify": {
     "title": "Vérifier un rapport",
@@ -2977,6 +3060,7 @@
       "BAD_SIGNATURE": "La signature ne correspond pas au contenu : le rapport a été modifié ou signé par une autre clé.",
       "ALTERED": "La signature est valide pour le rapport d’origine, mais le fichier n’est plus ce rapport : quelque chose a été changé après la signature.",
       "UNKNOWN_KEY": "Il a été signé par une clé qui n’est pas celle de ce serveur.",
+      "UNKNOWN_SCHEMA": "Ce rapport est dans un format que Yomizaka ne vérifie pas.",
       "SPECIMEN": "Ce rapport est un spécimen : il ne prouve rien."
     },
     "facts": {
@@ -2987,7 +3071,9 @@
       "ruleset": "Règles",
       "checked": "Vérification terminée",
       "findings": "Constats",
-      "jurisdiction": "Juridiction"
+      "jurisdiction": "Juridiction",
+      "issued": "Émis le",
+      "expires": "Lien valide jusqu'au"
     },
     "documentMatch": {
       "yes": "Le document que vous avez donné est bien celui qui a été vérifié.",
@@ -3538,10 +3624,22 @@
     "ruleset": "Jeu de règles {id} version {version} ({jurisdiction})",
     "reviewStatus": "État de relecture du jeu de règles : {status}. Il doit être relu par un avocat avant qu'on s'y fie.",
     "limits": "Ce que ce rapport ne montre pas : les documents eux-mêmes, le nom ou les coordonnées de la personne, tout pointage ou classement. Les signaux sont des observations sur un fichier, jamais un jugement sur une personne.",
+    "download": "Télécharger le PDF signé",
+    "expires": "Ce lien est valable jusqu’au {date}.",
+    "guarantees": "Ce PDF est signé avec la clé de Yomizaka (Ed25519, détenue par Krizaka). La signature couvre chaque élément de ce rapport (documents, signaux, règles vérifiées, exécutions, versions), l’expiration du lien et le texte complet des pages. Si un seul caractère change, la vérification échoue.",
+    "notGuaranteed": "Elle ne prouve pas que les signaux ou les constats sont justes, ni qui détient le dossier : elle n’affiche aucun nom, aucune coordonnée, aucun nom de fichier ni aucun extrait cité. Informatif, pas un avis juridique ; une personne décide.",
+    "signatureNote": "L’attestation (contenu, empreinte du texte et signature) est intégrée au PDF. Toute modification du texte des pages précédentes fait échouer la vérification.",
+    "footer": "Yomizaka, un produit Krizaka — analyse par Orazaka.",
     "verdict": {
       "PASS": "Aucun problème signalé",
       "FAIL": "Problème signalé",
       "INSUFFICIENT_EVIDENCE": "Preuves insuffisantes"
-    }
+    },
+    "language": "Langue",
+    "languageName": {
+      "en": "English",
+      "fr": "Français"
+    },
+    "languageNote": "Les règles sont rédigées en français ; les noms anglais viennent avec le jeu de règles. Les références aux articles sont données telles que citées."
   }
 }
