@@ -3,9 +3,12 @@ import { readStorageSettings } from "@krizaka/storage/settings";
 import { type CloudOwner, STORAGE_OWNER } from "@yomizaka/core";
 
 import { query } from "@/lib/db";
+import type { HeldObject } from "@/lib/document-objects";
 import { env } from "@/lib/env";
+import { EXTERNAL } from "@/lib/retention";
 import { appSettings } from "@/lib/settings/instance";
 import { storageFrom } from "@/lib/storage/config";
+import { localStore } from "@/lib/storage/local";
 import { noneStore } from "@/lib/storage/none";
 import type { DocumentStore, StoreDescriptor } from "@/lib/storage/port";
 import { ownS3Store, type StorageSettings, storeForOwner } from "@/lib/storage/settings";
@@ -41,11 +44,28 @@ export async function storesOf(ownerId: string): Promise<OwnerStores> {
   return { write, settings, of, describe: (o) => (of(o) ?? noneStore()).describe() };
 }
 
-/** The store that holds one document (its own owner's cloud or Krizaka's), or undefined when it has none to ask. */
+/**
+ * The store that holds the bytes of every document that is not kept in a store of its own (ADR-0012): the deployment's store when it
+ * configures one, else a folder on disk in development and tests. Production without a real store has none: null (uploads are refused).
+ */
+export async function workingStore(): Promise<DocumentStore | null> {
+  const krizaka = await krizakaStore();
+  if (krizaka.describe().kind !== "none") return krizaka;
+  return env().APP_ENVIRONMENT === "prod" ? null : localStore();
+}
+
+/** The store that holds one document: its owner's cloud or Krizaka's for a kept one, the working store for the rest; undefined when it has none to ask. */
 export async function storeForDocument(ownerId: string, documentId: string): Promise<DocumentStore | undefined> {
-  const [row] = await query<{ storage_owner: CloudOwner }>("SELECT storage_owner FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, documentId]).catch(() => []);
+  const [row] = await query<{ storage: string; storage_owner: CloudOwner }>("SELECT storage, storage_owner FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, documentId]).catch(() => []);
+  if (row && !EXTERNAL.has(row.storage as never)) return (await workingStore()) ?? undefined;
   const stores = await storesOf(ownerId);
   return stores.of(row?.storage_owner ?? "krizaka") ?? undefined;
+}
+
+/** The holder of a stored file, for the purge: the owner's own cloud when it is theirs, else Krizaka's (kept) or the working store (not kept). */
+export async function holderOf(row: HeldObject): Promise<DocumentStore | null> {
+  if (!EXTERNAL.has(row.storage as never)) return workingStore();
+  return (await storesOf(row.owner_id)).of(row.storage_owner as CloudOwner);
 }
 
 /** Where uploaded avatars live: the same provider as the documents (the admin's settings first, through `resolveStorage`), under a prefix of their own (`<prefix>-avatars`); null when no store is configured (avatars are then picked from the set only). */
