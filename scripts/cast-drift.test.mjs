@@ -35,11 +35,11 @@ describe("the cast is the only source of the personas", () => {
   });
 
   it("gives the cast accounts from the environment, and a default password only on this machine", () => {
-    const env = { DATABASE_URL: "postgres://u@db.example.com/x", QA_USER_EMAIL: "A@x.test", QA_USER_PASSWORD: "x".repeat(14), QA_ADMIN_EMAIL: "b@x.test", QA_ADMIN_PASSWORD: "y".repeat(14) };
-    expect(castAccounts(env).map((a) => [a.persona.id, a.email, a.role])).toEqual([["eric", "a@x.test", "USER"], ["marie-eve", "b@x.test", "ADMIN"]]);
+    const env = { DATABASE_URL: "postgres://u@db.example.com/x", QA_USER_EMAIL: "A@x.test", QA_USER_PASSWORD: "x".repeat(14), QA_ADMIN_EMAIL: "b@x.test", QA_ADMIN_PASSWORD: "y".repeat(14), QA_CAMILLE_EMAIL: "c@x.test", QA_CAMILLE_PASSWORD: "z".repeat(14) };
+    expect(castAccounts(env).map((a) => [a.persona.id, a.email, a.role])).toEqual([["eric", "a@x.test", "USER"], ["mira", "b@x.test", "ADMIN"], ["camille", "c@x.test", "USER"]]);
     expect(() => castAccounts({ DATABASE_URL: "postgres://u@db.example.com/x" })).toThrow(/password/);
     const local = castAccounts({ DATABASE_URL: "postgres://u:p@localhost:5432/x" });
-    expect(local.map((a) => a.password)).toEqual([LOCAL_PASSWORD, LOCAL_PASSWORD]);
-    expect(local.map((a) => a.email)).toEqual(["eric@demo.yomizaka.test", "marie-eve@demo.yomizaka.test"]);
+    expect(local.map((a) => a.password)).toEqual([LOCAL_PASSWORD, LOCAL_PASSWORD, LOCAL_PASSWORD]);
+    expect(local.map((a) => a.email)).toEqual(["eric@demo.yomizaka.test", "mira@demo.yomizaka.test", "camille@demo.yomizaka.test"]);
   });
 });

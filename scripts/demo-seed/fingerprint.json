@@ -1,4 +1,4 @@
 {
   "note": "Counts per table for the cast accounts after the dev seed; --check compares a database (local, CI, dev) to it. Change it together with the seed, never alone.",
-  "fingerprint": "accounts=2;analyses=7;collections=7;documents=16;file_report_shares=2;screenings=1"
+  "fingerprint": "accounts=3;analyses=7;collections=8;documents=16;file_report_shares=2;screenings=1"
 }

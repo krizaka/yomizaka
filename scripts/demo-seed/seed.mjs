@@ -4,7 +4,7 @@
 import { createHash } from "node:crypto";
 
 import { generateDocument, PERSONA_ERIC, AS_OF, DEFAULT_SEED } from "../demo-documents/index.mjs";
-import { CAST_ADMIN, CAST_MEMBER, castAccounts, fingerprintOf } from "./cast.mjs";
+import { CAST_MEMBER, castAccounts, fingerprintOf } from "./cast.mjs";
 
 /** The persona's name comes from the cast; this file adds what the cast does not hold: the collections and documents. */
 export const PERSONAS = { [CAST_MEMBER.id]: { ...PERSONA_ERIC, key: CAST_MEMBER.id, name: CAST_MEMBER.displayName } };
@@ -153,15 +153,19 @@ async function seedInTransaction(q, def, { persona, address, locale, messagesByL
  * (`assertNotProduction`) before it connects. Returns the fingerprint of what is there for the cast's accounts.
  */
 export async function seedCast(q, { env, hashPassword, locale, messagesByLocale, reset = false }) {
-  const [member, admin] = castAccounts(env);
+  const [member, admin, camille] = castAccounts(env);
   const result = await seedPersona(q, { persona: member.persona.id, email: member.email, locale: locale ?? member.persona.locale, messagesByLocale, reset, passwordHash: await hashPassword(member.password) });
-  // The administrator keeps the name the person chose; the role and the credentials follow the environment.
-  const [adminRow] = await q(
-    `INSERT INTO accounts (email, locale, email_verified_at, password_hash, perspective, name, role) VALUES ($1, $2, now(), $3, 'landlord', $4, 'ADMIN')
-     ON CONFLICT (email) DO UPDATE SET role = 'ADMIN', status = 'ACTIVE', password_hash = EXCLUDED.password_hash, name = coalesce(accounts.name, EXCLUDED.name)
-     RETURNING id`,
-    [admin.email, CAST_ADMIN.locale, await hashPassword(admin.password), CAST_ADMIN.displayName],
-  );
-  const print = await fingerprintOf(q, [result.owner, adminRow.id]);
-  return { ...print, member: result, admin: { email: admin.email, name: CAST_ADMIN.displayName } };
+  // The other accounts keep the name the person chose; the role and the credentials follow the environment.
+  const upsert = async (a) =>
+    (
+      await q(
+        `INSERT INTO accounts (email, locale, email_verified_at, password_hash, perspective, name, role) VALUES ($1, $2, now(), $3, 'landlord', $4, $5)
+         ON CONFLICT (email) DO UPDATE SET role = EXCLUDED.role, status = 'ACTIVE', password_hash = EXCLUDED.password_hash, name = coalesce(accounts.name, EXCLUDED.name)
+         RETURNING id`,
+        [a.email, a.persona.locale, await hashPassword(a.password), a.persona.displayName, a.role],
+      )
+    )[0].id;
+  const others = [await upsert(admin), await upsert(camille)];
+  const print = await fingerprintOf(q, [result.owner, ...others]);
+  return { ...print, member: result, admin: { email: admin.email, name: admin.persona.displayName }, camille: { email: camille.email, name: camille.persona.displayName } };
 }

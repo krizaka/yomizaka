@@ -1,11 +1,12 @@
 // The demo cast of Yomizaka, read from `@krizaka/org` (krizaka/.github#356): who is seeded, with which name, role and language.
 // E-mail addresses and passwords are NOT in the cast: they come from the environment (the deployment's own configuration), with
 // documented defaults that exist only for a local database.
-import { castOf, personaByRole, seedFingerprint } from "@krizaka/org";
+import { castOf, persona, personaByRole, seedFingerprint } from "@krizaka/org";
 
 export const CAST = castOf("yomizaka");
 export const CAST_MEMBER = personaByRole("yomizaka", "member");
 export const CAST_ADMIN = personaByRole("yomizaka", "admin");
+export const CAST_CAMILLE = persona("yomizaka", "camille");
 export { seedFingerprint };
 
 /** The password a LOCAL database gets when none is given. Never used on a host that is not this machine. */
@@ -20,7 +21,7 @@ const isLocalHost = (databaseUrl) => {
 };
 
 /**
- * The accounts of the cast for an environment: the member and the administrator, with the display name of their persona.
+ * The accounts of the cast for an environment: Éric (the member), Mira (the administrator) and Camille, with the display name of their persona.
  * The same variables as `qa-accounts` (`QA_*`) and the demo seed (`APP_DEMO_*`): one list, so a deployment and a laptop hold the same people.
  */
 export function castAccounts(env) {
@@ -35,6 +36,7 @@ export function castAccounts(env) {
   return [
     pick("USER", CAST_MEMBER, ["APP_DEMO_ACCOUNT_EMAIL", "QA_USER_EMAIL"], ["APP_DEMO_ACCOUNT_PASSWORD", "QA_USER_PASSWORD"]),
     pick("ADMIN", CAST_ADMIN, ["APP_DEMO_ADMIN_EMAIL", "QA_ADMIN_EMAIL"], ["APP_DEMO_ADMIN_PASSWORD", "QA_ADMIN_PASSWORD"]),
+    pick("USER", CAST_CAMILLE, ["QA_CAMILLE_EMAIL"], ["QA_CAMILLE_PASSWORD"]),
   ];
 }
 

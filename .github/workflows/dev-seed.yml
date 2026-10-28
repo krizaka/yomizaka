@@ -28,12 +28,14 @@ jobs:
       QA_USER_PASSWORD: ${{ secrets.QA_USER_PASSWORD }}
       QA_ADMIN_EMAIL: ${{ secrets.QA_ADMIN_EMAIL }}
       QA_ADMIN_PASSWORD: ${{ secrets.QA_ADMIN_PASSWORD }}
+      QA_CAMILLE_EMAIL: ${{ secrets.QA_CAMILLE_EMAIL }}
+      QA_CAMILLE_PASSWORD: ${{ secrets.QA_CAMILLE_PASSWORD }}
       RESET: ${{ inputs.reset && '--reset' || '' }}
     steps:
       - name: Check the environment secrets (fail closed)
         run: |
           missing=""
-          for name in DATABASE_URL DATABASE_CA_CERT QA_USER_EMAIL QA_USER_PASSWORD QA_ADMIN_EMAIL QA_ADMIN_PASSWORD; do
+          for name in DATABASE_URL DATABASE_CA_CERT QA_USER_EMAIL QA_USER_PASSWORD QA_ADMIN_EMAIL QA_ADMIN_PASSWORD QA_CAMILLE_EMAIL QA_CAMILLE_PASSWORD; do
             [ -n "$(printenv "$name")" ] || missing="$missing $name"
           done
           if [ -n "$missing" ]; then

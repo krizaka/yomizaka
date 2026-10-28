@@ -38,7 +38,7 @@ async function main() {
     if (cast) {
       const { hashPassword } = await import("../../apps/web/scripts/qa-accounts.mjs");
       const run = await seedCast((sql, values) => client.query(sql, values).then((r) => r.rows), { env: process.env, hashPassword, locale: arg("locale"), messagesByLocale, reset: process.argv.includes("--reset") });
-      console.log(`demo:seed --cast: ${run.member.name} (member), ${run.admin.name} (administrator)`);
+      console.log(`demo:seed --cast: ${run.member.name} (member), ${run.admin.name} (administrator), ${run.camille.name}`);
       console.log(`fingerprint: ${run.fingerprint}`);
       if (process.argv.includes("--check")) {
         const expected = JSON.parse(readFileSync(new URL("./fingerprint.json", import.meta.url), "utf8")).fingerprint;
