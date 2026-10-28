@@ -8,7 +8,9 @@
 // Exits 1 listing every page × width × theme that overflows. With --shots it also writes a screenshot of each.
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
+import { A11yCollector, auditPage as auditA11y, finish } from "@krizaka/a11y-audit";
 import { chromium } from "playwright-core";
 
 import { auditPage, problemsOf } from "./lib/page-audit.mjs";
@@ -16,6 +18,9 @@ import { auditContext, loadSettled, resizeSettled } from "./lib/settle.mjs";
 
 export const WIDTHS = [360, 390, 430, 768, 1024, 1440];
 export const THEMES = ["dark", "light"];
+// axe-core (WCAG 2.1 AA) runs at the phone and the desktop width only: a finding is counted once per route, theme and node.
+export const A11Y_WIDTHS = [390, 1440];
+export const A11Y_BASELINE = fileURLToPath(new URL("../a11y-baseline.json", import.meta.url));
 export const PAGES = ["/en", "/fr", "/en/privacy", "/fr/privacy", "/en/docs", "/fr/docs", "/en/sign-in", "/fr/sign-in", "/en/forgot-password", "/fr/forgot-password", `/en/reset-password?token=ye1.${"A".repeat(43)}`, "/fr/reset-password", "/fr/verify", "/fr/nope", "/en/nope"];
 
 const arg = (name, fallback) => {
@@ -26,6 +31,7 @@ const arg = (name, fallback) => {
 export async function check({ base, shots }) {
   const browser = await chromium.launch();
   const problems = [];
+  const a11y = new A11yCollector("yomizaka");
   for (const theme of THEMES) {
     const context = await auditContext(browser, { colorScheme: theme });
     await context.addInitScript((t) => {
@@ -51,6 +57,7 @@ export async function check({ base, shots }) {
         const result = await page.evaluate(auditPage);
         const where = `${path} @${width} ${theme}`;
         problems.push(...problemsOf(where, result, { errors }));
+        if (A11Y_WIDTHS.includes(width)) a11y.add({ route: path, theme }, await auditA11y(page));
         errors = [];
         if (shots) {
           mkdirSync(shots, { recursive: true });
@@ -61,6 +68,9 @@ export async function check({ base, shots }) {
     await context.close();
   }
   await browser.close();
+  const guard = finish(a11y, { baseline: A11Y_BASELINE });
+  for (const note of guard.notes) console.log(note);
+  problems.push(...guard.problems);
   return problems;
 }
 

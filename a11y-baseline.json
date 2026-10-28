@@ -1,0 +1,13 @@
+{
+  "app": "yomizaka",
+  "rules": {
+    "landmark-one-main": {
+      "impact": "moderate",
+      "count": 4
+    },
+    "region": {
+      "impact": "moderate",
+      "count": 58
+    }
+  }
+}

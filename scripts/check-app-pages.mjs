@@ -9,7 +9,9 @@
 // Exits 1 listing every page × width × theme with a problem. With --shots it also writes a screenshot of each.
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
+import { A11yCollector, auditPage as auditA11y, finish } from "@krizaka/a11y-audit";
 import { chromium } from "playwright-core";
 
 import { demoOwnerTokens } from "./demo-seed/seed.mjs";
@@ -18,6 +20,9 @@ import { auditContext, loadSettled, resizeSettled } from "./lib/settle.mjs";
 
 export const WIDTHS = [360, 390, 1280, 1440, 1600];
 export const THEMES = ["dark", "light"];
+// axe-core (WCAG 2.1 AA) runs at the phone and the desktop width only: a finding is counted once per route, theme and node.
+export const A11Y_WIDTHS = [390, 1440];
+export const A11Y_BASELINE = fileURLToPath(new URL("../a11y-baseline.app.json", import.meta.url));
 export const PAGES = ["/app", "/app/documents", "/app/dossiers", "/app/screening", "/app/check", "/app/verifications", "/app/verifications?tab=lots", "/app/verifications?q=bail&result=attention,checked&kind=lease&period=year", "/app/search", "/app/settings/profil", "/app/settings/apparence", "/app/settings/securite", "/app/settings/facturation", "/app/settings/stockage", "/app/settings/donnees"];
 
 const arg = (name, fallback) => {
@@ -69,8 +74,25 @@ export async function discover(page, base, locale) {
 export const ownerReportPath = (persona = "eric") => `/rapport/${demoOwnerTokens(persona).live}`;
 export const revokedReportPath = (persona = "eric") => `/rapport/${demoOwnerTokens(persona).revoked}`;
 
+/** One page at one width in one theme: the audit's problems, the axe findings recorded, the optional screenshot. */
+async function auditAt({ page, path, width, theme, base, locale, shots, a11y, errors }) {
+  const publicPage = path.startsWith("/rapport/");
+  await resizeSettled(page, { width, height: width < 600 ? 844 : 900 });
+  await loadSettled(page, `${base}/${locale}${path}`);
+  await page.waitForTimeout(300);
+  const result = await page.evaluate(auditPage);
+  const where = `${publicPage ? "/rapport/<demo token>" : path} @${width} ${theme}`;
+  const found = problemsOf(where, result, { errors, h1: true, headerAction: !publicPage });
+  if (A11Y_WIDTHS.includes(width)) a11y.add({ route: publicPage ? "/rapport/<demo token>" : path, theme }, await auditA11y(page));
+  if (shots) {
+    mkdirSync(shots, { recursive: true });
+    await page.screenshot({ path: join(shots, `${path.replace(/[^a-z0-9]+/gi, "_")}-${width}-${theme}.png`), fullPage: false });
+  }
+  return found;
+}
+
 /** One theme's pass over every page at every width: the problems found (one console collector per page). */
-async function auditTheme(browser, { theme, cookies, pages, base, locale, shots }) {
+async function auditTheme({ browser, theme, cookies, pages, base, locale, shots, a11y }) {
   const problems = [];
   const ctx = await auditContext(browser, { colorScheme: theme });
   await ctx.addCookies(cookies);
@@ -80,25 +102,15 @@ async function auditTheme(browser, { theme, cookies, pages, base, locale, shots 
     } catch {}
   }, theme);
   const page = await ctx.newPage();
-  let errors = [];
+  const errors = [];
   page.on("console", (m) => {
     if (m.type() === "error" && !/Failed to load resource/.test(m.text())) errors.push(m.text().slice(0, 140));
   });
   page.on("pageerror", (e) => errors.push(String(e).slice(0, 140)));
   for (const path of [...pages, ownerReportPath()]) {
-    const publicPage = path.startsWith("/rapport/");
     for (const width of WIDTHS) {
-      await resizeSettled(page, { width, height: width < 600 ? 844 : 900 });
-      await loadSettled(page, `${base}/${locale}${path}`);
-      await page.waitForTimeout(300);
-      const result = await page.evaluate(auditPage);
-      const where = `${publicPage ? "/rapport/<demo token>" : path} @${width} ${theme}`;
-      problems.push(...problemsOf(where, result, { errors, h1: true, headerAction: !publicPage }));
-      errors = [];
-      if (shots) {
-        mkdirSync(shots, { recursive: true });
-        await page.screenshot({ path: join(shots, `${path.replace(/[^a-z0-9]+/gi, "_")}-${width}-${theme}.png`), fullPage: false });
-      }
+      problems.push(...(await auditAt({ page, path, width, theme, base, locale, shots, a11y, errors })));
+      errors.length = 0;
     }
   }
   await ctx.close();
@@ -109,6 +121,7 @@ export async function check({ base, locale = "fr", email, password, shots }) {
   if (!email || !password) throw new Error("E2E_EMAIL and E2E_PASSWORD are required (the seeded persona)");
   const browser = await chromium.launch();
   const problems = [];
+  const a11y = new A11yCollector("yomizaka-app");
   try {
     const context = await auditContext(browser, { viewport: { width: 1440, height: 900 } });
     const probe = await context.newPage();
@@ -124,7 +137,10 @@ export async function check({ base, locale = "fr", email, password, shots }) {
     await probe.close();
     const cookies = await context.cookies();
     await context.close();
-    for (const theme of THEMES) problems.push(...(await auditTheme(browser, { theme, cookies, pages, base, locale, shots })));
+    for (const theme of THEMES) problems.push(...(await auditTheme({ browser, theme, cookies, pages, base, locale, shots, a11y })));
+    const guard = finish(a11y, { baseline: A11Y_BASELINE });
+    for (const note of guard.notes) console.log(note);
+    problems.push(...guard.problems);
     return { problems, pages: [...pages, ownerReportPath()] };
   } finally {
     await browser.close();
