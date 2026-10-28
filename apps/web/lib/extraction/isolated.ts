@@ -37,7 +37,7 @@ type Answer = { id: number; ok: true; pages: number; text: string } | { id: numb
  * It stays up between files — loading pdf.js costs more than reading a page — and answers one job at a time, each document destroyed
  * once read.
  */
-const WORKER_SOURCE = `
+const WORKER_SOURCE = String.raw`
 const { parentPort, workerData } = require("node:worker_threads");
 const { extractText, getDocumentProxy } = require(workerData.unpdf);
 parentPort.on("message", async ({ id, bytes, maxPages }) => {
@@ -46,7 +46,7 @@ parentPort.on("message", async ({ id, bytes, maxPages }) => {
     pdf = await getDocumentProxy(new Uint8Array(bytes));
     if (pdf.numPages > maxPages) return parentPort.postMessage({ id, ok: false, code: "TOO_MANY_PAGES" });
     const { totalPages, text } = await extractText(pdf, { mergePages: true });
-    parentPort.postMessage({ id, ok: true, pages: totalPages, text: Array.isArray(text) ? text.join("\\n") : text });
+    parentPort.postMessage({ id, ok: true, pages: totalPages, text: Array.isArray(text) ? text.join("\n") : text });
   } catch {
     parentPort.postMessage({ id, ok: false, code: "FAILED" });
   } finally {
