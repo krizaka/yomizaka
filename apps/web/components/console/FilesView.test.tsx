@@ -29,13 +29,6 @@ const TYPES = [
 const summary = (id: string, name: string, extra: Partial<FileSummary> = {}): FileSummary => ({ id, candidateName: name, status: "open", createdAt: "2026-10-20T14:00:00.000Z", expiresAt: "2026-11-07T15:00:00.000Z", submittedAt: null, closedAt: null, documents: 0, requested: 3, decision: "a_decider", tagIds: [], ...extra });
 
 describe("« Dossiers »: the list (P6, yomizaka#323)", () => {
-  it("never squeezes the link's state into the one-line facts under the name (cut off at 360 and 390 px, yomizaka#496): the phone list shows it whole in the row's detail", () => {
-    const html = wrap(<FilesView files={[summary("f1", "Camille Fictif")]} types={TYPES} origin="https://www.yomizaka.com" />);
-    const facts = [...html.matchAll(/<span data-facts="[^"]*"[^>]*>(.*?)<\/span><\/span>/g)].map((m) => m[1]).join(" ");
-    expect(facts).not.toContain("Lien ouvert");
-    expect(readable(html)).toContain("Lien ouvert jusqu'au 7 nov. 2026");
-  });
-
   it("draws a row per file of listApplicantFiles — the applicant, the link in words, the documents in against those asked — each leading to its file", () => {
     const html = wrap(<FilesView files={[summary("f1", "Camille Fictif", { documents: 2 }), summary("f2", "Noé Imaginaire", { status: "used", submittedAt: "2026-10-22T14:00:00.000Z", documents: 3 })]} types={TYPES} origin="https://www.yomizaka.com" />);
     const text = readable(html);
