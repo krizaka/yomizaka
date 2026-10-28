@@ -1,10 +1,12 @@
 name: CI
+# main is protected by a merge queue (merge_group below): a pull request merges only after CI passes on its entry.
 
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
+  merge_group:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,7 +19,7 @@ jobs:
   # The pipeline is the org's (krizaka/.github docs/standards/ci-and-deploy.md): the changes gate, the pnpm and Playwright
   # caches, parallel legs, the timeouts and the gate that always reports live there. This file says only what is Yomizaka's.
   ci:
-    uses: krizaka/.github/.github/workflows/node-ci.yml@71a649f6851ca7b4fcb1bb6b5495201ed4eca0d7 # main (fix-needs-guard, light Sonar scan)
+    uses: krizaka/.github/.github/workflows/node-ci.yml@52867e939aae51e061389109d52b1e463f8fe72f # main (merge queue, layout guard)
     permissions:
       contents: read
     secrets:

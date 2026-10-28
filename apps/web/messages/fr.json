@@ -92,6 +92,32 @@
     },
     "visual": {
       "caption": "Une vraie vérification, enregistrée telle qu'elle est revenue"
+    },
+    "showcase": {
+      "title": "L'app, telle qu'elle est",
+      "lead": "Trois écrans de Yomizaka, dessinés avec ses propres composants sur des données fictives. Rien ici n'est une capture d'écran.",
+      "demo": "Données fictives",
+      "findings": {
+        "title": "Chaque constat cite sa ligne",
+        "text": "La règle, la phrase du bail sur laquelle elle repose et l'article de loi, dans l'ordre de lecture.",
+        "summary": "Le rapport d'une vérification : le verdict, puis chaque constat avec le passage cité du bail et son article."
+      },
+      "screening": {
+        "title": "Une vérification que le locataire accepte",
+        "text": "Le candidat voit le résultat en premier; une vérification de registre qui n'est pas prête le dit au lieu de deviner.",
+        "summary": "Le résultat d'une vérification avec les contrôles demandés et, pour chacun, son issue : rien à signaler, ou pas encore disponible.",
+        "title2": "Résultat",
+        "items": {
+          "payment-history": "Historique de paiement",
+          "credit": "Rapport de crédit",
+          "registry": "Registre du tribunal"
+        }
+      },
+      "owner": {
+        "title": "Un rapport que le propriétaire peut ouvrir",
+        "text": "Une page en lecture seule, par lien, avec une échéance : l'empreinte du fichier, les constats et l'exécution qui les a produits.",
+        "summary": "La page du propriétaire : l'empreinte du document, les constats avec leurs articles et l'identifiant d'exécution."
+      }
     }
   },
   "run": {
@@ -3469,9 +3495,17 @@
       "parameters": "Paramètres",
       "answers": "Réponses",
       "errorsTitle": "Erreurs",
-      "errors": "Une erreur est { \"code\": \"…\", \"error\": \"…\" }. Le code est stable ; le message sert aux journaux.",
+      "errors": "Chaque erreur répond par un code stable et un message. Appuyez-vous sur le code ; le message sert à vos journaux.",
+      "codeColumn": "Code",
+      "meaningColumn": "Sens",
+      "statusTitle": "Codes de statut",
+      "statusLead": "Ces réponses sont données par plusieurs routes ; le tableau des routes liste les autres.",
+      "errorShapeLabel": "Corps d'une erreur",
       "webhooksTitle": "Webhooks",
-      "webhooks": "Plutôt que d'interroger, enregistrez un point d'accès https dans votre compte et Yomizaka l'appelle quand le travail se termine. Chaque requête porte un nom d'événement, un identifiant d'événement stable (appliquez un événement une seule fois) et une signature dans x-krizaka-signature : t=SECONDES_UNIX,v1=HEX, où HEX est le HMAC-SHA256, avec le secret de votre point d'accès, de \"SECONDES_UNIX.CORPS_BRUT\". Une charge contient des identifiants et des états, jamais un document ni un rapport.",
+      "webhooks": "Plutôt que d'interroger, enregistrez un point d'accès https dans votre compte et Yomizaka l'appelle quand le travail se termine. Chaque requête porte un nom d'événement, un identifiant d'événement stable (appliquez un événement une seule fois) et une signature. Une charge contient des identifiants et des états, jamais un document ni un rapport.",
+      "signatureTitle": "Vérifier la signature",
+      "signature": "L'en-tête x-krizaka-signature a ce format. HEX est le HMAC-SHA256, avec le secret de votre point d'accès, de l'horodatage, d'un point et du corps brut. Refusez une requête dont la signature ne correspond pas.",
+      "signatureLabel": "Signature",
       "event": "Événement",
       "openapiLink": "Ouvrir le document OpenAPI"
     },

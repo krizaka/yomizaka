@@ -8,6 +8,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  merge_group:
 
 permissions:
   contents: read
@@ -20,7 +21,7 @@ jobs:
   ci:
     permissions:
       contents: read
-    uses: krizaka/.github/.github/workflows/expo-ci.yml@5a6ae3ac28625b1dd1d1468ca31b44dddd133094 # main, with lockfile-directory (krizaka/.github#182)
+    uses: krizaka/.github/.github/workflows/expo-ci.yml@52867e939aae51e061389109d52b1e463f8fe72f # main (merge queue, layout guard)
     with:
       package-manager: pnpm
       working-directory: apps/mobile
@@ -35,7 +36,7 @@ jobs:
   mobile-e2e:
     permissions:
       contents: read
-    uses: krizaka/.github/.github/workflows/mobile-e2e.yml@274094c6ea47f88d759ef6da0a4aaeafd0d2dfb2 # main (krizaka/.github#312)
+    uses: krizaka/.github/.github/workflows/mobile-e2e.yml@52867e939aae51e061389109d52b1e463f8fe72f # main (merge queue, layout guard)
     with:
       app-id: com.krizaka.yomizaka
       app-directory: apps/mobile

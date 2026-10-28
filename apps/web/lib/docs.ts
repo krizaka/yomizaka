@@ -10,3 +10,11 @@ export const quickstartCode = (origin: string): string => `curl -X POST ${origin
 
 curl ${origin}/api/v1/checks/<id> -H "Authorization: Bearer $YOMIZAKA_KEY"
 # poll until "state" is "done" (the "report" is there), "failed" or "refused"`;
+
+/** The body of an error of the API: the code is stable, the message is for logs. */
+export const ERROR_BODY_CODE = `{ "code": "…", "error": "…" }`;
+
+/** The signature of a webhook, and what it signs. */
+export const WEBHOOK_SIGNATURE_CODE = `x-krizaka-signature: t=UNIX_SECONDS,v1=HEX
+
+HEX = HMAC-SHA256(endpoint secret, "UNIX_SECONDS.RAW_BODY")`;
