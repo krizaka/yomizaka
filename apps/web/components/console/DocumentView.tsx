@@ -24,6 +24,7 @@ import { DocumentActions } from "./DocumentActions";
 import { DocumentFileTab } from "./DocumentFileTab";
 import { DocumentHistoryTab } from "./DocumentHistoryTab";
 import { DocumentReportTab } from "./DocumentReportTab";
+import type { LeaseBundle } from "@/lib/lease-bundle";
 import { STATUS_TONE } from "./DocumentTable";
 import { formatBytes, formatDate } from "./format";
 import { LiveAnalysis } from "./LiveAnalysis";
@@ -83,7 +84,7 @@ function ReportAside({ doc, facts, placeName, retention, startProps }: Readonly<
   );
 }
 
-export function DocumentView({ initial, tab, place = null, perspective = null, offer }: Readonly<{ initial: DocumentViewData; tab: DocumentTab; place?: DocumentPlace | null; perspective?: Audience | null; offer: { studios: readonly Studio[]; jurisdictions: readonly Jurisdiction[]; rulesets: readonly string[] } }>) {
+export function DocumentView({ initial, tab, place = null, perspective = null, bundle = null, offer }: Readonly<{ initial: DocumentViewData; tab: DocumentTab; place?: DocumentPlace | null; perspective?: Audience | null; bundle?: LeaseBundle | null; offer: { studios: readonly Studio[]; jurisdictions: readonly Jurisdiction[]; rulesets: readonly string[] } }>) {
   const { say, locale } = useSay();
   const router = useRouter();
   const client = useQueryClient();
@@ -159,7 +160,7 @@ export function DocumentView({ initial, tab, place = null, perspective = null, o
       {doc.analyses.filter((a) => a.status === ANALYSIS_STATUS.running).map((a) => (
         <LiveAnalysis key={a.id} documentId={doc.id} analysis={a} />
       ))}
-      {tab === "rapport" ? <DocumentReportTab doc={doc} facts={facts} selection={selection} perspective={perspective} startCards={startCards} /> : null}
+      {tab === "rapport" ? <DocumentReportTab doc={doc} facts={facts} selection={selection} perspective={perspective} bundle={bundle} startCards={startCards} /> : null}
       {tab === "document" ? (
         <DocumentFileTab doc={doc} path={path} isPdf={isPdf} report={latestReport} viewer={{ fileUrl, highlights, activeId, onActiveChange: setActiveId, onLocate: setFound }} viewerRef={viewerRef} found={found} onDelete={() => remove.mutate()} deleting={remove.isPending} />
       ) : null}

@@ -2977,6 +2977,20 @@
         "retry": "Réessayer"
       }
     },
+    "bundle": {
+      "title": "Le bail et ses annexes",
+      "lead": "Chaque constat du bail et de chaque annexe, par ligne, avec l'article que la règle cite. Une vérification informe : elle ne donne ni conseil ni verdict.",
+      "roles": {
+        "lease": "Bail",
+        "annex": "Annexe",
+        "building-rules": "Règlement de l'immeuble"
+      },
+      "notChecked": "pas encore vérifié",
+      "line": "ligne {n}",
+      "noLine": "sans ligne",
+      "none": "Aucune règle ne demande un regard sur les documents vérifiés jusqu'ici.",
+      "toReview": "Règles québécoises encore à faire relire par un juriste : un écran de démonstration, pas un avis juridique."
+    },
     "documentsPage": {
       "title": "Tous les documents",
       "lead": "Tous vos documents, du plus récent au plus ancien, dans toutes vos collections.",
