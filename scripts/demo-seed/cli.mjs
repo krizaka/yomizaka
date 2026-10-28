@@ -15,6 +15,21 @@ const arg = (name) => {
   return i >= 0 ? process.argv[i + 1] : undefined;
 };
 
+const LOCAL_HOSTS = ["localhost", "127.0.0.1", "::1", "[::1]", "postgres", "db"];
+
+/** The whole cast on the database; with --check, compared to the recorded fingerprint (exact on a local database, « all there » on dev). */
+async function runCast(client, url, { messagesByLocale, locale }) {
+  const { hashPassword } = await import("../../apps/web/scripts/qa-accounts.mjs");
+  const run = await seedCast((sql, values) => client.query(sql, values).then((r) => r.rows), { env: process.env, hashPassword, locale, messagesByLocale, reset: process.argv.includes("--reset") });
+  console.log(`demo:seed --cast: ${run.member.name} (member), ${run.admin.name} (administrator), ${run.camille.name}`);
+  console.log(`fingerprint: ${run.fingerprint}`);
+  if (!process.argv.includes("--check")) return;
+  const expected = JSON.parse(readFileSync(new URL("./fingerprint.json", import.meta.url), "utf8")).fingerprint;
+  const exact = LOCAL_HOSTS.includes(url.hostname);
+  if (!matchesRecorded(run.fingerprint, expected, exact)) throw new Error(`the seeded data differs from the recorded fingerprint\n  expected ${expected}\n  got      ${run.fingerprint}`);
+  console.log(exact ? "fingerprint: matches the recorded one" : "fingerprint: everything recorded is there (this database is lived in: counts may exceed it)");
+}
+
 async function main() {
   assertNotProduction(process.env);
   const cast = process.argv.includes("--cast");
@@ -36,19 +51,7 @@ async function main() {
   }
   await client.connect();
   try {
-    if (cast) {
-      const { hashPassword } = await import("../../apps/web/scripts/qa-accounts.mjs");
-      const run = await seedCast((sql, values) => client.query(sql, values).then((r) => r.rows), { env: process.env, hashPassword, locale: arg("locale"), messagesByLocale, reset: process.argv.includes("--reset") });
-      console.log(`demo:seed --cast: ${run.member.name} (member), ${run.admin.name} (administrator), ${run.camille.name}`);
-      console.log(`fingerprint: ${run.fingerprint}`);
-      if (process.argv.includes("--check")) {
-        const expected = JSON.parse(readFileSync(new URL("./fingerprint.json", import.meta.url), "utf8")).fingerprint;
-        const exact = ["localhost", "127.0.0.1", "::1", "[::1]", "postgres", "db"].includes(url.hostname);
-        if (!matchesRecorded(run.fingerprint, expected, exact)) throw new Error(`the seeded data differs from the recorded fingerprint\n  expected ${expected}\n  got      ${run.fingerprint}`);
-        console.log(exact ? "fingerprint: matches the recorded one" : "fingerprint: everything recorded is there (this database is lived in: counts may exceed it)");
-      }
-      return;
-    }
+    if (cast) return await runCast(client, url, { messagesByLocale, locale: arg("locale") });
     const result = await seedPersona((sql, values) => client.query(sql, values).then((r) => r.rows), {
       persona,
       email: process.env.APP_DEMO_ACCOUNT_EMAIL,
