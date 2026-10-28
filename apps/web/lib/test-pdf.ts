@@ -5,7 +5,7 @@ export function textPdf(lines: readonly string[], linesPerPage = 40): Uint8Array
   const pages: string[][] = [];
   for (let i = 0; i < lines.length; i += linesPerPage) pages.push(lines.slice(i, i + linesPerPage));
   const latin1 = (s: string) => Buffer.from(s, "latin1");
-  const esc = (s: string) => s.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+  const esc = (s: string) => s.replace(/\\/g, String.raw`\\`).replace(/\(/g, String.raw`\(`).replace(/\)/g, String.raw`\)`);
   const objects: Buffer[] = [];
   const font = 3 + pages.length * 2;
   const kids = pages.map((_, i) => `${3 + i * 2} 0 R`).join(" ");

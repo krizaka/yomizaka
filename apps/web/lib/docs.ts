@@ -3,8 +3,8 @@ export const DOCS_SECTIONS = ["check", "api", "data"] as const;
 export type DocsSection = (typeof DOCS_SECTIONS)[number];
 
 /** The curl of the quickstart: start a check, then read it. */
-export const quickstartCode = (origin: string): string => `curl -X POST ${origin}/api/v1/checks \\
-  -H "Authorization: Bearer $YOMIZAKA_KEY" \\
+export const quickstartCode = (origin: string): string => String.raw`curl -X POST ${origin}/api/v1/checks \
+  -H "Authorization: Bearer $YOMIZAKA_KEY" \
   -F file=@bail.pdf -F check=compliance -F reference=APT-12
 # 201 { "check": { "id": "…", "state": "running", … } }
 

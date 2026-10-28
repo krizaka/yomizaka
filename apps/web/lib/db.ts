@@ -52,7 +52,7 @@ function configFor(env: ReturnType<typeof readEnv>, source: { variable: string; 
     connectionString: url.toString(),
     max,
     idleTimeoutMillis: 30_000,
-    ...(tls ? { ssl: { ca: env.DATABASE_CA_CERT?.replaceAll("\\n", "\n"), rejectUnauthorized: true } } : {}),
+    ...(tls ? { ssl: { ca: env.DATABASE_CA_CERT?.replaceAll(String.raw`\n`, "\n"), rejectUnauthorized: true } } : {}),
   };
 }
 
