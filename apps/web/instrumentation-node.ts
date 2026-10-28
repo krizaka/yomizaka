@@ -66,7 +66,8 @@ async function start() {
       const { purgeExpired: purgeDocuments } = await import("./lib/retention");
       const { purgeExpired: purgeResults } = await import("./lib/screening");
       const { query: sweepQuery } = await import("./lib/db");
-      const purgedDocuments = await purgeDocuments(sweepQuery, new Date());
+      const { holderOf: documentHolder } = await import("./app/active-store");
+      const purgedDocuments = await purgeDocuments(sweepQuery, new Date(), documentHolder);
       const purgedResults = await purgeResults(new Date());
       if (purgedDocuments || purgedResults) logInfo(`[yomizaka] retention: ${purgedDocuments} documents, ${purgedResults} results purged`);
       // The screening checks a provider accepted without answering are collected on the same look (yomizaka#134).

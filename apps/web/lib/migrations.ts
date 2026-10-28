@@ -1330,4 +1330,12 @@ ALTER TABLE documents ADD CONSTRAINT documents_role_has_lease CHECK ((document_r
 CREATE INDEX documents_lease ON documents(lease_id) WHERE lease_id IS NOT NULL;
 `,
   },
+  {
+    version: "0057_document_object_key",
+    // ADR-0012 (yomizaka#17): the bytes of a document leave `documents.content` for the deployment's store. `object_key` set means « the bytes are in the store under this key »; null means none (or legacy bytes still in `content`).
+    sql: `
+ALTER TABLE documents ADD COLUMN object_key text;
+CREATE INDEX documents_object_key ON documents(object_key) WHERE object_key IS NOT NULL;
+`,
+  },
 ];

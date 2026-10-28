@@ -1,15 +1,18 @@
 import { filterSql, type StatusSet, type ViewFilters } from "@krizaka/organize";
 import type { Analysis, StartAnalysis, StorageKind,Studio } from "@yomizaka/core";
 
+import { holderOf as documentHolder } from "@/app/active-store";
+
 import { refresh, startAnalysis } from "./analyses";
 import { activeConsents, assertUploadForApplication, attachToApplication, CONSENT_PURPOSE, type ConsentPurpose, hasConsent } from "./applicant-consent";
 import { assertOpen, FILE_JURISDICTION, type LinkState, linkState, MAX_DOCUMENTS_PER_FILE, requestedTypes, retentionOf } from "./applicant-file-rules";
 import { audit } from "./audit";
 import { releaseAudit,reserveAudit } from "./billing";
 import { query, withBlockingLock } from "./db";
+import { removeObject } from "./document-objects";
 import { type AnalysisRow, inspectUpload, isUuid, type StoragePolicy, storeDocument } from "./documents";
 import { codeOf, HttpError, refuse } from "./http";
-import { EXTERNAL, objectKey, purgeIfDone } from "./retention";
+import { EXTERNAL, HOLDS_BYTES, objectKey, purgeIfDone } from "./retention";
 import { policyFor } from "./retention-policy";
 import { addDays, hash, newToken, REQUEST_VALID_DAYS } from "./screening";
 import type { DocumentStore } from "./storage/port";
@@ -222,17 +225,22 @@ export async function revokeApplicantFile(landlordId: string, id: string, now: D
  * (its bytes and text); its reports stay. Returns how many files were purged. Refuses while a kept file's store is not there.
  */
 export async function purgeApplicationFiles(ownerId: string, screeningId: string, store: DocumentStore | undefined): Promise<number> {
-  const docs = await query<{ id: string; mime_type: string; storage: string }>(
-    "SELECT id, mime_type, storage FROM documents WHERE owner_id = $1 AND screening_id = $2 AND (storage <> 'none' OR octet_length(content) > 0 OR text <> '')",
+  const docs = await query<{ id: string; mime_type: string; storage: string; storage_owner: string; object_key: string | null }>(
+    `SELECT id, mime_type, storage, storage_owner, object_key FROM documents WHERE owner_id = $1 AND screening_id = $2 AND (storage <> 'none' OR ${HOLDS_BYTES} OR text <> '')`,
     [ownerId, screeningId],
   );
   for (const d of docs) {
+    // A file in the store (ADR-0012) leaves it first; a store that does not answer keeps the file whole.
+    if (d.object_key) {
+      if (!(await removeObject({ owner_id: ownerId, storage: d.storage, storage_owner: d.storage_owner, object_key: d.object_key }, documentHolder))) throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds these documents is not available");
+      continue;
+    }
     if (!EXTERNAL.has(d.storage as StorageKind)) continue;
     if (store?.describe().kind !== d.storage) throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds these documents is not available");
     await store.delete(objectKey(ownerId, d.id, d.mime_type));
   }
   const purged = await query<{ id: string }>(
-    "UPDATE documents SET content = ''::bytea, text = '', storage = 'none', retain_until = NULL WHERE owner_id = $1 AND screening_id = $2 AND (storage <> 'none' OR octet_length(content) > 0 OR text <> '') RETURNING id",
+    `UPDATE documents SET content = ''::bytea, text = '', object_key = NULL, storage = 'none', retain_until = NULL WHERE owner_id = $1 AND screening_id = $2 AND (storage <> 'none' OR ${HOLDS_BYTES} OR text <> '') RETURNING id`,
     [ownerId, screeningId],
   );
   for (const p of purged) await audit({ action: "document.purged", actorId: ownerId, actorLabel: "decision", targetId: p.id, detail: { reason: "after-decision", application: screeningId } });
@@ -292,7 +300,7 @@ export async function applicantFileOf(landlordId: string, id: string, now: Date)
   }
   const docs = await query<{ id: string; document_type: string | null; title: string; filename: string; size_bytes: number; pages: number | null; retention_policy: string | null; storage: string; checks_skipped: SkippedCheck[]; purged: boolean }>(
     `SELECT d.id, d.document_type, d.title, d.filename, d.size_bytes, d.pages, d.retention_policy, d.storage, d.checks_skipped,
-            (d.storage = 'none' AND octet_length(d.content) = 0 AND d.text = '') AS purged
+            (d.storage = 'none' AND d.object_key IS NULL AND octet_length(d.content) = 0 AND d.text = '') AS purged
        FROM documents d WHERE d.owner_id = $1 AND d.screening_id = $2 ORDER BY d.created_at`,
     [landlordId, id],
   );
