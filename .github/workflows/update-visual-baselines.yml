@@ -19,7 +19,8 @@ jobs:
     uses: krizaka/.github/.github/workflows/visual-regression.yml@208fa4aacc32a1da45676306bb1d0ace7fd4255c # main
     permissions:
       contents: read
-    secrets: inherit
+    secrets:
+      RELEASE_APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
     with:
       update: true
       branch: ${{ github.event.inputs.branch }}
