@@ -9,10 +9,12 @@ import { ClosingNoteView } from "@/components/ClosingNoteView";
 import { CheckSteps } from "@/components/console/CheckSteps";
 import { buildNote, noteInputOf, noteSourceOf } from "@/lib/closing-note/build";
 import { useSay } from "@/lib/i18n-client";
+import type { LeaseBundle } from "@/lib/lease-bundle";
 import { wordingOf } from "@/lib/perspective-defaults";
 
 import { AuthenticitySignals } from "./AuthenticitySignals";
 import type { DocumentFacts } from "./document-view-model";
+import { LeaseBundleSection } from "./LeaseBundleSection";
 import { FindingList, type FindingSelection, TechnicalDetails, VerdictBand } from "./ReportFace";
 
 /**
@@ -21,7 +23,7 @@ import { FindingList, type FindingSelection, TechnicalDetails, VerdictBand } fro
  * authenticity report alone; or « Pas encore vérifié » with the checks to start. Once a report is shown, the other checks are
  * the aside's actions (design § 5.3): no form in this column.
  */
-export function DocumentReportTab({ doc, facts, selection, perspective, startCards }: Readonly<{ doc: DocumentView; facts: DocumentFacts; selection: FindingSelection; perspective: Audience | null; startCards: ReactNode }>) {
+export function DocumentReportTab({ doc, facts, selection, perspective, bundle = null, startCards }: Readonly<{ doc: DocumentView; facts: DocumentFacts; selection: FindingSelection; perspective: Audience | null; bundle?: LeaseBundle | null; startCards: ReactNode }>) {
   const { say, locale } = useSay();
   const { latestCompliance, latestReport, latestAuthenticity, runningStudio, failures } = facts;
   // The notes at the foot (design § 3.5): the review note first (the verdict points to it, REVIEW_NOTE), then a demo check's note — never a box above the report.
@@ -71,6 +73,7 @@ export function DocumentReportTab({ doc, facts, selection, perspective, startCar
         </Alert>
       ))}
       {body()}
+      {bundle && bundle.documents.length > 1 ? <LeaseBundleSection bundle={bundle} /> : null}
       <p className="m-0 text-xs text-fg-muted">{say("library.informative")}</p>
       {notes.length ? <Footnotes className="[&_ol]:list-decimal" notes={notes} label={say("reportFace.notes")} backLabel={say("reportFace.backToText")} /> : null}
     </section>

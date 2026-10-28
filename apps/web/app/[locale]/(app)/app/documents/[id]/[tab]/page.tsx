@@ -11,6 +11,7 @@ import { appEnvironment } from "@/lib/env";
 import { availableFlows, offerFor } from "@/lib/flows";
 import { HttpError } from "@/lib/http";
 import { asLocale, getDictionary } from "@/lib/i18n";
+import { leaseBundle } from "@/lib/lease-bundle";
 import { placeOf } from "@/lib/organisation/store";
 import { withFeatures } from "@/lib/settings/boundary";
 import { insightFeatures } from "@/lib/settings/guards";
@@ -33,5 +34,7 @@ export default async function DocumentTabPage({ params, searchParams }: Readonly
     throw error;
   });
   if (!document) notFound();
-  return <DocumentView initial={document} tab={tab} place={await placeOf(query, session.account.id, id)} perspective={session.account.perspective} offer={offerFor(await availableFlows(appEnvironment()), session.account.perspective)} />;
+  // The lease and its annexes read as one (yomizaka#499): read for the report tab only, and shown only when there are annexes.
+  const bundle = tab === "rapport" ? await leaseBundle(session.account.id, id) : null;
+  return <DocumentView initial={document} tab={tab} bundle={bundle} place={await placeOf(query, session.account.id, id)} perspective={session.account.perspective} offer={offerFor(await availableFlows(appEnvironment()), session.account.perspective)} />;
 }

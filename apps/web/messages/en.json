@@ -2977,6 +2977,20 @@
         "retry": "Try again"
       }
     },
+    "bundle": {
+      "title": "The lease and its annexes",
+      "lead": "Every finding of the lease and of each annex, by line, with the article the rule cites. A check informs: it gives no advice and no verdict.",
+      "roles": {
+        "lease": "Lease",
+        "annex": "Annex",
+        "building-rules": "Building rules"
+      },
+      "notChecked": "not checked yet",
+      "line": "line {n}",
+      "noLine": "no line",
+      "none": "No rule needs a look on the documents checked so far.",
+      "toReview": "Québec rules still to be reviewed by a lawyer: a demonstration screen, not legal advice."
+    },
     "documentsPage": {
       "title": "All documents",
       "lead": "All your documents, newest first, across all your collections.",
