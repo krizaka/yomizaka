@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@krizaka/query";
 import { ThemeProvider } from "@krizaka/ui/theme";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -7,7 +8,7 @@ vi.mock("@krizaka/query", async (original) => ({ ...(await original<typeof impor
 
 import fr from "@/messages/fr.json";
 
-import { BarActionsView, ClosingActionsView, ClosingBodyView, fetchMe, HeroActionsView, type Me, ME_KEY, signOutAndForget } from "./BarSession";
+import { BarActions, BarActionsView, ClosingActionsView, ClosingBodyView, HeroActionsView, type Me, ME_KEY, meOf, signOutAndForget } from "./BarSession";
 import { SiteHeader } from "./SiteChrome";
 
 const text = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/\s+/g, " ");
@@ -97,31 +98,56 @@ describe("the hero's action reads the same answer (F0): rendered on the server i
 });
 
 describe("the hint comes from the server, never from the browser's memory", () => {
-  it("reads the identity from /api/me", async () => {
-    krizakaFetch.mockResolvedValue({ account: ME });
-    expect(await fetchMe()).toEqual(ME);
-    expect(krizakaFetch.mock.calls[0]![0]).toBe("/api/me");
+  it("reads the identity from the family's /api/me query", () => {
+    expect(ME_KEY).toEqual(["krizaka", "session", "/api/me"]);
   });
 
-  it("no session (401), an expired one or an unreachable server: signed out", async () => {
-    krizakaFetch.mockImplementation(async () => {
-      throw Object.assign(new Error("Sign in first"), { status: 401 });
-    });
-    expect(await fetchMe()).toBeNull();
-    krizakaFetch.mockImplementation(async () => {
-      throw new TypeError("fetch failed");
-    });
-    expect(await fetchMe()).toBeNull();
+  it("pending is neither state; an answer is the person or signed out", () => {
+    expect(meOf({ status: "pending" })).toEqual({ pending: true, me: null });
+    expect(meOf({ status: "in", account: ME, signupOpen: false })).toEqual({ pending: false, me: ME });
+    expect(meOf({ status: "out", signupOpen: true })).toEqual({ pending: false, me: null });
   });
 
   it("signing out forgets the person at once — even when the call fails", async () => {
+    const signedOut = { signedIn: false, signupOpen: false };
     const cache = new Map<string, unknown>([[ME_KEY.join(), ME]]);
-    const client = { setQueryData: (key: readonly string[], value: null) => void cache.set(key.join(), value) };
+    const client = { setQueryData: (key: readonly string[], value: typeof signedOut) => void cache.set(key.join(), value) };
     await signOutAndForget(client, async () => undefined);
-    expect(cache.get("me")).toBeNull();
-    cache.set("me", ME);
+    expect(cache.get(ME_KEY.join())).toEqual(signedOut);
+    cache.set(ME_KEY.join(), ME);
     await expect(signOutAndForget(client, async () => Promise.reject(new Error("offline")))).rejects.toThrow("offline");
-    expect(cache.get("me")).toBeNull();
+    expect(cache.get(ME_KEY.join())).toEqual(signedOut);
+  });
+});
+
+describe("the bar's first render matches the session (krizaka-ui#800)", () => {
+  const bar = (prime?: (client: QueryClient) => void) => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    prime?.(client);
+    return renderToStaticMarkup(
+      <QueryClientProvider client={client}>
+        <BarActions locale="en" placement="bar" />
+      </QueryClientProvider>,
+    );
+  };
+
+  it("not known yet: neither « Sign in » nor the account (a signed-in person never sees the bar flash signed out)", () => {
+    const html = bar();
+    expect(html).toContain('data-session="pending"');
+    expect(text(html)).not.toContain("Sign in");
+    expect(html).not.toContain('aria-label="Account"');
+  });
+
+  it("known and signed in: the very first render is the account", () => {
+    const html = bar((c) => c.setQueryData(ME_KEY, { signedIn: true, signupOpen: false, account: ME }));
+    expect(html).toContain('aria-label="Account"');
+    expect(text(html)).not.toContain("Sign in");
+  });
+
+  it("known and signed out: the very first render is « Sign in »", () => {
+    const html = bar((c) => c.setQueryData(ME_KEY, { signedIn: false, signupOpen: false }));
+    expect(text(html)).toContain("Sign in");
+    expect(html).not.toContain('aria-label="Account"');
   });
 });
 
