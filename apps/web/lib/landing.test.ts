@@ -38,7 +38,8 @@ describe("the home is one short page: who it is for, one real check, one way in"
     expect(home).not.toContain("/sign-in`");
     expect(home).not.toContain("proofs=");
     expect(home.match(/<MascotQuote\b/g) ?? []).toHaveLength(0);
-    expect(home).not.toMatch(/NumberTicker|GlowCard|Sparkle|shimmer|grid\b/);
+    // No decorative grid, counter or glow; the `CardGrid` block (card-grid) is the card layout itself, not a backdrop.
+    expect(home).not.toMatch(/NumberTicker|GlowCard|Sparkle|shimmer|(?<!card-)grid\b/);
     expect(home).not.toContain("pt-20");
     expect(home).toContain("<main id=\"content\" data-landing>");
     // LandingPage's hero frame pads itself with --kz-hero-top: nothing added on main (the offset would double).

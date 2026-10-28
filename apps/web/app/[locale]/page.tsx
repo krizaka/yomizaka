@@ -1,4 +1,6 @@
 import { CheckIcon, EyeIcon, SearchIcon } from "@krizaka/icons";
+import { Card } from "@krizaka/ui/card";
+import { CardGrid } from "@krizaka/ui/card-grid";
 import { LandingPage } from "@krizaka/ui/landing-page";
 import { Section } from "@krizaka/ui/page";
 import type { Metadata } from "next";
@@ -6,10 +8,16 @@ import Link from "next/link";
 
 import { BarQueryRoot, ClosingBody, HeroActions } from "@/components/BarSession";
 import { BeforeAfter } from "@/components/home/BeforeAfter";
+import { FindingsScreen } from "@/components/home/FindingsScreen";
+import { LiveScreen } from "@/components/home/LiveScreen";
+import { OwnerReportDocument } from "@/components/OwnerReportDocument";
+import { ScreeningResultCard } from "@/components/screening/ScreeningResultCard";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
 import { asLocale, format, getDictionary } from "@/lib/i18n";
+import type { ConsoleMessages } from "@/lib/i18n-client";
 import { HERO_FIGURES, productStatus } from "@/lib/landing";
+import { DEMO_SCREENING,demoOwnerDocument } from "@/lib/landing-demo";
 import { recordedRun } from "@/lib/recorded-runs";
 import { pageMetadata, siteJsonLd } from "@/lib/seo";
 import { pagePath } from "@/lib/site";
@@ -84,6 +92,48 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               ),
             }}
           >
+            <Section id="app" title={d.showcase.title} lead={d.showcase.lead} spacing="sm" divider>
+              <CardGrid min={340} align="start" reveal={false}>
+                <Card.Root data-testid="feature-findings">
+                  <Card.Body className="flex flex-col gap-3">
+                    <Card.Title as="h3">{d.showcase.findings.title}</Card.Title>
+                    <Card.Description>{d.showcase.findings.text}</Card.Description>
+                    <p className="sr-only">{d.showcase.findings.summary}</p>
+                    <LiveScreen testId="screen-findings">
+                      <FindingsScreen locale={locale} messages={{ console: { reportFace: dict.console.reportFace, analysis: dict.console.analysis } } as unknown as ConsoleMessages} report={run.report} />
+                    </LiveScreen>
+                  </Card.Body>
+                </Card.Root>
+                <Card.Root data-testid="feature-screening">
+                  <Card.Body className="flex flex-col gap-3">
+                    <Card.Title as="h3">{d.showcase.screening.title}</Card.Title>
+                    <Card.Description>{d.showcase.screening.text}</Card.Description>
+                    <p className="sr-only">{d.showcase.screening.summary}</p>
+                    <LiveScreen testId="screen-screening">
+                      <div className="p-4">
+                        <ScreeningResultCard
+                          result={DEMO_SCREENING}
+                          words={{ title: dict.screening.tenant.resultTitle, band: dict.screening.tenant.band, item: d.showcase.screening.items, outcome: dict.screening.tenant.outcome }}
+                          demo={d.showcase.demo}
+                        />
+                      </div>
+                    </LiveScreen>
+                  </Card.Body>
+                </Card.Root>
+                <Card.Root data-testid="feature-owner">
+                  <Card.Body className="flex flex-col gap-3">
+                    <Card.Title as="h3">{d.showcase.owner.title}</Card.Title>
+                    <Card.Description>{d.showcase.owner.text}</Card.Description>
+                    <p className="sr-only">{d.showcase.owner.summary}</p>
+                    <LiveScreen testId="screen-owner">
+                      <ol className="m-0 list-none p-4">
+                        <OwnerReportDocument doc={demoOwnerDocument(run)} n={1} words={dict.ownerReport} lang={locale} />
+                      </ol>
+                    </LiveScreen>
+                  </Card.Body>
+                </Card.Root>
+              </CardGrid>
+            </Section>
             <Section id="proof" title={d.proof.title} lead={d.proof.lead} spacing="sm" divider>
               <p className="text-sm text-fg-secondary">{format(d.proof.figures, { rules: figures.rules, found: figures.found })}</p>
               <p className="mt-1 text-xs text-fg-muted" data-testid="proof-meta">
