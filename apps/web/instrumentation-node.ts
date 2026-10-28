@@ -68,6 +68,14 @@ async function start() {
       const { query: sweepQuery } = await import("./lib/db");
       const { holderOf: documentHolder } = await import("./app/active-store");
       const purgedDocuments = await purgeDocuments(sweepQuery, new Date(), documentHolder);
+      // The bytes still in the database move to the store, a few at a time (ADR-0012): copied, read back, SHA-256 checked, then the column emptied.
+      const { backfillDocuments } = await import("./lib/documents-backfill");
+      const { readEnv: backfillEnv } = await import("./lib/env");
+      const mode = backfillEnv().APP_DOCUMENTS_BACKFILL;
+      if (mode !== "off") {
+        const moved = await backfillDocuments(sweepQuery, documentHolder, { dryRun: mode === "dry-run", limit: 25 });
+        if (moved.candidates) logInfo(`[yomizaka] documents backfill${moved.dryRun ? " (dry run)" : ""}: ${moved.candidates} to move, ${moved.copied} moved, ${moved.failed.length} left`);
+      }
       const purgedResults = await purgeResults(new Date());
       if (purgedDocuments || purgedResults) logInfo(`[yomizaka] retention: ${purgedDocuments} documents, ${purgedResults} results purged`);
       // The screening checks a provider accepted without answering are collected on the same look (yomizaka#134).

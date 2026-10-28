@@ -113,6 +113,7 @@ Every variable is declared once in `apps/web/lib/env.ts` (see `.env.example`); a
 | `PAYMENTS_STRIPE_WEBHOOK_SECRET` | the signing secret of the endpoint `/api/webhooks/payments` (a secret) |
 | `APP_ESTIMATED_RUN_COST_CENTS` | the estimated cost of one engine run, in cents (default 3), for the pre-flight's savings metric |
 | `APP_SETTINGS_ENCRYPTION_KEY` | seals a workspace's own S3 credentials in the database (AES-256-GCM, 32 bytes in base64; a secret); without it, storing credentials is unavailable |
+| `APP_DOCUMENTS_BACKFILL` | `on` (default), `dry-run` or `off`: the sweep moves the bytes still in `documents.content` to the store, SHA-256 checked, a few documents per look (ADR-0012); `dry-run` only logs the count |
 | `APP_PURGE_AFTER_HOURS` | a document that is not kept is purged after its check; one never checked, after this many hours (default 24) |
 | `MEDIA_DOCUMENTS_PROVIDER` | where a kept document lives (ADR-0007): `none` (default, nothing kept), `bunny` (development and fictional data only, refused in production) or `s3` (DigitalOcean Spaces `tor1`, a workspace's own bucket, a local test server) |
 | `MEDIA_DOCUMENTS_PREFIX`, `MEDIA_DOCUMENTS_ENCRYPTION_KEY` | the prefix of every object (default `yomizaka`) and the AES-256-GCM key (32 bytes, base64; a secret) that encrypts it before it leaves |
