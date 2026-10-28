@@ -1,9 +1,1 @@
-{
-  "app": "yomizaka-app",
-  "rules": {
-    "landmark-unique": {
-      "impact": "moderate",
-      "count": 2
-    }
-  }
-}
+{"app":"yomizaka-app","rules":{}}

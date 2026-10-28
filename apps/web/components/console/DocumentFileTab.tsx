@@ -93,21 +93,21 @@ function FindingPlace({ title, place, path }: Readonly<{ title: string; place: s
 }
 
 /** The file itself: the PDF viewer, or why it is not there, or its text. */
-function FileContent({ doc, isPdf, report, viewer, viewerRef }: Readonly<{ doc: DocumentView; isPdf: boolean; report: ComplianceReport | null; viewer: ViewerProps; viewerRef: RefObject<HTMLElement | null> }>) {
+function FileContent({ doc, isPdf, report, viewer, viewerRef }: Readonly<{ doc: DocumentView; isPdf: boolean; report: ComplianceReport | null; viewer: ViewerProps; viewerRef: RefObject<HTMLDivElement | null> }>) {
   const { say } = useSay();
   if (doc.purged) return <Alert tone="info">{say("document.where.notKeptText")}</Alert>;
   if (isPdf) {
     return (
-      <section ref={viewerRef} aria-label={say("document.viewerRegion")} className="min-w-0">
+      <div ref={viewerRef} className="min-w-0">
         <PdfViewer {...viewer} />
-      </section>
+      </div>
     );
   }
   if (doc.hasText) return <DocumentText text={doc.text} report={report} />;
   return <Alert tone="info">{say("document.noText")}</Alert>;
 }
 
-export function DocumentFileTab({ doc, path, isPdf, report, viewer, viewerRef, found, onDelete, deleting }: Readonly<{ doc: DocumentView; path: string; isPdf: boolean; report: ComplianceReport | null; viewer: ViewerProps; viewerRef: RefObject<HTMLElement | null>; found: Record<string, Located | null>; onDelete: () => void; deleting: boolean }>) {
+export function DocumentFileTab({ doc, path, isPdf, report, viewer, viewerRef, found, onDelete, deleting }: Readonly<{ doc: DocumentView; path: string; isPdf: boolean; report: ComplianceReport | null; viewer: ViewerProps; viewerRef: RefObject<HTMLDivElement | null>; found: Record<string, Located | null>; onDelete: () => void; deleting: boolean }>) {
   const { say, locale } = useSay();
   const activeFinding = viewer.activeId ? (report?.findings.find((f) => f.ruleId === viewer.activeId) ?? null) : null;
   const place = viewer.activeId ? placeOf(found[viewer.activeId], say) : null;

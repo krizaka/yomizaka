@@ -13,8 +13,9 @@ describe("the document page's landmarks", () => {
   ])("the preview region and the tabs' navigation are named differently (%s)", (_locale, messages) => {
     expect(messages.console.document.viewerRegion).not.toBe(messages.console.document.viewer);
   });
-  it("the file tab names its preview region with the region message", () => {
+  it("the preview is ONE named region: the viewer's own, its wrapper is not a second landmark with the same name (axe landmark-unique, yomizaka#462)", () => {
     const source = readFileSync(new URL("./DocumentFileTab.tsx", import.meta.url), "utf8");
-    expect(source).toContain('aria-label={say("document.viewerRegion")}');
+    expect(source).toContain('region: say("document.viewerRegion")');
+    expect(source).not.toContain('aria-label={say("document.viewerRegion")}');
   });
 });
