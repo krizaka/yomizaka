@@ -15,7 +15,7 @@ import { chromium } from "playwright-core";
 
 import { auditContext, loadSettled } from "./lib/settle.mjs";
 
-export const PAGES = ["", "/users", "/documents", "/runs", "/flows", "/flows/new", "/operations", "/audit"];
+export const PAGES = ["", "/users", "/documents", "/runs", "/flows", "/flows/new", "/operations", "/incidents", "/audit"];
 export const VIEWS = [
   { tag: "desktop-dark", theme: "dark", viewport: { width: 1440, height: 900 } },
   { tag: "desktop-light", theme: "light", viewport: { width: 1440, height: 900 } },
