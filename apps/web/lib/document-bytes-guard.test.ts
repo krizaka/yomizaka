@@ -5,10 +5,9 @@ import { describe, expect, it } from "vitest";
 
 /**
  * ADR-0012 guard: a document's bytes live in the store, never in `documents.content` (BYTEA). This reads the SQL of the code that
- * writes to `documents` and refuses a write of anything but `''::bytea` into that column. The two files in KNOWN still write demo
- * and fixture bytes there (the dual read serves them until the column is dropped); the list only goes down.
+ * writes to `documents` and refuses a write of anything but `''::bytea` into that column. KNOWN is empty: the demo seed puts its bytes in the working store and the e2e fixture writes none; a file added there needs a reason.
  */
-const KNOWN = new Set(["scripts/demo-seed/seed.mjs", "scripts/e2e-admin.mjs"]);
+const KNOWN = new Set<string>([]);
 const EMPTY = "''::bytea";
 
 /** Splits a SQL list on its top-level commas (parentheses and quotes respected). */
