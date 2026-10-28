@@ -9,7 +9,7 @@
 import { auditRoutes, THEMES, WIDTHS } from "@krizaka/page-audit";
 
 export { THEMES, WIDTHS };
-export const PAGES = ["/en", "/fr", "/en/privacy", "/fr/privacy", "/en/sign-in", "/fr/sign-in", "/en/forgot-password", "/fr/forgot-password", `/en/reset-password?token=ye1.${"A".repeat(43)}`, "/fr/reset-password", "/fr/verify", "/fr/nope", "/en/nope"];
+export const PAGES = ["/en", "/fr", "/en/privacy", "/fr/privacy", "/en/docs", "/fr/docs", "/en/sign-in", "/fr/sign-in", "/en/forgot-password", "/fr/forgot-password", `/en/reset-password?token=ye1.${"A".repeat(43)}`, "/fr/reset-password", "/fr/verify", "/fr/nope", "/en/nope"];
 
 const arg = (name, fallback) => {
   const i = process.argv.indexOf(`--${name}`);
