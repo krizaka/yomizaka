@@ -280,6 +280,9 @@ importers:
       '@krizaka/intl':
         specifier: ^0.3.0
         version: 0.3.0
+      '@krizaka/orazaka-client':
+        specifier: ^0.2.0
+        version: 0.2.0
       '@krizaka/org':
         specifier: ^0.1.0
         version: 0.1.0
@@ -1902,6 +1905,10 @@ packages:
 
   '@krizaka/intl@0.4.1':
     resolution: {integrity: sha512-mxk3T8OBwdHYC2nJMUDqNzts3mu2gcvdcqZ7qBFRq64D8cfxqR1d3hTy6lYpMjyCnxmsuBBZ6ACrc1+tlnjB8g==}
+    engines: {node: '>=22'}
+
+  '@krizaka/orazaka-client@0.2.0':
+    resolution: {integrity: sha512-pXHhg2U7i7r7pFOTJQg6nSZmonFiWmnKFTaOf3dDStqZBaIrFbS69Y2nLC7JLyBvhaH2iyNiuY4XjqCmKPIwSQ==}
     engines: {node: '>=22'}
 
   '@krizaka/org@0.1.0':
@@ -10336,6 +10343,10 @@ snapshots:
   '@krizaka/intl@0.3.0': {}
 
   '@krizaka/intl@0.4.1': {}
+
+  '@krizaka/orazaka-client@0.2.0':
+    dependencies:
+      date-fns: 4.4.0
 
   '@krizaka/org@0.1.0': {}
 

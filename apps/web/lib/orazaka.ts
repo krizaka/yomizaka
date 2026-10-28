@@ -1,8 +1,12 @@
+import { createOrazakaClient as createSharedClient } from "@krizaka/orazaka-client";
 import { type OrazakaRun, orazakaRun, type Studio } from "@yomizaka/core";
 import { z } from "zod";
 
+import { systemClock } from "../app/system-clock";
 import { readEnv } from "./env";
 import { HttpError, refuse } from "./http";
+import { engineDoor, standingConsent } from "./screening-checks/engine-door";
+import type { ChecksDoor } from "./screening-checks/model";
 
 /**
  * Orazaka's edge — the only place Yomizaka's analyses run. Yomizaka calls it with its service key (`oz_…`, a DO
@@ -105,4 +109,10 @@ export function orazaka(): OrazakaClient {
 /** Tests: use this client (null: back to the configured one). */
 export function useOrazakaClient(client: OrazakaClient | null) {
   holder.__yomizakaOrazaka = client ?? undefined;
+}
+
+/** The door for external checks (orazaka-ai-engine#105): the shared client with this product's service key, `AI_API_URL` / `AI_API_KEY`. */
+export function checksDoor(): ChecksDoor {
+  const env = readEnv();
+  return engineDoor(createSharedClient({ baseUrl: env.AI_API_URL, apiKey: env.AI_API_KEY, clock: systemClock }), standingConsent);
 }
