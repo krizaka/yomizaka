@@ -6,6 +6,8 @@
 //
 // Also fails on a console error or an uncaught exception (a hydration mismatch is one: React error #418).
 // Exits 1 listing every page × width × theme that overflows. With --shots it also writes a screenshot of each.
+import { fileURLToPath } from "node:url";
+
 import { auditRoutes, THEMES, WIDTHS } from "@krizaka/page-audit";
 
 export { THEMES, WIDTHS };
@@ -16,7 +18,10 @@ const arg = (name, fallback) => {
   return i >= 0 ? process.argv[i + 1] : fallback;
 };
 
-export const check = ({ base, shots }) => auditRoutes({ base, routes: PAGES, widths: WIDTHS, themes: THEMES, shots });
+// axe-core (WCAG 2.1 AA) runs at the phone and the desktop width only; the ratchet baseline is the repo's own.
+export const A11Y_WIDTHS = [390, 1440];
+export const A11Y_BASELINE = fileURLToPath(new URL("../a11y-baseline.json", import.meta.url));
+export const check = ({ base, shots }) => auditRoutes({ base, routes: PAGES, widths: WIDTHS, themes: THEMES, shots, a11y: { app: "yomizaka", baseline: A11Y_BASELINE, widths: A11Y_WIDTHS } });
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const problems = await check({ base: arg("base", "http://localhost:3000"), shots: arg("shots") });
