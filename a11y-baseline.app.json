@@ -1,14 +1,6 @@
 {
   "app": "yomizaka-app",
   "rules": {
-    "empty-heading": {
-      "impact": "minor",
-      "count": 12
-    },
-    "landmark-complementary-is-top-level": {
-      "impact": "moderate",
-      "count": 2
-    },
     "landmark-unique": {
       "impact": "moderate",
       "count": 2
