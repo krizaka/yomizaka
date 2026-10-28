@@ -8,10 +8,12 @@ import { env } from "@/lib/env";
 import { EXTERNAL } from "@/lib/retention";
 import { appSettings } from "@/lib/settings/instance";
 import { storageFrom } from "@/lib/storage/config";
+import { databaseStore } from "@/lib/storage/database";
 import { localStore } from "@/lib/storage/local";
 import { noneStore } from "@/lib/storage/none";
 import type { DocumentStore, StoreDescriptor } from "@/lib/storage/port";
 import { ownS3Store, type StorageSettings, storeForOwner } from "@/lib/storage/settings";
+import { workingStoreFor } from "@/lib/storage/working";
 
 /** The key that seals a workspace's S3 credentials (null when the deployment has none: storing credentials is then unavailable). */
 export const settingsKey = () => {
@@ -45,13 +47,19 @@ export async function storesOf(ownerId: string): Promise<OwnerStores> {
 }
 
 /**
- * The store that holds the bytes of every document that is not kept in a store of its own (ADR-0012): the deployment's store when it
- * configures one, else a folder on disk in development and tests. Production without a real store has none: null (uploads are refused).
+ * The store that holds the bytes of every document that is not kept in a store of its own (ADR-0012), chosen by `APP_DOCUMENTS_STORE`:
+ * the database for a deployed environment without a bucket, the deployment's bucket (`spaces`; none configured: null, uploads are refused),
+ * or a folder on disk on a laptop and in the tests (a deployed app refuses to start with it).
  */
 export async function workingStore(): Promise<DocumentStore | null> {
-  const krizaka = await krizakaStore();
-  if (krizaka.describe().kind !== "none") return krizaka;
-  return env().APP_ENVIRONMENT === "prod" ? null : localStore();
+  return workingStoreFor(env().APP_DOCUMENTS_STORE, {
+    spaces: async () => {
+      const krizaka = await krizakaStore();
+      return krizaka.describe().kind === "none" ? null : krizaka;
+    },
+    database: () => databaseStore(query),
+    folder: () => localStore(),
+  });
 }
 
 /** The store that holds one document: its owner's cloud or Krizaka's for a kept one, the working store for the rest; undefined when it has none to ask. */

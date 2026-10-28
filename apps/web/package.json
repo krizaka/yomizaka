@@ -34,7 +34,7 @@
     "@krizaka/query": "^0.2.2",
     "@krizaka/rate-limit": "0.1.0",
     "@krizaka/settings": "0.5.0",
-    "@krizaka/storage": "0.3.0",
+    "@krizaka/storage": "0.3.1",
     "@krizaka/tailwind": "^3.67.0",
     "@krizaka/time": "0.1.0",
     "@krizaka/tokens": "^3.67.0",

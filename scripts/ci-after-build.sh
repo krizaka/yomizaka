@@ -3,6 +3,7 @@
 # the SEO family contract on the built site, the responsive guard in a real browser, sign-up closed.
 set -euo pipefail
 export NODE_ENV=production
+export APP_DOCUMENTS_STORE=database
 export AUTH_SESSION_SECRET=ci-only-session-secret-0123456789abcdef
 export AI_API_KEY=oz_ci_only_not_a_key
 export PORT=3000

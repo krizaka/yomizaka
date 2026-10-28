@@ -9,12 +9,25 @@ import { dirname, join } from "node:path";
 import { generateDocument, PERSONA_ERIC, AS_OF, DEFAULT_SEED } from "../demo-documents/index.mjs";
 import { CAST_MEMBER, castAccounts, fingerprintOf } from "./cast.mjs";
 
-/** Where the app keeps the bytes of documents on a laptop, in CI and in tests when it has no store (apps/web/lib/storage/local.ts): the seed writes the same folder. */
+/**
+ * Where the seeded bytes go: the working store the app is configured with (`APP_DOCUMENTS_STORE`, apps/web/lib/env.ts; ADR-0012). `database`
+ * (the dev deployment, CI) writes the `document_blobs` table like the app's database adapter (apps/web/lib/storage/database.ts: the seed
+ * cannot import TypeScript, the guard names both); `folder` (a laptop, the default) writes the folder of apps/web/lib/storage/local.ts.
+ * A bucket (`spaces`) is not seeded from here.
+ */
 const workingFolder = () => join(tmpdir(), "yomizaka-documents");
-async function putBytes(key, bytes) {
-  const path = join(workingFolder(), key);
-  await mkdir(dirname(path), { recursive: true });
-  await writeFile(path, bytes);
+export function bytesWriter(env, q) {
+  const mode = env.APP_DOCUMENTS_STORE ?? "folder";
+  if (mode === "database") {
+    return (key, bytes) =>
+      q("INSERT INTO document_blobs (object_key, content_type, bytes) VALUES ($1, 'application/pdf', $2) ON CONFLICT (object_key) DO UPDATE SET content_type = EXCLUDED.content_type, bytes = EXCLUDED.bytes", [key, Buffer.from(bytes)]);
+  }
+  if (mode !== "folder") throw new Error(`the demo seed writes APP_DOCUMENTS_STORE=database or folder, not ${mode}`);
+  return async (key, bytes) => {
+    const path = join(workingFolder(), key);
+    await mkdir(dirname(path), { recursive: true });
+    await writeFile(path, bytes);
+  };
 }
 
 /** The persona's name comes from the cast; this file adds what the cast does not hold: the collections and documents. */
@@ -141,8 +154,9 @@ async function seedInTransaction(q, def, { persona, address, locale, messagesByL
          VALUES ($1, $2, $3, $4, 'application/pdf', $5, $6, $7, $8, ''::bytea, $9, $10, $11) ON CONFLICT (owner_id, sha256) DO NOTHING RETURNING id`,
         [docId, owner, doc.title, doc.filename, doc.kind, doc.bytes.length, doc.sha256, doc.pages, key, doc.text, row.id],
       );
-      if (inserted.length > 0) await putBytes(key, doc.bytes);
-      const [stored] = await q("SELECT id FROM documents WHERE owner_id = $1 AND sha256 = $2", [owner, doc.sha256]);
+      const [stored] = await q("SELECT id, object_key FROM documents WHERE owner_id = $1 AND sha256 = $2", [owner, doc.sha256]);
+      // Written again on a re-run (same bytes, same key): a store that lost its files (a folder after a redeploy) heals.
+      if (stored.object_key || inserted.length > 0) await bytesWriter(process.env, q)(stored.object_key ?? key, doc.bytes);
       if (def.checked.includes(id)) {
         const report = seededReport(doc);
         const studio = doc.family === "lease" ? "compliance-check" : "document-authenticity";
