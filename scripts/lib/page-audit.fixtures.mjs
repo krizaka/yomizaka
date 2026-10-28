@@ -27,3 +27,8 @@ export const HIDDEN_CONTENT = page(
 export const FOLDED_SECTION = page(
   `<div style="display:flex;flex-direction:column"><section data-testid="facts" style="height:80px">Faits</section><details><summary>Détails</summary><section data-testid="closing-note" style="padding:16px">Ce que nous avons vérifié</section></details><section data-testid="other" style="height:80px">Autres</section></div>`,
 );
+
+/** A code token squeezed into a few pixels, wrapping one character per line (yomizaka#486: the codes of /docs). */
+export const TOKEN_SQUEEZED = page(`<div style="width:60px"><code style="word-break:break-all">API_KEY_MISSING_FOR_REAL</code></div>`);
+/** A cell stretched by its neighbour is tall without its text wrapping: not a problem. */
+export const TALL_CELL = page(`<table><tbody><tr><td><code>reports:read</code></td><td>${"A line of words that wraps in the other cell. ".repeat(40)}</td></tr></tbody></table>`);
