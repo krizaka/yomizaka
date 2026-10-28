@@ -13,7 +13,7 @@ import { join } from "node:path";
 
 import { chromium } from "playwright-core";
 
-import { auditContext, loadSettled } from "./lib/settle.mjs";
+import { auditContext, loadSettled } from "@krizaka/page-audit";
 
 export const PAGES = ["", "/users", "/documents", "/runs", "/flows", "/flows/new", "/operations", "/incidents", "/audit"];
 export const VIEWS = [

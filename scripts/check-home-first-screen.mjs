@@ -8,8 +8,8 @@
 // Exits 1 listing every page × viewport × theme with a problem.
 import { chromium } from "playwright-core";
 
-import { auditPage } from "./lib/page-audit.mjs";
-import { auditContext, loadSettled } from "./lib/settle.mjs";
+import { auditPage, auditContext, loadSettled } from "@krizaka/page-audit";
+
 
 // @fixed: the gap between the bar and the page (`--kz-hero-top` = the bar's bottom + this), the family's « One frame for every page »
 export const GAP_PX = 24;
