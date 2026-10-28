@@ -8,7 +8,7 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url));
 
 // Scripts that RECORD (demo takes, the motion is the point), not audit. Everything else that drives a browser measures,
 // so it settles transitions first (yomizaka#354). A new browser script is an audit unless it is named here, with a reason.
-const RECORDERS = new Set(["scripts/landing-journey.mjs", "scripts/landing-take.mjs", "scripts/record-krizaka-review.mjs"]);
+const RECORDERS = new Set(["scripts/landing-journey.mjs", "scripts/landing-take.mjs", "scripts/record-krizaka-review.mjs", "scripts/showcase-web.mjs"]);
 
 const files = (dir) =>
   readdirSync(join(ROOT, dir), { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? (e.name === "node_modules" ? [] : files(join(dir, e.name))) : e.name.endsWith(".mjs") && !e.name.endsWith(".test.mjs") ? [join(dir, e.name)] : []));
