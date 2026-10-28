@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import config from "./vitest.config.mts";
+import config from "./vitest.config.mjs";
 
 /**
  * yomizaka#268: the integration files write global rows (settings, rate limits, maintenance flag) read through a cache by other
