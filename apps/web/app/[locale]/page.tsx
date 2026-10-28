@@ -1,17 +1,23 @@
 import { CheckIcon, EyeIcon, SearchIcon } from "@krizaka/icons";
+import { Card } from "@krizaka/ui/card";
+import { CardGrid } from "@krizaka/ui/card-grid";
 import { LandingPage } from "@krizaka/ui/landing-page";
-import { MascotQuote } from "@krizaka/ui/mascot-quote";
 import { Section } from "@krizaka/ui/page";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { BarQueryRoot, ClosingActions, ClosingBody, HeroActions } from "@/components/BarSession";
-import { ButtonLink } from "@/components/ButtonLink";
+import { BarQueryRoot, ClosingBody, HeroActions } from "@/components/BarSession";
 import { BeforeAfter } from "@/components/home/BeforeAfter";
+import { FindingsScreen } from "@/components/home/FindingsScreen";
+import { LiveScreen } from "@/components/home/LiveScreen";
+import { OwnerReportDocument } from "@/components/OwnerReportDocument";
+import { ScreeningResultCard } from "@/components/screening/ScreeningResultCard";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
 import { asLocale, format, getDictionary } from "@/lib/i18n";
+import type { ConsoleMessages } from "@/lib/i18n-client";
 import { HERO_FIGURES, productStatus } from "@/lib/landing";
+import { DEMO_SCREENING,demoOwnerDocument } from "@/lib/landing-demo";
 import { recordedRun } from "@/lib/recorded-runs";
 import { pageMetadata, siteJsonLd } from "@/lib/seo";
 import { pagePath } from "@/lib/site";
@@ -43,7 +49,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
       <BarQueryRoot>
         <SiteHeader locale={locale} current="home" provider={false} />
-        {/* The bar is fixed: the hero's frame starts 24 px under it (`--kz-hero-top`, F6) — no void above the hero, nothing added on main. */}
+        {/* The bar floats (a zero-height sticky wrapper): the hero's frame starts 24 px under it (`--kz-hero-top`, F6) — no void above the hero, nothing added on main. */}
         <main id="content" data-landing>
           <LandingPage
             title={d.title}
@@ -75,36 +81,69 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               title: d.closing.title,
               /* The closing call follows the same session answer as the hero (F0): signed in, the way to the documents; signed out, the way in. */
               body: <ClosingBody signedOut={d.closing.body} signedIn={d.closing.bodyIn} />,
+              /* One way in on the page (the hero's); the closing says what happens to the documents and links the notice. */
               actions: (
-                <>
-                  <ClosingActions locale={locale} />
-                  <ButtonLink href={pagePath(locale, "privacy")} variant="ghost" size="lg">
+                <span className="flex max-w-[70ch] flex-col gap-2 text-sm text-fg-secondary" data-testid="closing-data">
+                  <span>{d.what.trust}</span>
+                  <Link href={pagePath(locale, "privacy")} className="text-fg-accent underline underline-offset-4">
                     {d.what.privacy}
-                  </ButtonLink>
-                </>
+                  </Link>
+                </span>
               ),
             }}
           >
+            <Section id="app" title={d.showcase.title} lead={d.showcase.lead} spacing="sm" divider>
+              <CardGrid min={340} align="start" reveal={false}>
+                <Card.Root data-testid="feature-findings">
+                  <Card.Body className="flex flex-col gap-3">
+                    <Card.Title as="h3">{d.showcase.findings.title}</Card.Title>
+                    <Card.Description>{d.showcase.findings.text}</Card.Description>
+                    <p className="sr-only">{d.showcase.findings.summary}</p>
+                    <LiveScreen testId="screen-findings">
+                      <FindingsScreen locale={locale} messages={{ console: { reportFace: dict.console.reportFace, analysis: dict.console.analysis } } as unknown as ConsoleMessages} report={run.report} />
+                    </LiveScreen>
+                  </Card.Body>
+                </Card.Root>
+                <Card.Root data-testid="feature-screening">
+                  <Card.Body className="flex flex-col gap-3">
+                    <Card.Title as="h3">{d.showcase.screening.title}</Card.Title>
+                    <Card.Description>{d.showcase.screening.text}</Card.Description>
+                    <p className="sr-only">{d.showcase.screening.summary}</p>
+                    <LiveScreen testId="screen-screening">
+                      <div className="p-4">
+                        <ScreeningResultCard
+                          result={DEMO_SCREENING}
+                          words={{ title: dict.screening.tenant.resultTitle, band: dict.screening.tenant.band, item: d.showcase.screening.items, outcome: dict.screening.tenant.outcome }}
+                          demo={d.showcase.demo}
+                        />
+                      </div>
+                    </LiveScreen>
+                  </Card.Body>
+                </Card.Root>
+                <Card.Root data-testid="feature-owner">
+                  <Card.Body className="flex flex-col gap-3">
+                    <Card.Title as="h3">{d.showcase.owner.title}</Card.Title>
+                    <Card.Description>{d.showcase.owner.text}</Card.Description>
+                    <p className="sr-only">{d.showcase.owner.summary}</p>
+                    <LiveScreen testId="screen-owner">
+                      <ol className="m-0 list-none p-4">
+                        <OwnerReportDocument doc={demoOwnerDocument(run)} n={1} words={dict.ownerReport} lang={locale} />
+                      </ol>
+                    </LiveScreen>
+                  </Card.Body>
+                </Card.Root>
+              </CardGrid>
+            </Section>
             <Section id="proof" title={d.proof.title} lead={d.proof.lead} spacing="sm" divider>
               <p className="text-sm text-fg-secondary">{format(d.proof.figures, { rules: figures.rules, found: figures.found })}</p>
               <p className="mt-1 text-xs text-fg-muted" data-testid="proof-meta">
                 {d.proof.runLabel} {run.runId} · {d.proof.dateLabel} {new Date(run.recordedAt).toLocaleDateString(DATE[locale], { dateStyle: "long", timeZone: "America/Toronto" })} · {d.proof.rulesetLabel} {run.report.rulesetId} {run.report.rulesetVersion}
               </p>
-              {/* The owl's caption is read, not shown: the blocks draw it in the mono (P10). */}
-              <MascotQuote bird="owl" variant="callout" label={<span className="sr-only">{d.proof.owlLabel}</span>} className="mt-8">
-                {d.what.items.line.text}
-              </MascotQuote>
               <p className="mt-6 text-xs text-fg-muted" data-testid="powered-by">
                 {d.proof.powered}
               </p>
             </Section>
             <Section id="who" title={d.who.title} lead={d.what.who} spacing="sm" divider>
-              <p className="max-w-[70ch] text-sm text-fg-secondary">{d.what.trust}</p>
-              <p className="mt-1 text-sm">
-                <Link href={pagePath(locale, "privacy")} className="text-fg-accent underline underline-offset-4">
-                  {d.what.privacy}
-                </Link>
-              </p>
             </Section>
           </LandingPage>
         </main>

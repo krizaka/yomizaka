@@ -92,6 +92,32 @@
     },
     "visual": {
       "caption": "A real check, recorded as it came back"
+    },
+    "showcase": {
+      "title": "The app, as it is",
+      "lead": "Three screens of Yomizaka, drawn with its own components on fictitious data. Nothing here is a screenshot.",
+      "demo": "Fictitious data",
+      "findings": {
+        "title": "Every finding quotes its line",
+        "text": "The rule, the sentence of the lease it rests on, and the article of law, in the order to read them.",
+        "summary": "The report of a check: the verdict, then each finding with the quoted passage of the lease and its article."
+      },
+      "screening": {
+        "title": "A screening the tenant agrees to",
+        "text": "The applicant sees the result first; a registry check that is not ready says so instead of guessing.",
+        "summary": "A screening result with the checks asked and, for each, its outcome: nothing to report, or not available yet.",
+        "title2": "Result",
+        "items": {
+          "payment-history": "Payment history",
+          "credit": "Credit report",
+          "registry": "Court registry"
+        }
+      },
+      "owner": {
+        "title": "A report the owner can open",
+        "text": "A read-only page by link, with an expiry: the file's fingerprint, the findings and the run that produced them.",
+        "summary": "The owner's page: the document fingerprint, the findings with their articles, and the run id."
+      }
     }
   },
   "run": {
@@ -104,7 +130,7 @@
   "privacy": {
     "title": "Privacy",
     "updated": "Updated {date}",
-    "body": "Your account and your checks are kept in Yomizaka's database in Toronto, Canada, visible to your account alone. A document is kept only if you choose it, and its information panel says where. When you ask for a check, the document, its text, or the PDF file, is sent to Orazaka, Krizaka's analysis engine, over HTTPS, and the result is kept with the run's id. Nothing is sold, shared or used to train a model. Deleting a document deletes its file, its text and its analyses. To ask a question or have your data removed, use the contact form.",
+    "body": "Your documents are yours: kept only if you choose, checked by Orazaka, never sold, never used to train a model. The details, in short sections.",
     "sections": [
       {
         "h": "Who is responsible",
@@ -119,12 +145,24 @@
         "p": "Your account and your checks are in a database in Toronto, Canada, outside Québec. Documents are sent to Orazaka, Krizaka's analysis engine, over HTTPS to be checked. A kept document is stored where its information panel says: today, in New York (United States)."
       },
       {
+        "h": "Who processes it",
+        "p": "Orazaka, Krizaka's analysis engine, reads a document when you ask for a check, over HTTPS. Stripe handles payment. Our database provider hosts your account in Toronto."
+      },
+      {
+        "h": "How long we keep it",
+        "p": "A document is kept until you delete it, and a deleted document takes its file, its text and its results with it. Your account and checks are kept until you close the account. Invoices are kept as the law requires."
+      },
+      {
         "h": "Your rights",
         "p": "You can access, correct or delete your information, withdraw your consent and download your data by writing to the privacy officer. Deleting a document deletes its file, its text and its results. Closing your account deletes your documents. We keep invoices as the law requires."
       },
       {
         "h": "Incidents",
         "p": "If a confidentiality incident presents a risk of serious harm, we notify the Commission d'accès à l'information and the people concerned, as the law requires."
+      },
+      {
+        "h": "Contact",
+        "p": "To ask a question, use your rights or have your data removed, write through the contact form of krizaka.com. The person in charge of the protection of personal information answers."
       }
     ]
   },
@@ -287,7 +325,8 @@
         "title": "The binder",
         "label": "Collections",
         "open": "Open this collection",
-        "empty": "No file in this collection yet."
+        "empty": "No file in this collection yet.",
+        "add": "Add a document"
       },
       "quick": {
         "label": "Quick access",
@@ -390,6 +429,7 @@
       "title": "Library",
       "dropTitle": "Drop your documents here",
       "browse": "Choose files",
+      "inputLabel": "Choose files to check",
       "hint": "PDF, Word (.docx), OpenDocument (.odt), text or photo (PNG, JPEG, HEIC), up to 10 MB each. A lease, a contract, an invoice.",
       "refusedSize": "{name}: larger than 10 MB",
       "refusedType": "{name}: only PDF, text files and photos",
@@ -510,6 +550,7 @@
       "added": "Added",
       "fingerprint": "SHA-256",
       "viewer": "The document",
+      "viewerRegion": "Document preview",
       "text": "Its text",
       "noText": "This PDF has no text layer: the check against the law could not read its clauses. The file itself is still examined.",
       "openFile": "Open the file",
@@ -725,6 +766,12 @@
       "RATE_LIMITED": "Too many attempts. Try again in a moment.",
       "UNAUTHENTICATED": "Your session has ended. Sign in again.",
       "FORBIDDEN": "Not allowed.",
+      "INCIDENT_BAD_INPUT": "The incident is incomplete or invalid.",
+      "INCIDENT_UNKNOWN": "This incident does not exist.",
+      "INCIDENT_CLOSED": "This incident is closed and can no longer change.",
+      "INCIDENT_NOT_ASSESSED": "Assess the risk first.",
+      "INCIDENT_NO_NOTICE_DUE": "No notice is due: the risk of serious injury was not retained.",
+      "INCIDENT_NOTICES_MISSING": "Both notices must be recorded before closing.",
       "IP_NOT_ALLOWED": "Not from this address.",
       "NOT_FOUND": "Not found.",
       "FILE_TOO_LARGE": "The file is larger than 10 MB.",
@@ -884,6 +931,7 @@
         "signOut": "Sign out",
         "openSite": "Open dev.yomizaka.com",
         "operations": "Operations",
+        "incidents": "Incidents",
         "flows": "Flows",
         "groups": {
           "people": "People and files",
@@ -976,6 +1024,81 @@
         "asideFooter": "Administrators only, from an allowed address.",
         "title": "Administration",
         "description": "Sign in with an administrator account."
+      },
+      "incidents": {
+        "title": "Confidentiality incidents",
+        "lead": "The register required by Law 25 (ss. 3.5 to 3.8): every incident, serious or not, kept five years. It holds facts and categories of information, never a person's data. Assess the risk of serious injury; if there is one, notify the Commission d'accès à l'information and the people concerned, then close.",
+        "exportCsv": "Export CSV",
+        "exportJson": "Export JSON",
+        "register": "Register",
+        "empty": "No incident recorded.",
+        "awareAt": "Aware on",
+        "kind": "What happened",
+        "status": "Status",
+        "risk": "Risk of serious injury",
+        "serious": "Serious",
+        "notSerious": "Not serious",
+        "drill": "Drill",
+        "drillBadge": "Drill",
+        "description": "What happened, in facts",
+        "details": "Details",
+        "hide": "Hide",
+        "kinds": {
+          "access": "Unauthorised access",
+          "use": "Unauthorised use",
+          "communication": "Unauthorised communication",
+          "loss": "Loss"
+        },
+        "statuses": {
+          "open": "Open",
+          "assessed": "Assessed",
+          "closed": "Closed"
+        },
+        "levels": {
+          "low": "Low",
+          "medium": "Medium",
+          "high": "High"
+        },
+        "open": "Open an incident",
+        "openSubmit": "Open",
+        "cancel": "Cancel",
+        "descriptionHint": "Facts only. No name, e-mail or document content.",
+        "information": "Categories of information concerned",
+        "informationHint": "Comma-separated, e.g. lease, pay stub. Never the information itself.",
+        "persons": "People concerned (if known)",
+        "drillLabel": "This is a drill",
+        "markDrill": "Mark as a drill",
+        "unmarkDrill": "Not a drill",
+        "assess": "Assess the risk",
+        "assessSubmit": "Save the assessment",
+        "sensitivity": "Sensitivity of the information",
+        "consequences": "Seriousness of the consequences",
+        "likelihood": "Likelihood of misuse",
+        "seriousInjury": "Risk of serious injury",
+        "rationale": "Reasons for the decision",
+        "measure": "Measures taken",
+        "measureText": "A measure to reduce the risk or prevent a new incident",
+        "measureSubmit": "Record the measure",
+        "notice": "Record a notice sent",
+        "target": "Sent to",
+        "targets": {
+          "cai": "Commission d'accès à l'information",
+          "persons": "People concerned"
+        },
+        "channel": "How",
+        "channels": {
+          "form": "Commission form",
+          "email": "E-mail",
+          "letter": "Letter",
+          "public": "Public notice"
+        },
+        "reference": "Acknowledgement reference (if any)",
+        "noticeSubmit": "Record the notice",
+        "caiNotice": "Notice to the Commission",
+        "personsNotice": "Notice to the people concerned",
+        "retain": "Kept in the register until {date}.",
+        "close": "Close the incident",
+        "closedNote": "This entry is closed. It stays in the register and is never edited again."
       },
       "operations": {
         "database": "Database",
@@ -1290,6 +1413,8 @@
         "set": "Avatars of the set",
         "upload": "An image of your own",
         "uploadHint": "PNG, JPEG or HEIC, up to {size} KB. The image is cropped square and its data (position, device) is removed.",
+        "browse": "Choose an image",
+        "tone": "Avatar {n}",
         "off": "Avatars are switched off."
       },
       "defaultName": "My documents",
@@ -1368,6 +1493,7 @@
         "portal": "Manage the subscription and invoices",
         "portalHint": "Payment method, invoices (with GST and QST) and cancellation: in Stripe's secure portal.",
         "off": "Payment is not available yet.",
+        "otherOffers": "Other offers",
         "buy": "Buy or subscribe",
         "testMode": "Test mode: no real card is charged.",
         "plans": {
@@ -1926,6 +2052,20 @@
             },
             "windowSeconds": {
               "label": "Window: Sharing a report",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            }
+          },
+          "reportMail": {
+            "perIp": {
+              "label": "Limit per address: E-mailing a report link",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "perSubject": {
+              "label": "Limit per account: E-mailing a report link",
+              "hint": "Beyond it the answer is 429 with the time to wait."
+            },
+            "windowSeconds": {
+              "label": "Window: E-mailing a report link",
               "hint": "Beyond it the answer is 429 with the time to wait."
             }
           },
@@ -2566,6 +2706,7 @@
       "title": "Check a batch of documents",
       "lead": "A CSV file (one row per document) and the documents it names, dropped together. Before anything starts, the preview says what will be checked, reused or refused, and what it costs.",
       "drop": "Drop the CSV and its documents",
+      "inputLabel": "Choose the CSV and its documents",
       "hint": "CSV + PDF, Word or text — up to 10 MB per document",
       "template": "Download the CSV template",
       "received": "{csv} · {count} document(s)",
@@ -2769,6 +2910,42 @@
         "decided": "Decision made: {state}",
         "none": "No action possible."
       },
+      "share": {
+        "title": "Link for the building owner",
+        "lead": "A read-only report: hashes and findings only, no name, no document. You choose how long it opens, 30 days at most.",
+        "expiry": "Opens for",
+        "days": "{count} days",
+        "create": "Create a link",
+        "creating": "Creating…",
+        "created": "Link ready. It is shown once: copy it now.",
+        "copy": "Copy the link",
+        "copied": "Link copied",
+        "linkLabel": "Link to send",
+        "none": "No link yet.",
+        "active": "Active links",
+        "views": "{count} views",
+        "viewsOne": "{count} view",
+        "expires": "until {date}",
+        "revoke": "Revoke",
+        "revoked": "Link revoked.",
+        "state": {
+          "live": "Active",
+          "expired": "Expired",
+          "revoked": "Revoked"
+        },
+        "email": {
+          "title": "Send by e-mail",
+          "address": "Owner's e-mail address",
+          "message": "A short note (optional)",
+          "language": "Language of the e-mail",
+          "hint": "The e-mail holds the link, its end date and your note: nothing from the report. The address is kept only while the link lives.",
+          "send": "Send by e-mail",
+          "sending": "Sending…",
+          "sent": "Sent to {email}.",
+          "sentTo": "Sent to {email}"
+        },
+        "loading": "Loading the links…"
+      },
       "tagsEdit": {
         "title": "Tags",
         "edit": "Edit tags",
@@ -2861,7 +3038,8 @@
     "signatureBody": "SHA-256 of the report's text (pages before this one)",
     "signatureValue": "Signature (base64)",
     "signatureNote": "The attestation — the payload, the text fingerprint and this signature — is also embedded in the PDF file. A member the owner gave access to checks it by giving this file to the verification page; any change to the text of the earlier pages makes it fail.",
-    "notCheckedServiceContract": "Not checked: the right to terminate (art. 2125 C.c.Q.) and the rest of the Civil Code of Québec on service contracts (art. 2098 and following). To be reviewed by a lawyer."
+    "notCheckedServiceContract": "Not checked: the right to terminate (art. 2125 C.c.Q.) and the rest of the Civil Code of Québec on service contracts (art. 2098 and following). To be reviewed by a lawyer.",
+    "languageNote": "Original wording of the rules: French. The English text is the ruleset's own translation; quoted passages and article references are given as they stand, never translated."
   },
   "verify": {
     "title": "Verify a report",
@@ -2882,6 +3060,7 @@
       "BAD_SIGNATURE": "The signature does not match the content: the report was modified or signed by another key.",
       "ALTERED": "The signature is valid for the original report, but the file is not that report any more: something was changed after signing.",
       "UNKNOWN_KEY": "It was signed by a key that is not this server's.",
+      "UNKNOWN_SCHEMA": "This report uses a format Yomizaka does not verify.",
       "SPECIMEN": "This report is a specimen: it proves nothing."
     },
     "facts": {
@@ -2892,7 +3071,9 @@
       "ruleset": "Rules",
       "checked": "Check finished",
       "findings": "Findings",
-      "jurisdiction": "Jurisdiction"
+      "jurisdiction": "Jurisdiction",
+      "issued": "Issued",
+      "expires": "Link valid until"
     },
     "documentMatch": {
       "yes": "The document you gave is the one that was checked.",
@@ -3065,6 +3246,7 @@
       "consentFirst": "Consent to the check above to send your documents.",
       "dropTitle": "Drop the PDF here",
       "browse": "Choose a PDF",
+      "inputLabel": "Choose the PDF to send",
       "hint": "PDF only, up to 10 MB.",
       "received": "Received",
       "sending": "Sending",
@@ -3283,6 +3465,14 @@
         "invoices": {
           "name": "Invoices 2026",
           "description": "The 2026 maintenance invoices — fictitious specimen documents, one with a wrong total."
+        },
+        "empty-a": {
+          "name": "To file",
+          "description": "A folder ready for the next documents."
+        },
+        "empty-b": {
+          "name": "Archive 2025",
+          "description": "An empty folder for last year's documents."
         }
       }
     }
@@ -3319,14 +3509,24 @@
       "quickstartTitle": "Start a check, then read it",
       "quickstartNote": "Poll until the state is done, failed or refused; the report comes with the check once it is done.",
       "routesTitle": "Routes",
+      "route": "Route",
+      "commonAnswers": "Answers shared by several routes",
       "scope": "Scope",
       "noScope": "No key needed",
       "parameters": "Parameters",
       "answers": "Answers",
       "errorsTitle": "Errors",
-      "errors": "An error is { \"code\": \"…\", \"error\": \"…\" }. The code is stable; the message is for logs.",
+      "errors": "Every error answers with a stable code and a message. Match on the code; the message is for your logs.",
+      "codeColumn": "Code",
+      "meaningColumn": "Meaning",
+      "statusTitle": "Status codes",
+      "statusLead": "These answers are given by several routes; the table of routes lists the rest.",
+      "errorShapeLabel": "Error body",
       "webhooksTitle": "Webhooks",
-      "webhooks": "Instead of polling, register an https endpoint in your account and Yomizaka calls it when work finishes. Each request carries an event name, a stable event id (apply an event once) and a signature in x-krizaka-signature: t=UNIX_SECONDS,v1=HEX, where HEX is the HMAC-SHA256, with your endpoint's secret, of \"UNIX_SECONDS.RAW_BODY\". A payload holds ids and states, never a document or a report.",
+      "webhooks": "Instead of polling, register an https endpoint in your account and Yomizaka calls it when work finishes. Each request carries an event name, a stable event id (apply an event once) and a signature. A payload holds ids and states, never a document or a report.",
+      "signatureTitle": "Verify the signature",
+      "signature": "The x-krizaka-signature header has this format. HEX is the HMAC-SHA256, with your endpoint's secret, of the timestamp, a dot and the raw body. Refuse a request whose signature does not match.",
+      "signatureLabel": "Signature",
       "event": "Event",
       "openapiLink": "Open the OpenAPI document"
     },
@@ -3429,5 +3629,46 @@
     "guarantees": "This file is sealed with Yomizaka's key (Ed25519, held by Krizaka): it attests that this content, these parties and these dates existed in this form at the time of sealing and have not been changed since.",
     "notGuaranteed": "It does not verify anyone's identity, the age of anyone, the validity of the contract in law or the partner's statements: Yomizaka checks documents, it does not decide. Informative, not legal advice.",
     "verify": "To check a copy, take its SHA-256 and open {url} followed by that value: the answer says whether Yomizaka sealed it and when, and shows no personal information."
+  },
+  "ownerReport": {
+    "title": "Verification report",
+    "lead": "What was examined on an applicant's file, for the building owner. Hashes only: no document, no name, no quoted passage.",
+    "reference": "File reference {ref}",
+    "issued": "Issued on {date}",
+    "notice": "Informative verification, not legal advice. A person decides; this report decides nothing and ranks no one.",
+    "documents": "Documents examined",
+    "document": "Document {n}",
+    "type": "Type",
+    "typeUnknown": "Not specified",
+    "sha": "SHA-256 of the document",
+    "pages": "Pages",
+    "signals": "Signals observed",
+    "noSignals": "No signal was observed on this document.",
+    "findings": "Rules checked",
+    "noFindings": "No rule was checked on this document.",
+    "notExamined": "Not examined",
+    "runs": "Orazaka runs",
+    "run": "{studio}, run {runId}, version {version}",
+    "versionNone": "unspecified",
+    "ruleset": "Ruleset {id} version {version} ({jurisdiction})",
+    "reviewStatus": "Ruleset review status: {status}. It is to be read by a lawyer before it is relied upon.",
+    "limits": "What this report does not show: the documents themselves, the person's name or contact, any score or ranking. The signals are observations about a file, never a judgement of a person.",
+    "download": "Download the signed PDF",
+    "expires": "This link is valid until {date}.",
+    "guarantees": "This PDF is signed with Yomizaka's key (Ed25519, held by Krizaka). The signature covers every item of this report (documents, signals, rules checked, runs, versions), the link's expiry and the full text of the pages. If a single character changes, verification fails.",
+    "notGuaranteed": "It does not prove that the signals or findings are right, nor who holds the file: it shows no name, contact, file name or quoted passage. Informative, not legal advice; a person decides.",
+    "signatureNote": "The attestation (payload, text fingerprint and signature) is embedded in the PDF. Any change to the text of the earlier pages makes verification fail.",
+    "footer": "Yomizaka, a Krizaka product — analysis by Orazaka.",
+    "verdict": {
+      "PASS": "No issue reported",
+      "FAIL": "Issue reported",
+      "INSUFFICIENT_EVIDENCE": "Not enough evidence"
+    },
+    "language": "Language",
+    "languageName": {
+      "en": "English",
+      "fr": "Français"
+    },
+    "languageNote": "The rules are written in French; the English names come with the ruleset. Article references are given as cited."
   }
 }

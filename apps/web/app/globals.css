@@ -28,6 +28,8 @@ body {
    PageHero start 24 px under it. */
 :root {
   --kz-hero-top: 5.75rem;
+  /* Where an anchor lands (a docs section, a finding): under the fixed bar, which ends 4.5 rem down. */
+  --kz-anchor-offset: 6.5rem;
 }
 /* The landing's hero frame (`.kz-hero > .kz-frame`, from the blocks) pads itself with --kz-hero-top — nothing added on main.
    The menu's anchor inside the features' heading clears the bar when followed. */

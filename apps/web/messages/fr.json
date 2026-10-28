@@ -92,6 +92,32 @@
     },
     "visual": {
       "caption": "Une vraie vérification, enregistrée telle qu'elle est revenue"
+    },
+    "showcase": {
+      "title": "L'app, telle qu'elle est",
+      "lead": "Trois écrans de Yomizaka, dessinés avec ses propres composants sur des données fictives. Rien ici n'est une capture d'écran.",
+      "demo": "Données fictives",
+      "findings": {
+        "title": "Chaque constat cite sa ligne",
+        "text": "La règle, la phrase du bail sur laquelle elle repose et l'article de loi, dans l'ordre de lecture.",
+        "summary": "Le rapport d'une vérification : le verdict, puis chaque constat avec le passage cité du bail et son article."
+      },
+      "screening": {
+        "title": "Une vérification que le locataire accepte",
+        "text": "Le candidat voit le résultat en premier; une vérification de registre qui n'est pas prête le dit au lieu de deviner.",
+        "summary": "Le résultat d'une vérification avec les contrôles demandés et, pour chacun, son issue : rien à signaler, ou pas encore disponible.",
+        "title2": "Résultat",
+        "items": {
+          "payment-history": "Historique de paiement",
+          "credit": "Rapport de crédit",
+          "registry": "Registre du tribunal"
+        }
+      },
+      "owner": {
+        "title": "Un rapport que le propriétaire peut ouvrir",
+        "text": "Une page en lecture seule, par lien, avec une échéance : l'empreinte du fichier, les constats et l'exécution qui les a produits.",
+        "summary": "La page du propriétaire : l'empreinte du document, les constats avec leurs articles et l'identifiant d'exécution."
+      }
     }
   },
   "run": {
@@ -104,7 +130,7 @@
   "privacy": {
     "title": "Confidentialité",
     "updated": "Mis à jour le {date}",
-    "body": "Votre compte et vos vérifications sont gardés dans la base de données de Yomizaka à Toronto, au Canada, visibles de votre seul compte. Un document n'est gardé que si vous le choisissez, et son panneau d'information dit où. Quand vous demandez une vérification, le document, son texte, ou le fichier PDF, est envoyé à Orazaka, le moteur d'analyse de Krizaka, en HTTPS, et le résultat est gardé avec l'identifiant du run. Rien n'est vendu, partagé ni utilisé pour entraîner un modèle. Supprimer un document supprime son fichier, son texte et ses analyses. Pour une question ou pour faire effacer vos données, utilisez le formulaire de contact.",
+    "body": "Vos documents vous appartiennent : gardés seulement si vous le choisissez, vérifiés par Orazaka, jamais vendus, jamais utilisés pour entraîner un modèle. Le détail, en courtes sections.",
     "sections": [
       {
         "h": "Qui est responsable",
@@ -119,12 +145,24 @@
         "p": "Votre compte et vos vérifications sont dans une base de données à Toronto, au Canada, hors Québec. Les documents sont envoyés à Orazaka, le moteur d’analyse de Krizaka, par HTTPS pour être vérifiés. Un document gardé est stocké là où son panneau d’information le dit : aujourd’hui, à New York (États-Unis)."
       },
       {
+        "h": "Qui les traite",
+        "p": "Orazaka, le moteur d’analyse de Krizaka, lit un document quand vous demandez une vérification, par HTTPS. Stripe traite le paiement. Notre fournisseur de base de données héberge votre compte à Toronto."
+      },
+      {
+        "h": "Combien de temps nous les gardons",
+        "p": "Un document est gardé jusqu’à ce que vous le supprimiez, et un document supprimé emporte son fichier, son texte et ses résultats. Votre compte et vos vérifications sont gardés jusqu’à la fermeture du compte. Les factures sont conservées comme la loi l’exige."
+      },
+      {
         "h": "Vos droits",
         "p": "Vous pouvez accéder à vos renseignements, les corriger ou les supprimer, retirer votre consentement et récupérer vos données en écrivant au responsable. Supprimer un document supprime son fichier, son texte et ses résultats. Fermer votre compte supprime vos documents. Nous conservons les factures comme la loi l’exige."
       },
       {
         "h": "Incidents",
         "p": "Si un incident de confidentialité présente un risque de préjudice sérieux, nous avisons la Commission d’accès à l’information et les personnes concernées, comme la loi l’exige."
+      },
+      {
+        "h": "Nous joindre",
+        "p": "Pour poser une question, exercer vos droits ou faire retirer vos données, écrivez par le formulaire de contact de krizaka.com. La personne responsable de la protection des renseignements personnels vous répond."
       }
     ]
   },
@@ -287,7 +325,8 @@
         "title": "Le classeur",
         "label": "Collections",
         "open": "Ouvrir cette collection",
-        "empty": "Aucun fichier dans cette collection pour l’instant."
+        "empty": "Aucun fichier dans cette collection pour l’instant.",
+        "add": "Ajouter un document"
       },
       "quick": {
         "label": "Accès rapide",
@@ -390,6 +429,7 @@
       "title": "Bibliothèque",
       "dropTitle": "Déposez vos documents ici",
       "browse": "Choisir des fichiers",
+      "inputLabel": "Choisir les fichiers à vérifier",
       "hint": "PDF, Word (.docx), OpenDocument (.odt), texte ou photo (PNG, JPEG, HEIC), jusqu'à 10 Mo chacun. Un bail, un contrat, une facture.",
       "refusedSize": "{name} : plus de 10 Mo",
       "refusedType": "{name} : seulement des PDF, des fichiers texte et des photos",
@@ -510,6 +550,7 @@
       "added": "Ajouté",
       "fingerprint": "SHA-256",
       "viewer": "Le document",
+      "viewerRegion": "Aperçu du document",
       "text": "Son texte",
       "noText": "Ce PDF n'a pas de couche texte : la vérification au regard de la loi n'a pas pu lire ses clauses. L'examen du fichier, lui, a lieu.",
       "openFile": "Ouvrir le fichier",
@@ -725,6 +766,12 @@
       "RATE_LIMITED": "Trop de tentatives. Réessayez dans un instant.",
       "UNAUTHENTICATED": "Votre session a pris fin. Reconnectez-vous.",
       "FORBIDDEN": "Non autorisé.",
+      "INCIDENT_BAD_INPUT": "L'incident est incomplet ou invalide.",
+      "INCIDENT_UNKNOWN": "Cet incident n'existe pas.",
+      "INCIDENT_CLOSED": "Cet incident est fermé et ne peut plus changer.",
+      "INCIDENT_NOT_ASSESSED": "Évaluez d'abord le risque.",
+      "INCIDENT_NO_NOTICE_DUE": "Aucun avis n'est requis : le risque de préjudice sérieux n'a pas été retenu.",
+      "INCIDENT_NOTICES_MISSING": "Les deux avis doivent être consignés avant la fermeture.",
       "IP_NOT_ALLOWED": "Pas depuis cette adresse.",
       "NOT_FOUND": "Introuvable.",
       "FILE_TOO_LARGE": "Le fichier dépasse 10 Mo.",
@@ -884,6 +931,7 @@
         "signOut": "Se déconnecter",
         "openSite": "Ouvrir dev.yomizaka.com",
         "operations": "Exploitation",
+        "incidents": "Incidents",
         "flows": "Parcours",
         "groups": {
           "people": "Personnes et fichiers",
@@ -976,6 +1024,81 @@
         "asideFooter": "Administrateurs seulement, depuis une adresse autorisée.",
         "title": "Administration",
         "description": "Connectez-vous avec un compte administrateur."
+      },
+      "incidents": {
+        "title": "Incidents de confidentialité",
+        "lead": "Le registre exigé par la Loi 25 (art. 3.5 à 3.8) : tous les incidents, graves ou non, conservés cinq ans. Il contient des faits et des catégories de renseignements, jamais les données d'une personne. Évaluez le risque de préjudice sérieux ; s'il existe, avisez la Commission d'accès à l'information et les personnes concernées, puis fermez.",
+        "exportCsv": "Exporter en CSV",
+        "exportJson": "Exporter en JSON",
+        "register": "Registre",
+        "empty": "Aucun incident consigné.",
+        "awareAt": "Constaté le",
+        "kind": "Ce qui s'est passé",
+        "status": "Statut",
+        "risk": "Risque de préjudice sérieux",
+        "serious": "Sérieux",
+        "notSerious": "Non sérieux",
+        "drill": "Exercice",
+        "drillBadge": "Exercice",
+        "description": "Ce qui s'est passé, en faits",
+        "details": "Détails",
+        "hide": "Masquer",
+        "kinds": {
+          "access": "Accès non autorisé",
+          "use": "Utilisation non autorisée",
+          "communication": "Communication non autorisée",
+          "loss": "Perte"
+        },
+        "statuses": {
+          "open": "Ouvert",
+          "assessed": "Évalué",
+          "closed": "Fermé"
+        },
+        "levels": {
+          "low": "Faible",
+          "medium": "Moyen",
+          "high": "Élevé"
+        },
+        "open": "Ouvrir un incident",
+        "openSubmit": "Ouvrir",
+        "cancel": "Annuler",
+        "descriptionHint": "Des faits seulement. Ni nom, ni courriel, ni contenu de document.",
+        "information": "Catégories de renseignements concernés",
+        "informationHint": "Séparées par des virgules, p. ex. bail, talon de paie. Jamais le renseignement lui-même.",
+        "persons": "Personnes concernées (si connu)",
+        "drillLabel": "Il s'agit d'un exercice",
+        "markDrill": "Marquer comme exercice",
+        "unmarkDrill": "Pas un exercice",
+        "assess": "Évaluer le risque",
+        "assessSubmit": "Enregistrer l'évaluation",
+        "sensitivity": "Sensibilité des renseignements",
+        "consequences": "Gravité des conséquences",
+        "likelihood": "Probabilité d'utilisation malveillante",
+        "seriousInjury": "Risque de préjudice sérieux",
+        "rationale": "Motifs de la décision",
+        "measure": "Mesures prises",
+        "measureText": "Une mesure pour réduire le risque ou éviter un nouvel incident",
+        "measureSubmit": "Consigner la mesure",
+        "notice": "Consigner un avis envoyé",
+        "target": "Envoyé à",
+        "targets": {
+          "cai": "Commission d'accès à l'information",
+          "persons": "Personnes concernées"
+        },
+        "channel": "Comment",
+        "channels": {
+          "form": "Formulaire de la Commission",
+          "email": "Courriel",
+          "letter": "Lettre",
+          "public": "Avis public"
+        },
+        "reference": "Référence de l'accusé de réception (s'il y a lieu)",
+        "noticeSubmit": "Consigner l'avis",
+        "caiNotice": "Avis à la Commission",
+        "personsNotice": "Avis aux personnes concernées",
+        "retain": "Conservé au registre jusqu'au {date}.",
+        "close": "Fermer l'incident",
+        "closedNote": "Cette entrée est fermée. Elle reste au registre et n'est plus jamais modifiée."
       },
       "operations": {
         "database": "Base de données",
@@ -1290,6 +1413,8 @@
         "set": "Avatars de la série",
         "upload": "Une image à vous",
         "uploadHint": "PNG, JPEG ou HEIC, {size} Ko au plus. L'image est recadrée en carré et ses données (position, appareil) sont retirées.",
+        "browse": "Choisir une image",
+        "tone": "Avatar {n}",
         "off": "Les avatars sont désactivés."
       },
       "defaultName": "Mes documents",
@@ -1368,6 +1493,7 @@
         "portal": "Gérer l'abonnement et les factures",
         "portalHint": "Mode de paiement, factures (avec TPS et TVQ) et annulation : dans le portail sécurisé de Stripe.",
         "off": "Le paiement n'est pas encore disponible.",
+        "otherOffers": "Autres offres",
         "buy": "Acheter ou s'abonner",
         "testMode": "Mode test : aucune vraie carte n'est débitée.",
         "plans": {
@@ -1926,6 +2052,20 @@
             },
             "windowSeconds": {
               "label": "Fenêtre : Partage d'un rapport",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            }
+          },
+          "reportMail": {
+            "perIp": {
+              "label": "Limite par adresse : Envoi d'un lien de rapport par courriel",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "perSubject": {
+              "label": "Limite par compte : Envoi d'un lien de rapport par courriel",
+              "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
+            },
+            "windowSeconds": {
+              "label": "Fenêtre : Envoi d'un lien de rapport par courriel",
               "hint": "Au-delà, la réponse est 429 avec le temps à attendre."
             }
           },
@@ -2566,6 +2706,7 @@
       "title": "Vérifier un lot de documents",
       "lead": "Un fichier CSV (une ligne par document) et les documents qu'il nomme, déposés ensemble. Avant tout lancement, l'aperçu dit ce qui sera vérifié, réutilisé ou refusé, et ce que ça coûte.",
       "drop": "Déposez le CSV et ses documents",
+      "inputLabel": "Choisir le CSV et ses documents",
       "hint": "CSV + PDF, Word ou texte — jusqu'à 10 Mo par document",
       "template": "Télécharger le modèle CSV",
       "received": "{csv} · {count} document(s)",
@@ -2769,6 +2910,42 @@
         "decided": "Décision prise : {state}",
         "none": "Aucune action possible."
       },
+      "share": {
+        "title": "Lien pour le propriétaire de l'immeuble",
+        "lead": "Un rapport en lecture seule : empreintes et constats seulement, ni nom ni document. Vous choisissez la durée d'ouverture, 30 jours au plus.",
+        "expiry": "Ouvert pendant",
+        "days": "{count} jours",
+        "create": "Créer un lien",
+        "creating": "Création…",
+        "created": "Lien prêt. Il n'est montré qu'une fois : copiez-le maintenant.",
+        "copy": "Copier le lien",
+        "copied": "Lien copié",
+        "linkLabel": "Lien à envoyer",
+        "none": "Aucun lien pour l'instant.",
+        "active": "Liens actifs",
+        "views": "{count} consultations",
+        "viewsOne": "{count} consultation",
+        "expires": "jusqu'au {date}",
+        "revoke": "Révoquer",
+        "revoked": "Lien révoqué.",
+        "state": {
+          "live": "Actif",
+          "expired": "Expiré",
+          "revoked": "Révoqué"
+        },
+        "email": {
+          "title": "Envoyer par courriel",
+          "address": "Adresse courriel du propriétaire",
+          "message": "Un court mot (facultatif)",
+          "language": "Langue du courriel",
+          "hint": "Le courriel contient le lien, sa date de fin et votre mot : rien du rapport. L'adresse n'est gardée que tant que le lien vit.",
+          "send": "Envoyer par courriel",
+          "sending": "Envoi…",
+          "sent": "Envoyé à {email}.",
+          "sentTo": "Envoyé à {email}"
+        },
+        "loading": "Chargement des liens…"
+      },
       "tagsEdit": {
         "title": "Étiquettes",
         "edit": "Modifier les étiquettes",
@@ -2861,7 +3038,8 @@
     "signatureBody": "SHA-256 du texte du rapport (pages précédentes)",
     "signatureValue": "Signature (base64)",
     "signatureNote": "L'attestation — le contenu signé, l'empreinte du texte et cette signature — est aussi intégrée au fichier PDF. Un membre à qui le propriétaire a donné accès la vérifie en donnant ce fichier à la page de vérification ; tout changement au texte des pages précédentes la fait échouer.",
-    "notCheckedServiceContract": "Non vérifié : droit de résiliation, art. 2125 C.c.Q., et le reste du Code civil du Québec sur le contrat de service (art. 2098 et suiv.). À faire relire par un avocat."
+    "notCheckedServiceContract": "Non vérifié : droit de résiliation, art. 2125 C.c.Q., et le reste du Code civil du Québec sur le contrat de service (art. 2098 et suiv.). À faire relire par un avocat.",
+    "languageNote": "Langue d'origine des règles : le français. Le texte anglais est la traduction fournie avec les règles ; les passages cités et les références aux articles restent tels quels, jamais traduits."
   },
   "verify": {
     "title": "Vérifier un rapport",
@@ -2882,6 +3060,7 @@
       "BAD_SIGNATURE": "La signature ne correspond pas au contenu : le rapport a été modifié ou signé par une autre clé.",
       "ALTERED": "La signature est valide pour le rapport d’origine, mais le fichier n’est plus ce rapport : quelque chose a été changé après la signature.",
       "UNKNOWN_KEY": "Il a été signé par une clé qui n’est pas celle de ce serveur.",
+      "UNKNOWN_SCHEMA": "Ce rapport est dans un format que Yomizaka ne vérifie pas.",
       "SPECIMEN": "Ce rapport est un spécimen : il ne prouve rien."
     },
     "facts": {
@@ -2892,7 +3071,9 @@
       "ruleset": "Règles",
       "checked": "Vérification terminée",
       "findings": "Constats",
-      "jurisdiction": "Juridiction"
+      "jurisdiction": "Juridiction",
+      "issued": "Émis le",
+      "expires": "Lien valide jusqu'au"
     },
     "documentMatch": {
       "yes": "Le document que vous avez donné est bien celui qui a été vérifié.",
@@ -3065,6 +3246,7 @@
       "consentFirst": "Consentez à la vérification ci-dessus pour envoyer vos documents.",
       "dropTitle": "Déposez le PDF ici",
       "browse": "Choisir un PDF",
+      "inputLabel": "Choisir le PDF à envoyer",
       "hint": "PDF seulement, jusqu'à 10 Mo.",
       "received": "Reçu",
       "sending": "Envoi",
@@ -3283,6 +3465,14 @@
         "invoices": {
           "name": "Factures 2026",
           "description": "Les factures d'entretien de 2026 — documents spécimens fictifs, dont une avec un total inexact."
+        },
+        "empty-a": {
+          "name": "À classer",
+          "description": "Dossier prêt pour les prochains documents."
+        },
+        "empty-b": {
+          "name": "Archives 2025",
+          "description": "Dossier vide, pour les documents de l'an dernier."
         }
       }
     }
@@ -3319,14 +3509,24 @@
       "quickstartTitle": "Lancer une vérification, puis la lire",
       "quickstartNote": "Interrogez jusqu'à ce que l'état soit done, failed ou refused ; le rapport arrive avec la vérification une fois terminée.",
       "routesTitle": "Routes",
+      "route": "Route",
+      "commonAnswers": "Réponses communes à plusieurs routes",
       "scope": "Portée",
       "noScope": "Aucune clé requise",
       "parameters": "Paramètres",
       "answers": "Réponses",
       "errorsTitle": "Erreurs",
-      "errors": "Une erreur est { \"code\": \"…\", \"error\": \"…\" }. Le code est stable ; le message sert aux journaux.",
+      "errors": "Chaque erreur répond par un code stable et un message. Appuyez-vous sur le code ; le message sert à vos journaux.",
+      "codeColumn": "Code",
+      "meaningColumn": "Sens",
+      "statusTitle": "Codes de statut",
+      "statusLead": "Ces réponses sont données par plusieurs routes ; le tableau des routes liste les autres.",
+      "errorShapeLabel": "Corps d'une erreur",
       "webhooksTitle": "Webhooks",
-      "webhooks": "Plutôt que d'interroger, enregistrez un point d'accès https dans votre compte et Yomizaka l'appelle quand le travail se termine. Chaque requête porte un nom d'événement, un identifiant d'événement stable (appliquez un événement une seule fois) et une signature dans x-krizaka-signature : t=SECONDES_UNIX,v1=HEX, où HEX est le HMAC-SHA256, avec le secret de votre point d'accès, de \"SECONDES_UNIX.CORPS_BRUT\". Une charge contient des identifiants et des états, jamais un document ni un rapport.",
+      "webhooks": "Plutôt que d'interroger, enregistrez un point d'accès https dans votre compte et Yomizaka l'appelle quand le travail se termine. Chaque requête porte un nom d'événement, un identifiant d'événement stable (appliquez un événement une seule fois) et une signature. Une charge contient des identifiants et des états, jamais un document ni un rapport.",
+      "signatureTitle": "Vérifier la signature",
+      "signature": "L'en-tête x-krizaka-signature a ce format. HEX est le HMAC-SHA256, avec le secret de votre point d'accès, de l'horodatage, d'un point et du corps brut. Refusez une requête dont la signature ne correspond pas.",
+      "signatureLabel": "Signature",
       "event": "Événement",
       "openapiLink": "Ouvrir le document OpenAPI"
     },
@@ -3429,5 +3629,46 @@
     "guarantees": "Ce fichier est scellé avec la clé de Yomizaka (Ed25519, détenue par Krizaka) : il atteste que ce contenu, ces parties et ces dates existaient sous cette forme au moment du scellement et n’ont pas été modifiés depuis.",
     "notGuaranteed": "Il ne vérifie ni l’identité de quiconque, ni l’âge de quiconque, ni la validité du contrat en droit, ni les déclarations du partenaire : Yomizaka vérifie des documents, il ne décide pas. Informatif, pas un avis juridique.",
     "verify": "Pour vérifier une copie, prenez son SHA-256 et ouvrez {url} suivi de cette valeur : la réponse dit si Yomizaka l’a scellée et quand, sans montrer aucun renseignement personnel."
+  },
+  "ownerReport": {
+    "title": "Rapport de vérification",
+    "lead": "Ce qui a été examiné dans le dossier d'un candidat, pour le propriétaire de l'immeuble. Des empreintes seulement : aucun document, aucun nom, aucun passage cité.",
+    "reference": "Référence du dossier {ref}",
+    "issued": "Émis le {date}",
+    "notice": "Vérification informative, ce n'est pas un avis juridique. Une personne décide ; ce rapport ne décide de rien et ne classe personne.",
+    "documents": "Documents examinés",
+    "document": "Document {n}",
+    "type": "Type",
+    "typeUnknown": "Non précisé",
+    "sha": "Empreinte SHA-256 du document",
+    "pages": "Pages",
+    "signals": "Signaux observés",
+    "noSignals": "Aucun signal n'a été observé sur ce document.",
+    "findings": "Règles vérifiées",
+    "noFindings": "Aucune règle n'a été vérifiée sur ce document.",
+    "notExamined": "Non examiné",
+    "runs": "Exécutions Orazaka",
+    "run": "{studio}, exécution {runId}, version {version}",
+    "versionNone": "non précisée",
+    "ruleset": "Jeu de règles {id} version {version} ({jurisdiction})",
+    "reviewStatus": "État de relecture du jeu de règles : {status}. Il doit être relu par un avocat avant qu'on s'y fie.",
+    "limits": "Ce que ce rapport ne montre pas : les documents eux-mêmes, le nom ou les coordonnées de la personne, tout pointage ou classement. Les signaux sont des observations sur un fichier, jamais un jugement sur une personne.",
+    "download": "Télécharger le PDF signé",
+    "expires": "Ce lien est valable jusqu’au {date}.",
+    "guarantees": "Ce PDF est signé avec la clé de Yomizaka (Ed25519, détenue par Krizaka). La signature couvre chaque élément de ce rapport (documents, signaux, règles vérifiées, exécutions, versions), l’expiration du lien et le texte complet des pages. Si un seul caractère change, la vérification échoue.",
+    "notGuaranteed": "Elle ne prouve pas que les signaux ou les constats sont justes, ni qui détient le dossier : elle n’affiche aucun nom, aucune coordonnée, aucun nom de fichier ni aucun extrait cité. Informatif, pas un avis juridique ; une personne décide.",
+    "signatureNote": "L’attestation (contenu, empreinte du texte et signature) est intégrée au PDF. Toute modification du texte des pages précédentes fait échouer la vérification.",
+    "footer": "Yomizaka, un produit Krizaka — analyse par Orazaka.",
+    "verdict": {
+      "PASS": "Aucun problème signalé",
+      "FAIL": "Problème signalé",
+      "INSUFFICIENT_EVIDENCE": "Preuves insuffisantes"
+    },
+    "language": "Langue",
+    "languageName": {
+      "en": "English",
+      "fr": "Français"
+    },
+    "languageNote": "Les règles sont rédigées en français ; les noms anglais viennent avec le jeu de règles. Les références aux articles sont données telles que citées."
   }
 }

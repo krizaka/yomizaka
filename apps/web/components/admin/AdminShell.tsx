@@ -31,7 +31,7 @@ export function AdminShell({ locale, email, children }: Readonly<{ locale: "en" 
       router.refresh();
     },
   });
-  const ICONS = { overview: <HomeIcon />, users: <UsersIcon />, documents: <KeepIcon />, flows: <ShieldIcon />, config: <ServerIcon />, runs: <ServerIcon />, operations: <ShieldIcon />, audit: <ClockIcon /> };
+  const ICONS = { overview: <HomeIcon />, users: <UsersIcon />, documents: <KeepIcon />, flows: <ShieldIcon />, config: <ServerIcon />, runs: <ServerIcon />, operations: <ShieldIcon />, incidents: <ShieldIcon />, audit: <ClockIcon /> };
   const pages = ADMIN_PAGES.map((p) => ({ ...p, to: `${home}${p.path}`, icon: ICONS[p.key], exact: p.path === "" }));
   const isCurrent = (p: (typeof pages)[number]) => (p.exact ? path === p.to : path === p.to || path.startsWith(`${p.to}/`));
   const current = pages.find(isCurrent) ?? pages[0]!;

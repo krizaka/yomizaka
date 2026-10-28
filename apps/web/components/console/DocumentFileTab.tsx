@@ -98,7 +98,7 @@ function FileContent({ doc, isPdf, report, viewer, viewerRef }: Readonly<{ doc: 
   if (doc.purged) return <Alert tone="info">{say("document.where.notKeptText")}</Alert>;
   if (isPdf) {
     return (
-      <section ref={viewerRef} aria-label={say("document.viewer")} className="min-w-0">
+      <section ref={viewerRef} aria-label={say("document.viewerRegion")} className="min-w-0">
         <PdfViewer {...viewer} />
       </section>
     );

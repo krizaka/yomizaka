@@ -1,11 +1,11 @@
 "use client";
 
-import { type MeAccount, meSchema } from "@krizaka/auth/contract";
+import type { MeAccount } from "@krizaka/auth/contract";
 import { HomeIcon, LogoutIcon, SettingsIcon } from "@krizaka/icons";
 import { krizakaFetch, KrizakaQueryProvider, useMutation, useQuery, useQueryClient } from "@krizaka/query";
 import { AccountMenu } from "@krizaka/ui/account-menu";
 import { Button } from "@krizaka/ui/button";
-import { ProductBarActions } from "@krizaka/ui/nav-bar";
+import { type NavSession, ProductBarActions, sessionKey, useNavSession } from "@krizaka/ui/nav-bar";
 import Link from "next/link";
 import { z } from "zod";
 
@@ -18,25 +18,17 @@ import { signInPath } from "@/lib/nav";
  * account and the hero's action — never what anyone may do: the app and the API check the real session on every request.
  * The bar and the hero read the same answer (one `BarQueryRoot` around the page), so they never disagree (the review's F0).
  */
-export const ME_KEY = ["me"] as const;
+export const ME_ENDPOINT = "/api/me";
+/** The family's one session query (`@krizaka/ui/nav-bar`): the bar, the hero and the closing call read it, so they never disagree (krizaka-ui#800). */
+export const ME_KEY = sessionKey(ME_ENDPOINT);
 export type Me = Pick<MeAccount, "email" | "name" | "avatarSeed">;
 
-/** The person signed in, or null (no session, an expired one, or the server unreachable: the page then says « Sign in »). */
-export async function fetchMe(): Promise<Me | null> {
-  try {
-    // The family's contract (200 `{ signedIn, signupOpen, account? }`): signed out is an answer, not an error.
-    return (await krizakaFetch("/api/me", { schema: meSchema })).account ?? null;
-  } catch {
-    return null;
-  }
-}
-
 /** Signing out: the server ends the session, and whatever the page remembered is dropped at once. */
-export async function signOutAndForget(client: { setQueryData: (key: readonly string[], value: null) => void }, post: () => Promise<unknown>): Promise<void> {
+export async function signOutAndForget(client: { setQueryData: (key: readonly string[], value: { signedIn: false; signupOpen: boolean }) => void }, post: () => Promise<unknown>): Promise<void> {
   try {
     await post();
   } finally {
-    client.setQueryData(ME_KEY, null);
+    client.setQueryData(ME_KEY, { signedIn: false, signupOpen: false });
   }
 }
 
@@ -44,7 +36,12 @@ export function BarQueryRoot({ children }: Readonly<{ children: React.ReactNode 
   return <KrizakaQueryProvider>{children}</KrizakaQueryProvider>;
 }
 
-const useMe = () => useQuery({ queryKey: ME_KEY, queryFn: fetchMe, staleTime: 30_000, retry: false, throwOnError: false });
+/**
+ * What the page knows of the visitor: `pending` until `/api/me` answers (the bar then draws neither state), the person once it did,
+ * and the LAST KNOWN state when a refetch fails or is throttled: only an answer signs anyone out (krizaka-ui#800).
+ */
+export const meOf = (session: NavSession<Me>): { pending: boolean; me: Me | null } => ({ pending: session.status === "pending", me: session.status === "in" ? session.account : null });
+const useMe = () => meOf(useNavSession<Me>(ME_ENDPOINT));
 
 /**
  * What the bar's actions look like, from what is known; the container below only fetches. Signed in, the bar keeps a quiet
@@ -93,7 +90,7 @@ const signupStatus = z.object({ open: z.boolean() });
 
 export function BarActions({ locale, placement }: Readonly<{ locale: Locale; placement: "bar" | "panel" }>) {
   const client = useQueryClient();
-  const me = useMe();
+  const { pending, me } = useMe();
   const signup = useQuery({
     queryKey: ["signup-status"],
     queryFn: () => krizakaFetch("/api/auth/sign-up/status", { schema: signupStatus }).then((r) => r.open, () => false),
@@ -102,7 +99,9 @@ export function BarActions({ locale, placement }: Readonly<{ locale: Locale; pla
     throwOnError: false,
   });
   const signOut = useMutation({ mutationFn: () => signOutAndForget(client, () => krizakaFetch("/api/auth/sign-out", { method: "POST" })) });
-  return <BarActionsView locale={locale} placement={placement} me={me.data ?? null} signupOpen={signup.data ?? false} onSignOut={() => signOut.mutate()} />;
+  // Neither « Sign in » nor the avatar until the session is known: a signed-in person never sees the bar flash signed out.
+  if (pending) return <span data-testid="bar-session" data-session="pending" aria-hidden="true" className="inline-block h-9 min-w-24" />;
+  return <BarActionsView locale={locale} placement={placement} me={me} signupOpen={signup.data ?? false} onSignOut={() => signOut.mutate()} />;
 }
 
 /**
@@ -136,8 +135,7 @@ export function HeroActionsView({ locale, me, status }: Readonly<{ locale: Local
 }
 
 export function HeroActions({ locale, status }: Readonly<{ locale: Locale; status: string }>) {
-  const me = useMe();
-  return <HeroActionsView locale={locale} me={me.data ?? null} status={status} />;
+  return <HeroActionsView locale={locale} me={useMe().me} status={status} />;
 }
 
 /** The closing call's action — secondary, the hero's island keeps the one primary: signed in, the documents; signed out, the way in. */
@@ -151,8 +149,7 @@ export function ClosingActionsView({ locale, me }: Readonly<{ locale: Locale; me
 }
 
 export function ClosingActions({ locale }: Readonly<{ locale: Locale }>) {
-  const me = useMe();
-  return <ClosingActionsView locale={locale} me={me.data ?? null} />;
+  return <ClosingActionsView locale={locale} me={useMe().me} />;
 }
 
 /** The closing call's sentence, by session: never « sign in » to someone who is. */
@@ -161,6 +158,5 @@ export function ClosingBodyView({ me, signedOut, signedIn }: Readonly<{ me: Me |
 }
 
 export function ClosingBody({ signedOut, signedIn }: Readonly<{ signedOut: string; signedIn: string }>) {
-  const me = useMe();
-  return <ClosingBodyView me={me.data ?? null} signedOut={signedOut} signedIn={signedIn} />;
+  return <ClosingBodyView me={useMe().me} signedOut={signedOut} signedIn={signedIn} />;
 }

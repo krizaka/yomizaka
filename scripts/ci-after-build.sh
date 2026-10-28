@@ -16,7 +16,7 @@ pnpm run seo:check
 # The brand icons and their lock = the CDN manifest (the unit test checks icons = lock offline).
 node scripts/sync-brand-icons.mjs --check
 # Responsive guard: no horizontal overflow at 360-1440 px in both themes, chips of at least 44 px.
-pnpm run check:overflow -- --base http://localhost:3000
+pnpm run check:overflow -- --base http://localhost:3000   # also axe-core WCAG 2.1 AA, ratcheted by a11y-baseline.json (--a11y-update lowers it)
 node scripts/check-home-first-screen.mjs --base http://localhost:3000
 # The 404 is a page in the language of the address (the UX review's Y10): its status and its words.
 test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/fr/nope)" = "404"
@@ -24,6 +24,8 @@ curl -s http://localhost:3000/fr/nope | grep -q "Retour à la bibliothèque"
 curl -s http://localhost:3000/en/nope | grep -q "Back to the library"
 test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:3000/api/auth/sign-up)" = "403"
 # The signed-in pages, rendered as the seeded persona Éric (the demo data set of scripts/demo-seed, CI-only credentials, never a
-# real account): exactly one h1 each, no horizontal overflow at 360-1440 px, the header's action on screen, no unnamed button.
+# real account): exactly one h1 each, no horizontal overflow at 360-1440 px, the header's action on screen, no unnamed button, axe-core (a11y-baseline.app.json).
 APP_DEMO_ACCOUNT_EMAIL=eric@demo.yomizaka.test APP_DEMO_ACCOUNT_PASSWORD=ci-only-demo-password-0123 node scripts/demo-seed/cli.mjs --persona eric
-E2E_EMAIL=eric@demo.yomizaka.test E2E_PASSWORD=ci-only-demo-password-0123 node scripts/check-app-pages.mjs --base http://localhost:3000
+# The layout audit proves itself on its own fixtures first (a card out of its panel, sections on top of each other, a cut column).
+node scripts/check-page-audit.mjs
+E2E_EMAIL=eric@demo.yomizaka.test E2E_PASSWORD=ci-only-demo-password-0123 node scripts/check-app-pages.mjs --base http://localhost:3000   # axe too: a11y-baseline.app.json

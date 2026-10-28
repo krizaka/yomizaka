@@ -80,5 +80,23 @@
       }
     }
   },
-  "unknown": {}
+  "unknown": {},
+  "ruleTitles": {
+    "QC-SVC-001": {
+      "fr": "Intérêt de retard exprimé par mois, par semaine ou par jour sans taux annuel",
+      "en": "Late-payment interest stated per month, week or day with no annual rate"
+    },
+    "QC-SVC-002": {
+      "fr": "Cession des droits moraux",
+      "en": "Assignment of moral rights"
+    },
+    "QC-SVC-003": {
+      "fr": "Cession du droit d'auteur sans mention des droits moraux",
+      "en": "Assignment of copyright with no mention of moral rights"
+    },
+    "QC-SVC-004": {
+      "fr": "Contrat signé",
+      "en": "Signed contract"
+    }
+  }
 }

@@ -85,14 +85,15 @@ describe("the public site, plain (P10)", () => {
       expect(html).not.toContain("kz-tpl-band");
     });
 
-    it("writes no mono caption: the window bar says nothing, the owl's caption is read, not shown", () => {
+    it("writes no mono caption: the window bar says nothing, and the owl's quote is not repeated (yomizaka#457)", () => {
       expect(html).toMatch(/<div class="kz-tpl-stage-bar" aria-hidden="true"><\/div>/);
-      const caption = html.match(/<figure class="kz-quote[^"]*"[^>]*>.*?<figcaption>(.*?)<\/figcaption>/s)?.[1] ?? "";
-      expect(caption.replace(/<svg.*<\/svg>/s, "")).toBe(`<span><span class="sr-only">${fr.landing.proof.owlLabel}</span></span>`);
+      expect(html).not.toMatch(/<figure class="kz-quote/);
     });
 
     it("uses a mono only on code in its content (the bar is the family's NavBar, its language code is @krizaka/ui's)", () => {
-      const main = html.slice(html.indexOf('<main id="content"'), html.indexOf("</main>"));
+      const whole = html.slice(html.indexOf('<main id="content"'), html.indexOf("</main>"));
+      // The feature cards hold the app's own screens (inert, drawn with its components, yomizaka#478): the app's mono (a fingerprint, a run id) is its own, not the page's.
+      const main = whole.slice(0, whole.indexOf('id="app"')) + whole.slice(whole.indexOf('id="proof"'));
       expect(main.length).toBeGreaterThan(0);
       expect(monoTags(main).filter((tag) => tag !== "code" && tag !== "pre")).toEqual([]);
       // `Facts` are « a few mono words on one line » in the blocks: the lead already says who it is for, in the sans.
@@ -106,9 +107,10 @@ describe("the public site, plain (P10)", () => {
       expect(bentoRows(sizes).every((r) => r === 6)).toBe(true);
     });
 
-    it("keeps what the product has: the real report in its frame, the owl once, the engine line", () => {
+    it("keeps what the product has: the real report in its frame, the engine line, and one way in: the hero's", () => {
       expect(html).toContain('data-testid="before-after"');
-      expect(html.match(/class="kz-quote[ "]/g)).toHaveLength(1);
+      expect(html).not.toContain('data-testid="closing-action"');
+      expect(html).toContain('data-testid="closing-data"');
       expect(html).toContain('data-testid="powered-by"');
     });
   });

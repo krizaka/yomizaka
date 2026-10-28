@@ -20,4 +20,10 @@ describe("the signed-in pages crawl (yomizaka#457: « Dossiers » crashed unseen
     assert.deepEqual(problemsOf("/app/verifications @390 dark", ok, { h1: true }), []);
     assert.match(problemsOf("/app/verifications @390 dark", { ...ok, wrapped: ["0198f2ab-7c1d-7e"] }, { h1: true })[0], /one character per line/);
   });
+  it("an empty heading and an unlabelled file input are problems", () => {
+    const ok = { h1: 1, scrollWidth: 400, clientWidth: 400, wide: [], unnamedButtons: 0 };
+    assert.deepEqual(problemsOf("/app/settings/profil @1440 dark", ok, { h1: true }), []);
+    assert.match(problemsOf("/app/settings/profil @1440 dark", { ...ok, emptyHeadings: 2 }, { h1: true })[0], /empty heading/);
+    assert.match(problemsOf("/app/check @1440 dark", { ...ok, unlabelledFiles: 1 }, { h1: true, fileLabels: true })[0], /file input/);
+  });
 });

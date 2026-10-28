@@ -55,7 +55,8 @@ function headerBlocks(payload: ReportPayload, labels: ReportLabels): Block[] {
   return [
     block(labels.eyebrow!, 8, { gap: 2 }),
     block(payload.document.title, 18, { bold: true, gap: 6 }),
-    block(labels.disclaimer!, 10, { bold: true, gap: 8 }),
+    block(labels.disclaimer!, 10, { bold: true, gap: 4 }),
+    block(labels.languageNote!, 8, { gap: 8 }),
     block(`${fill(labels.summary!, { failures: payload.summary.blockingFailures, rules: payload.summary.rulesEvaluated })}${marks}`, 10, { gap: 8 }),
     ...notes,
   ];
@@ -153,7 +154,10 @@ export interface IssuedPdf {
   attestation: Attestation;
 }
 
-const faceOf = (b: Block): Face => (b.mono ? "mono" : b.bold ? "bold" : "regular");
+const faceOf = (b: Block): Face => {
+  if (b.mono) return "mono";
+  return b.bold ? "bold" : "regular";
+};
 
 /** Lays out, hashes the text, signs, embeds. Each page carries its folio and the first one its footnotes; the findings are numbered as on the screen. */
 export async function issuePdf(payload: ReportPayload, labels: ReportLabels, key: SigningKey): Promise<IssuedPdf> {
