@@ -39,7 +39,7 @@ describe("the phone's Maestro flows in CI", () => {
     expect(sh).toContain("export APP_ENVIRONMENT=dev");
     expect(sh).not.toMatch(/APP_ENVIRONMENT=prod/);
     expect(sh).toContain("DEMO_ACCOUNT_PASSWORD:?");
-    expect(sh).toContain("demo-seed/cli.mjs --persona eric --reset");
+    expect(sh).toContain("demo-seed/cli.mjs --cast --reset --check");
   });
 
   it("the seed refuses a non-dev environment before it touches any database (the persona is never usable in production)", () => {

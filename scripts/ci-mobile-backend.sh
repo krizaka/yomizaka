@@ -30,5 +30,5 @@ for _ in $(seq 1 90); do curl -sf http://localhost:3000/api/healthz >/dev/null &
 curl -sf http://localhost:3000/api/healthz >/dev/null
 
 # The migrations ran at the server's start; now the persona (idempotent, refused outside dev).
-APP_DEMO_ACCOUNT_EMAIL="$DEMO_ACCOUNT_EMAIL" APP_DEMO_ACCOUNT_PASSWORD="$DEMO_ACCOUNT_PASSWORD" node scripts/demo-seed/cli.mjs --persona eric --reset
+APP_DEMO_ACCOUNT_EMAIL="$DEMO_ACCOUNT_EMAIL" APP_DEMO_ACCOUNT_PASSWORD="$DEMO_ACCOUNT_PASSWORD" node scripts/demo-seed/cli.mjs --cast --reset --check
 echo "backend ready: http://localhost:3000 (dev, persona Éric)"

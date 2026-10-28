@@ -4,9 +4,11 @@
 import { createHash } from "node:crypto";
 
 import { generateDocument, PERSONA_ERIC, AS_OF, DEFAULT_SEED } from "../demo-documents/index.mjs";
+import { CAST_ADMIN, CAST_MEMBER, castAccounts, fingerprintOf } from "./cast.mjs";
 
-export const PERSONAS = { eric: PERSONA_ERIC };
-export const DEFAULT_EMAILS = { eric: "eric@demo.yomizaka.test" };
+/** The persona's name comes from the cast; this file adds what the cast does not hold: the collections and documents. */
+export const PERSONAS = { [CAST_MEMBER.id]: { ...PERSONA_ERIC, key: CAST_MEMBER.id, name: CAST_MEMBER.displayName } };
+export const DEFAULT_EMAILS = { [CAST_MEMBER.id]: `${CAST_MEMBER.id}@demo.yomizaka.test` };
 export const SEEDED_RUN_PREFIX = "seeded-";
 /** What a seeded check carries in its inputs — the same marker `@yomizaka/core` reads (`isSeededCheck`). */
 export const SEEDED_INPUTS = { seeded: "true" };
@@ -143,4 +145,23 @@ async function seedInTransaction(q, def, { persona, address, locale, messagesByL
   }
   await seedOwnerFile(q, owner, persona);
   return { owner, email: address, name: account.name, collections: counts };
+}
+
+/**
+ * `seed --cast`: the whole Yomizaka cast, the same on a laptop, a CI runner and the dev deployment. The member gets the demo data
+ * set of `seedPersona`; the administrator gets an account named after its persona. Idempotent; the caller refuses production
+ * (`assertNotProduction`) before it connects. Returns the fingerprint of what is there for the cast's accounts.
+ */
+export async function seedCast(q, { env, hashPassword, locale, messagesByLocale, reset = false }) {
+  const [member, admin] = castAccounts(env);
+  const result = await seedPersona(q, { persona: member.persona.id, email: member.email, locale: locale ?? member.persona.locale, messagesByLocale, reset, passwordHash: await hashPassword(member.password) });
+  // The administrator keeps the name the person chose; the role and the credentials follow the environment.
+  const [adminRow] = await q(
+    `INSERT INTO accounts (email, locale, email_verified_at, password_hash, perspective, name, role) VALUES ($1, $2, now(), $3, 'landlord', $4, 'ADMIN')
+     ON CONFLICT (email) DO UPDATE SET role = 'ADMIN', status = 'ACTIVE', password_hash = EXCLUDED.password_hash, name = coalesce(accounts.name, EXCLUDED.name)
+     RETURNING id`,
+    [admin.email, CAST_ADMIN.locale, await hashPassword(admin.password), CAST_ADMIN.displayName],
+  );
+  const print = await fingerprintOf(q, [result.owner, adminRow.id]);
+  return { ...print, member: result, admin: { email: admin.email, name: CAST_ADMIN.displayName } };
 }

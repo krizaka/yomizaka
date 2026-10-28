@@ -2,10 +2,12 @@
 // The demo data set of a persona, on dev and local only.
 //   DATABASE_URL=… [DATABASE_CA_CERT=…] [APP_DEMO_ACCOUNT_EMAIL=…] [APP_DEMO_ACCOUNT_PASSWORD=…] \
 //     node scripts/demo-seed/cli.mjs --persona eric [--locale fr|en] [--reset]
+//   The whole cast (`pnpm run dev:seed`, the dev deployment, CI, Maestro and the recorders all run this; krizaka/.github#356):
+//     node scripts/demo-seed/cli.mjs --cast [--reset] [--check]   # --check fails when the fingerprint is not the recorded one
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 
-import { assertNotProduction, PERSONAS, seedPersona } from "./seed.mjs";
+import { assertNotProduction, PERSONAS, seedCast, seedPersona } from "./seed.mjs";
 
 const arg = (name) => {
   const i = process.argv.indexOf(`--${name}`);
@@ -14,8 +16,9 @@ const arg = (name) => {
 
 async function main() {
   assertNotProduction(process.env);
+  const cast = process.argv.includes("--cast");
   const persona = arg("persona") ?? "";
-  if (!PERSONAS[persona]) throw new Error(`--persona is required (known: ${Object.keys(PERSONAS).join(", ")})`);
+  if (!cast && !PERSONAS[persona]) throw new Error(`--persona is required (known: ${Object.keys(PERSONAS).join(", ")})`);
   const locale = arg("locale") ?? "fr";
   if (!["fr", "en"].includes(locale)) throw new Error("--locale must be fr or en");
   const web = createRequire(new URL("../../apps/web/package.json", import.meta.url));
@@ -26,12 +29,24 @@ async function main() {
   const client = new pg.Client({ connectionString: url.toString(), ...(tls ? { ssl: { ca: process.env.DATABASE_CA_CERT?.replace(/\\n/g, "\n"), rejectUnauthorized: true } } : {}) });
   const messagesByLocale = Object.fromEntries(["fr", "en"].map((l) => [l, JSON.parse(readFileSync(new URL(`../../apps/web/messages/${l}.json`, import.meta.url), "utf8"))]));
   let passwordHash = null;
-  if (process.env.APP_DEMO_ACCOUNT_PASSWORD) {
+  if (!cast && process.env.APP_DEMO_ACCOUNT_PASSWORD) {
     if (process.env.APP_DEMO_ACCOUNT_PASSWORD.length < 12) throw new Error("APP_DEMO_ACCOUNT_PASSWORD must have at least 12 characters");
     passwordHash = await (await import("../../apps/web/scripts/qa-accounts.mjs")).hashPassword(process.env.APP_DEMO_ACCOUNT_PASSWORD);
   }
   await client.connect();
   try {
+    if (cast) {
+      const { hashPassword } = await import("../../apps/web/scripts/qa-accounts.mjs");
+      const run = await seedCast((sql, values) => client.query(sql, values).then((r) => r.rows), { env: process.env, hashPassword, locale: arg("locale"), messagesByLocale, reset: process.argv.includes("--reset") });
+      console.log(`demo:seed --cast: ${run.member.name} (member), ${run.admin.name} (administrator)`);
+      console.log(`fingerprint: ${run.fingerprint}`);
+      if (process.argv.includes("--check")) {
+        const expected = JSON.parse(readFileSync(new URL("./fingerprint.json", import.meta.url), "utf8")).fingerprint;
+        if (run.fingerprint !== expected) throw new Error(`the seeded data differs from the recorded fingerprint\n  expected ${expected}\n  got      ${run.fingerprint}`);
+        console.log("fingerprint: matches the recorded one");
+      }
+      return;
+    }
     const result = await seedPersona((sql, values) => client.query(sql, values).then((r) => r.rows), {
       persona,
       email: process.env.APP_DEMO_ACCOUNT_EMAIL,

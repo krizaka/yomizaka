@@ -1,0 +1,16 @@
+# The local database of Yomizaka: the same engine and version as the dev deployment, on this machine only.
+#   docker compose -f deploy/docker/compose.yml up -d
+#   DATABASE_URL=postgres://yomizaka:yomizaka@localhost:5432/yomizaka pnpm run dev:seed
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: yomizaka
+      POSTGRES_PASSWORD: yomizaka
+      POSTGRES_DB: yomizaka
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - yomizaka-pg:/var/lib/postgresql/data
+volumes:
+  yomizaka-pg:
