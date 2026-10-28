@@ -6,21 +6,11 @@
 //
 // Also fails on a console error or an uncaught exception (a hydration mismatch is one: React error #418).
 // Exits 1 listing every page × width × theme that overflows. With --shots it also writes a screenshot of each.
-import { mkdirSync } from "node:fs";
-import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { A11yCollector, auditPage as auditA11y, finish } from "@krizaka/a11y-audit";
-import { chromium } from "playwright-core";
+import { auditRoutes, THEMES, WIDTHS } from "@krizaka/page-audit";
 
-import { auditPage, problemsOf } from "./lib/page-audit.mjs";
-import { auditContext, loadSettled, resizeSettled } from "./lib/settle.mjs";
-
-export const WIDTHS = [360, 390, 430, 768, 1024, 1440];
-export const THEMES = ["dark", "light"];
-// axe-core (WCAG 2.1 AA) runs at the phone and the desktop width only: a finding is counted once per route, theme and node.
-export const A11Y_WIDTHS = [390, 1440];
-export const A11Y_BASELINE = fileURLToPath(new URL("../a11y-baseline.json", import.meta.url));
+export { THEMES, WIDTHS };
 export const PAGES = ["/en", "/fr", "/en/privacy", "/fr/privacy", "/en/docs", "/fr/docs", "/en/sign-in", "/fr/sign-in", "/en/forgot-password", "/fr/forgot-password", `/en/reset-password?token=ye1.${"A".repeat(43)}`, "/fr/reset-password", "/fr/verify", "/fr/nope", "/en/nope"];
 
 const arg = (name, fallback) => {
@@ -28,51 +18,10 @@ const arg = (name, fallback) => {
   return i >= 0 ? process.argv[i + 1] : fallback;
 };
 
-export async function check({ base, shots }) {
-  const browser = await chromium.launch();
-  const problems = [];
-  const a11y = new A11yCollector("yomizaka");
-  for (const theme of THEMES) {
-    const context = await auditContext(browser, { colorScheme: theme });
-    await context.addInitScript((t) => {
-      try {
-        localStorage.setItem("kz-theme", t);
-      } catch {}
-    }, theme);
-    const page = await context.newPage();
-    let errors = [];
-    page.on("console", (m) => {
-      // A blocked third-party resource is not a page error; a script error and a hydration mismatch are.
-      if (m.type() === "error" && !/Failed to load resource/.test(m.text())) errors.push(m.text().slice(0, 140));
-    });
-    page.on("pageerror", (e) => errors.push(String(e).slice(0, 140)));
-    for (const path of PAGES) {
-      for (const width of WIDTHS) {
-        await resizeSettled(page, { width, height: 900 });
-        // « load » and the faces, not « networkidle »: Next's router prefetches (one RSC stream per link of the bar) can hold
-        // Chromium's six connections to the host open on a re-visit, and the page never goes idle (30 s, CI red) while
-        // nothing on screen changes. What is measured below — layout — is final once the page and its fonts are loaded.
-        await loadSettled(page, `${base}${path}`);
-        await page.waitForTimeout(300);
-        const result = await page.evaluate(auditPage);
-        const where = `${path} @${width} ${theme}`;
-        problems.push(...problemsOf(where, result, { errors }));
-        if (A11Y_WIDTHS.includes(width)) a11y.add({ route: path, theme }, await auditA11y(page));
-        errors = [];
-        if (shots) {
-          mkdirSync(shots, { recursive: true });
-          await page.screenshot({ path: join(shots, `${path.replace(/\//g, "_") || "_"}-${width}-${theme}.png`), fullPage: false });
-        }
-      }
-    }
-    await context.close();
-  }
-  await browser.close();
-  const guard = finish(a11y, { baseline: A11Y_BASELINE });
-  for (const note of guard.notes) console.log(note);
-  problems.push(...guard.problems);
-  return problems;
-}
+// axe-core (WCAG 2.1 AA) runs at the phone and the desktop width only; the ratchet baseline is the repo's own.
+export const A11Y_WIDTHS = [390, 1440];
+export const A11Y_BASELINE = fileURLToPath(new URL("../a11y-baseline.json", import.meta.url));
+export const check = ({ base, shots }) => auditRoutes({ base, routes: PAGES, widths: WIDTHS, themes: THEMES, shots, a11y: { app: "yomizaka", baseline: A11Y_BASELINE, widths: A11Y_WIDTHS } });
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const problems = await check({ base: arg("base", "http://localhost:3000"), shots: arg("shots") });

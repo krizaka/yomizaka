@@ -1320,4 +1320,14 @@ INSERT INTO public.krizaka_module_versions (module, version, checksum) VALUES
 ON CONFLICT (module, version) DO NOTHING;
 `,
   },
+  {
+    version: "0056_document_roles",
+    // yomizaka#129: a lease and its annexes are one submission. `lease_id` points an annex or the building's rules at its lease; a lease points at nothing.
+    sql: `
+ALTER TABLE documents ADD COLUMN document_role text NOT NULL DEFAULT 'lease' CHECK (document_role IN ('lease', 'annex', 'building-rules'));
+ALTER TABLE documents ADD COLUMN lease_id uuid REFERENCES documents(id) ON DELETE CASCADE;
+ALTER TABLE documents ADD CONSTRAINT documents_role_has_lease CHECK ((document_role = 'lease') = (lease_id IS NULL));
+CREATE INDEX documents_lease ON documents(lease_id) WHERE lease_id IS NOT NULL;
+`,
+  },
 ];

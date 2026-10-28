@@ -151,6 +151,8 @@ export const finding = z.object({
   explanation: z.string(),
   method: z.string().optional(),
   citation: z.string().optional(),
+  /** The line of the document the evidence sits on (1-based), set by Yomizaka while the text is still there (yomizaka#129). */
+  line: z.number().int().positive().optional(),
 });
 export type Finding = z.infer<typeof finding>;
 

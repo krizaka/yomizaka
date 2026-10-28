@@ -50,13 +50,13 @@ describe("phone lists as list rows (P12, #329)", () => {
     expect(rows[0]).toContain('href="/fr/app/documents/d1"');
   });
 
-  it("Dossiers: the applicant is the title and the row's link, the link's state is the line of facts, the decision ends the row", () => {
+  it("Dossiers: the applicant is the title and the row's link, the link's state waits whole in the row's detail (a one-line fact was cut off at 360 and 390 px, #496), the decision ends the row", () => {
     const html = wrap(<FilesView files={[file("f1", "Camille Fictif")]} types={[]} origin="" workspace={undefined} />);
     expect(html).not.toContain("<dl");
     const [row] = rowsOf(html);
     expect(row).toContain('href="/fr/app/dossiers/f1"');
-    expect(row!.match(/data-facts=/g)).toHaveLength(1);
-    expect(factsIn(row!)[0]).toContain("Documents envoyés le 22 oct. 2026");
+    expect(factsIn(row!).join(" ")).not.toContain("Documents envoyés");
+    expect(textOf(row!)).toContain("Documents envoyés le 22 oct. 2026");
   });
 
   it("every table of the three says phone=\"list\" and types its title column with the row's link", () => {

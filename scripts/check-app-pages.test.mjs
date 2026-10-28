@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "vitest";
 
 import { PAGES, railRoutes } from "./check-app-pages.mjs";
-import { problemsOf } from "./lib/page-audit.mjs";
+import { problemsOf } from "@krizaka/page-audit";
 
 describe("the signed-in pages crawl (yomizaka#457: « Dossiers » crashed unseen, it was in no list)", () => {
   it("audits « Dossiers » and every route the sidebar offers", () => {

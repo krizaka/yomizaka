@@ -261,8 +261,7 @@ export function buildDocument(spec, seed = DEFAULT_SEED) {
 /** The persona Éric (property manager): his display name, his collections and the documents each one holds. */
 export const PERSONA_ERIC = {
   key: "eric",
-  /** Shown by the app's header instead of the e-mail address (the review's A4); the account keeps a name the person chose. */
-  name: "Éric Tremblay",
+  // The display name comes from the cast (`@krizaka/org`, persona `eric`): one source for the seed, the QA accounts and the recordings.
   collections: [
     { key: "rosemont", documents: SPECS.filter((s) => /rosemont/.test(s.id)).map((s) => s.id) },
     { key: "villeray", documents: SPECS.filter((s) => /villeray/.test(s.id)).map((s) => s.id) },

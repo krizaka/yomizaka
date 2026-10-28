@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { PERSONA_ERIC } from "../../../scripts/demo-documents/index.mjs";
+import { CAST_MEMBER } from "../../../scripts/demo-seed/cast.mjs";
 import { seedPersona } from "../../../scripts/demo-seed/seed.mjs";
 import en from "../messages/en.json";
 import fr from "../messages/fr.json";
@@ -58,7 +59,7 @@ describe.runIf(enabled)("the demo seed (Éric)", () => {
     }
     const [account] = await query<{ perspective: string | null; name: string | null }>("SELECT perspective, name FROM accounts WHERE id = $1", [owner]);
     expect(account?.perspective).toBe("landlord");
-    expect(account?.name).toBe(PERSONA_ERIC.name);
+    expect(account?.name).toBe(CAST_MEMBER.displayName);
   });
 
   it("keeps a name the person chose, and fills a missing one", async () => {
@@ -69,7 +70,7 @@ describe.runIf(enabled)("the demo seed (Éric)", () => {
     expect((await query<{ name: string | null }>("SELECT name FROM accounts WHERE id = $1", [owner]))[0]?.name).toBe("Éric R.");
     await query("UPDATE accounts SET name = NULL WHERE id = $1", [owner]);
     await run(email);
-    expect((await query<{ name: string | null }>("SELECT name FROM accounts WHERE id = $1", [owner]))[0]?.name).toBe(PERSONA_ERIC.name);
+    expect((await query<{ name: string | null }>("SELECT name FROM accounts WHERE id = $1", [owner]))[0]?.name).toBe(CAST_MEMBER.displayName);
   });
 
   it("changes nothing on a re-run, and starts over with reset", async () => {
@@ -79,7 +80,7 @@ describe.runIf(enabled)("the demo seed (Éric)", () => {
     await query("UPDATE accounts SET perspective = 'tenant' WHERE id = $1", [first.owner]);
     const again = await run(email);
     expect(again.owner).toBe(first.owner);
-    expect(again.name).toBe(PERSONA_ERIC.name);
+    expect(again.name).toBe(CAST_MEMBER.displayName);
     expect(again.collections).toEqual(expected);
     expect(await snapshot(first.owner)).toEqual(before);
     expect((await query<{ perspective: string | null }>("SELECT perspective FROM accounts WHERE id = $1", [first.owner]))[0]?.perspective).toBe("tenant");

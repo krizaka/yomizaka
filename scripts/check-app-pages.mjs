@@ -14,9 +14,9 @@ import { fileURLToPath } from "node:url";
 import { A11yCollector, auditPage as auditA11y, finish } from "@krizaka/a11y-audit";
 import { chromium } from "playwright-core";
 
+import { auditPage, problemsOf, auditContext, loadSettled, resizeSettled } from "@krizaka/page-audit";
+
 import { demoOwnerTokens } from "./demo-seed/seed.mjs";
-import { auditPage, problemsOf } from "./lib/page-audit.mjs";
-import { auditContext, loadSettled, resizeSettled } from "./lib/settle.mjs";
 
 export const WIDTHS = [360, 390, 1280, 1440, 1600];
 export const THEMES = ["dark", "light"];
