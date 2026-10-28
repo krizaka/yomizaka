@@ -1,8 +1,8 @@
 import { Badge } from "@krizaka/ui/badge";
 
-import type { LeaseBundle } from "@/lib/lease-bundle";
 import { severityOf } from "@/lib/document-face";
 import { useSay } from "@/lib/i18n-client";
+import type { LeaseBundle } from "@/lib/lease-bundle";
 
 /**
  * A lease and its annexes read as one (yomizaka#499, API of #129): the documents of the submission, then every finding that needs a look,

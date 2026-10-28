@@ -16,6 +16,7 @@ import { z } from "zod";
 import { type DocumentTab } from "@/lib/console-nav";
 import { displayTitle } from "@/lib/document-face";
 import { useSay } from "@/lib/i18n-client";
+import type { LeaseBundle } from "@/lib/lease-bundle";
 import { collectionLabel } from "@/lib/organisation/display";
 import { libraryPath } from "@/lib/organisation/rules";
 
@@ -24,7 +25,6 @@ import { DocumentActions } from "./DocumentActions";
 import { DocumentFileTab } from "./DocumentFileTab";
 import { DocumentHistoryTab } from "./DocumentHistoryTab";
 import { DocumentReportTab } from "./DocumentReportTab";
-import type { LeaseBundle } from "@/lib/lease-bundle";
 import { STATUS_TONE } from "./DocumentTable";
 import { formatBytes, formatDate } from "./format";
 import { LiveAnalysis } from "./LiveAnalysis";

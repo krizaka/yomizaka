@@ -7,9 +7,9 @@ import type { ReactNode } from "react";
 
 import { ClosingNoteView } from "@/components/ClosingNoteView";
 import { CheckSteps } from "@/components/console/CheckSteps";
-import type { LeaseBundle } from "@/lib/lease-bundle";
 import { buildNote, noteInputOf, noteSourceOf } from "@/lib/closing-note/build";
 import { useSay } from "@/lib/i18n-client";
+import type { LeaseBundle } from "@/lib/lease-bundle";
 import { wordingOf } from "@/lib/perspective-defaults";
 
 import { AuthenticitySignals } from "./AuthenticitySignals";
