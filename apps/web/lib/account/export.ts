@@ -1,15 +1,19 @@
 import type { CloudOwner, StorageKind } from "@yomizaka/core";
 import type { QueryResultRow } from "pg";
 
-import { holderOf as documentHolder } from "@/app/active-store";
+import { workingStore } from "@/app/active-store";
 
 import { ledgerState } from "../billing";
+import type { ObjectHolder } from "../document-objects";
 import { refuse } from "../http";
 import { EXTERNAL, objectKey } from "../retention";
 import type { DocumentStore } from "../storage/port";
 
 /** The store that holds a document: Krizaka's configured one, or the owner's own cloud. */
 export type StoresOf = (owner: CloudOwner) => DocumentStore | null;
+
+/** The holder of a stored file (ADR-0012): the given stores for a kept document, the working store for the rest. */
+export const holderFrom = (stores: StoresOf): ObjectHolder => async (row) => (EXTERNAL.has(row.storage as never) ? stores(row.storage_owner as CloudOwner) : workingStore());
 
 /**
  * What belongs to Yomizaka and not to the account port, for the export (Loi 25, access): the person's profile, billing state,
@@ -76,7 +80,7 @@ export async function exportData(q: Query, accountId: string, stores: StoresOf, 
   const fileOf = async (d: (typeof docs)[number]) => {
     // A file in the store (ADR-0012) is read by its key from whoever holds it.
     if (d.object_key) {
-      const held = await (await documentHolder({ owner_id: accountId, storage: d.storage, storage_owner: d.storage_owner, object_key: d.object_key }))?.get(d.object_key);
+      const held = await (await holderFrom(stores)({ owner_id: accountId, storage: d.storage, storage_owner: d.storage_owner, object_key: d.object_key }))?.get(d.object_key);
       return held ? { contentType: d.mime_type, base64: Buffer.from(held.bytes).toString("base64") } : null;
     }
     const store = stores(d.storage_owner);

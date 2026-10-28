@@ -13,6 +13,7 @@ import type { OcrEngine, VisionReader } from "./ocr/port";
 import { YOMIZAKA_OCR_RULES } from "./ocr/rules";
 import { storePhotos } from "./photos";
 import { cleanPdf } from "./preflight/fixtures";
+import { localStore } from "./storage/local";
 
 /** Photos become one document through the real pre-flight, cleaner and PostgreSQL (CI's service; locally YOMIZAKA_DB_IT=1 DATABASE_URL=…); the engine is a fake so this stays fast. */
 const enabled = process.env.YOMIZAKA_DB_IT === "1" && !!process.env.DATABASE_URL;
@@ -38,7 +39,7 @@ describe.runIf(enabled)("photos become one document", () => {
     expect(detail.text).toContain("Loyer mensuel");
     expect(detail.textSource).toMatchObject({ kind: "ocr", engine: "tesseract", confidence: 91, photos: 2, lowConfidence: false, origin: { software: "Adobe Photoshop 25.0", device: "Apple iPhone 15", hadGps: true } });
     expect(JSON.stringify(detail.textSource)).not.toMatch(/45\/1|73\/1|latitude/i);
-    const stored = (await getFile(owner, summary.id)).content;
+    const stored = (await getFile(owner, summary.id, localStore())).content;
     const pdf = await PDFDocument.load(stored, { updateMetadata: false });
     expect(pdf.getPageCount()).toBe(2);
     expect(stored.includes(Buffer.from("Exif"))).toBe(false);
@@ -68,7 +69,7 @@ describe.runIf(enabled)("photos become one document", () => {
     };
     const photos = [await file("layer.jpg", 3)];
     const first = await storePhotos(owner, photos, "auto", { deps: deps(withWords) });
-    const stored = (await getFile(owner, first.summary.id)).content;
+    const stored = (await getFile(owner, first.summary.id, localStore())).content;
     const [row] = await query<{ sha256: string; source_sha256: string | null }>("SELECT sha256, source_sha256 FROM documents WHERE id = $1", [first.summary.id]);
     expect(row!.source_sha256).toMatch(/^[0-9a-f]{64}$/);
     expect(row!.sha256).not.toBe(row!.source_sha256);

@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 
 import { type AcceptedType, type Analysis, type AnalysisStatus, type AuthenticityReport, type CloudOwner, type ComplianceReport, type DocumentDetail, type DocumentInsight, type DocumentKind, type DocumentStatus, type DocumentSummary, DOCX_MIME, type ExtractionStatus, ODT_MIME, type StorageKind, type Studio, type TextSource } from "@yomizaka/core";
 
@@ -12,6 +12,7 @@ import { createInspector } from "./preflight/inspector";
 import { type FileKind, OUTCOME, type PreflightRules, type RejectReason } from "./preflight/port";
 import { YOMIZAKA_RULES } from "./preflight/rules";
 import { EXTERNAL, objectKey, purgeDeadline, storageFor } from "./retention";
+import { localStore } from "./storage/local";
 import type { DocumentStore, StoreDescriptor } from "./storage/port";
 import { storedAs } from "./storage/where";
 import { understanding } from "./understanding";
@@ -257,7 +258,10 @@ export const safeFilename = (name: string) => name.normalize("NFC").replace(/[^\
 /** What a new document is subject to: kept or purged after the check (ADR-0007). Without a policy a document is kept in the database (legacy callers, tests). */
 export interface StoragePolicy {
   keep: boolean;
+  /** Where a KEPT document goes (nothing, Krizaka's or the owner's own cloud). */
   store: DocumentStore;
+  /** Where the bytes of every other document wait for their purge (ADR-0012): null when the deployment has none (production without a store: uploads are refused, 503). A folder when absent (tests, laptops). */
+  working?: DocumentStore | null;
   now: Date;
   purgeAfterHours: number;
   /** The pre-flight rules as configured (limits an administrator set); the product's own when absent. */
@@ -293,36 +297,36 @@ async function readNewDocument(mimeType: AcceptedType, bytes: Uint8Array, pages:
   }
 }
 
-/** Writes the document's row: restores a purged duplicate in place, or inserts a new one. */
-async function saveDocumentRow(args: { ownerId: string; existingId: string | null; file: { filename: string; mimeType: AcceptedType; kind: DocumentKind; sha256: string; sourceSha256: string | null; pages: number | null }; bytes: Uint8Array; text: string; where: StorageKind; deadline: Date | null; source: TextSource | null; extraction: "queued" | "done" }): Promise<DocumentRow> {
-  const { ownerId, existingId, file, bytes, text, where, deadline, source, extraction } = args;
-  const [row] = existingId
-    ? await query<DocumentRow>(`WITH d AS (UPDATE documents SET content = $3, text = $4, storage = $5, retain_until = $6, text_source = $7, extraction = $8, extraction_error = NULL, extraction_at = now(), sha256 = $9, source_sha256 = $10 WHERE owner_id = $1 AND id = $2 RETURNING *) SELECT ${SUMMARY_COLUMNS} FROM d`, [ownerId, existingId, Buffer.from(bytes), text, where, deadline, source, extraction, file.sha256, file.sourceSha256])
+/** Writes the document's row: restores a purged duplicate in place, or inserts a new one. The bytes are not in it: `object_key` names where they go (ADR-0012). */
+async function saveDocumentRow(args: { ownerId: string; id: string; existing: boolean; file: { filename: string; mimeType: AcceptedType; kind: DocumentKind; sha256: string; sourceSha256: string | null; pages: number | null; sizeBytes: number }; key: string; text: string; where: StorageKind; deadline: Date | null; source: TextSource | null; extraction: "queued" | "done" }): Promise<DocumentRow> {
+  const { ownerId, id, existing, file, key, text, where, deadline, source, extraction } = args;
+  const [row] = existing
+    ? await query<DocumentRow>(`WITH d AS (UPDATE documents SET content = ''::bytea, object_key = $3, text = $4, storage = $5, retain_until = $6, text_source = $7, extraction = $8, extraction_error = NULL, extraction_at = now(), sha256 = $9, source_sha256 = $10 WHERE owner_id = $1 AND id = $2 RETURNING *) SELECT ${SUMMARY_COLUMNS} FROM d`, [ownerId, id, key, text, where, deadline, source, extraction, file.sha256, file.sourceSha256])
     : await query<DocumentRow>(
         `WITH d AS (
-           INSERT INTO documents (owner_id, title, filename, mime_type, kind, size_bytes, sha256, pages, content, text, storage, retain_until, text_source, extraction, source_sha256)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *)
+           INSERT INTO documents (id, owner_id, title, filename, mime_type, kind, size_bytes, sha256, pages, content, object_key, text, storage, retain_until, text_source, extraction, source_sha256)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, ''::bytea, $10, $11, $12, $13, $14, $15, $16) RETURNING *)
          SELECT ${SUMMARY_COLUMNS} FROM d`,
-        [ownerId, titleFor(file.filename, text), file.filename, file.mimeType, file.kind, bytes.length, file.sha256, file.pages, Buffer.from(bytes), text, where, deadline, source, extraction, file.sourceSha256],
+        [id, ownerId, titleFor(file.filename, text), file.filename, file.mimeType, file.kind, file.sizeBytes, file.sha256, file.pages, key, text, where, deadline, source, extraction, file.sourceSha256],
       );
   return row!;
 }
 
-/** Moves the bytes to the external store; if it does not answer, the new row goes away and the upload is refused (502). */
-async function moveToStore(policy: StoragePolicy, ownerId: string, id: string, mimeType: AcceptedType, bytes: Uint8Array): Promise<void> {
+/** Puts the bytes in their store under the row's key; if it does not answer, the new row goes away (a restored one goes back to purged) and the upload is refused (502). */
+async function putBytes(target: DocumentStore, doc: { id: string; key: string; mimeType: AcceptedType; bytes: Uint8Array; existing: boolean }): Promise<void> {
   try {
-    await policy.store.put(objectKey(ownerId, id, mimeType), bytes, { contentType: mimeType });
+    await target.put(doc.key, doc.bytes, { contentType: doc.mimeType });
   } catch {
-    await query("DELETE FROM documents WHERE id = $1 AND NOT EXISTS (SELECT 1 FROM analyses WHERE document_id = $1)", [id]);
+    if (doc.existing) await query("UPDATE documents SET object_key = NULL, text = '', retain_until = NULL, storage = 'none' WHERE id = $1", [doc.id]);
+    else await query("DELETE FROM documents WHERE id = $1 AND NOT EXISTS (SELECT 1 FROM analyses WHERE document_id = $1)", [doc.id]);
     throw refuse(502, "STORAGE_UNAVAILABLE", "The storage that keeps documents did not answer");
   }
-  await query("UPDATE documents SET content = ''::bytea, storage_owner = $2 WHERE id = $1", [id, policy.store.describe().owner === "workspace" ? "workspace" : "krizaka"]);
 }
 
-/** Where the saved bytes go once the row exists: a keep is a consent (the day is recorded), and an external store receives the bytes. */
-async function placeDocument(policy: StoragePolicy, where: ReturnType<typeof storageFor>, doc: { ownerId: string; id: string; mimeType: AcceptedType; bytes: Uint8Array }): Promise<void> {
-  if (where !== "none") await query("UPDATE documents SET keep_consent_at = COALESCE(keep_consent_at, $2) WHERE id = $1", [doc.id, policy.now]);
-  if (EXTERNAL.has(where)) await moveToStore(policy, doc.ownerId, doc.id, doc.mimeType, doc.bytes);
+/** Once the bytes are stored: a keep is a consent (the day is recorded), and the row says whose store holds them. */
+async function placeDocument(policy: StoragePolicy, where: ReturnType<typeof storageFor>, id: string): Promise<void> {
+  if (where !== "none") await query("UPDATE documents SET keep_consent_at = COALESCE(keep_consent_at, $2) WHERE id = $1", [id, policy.now]);
+  await query("UPDATE documents SET storage_owner = $2 WHERE id = $1", [id, EXTERNAL.has(where) && policy.store.describe().owner === "workspace" ? "workspace" : "krizaka"]);
 }
 
 /** The kind asked for; for « auto », what the text turns out to be — « other » while a deferred document's text is still to be read. */
@@ -332,9 +336,18 @@ function chooseKind(requested: DocumentKind | "auto", deferred: boolean, read: {
   return kindFromNature(understanding.understand(read.text, { pages: read.pages }).nature?.id ?? null);
 }
 
+/** Every document's bytes live in a store from the first moment (ADR-0012): the owner's or Krizaka's for a kept one, the working store otherwise. Production without one refuses. */
+function storeForBytes(policy: StoragePolicy | undefined, where: StorageKind): DocumentStore {
+  const working = policy?.working === undefined ? localStore() : policy.working;
+  const target = EXTERNAL.has(where) && policy ? policy.store : working;
+  if (!target) throw refuse(503, "STORAGE_UNAVAILABLE", "No storage is configured for documents");
+  return target;
+}
+
 export async function storeDocument(ownerId: string, file: { name: string; type: string; size: number }, bytes: Uint8Array, requested: DocumentKind | "auto", policy?: StoragePolicy, textOf?: TextReader, options: { defer?: boolean } = {}): Promise<{ summary: DocumentSummary; duplicate: boolean; finish?: () => Promise<void> }> {
   const { mimeType, sha256, pages } = await checkUpload(file, bytes, policy?.rules);
   const where = policy ? storageFor(policy.keep, policy.store.describe()) : "database";
+  const target = storeForBytes(policy, where);
   const [existing] = await query<DocumentRow & { purged: boolean }>(`SELECT ${SUMMARY_COLUMNS}, (d.storage = 'none' AND d.object_key IS NULL AND octet_length(d.content) = 0 AND d.text = '') AS purged FROM documents d WHERE d.owner_id = $1 AND (d.sha256 = $2 OR d.source_sha256 = $2)`, [ownerId, sha256]);
   // The same file again: reused as it is — unless it was purged and the person now keeps it, then it is restored below; or its reading failed, then it is read again.
   if (existing && existing.extraction !== "failed" && !(existing.purged && where !== "none")) return { summary: summary(existing), duplicate: true };
@@ -346,9 +359,12 @@ export async function storeDocument(ownerId: string, file: { name: string; type:
   // The file kept is the one received, unless the reader made a richer one of it (photos: with their words as an invisible text layer).
   const content = kept ?? bytes;
   const kind = chooseKind(requested, deferred, read);
-  // The bytes sit in the database until the document is placed (and, if not kept, until its check has run).
-  const row = await saveDocumentRow({ ownerId, existingId: existing?.id ?? null, file: { filename, mimeType, kind, sha256: kept ? createHash("sha256").update(kept).digest("hex") : sha256, sourceSha256: kept ? sha256 : null, pages: read.pages }, bytes: content, text: read.text, where, deadline, source, extraction: deferred ? "queued" : "done" });
-  if (policy) await placeDocument(policy, where, { ownerId, id: row.id, mimeType, bytes: content });
+  // The row first, with the key its bytes will have, then the bytes: no object is ever unowned (ADR-0012). They stay until the check has run, or the person's choice ends.
+  const id = existing?.id ?? randomUUID();
+  const key = objectKey(ownerId, id, mimeType);
+  const row = await saveDocumentRow({ ownerId, id, existing: !!existing, file: { filename, mimeType, kind, sha256: kept ? createHash("sha256").update(kept).digest("hex") : sha256, sourceSha256: kept ? sha256 : null, pages: read.pages, sizeBytes: content.length }, key, text: read.text, where, deadline, source, extraction: deferred ? "queued" : "done" });
+  await putBytes(target, { id, key, mimeType, bytes: content, existing: !!existing });
+  if (policy) await placeDocument(policy, where, id);
   return { summary: summary(row), duplicate: false, ...(deferred ? { finish: () => finishExtraction({ ownerId, id: row.id, filename, mimeType, requested, bytes }) } : {}) };
 }
 

@@ -1,13 +1,11 @@
 import type { CloudOwner, StorageKind } from "@yomizaka/core";
 import type { QueryResultRow } from "pg";
 
-import { holderOf as documentHolder } from "@/app/active-store";
-
 import { type ObjectHolder, removeObject } from "../document-objects";
 import { refuse } from "../http";
 import { accountSubject, privacyFor,purposesOf } from "../privacy";
 import { EXTERNAL, objectKey } from "../retention";
-import { type StoresOf } from "./export";
+import { holderFrom, type StoresOf } from "./export";
 
 export { type DataExport, exportData, type StoresOf } from "./export";
 
@@ -27,7 +25,7 @@ export async function eraseAccount(deps: { query: Query; stores: StoresOf; holde
   for (const d of kept) {
     // A file in the store (ADR-0012) is deleted whoever holds it; a store that does not answer stops the erasure before any row goes.
     if (d.object_key) {
-      if (!(await removeObject({ owner_id: accountId, storage: d.storage, storage_owner: d.storage_owner, object_key: d.object_key }, deps.holder ?? documentHolder))) throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds a document is not available");
+      if (!(await removeObject({ owner_id: accountId, storage: d.storage, storage_owner: d.storage_owner, object_key: d.object_key }, deps.holder ?? holderFrom(deps.stores)))) throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds a document is not available");
       continue;
     }
     if (!EXTERNAL.has(d.storage)) continue;

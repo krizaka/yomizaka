@@ -2,7 +2,7 @@ import { type DocumentKind, documentKind, STORAGE_MODE } from "@yomizaka/core";
 import { after } from "next/server";
 import { z } from "zod";
 
-import { storeForDocument, storesOf } from "@/app/active-store";
+import { storeForDocument, storesOf, workingStore } from "@/app/active-store";
 import { requireSession } from "@/lib/access";
 import { assertUploadForApplication, attachToApplication } from "@/lib/applicant-consent";
 import { audit } from "@/lib/audit";
@@ -49,7 +49,7 @@ async function storeUpload(accountId: string, upload: { files: File[]; bytes: Ui
   const file = files[0]!;
   const settings = await settingsFor(accountId);
   try {
-    const policy = { keep, store: stores.write, now: new Date(), purgeAfterHours: settings["limits.purgeAfterHours"].value as number, rules: preflightRulesFrom(YOMIZAKA_RULES, settings) };
+    const policy = { keep, store: stores.write, working: await workingStore(), now: new Date(), purgeAfterHours: settings["limits.purgeAfterHours"].value as number, rules: preflightRulesFrom(YOMIZAKA_RULES, settings) };
     return photos
       ? await storePhotos(accountId, await Promise.all(files.map(async (f, i) => ({ name: f.name, type: f.type, bytes: i === 0 ? bytes : new Uint8Array(await f.arrayBuffer()) }))), kind, { policy })
       : await storeDocument(accountId, { name: file.name, type: file.type, size: file.size }, bytes, kind, policy, undefined, { defer: true });

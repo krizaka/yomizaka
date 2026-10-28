@@ -60,8 +60,8 @@ describe.runIf(enabled)("the applicant file (yomizaka#127)", () => {
     const bytes = await cleanPdf(text);
     return { name: `${text}.pdf`, type: "application/pdf", size: bytes.length, bytes };
   };
-  const documentsOf = (id: string) => query<{ id: string; storage: string; content_len: number; text: string; document_type: string; retention_policy: string }>(
-    "SELECT id, storage, octet_length(content) AS content_len, text, document_type, retention_policy FROM documents WHERE screening_id = $1 ORDER BY created_at",
+  const documentsOf = (id: string) => query<{ id: string; storage: string; content_len: number; in_store: boolean; text: string; document_type: string; retention_policy: string }>(
+    "SELECT id, storage, octet_length(content) AS content_len, object_key IS NOT NULL AS in_store, text, document_type, retention_policy FROM documents WHERE screening_id = $1 ORDER BY created_at",
     [id],
   );
   const refusal = (promise: Promise<unknown>) => expect(promise).rejects.toMatchObject({ body: expect.objectContaining({ code: expect.any(String) }) });
@@ -124,14 +124,14 @@ describe.runIf(enabled)("the applicant file (yomizaka#127)", () => {
     expect(sent.checks.skipped).toEqual([{ studio: "compliance-check", code: "KIND_NOT_VERIFIED" }]);
     const [doc] = await documentsOf(made.id);
     expect(doc).toMatchObject({ document_type: "pay-stub", retention_policy: "after-check", storage: "none" });
-    expect(doc!.content_len).toBeGreaterThan(0);
+    expect(doc).toMatchObject({ content_len: 0, in_store: true });
     // The checks end: both runs fail at Orazaka here, which is an end of the check all the same.
     for (const id of runs.keys()) runs.set(id, "FAILED");
     const view = await applicantFileOf(landlordA.id, made.id, NOW);
     expect(view.documents[0]).toMatchObject({ purged: true, retention: "after-check" });
     expect(view.documents[0]!.checks.map((c) => c.status)).toEqual(["failed"]);
     const [after] = await documentsOf(made.id);
-    expect(after).toMatchObject({ content_len: 0, text: "" });
+    expect(after).toMatchObject({ content_len: 0, in_store: false, text: "" });
     const reports = await query("SELECT id FROM analyses WHERE document_id = $1", [doc!.id]);
     expect(reports).toHaveLength(1);
   });
@@ -142,11 +142,11 @@ describe.runIf(enabled)("the applicant file (yomizaka#127)", () => {
     const [kept] = await documentsOf(made.id);
     expect(kept).toMatchObject({ retention_policy: "after-decision" });
     expect(kept!.storage).not.toBe("none");
-    expect(kept!.content_len).toBeGreaterThan(0);
+    expect(kept).toMatchObject({ content_len: 0, in_store: true });
     const closed = await closeApplicantFile(landlordA.id, made.id, store, NOW);
     expect(closed.purged).toBe(1);
     const [after] = await documentsOf(made.id);
-    expect(after).toMatchObject({ content_len: 0, text: "", storage: "none" });
+    expect(after).toMatchObject({ content_len: 0, in_store: false, text: "", storage: "none" });
     expect((await applicantFileOf(landlordA.id, made.id, NOW)).status).toBe("closed");
     expect(await codeOf(uploadApplicantDocument(made.token, "pay-stub", await pdf("PAY LATE"), ctx(), NOW))).toBe("410 FILE_CLOSED");
     expect((await query("SELECT action FROM audit_log WHERE target_id = $1 AND action = 'applicant_file.closed'", [made.id]))).toHaveLength(1);
