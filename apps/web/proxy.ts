@@ -1,7 +1,9 @@
+import { landingRedirect, sessionHint } from "@krizaka/auth";
 import { type NextRequest, NextResponse } from "next/server";
 
 import { type HostRoute, isAdminHost, routeFor } from "./lib/host";
 import { CLOSED_ROBOTS, devRedirect, indexableOn, isDevHost, NOINDEX_HEADER } from "./lib/indexing";
+import { SESSION_COOKIE } from "./lib/session-cookie";
 import { SITE_URL } from "./lib/site";
 
 /**
@@ -13,7 +15,10 @@ import { SITE_URL } from "./lib/site";
 const isLocale = (value: string | undefined): value is "en" | "fr" => value === "en" || value === "fr";
 const closedRobots = () => new NextResponse(CLOSED_ROBOTS, { headers: { "content-type": "text/plain" } });
 const notFound = () => new NextResponse("Not found", { status: 404 });
-const seal = <T extends NextResponse>(response: T, closed: boolean): T => {
+/** krizaka-ui#827: a signed-in person never sees the public landing page; the cookie is a hint, the app and the API still resolve the session. */
+const LANDING = ["/", "/fr", "/en"] as const;
+const hinted = <T extends NextResponse>(response: T, request: NextRequest): T => sessionHint(response, request, { cookie: SESSION_COOKIE, secure: process.env.NODE_ENV === "production" });
+const seal = <T extends Response>(response: T, closed: boolean): T => {
   if (closed) response.headers.set("x-robots-tag", NOINDEX_HEADER);
   return response;
 };
@@ -55,6 +60,8 @@ export function proxy(request: NextRequest) {
   if (dev) return seal(devResponse(request), closed);
   if (!admin && closed && pathname === "/robots.txt") return seal(closedRobots(), closed);
   if (!admin && closed && pathname === "/sitemap.xml") return seal(notFound(), closed);
+  const home = admin ? null : landingRedirect(request, { cookie: SESSION_COOKIE, landing: LANDING, home: () => `/${isLocale(pathname.split("/")[1]) ? pathname.split("/")[1] : chosen}/app` });
+  if (home) return seal(home, closed);
   const route = routeFor(host, pathname, chosen);
   const direct = directResponse(request, route, host);
   if (direct) return seal(direct, closed);
@@ -66,7 +73,7 @@ export function proxy(request: NextRequest) {
   if (isLocale(segment) && request.cookies.get("NEXT_LOCALE")?.value !== segment) {
     response.cookies.set("NEXT_LOCALE", segment, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
   }
-  return seal(response, closed);
+  return seal(hinted(response, request), closed);
 }
 
 export const config = {

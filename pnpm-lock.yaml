@@ -257,14 +257,14 @@ importers:
         specifier: 0.1.3
         version: 0.1.3(vitest@4.1.11)(zod@4.6.7)
       '@krizaka/auth':
-        specifier: 0.9.0
-        version: 0.9.0(vitest@4.1.11)(zod@4.6.7)
+        specifier: ^0.10.0
+        version: 0.10.0(vitest@4.1.11)(zod@4.6.7)
       '@krizaka/brief':
         specifier: ^0.1.0
         version: 0.1.0
       '@krizaka/charts':
         specifier: 0.6.2
-        version: 0.6.2(@krizaka/ui@3.68.0)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)
+        version: 0.6.2(@krizaka/ui@3.71.0)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)
       '@krizaka/coupons':
         specifier: 0.1.1
         version: 0.1.1(vitest@4.1.11)(zod@4.6.7)
@@ -318,7 +318,7 @@ importers:
         version: 0.3.0(vitest@4.1.11)(zod@4.6.7)
       '@krizaka/tailwind':
         specifier: ^3.67.0
-        version: 3.67.0(@krizaka/tokens@3.67.0)(@krizaka/ui@3.68.0)(tailwindcss@4.3.3)
+        version: 3.67.0(@krizaka/tokens@3.67.0)(@krizaka/ui@3.71.0)(tailwindcss@4.3.3)
       '@krizaka/time':
         specifier: 0.1.0
         version: 0.1.0
@@ -326,8 +326,8 @@ importers:
         specifier: ^3.67.0
         version: 3.67.0
       '@krizaka/ui':
-        specifier: ^3.68.0
-        version: 3.68.0(@krizaka/query@0.2.2(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.67.0)(@shopify/flash-list@2.3.2(@babel/runtime@7.29.10)(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(expo-image-picker@58.0.10(expo@58.0.17))(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)(vitest@4.1.11)
+        specifier: ^3.71.0
+        version: 3.71.0(@krizaka/query@0.2.2(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.67.0)(@shopify/flash-list@2.3.2(@babel/runtime@7.29.10)(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(expo-image-picker@58.0.10(expo@58.0.17))(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)(vitest@4.1.11)
       '@krizaka/webhooks':
         specifier: 0.3.0
         version: 0.3.0
@@ -1762,8 +1762,8 @@ packages:
       vitest:
         optional: true
 
-  '@krizaka/auth@0.9.0':
-    resolution: {integrity: sha512-+D05dks8LrcFSYM0SgutAMsc7EZCR/DUhv9LS2aBv9JaQTM6wpRKZp/xeiK8WzSx/QMJjjykFIW6RfJxEZBa1A==}
+  '@krizaka/auth@0.10.0':
+    resolution: {integrity: sha512-swQ9EkF1T8tweabekLfHjkACJZX9LJZslzAcQXezdIkOslvI5BHWUXbeP38cO2NPkDAXehn1UYHJ4QsgocCMvA==}
     engines: {node: '>=22'}
     peerDependencies:
       vitest: '>=4'
@@ -2086,8 +2086,8 @@ packages:
     resolution: {integrity: sha512-+5ekCmpSyEXEDtsgnVbnqPVwpfdnB5DdeFPbaRggPK+Rvj5YXD+IS7rf5PW+D/YroKAeuIOfDLpqg5z/ASANpA==}
     engines: {node: '>=22'}
 
-  '@krizaka/tokens@3.68.0':
-    resolution: {integrity: sha512-kUWO+7yChGCbaElOQh6rGgxguESj4SrQ7NcwshHWxnTLQ8AdsdCESwFmDcG56zZ3Sj/l5BVlHeFtLyOGquZEPQ==}
+  '@krizaka/tokens@3.71.0':
+    resolution: {integrity: sha512-MvZFrw+40jc6pn15wD9xaZ5ENoyw97FIl9EnXTYDdyxpNjiBj3TWO1WV5ivYqe1aNM+1IL36/vrS5Nwp31FsPA==}
     engines: {node: '>=22'}
 
   '@krizaka/ui@3.66.0':
@@ -2139,12 +2139,12 @@ packages:
       tailwindcss:
         optional: true
 
-  '@krizaka/ui@3.68.0':
-    resolution: {integrity: sha512-PtdSzvTHwSMR5ZAKtvyboB46oojSniplK+AHNHqOIKvOjiJfXJgO9AAKWJDN5r+0TzqbY/Naos0cX5zM0wqCWg==}
+  '@krizaka/ui@3.71.0':
+    resolution: {integrity: sha512-upAWduaAbxRl+y0pEL82wKA2S8twFNnlsSo8sn3rtfkprAamdhP0YkSyc2imcdPgMtBgwuGLgp8HcOEzZzlUkg==}
     engines: {node: '>=22'}
     peerDependencies:
       '@krizaka/query': '>=0.2.2'
-      '@krizaka/tailwind': '>=3.68.0'
+      '@krizaka/tailwind': '>=3.71.0'
       '@maplibre/maplibre-react-native': '>=11'
       '@shopify/flash-list': '>=2'
       expo-camera: '>=16'
@@ -10214,10 +10214,10 @@ snapshots:
     optionalDependencies:
       vitest: 4.1.11(@types/node@24.19.2)(@vitest/coverage-v8@4.1.11)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.4(@types/node@24.19.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
 
-  '@krizaka/auth@0.9.0(vitest@4.1.11)(zod@4.6.7)':
+  '@krizaka/auth@0.10.0(vitest@4.1.11)(zod@4.6.7)':
     dependencies:
       '@krizaka/db': 0.2.0
-      '@krizaka/settings': 0.4.0(zod@4.6.7)
+      '@krizaka/settings': 0.5.0(zod@4.6.7)
       date-fns: 4.4.0
     optionalDependencies:
       vitest: 4.1.11(@types/node@24.19.2)(@vitest/coverage-v8@4.1.11)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.4(@types/node@24.19.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
@@ -10227,10 +10227,10 @@ snapshots:
     dependencies:
       date-fns: 4.4.0
 
-  '@krizaka/charts@0.6.2(@krizaka/ui@3.68.0)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)':
+  '@krizaka/charts@0.6.2(@krizaka/ui@3.71.0)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)':
     dependencies:
       '@krizaka/intl': 0.4.1
-      '@krizaka/ui': 3.68.0(@krizaka/query@0.2.2(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.67.0)(@shopify/flash-list@2.3.2(@babel/runtime@7.29.10)(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(expo-image-picker@58.0.10(expo@58.0.17))(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)(vitest@4.1.11)
+      '@krizaka/ui': 3.71.0(@krizaka/query@0.2.2(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.67.0)(@shopify/flash-list@2.3.2(@babel/runtime@7.29.10)(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(expo-image-picker@58.0.10(expo@58.0.17))(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)(vitest@4.1.11)
       d3-geo: 3.1.1
       echarts: 6.1.0
       react: 19.3.1
@@ -10489,10 +10489,10 @@ snapshots:
       tailwindcss: 4.3.3
     optional: true
 
-  '@krizaka/tailwind@3.67.0(@krizaka/tokens@3.67.0)(@krizaka/ui@3.68.0)(tailwindcss@4.3.3)':
+  '@krizaka/tailwind@3.67.0(@krizaka/tokens@3.67.0)(@krizaka/ui@3.71.0)(tailwindcss@4.3.3)':
     dependencies:
       '@krizaka/tokens': 3.67.0
-      '@krizaka/ui': 3.68.0(@krizaka/query@0.2.2(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.67.0)(@shopify/flash-list@2.3.2(@babel/runtime@7.29.10)(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(expo-image-picker@58.0.10(expo@58.0.17))(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)(vitest@4.1.11)
+      '@krizaka/ui': 3.71.0(@krizaka/query@0.2.2(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.67.0)(@shopify/flash-list@2.3.2(@babel/runtime@7.29.10)(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(expo-image-picker@58.0.10(expo@58.0.17))(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)(vitest@4.1.11)
       tailwindcss: 4.3.3
 
   '@krizaka/time@0.1.0':
@@ -10505,7 +10505,7 @@ snapshots:
 
   '@krizaka/tokens@3.67.0': {}
 
-  '@krizaka/tokens@3.68.0': {}
+  '@krizaka/tokens@3.71.0': {}
 
   '@krizaka/ui@3.66.0(@krizaka/query@0.2.2(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.63.0)(@shopify/flash-list@2.3.2(@babel/runtime@7.29.10)(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(expo-image-picker@58.0.10(expo@58.0.17))(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)(vitest@4.1.11)':
     dependencies:
@@ -10585,12 +10585,12 @@ snapshots:
       - tailwind-merge
       - vitest
 
-  '@krizaka/ui@3.68.0(@krizaka/query@0.2.2(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.67.0)(@shopify/flash-list@2.3.2(@babel/runtime@7.29.10)(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(expo-image-picker@58.0.10(expo@58.0.17))(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)(vitest@4.1.11)':
+  '@krizaka/ui@3.71.0(@krizaka/query@0.2.2(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1))(@krizaka/tailwind@3.67.0)(@shopify/flash-list@2.3.2(@babel/runtime@7.29.10)(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(expo-image-picker@58.0.10(expo@58.0.17))(pdfjs-dist@6.4.299)(react-dom@19.3.1(react@19.3.1))(react-native-svg@15.16.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)(vitest@4.1.11)':
     dependencies:
       '@krizaka/intl': 0.4.1
       '@krizaka/organize': 0.4.0(vitest@4.1.11)
       '@krizaka/pacer': 0.1.0(react@19.3.1)
-      '@krizaka/tokens': 3.68.0
+      '@krizaka/tokens': 3.71.0
       '@protomaps/basemaps': 5.7.2
       '@tanstack/highlight': 1.1.0
       '@tanstack/markdown': 1.0.0(react@19.3.1)
@@ -10608,7 +10608,7 @@ snapshots:
       zod: 4.6.7
     optionalDependencies:
       '@krizaka/query': 0.2.2(@types/react@19.3.0)(csstype@3.2.3)(pg@8.23.1)(react@19.3.1)
-      '@krizaka/tailwind': 3.67.0(@krizaka/tokens@3.67.0)(@krizaka/ui@3.68.0)(tailwindcss@4.3.3)
+      '@krizaka/tailwind': 3.67.0(@krizaka/tokens@3.67.0)(@krizaka/ui@3.71.0)(tailwindcss@4.3.3)
       '@shopify/flash-list': 2.3.2(@babel/runtime@7.29.10)(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)
       expo-image-picker: 58.0.10(expo@58.0.17)
       pdfjs-dist: 6.4.299

@@ -29,3 +29,4 @@ APP_DEMO_ACCOUNT_EMAIL=eric@demo.yomizaka.test APP_DEMO_ACCOUNT_PASSWORD=ci-only
 # The layout audit proves itself on its own fixtures first (a card out of its panel, sections on top of each other, a cut column).
 pnpm exec krizaka-page-audit --self-test
 E2E_EMAIL=eric@demo.yomizaka.test E2E_PASSWORD=ci-only-demo-password-0123 node scripts/check-app-pages.mjs --base http://localhost:3000
+E2E_EMAIL=eric@demo.yomizaka.test E2E_PASSWORD=ci-only-demo-password-0123 node scripts/check-signed-in-landing.mjs --base http://localhost:3000

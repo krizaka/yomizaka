@@ -4,6 +4,7 @@ import type { Audience } from "@yomizaka/core";
 import { systemClock } from "../app/system-clock";
 import { query } from "./db";
 import { sessionSecret } from "./env";
+import { SESSION_COOKIE } from "./session-cookie";
 import { appSettings } from "./settings/instance";
 
 /**
@@ -11,7 +12,7 @@ import { appSettings } from "./settings/instance";
  * table opens nothing. The account is re-read on every request (a suspension applies at once). The length is the setting
  * `auth.sessionDays` (14 by default); HttpOnly, Secure in production, SameSite=Lax. The tokens and hashes already stored keep working.
  */
-export const SESSION_COOKIE = "yomizaka_session";
+export { SESSION_COOKIE };
 
 export interface SessionAccount {
   id: string;
