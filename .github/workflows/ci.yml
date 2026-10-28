@@ -1,4 +1,5 @@
 name: CI
+# main is protected by a merge queue (merge_group below): a pull request merges only after CI passes on its entry.
 
 on:
   push:
