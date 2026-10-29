@@ -13,11 +13,14 @@ import { llmsText } from "../seo";
 import { SITE_URL } from "../site";
 import { PRICING_PUBLISHED } from "./publication";
 
-/** The price grid waits for Oussama's OK (yomizaka#300): while it is held, no surface offers the page, and the page itself is a 404. */
+/** The grid is decided (ADR-0013): the page is published, and every surface offers it; held again, none would and the page would be a 404. */
 const ROOT = join(import.meta.dirname, "../..");
 
-describe("the pricing page is held until the grid is approved (#388, #300)", () => {
-  it("is not published without his OK", () => expect(PRICING_PUBLISHED).toBe(false));
+describe("the pricing page is published once the grid is decided (#388, ADR-0013)", () => {
+  it("is published, with its decision record", () => {
+    expect(PRICING_PUBLISHED).toBe(true);
+    expect(existsSync(join(ROOT, "../../docs/adr/ADR-0013-price-grid.md"))).toBe(true);
+  });
 
   it("every surface follows the constant: the bar, the footer, the sitemap and llms.txt", () => {
     const offered = PRICING_PUBLISHED;
@@ -30,7 +33,7 @@ describe("the pricing page is held until the grid is approved (#388, #300)", () 
     expect(llmsText().includes("/pricing")).toBe(offered);
   });
 
-  it("the route answers 404 while held, and the page file exists for the day it is published", () => {
+  it("the page exists and keeps its 404 guard for the day it is held again", () => {
     const page = readFileSync(join(ROOT, "app/[locale]/pricing/page.tsx"), "utf8");
     expect(existsSync(join(ROOT, "app/[locale]/pricing/page.tsx"))).toBe(true);
     expect(page).toContain("if (!PRICING_PUBLISHED) notFound();");
