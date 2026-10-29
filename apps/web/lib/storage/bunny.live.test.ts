@@ -1,9 +1,12 @@
 import crypto from "node:crypto";
 
+import { encryptedStore, type FetchLike, remoteStore } from "@krizaka/storage";
 import { describe, expect, it } from "vitest";
 
-import { storageFrom } from "./config";
+import { documentStoreOver } from "./adapter";
 import { documentStoreContract } from "./contract.testkit";
+import { MAX_SIGNED_URL_SECONDS } from "./providers";
+import { asDescriptor } from "./where";
 
 /**
  * The HTTP (Bunny-shaped) store against the REAL storage zone, with fictional data only, under `yomizaka/it/` (opt-in: set
@@ -11,20 +14,14 @@ import { documentStoreContract } from "./contract.testkit";
  */
 const e = process.env;
 const enabled = !!e.STORAGE_IT_BUNNY_ZONE && !!e.STORAGE_IT_BUNNY_ACCESS;
-const env = (extra: Record<string, string> = {}) => ({
-  APP_ENVIRONMENT: "dev" as const,
-  MEDIA_DOCUMENTS_PROVIDER: "bunny" as const,
-  MEDIA_DOCUMENTS_PREFIX: "yomizaka/it",
-  MEDIA_STORAGE_ENDPOINT: e.STORAGE_IT_BUNNY_ENDPOINT ?? "storage.bunnycdn.com",
-  MEDIA_STORAGE_ZONE: e.STORAGE_IT_BUNNY_ZONE,
-  MEDIA_STORAGE_API_KEY: e.STORAGE_IT_BUNNY_ACCESS,
-  ...extra,
-});
-const make = () => storageFrom(env(), () => new Date());
+const DESCRIPTOR = asDescriptor({ kind: "bunny", endpoint: null, region: null, residency: "elsewhere", encrypted: false, owner: "krizaka", devOnly: true });
+const objects = () =>
+  remoteStore({ endpoint: e.STORAGE_IT_BUNNY_ENDPOINT ?? "storage.bunnycdn.com", zone: e.STORAGE_IT_BUNNY_ZONE!, accessKey: e.STORAGE_IT_BUNNY_ACCESS!, prefix: "yomizaka/it", fetch: fetch as unknown as FetchLike, clock: { now: () => new Date() } });
+const make = () => documentStoreOver(objects(), DESCRIPTOR, MAX_SIGNED_URL_SECONDS);
 
 describe.runIf(enabled)("http store (real zone, fictional data)", () => {
   documentStoreContract("bunny live", make);
-  documentStoreContract("bunny live + encryption", () => storageFrom(env({ MEDIA_DOCUMENTS_ENCRYPTION_KEY: crypto.randomBytes(32).toString("base64") }), () => new Date()));
+  documentStoreContract("bunny live + encryption", () => documentStoreOver(encryptedStore(objects(), crypto.randomBytes(32)), DESCRIPTOR, MAX_SIGNED_URL_SECONDS));
 
   it("what it holds is not publicly readable through the pull zone without the zone's authentication", async () => {
     const store = make();

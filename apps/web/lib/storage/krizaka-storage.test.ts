@@ -1,61 +1,33 @@
 import crypto from "node:crypto";
 
-import type { FetchLike } from "@krizaka/storage";
+import { bucketStore, encryptedStore, type FetchLike, remoteStore } from "@krizaka/storage";
 import { describe, expect, it } from "vitest";
 
 import { objectKey } from "../retention";
-import { type AdminChoice, type StorageEnv,storageFrom } from "./config";
+import { documentStoreOver } from "./adapter";
 import { documentStoreContract } from "./contract.testkit";
-import { storageNotice } from "./where";
+import { fakeBucket } from "./fake-bucket.testkit";
+import { MAX_SIGNED_URL_SECONDS } from "./providers";
+import { asDescriptor } from "./where";
 
 /**
- * Yomizaka keeps its documents through `@krizaka/storage` (ADR-010, yomizaka#445): same keys, same links as before the swap, and the
- * personal-data rules (encrypted at rest, short-lived links, purge) still hold. A fake S3 and a fake Bunny zone record every request.
+ * Yomizaka keeps its documents through `@krizaka/storage` (ADR-010, yomizaka#445; the store is chosen by the provider registry, ADR-005):
+ * same keys, same links as before the swap, and the personal-data rules (encrypted at rest, short-lived links, purge) still hold. A fake S3
+ * and a fake Bunny zone record every request; the stores are the package's own, behind this product's `documentStoreOver`.
  */
 const NOW = new Date("2026-10-27T12:00:00Z");
-
-interface Held {
-  bytes: Uint8Array;
-  contentType: string;
-}
-
-/** A tiny S3 (path-style): PUT, GET, DELETE on `<origin>/<bucket>/<key>`; every request must be signed (Signature V4). */
-function fakeBucket() {
-  const objects = new Map<string, Held>();
-  const calls: { method: string; url: string; signed: boolean }[] = [];
-  const fetchLike: FetchLike = async (url, init) => {
-    const target = new URL(url);
-    const key = `${target.origin}${target.pathname}`;
-    calls.push({ method: init.method, url, signed: (init.headers.authorization ?? init.headers.Authorization ?? "").startsWith("AWS4-HMAC-SHA256") });
-    const reply = (status: number, body?: Held) => ({ ok: status < 300, status, headers: { get: (n: string) => (n.toLowerCase() === "content-type" ? (body?.contentType ?? null) : null) }, arrayBuffer: async () => new Uint8Array(body?.bytes ?? []).buffer, text: async () => "" });
-    if (init.method === "PUT") {
-      objects.set(key, { bytes: init.body!, contentType: init.headers["content-type"] ?? "application/octet-stream" });
-      return reply(200);
-    }
-    if (init.method === "GET") return objects.has(key) ? reply(200, objects.get(key)) : reply(404);
-    if (init.method === "DELETE") return reply(objects.delete(key) ? 204 : 404);
-    return reply(405);
-  };
-  return { objects, calls, fetchLike };
-}
-
-const S3: StorageEnv = {
-  APP_ENVIRONMENT: "prod",
-  MEDIA_DOCUMENTS_PROVIDER: "s3",
-  MEDIA_DOCUMENTS_PREFIX: "yomizaka",
-  MEDIA_STORAGE_ENDPOINT: "storage.bunnycdn.com",
-  MEDIA_S3_ENDPOINT: "https://tor1.digitaloceanspaces.com",
-  MEDIA_S3_REGION: "tor1",
-  MEDIA_S3_BUCKET: "yomizaka-documents",
-  MEDIA_S3_ACCESS_KEY_ID: "id",
-  MEDIA_S3_SECRET_ACCESS_KEY: "fake-credential",
-};
+const clock = { now: () => NOW };
 const KEY = objectKey("0f1e2d3c-aaaa-4bbb-8ccc-111122223333", "9a8b7c6d-dddd-4eee-8fff-444455556666", "application/pdf");
+const DESCRIPTOR = asDescriptor({ kind: "s3", endpoint: "tor1.digitaloceanspaces.com", region: "tor1", residency: "canada", encrypted: false, owner: "krizaka", devOnly: false });
+
+const s3 = (fetch: FetchLike) => bucketStore({ endpoint: "https://tor1.digitaloceanspaces.com", region: "tor1", bucket: "yomizaka-documents", accessKeyId: "id", secretAccessKey: "fake-credential", prefix: "yomizaka", fetch, clock });
+const documents = (objects: ReturnType<typeof s3>) => documentStoreOver(objects, DESCRIPTOR, MAX_SIGNED_URL_SECONDS);
+const encrypted = () => encryptedStore;
 
 describe("the adapters pass the contract of a document store", () => {
   const bucket = fakeBucket();
-  documentStoreContract("storageFrom(s3)", () => storageFrom(S3, () => NOW, null, bucket.fetchLike));
-  documentStoreContract("storageFrom(s3) + encryption", () => storageFrom({ ...S3, MEDIA_DOCUMENTS_ENCRYPTION_KEY: crypto.randomBytes(32).toString("base64") }, () => NOW, null, bucket.fetchLike));
+  documentStoreContract("bucketStore(s3)", () => documents(s3(bucket.fetchLike)));
+  documentStoreContract("bucketStore(s3) + encryption", () => documents(encrypted()(s3(bucket.fetchLike), crypto.randomBytes(32))));
 });
 
 describe("documents kept before the swap stay readable", () => {
@@ -64,7 +36,7 @@ describe("documents kept before the swap stay readable", () => {
     const body = new TextEncoder().encode("%PDF-1.7 bail");
     // What the previous module wrote: path-style URL, the deployment's prefix, the app's key.
     bucket.objects.set(`https://tor1.digitaloceanspaces.com/yomizaka-documents/yomizaka/${KEY}`, { bytes: body, contentType: "application/pdf" });
-    const store = storageFrom(S3, () => NOW, null, bucket.fetchLike);
+    const store = documents(s3(bucket.fetchLike));
     expect(await store.get(KEY)).toEqual({ bytes: body, contentType: "application/pdf" });
     expect(bucket.calls.every((c) => c.signed)).toBe(true);
   });
@@ -75,8 +47,8 @@ describe("documents kept before the swap stay readable", () => {
       seen.push(`${init.method} ${new URL(url).pathname}`);
       return { ok: true, status: 200, headers: { get: () => "application/pdf" }, arrayBuffer: async () => new Uint8Array([1, 2]).buffer, text: async () => "" };
     };
-    const env: StorageEnv = { ...S3, APP_ENVIRONMENT: "dev", MEDIA_DOCUMENTS_PROVIDER: "bunny", MEDIA_STORAGE_ZONE: "krizaka-assets", MEDIA_STORAGE_API_KEY: "fake-zone-credential", MEDIA_DOCUMENTS_PULL_HOSTNAME: "cdn.test", MEDIA_DOCUMENTS_TOKEN_KEY: "fake-token-key" };
-    const store = storageFrom(env, () => NOW, null, zone);
+    const objects = remoteStore({ endpoint: "storage.bunnycdn.com", zone: "krizaka-assets", accessKey: "fake-zone-credential", prefix: "yomizaka", pullHostname: "cdn.test", tokenKey: "fake-token-key", fetch: zone, clock });
+    const store = documentStoreOver(objects, DESCRIPTOR, MAX_SIGNED_URL_SECONDS);
     await store.get("o1/d1/original.pdf");
     expect(seen).toEqual(["GET /krizaka-assets/yomizaka/o1/d1/original.pdf"]);
     const link = (await store.signedUrl("o1/d1/original.pdf", 60))!;
@@ -89,7 +61,7 @@ describe("documents kept before the swap stay readable", () => {
   });
 
   it("keeps the refusal of a provider that says no: a StorageError 502", async () => {
-    const store = storageFrom(S3, () => NOW, null, async () => ({ ok: false, status: 403, headers: { get: () => null }, arrayBuffer: async () => new ArrayBuffer(0), text: async () => "" }));
+    const store = documents(s3(async () => ({ ok: false, status: 403, headers: { get: () => null }, arrayBuffer: async () => new ArrayBuffer(0), text: async () => "" })));
     await expect(store.put(KEY, new Uint8Array([1]), { contentType: "application/pdf" })).rejects.toMatchObject({ status: 502, name: "StorageError" });
   });
 });
@@ -97,7 +69,7 @@ describe("documents kept before the swap stay readable", () => {
 describe("data paths are personal data", () => {
   it("encrypted at rest: the provider holds ciphertext, the plain text comes back through the store, and no link points at ciphertext", async () => {
     const bucket = fakeBucket();
-    const store = storageFrom({ ...S3, MEDIA_DOCUMENTS_ENCRYPTION_KEY: crypto.randomBytes(32).toString("base64") }, () => NOW, null, bucket.fetchLike);
+    const store = documents(encrypted()(s3(bucket.fetchLike), crypto.randomBytes(32)));
     const text = new TextEncoder().encode("Loyer mensuel : 1 450 $ — Sophie Gagnon");
     await store.put(KEY, text, { contentType: "text/plain" });
     const held = [...bucket.objects.values()][0]!;
@@ -105,22 +77,17 @@ describe("data paths are personal data", () => {
     expect(held.contentType).toBe("application/octet-stream");
     expect(Buffer.from((await store.get(KEY))!.bytes).toString()).toContain("Sophie Gagnon");
     expect(await store.signedUrl(KEY, 60)).toBeNull();
-    expect(store.describe().encrypted).toBe(true);
   });
 
-  it("signed links are short-lived: never longer than 15 minutes, whatever is asked or the admin sets", async () => {
-    const lived = async (admin: AdminChoice, ttl: number) => {
-      const link = (await storageFrom(S3, () => NOW, admin, fakeBucket().fetchLike).signedUrl(KEY, ttl))!;
-      return Number(new URL(link).searchParams.get("X-Amz-Expires"));
-    };
-    expect(await lived(null, 60)).toBe(60);
-    expect(await lived(null, 86400)).toBe(900);
-    expect(await lived(admin({ signedUrlSeconds: 86400 }), 86400)).toBe(900);
+  it("signed links are short-lived: never longer than 15 minutes, whatever is asked", async () => {
+    const lived = async (ttl: number) => Number(new URL((await documents(s3(fakeBucket().fetchLike)).signedUrl(KEY, ttl))!).searchParams.get("X-Amz-Expires"));
+    expect(await lived(60)).toBe(60);
+    expect(await lived(86400)).toBe(900);
   });
 
   it("retention purge: deleting a kept document removes its object at its key, and a second purge is harmless", async () => {
     const bucket = fakeBucket();
-    const store = storageFrom(S3, () => NOW, null, bucket.fetchLike);
+    const store = documents(s3(bucket.fetchLike));
     await store.put(KEY, new Uint8Array([1, 2, 3]), { contentType: "application/pdf" });
     expect(bucket.objects.size).toBe(1);
     await store.delete(KEY);
@@ -128,32 +95,5 @@ describe("data paths are personal data", () => {
     expect(await store.get(KEY)).toBeNull();
     await expect(store.delete(KEY)).resolves.toBeUndefined();
     expect(bucket.calls.filter((c) => c.method === "DELETE").every((c) => c.url.endsWith(`/yomizaka-documents/yomizaka/${KEY}`))).toBe(true);
-  });
-});
-
-function admin(over: Partial<NonNullable<AdminChoice>>): NonNullable<AdminChoice> {
-  return { provider: "s3", maxMegabytes: 25, signedUrlSeconds: 300, endpoint: "", region: "", bucket: "", zone: "", prefix: "", pullHostname: "", publicBaseUrl: "", ...over };
-}
-
-describe("the admin chooses; the residency text follows the configuration", () => {
-  it("`local` (the default) follows the deployment's environment", () => {
-    expect(storageFrom(S3, () => NOW, admin({ provider: "local" }), fakeBucket().fetchLike).describe()).toMatchObject({ kind: "s3", region: "tor1", residency: "canada" });
-  });
-  it("an admin who picks another region moves the claim with it: Canada only if the region table proves it", () => {
-    const eu = storageFrom(S3, () => NOW, admin({ endpoint: "https://s3.eu-west-3.amazonaws.com", region: "eu-west-3" }), fakeBucket().fetchLike);
-    expect(eu.describe()).toMatchObject({ region: "eu-west-3", endpoint: "s3.eu-west-3.amazonaws.com", residency: "elsewhere" });
-    expect(storageNotice(eu.describe()).key).toBe("krizakaElsewhere");
-    const ca = storageFrom(S3, () => NOW, admin({ endpoint: "https://s3.ca-central-1.amazonaws.com", region: "ca-central-1" }), fakeBucket().fetchLike);
-    expect(ca.describe().residency).toBe("canada");
-    expect(storageNotice(ca.describe()).key).toBe("krizakaCanada");
-  });
-  it("an unmapped region is never called Canadian", () => {
-    expect(storageFrom(S3, () => NOW, admin({ region: "mars-1" }), fakeBucket().fetchLike).describe().residency).toBe("elsewhere");
-  });
-  it("an admin cannot switch keeping on: the environment's `none` stays off", () => {
-    expect(storageFrom({ ...S3, MEDIA_DOCUMENTS_PROVIDER: "none" }, () => NOW, admin({}), fakeBucket().fetchLike).describe().kind).toBe("none");
-  });
-  it("an admin-typed endpoint on Krizaka's own network is refused", () => {
-    expect(() => storageFrom(S3, () => NOW, admin({ endpoint: "https://169.254.169.254" }), fakeBucket().fetchLike)).toThrow(/private/);
   });
 });

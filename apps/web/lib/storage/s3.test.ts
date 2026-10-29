@@ -1,9 +1,12 @@
 import crypto from "node:crypto";
 
+import { bucketStore, encryptedStore, type FetchLike } from "@krizaka/storage";
 import { describe, expect, it } from "vitest";
 
-import { storageFrom } from "./config";
+import { documentStoreOver } from "./adapter";
 import { documentStoreContract } from "./contract.testkit";
+import { MAX_SIGNED_URL_SECONDS } from "./providers";
+import { asDescriptor } from "./where";
 
 /**
  * The S3 store (`@krizaka/storage`'s bucketStore) against a real S3-compatible server — a local S3 server (scripts/ci-s3.sh), never a paid
@@ -11,19 +14,10 @@ import { documentStoreContract } from "./contract.testkit";
  */
 const e = process.env;
 const enabled = !!e.STORAGE_IT_S3_ENDPOINT && !!e.STORAGE_IT_S3_USER && !!e.STORAGE_IT_S3_PASS && !!e.STORAGE_IT_S3_BUCKET;
-const env = (pass = e.STORAGE_IT_S3_PASS!, extra: Record<string, string> = {}) => ({
-  APP_ENVIRONMENT: "dev" as const,
-  MEDIA_DOCUMENTS_PROVIDER: "s3" as const,
-  MEDIA_DOCUMENTS_PREFIX: "yomizaka-it",
-  MEDIA_STORAGE_ENDPOINT: "storage.bunnycdn.com",
-  MEDIA_S3_ENDPOINT: e.STORAGE_IT_S3_ENDPOINT,
-  MEDIA_S3_REGION: "us-east-1",
-  MEDIA_S3_BUCKET: e.STORAGE_IT_S3_BUCKET,
-  MEDIA_S3_ACCESS_KEY_ID: e.STORAGE_IT_S3_USER,
-  MEDIA_S3_SECRET_ACCESS_KEY: pass,
-  ...extra,
-});
-const make = (pass?: string) => storageFrom(env(pass), () => new Date());
+const DESCRIPTOR = asDescriptor({ kind: "s3", endpoint: null, region: "us-east-1", residency: "elsewhere", encrypted: false, owner: "krizaka", devOnly: false });
+const objects = (pass = e.STORAGE_IT_S3_PASS!) =>
+  bucketStore({ endpoint: e.STORAGE_IT_S3_ENDPOINT!, region: "us-east-1", bucket: e.STORAGE_IT_S3_BUCKET!, accessKeyId: e.STORAGE_IT_S3_USER!, secretAccessKey: pass, prefix: "yomizaka-it", fetch: fetch as unknown as FetchLike, clock: { now: () => new Date() } });
+const make = (pass?: string) => documentStoreOver(objects(pass), DESCRIPTOR, MAX_SIGNED_URL_SECONDS);
 
 /** In CI the job sets STORAGE_IT_S3_REQUIRED: a missing variable is a failure, not a silent skip (krizaka/yomizaka#198). */
 describe.runIf(!!e.STORAGE_IT_S3_REQUIRED)("s3 adapter (S3 server) is required here", () => {
@@ -32,7 +26,7 @@ describe.runIf(!!e.STORAGE_IT_S3_REQUIRED)("s3 adapter (S3 server) is required h
 
 describe.runIf(enabled)("s3 adapter (S3 server)", () => {
   documentStoreContract("s3", () => make());
-  documentStoreContract("s3 + encryption", () => storageFrom(env(undefined, { MEDIA_DOCUMENTS_ENCRYPTION_KEY: crypto.randomBytes(32).toString("base64") }), () => new Date()));
+  documentStoreContract("s3 + encryption", () => documentStoreOver(encryptedStore(objects(), crypto.randomBytes(32)), DESCRIPTOR, MAX_SIGNED_URL_SECONDS));
 
   it("hands out a presigned link the browser can follow", async () => {
     const store = make();
