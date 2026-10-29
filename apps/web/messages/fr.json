@@ -3854,5 +3854,11 @@
     "no-rate": "Aucune conclusion : le taux du TAL pour cette année n'est pas saisi, ou les montants sont inutilisables, donc l'augmentation n'est pas comparée.",
     "recourse": "Recours : le locataire peut demander au Tribunal administratif du logement de fixer le loyer (C.c.Q., art. 1950).",
     "disclaimer": "Information sur les montants du bail, pas un avis juridique et aucun jugement sur le locateur. Vérifiez l'article et la page du TAL, ou demandez au TAL."
+  },
+  "paymentClauses": {
+    "advance-over-one-month": "Le bail demande plus d'un mois de loyer d'avance. Le locateur ne peut exiger d'avance que le premier terme, dans la limite d'un mois (C.c.Q., art. 1904).",
+    "deposit": "Le bail demande une somme en plus du loyer (dépôt, clé ou garantie). Le locateur ne peut en exiger aucune (C.c.Q., art. 1904).",
+    "postdated-cheques": "Le bail exige des chèques postdatés. Le locateur ne peut pas les exiger (C.c.Q., art. 1904).",
+    "disclaimer": "Information sur les clauses du bail, pas un avis juridique ni un jugement sur le locateur. Vérifiez l'article, ou demandez au TAL."
   }
 }

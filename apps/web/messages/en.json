@@ -3854,5 +3854,11 @@
     "no-rate": "No claim: the TAL's rate for this year is not entered, or the figures are not usable, so the increase is not compared.",
     "recourse": "Recourse: the tenant may ask the Tribunal administratif du logement to fix the rent (C.c.Q., art. 1950).",
     "disclaimer": "Information about the figures of the lease, not legal advice and no judgement on the landlord. Check the article and the TAL's page, or ask the TAL."
+  },
+  "paymentClauses": {
+    "advance-over-one-month": "The lease asks for more than one month of rent in advance. A landlord may require only the first term, within one month (C.c.Q., art. 1904).",
+    "deposit": "The lease asks for a sum besides the rent (deposit, key money or guarantee). A landlord may not require one (C.c.Q., art. 1904).",
+    "postdated-cheques": "The lease requires postdated cheques. A landlord may not require them (C.c.Q., art. 1904).",
+    "disclaimer": "Information about the terms of the lease, not legal advice and no judgement on the landlord. Check the article, or ask the TAL."
   }
 }
