@@ -3910,5 +3910,16 @@
     "closed": "By these dates, the last day to ask was {lastDay}. Source: {source}.",
     "no-claim": "No claim: a date is missing or unreadable, so no deadline is given.",
     "disclaimer": "Information about dates, not legal advice. How days and months are counted is for the TAL or a lawyer to confirm."
+  },
+  "sectionGRequest": {
+    "title": "Facts to take to the TAL",
+    "rentNew": "Rent of the new lease: {cents}.",
+    "rentPrevious": "Lowest rent in the twelve months before, as written in Section G: {cents}.",
+    "previousBlank": "Section G of the lease does not state the previous rent.",
+    "previousAltered": "Section G of the lease looks crossed out or altered.",
+    "rentMax": "Highest rent the TAL's {year} rate gives from that previous rent: {cents}.",
+    "excess": "Difference with the new rent: {cents}.",
+    "deadline": "By the dates given, the last day to ask the TAL to fix the rent is {lastDay}.",
+    "disclaimer": "A summary of the lease's figures to keep and to bring to the TAL, which tells you the form and any fee. Yomizaka files nothing. Information, not legal advice."
   }
 }
