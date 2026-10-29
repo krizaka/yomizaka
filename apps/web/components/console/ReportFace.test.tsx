@@ -30,6 +30,17 @@ const wrap = (node: React.ReactNode, locale: "en" | "fr" = "fr") =>
 const analysis = (inputs: Record<string, string>) => ({ id: "a1", studio: "compliance-check" as const, status: "succeeded" as const, runId: "run_8f3a2c", blueprintVersion: "1.4.0", inputs, report: REPORT, error: null, createdAt: "2026-10-23T12:00:00.000Z", finishedAt: "2026-10-23T12:00:04.000Z" });
 
 describe("the report's face (the UX review's Y5, the report of #321)", () => {
+  it("never calls a document the engine did not check a clean one (compliance-check 2.0: unsupported or unknown kind)", () => {
+    for (const outcome of ["UNSUPPORTED_KIND", "KIND_UNKNOWN"]) {
+      const html = wrap(<VerdictBand report={{ ...REPORT, rulesetId: "", rulesetVersion: "", findings: [], summary: undefined, outcome } as never} />, "en");
+      const text = readable(html);
+      expect(html).toContain('data-tone="neutral"');
+      expect(text).not.toContain("No problem found");
+      expect(text).toContain(outcome === "UNSUPPORTED_KIND" ? "No rules for this kind of document yet" : "Could not tell what kind of document this is");
+    }
+    expect(readable(wrap(<VerdictBand report={{ ...REPORT, findings: [], outcome: "KIND_UNKNOWN" } as never} />, "fr"))).toContain("Impossible de dire de quel type de document il s'agit");
+  });
+
   it("says the verdict first — how many rules of how many need a look, how many of them block — with the law's context and no code", () => {
     const html = wrap(<VerdictBand report={REPORT as never} />);
     expect(html).toContain('data-tone="danger"');

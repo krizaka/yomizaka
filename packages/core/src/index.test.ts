@@ -46,6 +46,26 @@ describe("Orazaka runs", () => {
     expect(bare).toEqual(wrapped);
   });
 
+  it("reads a compliance-check 2.0 report: the ruleset is nested, the outcome says whether the document was checked", () => {
+    const checked = {
+      contract: "2.0",
+      outcome: "CHECKED",
+      identification: { outcome: "CHECK", detectedKind: "LEASE", jurisdiction: "QC", asOf: "2026-10-29", mismatch: false },
+      ruleset: { id: "qc-residential-lease", version: "2026-10-24", revision: 2, reviewStatus: "TO_REVIEW_BY_LAWYER" },
+      jurisdiction: "QC",
+      asOf: "2026-10-29",
+      findings: [{ ruleId: "QC-LEASE-001", severity: "BLOCKING", verdict: "PASS", explanation: "ok", checks: { passage: "VERIFIED", citation: "VERIFIED" } }],
+    };
+    const read = reportOf("compliance-check", [{ key: "report", type: "JSON", value: JSON.stringify(checked) }]);
+    expect(read && "findings" in read ? [read.rulesetId, read.rulesetVersion, read.rulesetRevision, read.reviewStatus, read.outcome] : null).toEqual(["qc-residential-lease", "2026-10-24", 2, "TO_REVIEW_BY_LAWYER", "CHECKED"]);
+  });
+
+  it("reads a 2.0 report of a document that was not checked (no ruleset, no findings), never as a clean one", () => {
+    const unsupported = { contract: "2.0", outcome: "UNSUPPORTED_KIND", identification: { outcome: "UNSUPPORTED_KIND", detectedKind: "NOTICE", jurisdiction: null, asOf: "2026-10-29" }, asOf: "2026-10-29", findings: [] };
+    const read = reportOf("compliance-check", [{ key: "report", type: "JSON", value: JSON.stringify(unsupported) }]);
+    expect(read && "findings" in read ? [read.outcome, read.findings.length, read.rulesetId] : null).toEqual(["UNSUPPORTED_KIND", 0, ""]);
+  });
+
   it("reads the authenticity signals from the run's `signals` output", () => {
     const report = { header: "Ce rapport n'est pas une expertise.", pages: 3, signals: [{ signalId: "PDF-META-002", level: "incohérent", observation: "Le producteur déclaré ne correspond pas." }] };
     const read = reportOf("document-authenticity", [

@@ -2827,6 +2827,10 @@
       }
     },
     "reportFace": {
+      "unchecked": {
+        "UNSUPPORTED_KIND": { "title": "Pas encore de règles pour ce type de document", "hint": "Rien n'a été vérifié : Yomizaka n'a pas encore de règles pour ce type de document. Ce n'est pas un résultat sans problème." },
+        "KIND_UNKNOWN": { "title": "Impossible de dire de quel type de document il s'agit", "hint": "Rien n'a été vérifié : indiquez le type de document que vous envoyez, puis relancez la vérification. Ce n'est pas un résultat sans problème." }
+      },
       "label": "Le résultat",
       "attentionOne": "{count} règle sur {rules} demande votre attention",
       "attentionMany": "{count} règles sur {rules} demandent votre attention",

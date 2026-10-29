@@ -2827,6 +2827,10 @@
       }
     },
     "reportFace": {
+      "unchecked": {
+        "UNSUPPORTED_KIND": { "title": "No rules for this kind of document yet", "hint": "Nothing was checked: Yomizaka has no rules for this kind of document yet. This is not a clean result." },
+        "KIND_UNKNOWN": { "title": "Could not tell what kind of document this is", "hint": "Nothing was checked: pick the kind of document you are sending, then run the check again. This is not a clean result." }
+      },
       "label": "The result",
       "attentionOne": "{count} rule of {rules} needs your attention",
       "attentionMany": "{count} rules of {rules} need your attention",
