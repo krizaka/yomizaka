@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { LibraryView } from "@/components/console/LibraryView";
+import { PaymentReturn } from "@/components/console/PaymentReturn";
 import { SAMPLES } from "@/content/recorded-runs/samples.mjs";
 import { pageSession } from "@/lib/access";
 import { listChecks } from "@/lib/checks";
@@ -15,6 +16,7 @@ import { HOME_PERIOD_KEY, homePeriodOf } from "@/lib/home-figures";
 import { asLocale, getDictionary } from "@/lib/i18n";
 import { onboardingTarget } from "@/lib/library-screen";
 import * as org from "@/lib/organisation/store";
+import { PAID_KEY, paymentReturnOf } from "@/lib/payment-return";
 import { purgeExpired } from "@/lib/retention";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -47,5 +49,7 @@ export default async function LibraryPage({ params, searchParams }: Readonly<{ p
     creditsOf(owner, now),
   ]);
   const documents = libraries.reduce((n, l) => n + l.collections.reduce((m, c) => m + c.files, 0), 0);
-  return <LibraryView libraries={libraries} documents={documents} latest={latest} tags={tags} perspective={perspective} screening={screeningOffered} examples={SAMPLES} jurisdictions={offerFor(flows, perspective).jurisdictions} todo={todo} activity={series.checks} strip={stripOf(series)} credits={credits} period={period} chosen={typeof search[BINDER_KEY] === "string" ? search[BINDER_KEY] : null} now={now.toISOString()} />;
+  const paid = paymentReturnOf(search[PAID_KEY]);
+  const view = <LibraryView libraries={libraries} documents={documents} latest={latest} tags={tags} perspective={perspective} screening={screeningOffered} examples={SAMPLES} jurisdictions={offerFor(flows, perspective).jurisdictions} todo={todo} activity={series.checks} strip={stripOf(series)} credits={credits} period={period} chosen={typeof search[BINDER_KEY] === "string" ? search[BINDER_KEY] : null} now={now.toISOString()} />;
+  return paid ? <><PaymentReturn result={paid} />{view}</> : view;
 }
