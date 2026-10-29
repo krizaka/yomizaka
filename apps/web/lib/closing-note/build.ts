@@ -41,8 +41,8 @@ const sentences = (key: string, lang: Lang) => (template(key) as unknown as Bili
 const longDate = (iso: string, lang: Lang) => new Intl.DateTimeFormat(say((template("dates") as unknown as Record<string, Bilingual>).locale!, lang), { dateStyle: "long", timeZone: "UTC" }).format(new Date(`${iso}T00:00:00Z`));
 
 const stateOf = (verdict: string): FindingState => {
-  if (verdict === VERDICT.pass) return FINDING_STATE.ok;
-  if (verdict === VERDICT.notApplicable) return FINDING_STATE.skipped;
+  if (verdict === VERDICT.pass) {return FINDING_STATE.ok;}
+  if (verdict === VERDICT.notApplicable) {return FINDING_STATE.skipped;}
   return verdict === VERDICT.fail ? FINDING_STATE.attention : FINDING_STATE.undecided;
 };
 const rank = (severity: string) => {
@@ -72,7 +72,7 @@ const isImportant = (f: FindingInput) => f.severity === SEVERITY_ORDER[0];
 function whatTextOf(pack: Pack, input: ComplianceInput, lang: Lang): string {
   const what = pack ? say(pack.what, lang) : line("whatFallback", lang);
   const date = longDate(input.asOf, lang);
-  if (!pack) return line("unknownPack", lang, { what, pack: input.rulesetId });
+  if (!pack) {return line("unknownPack", lang, { what, pack: input.rulesetId });}
   const scope = say(pack.scope, lang);
   return input.findings.length === 1 ? line("whatComplianceOne", lang, { what, scope, date }) : line("whatCompliance", lang, { what, count: input.findings.length, scope, date });
 }
@@ -95,7 +95,7 @@ function notCheckedOf(pack: Pack, input: ComplianceInput, undecided: readonly Fi
 
 /** The one-sentence result: all fine, or the counts of what is fine, needs attention (blocking) and is undecided. */
 function resultTextOf({ ok, failed, undecided }: Findings, lang: Lang): string {
-  if (failed.length === 0 && undecided.length === 0) return counted("allFine", ok.length, lang);
+  if (failed.length === 0 && undecided.length === 0) {return counted("allFine", ok.length, lang);}
   const important = failed.filter(isImportant);
   const attention = [counted("attention", failed.length, lang), important.length ? counted("blocking", important.length, lang) : null].filter(Boolean).join(", ");
   const parts = [ok.length ? counted("ok", ok.length, lang) : null, failed.length ? attention : null, undecided.length ? counted("undecided", undecided.length, lang) : null];
@@ -162,7 +162,7 @@ export function noteInputOf(report: ComplianceReport | AuthenticityReport, textS
 
 /** What the note needs of a document's text source (a PDF or a text file has none). */
 export function noteSourceOf(source: TextSource | null | undefined): TextSourceInput | null {
-  if (!source) return null;
+  if (!source) {return null;}
   return source.kind === TEXT_SOURCE.vision ? { kind: TEXT_SOURCE.vision } : { kind: TEXT_SOURCE.ocr, confidence: source.confidence, lowConfidence: source.lowConfidence };
 }
 
