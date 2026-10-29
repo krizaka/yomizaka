@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "turbo run dev --filter=@yomizaka/web",
     "build": "turbo run build",
-    "lint": "turbo run lint && pnpm run check:i18n && ast-grep test --skip-snapshot-tests && krizaka-sg-ratchet",
+    "lint:workspace": "npx --yes -p @krizaka/config@latest krizaka-workspace-guard",
+    "lint": "pnpm run lint:workspace && turbo run lint && pnpm run check:i18n && ast-grep test --skip-snapshot-tests && krizaka-sg-ratchet",
     "check:i18n": "krizaka-i18n check apps/web/messages",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test && vitest run",
@@ -23,6 +24,7 @@
     "demo:documents": "node scripts/demo-documents/cli.mjs",
     "demo:seed": "node scripts/demo-seed/cli.mjs",
     "dev:seed": "node scripts/demo-seed/cli.mjs --cast",
+    "dev:launch-offer": "node scripts/launch-offer.mjs",
     "check:overflow": "node scripts/check-overflow.mjs",
     "check:admin-live": "node scripts/check-admin-live.mjs",
     "payments:setup": "pnpm --filter @yomizaka/web exec krizaka-payments-setup --catalogue ../../deploy/payments-catalogue.json",

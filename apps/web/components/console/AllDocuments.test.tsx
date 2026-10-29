@@ -29,4 +29,23 @@ describe("« Documents » (B2, P14)", () => {
     expect(html).toContain(en.console.documentsPage.empty);
     expect(html).toContain('href="/en/app/check"');
   });
+  it("filters by bookmark: the bar, the bookmarks of each row, and a sentence when none wears them all", () => {
+    const urgent = { id: "t1", name: "Urgent", color: "red" as const };
+    const html = wrap(<AllDocuments documents={[doc(1)]} bookmarks={[urgent]} selected={["t1"]} bookmarksByDocument={{ d1: [urgent] }} path="/fr/app/documents" />, "en");
+    expect(html).toContain('data-testid="place-filters"');
+    expect(html).toContain("Urgent");
+    expect(html).toContain(en.console.documentsPage.bookmarks);
+    // one tap from the row: the menu's trigger names the document
+    expect(html).toContain('data-testid="row-bookmarks"');
+    expect(html).toContain("Bookmark Bail 1");
+    // and in bulk: the rows are selectable once there are bookmarks
+    expect(html).toContain('type="checkbox"');
+    const tabs = [{ id: null, name: null, hue: "accent" as const, count: 1, href: "/fr/app/documents", on: false }, { id: "t1", name: "Urgent", hue: "danger" as const, count: 1, href: "/fr/app/documents?tags=t1", on: true }];
+    const divided = wrap(<AllDocuments documents={[doc(1)]} bookmarks={[urgent]} selected={["t1"]} bookmarksByDocument={{ d1: [urgent] }} path="/fr/app/documents" tabs={tabs} />, "en");
+    expect(divided).toContain('data-testid="bookmark-dividers"');
+    expect(divided).toContain('href="/fr/app/documents?tags=t1"');
+    const none = wrap(<AllDocuments documents={[]} bookmarks={[urgent]} selected={["t1"]} path="/en/app/documents" />, "en");
+    expect(none).toContain('data-testid="documents-nothing"');
+    expect(none).not.toContain('data-testid="documents-empty"');
+  });
 });

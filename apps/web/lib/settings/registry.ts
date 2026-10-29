@@ -1,7 +1,7 @@
 import { authSettings } from "@krizaka/auth/settings";
 import { couponSettings } from "@krizaka/coupons/settings";
 import { creditsSettings } from "@krizaka/credits/settings";
-import { ALL_SCOPES, bilingual, choice, defineSettings, flag, integer, type Registry, SCOPE, subset, WORKSPACE_SCOPES } from "@krizaka/settings";
+import { ALL_SCOPES, bilingual, choice, defineSettings, flag, integer, type Registry, SCOPE, subset, text, WORKSPACE_SCOPES } from "@krizaka/settings";
 import { storageSettings } from "@krizaka/storage/settings";
 import type { z } from "zod";
 
@@ -47,6 +47,16 @@ export const SETTINGS = {
   "payments.enabled": flag(GROUP.general, true, WORKSPACE),
   "payments.display": choice(GROUP.general, [PAYMENT_DISPLAY.test, PAYMENT_DISPLAY.live], PAYMENT_DISPLAY.test),
   "audit.freeFirst": flag(GROUP.general, true, WORKSPACE),
+  // The promo code the pricing page announces (a coupon the administrator created at /config/coupons; empty = no announcement). The offer itself (percent, months, plans, dates) is the coupon's.
+  "pricing.announcedCode": text(GROUP.general, "", { max: 40, empty: true }),
+  // The TAL's published rent-adjustment percentage of the year (yomizaka#554), as DATA the administrator edits: Section G's check compares a lease with it.
+  // Seeded with the 2026 base percentage as the TAL published it on 2026-01-19 (leases starting 2026-04-02 to 2027-04-01), read on quebec.ca on 2026-10-29.
+  // Basis points of the current rent (0 = nothing entered: the check then makes no claim). The source URL and the day it was entered are shown beside every figure.
+  "tal.rate.year": integer(GROUP.general, 2026, { min: 2000, max: 2100, unit: "year" }),
+  // @fixed: 3,1 % is the TAL's 2026 base percentage (quebec.ca, 2026-01-19), the seed an administrator replaces each year
+  "tal.rate.basisPoints": integer(GROUP.general, 310, { min: 0, max: 5000, unit: "bp" }),
+  "tal.rate.sourceUrl": text(GROUP.general, "https://www.quebec.ca/nouvelles/actualites/details/le-calcul-de-lajustement-des-loyers-en-2026-68053", { max: 300, empty: true }),
+  "tal.rate.enteredOn": text(GROUP.general, "2026-10-29", { max: 10, empty: true }),
   /** How long the free first audit, once given, can be used (yomizaka#261: it is a pot of the credits ledger, and a pot lapses). */
   "audit.freeValidDays": integer(GROUP.general, 3650, { min: 1, max: 36500, unit: "days" }),
   // The credits ledger's knobs (the zone days and months are counted in, how long a hold keeps credits back): @krizaka/credits'.

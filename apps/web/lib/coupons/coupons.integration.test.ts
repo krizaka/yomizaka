@@ -125,6 +125,22 @@ describe.runIf(enabled)("coupons", () => {
     expect(lost.reason).toMatchObject({ body: { code: "COUPON_EXHAUSTED" } });
   });
 
+  it("the launch offer: -50 % for 3 months on the monthly plans, once per account, refused for another plan or when over (#548)", async () => {
+    const launch = await discount({ percentOffBp: 5000, duration: "repeating", durationMonths: 3, plans: ["agency", "firm"], maxPerAccount: 1 });
+    const monthly = (accountId: string, plan: string) => reserve({ code: launch.code.toLowerCase(), accountId, plan, amountMinor: 4900, currency: "cad", ip: ip() });
+    const id = await account();
+    // valid: the processor is told 50 % for 3 months, so the 4th invoice is the regular price
+    const ok = await monthly(id, "agency");
+    expect(ok.applied.discount).toMatchObject({ couponId: launch.id, percentOffBp: 5000, duration: "repeating", durationMonths: 3 });
+    // already used by this account
+    await expect(monthly(id, "firm")).rejects.toMatchObject({ body: { code: "COUPON_ACCOUNT_LIMIT" } });
+    // wrong plan: the single document is not in the offer
+    await expect(reserve({ code: launch.code, accountId: await account(), plan: "document", amountMinor: 499, currency: "cad", ip: ip() })).rejects.toMatchObject({ body: { code: "COUPON_NOT_FOR_PLAN" } });
+    // expired: the window has closed
+    const over = await discount({ percentOffBp: 5000, duration: "repeating", durationMonths: 3, startsAt: new Date(NOW.getTime() - 3 * DAY_MS), endsAt: new Date(NOW.getTime() - DAY_MS) });
+    await expect(reserve({ code: over.code, accountId: await account(), plan: "agency", amountMinor: 4900, currency: "cad", ip: ip() })).rejects.toMatchObject({ body: { code: "COUPON_EXPIRED" } });
+  });
+
   it("a refund adds up and never gives the use back unless the admin allowed it", async () => {
     const c = await discount({ maxRedemptions: 1 });
     const id = await account();

@@ -1,7 +1,6 @@
-import { parseVaultKey } from "@krizaka/storage";
 import { type CloudOwner, STORAGE_OWNER } from "@yomizaka/core";
 
-import { defaultStore } from "@/app/storage-providers";
+import { defaultStore, providers } from "@/app/storage-providers";
 import { query } from "@/lib/db";
 import type { HeldObject } from "@/lib/document-objects";
 import { env } from "@/lib/env";
@@ -11,12 +10,6 @@ import { noneStore } from "@/lib/storage/none";
 import type { DocumentStore, StoreDescriptor } from "@/lib/storage/port";
 import { DATA_KIND } from "@/lib/storage/providers";
 import { ownS3Store, type StorageSettings, storeForOwner } from "@/lib/storage/settings";
-
-/** The key that seals a workspace's S3 credentials (null when the deployment has none: storing credentials is then unavailable). */
-export const settingsKey = () => {
-  const k = env().APP_SETTINGS_ENCRYPTION_KEY;
-  return k ? parseVaultKey(k) : null;
-};
 
 /** The documents store this deployment configures (Krizaka's): the default provider the admin chose in the database (ADR-005); none = nothing is kept. */
 export const krizakaStore = async (): Promise<DocumentStore> => (await defaultStore(DATA_KIND.documents)) ?? noneStore();
@@ -32,11 +25,10 @@ export interface OwnerStores {
 
 /** The stores of an account: its own settings decide where new documents go; each kept document is read from the store that holds it. */
 export async function storesOf(ownerId: string): Promise<OwnerStores> {
-  const now = () => new Date();
-  const key = settingsKey();
+  const registry = providers();
   const krizaka = await krizakaStore();
-  const own = await ownS3Store(query, ownerId, key, now);
-  const { store: write, settings } = await storeForOwner(query, ownerId, key, krizaka, now).catch(() => ({ store: noneStore(), settings: { mode: "none", keepDefault: false, s3: null, testedAt: null } as StorageSettings }));
+  const own = await ownS3Store(query, ownerId, registry);
+  const { store: write, settings } = await storeForOwner(query, ownerId, registry, krizaka).catch(() => ({ store: noneStore(), settings: { mode: "none", keepDefault: false, s3: null, testedAt: null } as StorageSettings }));
   const of = (o: CloudOwner) => (o === STORAGE_OWNER.workspace ? own : krizaka);
   return { write, settings, of, describe: (o) => (of(o) ?? noneStore()).describe() };
 }

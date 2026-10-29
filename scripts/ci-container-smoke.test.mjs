@@ -15,6 +15,28 @@ describe("the container smoke check", () => {
     const dockerfile = read("deploy/docker/Dockerfile");
     for (const needle of ["tesseract\\.js-core", "@tesseract\\.js-data", "COPY --from=build --chown=yomizaka:yomizaka /ocr/"]) expect(dockerfile).toContain(needle);
   });
+  it("holds the image to a size budget, and the runtime stays on musl (OpenDAL's linux-gnu binary needs glibc 2.38)", () => {
+    const budget = Number(read("deploy/docker/image-size-budget-mb").trim());
+    expect(Number.isInteger(budget) && budget > 0 && budget <= 260, "a positive budget within a few MB of what CI measured (244 MB)").toBe(true);
+    expect(read("scripts/ci-container-smoke.sh")).toContain("image-size-budget-mb");
+    const dockerfile = read("deploy/docker/Dockerfile");
+    expect(dockerfile.match(/^FROM node:22-alpine/gm)?.length, "the build stage is the musl node image").toBe(1);
+    expect(dockerfile.match(/^FROM alpine:/gm)?.length, "the runtime stage is Alpine (musl) too").toBe(1);
+    expect(dockerfile).not.toMatch(/^FROM node:[^ ]*(bookworm|bullseye|slim|jammy)/m);
+  });
+  it("the runtime stage is a slim Alpine plus the node binary, never the full node image (npm, yarn and the headers made 35 MB nobody runs)", () => {
+    const dockerfile = read("deploy/docker/Dockerfile");
+    const run = dockerfile.slice(dockerfile.indexOf(" AS run") - 120);
+    expect(run).toMatch(/FROM alpine:[\d.]+@sha256:[0-9a-f]{64} AS run/);
+    expect(run).toContain("COPY --from=build /usr/local/bin/node /usr/local/bin/node");
+    expect(run).not.toMatch(/FROM node:/);
+  });
+  it("only what the OCR never loads is pruned: the browser builds of the core and the fast-model data, not the Node cores or the best_int data", () => {
+    const dockerfile = read("deploy/docker/Dockerfile");
+    expect(dockerfile).toContain("-name '*.wasm.js' -delete");
+    expect(dockerfile).toContain("-type d -name 4.0.0 -exec rm -rf");
+    expect(dockerfile).not.toMatch(/4\.0\.0_best_int[^\n]*(-delete|rm -rf)/);
+  });
   it("the dockerignore keeps the smoke fixtures out of the build context only if they are not needed there", () => {
     expect(read(".dockerignore")).not.toMatch(/deploy/);
   });

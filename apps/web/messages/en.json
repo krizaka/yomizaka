@@ -1364,8 +1364,8 @@
       "fairUseTitle": "Monthly limit reached",
       "fairUse": "Your subscription includes {limit} verifications a month. The limit resets at the start of next month.",
       "testMode": "Test mode: no real card is charged.",
-      "agency": "Subscribe — Small business",
-      "firm": "Subscribe — Firms",
+      "agency": "Subscribe — Agency",
+      "firm": "Subscribe — Building manager",
       "informative": "An informative check, not legal advice."
     },
     "insight": {
@@ -1527,7 +1527,8 @@
         "securite": "Security",
         "facturation": "Plan and billing",
         "donnees": "My data",
-        "stockage": "Storage"
+        "stockage": "Storage",
+        "signets": "Bookmarks"
       },
       "label": "Account settings",
       "verified": "E-mail verified",
@@ -1591,8 +1592,8 @@
         "buy": "Buy or subscribe",
         "testMode": "Test mode: no real card is charged.",
         "plans": {
-          "agency": "Small business",
-          "firm": "Firms & corporate"
+          "agency": "Agency",
+          "firm": "Building manager"
         }
       },
       "data": {
@@ -1778,6 +1779,32 @@
           "display": {
             "label": "Payments display",
             "hint": "Test mode: a notice says no real card is charged."
+          }
+        },
+        "tal": {
+          "rate": {
+            "year": {
+              "label": "TAL rate: year",
+              "hint": "The year the TAL percentage applies to (the lease starts in it)."
+            },
+            "basisPoints": {
+              "label": "TAL rate: percentage (basis points)",
+              "hint": "The TAL base percentage for the rent, in hundredths of a percent (310 = 3.1 %). 0: nothing entered, the Section G check makes no claim."
+            },
+            "sourceUrl": {
+              "label": "TAL rate: source page",
+              "hint": "The page the figure was read from; shown beside every figure."
+            },
+            "enteredOn": {
+              "label": "TAL rate: entered on",
+              "hint": "The day it was entered (YYYY-MM-DD)."
+            }
+          }
+        },
+        "pricing": {
+          "announcedCode": {
+            "label": "Announced promo code",
+            "hint": "The code of a coupon the pricing page announces (empty: none). Its percent, months and end date come from the coupon."
           }
         },
         "audit": {
@@ -2543,7 +2570,7 @@
         "fromHint": "Empty or today: from now. A later day: from its start.",
         "schedule": "Schedule the change",
         "charged": "Charged by the processor",
-        "chargedHint": "Sales stop while it differs from the catalogue: create the new processor price first.",
+        "chargedHint": "Sales stop while it differs from the catalogue: sync the processor (test mode) below.",
         "notFound": "Price not found at the processor.",
         "mismatch": "Differs",
         "match": "Equal",
@@ -2562,12 +2589,50 @@
         },
         "entries": {
           "document": "One document verified",
-          "agency": "Small business",
-          "firm": "Firms & corporate",
-          "api": "Dedicated API (over 5,000 a month, on quote)",
+          "agency": "Agency",
+          "firm": "Building manager",
+          "api": "Dedicated API (on quote)",
           "fullFile": "Full applicant file",
           "backgroundCheck": "Background checks",
           "screening": "Screening alone"
+        },
+        "editor": {
+          "edit": "Change",
+          "plusTaxes": "plus taxes",
+          "unit": "Unit",
+          "limitsLabel": "Limits",
+          "keepsPrice": "Current subscriptions keep the price they were sold at.",
+          "cancel": "Cancel",
+          "scheduled": "Scheduled changes ({count})",
+          "history": "History",
+          "historyEmpty": "No change yet.",
+          "loading": "Loading…",
+          "historyLine": "{actor}, {at}: {before} → {after}, from {from}",
+          "scheduledLine": "from {from}",
+          "saved": "Saved."
+        },
+        "confirm": {
+          "title": "Change the price of {name}?",
+          "now": "From now: {before} → {after}. New sales use the new price at once; subscriptions already sold keep theirs.",
+          "later": "From {date}: {before} → {after}. Nothing changes before that day; subscriptions already sold keep their price.",
+          "processorTest": "The processor (test mode) gets the matching price.",
+          "processorLive": "The processor is in LIVE mode: its price is not changed from here, the owner does it.",
+          "confirm": "Yes, change it",
+          "cancel": "No, keep it",
+          "cancelled": "Cancelled, nothing was changed."
+        },
+        "sync": {
+          "title": "Processor prices",
+          "button": "Sync the processor",
+          "hint": "Creates at the processor the price of each sold entry that differs from the catalogue (test mode only). A price already sold is never edited: a new one takes its lookup key.",
+          "done": "Synced: {lines}",
+          "live": "The processor is in live mode: only the owner changes its prices.",
+          "off": "Payments are not configured here.",
+          "status": {
+            "exists": "up to date",
+            "created": "created",
+            "repriced": "new price"
+          }
         }
       },
       "coupons": {
@@ -3086,6 +3151,22 @@
       "toReview": "Québec rules still to be reviewed by a lawyer: a demonstration screen, not legal advice."
     },
     "documentsPage": {
+      "dividers": "Bookmarks",
+      "allBookmarks": "All",
+      "bulk": {
+        "label": "Actions on the selection",
+        "selectedOne": "{count} document selected",
+        "selectedMany": "{count} documents selected",
+        "tag": "Bookmark",
+        "untag": "Remove the bookmark",
+        "noTags": "No bookmark yet: create one in Settings > Bookmarks.",
+        "tagged": "Bookmarks updated: {count}.",
+        "clear": "Clear selection",
+        "tooMany": "At most {max} documents at a time"
+      },
+      "bookmarkNamed": "Bookmark {name}",
+      "nothingWithBookmarks": "No document wears all of these bookmarks.",
+      "bookmarks": "Bookmarks",
       "title": "All documents",
       "lead": "All your documents, newest first, across all your collections.",
       "caption": "All your documents, newest first",
@@ -3102,6 +3183,18 @@
         "once": "on this payment",
         "repeating": "for {months} months",
         "forever": "every month"
+      }
+    },
+    "bookmarks": {
+      "lead": "Your own coloured categories. A bookmark groups files; taking one away never deletes them.",
+      "none": "No bookmark yet.",
+      "edit": "Rename or recolour",
+      "editNamed": "Rename or recolour “{name}”",
+      "deleteNamed": "Delete “{name}”",
+      "deleteKeeps": "The bookmark is taken off its files. The files themselves are kept.",
+      "kinds": {
+        "applicant_file": "Applicant files",
+        "document": "Documents"
       }
     }
   },
@@ -3648,6 +3741,12 @@
   "pricing": {
     "title": "Pricing",
     "lead": "No annual subscription. Pay per document, or subscribe by the month and cancel when you like. Prices in CAD, before taxes: GST and QST are added on the invoice.",
+    "offer": {
+      "headline": "Launch offer: {percent}% off the first {months} months with the code {code}",
+      "line": "{offer} a month for the first {months} months, then {regular} a month",
+      "ends": "Offer valid until {date}. The regular price applies after the offer.",
+      "always": "The regular price applies after the offer."
+    },
     "plansLabel": "Plans",
     "perMonth": " a month, plus taxes",
     "perDocument": " per document, plus taxes",
@@ -3656,6 +3755,7 @@
     "freeFirst": "Your first verification is free",
     "cancel": "Billed monthly, cancel any time from the billing portal",
     "noSubscription": "No subscription: you pay for the documents you verify",
+    "volume": "More than {included} verifications a month? Write to us",
     "plans": {
       "document": {
         "name": "One document",
@@ -3665,16 +3765,16 @@
         ]
       },
       "agency": {
-        "name": "Property manager",
+        "name": "Agency",
         "features": [
-          "For those who check several files a month: agencies, property managers and landlords",
+          "For agencies, brokers and landlords who check several files a month",
           "The API, with keys created in your account"
         ]
       },
       "firm": {
-        "name": "Firms and corporate",
+        "name": "Building manager",
         "features": [
-          "For firms with a larger volume",
+          "For property managers and firms with a larger volume",
           "The API, with keys created in your account"
         ]
       }
@@ -3698,6 +3798,12 @@
         }
       }
     }
+  },
+  "affordability": {
+    "share": "The rent is {share} of the income given. Information only.",
+    "no-claim": "No figure: the income or the rent is not given as a usable number, so no share is computed.",
+    "note": "This share must not be the sole criterion. In Québec, deciding on income alone can be discrimination on social condition (Charter of human rights and freedoms, s. 10 and 12). The income is a figure the applicant chose to give; it is used here and not kept.",
+    "disclaimer": "Information about two figures, not legal advice and no judgement on the applicant. Salary is not required to rent in Québec."
   },
   "brief": {
     "renewalNotice": {
@@ -3778,5 +3884,42 @@
       "fr": "Français"
     },
     "languageNote": "The rules are written in French; the English names come with the ruleset. Article references are given as cited."
+  },
+  "sectionG": {
+    "previous-blank": "Section G of the lease is blank: the lowest rent paid in the twelve months before the lease is not stated (C.c.Q., art. 1896).",
+    "previous-altered": "Section G of the lease looks altered: check the figure against the landlord's notice (C.c.Q., art. 1896).",
+    "over-rate": "The new rent is {excess} a month above the highest rent the TAL's {year} rate gives from the stated previous rent ({max}). Source: {source}.",
+    "within-rate": "The new rent is within the highest rent the TAL's {year} rate gives from the stated previous rent ({max}). Source: {source}.",
+    "not-above-previous": "The new rent is not above the previous rent stated in Section G.",
+    "no-rate": "No claim: the TAL's rate for this year is not entered, or the figures are not usable, so the increase is not compared.",
+    "recourse": "Recourse: the tenant may ask the Tribunal administratif du logement to fix the rent (C.c.Q., art. 1950).",
+    "disclaimer": "Information about the figures of the lease, not legal advice and no judgement on the landlord. Check the article and the TAL's page, or ask the TAL."
+  },
+  "paymentClauses": {
+    "advance-over-one-month": "The lease asks for more than one month of rent in advance. A landlord may require only the first term, within one month (C.c.Q., art. 1904).",
+    "deposit": "The lease asks for a sum besides the rent (deposit, key money or guarantee). A landlord may not require one (C.c.Q., art. 1904).",
+    "postdated-cheques": "The lease requires postdated cheques. A landlord may not require them (C.c.Q., art. 1904).",
+    "disclaimer": "Information about the terms of the lease, not legal advice and no judgement on the landlord. Check the article, or ask the TAL."
+  },
+  "sectionGDeadline": {
+    "ten-days": "The landlord gave the notice: the request to the TAL is made within 10 days of the day the lease was concluded.",
+    "two-months-from-start": "No notice was given: the request to the TAL is made within two months of the start of the lease.",
+    "two-months-from-knowledge": "The notice held a false statement: the request to the TAL is made within two months of learning of it.",
+    "open": "By these dates, the last day to ask is {lastDay} ({days} days left). Source: {source}.",
+    "last-day": "By these dates, today ({lastDay}) is the last day to ask. Source: {source}.",
+    "closed": "By these dates, the last day to ask was {lastDay}. Source: {source}.",
+    "no-claim": "No claim: a date is missing or unreadable, so no deadline is given.",
+    "disclaimer": "Information about dates, not legal advice. How days and months are counted is for the TAL or a lawyer to confirm."
+  },
+  "sectionGRequest": {
+    "title": "Facts to take to the TAL",
+    "rentNew": "Rent of the new lease: {cents}.",
+    "rentPrevious": "Lowest rent in the twelve months before, as written in Section G: {cents}.",
+    "previousBlank": "Section G of the lease does not state the previous rent.",
+    "previousAltered": "Section G of the lease looks crossed out or altered.",
+    "rentMax": "Highest rent the TAL's {year} rate gives from that previous rent: {cents}.",
+    "excess": "Difference with the new rent: {cents}.",
+    "deadline": "By the dates given, the last day to ask the TAL to fix the rent is {lastDay}.",
+    "disclaimer": "A summary of the lease's figures to keep and to bring to the TAL, which tells you the form and any fee. Yomizaka files nothing. Information, not legal advice."
   }
 }

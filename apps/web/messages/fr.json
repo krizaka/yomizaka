@@ -9,7 +9,7 @@
     "navLabel": "Yomizaka",
     "nav": {
       "what": "Ce que ça fait",
-      "proof": "Une vraie vérification",
+      "proof": "Un cas réel",
       "privacy": "Confidentialité",
       "docs": "Docs",
       "pricing": "Tarifs"
@@ -1364,8 +1364,8 @@
       "fairUseTitle": "Limite mensuelle atteinte",
       "fairUse": "Votre abonnement comprend {limit} vérifications par mois. La limite revient au début du mois prochain.",
       "testMode": "Mode test : aucune vraie carte n'est débitée.",
-      "agency": "S’abonner — PME",
-      "firm": "S’abonner — Études",
+      "agency": "S’abonner — Agence",
+      "firm": "S’abonner — Gestionnaire d’immeubles",
       "informative": "Vérification informative, ce n’est pas un avis juridique."
     },
     "insight": {
@@ -1527,7 +1527,8 @@
         "securite": "Sécurité",
         "facturation": "Abonnement et facturation",
         "donnees": "Mes données",
-        "stockage": "Stockage"
+        "stockage": "Stockage",
+        "signets": "Signets"
       },
       "label": "Réglages du compte",
       "verified": "Courriel vérifié",
@@ -1591,8 +1592,8 @@
         "buy": "Acheter ou s'abonner",
         "testMode": "Mode test : aucune vraie carte n'est débitée.",
         "plans": {
-          "agency": "PME",
-          "firm": "Études et entreprises"
+          "agency": "Agence",
+          "firm": "Gestionnaire d’immeubles"
         }
       },
       "data": {
@@ -1778,6 +1779,32 @@
           "display": {
             "label": "Affichage des paiements",
             "hint": "Mode test : un avis dit qu'aucune vraie carte n'est débitée."
+          }
+        },
+        "tal": {
+          "rate": {
+            "year": {
+              "label": "Taux du TAL : année",
+              "hint": "L'année à laquelle s'applique le pourcentage du TAL (le bail y commence)."
+            },
+            "basisPoints": {
+              "label": "Taux du TAL : pourcentage (points de base)",
+              "hint": "Le pourcentage de base du TAL pour le loyer, en centièmes de pour cent (310 = 3,1 %). 0 : rien d'inscrit, la vérification de la section G ne fait aucune affirmation."
+            },
+            "sourceUrl": {
+              "label": "Taux du TAL : page source",
+              "hint": "La page où le chiffre a été lu ; affichée à côté de chaque chiffre."
+            },
+            "enteredOn": {
+              "label": "Taux du TAL : inscrit le",
+              "hint": "Le jour de l'inscription (AAAA-MM-JJ)."
+            }
+          }
+        },
+        "pricing": {
+          "announcedCode": {
+            "label": "Code promo annoncé",
+            "hint": "Le code d'un coupon que la page des tarifs annonce (vide : aucun). Son pourcentage, sa durée et sa fin viennent du coupon."
           }
         },
         "audit": {
@@ -2543,7 +2570,7 @@
         "fromHint": "Vide ou aujourd’hui : dès maintenant. Un jour plus tard : dès son début.",
         "schedule": "Planifier le changement",
         "charged": "Facturé par le processeur",
-        "chargedHint": "La vente s’arrête tant qu’il diffère du catalogue : créez d’abord le nouveau prix chez le processeur.",
+        "chargedHint": "La vente s’arrête tant qu’il diffère du catalogue : synchronisez le processeur (mode test) ci-dessous.",
         "notFound": "Prix introuvable chez le processeur.",
         "mismatch": "Différent",
         "match": "Égal",
@@ -2562,12 +2589,50 @@
         },
         "entries": {
           "document": "Un document vérifié",
-          "agency": "PME",
-          "firm": "Études et entreprises",
-          "api": "API dédiée (plus de 5 000 par mois, sur soumission)",
+          "agency": "Agence",
+          "firm": "Gestionnaire d’immeubles",
+          "api": "API dédiée (sur soumission)",
           "fullFile": "Dossier complet du locataire",
           "backgroundCheck": "Vérification des antécédents",
           "screening": "Filtre seul"
+        },
+        "editor": {
+          "edit": "Modifier",
+          "plusTaxes": "plus taxes",
+          "unit": "Unité",
+          "limitsLabel": "Limites",
+          "keepsPrice": "Les abonnements en cours gardent le prix auquel ils ont été vendus.",
+          "cancel": "Annuler",
+          "scheduled": "Changements planifiés ({count})",
+          "history": "Historique",
+          "historyEmpty": "Aucun changement pour l’instant.",
+          "loading": "Chargement…",
+          "historyLine": "{actor}, {at} : {before} → {after}, à partir du {from}",
+          "scheduledLine": "à partir du {from}",
+          "saved": "Enregistré."
+        },
+        "confirm": {
+          "title": "Changer le prix de {name} ?",
+          "now": "Dès maintenant : {before} → {after}. Les nouvelles ventes utilisent aussitôt le nouveau prix ; les abonnements déjà vendus gardent le leur.",
+          "later": "À partir du {date} : {before} → {after}. Rien ne change avant ce jour ; les abonnements déjà vendus gardent leur prix.",
+          "processorTest": "Le processeur (mode test) reçoit le prix correspondant.",
+          "processorLive": "Le processeur est en mode RÉEL : son prix n’est pas changé d’ici, c’est le propriétaire qui le fait.",
+          "confirm": "Oui, changer",
+          "cancel": "Non, garder",
+          "cancelled": "Annulé, rien n’a été changé."
+        },
+        "sync": {
+          "title": "Prix du processeur",
+          "button": "Synchroniser le processeur",
+          "hint": "Crée chez le processeur le prix de chaque entrée vendue qui diffère du catalogue (mode test seulement). Un prix déjà vendu n’est jamais modifié : un nouveau prend sa clé de recherche.",
+          "done": "Synchronisé : {lines}",
+          "live": "Le processeur est en mode réel : seul le propriétaire change ses prix.",
+          "off": "Les paiements ne sont pas configurés ici.",
+          "status": {
+            "exists": "à jour",
+            "created": "créé",
+            "repriced": "nouveau prix"
+          }
         }
       },
       "coupons": {
@@ -3086,6 +3151,22 @@
       "toReview": "Règles québécoises encore à faire relire par un juriste : un écran de démonstration, pas un avis juridique."
     },
     "documentsPage": {
+      "dividers": "Signets",
+      "allBookmarks": "Tous",
+      "bulk": {
+        "label": "Actions sur la sélection",
+        "selectedOne": "{count} document sélectionné",
+        "selectedMany": "{count} documents sélectionnés",
+        "tag": "Mettre un signet",
+        "untag": "Retirer le signet",
+        "noTags": "Aucun signet pour l’instant : créez-en un dans Réglages > Signets.",
+        "tagged": "Signets mis à jour : {count}.",
+        "clear": "Effacer la sélection",
+        "tooMany": "{max} documents au plus à la fois"
+      },
+      "bookmarkNamed": "Mettre un signet sur {name}",
+      "nothingWithBookmarks": "Aucun document ne porte tous ces signets.",
+      "bookmarks": "Signets",
       "title": "Tous les documents",
       "lead": "Tous vos documents, du plus récent au plus ancien, dans toutes vos collections.",
       "caption": "Tous vos documents, les plus récents d'abord",
@@ -3102,6 +3183,18 @@
         "once": "sur ce paiement",
         "repeating": "pendant {months} mois",
         "forever": "chaque mois"
+      }
+    },
+    "bookmarks": {
+      "lead": "Vos propres catégories colorées. Un signet regroupe des fichiers ; le retirer ne les supprime jamais.",
+      "none": "Aucun signet pour l’instant.",
+      "edit": "Renommer ou recolorer",
+      "editNamed": "Renommer ou recolorer « {name} »",
+      "deleteNamed": "Supprimer « {name} »",
+      "deleteKeeps": "Le signet est retiré de ses fichiers. Les fichiers eux-mêmes sont conservés.",
+      "kinds": {
+        "applicant_file": "Dossiers de candidature",
+        "document": "Documents"
       }
     }
   },
@@ -3648,6 +3741,12 @@
   "pricing": {
     "title": "Tarifs",
     "lead": "Aucun abonnement annuel. Payez au document, ou abonnez-vous au mois et résiliez quand vous voulez. Prix en CAD, avant taxes : la TPS et la TVQ s'ajoutent sur la facture.",
+    "offer": {
+      "headline": "Offre de lancement : −{percent} % les {months} premiers mois avec le code {code}",
+      "line": "{offer} par mois les {months} premiers mois, puis {regular} par mois",
+      "ends": "Offre valable jusqu’au {date}. Le prix régulier s’applique après l’offre.",
+      "always": "Le prix régulier s’applique après l’offre."
+    },
     "plansLabel": "Forfaits",
     "perMonth": " par mois, plus taxes",
     "perDocument": " par document, plus taxes",
@@ -3656,6 +3755,7 @@
     "freeFirst": "Votre première vérification est offerte",
     "cancel": "Facturé au mois, résiliable en tout temps depuis le portail de facturation",
     "noSubscription": "Sans abonnement : vous payez les documents que vous vérifiez",
+    "volume": "Plus de {included} vérifications par mois ? Écrivez-nous",
     "plans": {
       "document": {
         "name": "Un document",
@@ -3665,16 +3765,16 @@
         ]
       },
       "agency": {
-        "name": "Gestionnaire d'immeubles",
+        "name": "Agence",
         "features": [
-          "Pour qui vérifie plusieurs dossiers par mois : agences, gestionnaires d'immeubles et propriétaires",
+          "Pour les agences, courtiers et propriétaires qui vérifient plusieurs dossiers par mois",
           "L'API, avec des clés créées dans votre compte"
         ]
       },
       "firm": {
-        "name": "Études et entreprises",
+        "name": "Gestionnaire d'immeubles",
         "features": [
-          "Pour les études avec un plus grand volume",
+          "Pour les gestionnaires d'immeubles et les entreprises avec un plus grand volume",
           "L'API, avec des clés créées dans votre compte"
         ]
       }
@@ -3698,6 +3798,12 @@
         }
       }
     }
+  },
+  "affordability": {
+    "share": "Le loyer représente {share} du revenu indiqué. À titre d'information seulement.",
+    "no-claim": "Aucun chiffre : le revenu ou le loyer n'est pas donné sous une forme utilisable, donc aucune part n'est calculée.",
+    "note": "Cette part ne doit pas être le seul critère. Au Québec, décider sur le seul revenu peut constituer de la discrimination fondée sur la condition sociale (Charte des droits et libertés de la personne, art. 10 et 12). Le revenu est un chiffre que le candidat a choisi de donner ; il est utilisé ici et n'est pas conservé.",
+    "disclaimer": "Information sur deux chiffres, pas un avis juridique ni un jugement sur le candidat. Le salaire n'est pas exigé pour louer au Québec."
   },
   "brief": {
     "renewalNotice": {
@@ -3778,5 +3884,42 @@
       "fr": "Français"
     },
     "languageNote": "Les règles sont rédigées en français ; les noms anglais viennent avec le jeu de règles. Les références aux articles sont données telles que citées."
+  },
+  "sectionG": {
+    "previous-blank": "La section G du bail est vide : le loyer le plus bas payé dans les douze mois précédant le bail n'y est pas indiqué (C.c.Q., art. 1896).",
+    "previous-altered": "La section G du bail semble modifiée : vérifiez le montant auprès de l'avis du locateur (C.c.Q., art. 1896).",
+    "over-rate": "Le nouveau loyer dépasse de {excess} par mois le loyer le plus élevé que donne le taux {year} du TAL à partir du loyer précédent indiqué ({max}). Source : {source}.",
+    "within-rate": "Le nouveau loyer respecte le loyer le plus élevé que donne le taux {year} du TAL à partir du loyer précédent indiqué ({max}). Source : {source}.",
+    "not-above-previous": "Le nouveau loyer ne dépasse pas le loyer précédent indiqué à la section G.",
+    "no-rate": "Aucune conclusion : le taux du TAL pour cette année n'est pas saisi, ou les montants sont inutilisables, donc l'augmentation n'est pas comparée.",
+    "recourse": "Recours : le locataire peut demander au Tribunal administratif du logement de fixer le loyer (C.c.Q., art. 1950).",
+    "disclaimer": "Information sur les montants du bail, pas un avis juridique et aucun jugement sur le locateur. Vérifiez l'article et la page du TAL, ou demandez au TAL."
+  },
+  "paymentClauses": {
+    "advance-over-one-month": "Le bail demande plus d'un mois de loyer d'avance. Le locateur ne peut exiger d'avance que le premier terme, dans la limite d'un mois (C.c.Q., art. 1904).",
+    "deposit": "Le bail demande une somme en plus du loyer (dépôt, clé ou garantie). Le locateur ne peut en exiger aucune (C.c.Q., art. 1904).",
+    "postdated-cheques": "Le bail exige des chèques postdatés. Le locateur ne peut pas les exiger (C.c.Q., art. 1904).",
+    "disclaimer": "Information sur les clauses du bail, pas un avis juridique ni un jugement sur le locateur. Vérifiez l'article, ou demandez au TAL."
+  },
+  "sectionGDeadline": {
+    "ten-days": "Le locateur a remis l'avis : la demande au TAL se fait dans les 10 jours de la conclusion du bail.",
+    "two-months-from-start": "Aucun avis n'a été remis : la demande au TAL se fait dans les deux mois du début du bail.",
+    "two-months-from-knowledge": "L'avis contenait une fausse déclaration : la demande au TAL se fait dans les deux mois de la connaissance de ce fait.",
+    "open": "D'après ces dates, le dernier jour pour demander est le {lastDay} ({days} jours restants). Source : {source}.",
+    "last-day": "D'après ces dates, aujourd'hui ({lastDay}) est le dernier jour pour demander. Source : {source}.",
+    "closed": "D'après ces dates, le dernier jour pour demander était le {lastDay}. Source : {source}.",
+    "no-claim": "Aucune conclusion : une date manque ou est illisible, aucun délai n'est donné.",
+    "disclaimer": "Information sur les dates, pas un avis juridique. La façon de compter les jours et les mois est à confirmer auprès du TAL ou d'un avocat."
+  },
+  "sectionGRequest": {
+    "title": "Les faits à apporter au TAL",
+    "rentNew": "Loyer du nouveau bail : {cents}.",
+    "rentPrevious": "Plus bas loyer des douze mois précédents, tel qu'écrit à la section G : {cents}.",
+    "previousBlank": "La section G du bail n'indique pas le loyer précédent.",
+    "previousAltered": "La section G du bail semble biffée ou modifiée.",
+    "rentMax": "Loyer le plus élevé que donne le taux {year} du TAL à partir de ce loyer précédent : {cents}.",
+    "excess": "Écart avec le nouveau loyer : {cents}.",
+    "deadline": "D'après les dates données, le dernier jour pour demander au TAL de fixer le loyer est le {lastDay}.",
+    "disclaimer": "Un résumé des chiffres du bail à garder et à apporter au TAL, qui vous dit le formulaire et les frais éventuels. Yomizaka ne dépose rien. Information, pas un avis juridique."
   }
 }

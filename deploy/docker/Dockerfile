@@ -15,14 +15,18 @@ RUN pnpm --filter @yomizaka/web build
 # The OCR (Tesseract) runs in a worker thread whose requires the build's tracing cannot see: carry its packages, with their
 # trained data (French, English) and the few they need, whole and with their symlinks (ADR-0010). The smoke check proves it.
 RUN mkdir /ocr && cd node_modules/.pnpm && cp -a $(ls | grep -E '^(tesseract\.js|tesseract\.js-core|bmp-js|idb-keyval|is-url|node-fetch|opencollective-postinstall|regenerator-runtime|wasm-feature-detect|zlibjs|tr46|whatwg-url|webidl-conversions)@|^@tesseract\.js-data\+') /ocr/
+# Not shipped (about 35 MB): the browser builds of the core (`*.wasm.js`, the same WebAssembly embedded for a page; Node reads the `.wasm`)
+# and the fast-model data (only `4.0.0_best_int` is read, lib/ocr/tesseract.ts). The smoke check reads a page, so a mistake here fails the build.
+RUN cd /ocr && find . -path '*/tesseract.js-core@*' -name '*.wasm.js' -delete \
+    && find . -path '*/@tesseract.js-data/*' -mindepth 4 -maxdepth 6 -type d -name 4.0.0 -exec rm -rf {} +
 
-FROM node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 AS run
+# The runtime starts `node` only: it is Alpine plus the node binary of the build stage's image (musl, same version) and its two
+# libraries. npm, corepack, yarn and the headers (and the dependencies they bundle, flagged by the image scan) are never in a layer.
+FROM alpine:3.24@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a AS run
 WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=8080 HOSTNAME=0.0.0.0
-RUN addgroup -S yomizaka && adduser -S yomizaka -G yomizaka
-# The runtime starts `node` only: npm and corepack (and the dependencies they bundle, flagged by the image scan) are not shipped.
-RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
-    /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack
+RUN apk add --no-cache libstdc++ libgcc && addgroup -S yomizaka && adduser -S yomizaka -G yomizaka
+COPY --from=build /usr/local/bin/node /usr/local/bin/node
 COPY --from=build --chown=yomizaka:yomizaka /repo/apps/web/.next/standalone ./
 COPY --from=build --chown=yomizaka:yomizaka /repo/apps/web/.next/static ./apps/web/.next/static
 COPY --from=build --chown=yomizaka:yomizaka /ocr/ ./node_modules/.pnpm/

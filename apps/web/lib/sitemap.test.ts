@@ -4,6 +4,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import sitemap from "../app/sitemap";
 import { proxy } from "../proxy";
 import { downloadPageOpen } from "./downloads";
+import { PRICING_PUBLISHED } from "./prices/publication";
 import { SITE_URL } from "./site";
 
 /** The sitemap lists every indexable page in both languages, each the other's hreflang alternate — and is served when indexing is on. */
@@ -15,9 +16,10 @@ describe("sitemap.xml", () => {
     urls = entries.map((e) => e.url);
   });
 
-  it("lists the home, docs, privacy and terms, in en and fr, and /download only while it has an app or a video, nothing else", () => {
-    for (const locale of ["en", "fr"]) for (const path of ["", "/docs", "/privacy", "/terms", ...(downloadPageOpen() ? ["/download"] : [])]) expect(urls).toContain(`${SITE_URL}/${locale}${path}`);
-    expect(urls).toHaveLength(downloadPageOpen() ? 10 : 8);
+  it("lists the home, docs, privacy and terms, in en and fr, /pricing while published and /download only while it has an app or a video, nothing else", () => {
+    const paths = ["", "/docs", "/privacy", "/terms", ...(PRICING_PUBLISHED ? ["/pricing"] : []), ...(downloadPageOpen() ? ["/download"] : [])];
+    for (const locale of ["en", "fr"]) for (const path of paths) expect(urls).toContain(`${SITE_URL}/${locale}${path}`);
+    expect(urls).toHaveLength(2 * paths.length);
   });
 
   it("lists none of the removed addresses", () => {

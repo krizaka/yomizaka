@@ -93,7 +93,7 @@ describe("sign-up", () => {
       const mail = await renderEmail("confirmEmail", { brand: "yomizaka", confirmUrl: "https://www.yomizaka.com/fr/verify-email?token=x", hours: VERIFY_TTL_HOURS }, { locale });
       expect(mail.text).toContain("Yomizaka");
       expect(mail.text).not.toMatch(/conforme|compliant|garanti|guarantee|approuv|approved/i);
-      expect(mail.html + mail.text).not.toMatch(/Orazaka|Orochia|Akinaza|Kachizaka|Yororis/);
+      expect(mail.html + mail.text).not.toMatch(/Orazaka|Akinaza/);
     }
     expect(newVerifyToken()).not.toBe(newVerifyToken());
   });

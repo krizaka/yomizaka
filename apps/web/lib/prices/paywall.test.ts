@@ -10,8 +10,8 @@ describe("the paywall says the catalogue's prices", () => {
   it("in French and English, from the entries in force", async () => {
     const prices = publicCatalogue(await priceCatalogue(PRICES, memoryPriceStore()).catalogue(NOW));
     const fr = paywallFigures(prices, "fr")!;
-    expect({ ...fr, document: fr.document.replace(/\s/gu, " "), agency: fr.agency.replace(/\s/gu, " ") }).toEqual({ document: "0,65 $", agency: "59,00 $", included: 100 });
-    expect(paywallFigures(prices, "en")).toMatchObject({ document: "$0.65", agency: "$59.00", included: 100 });
+    expect({ ...fr, document: fr.document.replace(/\s/gu, " "), agency: fr.agency.replace(/\s/gu, " ") }).toEqual({ document: "4,99 $", agency: "49,00 $", included: 100 });
+    expect(paywallFigures(prices, "en")).toMatchObject({ document: "$4.99", agency: "$49.00", included: 100 });
   });
 
   it("says nothing it does not have (an entry withdrawn from sale)", () => {

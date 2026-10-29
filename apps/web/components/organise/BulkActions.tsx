@@ -21,12 +21,13 @@ type TagOption = { id: string; name: string; color: "blue" | "green" | "amber" |
  * are Krizaka UI's): tag, untag, decide — one transaction, one audit line per file. A decision that asks for it needs a second press,
  * and says what it does: the file closes and its documents are erased. What the call did goes back to the bar (`onResult`).
  */
-export function BulkActions({ kind, ids, set, tags, onResult, onDone }: Readonly<{ kind: string; ids: readonly string[]; set: StatusSet; tags: readonly TagOption[]; onResult: (text: string) => void; onDone: () => void }>) {
+export function BulkActions({ kind, ids, set, tags, words = "dossiers", onResult, onDone }: Readonly<{ kind: string; ids: readonly string[]; set?: StatusSet; tags: readonly TagOption[]; words?: "dossiers" | "documentsPage"; onResult: (text: string) => void; onDone: () => void }>) {
   const { say, locale } = useSay();
   const router = useRouter();
   const [armed, setArmed] = useState<string | null>(null);
   const call = useMutation({ mutationFn: (request: { path: string; json: object }) => krizakaFetch(`/api/organize/${kind}/${request.path}`, { method: "POST", json: request.json }) });
-  const moves = movesFrom(set, set.initial ?? "", OWNER_ROLE);
+  // Documents have no decision set: only the tag and untag menus show.
+  const moves = set ? movesFrom(set, set.initial ?? "", OWNER_ROLE) : [];
   const run = async (path: string, json: object, done: (answer: Record<string, unknown>) => string) => {
     onResult("");
     try {
@@ -43,7 +44,7 @@ export function BulkActions({ kind, ids, set, tags, onResult, onDone }: Readonly
     setArmed(next.armed);
     if (next.send) void run("status", { ids, to }, (a) => say("dossiers.bulk.done", { moved: (a.moved as unknown[]).length, skipped: (a.skipped as unknown[]).length }));
   };
-  const retag = (tagId: string, mode: "add" | "remove") => run("tags/apply", { ids, [mode]: [tagId] }, (a) => say("dossiers.bulk.tagged", { count: Number(a.changed) }));
+  const retag = (tagId: string, mode: "add" | "remove") => run("tags/apply", { ids, [mode]: [tagId] }, (a) => say(`${words}.bulk.tagged`, { count: Number(a.changed) }));
   const tagMenu = (label: string, mode: "add" | "remove") => (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
@@ -53,7 +54,7 @@ export function BulkActions({ kind, ids, set, tags, onResult, onDone }: Readonly
       </DropdownMenu.Trigger>
       <DropdownMenu.Content align="start">
         {tags.length === 0 ? (
-          <DropdownMenu.Item disabled>{say("dossiers.bulk.noTags")}</DropdownMenu.Item>
+          <DropdownMenu.Item disabled>{say(`${words}.bulk.noTags`)}</DropdownMenu.Item>
         ) : (
           tags.map((t) => (
             <DropdownMenu.Item key={t.id} onSelect={() => void retag(t.id, mode)}>
@@ -66,10 +67,10 @@ export function BulkActions({ kind, ids, set, tags, onResult, onDone }: Readonly
   );
   return (
     <>
-      {tagMenu(say("dossiers.bulk.tag"), "add")}
-      {tagMenu(say("dossiers.bulk.untag"), "remove")}
+      {tagMenu(say(`${words}.bulk.tag`), "add")}
+      {tagMenu(say(`${words}.bulk.untag`), "remove")}
       {moves.map((m) => {
-        const state = set.states.find((s) => s.key === m.to)?.label[locale] ?? m.to;
+        const state = set?.states.find((s) => s.key === m.to)?.label[locale] ?? m.to;
         return (
           <Button key={m.to} variant={m.confirm ? "secondary" : "primary"} size="md" loading={call.isPending} onClick={() => decide(m.to, m.confirm === true)}>
             {say(armed === m.to ? "dossiers.decide.confirm" : "dossiers.decide.mark", { state })}

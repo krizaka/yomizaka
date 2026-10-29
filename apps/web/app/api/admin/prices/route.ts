@@ -6,6 +6,7 @@ import { audit } from "@/lib/audit";
 import { env } from "@/lib/env";
 import { handle, readJson } from "@/lib/http";
 import { paymentsFrom } from "@/lib/payments/config";
+import { processorSync } from "@/lib/payments/processor-sync";
 import { appPrices } from "@/lib/prices/catalogue";
 import { SOLD, SOLD_KINDS } from "@/lib/pricing";
 import { settingsRefusal } from "@/lib/settings/refusal";
@@ -62,5 +63,7 @@ export const POST = (req: Request) =>
     const patch = Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== undefined)) as Partial<Price>;
     const entry = await appPrices().schedule({ id: session.account.id, label: session.account.email }, key, patch, effectiveFrom ? new Date(effectiveFrom) : now, now);
     await audit({ action: "prices.scheduled", actorId: session.account.id, actorLabel: session.account.email, targetId: null, detail: { key, versionId: entry.versionId, effectiveFrom: entry.effectiveFrom.toISOString(), ...patch }, headers: req.headers });
-    return Response.json({ entry });
+    // A change that applies now reaches the processor at once (test mode; a live key is the owner's); a scheduled one is synced when its day comes (the screen's « Sync » or the next change).
+    const sync = entry.effectiveFrom <= now ? await processorSync(env(), (await describePrices(appPrices(), now)).entries).catch(() => "failed" as const) : "later";
+    return Response.json({ entry, sync });
   });

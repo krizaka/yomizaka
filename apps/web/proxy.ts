@@ -60,7 +60,7 @@ export function proxy(request: NextRequest) {
   if (dev) return seal(devResponse(request), closed);
   if (!admin && closed && pathname === "/robots.txt") return seal(closedRobots(), closed);
   if (!admin && closed && pathname === "/sitemap.xml") return seal(notFound(), closed);
-  const home = admin ? null : landingRedirect(request, { cookie: SESSION_COOKIE, landing: LANDING, home: () => `/${isLocale(pathname.split("/")[1]) ? pathname.split("/")[1] : chosen}/app` });
+  const home = admin ? null : landingRedirect(request, { cookie: SESSION_COOKIE, landing: LANDING, home: () => `/${isLocale(pathname.split("/")[1]) ? pathname.split("/")[1] : chosen}/app`, origin: process.env.APP_PUBLIC_URL ?? SITE_URL });
   if (home) return seal(home, closed);
   const route = routeFor(host, pathname, chosen);
   const direct = directResponse(request, route, host);

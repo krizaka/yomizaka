@@ -25,7 +25,7 @@ describe("the proxy carries the language of the address to the page (the UX revi
 describe("an address without a language opens in French; English stays a choice (yomizaka#366)", () => {
   const ask = (path: string, cookie?: string, host = "www.yomizaka.com") =>
     proxy(new NextRequest(`https://${host}${path}`, { headers: { host, ...(cookie ? { cookie } : {}) } }));
-  const goes = (res: Response) => (res.headers.get("location") ? new URL(res.headers.get("location")!).pathname : null);
+  const goes = (res: Response) => (res.headers.get("location") ? new URL(res.headers.get("location")!, "https://www.yomizaka.com").pathname : null);
 
   it("no cookie: / goes to /fr, and every other address to its /fr twin", () => {
     expect(goes(ask("/"))).toBe("/fr");
@@ -56,7 +56,7 @@ describe("an address without a language opens in French; English stays a choice 
 // krizaka-ui#827: a signed-in visitor never sees the public landing page; the bar's hint flag follows the session cookie.
 describe("a signed-in visitor lands on their home, never on the landing page (krizaka-ui#827)", () => {
   const ask = (path: string, cookie?: string, host = "www.yomizaka.com") => proxy(new NextRequest(`https://${host}${path}`, { headers: { host, ...(cookie ? { cookie } : {}) } }));
-  const goes = (res: Response) => (res.headers.get("location") ? new URL(res.headers.get("location")!).pathname : null);
+  const goes = (res: Response) => (res.headers.get("location") ? new URL(res.headers.get("location")!, "https://www.yomizaka.com").pathname : null);
 
   it("/ , /fr and /en with the session cookie answer 307 to the home in the language, private and varying with the cookie", () => {
     for (const [path, home, cookie] of [
@@ -71,6 +71,10 @@ describe("a signed-in visitor lands on their home, never on the landing page (kr
       expect(res.headers.get("cache-control")).toBe("private, no-store");
       expect(res.headers.get("vary")).toBe("Cookie");
     }
+  });
+  it("the Location is absolute on the configured public origin (Next's proxy throws on a relative one), never on the Host the request claims", () => {
+    const res = proxy(new NextRequest("https://localhost:3000/fr", { headers: { host: "evil.example", "x-forwarded-host": "evil.example", cookie: "yomizaka_session=ys1.x" } }));
+    expect(res.headers.get("location")).toBe(`${(process.env.APP_PUBLIC_URL ?? "https://www.yomizaka.com").replace(/\/$/, "")}/fr/app`);
   });
   it("a signed-out visitor still gets the landing page, and a public page stays reachable signed in", () => {
     expect(goes(ask("/fr"))).toBeNull();

@@ -3,21 +3,21 @@ import crypto from "node:crypto";
 import { STORAGE_MODE, STORAGE_MODES } from "@yomizaka/core";
 import { z } from "zod";
 
-import { settingsKey } from "@/app/active-store";
 import { s3Body, secretFor } from "@/app/own-s3";
+import { openContextOf, providers } from "@/app/storage-providers";
 import { accountAct } from "@/lib/account/act";
 import { audit } from "@/lib/audit";
 import { query } from "@/lib/db";
-import { env } from "@/lib/env";
 import { readJson, refuse } from "@/lib/http";
 import { assertFeature } from "@/lib/settings/guards";
+import { actorOf } from "@/lib/storage/providers";
 import { loadSettings, saveSettings } from "@/lib/storage/settings";
 import { verifyS3 } from "@/lib/storage/verify";
 
 
 export const dynamic = "force-dynamic";
 
-export const GET = (req: Request) => accountAct(req, "storage", async (s) => ({ settings: await loadSettings(query, s.account.id), canStoreCredentials: settingsKey() !== null }));
+export const GET = (req: Request) => accountAct(req, "storage", async (s) => ({ settings: await loadSettings(query, s.account.id), canStoreCredentials: providers() !== null }));
 
 /**
  * Saves where kept documents live: none, Krizaka's store, or the owner's own S3. An own S3 is verified (public https address,
@@ -37,12 +37,12 @@ export const PUT = (req: Request) => accountAct(req, "storage", async (s) => {
     await assertFeature("ownStorage", owner);
     if (!input.s3) throw refuse(400, "BAD_REQUEST", "The S3 settings are required");
     const secretAccessKey = await secretFor(owner, input.s3.secretAccessKey);
-    const v = await verifyS3({ ...input.s3, secretAccessKey }, { allowLocal: env().APP_ENVIRONMENT === "dev", now: () => new Date(), probeId: crypto.randomUUID() });
+    const v = await verifyS3({ ...input.s3, secretAccessKey }, { ctx: openContextOf(), probeId: crypto.randomUUID() });
     if (v.error) throw refuse(422, v.error, "This endpoint is not allowed");
     if (!v.ok) throw refuse(422, "CONNECTION_FAILED", "The connection test failed", { steps: v.steps });
-    s3 = { ...input.s3, endpoint: v.origin!, secretAccessKey: input.s3.secretAccessKey };
+    s3 = { ...input.s3, endpoint: v.origin! };
   }
-  const settings = await saveSettings(query, owner, { mode: input.mode, keepDefault: input.keepDefault, s3 }, settingsKey(), new Date());
+  const settings = await saveSettings(query, owner, { mode: input.mode, keepDefault: input.keepDefault, s3 }, providers(), actorOf({ id: owner, email: s.account.email }), new Date());
   await audit({ action: "storage.settings_changed", actorId: owner, actorLabel: s.account.email, targetId: owner, detail: { mode: settings.mode, host: settings.s3 ? new URL(settings.s3.endpoint).host : null }, headers: req.headers });
   return { settings };
 });

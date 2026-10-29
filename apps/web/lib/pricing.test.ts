@@ -13,14 +13,36 @@ const NOW = new Date("2026-10-25T12:00:00Z");
 const LATER = new Date("2026-12-01T00:00:00Z");
 const catalogue = () => priceCatalogue(PRICES, memoryPriceStore());
 
-describe("the seed is the pricing audit's grid (yomizaka#367)", () => {
+describe("the seed is the grid of ADR-0013 (yomizaka#367, #388)", () => {
   it("has every entry, at its default, with its availability", async () => {
     const byKey = Object.fromEntries((await catalogue().catalogue(NOW)).map((e) => [e.key, e]));
-    expect(byKey[PRICE.document]).toMatchObject({ unit: "document", amountCents: 65, availability: AVAILABILITY.public, currency: "CAD", taxes: "plus-taxes" });
-    expect(byKey[PRICE.agency]).toMatchObject({ unit: "month", amountCents: 5900, availability: AVAILABILITY.public, limits: { included: 100 } });
-    expect(byKey[PRICE.firm]).toMatchObject({ unit: "month", amountCents: 27900, availability: AVAILABILITY.public, limits: { included: 750 } });
+    expect(byKey[PRICE.document]).toMatchObject({ unit: "document", amountCents: 499, availability: AVAILABILITY.public, currency: "CAD", taxes: "plus-taxes" });
+    expect(byKey[PRICE.agency]).toMatchObject({ unit: "month", amountCents: 4900, availability: AVAILABILITY.public, limits: { included: 100 } });
+    expect(byKey[PRICE.firm]).toMatchObject({ unit: "month", amountCents: 14900, availability: AVAILABILITY.public, limits: { included: 500 } });
     expect(byKey[PRICE.api]).toMatchObject({ unit: "document", amountCents: 22, availability: AVAILABILITY.internal });
     for (const k of [PRICE.fullFile, PRICE.backgroundCheck, PRICE.screening]) expect(byKey[k]).toMatchObject({ amountCents: null, availability: AVAILABILITY.preparing });
+  });
+});
+
+describe("the grid keeps the rules of ADR-0013", () => {
+  const seed = (key: string) => PRICES.defaultOf(key);
+  const amount = (key: string) => seed(key).amountCents!;
+  const included = (key: string) => seed(key).limits?.[LIMIT.included] ?? 0;
+
+  it("a landlord can buy one check, with no subscription", () => {
+    expect(SOLD.document.mode).toBe("payment");
+    expect(seed(PRICE.document)).toMatchObject({ unit: "document", availability: AVAILABILITY.public });
+  });
+
+  it("Agency pays for itself from the 10th document of the month (about three applicant files), not before", () => {
+    expect(9 * amount(PRICE.document)).toBeLessThan(amount(PRICE.agency));
+    expect(amount(PRICE.agency)).toBeLessThanOrEqual(10 * amount(PRICE.document));
+  });
+
+  it("each step up includes more and costs less per verification", () => {
+    expect(included(PRICE.firm)).toBeGreaterThan(included(PRICE.agency));
+    expect(amount(PRICE.firm) / included(PRICE.firm)).toBeLessThan(amount(PRICE.agency) / included(PRICE.agency));
+    expect(amount(PRICE.agency) / included(PRICE.agency)).toBeLessThan(amount(PRICE.document));
   });
 });
 
@@ -65,7 +87,7 @@ describe("the included volume is the catalogue's, for the version a subscription
   it("a subscription that recorded nothing (sold before the catalogue) reads its plan, or the default plan, in force", async () => {
     const c = catalogue();
     expect((await subscriptionEntry(c, { planKey: null, priceVersionId: null }, NOW)).key).toBe(SOLD[DEFAULT_SUBSCRIPTION].key);
-    expect(await includedFor(c, { planKey: PRICE.firm, priceVersionId: null }, NOW)).toBe(750);
+    expect(await includedFor(c, { planKey: PRICE.firm, priceVersionId: null }, NOW)).toBe(500);
     expect(await includedFor(c, { planKey: null, priceVersionId: "999" }, NOW)).toBe(100);
   });
 });
@@ -73,20 +95,20 @@ describe("the included volume is the catalogue's, for the version a subscription
 describe("a checkout charges the catalogue's amount, or nothing", () => {
   it("sells an entry whose processor price equals it", async () => {
     const entry = await soldEntry(catalogue(), "firm", NOW);
-    expect(onSale(entry, { amount: 27900, currency: "cad" }).versionId).toBe(seedVersionId(PRICE.firm));
+    expect(onSale(entry, { amount: 14900, currency: "cad" }).versionId).toBe(seedVersionId(PRICE.firm));
   });
 
   it("refuses while the processor's price differs (a change scheduled without its new processor price)", async () => {
     const c = catalogue();
-    await c.schedule(ADMIN, PRICE.document, { amountCents: 75 }, NOW, NOW);
+    await c.schedule(ADMIN, PRICE.document, { amountCents: 599 }, NOW, NOW);
     const entry = await c.entry(PRICE.document, NOW);
-    expect(() => onSale(entry, { amount: 65, currency: "cad" })).toThrow(expect.objectContaining({ status: 503 }));
+    expect(() => onSale(entry, { amount: 499, currency: "cad" })).toThrow(expect.objectContaining({ status: 503 }));
   });
 
   it("refuses an entry that is not on sale", async () => {
     const c = catalogue();
     await c.schedule(ADMIN, PRICE.agency, { availability: AVAILABILITY.preparing }, NOW, NOW);
     const entry = await c.entry(PRICE.agency, NOW);
-    expect(() => onSale(entry, { amount: 5900, currency: "cad" })).toThrow(expect.objectContaining({ status: 409 }));
+    expect(() => onSale(entry, { amount: 4900, currency: "cad" })).toThrow(expect.objectContaining({ status: 409 }));
   });
 });
