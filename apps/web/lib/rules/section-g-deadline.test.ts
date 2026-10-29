@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import en from "../../messages/en.json";
 import fr from "../../messages/fr.json";
-import { addMonthsIso, sectionGDeadline, SECTION_G_DEADLINE_SOURCE } from "./section-g-deadline";
+import { addMonthsIso, SECTION_G_DEADLINE_SOURCE,sectionGDeadline } from "./section-g-deadline";
 
 describe("deadline to ask the TAL to fix the rent", () => {
   it("is 10 days after the lease was concluded when the notice was given", () => {

@@ -149,6 +149,8 @@ export const finding = z.object({
   verdict: z.string(),
   evidenceSpan: z.object({ start: z.number().nullish(), end: z.number().nullish(), quote: z.string() }).nullable().optional(),
   explanation: z.string(),
+  /** The same sentence in English, for the findings Yomizaka itself writes (the tenant-shield rules, #104); the engine's own are French only. */
+  explanationEn: z.string().optional(),
   method: z.string().optional(),
   citation: z.string().optional(),
   /** The line of the document the evidence sits on (1-based), set by Yomizaka while the text is still there (yomizaka#129). */
@@ -156,10 +158,18 @@ export const finding = z.object({
 });
 export type Finding = z.infer<typeof finding>;
 
-/** A figure the ruleset declares it reads (rents for Section G, yomizaka#554): found with its cents, blank (the label with no amount) or absent. */
-export const reportFact = z.discriminatedUnion("status", [
-  z.object({ status: z.literal("found"), cents: z.number().int().positive(), evidenceSpan: z.object({ quote: z.string() }).passthrough().optional() }),
-  z.object({ status: z.literal("blank"), evidenceSpan: z.object({ quote: z.string() }).passthrough().optional() }),
+/**
+ * A figure the ruleset declares it reads: found with its value, blank (the label with no amount) or absent. A value is cents (the rents of
+ * Section G, yomizaka#554), a number of months (rent asked in advance), a yes/no (postdated cheques, notice given) or a date `YYYY-MM-DD`
+ * (conclusion and start of the lease): the tenant-shield rules (#104) read these and nothing else, never free text.
+ */
+const factEvidence = z.object({ quote: z.string() }).passthrough().optional();
+export const reportFact = z.union([
+  z.object({ status: z.literal("found"), cents: z.number().int().positive(), evidenceSpan: factEvidence }),
+  z.object({ status: z.literal("found"), months: z.number().int().min(0).max(120), evidenceSpan: factEvidence }),
+  z.object({ status: z.literal("found"), flag: z.boolean(), evidenceSpan: factEvidence }),
+  z.object({ status: z.literal("found"), date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), evidenceSpan: factEvidence }),
+  z.object({ status: z.literal("blank"), evidenceSpan: factEvidence }),
   z.object({ status: z.literal("absent") }),
 ]);
 export type ReportFact = z.infer<typeof reportFact>;

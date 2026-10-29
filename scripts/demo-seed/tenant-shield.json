@@ -1,0 +1,48 @@
+{
+  "bail-rosemont-1-conforme": [
+    {
+      "ruleId": "TS-G-001",
+      "title": "Loyer précédent de la section G et pourcentage du Tribunal",
+      "severity": "MAJOR",
+      "verdict": "PASS",
+      "explanation": "Le nouveau loyer respecte le loyer le plus élevé que donne le taux 2026 du TAL à partir du loyer précédent indiqué (1 237,20 $). Source : https://www.quebec.ca/nouvelles/actualites/details/le-calcul-de-lajustement-des-loyers-en-2026-68053. Information sur les montants du bail, pas un avis juridique et aucun jugement sur le locateur. Vérifiez l'article et la page du TAL, ou demandez au TAL.",
+      "explanationEn": "The new rent is within the highest rent the TAL's 2026 rate gives from the stated previous rent ($1,237.20). Source: https://www.quebec.ca/nouvelles/actualites/details/le-calcul-de-lajustement-des-loyers-en-2026-68053. Information about the figures of the lease, not legal advice and no judgement on the landlord. Check the article and the TAL's page, or ask the TAL.",
+      "method": "DETERMINISTIC",
+      "citation": "C.c.Q., art. 1896"
+    }
+  ],
+  "bail-rosemont-4-sans-avis-tal": [
+    {
+      "ruleId": "TS-G-001",
+      "title": "Loyer précédent de la section G et pourcentage du Tribunal",
+      "severity": "MAJOR",
+      "verdict": "FAIL",
+      "explanation": "Le nouveau loyer dépasse de 33,11 $ par mois le loyer le plus élevé que donne le taux 2026 du TAL à partir du loyer précédent indiqué (1 891,89 $). Source : https://www.quebec.ca/nouvelles/actualites/details/le-calcul-de-lajustement-des-loyers-en-2026-68053. Recours : le locataire peut demander au Tribunal administratif du logement de fixer le loyer (C.c.Q., art. 1950). Information sur les montants du bail, pas un avis juridique et aucun jugement sur le locateur. Vérifiez l'article et la page du TAL, ou demandez au TAL.",
+      "explanationEn": "The new rent is $33.11 a month above the highest rent the TAL's 2026 rate gives from the stated previous rent ($1,891.89). Source: https://www.quebec.ca/nouvelles/actualites/details/le-calcul-de-lajustement-des-loyers-en-2026-68053. Recourse: the tenant may ask the Tribunal administratif du logement to fix the rent (C.c.Q., art. 1950). Information about the figures of the lease, not legal advice and no judgement on the landlord. Check the article and the TAL's page, or ask the TAL.",
+      "method": "DETERMINISTIC",
+      "citation": "C.c.Q., art. 1896 ; C.c.Q., art. 1950"
+    }
+  ],
+  "bail-rosemont-5-clause-illegale": [
+    {
+      "ruleId": "TS-G-001",
+      "title": "Loyer précédent de la section G et pourcentage du Tribunal",
+      "severity": "MAJOR",
+      "verdict": "PASS",
+      "explanation": "Le nouveau loyer respecte le loyer le plus élevé que donne le taux 2026 du TAL à partir du loyer précédent indiqué (953,68 $). Source : https://www.quebec.ca/nouvelles/actualites/details/le-calcul-de-lajustement-des-loyers-en-2026-68053. Information sur les montants du bail, pas un avis juridique et aucun jugement sur le locateur. Vérifiez l'article et la page du TAL, ou demandez au TAL.",
+      "explanationEn": "The new rent is within the highest rent the TAL's 2026 rate gives from the stated previous rent ($953.68). Source: https://www.quebec.ca/nouvelles/actualites/details/le-calcul-de-lajustement-des-loyers-en-2026-68053. Information about the figures of the lease, not legal advice and no judgement on the landlord. Check the article and the TAL's page, or ask the TAL.",
+      "method": "DETERMINISTIC",
+      "citation": "C.c.Q., art. 1896"
+    },
+    {
+      "ruleId": "TS-P-001",
+      "title": "Paiement d'avance, dépôt et chèques postdatés",
+      "severity": "MAJOR",
+      "verdict": "FAIL",
+      "explanation": "Le bail demande une somme en plus du loyer (dépôt, clé ou garantie). Le locateur ne peut en exiger aucune (C.c.Q., art. 1904). Le bail exige des chèques postdatés. Le locateur ne peut pas les exiger (C.c.Q., art. 1904). Information sur les clauses du bail, pas un avis juridique ni un jugement sur le locateur. Vérifiez l'article, ou demandez au TAL.",
+      "explanationEn": "The lease asks for a sum besides the rent (deposit, key money or guarantee). A landlord may not require one (C.c.Q., art. 1904). The lease requires postdated cheques. A landlord may not require them (C.c.Q., art. 1904). Information about the terms of the lease, not legal advice and no judgement on the landlord. Check the article, or ask the TAL.",
+      "method": "DETERMINISTIC",
+      "citation": "C.c.Q., art. 1904"
+    }
+  ]
+}

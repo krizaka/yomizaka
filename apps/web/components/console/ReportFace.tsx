@@ -85,7 +85,7 @@ export function FindingList({ report, selection }: Readonly<{ report: Compliance
           </div>
           {f.evidenceSpan?.quote ? <p className="m-0 italic text-fg-secondary">« {f.evidenceSpan.quote} »</p> : null}
           {!f.evidenceSpan?.quote && failed ? <p className="m-0 text-fg-muted">{say("reportFace.noQuote")}</p> : null}
-          <p className="m-0 text-fg-secondary">{ruleExplanation(f.ruleId, locale, f.explanation)}</p>
+          <p className="m-0 text-fg-secondary">{ruleExplanation(f.ruleId, locale, f.explanation, f.explanationEn)}</p>
           <div className="flex flex-wrap items-center gap-3 text-xs text-fg-muted">
             {f.citation ? <span data-testid="finding-citation">{f.citation}</span> : null}
             {selection && f.evidenceSpan?.quote ? (

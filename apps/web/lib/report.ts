@@ -107,7 +107,7 @@ export function buildPayload(doc: Pick<DocumentDetail, "sha256" | "filename" | "
       verdict: f.verdict,
       citation: f.citation ?? null,
       quote: f.evidenceSpan?.quote ?? null,
-      explanation: ruleExplanation(f.ruleId, lang, f.explanation),
+      explanation: ruleExplanation(f.ruleId, lang, f.explanation, f.explanationEn),
       method: f.method ?? null,
     })),
   };
