@@ -1626,6 +1626,15 @@
         "otherOffers": "Autres offres",
         "buy": "Acheter ou s'abonner",
         "testMode": "Mode test : aucune vraie carte n'est débitée.",
+        "history": {
+          "title": "Historique des paiements",
+          "empty": "Aucun paiement pour l'instant. Un reçu apparaît ici après chaque paiement.",
+          "what": "Paiement",
+          "refunded": "Remboursé",
+          "paid": "Payé",
+          "receipt": "Reçu",
+          "receiptFor": "Reçu du {date}"
+        },
         "plans": {
           "agency": "Agence",
           "firm": "Gestionnaire d’immeubles"
