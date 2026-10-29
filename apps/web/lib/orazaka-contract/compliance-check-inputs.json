@@ -1,0 +1,24 @@
+{
+  "source": "krizaka/orazaka-packs document-validation/studios/compliance-check/blueprint.json (inputSchema), revision 31b4479; the engine refuses an input outside it with 400 invalid_request",
+  "versions": {
+    "1.7.2": {
+      "required": ["document", "jurisdiction"],
+      "properties": {
+        "document": { "type": "string", "maxLength": 60000 },
+        "jurisdiction": { "type": "string", "enum": ["QC", "FR", "BE-WAL"] },
+        "asOf": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+        "ruleset": { "type": "string", "enum": ["qc-invoice", "qc-service-contract"] }
+      }
+    },
+    "2.0.0": {
+      "required": ["document"],
+      "properties": {
+        "document": { "type": "string", "maxLength": 60000 },
+        "jurisdiction": { "type": "string", "enum": ["QC", "FR", "BE-WAL"] },
+        "declaredKind": { "type": "string", "enum": ["LEASE", "NOTICE", "CONDITION_REPORT", "INVOICE", "SERVICE_CONTRACT", "OTHER"] },
+        "asOf": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+        "ruleset": { "type": "string", "enum": ["qc-invoice", "qc-service-contract"] }
+      }
+    }
+  }
+}

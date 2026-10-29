@@ -1,0 +1,34 @@
+# The lease check on the deployed dev, as the persona (yomizaka P0, 2026-10-29): one REAL check through Yomizaka and Orazaka, so a refusal of
+# the engine (« Orazaka refused the document as sent ») is found by a red run, not by a customer. Every two hours and on demand (dev deploys
+# on every push to main, 6-10 min, no release train: run it by hand after a deploy). Never required, so it cannot block a merge.
+# Secrets: SMOKE_EMAIL / SMOKE_PASSWORD, the persona of the dev environment (environment `dev`).
+name: Dev smoke
+
+on:
+  schedule:
+    - cron: "23 */2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lease-check:
+    name: Lease check on dev
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: dev
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: main
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - name: One real lease check, signed in once
+        env:
+          SMOKE_EMAIL: ${{ secrets.SMOKE_EMAIL }}
+          SMOKE_PASSWORD: ${{ secrets.SMOKE_PASSWORD }}
+        run: node scripts/smoke-lease-check.mjs --base https://dev.yomizaka.com

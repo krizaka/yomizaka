@@ -1,7 +1,7 @@
 import { DOCX_MIME } from "@yomizaka/core";
 import { describe, expect, it } from "vitest";
 
-import { runInputs, searchText } from "./analyses";
+import { keptInputs, runInputs, searchText } from "./analyses";
 import { checkUpload, documentStatus, needsAttention, safeFilename, titleOf } from "./documents";
 import { normaliseText } from "./pdf-text";
 import { cleanPdf } from "./preflight/fixtures";
@@ -16,6 +16,19 @@ describe("what Yomizaka sends to Orazaka", () => {
     const day = new Date("2026-10-19T12:00:00Z");
     expect(runInputs({ studio: "compliance-check", jurisdiction: "QC", ruleset: "qc-invoice" }, doc, day)).toMatchObject({ jurisdiction: "QC", ruleset: "qc-invoice", asOf: "2026-10-19" });
     expect(runInputs({ studio: "compliance-check", jurisdiction: "QC" }, doc, day)).not.toHaveProperty("ruleset");
+  });
+  it("never sends the dated lease reference to the Studio (its schema does not take it) but keeps it as its own record", () => {
+    const doc = { mimeType: "application/pdf", text: LEASE, content: pdf(10) };
+    const request = { studio: "compliance-check", jurisdiction: "QC", ruleset: "qc-residential-lease/2026-10-24", asOf: "2026-10-29" } as const;
+    const inputs = runInputs(request, doc);
+    expect(inputs).not.toHaveProperty("ruleset");
+    expect(keptInputs(request, inputs)).toEqual({ jurisdiction: "QC", asOf: "2026-10-29", ruleset: "qc-residential-lease/2026-10-24" });
+  });
+  it("declares a visit notice or an état des lieux by its kind, and names only the invoice and the service contract as rulesets", () => {
+    const doc = { mimeType: "application/pdf", text: LEASE, content: pdf(10) };
+    expect(runInputs({ studio: "compliance-check", jurisdiction: "QC", ruleset: "qc-visit-notice", asOf: "2026-10-29" }, doc)).toMatchObject({ declaredKind: "NOTICE" });
+    expect(runInputs({ studio: "compliance-check", jurisdiction: "QC", ruleset: "qc-premises-condition", asOf: "2026-10-29" }, doc)).toMatchObject({ declaredKind: "CONDITION_REPORT" });
+    expect(runInputs({ studio: "compliance-check", jurisdiction: "QC", ruleset: "qc-service-contract", asOf: "2026-10-29" }, doc)).toMatchObject({ ruleset: "qc-service-contract" });
   });
   it("sends the text, the jurisdiction and today's date to the compliance Studio", () => {
     const inputs = runInputs({ studio: "compliance-check", jurisdiction: "FR" }, { mimeType: "application/pdf", text: LEASE, content: pdf(10) }, new Date("2026-10-14T12:00:00Z"));

@@ -789,6 +789,7 @@
       "ORAZAKA_LOCKED": "Ce Studio n'est pas ouvert à Yomizaka sur Orazaka.",
       "ORAZAKA_CREDITS": "Orazaka n'a plus de crédits pour cette vérification.",
       "ORAZAKA_INPUT": "Orazaka a refusé le document tel qu'envoyé.",
+      "ORAZAKA_STUDIO_OLD": "Orazaka ne lit pas encore ce type de document sur le compte de Yomizaka.",
       "ORAZAKA_NOT_FOUND": "Orazaka ne connaît pas ce run.",
       "ORAZAKA_SHAPE": "La réponse d'Orazaka n'a pas pu être lue.",
       "BAD_REQUEST": "La demande n'est pas valide.",

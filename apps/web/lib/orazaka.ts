@@ -27,7 +27,7 @@ export interface OrazakaClient {
   studios(): Promise<string[]>;
 }
 
-const installation = z.object({ studioKey: z.string() });
+const installation = z.object({ studioKey: z.string(), pinnedVersion: z.string().optional() });
 
 /** What a refusal of Orazaka's means for Yomizaka — a stable code the UI translates. */
 export function orazakaRefusal(status: number): { status: number; code: string } {
@@ -41,10 +41,13 @@ export function orazakaRefusal(status: number): { status: number; code: string }
   return { status: 502, code: "ORAZAKA_UNAVAILABLE" };
 }
 
+/** Whether an installation pinned on this version reads a declared kind (2.x and later; not told: assumed so). */
+export const kindIsRead = (pinnedVersion: string | undefined): boolean => pinnedVersion === undefined || Number.parseInt(pinnedVersion, 10) >= 2;
+
 export function createOrazakaClient(options: { baseUrl: string; apiKey: string | undefined; fetch?: Fetch; timeoutMs?: number }): OrazakaClient {
   const doFetch = options.fetch ?? fetch;
   const base = options.baseUrl.replace(/\/$/, "");
-  const installed = new Set<string>();
+  const installed = new Map<string, string | undefined>();
 
   async function call<T>(path: string, schema: z.ZodType<T>, init: { method?: string; body?: unknown } = {}): Promise<T> {
     if (!options.apiKey) throw refuse(503, "ORAZAKA_NOT_CONFIGURED", "AI_API_KEY is not set");
@@ -73,18 +76,20 @@ export function createOrazakaClient(options: { baseUrl: string; apiKey: string |
     return parsed.data;
   }
 
-  async function ensureInstalled(studio: Studio) {
-    if (installed.has(studio)) return;
+  /** The version this account's installation is pinned on (undefined: not told). Installs the Studio once when it is not. */
+  async function ensureInstalled(studio: Studio): Promise<string | undefined> {
+    if (installed.has(studio)) return installed.get(studio);
     const mine = await call("/api/v1/studios/installations", z.array(installation));
-    if (!mine.some((i) => i.studioKey === studio)) {
-      await call(`/api/v1/studios/${studio}/installations?locale=en`, installation, { method: "POST", body: { config: {} } });
-    }
-    installed.add(studio);
+    const found = mine.find((i) => i.studioKey === studio) ?? (await call(`/api/v1/studios/${studio}/installations?locale=en`, installation, { method: "POST", body: { config: {} } }));
+    installed.set(studio, found.pinnedVersion);
+    return found.pinnedVersion;
   }
 
   return {
     async startRun(studio, inputs) {
-      await ensureInstalled(studio);
+      const pinned = await ensureInstalled(studio);
+      // A kind declared to the Studio (visit notice, état des lieux) is read by compliance-check 2.x only; a 1.x installation would ignore it and judge the document as a lease.
+      if (inputs.declaredKind && !kindIsRead(pinned)) throw refuse(422, "ORAZAKA_STUDIO_OLD", "This Studio's installation is on 1.x: it cannot read this kind of document yet");
       return call(`/api/v1/studios/${studio}/runs`, orazakaRun, { method: "POST", body: { inputs } });
     },
     async studios() {
