@@ -70,6 +70,8 @@ async function typeRentShare(page) {
   await page.locator("#rent-share-rent").fill("1450");
   await page.locator("#rent-share-income").fill("4200");
   await page.locator('[data-testid="rent-share-result"] p').first().waitFor();
+  // The page's own lists (the active links) load after the first paint and change its height, hence where the scroll stops: settle first.
+  await page.waitForLoadState("networkidle");
   await page.evaluate(() => document.getElementById("rent-share-title")?.scrollIntoView({ block: "start" }));
 }
 
