@@ -3,6 +3,8 @@
 # the SEO family contract on the built site, the responsive guard in a real browser, sign-up closed.
 set -euo pipefail
 export NODE_ENV=production
+# The app's declared public origin (landingRedirect requires it in production: never read from the request's Host).
+export APP_PUBLIC_URL=http://localhost:3000
 export AUTH_SESSION_SECRET=ci-only-session-secret-0123456789abcdef
 export AI_API_KEY=oz_ci_only_not_a_key
 export PORT=3000
