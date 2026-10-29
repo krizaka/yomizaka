@@ -69,7 +69,7 @@ function Frame({ open, onOpenChange, title, description, children }: Readonly<{ 
 }
 
 /** A name (and, for a tag, a colour): creates or renames. */
-function NameDialog({ open, onOpenChange, title, initial = "", color, submit }: Readonly<{ open: boolean; onOpenChange: (o: boolean) => void; title: string; initial?: string; color?: TagColor | null; submit: (name: string, color: TagColor | null) => Promise<unknown> }>) {
+export function NameDialog({ open, onOpenChange, title, initial = "", color, submit }: Readonly<{ open: boolean; onOpenChange: (o: boolean) => void; title: string; initial?: string; color?: TagColor | null; submit: (name: string, color: TagColor | null) => Promise<unknown> }>) {
   const { say, locale } = useSay();
   const [chosen, setChosen] = useState<TagColor>(color ?? "blue");
   const action = useAction<string>((name) => submit(name, color === undefined ? null : chosen), () => onOpenChange(false));

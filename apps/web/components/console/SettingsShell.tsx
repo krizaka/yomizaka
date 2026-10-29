@@ -1,6 +1,6 @@
 "use client";
 
-import { BillingIcon, LockIcon, ServerIcon, ShieldIcon, SunIcon, UserIcon } from "@krizaka/icons";
+import { BillingIcon, BookmarkIcon, LockIcon, ServerIcon, ShieldIcon, SunIcon, UserIcon } from "@krizaka/icons";
 import { AccountProfileCard } from "@krizaka/ui/account-settings";
 import { SettingsLayout } from "@krizaka/ui/settings-layout";
 import Link from "next/link";
@@ -22,7 +22,7 @@ export interface SettingsAccount {
   memberSince: string;
 }
 
-const ICONS = { profil: UserIcon, apparence: SunIcon, securite: LockIcon, facturation: BillingIcon, stockage: ServerIcon, donnees: ShieldIcon } as const;
+const ICONS = { profil: UserIcon, apparence: SunIcon, securite: LockIcon, facturation: BillingIcon, stockage: ServerIcon, signets: BookmarkIcon, donnees: ShieldIcon } as const;
 
 /**
  * The settings on `SettingsLayout` (flat: one calm column, rows divided by hairlines), the identity card on top, the six

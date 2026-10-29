@@ -1527,7 +1527,8 @@
         "securite": "Sécurité",
         "facturation": "Abonnement et facturation",
         "donnees": "Mes données",
-        "stockage": "Stockage"
+        "stockage": "Stockage",
+        "signets": "Signets"
       },
       "label": "Réglages du compte",
       "verified": "Courriel vérifié",
@@ -3102,6 +3103,18 @@
         "once": "sur ce paiement",
         "repeating": "pendant {months} mois",
         "forever": "chaque mois"
+      }
+    },
+    "bookmarks": {
+      "lead": "Vos propres catégories colorées. Un signet regroupe des fichiers ; le retirer ne les supprime jamais.",
+      "none": "Aucun signet pour l’instant.",
+      "edit": "Renommer ou recolorer",
+      "editNamed": "Renommer ou recolorer « {name} »",
+      "deleteNamed": "Supprimer « {name} »",
+      "deleteKeeps": "Le signet est retiré de ses fichiers. Les fichiers eux-mêmes sont conservés.",
+      "kinds": {
+        "applicant_file": "Dossiers de candidature",
+        "document": "Documents"
       }
     }
   },
