@@ -16,7 +16,7 @@ describe("the check's steps on the document page", () => {
     expect(steps).toContain("@yomizaka/core");
     expect(steps).not.toMatch(/<ol\b/);
     const view = read("components/console/DocumentReportTab.tsx");
-    expect(view).toContain("<CheckSteps steps={checkSteps(");
+    expect(view).toMatch(/<CheckSteps\s+steps=\{checkSteps\(/);
   });
 
   it("are named in both languages: the four steps, the rules step per Studio, and the four states", () => {

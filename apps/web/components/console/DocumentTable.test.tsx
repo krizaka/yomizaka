@@ -15,6 +15,8 @@ describe("the documents table on a phone (the review's B5)", () => {
 describe("the date column and the visual journeys", () => {
   it("renders the date in a <time>, which the visual journeys mask (rows are stamped with the day of the run)", () => {
     const source = readFileSync(new URL("./DocumentTable.tsx", import.meta.url), "utf8");
-    expect(source).toMatch(/<time dateTime=\{d\.createdAt\}[^>]*>\{formatDate\(d\.createdAt, locale\)\}<\/time>/);
+    expect(source).toMatch(
+      /<time\s+dateTime=\{d\.createdAt\}[^>]*>\s*\{formatDate\(d\.createdAt, locale\)\}\s*<\/time>/,
+    );
   });
 });

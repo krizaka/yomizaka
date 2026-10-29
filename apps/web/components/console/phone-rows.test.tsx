@@ -70,11 +70,11 @@ describe("phone lists as list rows (P12, #329)", () => {
 
   it("Vérifications: the kind and the day are the line of facts, the studio and the run wait in the row's detail", () => {
     const code = readFileSync(new URL("./ChecksView.tsx", import.meta.url), "utf8");
-    expect(code).toMatch(/id: "kind"[^\n]*priority: 2/);
-    expect(code).toMatch(/id: "at"[^\n]*priority: 2/);
-    expect(code).toMatch(/id: "studio"[^\n]*priority: 3/);
-    expect(code).toMatch(/id: "run"[^\n]*priority: 3/);
-    expect(code).toMatch(/id: "result", header: say\("checks.columns.result"\), type: "status"/);
+    expect(code).toMatch(/id: "kind"[^]{0,200}?priority: 2/);
+    expect(code).toMatch(/id: "at"[^]{0,200}?priority: 2/);
+    expect(code).toMatch(/id: "studio"[^]{0,200}?priority: 3/);
+    expect(code).toMatch(/id: "run"[^]{0,200}?priority: 3/);
+    expect(code).toMatch(/id: "result",\s*header: say\("checks.columns.result"\),\s*type: "status"/);
   });
 
   it("Documents: the row bookmark is a quick action, it stays on the phone card (priority 2), never under the chevron (yomizaka#339)", () => {

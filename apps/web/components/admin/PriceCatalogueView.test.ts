@@ -28,6 +28,6 @@ describe("the price editor's words (yomizaka#548)", () => {
   it("asks for a confirmation before any change, and never edits a live processor", () => {
     expect(source).toContain("AlertDialog");
     expect(source).toContain("settle(true)");
-    expect(source).toMatch(/processor\.mode === "live" \? <Alert/);
+    expect(source).toMatch(/processor\.mode === "live" \? \(?\s*<Alert/);
   });
 });

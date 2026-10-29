@@ -104,13 +104,13 @@ describe("a collection (the UX review's Y7)", () => {
     expect(page).toContain("jurisdictions={jurisdictions}");
     expect(page).toContain("libraryId: l.id");
     const view = readFileSync(new URL("./PlaceView.tsx", import.meta.url), "utf8");
-    expect(view).toContain("jurisdictions={jurisdictions}>");
+    expect(view).toMatch(/jurisdictions=\{jurisdictions\}\s*>/);
     expect(view).toContain("afterDelete={libraryPath(locale, library.id, collection.id)}");
     expect(view).toContain("afterMove={movedFolderHrefs(locale, collections, folder.id)}");
     const actions = readFileSync(new URL("./OrganisationActions.tsx", import.meta.url), "utf8");
     expect(actions).toContain("if (next) router.push(next);");
-    expect(actions).toContain("onClose, (to) => after?.[to] ?? null)");
-    expect(actions).toContain("onClose, () => after ?? null)");
+    expect(actions).toMatch(/onClose,\s*\(to\) => after\?\.\[to\] \?\? null,?\s*\)/);
+    expect(actions).toMatch(/onClose,\s*\(\) => after \?\? null,?\s*\)/);
   });
 
   it("the whole page is the drop zone (an overlay); the empty place shows the only visible zone with the owl, the full one its table", () => {
