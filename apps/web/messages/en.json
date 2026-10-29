@@ -3126,6 +3126,12 @@
           "violet": "Violet",
           "gray": "Grey"
         }
+      },
+      "rentShare": {
+        "title": "Rent and income",
+        "lead": "If the applicant gave you their monthly income, type it with the monthly rent to see the share. Nothing you type here is sent or kept.",
+        "rent": "Monthly rent ($)",
+        "income": "Monthly income given ($)"
       }
     },
     "states": {
@@ -3913,7 +3919,7 @@
     "disclaimer": "Information about dates, not legal advice. How days and months are counted is for the TAL or a lawyer to confirm."
   },
   "sectionGRequest": {
-    "title": "Facts to take to the TAL",
+    "title": "Facts to take to the TAL:",
     "rentNew": "Rent of the new lease: {cents}.",
     "rentPrevious": "Lowest rent in the twelve months before, as written in Section G: {cents}.",
     "previousBlank": "Section G of the lease does not state the previous rent.",

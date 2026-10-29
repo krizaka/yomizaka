@@ -16,6 +16,7 @@ import { DecisionActions } from "../organise/DecisionActions";
 import { FileTags } from "../organise/FileTags";
 import { useFileFacts } from "./FilesView";
 import { OwnerShare } from "./OwnerShare";
+import { RentShare, type RentShareWords } from "./RentShare";
 import type { AskableType } from "./RequestDocuments";
 
 /** One line of the file: a document asked, with the one received for it (or none yet). */
@@ -46,9 +47,12 @@ export function FileView({
   file,
   types,
   workspace,
+  affordability,
 }: Readonly<{
   file: ApplicantFileView;
   types: readonly AskableType[];
+  /** The sentences of the rent-share rule; absent, the section is not shown. */
+  affordability?: RentShareWords;
   workspace?: { set: StatusSet; decision: string; tags: readonly { id: string; name: string; color: "blue" | "green" | "amber" | "red" | "violet" | "gray" }[]; tagIds: readonly string[] };
 }>) {
   const { say, locale } = useSay();
@@ -123,6 +127,7 @@ export function FileView({
           }
         />
       </section>
+      {affordability ? <RentShare words={affordability} /> : null}
       <OwnerShare fileId={file.id} />
     </DetailLayout>
   );

@@ -36,6 +36,35 @@ async function firstReport(page, { origin }) {
   return `/fr/app/documents/${id}/rapport`;
 }
 
+/** The report of the seeded lease whose title holds `words` (Section G on the lease without notice, art. 1904 on the one with illegal clauses; yomizaka#104). */
+const reportTitled = (words) => async (page, { origin }) => {
+  await page.goto(new URL("/fr/app/documents", origin).toString());
+  const href = await page.locator('a[href*="/app/documents/"]', { hasText: words }).first().getAttribute("href");
+  const id = href?.match(/\/app\/documents\/([^/?#]+)/)?.[1];
+  if (!id) throw new Error(`no seeded document titled « ${words} »: is the cast seeded?`);
+  return `/fr/app/documents/${id}/rapport`;
+};
+
+/** The seeded applicant file, with two figures typed in the rent-share section (information only, in memory). */
+async function firstFile(page, { origin }) {
+  await page.goto(new URL("/fr/app/dossiers", origin).toString());
+  const href = await page.locator('a[href*="/app/dossiers/"]').first().getAttribute("href");
+  const id = href?.match(/\/app\/dossiers\/([^/?#]+)/)?.[1];
+  if (!id) throw new Error("no seeded applicant file: is the cast seeded?");
+  return `/fr/app/dossiers/${id}`;
+}
+/** Brings a finding of the report to the top of the screen, so the capture shows it and not the header. */
+const showFinding = (ruleId) => async (page) => {
+  await page.locator(`#finding-${ruleId}`).scrollIntoViewIfNeeded();
+  await page.evaluate((id) => document.getElementById(`finding-${id}`)?.scrollIntoView({ block: "start" }), ruleId);
+};
+async function typeRentShare(page) {
+  await page.locator("#rent-share-rent").fill("1450");
+  await page.locator("#rent-share-income").fill("4200");
+  await page.locator('[data-testid="rent-share-result"] p').first().waitFor();
+  await page.evaluate(() => document.getElementById("rent-share-title")?.scrollIntoView({ block: "start" }));
+}
+
 defineJourneyTests({
   test,
   expect,
@@ -50,6 +79,10 @@ defineJourneyTests({
     // The library, where the bookmarks live (#339): the guard they lacked.
     { name: "documents", path: "/fr/app/documents", session: true, mask: LIVE },
     { name: "document-report", path: firstReport, session: true, mask: LIVE },
+    // The tenant-shield findings in the report (yomizaka#104): Section G with the deadline and the facts for the TAL; the payment clauses (art. 1904).
+    { name: "report-section-g", path: reportTitled("avis du TAL absent"), session: true, ready: showFinding("TS-G-001"), mask: LIVE },
+    { name: "report-payment-clauses", path: reportTitled("clause illégale"), session: true, ready: showFinding("TS-P-001"), mask: LIVE },
+    { name: "file-rent-share", path: firstFile, session: true, ready: typeRentShare, mask: LIVE },
     // The first paint of a signed-in page: the HTML the server sent, and the hydrated page while the account query is pending (krizaka-ui#827).
     { name: "app-home", path: "/fr/app", session: true, firstPaint: true, viewports: ["phone"], mask: LIVE },
     { name: "app-home-pending", path: "/fr/app", session: true, firstPaint: { hold: ["**/api/me"] }, viewports: ["phone"], mask: LIVE },
