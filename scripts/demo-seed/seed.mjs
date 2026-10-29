@@ -2,6 +2,7 @@
 // Idempotent (a re-run changes nothing; `reset` starts over) and refused on production. The checks are SEEDED, not run: their run id
 // starts with `seeded-` and their inputs say so — no paid run, no call to the engine.
 import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 
 import { generateDocument, PERSONA_ERIC, AS_OF, DEFAULT_SEED } from "../demo-documents/index.mjs";
 import { CAST_MEMBER, castAccounts, fingerprintOf } from "./cast.mjs";
@@ -9,6 +10,12 @@ import { CAST_MEMBER, castAccounts, fingerprintOf } from "./cast.mjs";
 /** The persona's name comes from the cast; this file adds what the cast does not hold: the collections and documents. */
 export const PERSONAS = { [CAST_MEMBER.id]: { ...PERSONA_ERIC, key: CAST_MEMBER.id, name: CAST_MEMBER.displayName } };
 export const DEFAULT_EMAILS = { [CAST_MEMBER.id]: `${CAST_MEMBER.id}@demo.yomizaka.test` };
+/**
+ * What the tenant-shield rules (Section G, payment clauses, yomizaka#104) give on the demo leases' figures, one list per document: the findings
+ * as the app writes them, kept as data because the rules are TypeScript and the seed is not. Generated from the rules and guarded by
+ * `apps/web/lib/rules/tenant-shield-fixture.test.ts` (it fails on a drift and says how to regenerate), never typed by hand.
+ */
+const TENANT_SHIELD = JSON.parse(readFileSync(new URL("./tenant-shield.json", import.meta.url), "utf8"));
 export const SEEDED_RUN_PREFIX = "seeded-";
 /** What a seeded check carries in its inputs — the same marker `@yomizaka/core` reads (`isSeededCheck`). */
 export const SEEDED_INPUTS = { seeded: "true" };
@@ -56,7 +63,10 @@ export function seededReport(doc) {
   if (doc.family === "lease") {
     const failed = doc.findings.map((f) => ({ ruleId: f.code, title: f.title, severity: f.severity, verdict: "FAIL", explanation: f.explanation, method: "SEEDED", ...(f.present?.[0] ? { evidenceSpan: { quote: f.present[0] } } : {}) }));
     const passed = failed.length === 0 ? [{ ruleId: "DEMO-LEASE-OK", title: "Aucun écart relevé", severity: "INFO", verdict: "PASS", explanation: "Le bail du jeu de données ne présente aucun des écarts recherchés.", method: "SEEDED" }] : [];
-    return { rulesetId: "demo-seeded", rulesetVersion: "1", jurisdiction: "QC", asOf: AS_OF, source: COMPLIANCE_SOURCE, reviewStatus: "TO_REVIEW_BY_LAWYER", summary: { byVerdict: failed.length ? { FAIL: failed.length } : { PASS: 1 }, blockingFailures: failed.length, rulesEvaluated: failed.length || 1 }, findings: [...failed, ...passed] };
+    const findings = [...failed, ...passed, ...(TENANT_SHIELD[doc.id] ?? [])];
+    const byVerdict = {};
+    for (const f of findings) byVerdict[f.verdict] = (byVerdict[f.verdict] ?? 0) + 1;
+    return { rulesetId: "demo-seeded", rulesetVersion: "1", jurisdiction: "QC", asOf: AS_OF, source: COMPLIANCE_SOURCE, reviewStatus: "TO_REVIEW_BY_LAWYER", summary: { byVerdict, blockingFailures: failed.length, rulesEvaluated: findings.length }, findings, ...(doc.facts ? { facts: doc.facts } : {}) };
   }
   return {
     header: COMPLIANCE_SOURCE,

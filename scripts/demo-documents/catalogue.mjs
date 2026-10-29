@@ -33,6 +33,8 @@ function lease(rng, flaw) {
   const landlord = person(rng);
   const tenant = person(rng);
   const rent = rng.int(9, 19) * 100 + rng.pick([0, 25, 50]);
+  // The lease with no TAL notice also carries a lowest rent well under the new one (Section G, yomizaka#104): the increase is over the TAL's rate.
+  const lowest = flaw === "no-tal" ? rent - 90 : rent - 25;
   const lines = [
     ...banner("bail de logement"),
     "BAIL DE LOGEMENT",
@@ -42,7 +44,7 @@ function lease(rng, flaw) {
     "Durée : 12 mois, du 1er juillet 2026 au 30 juin 2027.",
     `Loyer mensuel : ${money(rent * 100)}, payable le premier jour du mois.`,
     // The mandatory notice of the lowest rent of the last twelve months (the form's section G): a lease without it is not clean.
-    `Le loyer le plus bas payé au cours des douze derniers mois précédant le début du bail était de ${money((rent - 25) * 100)} par mois.`,
+    `Le loyer le plus bas payé au cours des douze derniers mois précédant le début du bail était de ${money(lowest * 100)} par mois.`,
     "Le loyer comprend le chauffage et l'eau chaude.",
     "Le locataire a droit au maintien dans les lieux à la fin du bail.",
     "Le locateur peut proposer une hausse de loyer selon les règles du Tribunal administratif du logement.",
@@ -74,7 +76,16 @@ function lease(rng, flaw) {
     });
   }
   lines.push("", `Signé à Montréal le 15 juin 2026 : ${landlord} (fictif) et ${tenant} (fictif).`);
-  return { lines, findings };
+  // The figures the lease states, in the shape the engine's report gives them (`facts`): what the tenant-shield rules read, true to the text above.
+  const facts = {
+    rentCents: { status: "found", cents: rent * 100 },
+    lowestRentCents: { status: "found", cents: lowest * 100 },
+    concludedOn: { status: "found", date: "2026-06-15" },
+    startsOn: { status: "found", date: "2026-07-01" },
+    noticeGiven: { status: "found", flag: flaw !== "no-tal" },
+    ...(flaw === "illegal-clause" ? { depositCents: { status: "found", cents: rent * 100 }, postdatedCheques: { status: "found", flag: true } } : {}),
+  };
+  return { lines, findings, facts };
 }
 
 function payStub(rng, flaw) {
@@ -254,8 +265,8 @@ const BUILDERS = {
 
 /** One document's text and expected findings, the same for the same seed. */
 export function buildDocument(spec, seed = DEFAULT_SEED) {
-  const { lines, findings } = BUILDERS[spec.family](seededRandom(hashSeed(`${seed}:${spec.id}`)), spec);
-  return { ...spec, filename: `${spec.id}.pdf`, lines, findings };
+  const { lines, findings, facts } = BUILDERS[spec.family](seededRandom(hashSeed(`${seed}:${spec.id}`)), spec);
+  return { ...spec, filename: `${spec.id}.pdf`, lines, findings, ...(facts ? { facts } : {}) };
 }
 
 /** The persona Éric (property manager): his display name, his collections and the documents each one holds. */

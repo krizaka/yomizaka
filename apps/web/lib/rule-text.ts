@@ -21,8 +21,9 @@ export function ruleTitle(ruleId: string, lang: Lang, fallback: string | null | 
  * The finding's explanation in `lang`. French is the engine's own text, always kept exact. English is the pack's sentence only when the
  * engine's French equals the pack's French word for word (so nothing specific, a name or an amount, is lost); otherwise the engine's text stays.
  */
-export function ruleExplanation(ruleId: string, lang: Lang, fallback: string): string {
+export function ruleExplanation(ruleId: string, lang: Lang, fallback: string, english?: string): string {
   if (lang === "fr") return fallback;
+  if (english) return english;
   const plain = allCompliancePacks().find((p) => ruleId in p.rules)?.rules[ruleId];
   const match = plain && [plain.ok, plain.attention].find((t) => t.fr === fallback);
   return match ? say(match, lang) : fallback;

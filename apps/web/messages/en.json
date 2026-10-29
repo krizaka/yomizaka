@@ -3899,6 +3899,7 @@
     "advance-over-one-month": "The lease asks for more than one month of rent in advance. A landlord may require only the first term, within one month (C.c.Q., art. 1904).",
     "deposit": "The lease asks for a sum besides the rent (deposit, key money or guarantee). A landlord may not require one (C.c.Q., art. 1904).",
     "postdated-cheques": "The lease requires postdated cheques. A landlord may not require them (C.c.Q., art. 1904).",
+    "ok": "The payment terms read in the lease stay within what art. 1904 allows (C.c.Q., art. 1904).",
     "disclaimer": "Information about the terms of the lease, not legal advice and no judgement on the landlord. Check the article, or ask the TAL."
   },
   "sectionGDeadline": {

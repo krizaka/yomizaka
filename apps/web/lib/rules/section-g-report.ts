@@ -1,11 +1,13 @@
 import type { ComplianceReport } from "@yomizaka/core";
 
+import en from "../../messages/en.json";
 import fr from "../../messages/fr.json";
 import { TAL } from "../brief/tal";
 import { talTableFrom } from "../brief/tal-settings";
 import { ruleTitle } from "../rule-text";
 import { checkSectionG } from "./section-g";
 import { sectionGInputFromFacts } from "./section-g-facts";
+import { appendFinding } from "./report-finding";
 import { sectionGFinding } from "./section-g-finding";
 
 /** The lease ruleset whose report exposes the rents (`facts`) Section G reads. */
@@ -22,9 +24,9 @@ export async function withSectionG(report: ComplianceReport, settings: Reader): 
   if (report.rulesetId !== LEASE_RULESET || report.findings.some((f) => f.ruleId === "TS-G-001")) return report;
   const input = sectionGInputFromFacts(report.facts, report.asOf);
   if (!input) return report;
-  const shaped = sectionGFinding(checkSectionG(input, await talTableFrom(settings, TAL)), "fr", fr.sectionG, ruleTitle("TS-G-001", "fr", null));
-  if (!shaped) return report;
-  const finding = { ruleId: shaped.ruleId, title: shaped.title ?? undefined, severity: shaped.severity, verdict: shaped.verdict, explanation: shaped.explanation, method: shaped.method ?? undefined, citation: shaped.citation ?? undefined };
-  const byVerdict = { ...report.summary?.byVerdict, [finding.verdict]: (report.summary?.byVerdict?.[finding.verdict] ?? 0) + 1 };
-  return { ...report, findings: [...report.findings, finding], summary: { ...report.summary, byVerdict, rulesEvaluated: (report.summary?.rulesEvaluated ?? report.findings.length) + 1 } };
+  const result = checkSectionG(input, await talTableFrom(settings, TAL));
+  const shaped = sectionGFinding(result, "fr", fr.sectionG, ruleTitle("TS-G-001", "fr", null));
+  const english = sectionGFinding(result, "en", en.sectionG, ruleTitle("TS-G-001", "en", null));
+  if (!shaped || !english) return report;
+  return appendFinding(report, { ruleId: shaped.ruleId, title: shaped.title ?? undefined, severity: shaped.severity, verdict: shaped.verdict, explanation: shaped.explanation, explanationEn: english.explanation, method: shaped.method ?? undefined, citation: shaped.citation ?? undefined });
 }

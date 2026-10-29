@@ -172,6 +172,20 @@
         "fr": "Comparez avec l'avis de votre propriétaire. Vous pouvez demander au Tribunal administratif du logement de fixer le loyer.",
         "en": "Compare with your landlord's notice. You may ask the housing tribunal to fix the rent."
       }
+    },
+    "TS-P-001": {
+      "ok": {
+        "fr": "Les modalités de paiement du bail restent dans ce que permet l'article 1904.",
+        "en": "The lease's payment terms stay within what article 1904 allows."
+      },
+      "attention": {
+        "fr": "Le bail demande plus d'un mois d'avance, une somme en plus du loyer ou des chèques postdatés.",
+        "en": "The lease asks for more than one month in advance, a sum besides the rent, or postdated cheques."
+      },
+      "advice": {
+        "fr": "Relisez ces clauses avec l'article 1904. Vous pouvez demander conseil au Tribunal administratif du logement.",
+        "en": "Read these clauses again with article 1904. You may ask the housing tribunal for advice."
+      }
     }
   },
   "unknown": {
@@ -232,6 +246,10 @@
     "TS-G-001": {
       "fr": "Loyer précédent de la section G et pourcentage du Tribunal",
       "en": "Previous rent in Section G and the tribunal's percentage"
+    },
+    "TS-P-001": {
+      "fr": "Paiement d'avance, dépôt et chèques postdatés",
+      "en": "Payment in advance, deposit and postdated cheques"
     }
   }
 }
