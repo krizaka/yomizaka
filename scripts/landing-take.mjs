@@ -93,39 +93,48 @@ const film = (async () => {
     if (shot) frames.push({ at, data: shot.data });
   }
 })();
+const RUN_LABEL = { en: /Run the check/i, fr: /Lancer la v[ée]rification/i };
 const t0 = Date.now();
 const marks = {};
 const mark = (name) => (marks[name] = (Date.now() - t0) / 1000);
 
-// 1 · the library, then the lease dropped.
+// 1 · the library, then « Vérifier un document »: the check page, the lease dropped.
 await page.goto(`${BASE}/${locale}/app`, { waitUntil: "networkidle" });
 mark("ready");
 await page.waitForTimeout(1400);
+await page.goto(`${BASE}/${locale}/app/check`, { waitUntil: "networkidle" });
+await page.waitForTimeout(1200);
 mark("drop");
 await page.setInputFiles('input[type="file"]', file);
-const row = page.locator('a[href*="/app/documents/"]').filter({ hasText: /bail.exemple.fictif/i }).first();
-await row.waitFor({ timeout: 60_000 });
-await page.waitForTimeout(1200);
-// 2 · the document opens, the check runs.
-await row.click();
+// 2 · the file lands; if Yomizaka is unsure it asks « Which document? » (CheckView's `kind-choice` radiogroup, as CheckView.test
+// reads it): the lease is named and the check starts on its report. A file recognised for sure opens its report by itself.
+const reportUrl = /\/app\/documents\/[^/]+\/rapport/;
+const asked = page.locator('[data-testid="kind-choice"]');
+await Promise.race([asked.waitFor({ timeout: 40_000 }), page.waitForURL(reportUrl, { timeout: 40_000 })]).catch(() => undefined);
+if (await asked.isVisible().catch(() => false)) {
+  await page.waitForTimeout(900);
+  await asked.getByRole("radio").first().click();
+}
+await page.waitForURL(reportUrl, { timeout: 45_000 }).catch(async (e) => {
+  console.error(page.url(), (await page.locator("main").innerText()).slice(-900));
+  throw e;
+});
 await page.waitForLoadState("networkidle");
-await page.waitForSelector("form[aria-label]");
-const form = page.locator("form[aria-label]").filter({ has: page.locator('[name="jurisdiction"], select') }).first();
-await form.scrollIntoViewIfNeeded();
-await page.waitForTimeout(1100);
 mark("check");
-const before = new Set((await page.locator('[data-testid="orazaka-run-id"]').allTextContents()).map((s) => s.trim()));
-await form.locator('button[type="submit"]').click();
-await page.waitForFunction((known) => [...document.querySelectorAll('[data-testid="orazaka-run-id"]')].some((el) => !known.includes(el.textContent.trim())), [...before], { timeout: 120_000 });
-const runId = (await page.locator('[data-testid="orazaka-run-id"]').allTextContents()).map((s) => s.trim()).find((id) => !before.has(id));
-await page.waitForFunction(() => /NON-COMPLIANT|NON CONFORME/i.test(document.body.innerText), null, { timeout: 240_000 });
+// The report waits for « Run the check » (the jurisdiction and the date are the page's defaults).
+await page.getByRole("button", { name: RUN_LABEL[locale] }).first().click();
+await page.waitForSelector('[data-testid="orazaka-run-id"]', { state: "attached", timeout: 150_000 }).catch(async (e) => {
+  await page.screenshot({ path: `${outRoot}/debug-${locale}.png` }).catch(() => undefined);
+  writeFileSync(`${outRoot}/debug-${locale}.txt`, await page.locator("main").innerText());
+  throw e;
+});
+const runId = (await page.locator('[data-testid="orazaka-run-id"]').first().textContent()).trim();
+await page.waitForFunction(() => document.querySelectorAll("mark").length > 0, null, { timeout: 240_000 }).catch(() => undefined);
 // 3 · the finding, with the line lit in the document.
 mark("finding");
 await page.waitForTimeout(900);
 await page.locator("mark").first().scrollIntoViewIfNeeded().catch(() => undefined);
-await page.waitForTimeout(1800);
-await page.getByText(/NON-COMPLIANT|NON CONFORME/i).first().scrollIntoViewIfNeeded();
-await page.waitForTimeout(2000);
+await page.waitForTimeout(3800);
 mark("poster");
 // 4 · search.
 await page.goto(`${BASE}/${locale}/app/search`, { waitUntil: "networkidle" });
