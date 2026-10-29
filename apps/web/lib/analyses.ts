@@ -1,5 +1,5 @@
 import { localDay } from "@krizaka/intl";
-import { type Analysis, AUTHENTICITY_MAX_BYTES, COMPLIANCE_MAX_CHARS, DOCX_MIME, type ExtractionStatus, fromRunStatus, isExtracting, isTerminal, ODT_MIME, type OrazakaRun, reportOf, type StartAnalysis,type StorageKind } from "@yomizaka/core";
+import { type Analysis, AUTHENTICITY_MAX_BYTES, COMPLIANCE_MAX_CHARS, DATED_LEASE_RULESET, DOCX_MIME, type ExtractionStatus, fromRunStatus, isExtracting, isTerminal, ODT_MIME, type OrazakaRun, reportOf, type StartAnalysis,type StorageKind } from "@yomizaka/core";
 
 import { holderOf as documentHolder } from "@/app/active-store";
 
@@ -25,15 +25,43 @@ import type { DocumentStore } from "./storage/port";
 /** What the authenticity Studio examines as a file (document-authenticity 1.3.0 reads PDF, images and office files; a photo document is read at upload instead, ADR-0010). */
 const AUTHENTICITY_TYPES: ReadonlySet<string> = new Set(["application/pdf", DOCX_MIME, ODT_MIME]);
 
+/**
+ * What the Studio's input schema takes for a ruleset (orazaka-packs `compliance-check`, enforced by the engine: 400 outside it, which
+ * Yomizaka showed as « Orazaka refused the document as sent »). `ruleset` names only the invoice and the service contract; the lease
+ * is the jurisdiction's own and its version comes from `asOf`; the visit notice and the état des lieux are declared by their kind
+ * (`declaredKind`, compliance-check 2.x). The dated lease reference stays Yomizaka's own record, never sent.
+ */
+const STUDIO_RULESET: Record<string, Record<string, string>> = {
+  "qc-invoice": { ruleset: "qc-invoice" },
+  "qc-service-contract": { ruleset: "qc-service-contract" },
+  "qc-visit-notice": { declaredKind: "NOTICE" },
+  "qc-premises-condition": { declaredKind: "CONDITION_REPORT" },
+};
+
+function studioRuleset(ruleset: string | undefined): Record<string, string> {
+  if (!ruleset || DATED_LEASE_RULESET.test(ruleset)) return {};
+  return STUDIO_RULESET[ruleset] ?? {};
+}
+
 export function runInputs(request: StartAnalysis, doc: { mimeType: string; text: string; content: Buffer }, today = new Date()): Record<string, string> {
   if (request.studio === "compliance-check") {
     if (!doc.text.trim()) throw refuse(422, "NO_TEXT", "This document has no text layer to check");
     if (doc.text.length > COMPLIANCE_MAX_CHARS) throw refuse(422, "TEXT_TOO_LONG", "This document is longer than the compliance check reads");
-    return { document: doc.text, jurisdiction: request.jurisdiction, asOf: request.asOf ?? localDay(today, LAW_TIME_ZONE),...(request.ruleset ? { ruleset: request.ruleset } : {}) };
+    return { document: doc.text, jurisdiction: request.jurisdiction, asOf: request.asOf ?? localDay(today, LAW_TIME_ZONE), ...studioRuleset(request.ruleset) };
   }
   if (!AUTHENTICITY_TYPES.has(doc.mimeType)) throw refuse(422, "NOT_A_PDF", "The authenticity check reads PDF and Word files");
   if (doc.content.length > AUTHENTICITY_MAX_BYTES) throw refuse(422, "PDF_TOO_LARGE", "The authenticity check reads files up to 5 MB");
   return { documentBase64: doc.content.toString("base64"), ...(request.expectedIssuer ? { expectedIssuer: request.expectedIssuer } : {}) };
+}
+
+/**
+ * What is kept of a run's inputs (the text and the file are not): the Studio's inputs plus the ruleset the person's request named, which
+ * is Yomizaka's own record (the reuse of a held result compares it, so a lease at two versions is never confused) even when the Studio
+ * is not sent it.
+ */
+export function keptInputs(request: StartAnalysis, inputs: Record<string, string>): Record<string, string> {
+  const kept = Object.fromEntries(Object.entries(inputs).filter(([k]) => k !== "document" && k !== "documentBase64"));
+  return request.studio === "compliance-check" && request.ruleset ? { ...kept, ruleset: request.ruleset } : kept;
 }
 
 /** The words a search should find in a report: rule titles, explanations, quoted passages, citations, signals. */
@@ -62,7 +90,7 @@ export async function startAnalysis(ownerId: string, documentId: string, request
   const inputs = runInputs(request, { mimeType: doc.mime_type, text: doc.text, content });
   if (request.studio === "compliance-check" && !request.ruleset && (await declaredKindOf(ownerId, documentId)) === "other") throw refuse(422, "KIND_NOT_VERIFIED", "This kind of document is not checked against the law yet");
   const run = await orazaka().startRun(request.studio, inputs);
-  const kept = Object.fromEntries(Object.entries(inputs).filter(([k]) => k !== "document" && k !== "documentBase64"));
+  const kept = keptInputs(request, inputs);
   const [row] = await query<AnalysisRow>(
     "INSERT INTO analyses (document_id, studio, status, run_id, blueprint_version, inputs, flow_version_id, billed_via) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *",
     [documentId, request.studio, fromRunStatus(run.status), run.id, run.blueprintVersion ?? null, JSON.stringify(kept), flowVersionId, billedVia],

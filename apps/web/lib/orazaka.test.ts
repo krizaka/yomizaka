@@ -57,6 +57,12 @@ describe("the Orazaka client", () => {
     await expect(createOrazakaClient({ baseUrl: "https://x/edge", apiKey: undefined, fetch: locked.fetch }).getRun(RUN.id)).rejects.toMatchObject({ body: { code: "ORAZAKA_NOT_CONFIGURED" } });
   });
 
+  it("does not start a kind that the pinned 1.x Studio would judge as a lease (declaredKind is read by 2.x only)", async () => {
+    const old = fakeEdge({ "GET /edge/api/v1/studios/installations": () => ({ status: 200, body: [{ studioKey: "compliance-check", pinnedVersion: "1.4.0" }] }) });
+    const client = createOrazakaClient({ baseUrl: "https://x/edge", apiKey: "oz_t", fetch: old.fetch });
+    await expect(client.startRun("compliance-check", { document: "Avis", declaredKind: "NOTICE" })).rejects.toMatchObject({ body: { code: "ORAZAKA_STUDIO_OLD" } });
+    expect(old.calls.some((c) => c.url.includes("/runs"))).toBe(false);
+  });
   it("a busy engine (429, « too many concurrent runs ») is ORAZAKA_BUSY with the wait it asked for — not a failure (yomizaka#248)", async () => {
     expect(orazakaRefusal(429)).toEqual({ status: 429, code: "ORAZAKA_BUSY" });
     const busy = fakeEdge({
