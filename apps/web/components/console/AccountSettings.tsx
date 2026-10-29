@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { z } from "zod";
 
+import { PaymentHistory } from "@/components/console/PaymentHistory";
 import { PromoCode } from "@/components/console/PromoCode";
 import { errorKey } from "@/lib/client";
 import { formI18n } from "@/lib/form-i18n";
@@ -174,6 +175,7 @@ export function BillingSection() {
           <PromoCode kind="agency" onCode={setCode} onRedeemed={() => void info.refetch()} />
         </SettingsRow>
       ) : null}
+      <PaymentHistory enabled={info.data?.paymentsOn === true && e?.hasCustomer === true} />
       {info.data && !info.data.paymentsOn ? <Alert tone="info">{say("settings.billing.off")}</Alert> : null}
       {info.data?.paymentsOn && info.data.paymentsDisplay === "test" ? <Alert tone="warning">{say("settings.billing.testMode")}</Alert> : null}
       {portal.problem || buy.problem ? <Alert tone="danger">{portal.problem ?? buy.problem}</Alert> : null}

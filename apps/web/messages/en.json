@@ -1628,6 +1628,15 @@
         "otherOffers": "Other offers",
         "buy": "Buy or subscribe",
         "testMode": "Test mode: no real card is charged.",
+        "history": {
+          "title": "Payment history",
+          "empty": "No payment yet. A receipt appears here after each payment.",
+          "what": "Payment",
+          "refunded": "Refunded",
+          "paid": "Paid",
+          "receipt": "Receipt",
+          "receiptFor": "Receipt of {date}"
+        },
         "plans": {
           "agency": "Agency",
           "firm": "Building manager"
