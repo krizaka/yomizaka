@@ -13,13 +13,14 @@ import { PAGE_SIZES, pageOf, pageSizeOf, parseList, sortOf, sortParam, TABLE_DEF
 
 import { formatBytes, formatDate } from "./format";
 import { ItemMenu, type Option, type TagOption } from "./OrganisationActions";
+import { RowBookmarks } from "./RowBookmarks";
 import { tableLabels } from "./table-labels";
 import { TagChips } from "./TagChips";
 
 type Say = ReturnType<typeof useSay>["say"];
 type Lang = ReturnType<typeof useSay>["locale"];
 
-function documentColumns(say: Say, locale: Lang, organise: Organise | undefined, bookmarks: Record<string, TagOption[]> | undefined): DataTableColumn<DocumentSummary>[] {
+function documentColumns(say: Say, locale: Lang, organise: Organise | undefined, bookmarks: Bookmarks | undefined): DataTableColumn<DocumentSummary>[] {
   return [
     {
       id: "title",
@@ -53,8 +54,8 @@ function documentColumns(say: Say, locale: Lang, organise: Organise | undefined,
             id: "bookmarks",
             header: say("documentsPage.bookmarks"),
             priority: 3,
-            value: (d: DocumentSummary) => (bookmarks[d.id] ?? []).length,
-            cell: (d: DocumentSummary) => <TagChips tags={bookmarks[d.id] ?? []} />,
+            value: (d: DocumentSummary) => (bookmarks.byDocument[d.id] ?? []).length,
+            cell: (d: DocumentSummary) => <RowBookmarks id={d.id} name={d.title} bookmarks={bookmarks.all} worn={(bookmarks.byDocument[d.id] ?? []).map((t) => t.id)} />,
           } satisfies DataTableColumn<DocumentSummary>,
         ]
       : []),
@@ -77,6 +78,12 @@ function documentColumns(say: Say, locale: Lang, organise: Organise | undefined,
   ];
 }
 
+/** The person's bookmarks on documents, and the ones each document wears: the column's chips and its one-tap menu. */
+export interface Bookmarks {
+  all: TagOption[];
+  byDocument: Record<string, TagOption[]>;
+}
+
 /** What the row menu needs to move and tag a document: the destinations, the owner's tags and each document's own. */
 export interface Organise {
   collections: Option[];
@@ -95,7 +102,7 @@ export const STATUS_TONE = { stored: "neutral", analysing: "accent", checked: "s
 export const DOCUMENT_COLUMN_PRIORITY = { title: 1, kind: 2, status: 1, size: 3, added: 2 } as const;
 
 /** The documents of a view (rows come from the server; a run in progress refreshes them every 4 s). */
-export function DocumentTable({ rows, caption, organise, bookmarks }: Readonly<{ rows: DocumentSummary[]; caption?: string; organise?: Organise; bookmarks?: Record<string, TagOption[]> }>) {
+export function DocumentTable({ rows, caption, organise, bookmarks }: Readonly<{ rows: DocumentSummary[]; caption?: string; organise?: Organise; bookmarks?: Bookmarks }>) {
   const { say, locale } = useSay();
   const router = useRouter();
   const running = rows.some((d) => d.status === "analysing");

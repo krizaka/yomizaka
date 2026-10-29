@@ -3151,6 +3151,7 @@
       "toReview": "Règles québécoises encore à faire relire par un juriste : un écran de démonstration, pas un avis juridique."
     },
     "documentsPage": {
+      "bookmarkNamed": "Mettre un signet sur {name}",
       "nothingWithBookmarks": "Aucun document ne porte tous ces signets.",
       "bookmarks": "Signets",
       "title": "Tous les documents",

@@ -3151,6 +3151,7 @@
       "toReview": "Québec rules still to be reviewed by a lawyer: a demonstration screen, not legal advice."
     },
     "documentsPage": {
+      "bookmarkNamed": "Bookmark {name}",
       "nothingWithBookmarks": "No document wears all of these bookmarks.",
       "bookmarks": "Bookmarks",
       "title": "All documents",

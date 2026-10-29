@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { knownBookmarks, wearingAll } from "./bookmarks";
+import { knownBookmarks, wearingAll, withBookmark } from "./bookmarks";
 
 const by = { d1: [{ id: "a" }, { id: "b" }], d2: [{ id: "a" }], d3: [] };
 
@@ -25,5 +25,14 @@ describe("documents filtered by bookmark", () => {
 describe("the bookmarks an address may name", () => {
   it("drops an id the person does not have", () => {
     expect(knownBookmarks(["a", "gone"], [{ id: "a" }, { id: "b" }])).toEqual(["a"]);
+  });
+});
+
+describe("one tap on a row", () => {
+  it("applies a bookmark once and lifts only that one", () => {
+    expect(withBookmark(["a"], "b", true)).toEqual(["a", "b"]);
+    expect(withBookmark(["a", "b"], "b", true)).toEqual(["a", "b"]);
+    expect(withBookmark(["a", "b"], "a", false)).toEqual(["b"]);
+    expect(withBookmark([], "a", false)).toEqual([]);
   });
 });
