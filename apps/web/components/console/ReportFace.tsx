@@ -33,6 +33,13 @@ export const REVIEW_NOTE = 1;
  */
 export function VerdictBand({ report }: Readonly<{ report: ComplianceReport }>) {
   const { say, locale } = useSay();
+  if (report.outcome === "UNSUPPORTED_KIND" || report.outcome === "KIND_UNKNOWN") {
+    return (
+      <section aria-label={say("reportFace.label")} className="rounded-lg border border-border-default border-l-4 border-l-border-strong bg-surface-1 p-4" data-testid="verdict-band" data-tone="neutral">
+        <Stat label={say("reportFace.label")} value={say(`reportFace.unchecked.${report.outcome}.title`)} hint={say(`reportFace.unchecked.${report.outcome}.hint`)} />
+      </section>
+    );
+  }
   const v = verdictOf(report);
   const value = v.attention ? say(pluralKey("reportFace.attention", v.attention), { count: v.attention, rules: v.rules }) : say("reportFace.attentionNone", { rules: v.rules });
   const context = say("reportFace.rulesOf", { jurisdiction: say(`analysis.jurisdictionNames.${report.jurisdiction}`), date: formatDate(report.asOf, locale) });

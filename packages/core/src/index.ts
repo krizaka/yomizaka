@@ -174,7 +174,7 @@ export const reportFact = z.union([
 ]);
 export type ReportFact = z.infer<typeof reportFact>;
 
-export const complianceReport = z.object({
+const complianceReportShape = z.object({
   rulesetId: z.string(),
   rulesetVersion: z.string(),
   rulesetRevision: z.number().optional(),
@@ -188,8 +188,32 @@ export const complianceReport = z.object({
   findings: z.array(finding),
   /** The figures the ruleset declares it reads; a shape this version does not know is dropped, never the report. */
   facts: z.record(z.string(), reportFact).optional().catch(undefined),
+  /** Compliance-check 2.x: `CHECKED`, or `UNSUPPORTED_KIND` / `KIND_UNKNOWN` when no ruleset applied (then there is no finding, and it is not a clean report). */
+  outcome: z.string().optional(),
 });
-export type ComplianceReport = z.infer<typeof complianceReport>;
+
+/**
+ * Compliance-check 2.0 nests the ruleset (`ruleset: { id, version, revision, reviewStatus }`) and carries no `rulesetId` / `jurisdiction`
+ * when the document was not checked; this reads both shapes as one (1.x reports are unchanged).
+ */
+function flatten(raw: unknown): unknown {
+  if (!raw || typeof raw !== "object" || !("contract" in raw || "outcome" in raw)) return raw;
+  const r = raw as Record<string, unknown>;
+  const ruleset = (r.ruleset && typeof r.ruleset === "object" ? r.ruleset : {}) as Record<string, unknown>;
+  const identified = (r.identification && typeof r.identification === "object" ? r.identification : {}) as Record<string, unknown>;
+  return {
+    ...r,
+    rulesetId: r.rulesetId ?? ruleset.id ?? "",
+    rulesetVersion: r.rulesetVersion ?? ruleset.version ?? "",
+    rulesetRevision: r.rulesetRevision ?? ruleset.revision,
+    reviewStatus: r.reviewStatus ?? ruleset.reviewStatus ?? undefined,
+    jurisdiction: r.jurisdiction ?? identified.jurisdiction ?? "",
+  };
+}
+
+export const complianceReport = z.preprocess(flatten, complianceReportShape);
+
+export type ComplianceReport = z.infer<typeof complianceReportShape>;
 
 export const SIGNAL_LEVELS = ["observé", "inhabituel", "incohérent"] as const;
 export const signal = z.object({
