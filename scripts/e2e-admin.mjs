@@ -65,7 +65,7 @@ try {
   for (const [email, role] of [[admin, "ADMIN"], [member, "USER"]]) {
     ids[role] = (await db.query("INSERT INTO accounts (email, role, password_hash) VALUES ($1, $2, $3) RETURNING id", [email, role, hash])).rows[0].id;
   }
-  const doc = (await db.query("INSERT INTO documents (owner_id, title, filename, mime_type, size_bytes, sha256, content, text) VALUES ($1, 'E2E lease', 'l.txt', 'text/plain', 4, $2, 'bail', 'bail') RETURNING id", [ids.USER, `e2e-${stamp}`])).rows[0].id;
+  const doc = (await db.query("INSERT INTO documents (owner_id, title, filename, mime_type, size_bytes, sha256, content, text) VALUES ($1, 'E2E lease', 'l.txt', 'text/plain', 4, $2, ''::bytea, 'bail') RETURNING id", [ids.USER, `e2e-${stamp}`])).rows[0].id;
   await db.query("INSERT INTO analyses (document_id, studio, status, run_id, error) VALUES ($1, 'compliance-check', 'failed', 'run-e2e', 'orazaka unreachable')", [doc]);
 
   const refused = await fetch(`${BASE}/en/sign-in`, { headers: { "do-connecting-ip": OTHER } });

@@ -1,11 +1,22 @@
 // The demo data set of a persona (krizaka/yomizaka#274): an account, its collections, its fictitious documents and a few finished checks.
 // Idempotent (a re-run changes nothing; `reset` starts over) and refused on production. The checks are SEEDED, not run: their run id
 // starts with `seeded-` and their inputs say so — no paid run, no call to the engine.
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { mkdir, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
 
 import { generateDocument, PERSONA_ERIC, AS_OF, DEFAULT_SEED } from "../demo-documents/index.mjs";
 import { CAST_MEMBER, castAccounts, fingerprintOf } from "./cast.mjs";
+
+/** Where the app keeps the bytes of documents on a laptop, in CI and in tests when it has no store (apps/web/lib/storage/local.ts): the seed writes the same folder. */
+const workingFolder = () => join(tmpdir(), "yomizaka-documents");
+async function putBytes(key, bytes) {
+  const path = join(workingFolder(), key);
+  await mkdir(dirname(path), { recursive: true });
+  await writeFile(path, bytes);
+}
 
 /** The persona's name comes from the cast; this file adds what the cast does not hold: the collections and documents. */
 export const PERSONAS = { [CAST_MEMBER.id]: { ...PERSONA_ERIC, key: CAST_MEMBER.id, name: CAST_MEMBER.displayName } };
@@ -134,11 +145,15 @@ async function seedInTransaction(q, def, { persona, address, locale, messagesByL
     );
     for (const id of collection.documents) {
       const doc = await generateDocument(id, seed);
-      await q(
-        `INSERT INTO documents (owner_id, title, filename, mime_type, kind, size_bytes, sha256, pages, content, text, collection_id)
-         VALUES ($1, $2, $3, 'application/pdf', $4, $5, $6, $7, $8, $9, $10) ON CONFLICT (owner_id, sha256) DO NOTHING`,
-        [owner, doc.title, doc.filename, doc.kind, doc.bytes.length, doc.sha256, doc.pages, Buffer.from(doc.bytes), doc.text, row.id],
+      // The bytes go to the working store (a folder here), the row only names them (ADR-0012): the same shape the upload writes.
+      const docId = randomUUID();
+      const key = `${owner}/${docId}/original.pdf`;
+      const inserted = await q(
+        `INSERT INTO documents (id, owner_id, title, filename, mime_type, kind, size_bytes, sha256, pages, content, object_key, text, collection_id)
+         VALUES ($1, $2, $3, $4, 'application/pdf', $5, $6, $7, $8, ''::bytea, $9, $10, $11) ON CONFLICT (owner_id, sha256) DO NOTHING RETURNING id`,
+        [docId, owner, doc.title, doc.filename, doc.kind, doc.bytes.length, doc.sha256, doc.pages, key, doc.text, row.id],
       );
+      if (inserted.length > 0) await putBytes(key, doc.bytes);
       const [stored] = await q("SELECT id FROM documents WHERE owner_id = $1 AND sha256 = $2", [owner, doc.sha256]);
       if (def.checked.includes(id)) {
         const report = seededReport(doc);
