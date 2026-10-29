@@ -1781,6 +1781,12 @@
             "hint": "Test mode: a notice says no real card is charged."
           }
         },
+        "pricing": {
+          "announcedCode": {
+            "label": "Announced promo code",
+            "hint": "The code of a coupon the pricing page announces (empty: none). Its percent, months and end date come from the coupon."
+          }
+        },
         "audit": {
           "freeFirst": {
             "label": "Free first audit",
@@ -3661,6 +3667,12 @@
   "pricing": {
     "title": "Pricing",
     "lead": "No annual subscription. Pay per document, or subscribe by the month and cancel when you like. Prices in CAD, before taxes: GST and QST are added on the invoice.",
+    "offer": {
+      "headline": "Launch offer: {percent}% off the first {months} months with the code {code}",
+      "line": "{offer} a month for the first {months} months, then {regular} a month",
+      "ends": "Offer valid until {date}. The regular price applies after the offer.",
+      "always": "The regular price applies after the offer."
+    },
     "plansLabel": "Plans",
     "perMonth": " a month, plus taxes",
     "perDocument": " per document, plus taxes",
