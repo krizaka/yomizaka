@@ -38,6 +38,8 @@ describe("« Documents » (B2, P14)", () => {
     // one tap from the row: the menu's trigger names the document
     expect(html).toContain('data-testid="row-bookmarks"');
     expect(html).toContain("Bookmark Bail 1");
+    // and in bulk: the rows are selectable once there are bookmarks
+    expect(html).toContain('type="checkbox"');
     const none = wrap(<AllDocuments documents={[]} bookmarks={[urgent]} selected={["t1"]} path="/en/app/documents" />, "en");
     expect(none).toContain('data-testid="documents-nothing"');
     expect(none).not.toContain('data-testid="documents-empty"');

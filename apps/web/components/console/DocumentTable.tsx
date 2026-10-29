@@ -6,11 +6,14 @@ import { useRouteState as useUrlState } from "@krizaka/ui/router";
 import { DOCUMENT_KINDS, DOCUMENT_STATUSES, type DocumentSummary } from "@yomizaka/core";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useSay } from "@/lib/i18n-client";
+import { pluralKey } from "@/lib/plural";
 import { PAGE_SIZES, pageOf, pageSizeOf, parseList, sortOf, sortParam, TABLE_DEFAULTS } from "@/lib/table-state";
+import { KIND } from "@/lib/workspace/decl";
 
+import { BulkActions } from "../organise/BulkActions";
 import { formatBytes, formatDate } from "./format";
 import { ItemMenu, type Option, type TagOption } from "./OrganisationActions";
 import { RowBookmarks } from "./RowBookmarks";
@@ -93,6 +96,9 @@ export interface Organise {
   tagsByDocument: Record<string, TagOption[]>;
 }
 
+// @fixed: the ceiling of one bulk call in @krizaka/organize (krizaka-ts ADR-003); the bar says so past it.
+const BULK_MAX = 200;
+
 /** The columns the table sorts by (and the address may name). */
 const SORTABLE = ["title", "kind", "size", "added"] as const;
 
@@ -126,7 +132,26 @@ export function DocumentTable({ rows, caption, organise, bookmarks }: Readonly<{
     setStatus(Array.isArray(next.status) ? next.status.join(",") : "");
     setPage(TABLE_DEFAULTS.page);
   };
-  const labels = useMemo(() => tableLabels(say), [say]);
+  // Bookmarks in bulk (yomizaka#339): select documents, apply or lift a bookmark on all of them in one call (the table's bar, count and ceiling are Krizaka UI's).
+  const [selected, setSelected] = useState<string[]>([]);
+  const [bulkResult, setBulkResult] = useState("");
+  const labels = useMemo(
+    () => ({
+      ...tableLabels(say),
+      selection: { bar: say("documentsPage.bulk.label"), selected: (count: number) => say(pluralKey("documentsPage.bulk.selected", count), { count }), clear: say("documentsPage.bulk.clear"), tooMany: (max: number) => say("documentsPage.bulk.tooMany", { max }) },
+    }),
+    [say],
+  );
+  const bulk = bookmarks
+    ? {
+        selectable: true as const,
+        selected,
+        onSelectedChange: setSelected,
+        bulkMax: BULK_MAX,
+        bulkResult,
+        bulkActions: ({ selected: ids, clear }: { selected: string[]; clear: () => void }) => <BulkActions kind={KIND.document} ids={ids} tags={bookmarks.all} words="documentsPage" onResult={setBulkResult} onDone={clear} />,
+      }
+    : {};
   const sort = sortOf(sortRaw, SORTABLE);
   return (
     <DataTable
@@ -150,6 +175,7 @@ export function DocumentTable({ rows, caption, organise, bookmarks }: Readonly<{
       toolbar={<DataTableFilters />}
       labels={labels}
       phone="list"
+      {...bulk}
     />
   );
 }
