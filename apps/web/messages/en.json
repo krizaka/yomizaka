@@ -3765,6 +3765,13 @@
       }
     }
   },
+  "affordability": {
+    "within-reference": "The rent is {share} of the income given, within the reference of {reference}.",
+    "above-reference": "The rent is {share} of the income given, above the reference of {reference}.",
+    "no-claim": "No claim: the income or the rent is not given as a usable figure, so no share is computed.",
+    "note": "The reference is a rule of thumb, not a legal limit. The income is a figure the applicant chose to give; it is used here and not kept.",
+    "disclaimer": "Information about two figures, not legal advice and no judgement on the applicant. Salary is not required to rent in Québec."
+  },
   "brief": {
     "renewalNotice": {
       "title": "Notice of renewal with a rent increase",
