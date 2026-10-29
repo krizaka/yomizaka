@@ -5,11 +5,11 @@ import fr from "../../messages/fr.json";
 import { TAL } from "../brief/tal";
 import { talTableFrom } from "../brief/tal-settings";
 import { ruleTitle } from "../rule-text";
-import { checkSectionG } from "./section-g";
-import { sectionGInputFromFacts } from "./section-g-facts";
 import { appendFinding } from "./report-finding";
+import { checkSectionG } from "./section-g";
 import { sectionGDeadline } from "./section-g-deadline";
 import { deadlineInputFromFacts } from "./section-g-deadline-facts";
+import { sectionGInputFromFacts } from "./section-g-facts";
 import { sectionGFinding } from "./section-g-finding";
 import { requestSentences } from "./section-g-request-text";
 

@@ -1,6 +1,6 @@
 import { longDate, money } from "../prices/format";
-import type { SectionGDeadline } from "./section-g-deadline";
 import type { SectionGResult } from "./section-g";
+import type { SectionGDeadline } from "./section-g-deadline";
 import { sectionGRequestSummary } from "./section-g-request";
 
 type Lang = "en" | "fr";

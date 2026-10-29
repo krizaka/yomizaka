@@ -1,10 +1,10 @@
-import { complianceReport, type ComplianceReport } from "@yomizaka/core";
+import { type ComplianceReport,complianceReport } from "@yomizaka/core";
 import { describe, expect, it } from "vitest";
 
 import en from "../../messages/en.json";
 import { missingRuleTexts } from "../rule-text";
-import { withPaymentClauses } from "./payment-clauses-report";
 import { paymentInputFromFacts } from "./payment-clauses-facts";
+import { withPaymentClauses } from "./payment-clauses-report";
 import { LEASE_RULESET } from "./section-g-report";
 
 const report = (facts: ComplianceReport["facts"], rulesetId = LEASE_RULESET): ComplianceReport => ({

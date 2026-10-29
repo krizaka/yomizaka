@@ -1,5 +1,5 @@
-import type { SectionGDeadline } from "./section-g-deadline";
 import type { SectionGResult } from "./section-g";
+import type { SectionGDeadline } from "./section-g-deadline";
 
 /**
  * The facts for a request to the TAL to fix the rent (yomizaka#566, slice 5 of #104: the « filing template » of the epic, as a summary
