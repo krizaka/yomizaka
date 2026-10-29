@@ -3151,6 +3151,17 @@
       "toReview": "Québec rules still to be reviewed by a lawyer: a demonstration screen, not legal advice."
     },
     "documentsPage": {
+      "bulk": {
+        "label": "Actions on the selection",
+        "selectedOne": "{count} document selected",
+        "selectedMany": "{count} documents selected",
+        "tag": "Bookmark",
+        "untag": "Remove the bookmark",
+        "noTags": "No bookmark yet: create one in Settings > Bookmarks.",
+        "tagged": "Bookmarks updated: {count}.",
+        "clear": "Clear selection",
+        "tooMany": "At most {max} documents at a time"
+      },
       "bookmarkNamed": "Bookmark {name}",
       "nothingWithBookmarks": "No document wears all of these bookmarks.",
       "bookmarks": "Bookmarks",
