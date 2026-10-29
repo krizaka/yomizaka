@@ -3,8 +3,8 @@ import { PricingPage } from "@krizaka/ui/pricing-page";
 import { ButtonLink } from "@/components/ButtonLink";
 import { format, getDictionary, type Locale } from "@/lib/i18n";
 import { signInPath } from "@/lib/nav";
-import { contactHref } from "@/lib/site";
 import type { PricingPlan, PricingSoon } from "@/lib/prices/page";
+import { contactHref } from "@/lib/site";
 
 /**
  * The pricing page on the pricing template of @krizaka/ui (yomizaka#388). Prices and included volumes come from the catalogue

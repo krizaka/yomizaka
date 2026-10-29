@@ -71,3 +71,24 @@ We look again after the first ten paying accounts: how many move from single doc
 - The product is « In development »: the page shows the prices and its action is sign-in; sign-up is closed and the processor
   is in test mode, so nothing is charged yet (krizaka/krizaka-com#468).
 - Comparisons on a public page need the source and date of each competitor's figure (krizaka/.github#269); this record holds them.
+
+## Amendment (2026-10-29): a launch offer, as a promo code the administrator creates
+
+Founder decision: « un discount pour les 3 premiers mois pour faire un prix d'appel ». It is **not a price and not a constant**:
+
+- **The offer is a promo code** created by the administrator at `/config/coupons` (`@krizaka/coupons`, ADR-002), e.g. `LANCEMENT`:
+  50 %, `duration: repeating` for 3 months, plans `agency` and `firm` (the single document and the free first verification are
+  untouched), start and end dates, maximum uses, once per account. Changing it, ending it or creating the next one is the same
+  flow; no amount, month count or code is in the code or the messages.
+- **The customer enters the code at checkout** (the promo field). The server checks it again and reserves the use; the processor
+  receives the discount's immutable terms (Stripe coupon `repeating`, 3 months), so the **4th invoice is the regular price**.
+  ADR-002 keeps our database as the source of truth and applies the coupon from terms rather than through a Stripe promotion code
+  (a promotion code would duplicate the limits, the dates and the per-account rule in two places); the effect for the customer is
+  the same. Test mode only until the owner turns payments live.
+- **The pricing page announces it** when the setting `pricing.announcedCode` names a running coupon (active, started, not ended):
+  « Offre de lancement : −50 % les 3 premiers mois avec le code LANCEMENT », each plan's line gives the offer price for 3 months and
+  **the regular price after**, and the end date is shown (Québec consumer protection: the regular price and the end of the
+  offer are always clear). An ended, paused or unknown code announces nothing.
+- Guards: `lib/prices/launch-offer.test.ts` (offer price, 4th month at the regular price, EN/FR rendering with the regular price and
+  the end date) and `lib/coupons/coupons.integration.test.ts` (valid, once per account, wrong plan, expired).
+- Still to build (yomizaka#548): the administrator's price editor (versions from a date, audit, processor sync in test mode).
