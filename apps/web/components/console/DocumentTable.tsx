@@ -19,7 +19,7 @@ import { TagChips } from "./TagChips";
 type Say = ReturnType<typeof useSay>["say"];
 type Lang = ReturnType<typeof useSay>["locale"];
 
-function documentColumns(say: Say, locale: Lang, organise: Organise | undefined): DataTableColumn<DocumentSummary>[] {
+function documentColumns(say: Say, locale: Lang, organise: Organise | undefined, bookmarks: Record<string, TagOption[]> | undefined): DataTableColumn<DocumentSummary>[] {
   return [
     {
       id: "title",
@@ -47,6 +47,17 @@ function documentColumns(say: Say, locale: Lang, organise: Organise | undefined)
     { id: "status", header: say("library.columns.status"), type: "status", filter: "facet", options: DOCUMENT_STATUSES.map((k) => ({ value: k, label: say(`statuses.${k}`) })), value: (d) => d.status, cell: (d) => <Badge tone={STATUS_TONE[d.status]}>{say(`statuses.${d.status}`)}</Badge> },
     { id: "size", header: say("library.columns.size"), priority: DOCUMENT_COLUMN_PRIORITY.size, sortable: true, align: "end", value: (d) => d.sizeBytes, cell: (d) => formatBytes(d.sizeBytes, locale) },
     { id: "added", header: say("library.columns.added"), priority: DOCUMENT_COLUMN_PRIORITY.added, sortable: true, align: "end", value: (d) => d.createdAt, cell: (d) => formatDate(d.createdAt, locale) },
+    ...(bookmarks && !organise
+      ? [
+          {
+            id: "bookmarks",
+            header: say("documentsPage.bookmarks"),
+            priority: 3,
+            value: (d: DocumentSummary) => (bookmarks[d.id] ?? []).length,
+            cell: (d: DocumentSummary) => <TagChips tags={bookmarks[d.id] ?? []} />,
+          } satisfies DataTableColumn<DocumentSummary>,
+        ]
+      : []),
     ...(organise
       ? [
           {
@@ -84,7 +95,7 @@ export const STATUS_TONE = { stored: "neutral", analysing: "accent", checked: "s
 export const DOCUMENT_COLUMN_PRIORITY = { title: 1, kind: 2, status: 1, size: 3, added: 2 } as const;
 
 /** The documents of a view (rows come from the server; a run in progress refreshes them every 4 s). */
-export function DocumentTable({ rows, caption, organise }: Readonly<{ rows: DocumentSummary[]; caption?: string; organise?: Organise }>) {
+export function DocumentTable({ rows, caption, organise, bookmarks }: Readonly<{ rows: DocumentSummary[]; caption?: string; organise?: Organise; bookmarks?: Record<string, TagOption[]> }>) {
   const { say, locale } = useSay();
   const router = useRouter();
   const running = rows.some((d) => d.status === "analysing");
@@ -93,7 +104,7 @@ export function DocumentTable({ rows, caption, organise }: Readonly<{ rows: Docu
     const timer = setInterval(() => router.refresh(), 4000);
     return () => clearInterval(timer);
   }, [running, router]);
-  const columns = useMemo(() => documentColumns(say, locale, organise), [say, locale, organise]);
+  const columns = useMemo(() => documentColumns(say, locale, organise, bookmarks), [say, locale, organise, bookmarks]);
   // The state is the address: ?q= (search in the title) &kind= &status= (filters) &page= &size= &sort= — a refresh, a shared link and the back button restore it.
   const [q, setQ] = useUrlState<string>("q", { default: TABLE_DEFAULTS.q, history: "replace" });
   const [kind, setKind] = useUrlState<string>("kind", { default: "" });

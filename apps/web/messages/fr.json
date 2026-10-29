@@ -3131,6 +3131,8 @@
       "toReview": "Règles québécoises encore à faire relire par un juriste : un écran de démonstration, pas un avis juridique."
     },
     "documentsPage": {
+      "nothingWithBookmarks": "Aucun document ne porte tous ces signets.",
+      "bookmarks": "Signets",
       "title": "Tous les documents",
       "lead": "Tous vos documents, du plus récent au plus ancien, dans toutes vos collections.",
       "caption": "Tous vos documents, les plus récents d'abord",
