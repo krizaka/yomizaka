@@ -1,5 +1,5 @@
 import { type Actor, type CatalogObject, moveBatch, type ObjectCatalog, type ProviderService } from "@krizaka/storage/provider-admin";
-import { addSeconds } from "date-fns";
+import { addSeconds } from "@krizaka/time";
 import type { QueryResultRow } from "pg";
 
 import { refuse } from "../http";
