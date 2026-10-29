@@ -15,6 +15,14 @@ describe("the container smoke check", () => {
     const dockerfile = read("deploy/docker/Dockerfile");
     for (const needle of ["tesseract\\.js-core", "@tesseract\\.js-data", "COPY --from=build --chown=yomizaka:yomizaka /ocr/"]) expect(dockerfile).toContain(needle);
   });
+  it("holds the image to a size budget, and the runtime stays on musl (OpenDAL's linux-gnu binary needs glibc 2.38)", () => {
+    const budget = Number(read("deploy/docker/image-size-budget-mb").trim());
+    expect(Number.isInteger(budget) && budget > 0 && budget <= 340, "a positive budget within 10% of what CI measured (310 MB)").toBe(true);
+    expect(read("scripts/ci-container-smoke.sh")).toContain("image-size-budget-mb");
+    const dockerfile = read("deploy/docker/Dockerfile");
+    expect(dockerfile.match(/^FROM node:22-alpine/gm)?.length, "build and run stages both on Alpine").toBe(2);
+    expect(dockerfile).not.toMatch(/^FROM node:[^ ]*(bookworm|bullseye|slim|jammy)/m);
+  });
   it("the dockerignore keeps the smoke fixtures out of the build context only if they are not needed there", () => {
     expect(read(".dockerignore")).not.toMatch(/deploy/);
   });
