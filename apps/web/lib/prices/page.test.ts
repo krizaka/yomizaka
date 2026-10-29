@@ -23,9 +23,9 @@ describe("the pricing page reads the catalogue (#388)", () => {
   it("shows one document, then the two subscriptions with what they include, then what is soon", async () => {
     const lines = await linesOf(fresh(), "fr");
     expect(lines.sold.map((l) => [l.plan, nb(l.price), l.per, l.included])).toEqual([
-      ["document", "0,65 $", "document", null],
-      ["agency", "59,00 $", "month", 100],
-      ["firm", "279,00 $", "month", 750],
+      ["document", "4,99 $", "document", null],
+      ["agency", "49,00 $", "month", 100],
+      ["firm", "149,00 $", "month", 500],
     ]);
     expect(lines.soon).toEqual([{ plan: "fullFile" }, { plan: "backgroundCheck" }, { plan: "screening" }]);
   });
@@ -38,11 +38,22 @@ describe("the pricing page reads the catalogue (#388)", () => {
   it("changing a price in the catalogue changes the page", async () => {
     const c = fresh();
     const before = nb(await render(c, "fr"));
-    expect(before).toContain("59,00 $");
+    expect(before).toMatch(/(?<!\d)49,00 \$/u);
     await c.schedule(ADMIN, PRICE.agency, { amountCents: 6900 }, NOW, NOW);
     const after = nb(await render(c, "fr"));
     expect(after).toContain("69,00 $");
-    expect(after).not.toContain("59,00 $");
+    expect(after).not.toMatch(/(?<!\d)49,00 \$/u);
+  });
+
+  it("above the largest included volume, a line leads to the contact form, with the catalogue's figure and no price (#360)", async () => {
+    const c = fresh();
+    const volume = (html: string) => /<p data-volume[^>]*><a href="([^"]+)">([^<]+)<\/a><\/p>/.exec(html);
+    const fr = volume(nb(await render(c, "fr"))!)!;
+    expect(fr[1]).toContain("/contact?topic=yomizaka");
+    expect(fr[2]).toBe("Plus de 500 vérifications par mois ? Écrivez-nous");
+    expect(volume(nb(await render(c, "en"))!)![2]).toBe("More than 500 verifications a month? Write to us");
+    await c.schedule(ADMIN, PRICE.firm, { limits: { included: 600 } }, NOW, NOW);
+    expect(volume(nb(await render(c, "en"))!)![2]).toContain("600");
   });
 
   it("follows an entry the administrator took off sale: it leaves the plans, and appears as soon without a figure", async () => {

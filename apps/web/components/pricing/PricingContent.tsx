@@ -3,22 +3,34 @@ import { PricingPage } from "@krizaka/ui/pricing-page";
 import { ButtonLink } from "@/components/ButtonLink";
 import { format, getDictionary, type Locale } from "@/lib/i18n";
 import { signInPath } from "@/lib/nav";
+import { contactHref } from "@/lib/site";
 import type { PricingPlan, PricingSoon } from "@/lib/prices/page";
 
 /**
  * The pricing page on the pricing template of @krizaka/ui (yomizaka#388). Prices and included volumes come from the catalogue
  * (props); every word is a message. What is not built is « soon » and carries no figure. Sign-up is closed while the product is in
- * development, so the call to action is sign-in and the status line says the same as the home.
+ * development, so the call to action is sign-in and the status line says the same as the home. Above the largest included volume
+ * there is no figure (the code bills no usage, #373): a quiet line leads to the contact form (#360).
  */
 export function PricingContent({ locale, sold, soon, freeFirst, status }: Readonly<{ locale: Locale; sold: PricingPlan[]; soon: PricingSoon[]; freeFirst: boolean; status: string }>) {
   const p = getDictionary(locale).pricing;
   const words = (plan: string) => p.plans[plan as keyof typeof p.plans];
   const soonWords = (plan: string) => p.soon.items[plan as keyof typeof p.soon.items];
+  const largest = Math.max(0, ...sold.map((s) => s.included ?? 0));
   return (
     <PricingPage
       title={p.title}
       lead={p.lead}
-      toolbar={<p>{status}</p>}
+      toolbar={
+        <>
+          <p>{status}</p>
+          {largest > 0 ? (
+            <p data-volume>
+              <a href={contactHref("dev-yomizaka-pricing-volume")}>{format(p.volume, { included: largest })}</a>
+            </p>
+          ) : null}
+        </>
+      }
       plansLabel={p.plansLabel}
       plans={sold
         .filter((s) => words(s.plan))

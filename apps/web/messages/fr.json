@@ -1364,8 +1364,8 @@
       "fairUseTitle": "Limite mensuelle atteinte",
       "fairUse": "Votre abonnement comprend {limit} vérifications par mois. La limite revient au début du mois prochain.",
       "testMode": "Mode test : aucune vraie carte n'est débitée.",
-      "agency": "S’abonner — PME",
-      "firm": "S’abonner — Études",
+      "agency": "S’abonner — Agence",
+      "firm": "S’abonner — Gestionnaire d’immeubles",
       "informative": "Vérification informative, ce n’est pas un avis juridique."
     },
     "insight": {
@@ -1592,8 +1592,8 @@
         "buy": "Acheter ou s'abonner",
         "testMode": "Mode test : aucune vraie carte n'est débitée.",
         "plans": {
-          "agency": "PME",
-          "firm": "Études et entreprises"
+          "agency": "Agence",
+          "firm": "Gestionnaire d’immeubles"
         }
       },
       "data": {
@@ -2563,9 +2563,9 @@
         },
         "entries": {
           "document": "Un document vérifié",
-          "agency": "PME",
-          "firm": "Études et entreprises",
-          "api": "API dédiée (plus de 5 000 par mois, sur soumission)",
+          "agency": "Agence",
+          "firm": "Gestionnaire d’immeubles",
+          "api": "API dédiée (sur soumission)",
           "fullFile": "Dossier complet du locataire",
           "backgroundCheck": "Vérification des antécédents",
           "screening": "Filtre seul"
@@ -3669,6 +3669,7 @@
     "freeFirst": "Votre première vérification est offerte",
     "cancel": "Facturé au mois, résiliable en tout temps depuis le portail de facturation",
     "noSubscription": "Sans abonnement : vous payez les documents que vous vérifiez",
+    "volume": "Plus de {included} vérifications par mois ? Écrivez-nous",
     "plans": {
       "document": {
         "name": "Un document",
@@ -3678,16 +3679,16 @@
         ]
       },
       "agency": {
-        "name": "Gestionnaire d'immeubles",
+        "name": "Agence",
         "features": [
-          "Pour qui vérifie plusieurs dossiers par mois : agences, gestionnaires d'immeubles et propriétaires",
+          "Pour les agences, courtiers et propriétaires qui vérifient plusieurs dossiers par mois",
           "L'API, avec des clés créées dans votre compte"
         ]
       },
       "firm": {
-        "name": "Études et entreprises",
+        "name": "Gestionnaire d'immeubles",
         "features": [
-          "Pour les études avec un plus grand volume",
+          "Pour les gestionnaires d'immeubles et les entreprises avec un plus grand volume",
           "L'API, avec des clés créées dans votre compte"
         ]
       }

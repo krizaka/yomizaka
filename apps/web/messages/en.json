@@ -1364,8 +1364,8 @@
       "fairUseTitle": "Monthly limit reached",
       "fairUse": "Your subscription includes {limit} verifications a month. The limit resets at the start of next month.",
       "testMode": "Test mode: no real card is charged.",
-      "agency": "Subscribe — Small business",
-      "firm": "Subscribe — Firms",
+      "agency": "Subscribe — Agency",
+      "firm": "Subscribe — Building manager",
       "informative": "An informative check, not legal advice."
     },
     "insight": {
@@ -1592,8 +1592,8 @@
         "buy": "Buy or subscribe",
         "testMode": "Test mode: no real card is charged.",
         "plans": {
-          "agency": "Small business",
-          "firm": "Firms & corporate"
+          "agency": "Agency",
+          "firm": "Building manager"
         }
       },
       "data": {
@@ -2563,9 +2563,9 @@
         },
         "entries": {
           "document": "One document verified",
-          "agency": "Small business",
-          "firm": "Firms & corporate",
-          "api": "Dedicated API (over 5,000 a month, on quote)",
+          "agency": "Agency",
+          "firm": "Building manager",
+          "api": "Dedicated API (on quote)",
           "fullFile": "Full applicant file",
           "backgroundCheck": "Background checks",
           "screening": "Screening alone"
@@ -3669,6 +3669,7 @@
     "freeFirst": "Your first verification is free",
     "cancel": "Billed monthly, cancel any time from the billing portal",
     "noSubscription": "No subscription: you pay for the documents you verify",
+    "volume": "More than {included} verifications a month? Write to us",
     "plans": {
       "document": {
         "name": "One document",
@@ -3678,16 +3679,16 @@
         ]
       },
       "agency": {
-        "name": "Property manager",
+        "name": "Agency",
         "features": [
-          "For those who check several files a month: agencies, property managers and landlords",
+          "For agencies, brokers and landlords who check several files a month",
           "The API, with keys created in your account"
         ]
       },
       "firm": {
-        "name": "Firms and corporate",
+        "name": "Building manager",
         "features": [
-          "For firms with a larger volume",
+          "For property managers and firms with a larger volume",
           "The API, with keys created in your account"
         ]
       }
