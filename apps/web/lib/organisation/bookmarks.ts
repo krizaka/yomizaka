@@ -19,3 +19,9 @@ export function knownBookmarks(selected: readonly string[], owned: readonly Book
   const own = new Set(owned.map((t) => t.id));
   return selected.filter((s) => own.has(s));
 }
+
+/** The bookmarks a document wears after one is applied (`on`) or lifted; never twice, the others untouched. */
+export function withBookmark(worn: readonly string[], id: string, on: boolean): string[] {
+  if (!on) return worn.filter((w) => w !== id);
+  return worn.includes(id) ? [...worn] : [...worn, id];
+}

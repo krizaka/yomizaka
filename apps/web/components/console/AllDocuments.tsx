@@ -38,7 +38,7 @@ export function AllDocuments({ documents, bookmarks = [], selected = [], bookmar
       <PageHeader title={say("documentsPage.title")} description={say("documentsPage.lead")} />
       {/* The bookmarks as a filter (yomizaka#339): the address is the state, `?tags=`, every bookmark asked for must be worn. */}
       {bookmarks.length > 0 ? <PlaceFilters tags={bookmarks} selected={selected} path={path} view={{ tags: selected, kind: null, status: null }} count={documents.length} /> : null}
-      {documents.length ? <DocumentTable rows={documents} caption={say("documentsPage.caption")} bookmarks={bookmarksByDocument} /> : nothing}
+      {documents.length ? <DocumentTable rows={documents} caption={say("documentsPage.caption")} bookmarks={{ all: bookmarks, byDocument: bookmarksByDocument }} /> : nothing}
     </div>
   );
 }
