@@ -56,7 +56,8 @@ function documentColumns(say: Say, locale: Lang, organise: Organise | undefined,
           {
             id: "bookmarks",
             header: say("documentsPage.bookmarks"),
-            priority: 3,
+            // A quick action sits in place: priority 2 keeps it on the phone card, one tap (3+ would send it under the chevron).
+            priority: 2,
             value: (d: DocumentSummary) => (bookmarks.byDocument[d.id] ?? []).length,
             cell: (d: DocumentSummary) => <RowBookmarks id={d.id} name={d.title} bookmarks={bookmarks.all} worn={(bookmarks.byDocument[d.id] ?? []).map((t) => t.id)} />,
           } satisfies DataTableColumn<DocumentSummary>,

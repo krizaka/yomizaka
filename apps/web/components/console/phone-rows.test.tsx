@@ -76,4 +76,9 @@ describe("phone lists as list rows (P12, #329)", () => {
     expect(code).toMatch(/id: "run"[^\n]*priority: 3/);
     expect(code).toMatch(/id: "result", header: say\("checks.columns.result"\), type: "status"/);
   });
+
+  it("Documents: the row bookmark is a quick action, it stays on the phone card (priority 2), never under the chevron (yomizaka#339)", () => {
+    const code = readFileSync(new URL("./DocumentTable.tsx", import.meta.url), "utf8");
+    expect(code).toMatch(/id: "bookmarks",[\s\S]*?priority: 2,/);
+  });
 });
