@@ -87,4 +87,13 @@ describe("the report's face (the UX review's Y5, the report of #321)", () => {
     expect(text).toContain("3 · R1 · DETERMINISTIC");
     expect(readable(wrap(<TechnicalDetails documentId="d1" analysis={analysis({ ...SEEDED_INPUTS })} />))).not.toContain(fr.console.analysis.seededNote);
   });
+
+  it("lets a long source address break inside its card, so it never overflows a phone's width (the TAL address of Section G)", () => {
+    const url = "https://www.tal.gouv.qc.ca/fr/le-bail-de-logement/avis-au-nouveau-locataire-formulaire-de-notification";
+    const report = { ...REPORT, findings: [{ ...finding("TS-G-001", "Avis du TAL absent", "FAIL", "MAJOR"), explanation: `Voir ${url}.` }] };
+    const html = wrap(<FindingList report={report as never} />);
+    expect(html).toContain(url);
+    const paragraph = html.match(/<p class="([^"]*)">Voir /)?.[1] ?? "";
+    expect(paragraph).toContain("[overflow-wrap:anywhere]");
+  });
 });
