@@ -72,6 +72,10 @@ describe("a signed-in visitor lands on their home, never on the landing page (kr
       expect(res.headers.get("vary")).toBe("Cookie");
     }
   });
+  it("the Location is absolute on the configured public origin (Next's proxy throws on a relative one), never on the Host the request claims", () => {
+    const res = proxy(new NextRequest("https://localhost:3000/fr", { headers: { host: "evil.example", "x-forwarded-host": "evil.example", cookie: "yomizaka_session=ys1.x" } }));
+    expect(res.headers.get("location")).toBe(`${(process.env.APP_PUBLIC_URL ?? "https://www.yomizaka.com").replace(/\/$/, "")}/fr/app`);
+  });
   it("a signed-out visitor still gets the landing page, and a public page stays reachable signed in", () => {
     expect(goes(ask("/fr"))).toBeNull();
     expect(goes(ask("/fr/pricing", "yomizaka_session=ys1.x"))).toBeNull();
