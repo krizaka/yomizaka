@@ -67,11 +67,10 @@ function capOf(table: TalTable, year: number, previousCents: number, costs: Sect
       case "rate-of-rent":
         total += Math.round((previousCents * c.basisPoints) / 10_000);
         break;
-      case "cost-per-door": {
+      default: {
         const change = costs?.[c.id];
         if (change === undefined) return { missing: "NO_BUILDING_COST" };
         total += change;
-        break;
       }
     }
   }
