@@ -5,9 +5,9 @@ import fr from "../../messages/fr.json";
 import { TAL } from "../brief/tal";
 import { talTableFrom } from "../brief/tal-settings";
 import { ruleTitle } from "../rule-text";
+import { appendFinding } from "./report-finding";
 import { checkSectionG } from "./section-g";
 import { sectionGInputFromFacts } from "./section-g-facts";
-import { appendFinding } from "./report-finding";
 import { sectionGFinding } from "./section-g-finding";
 
 /** The lease ruleset whose report exposes the rents (`facts`) Section G reads. */

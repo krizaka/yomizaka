@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { complianceReport, type ComplianceReport } from "@yomizaka/core";
+import { type ComplianceReport,complianceReport } from "@yomizaka/core";
 import { describe, expect, it } from "vitest";
 
 import { generateDocument, PERSONA_ERIC } from "../../../../scripts/demo-documents/index.mjs";
