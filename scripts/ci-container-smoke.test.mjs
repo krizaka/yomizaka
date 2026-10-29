@@ -17,7 +17,7 @@ describe("the container smoke check", () => {
   });
   it("holds the image to a size budget, and the runtime stays on musl (OpenDAL's linux-gnu binary needs glibc 2.38)", () => {
     const budget = Number(read("deploy/docker/image-size-budget-mb").trim());
-    expect(Number.isInteger(budget) && budget > 0 && budget <= 340, "a positive budget within 10% of what CI measured (310 MB)").toBe(true);
+    expect(Number.isInteger(budget) && budget > 0 && budget <= 260, "a positive budget within a few MB of what CI measured (244 MB)").toBe(true);
     expect(read("scripts/ci-container-smoke.sh")).toContain("image-size-budget-mb");
     const dockerfile = read("deploy/docker/Dockerfile");
     expect(dockerfile.match(/^FROM node:22-alpine/gm)?.length, "the build stage is the musl node image").toBe(1);
