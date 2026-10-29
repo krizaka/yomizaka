@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "turbo run dev --filter=@yomizaka/web",
     "build": "turbo run build",
-    "lint": "turbo run lint && pnpm run check:i18n && ast-grep test --skip-snapshot-tests && krizaka-sg-ratchet",
+    "lint:workspace": "npx --yes -p @krizaka/config krizaka-workspace-guard",
+    "lint": "pnpm run lint:workspace && turbo run lint && pnpm run check:i18n && ast-grep test --skip-snapshot-tests && krizaka-sg-ratchet",
     "check:i18n": "krizaka-i18n check apps/web/messages",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test && vitest run",
