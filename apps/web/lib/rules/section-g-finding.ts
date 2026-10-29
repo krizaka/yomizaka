@@ -28,7 +28,7 @@ const VERDICT: Record<SectionGResult["status"], string | null> = { finding: "FAI
 
 const fill = (template: string, vars: Record<string, string | number>) => template.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
 
-export function sectionGFinding(result: SectionGResult, lang: "en" | "fr", messages: SectionGMessages, title: string): ReportFindingShape | null {
+export function sectionGFinding(result: SectionGResult, lang: "en" | "fr", messages: SectionGMessages, title: string, after: readonly string[] = []): ReportFindingShape | null {
   const verdict = VERDICT[result.status];
   if (!verdict) return null;
   const vars = {
@@ -38,7 +38,7 @@ export function sectionGFinding(result: SectionGResult, lang: "en" | "fr", messa
     source: result.source.url,
   };
   const parts = [fill(messages[result.code] ?? "", vars)];
-  if (result.recourse) parts.push(messages.recourse);
+  if (result.recourse) parts.push(messages.recourse, ...after);
   parts.push(messages.disclaimer);
   return {
     ruleId: result.ruleId,

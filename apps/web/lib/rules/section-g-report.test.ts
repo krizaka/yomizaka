@@ -35,3 +35,27 @@ describe("withSectionG", () => {
     expect((await withSectionG({ ...r, asOf: "2031-01-01" }, none)).findings).toHaveLength(1);
   });
 });
+
+describe("withSectionG: the deadline and the facts to take to the TAL", () => {
+  const over = { rentCents: { status: "found", cents: 99_000 }, lowestRentCents: { status: "found", cents: 92_500 } } as const;
+  const dates = { concludedOn: { status: "found", date: "2026-06-15" }, startsOn: { status: "found", date: "2026-07-01" }, noticeGiven: { status: "found", flag: false } } as const;
+
+  it("follows a finding with the basis of the deadline, its last day and the figures, in both languages", async () => {
+    const f = (await withSectionG(report({ ...over, ...dates }), settings)).findings.at(-1)!;
+    expect(f.explanation).toContain("dans les deux mois du début du bail");
+    expect(f.explanation).toMatch(/1(er)? septembre 2026/);
+    expect(f.explanationEn).toContain("within two months of the start of the lease");
+    expect(f.explanationEn).toContain("September 1, 2026");
+    expect(f.explanationEn).toContain("Facts to take to the TAL");
+    expect(f.explanationEn).toContain("Yomizaka files nothing");
+    expect(f.explanationEn).toContain("not legal advice");
+  });
+
+  it("keeps the figures without a deadline when the dates are not read, and adds nothing to a pass", async () => {
+    const f = (await withSectionG(report(over), settings)).findings.at(-1)!;
+    expect(f.explanationEn).toContain("Facts to take to the TAL");
+    expect(f.explanationEn).not.toContain("last day to ask");
+    const ok = (await withSectionG(report({ rentCents: { status: "found", cents: 95_000 }, lowestRentCents: { status: "found", cents: 92_500 }, ...dates }), settings)).findings.at(-1)!;
+    expect(ok.explanationEn).not.toContain("Facts to take");
+  });
+});

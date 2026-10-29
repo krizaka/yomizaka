@@ -3126,6 +3126,12 @@
           "violet": "Violet",
           "gray": "Gris"
         }
+      },
+      "rentShare": {
+        "title": "Loyer et revenu",
+        "lead": "Si la personne vous a donné son revenu mensuel, saisissez-le avec le loyer mensuel pour voir la part. Rien de ce que vous saisissez ici n'est envoyé ni conservé.",
+        "rent": "Loyer mensuel ($)",
+        "income": "Revenu mensuel donné ($)"
       }
     },
     "states": {
@@ -3913,7 +3919,7 @@
     "disclaimer": "Information sur les dates, pas un avis juridique. La façon de compter les jours et les mois est à confirmer auprès du TAL ou d'un avocat."
   },
   "sectionGRequest": {
-    "title": "Les faits à apporter au TAL",
+    "title": "Les faits à apporter au TAL :",
     "rentNew": "Loyer du nouveau bail : {cents}.",
     "rentPrevious": "Plus bas loyer des douze mois précédents, tel qu'écrit à la section G : {cents}.",
     "previousBlank": "La section G du bail n'indique pas le loyer précédent.",

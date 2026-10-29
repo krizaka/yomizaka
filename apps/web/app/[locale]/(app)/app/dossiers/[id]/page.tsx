@@ -39,6 +39,7 @@ export default async function FilePage({ params }: Readonly<{ params: Promise<{ 
   return (
     <FileView
       file={file}
+      affordability={getDictionary(locale).affordability}
       types={askableTypes(getDictionary(locale).applicantFile.types, await documentTypes())}
       workspace={set ? { set, decision: state.get(id)?.state ?? set.initial ?? "", tags: tags.map(asTag), tagIds: (worn.get(id) ?? []).map((t) => t.id) } : undefined}
     />
