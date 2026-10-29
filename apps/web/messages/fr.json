@@ -3842,5 +3842,15 @@
       "fr": "Français"
     },
     "languageNote": "Les règles sont rédigées en français ; les noms anglais viennent avec le jeu de règles. Les références aux articles sont données telles que citées."
+  },
+  "sectionG": {
+    "previous-blank": "La section G du bail est vide : le loyer le plus bas payé dans les douze mois précédant le bail n'y est pas indiqué (C.c.Q., art. 1896).",
+    "previous-altered": "La section G du bail semble modifiée : vérifiez le montant auprès de l'avis du locateur (C.c.Q., art. 1896).",
+    "over-rate": "Le nouveau loyer dépasse de {excess} par mois le loyer le plus élevé que donne le taux {year} du TAL à partir du loyer précédent indiqué ({max}). Source : {source}.",
+    "within-rate": "Le nouveau loyer respecte le loyer le plus élevé que donne le taux {year} du TAL à partir du loyer précédent indiqué ({max}). Source : {source}.",
+    "not-above-previous": "Le nouveau loyer ne dépasse pas le loyer précédent indiqué à la section G.",
+    "no-rate": "Aucune conclusion : le taux du TAL pour cette année n'est pas saisi, ou les montants sont inutilisables, donc l'augmentation n'est pas comparée.",
+    "recourse": "Recours : le locataire peut demander au Tribunal administratif du logement de fixer le loyer (C.c.Q., art. 1950).",
+    "disclaimer": "Information sur les montants du bail, pas un avis juridique et aucun jugement sur le locateur. Vérifiez l'article et la page du TAL, ou demandez au TAL."
   }
 }

@@ -3842,5 +3842,15 @@
       "fr": "Français"
     },
     "languageNote": "The rules are written in French; the English names come with the ruleset. Article references are given as cited."
+  },
+  "sectionG": {
+    "previous-blank": "Section G of the lease is blank: the lowest rent paid in the twelve months before the lease is not stated (C.c.Q., art. 1896).",
+    "previous-altered": "Section G of the lease looks altered: check the figure against the landlord's notice (C.c.Q., art. 1896).",
+    "over-rate": "The new rent is {excess} a month above the highest rent the TAL's {year} rate gives from the stated previous rent ({max}). Source: {source}.",
+    "within-rate": "The new rent is within the highest rent the TAL's {year} rate gives from the stated previous rent ({max}). Source: {source}.",
+    "not-above-previous": "The new rent is not above the previous rent stated in Section G.",
+    "no-rate": "No claim: the TAL's rate for this year is not entered, or the figures are not usable, so the increase is not compared.",
+    "recourse": "Recourse: the tenant may ask the Tribunal administratif du logement to fix the rent (C.c.Q., art. 1950).",
+    "disclaimer": "Information about the figures of the lease, not legal advice and no judgement on the landlord. Check the article and the TAL's page, or ask the TAL."
   }
 }
