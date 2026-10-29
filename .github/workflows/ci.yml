@@ -19,7 +19,7 @@ jobs:
   # The pipeline is the org's (krizaka/.github docs/standards/ci-and-deploy.md): the changes gate, the pnpm and Playwright
   # caches, parallel legs, the timeouts and the gate that always reports live there. This file says only what is Yomizaka's.
   ci:
-    uses: krizaka/.github/.github/workflows/node-ci.yml@52867e939aae51e061389109d52b1e463f8fe72f # main (merge queue, layout guard)
+    uses: krizaka/.github/.github/workflows/node-ci.yml@944b6e5283428852f463b108b7ec9cd2647345fe # main (merge queue, layout guard)
     permissions:
       contents: read
     secrets:

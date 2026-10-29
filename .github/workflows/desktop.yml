@@ -21,11 +21,32 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  desktop:
+  # Pull request: unsigned check and build, no secret (the shared workflow refuses one with sign: false).
+  desktop-pr:
+    if: github.event_name == 'pull_request'
     permissions:
-      contents: write
-    uses: krizaka/.github/.github/workflows/tauri-macos.yml@eebba5e6e80145b0892af1742b5c09aa3d1560eb # main
+      contents: read
+    uses: krizaka/.github/.github/workflows/tauri-macos.yml@944b6e5283428852f463b108b7ec9cd2647345fe # main
     with:
       working-directory: apps/desktop
       product-name: Yomizaka
-    secrets: inherit # zizmor: ignore[secrets-inherit] the org's own reusable workflow, pinned by SHA, needs the signing secrets
+      sign: false
+
+  # Tag: signed and notarised in the `release` environment, the secrets passed by name.
+  desktop-release:
+    if: github.event_name == 'push'
+    permissions:
+      contents: write
+    uses: krizaka/.github/.github/workflows/tauri-macos.yml@944b6e5283428852f463b108b7ec9cd2647345fe # main
+    with:
+      working-directory: apps/desktop
+      product-name: Yomizaka
+      sign: true
+    secrets:
+      APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+      APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+      APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+      APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+      APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+      APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
