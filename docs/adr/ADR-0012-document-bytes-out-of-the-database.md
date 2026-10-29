@@ -109,3 +109,8 @@ Extends ADR-0007 (the `DocumentStore` port, decision 2). Issues: krizaka/yomizak
 - **The off-site backup destination** for the nightly encrypted `pg_dump` (a second provider is a new, paid account).
 - **Custody of `MEDIA_DOCUMENTS_ENCRYPTION_KEY`** for production (an offline copy outside the cloud account).
 - **Dropping `documents.content`** on any deployment that holds real data (after the guard is green and a fresh backup).
+
+## Amendment (2026-10-28, yomizaka#523, krizaka-ts ADR-005)
+- **The store is chosen by the admin, in the database.** `storageFrom`'s selection by environment is replaced by the provider registry of `@krizaka/storage`: `storage.provider` holds the admin's providers (credentials sealed under `MEDIA_VAULT_KEY`), `storage.default_provider` the default for `documents` and `avatars`. The `MEDIA_DOCUMENTS_*`, `MEDIA_STORAGE_*` and `MEDIA_S3_*` variables only bootstrap: at the first start with no provider, they are imported once as an active provider (`source: env`, audited), so the development deployment keeps using the Bunny zone `yomizaka-docs-dev` and its existing objects still open (the encryption key is imported as the provider's sealed credential).
+- **`documents.provider_id`** records which provider holds a document's bytes (migration 0059; rows already in a store are given the imported provider). It is what lets a later provider switch move objects and read from both stores.
+- **No provider, no vault key: nothing is kept**, uploads answer 503 `STORAGE_NOT_CONFIGURED`. No bytes go into PostgreSQL and the web never writes the local disk (a `folder` provider opens only in a development runtime).

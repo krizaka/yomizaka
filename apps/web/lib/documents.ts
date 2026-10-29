@@ -326,7 +326,9 @@ async function putBytes(target: DocumentStore, doc: { id: string; key: string; m
 /** Once the bytes are stored: a keep is a consent (the day is recorded), and the row says whose store holds them. */
 async function placeDocument(policy: StoragePolicy, where: ReturnType<typeof storageFor>, id: string): Promise<void> {
   if (where !== "none") await query("UPDATE documents SET keep_consent_at = COALESCE(keep_consent_at, $2) WHERE id = $1", [id, policy.now]);
-  await query("UPDATE documents SET storage_owner = $2 WHERE id = $1", [id, EXTERNAL.has(where) && policy.store.describe().owner === "workspace" ? "workspace" : "krizaka"]);
+  const owner = EXTERNAL.has(where) && policy.store.describe().owner === "workspace" ? "workspace" : "krizaka";
+  // The provider that holds the bytes is recorded with the row (ADR-005): the default of the documents for Krizaka's store, none for the owner's own cloud.
+  await query("UPDATE documents SET storage_owner = $2, provider_id = CASE WHEN $2 = 'krizaka' THEN (SELECT provider_id FROM storage.default_provider WHERE scope = 'org' AND data_kind = 'documents') END WHERE id = $1", [id, owner]);
 }
 
 /** The kind asked for; for « auto », what the text turns out to be — « other » while a deferred document's text is still to be read. */

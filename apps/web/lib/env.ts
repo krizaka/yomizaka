@@ -76,6 +76,9 @@ export const envSchema = z.object({
   APP_PURGE_AFTER_HOURS: z.coerce.number().int().min(1).max(720).default(24),
   /** Seals the credentials of a workspace's own S3 in the database (AES-256-GCM, 32 bytes in base64); without it, storing credentials is unavailable. */
   APP_SETTINGS_ENCRYPTION_KEY: z.string().optional(),
+  /** The key-encryption key of the storage providers (ADR-005): 32 bytes in base64, a DO SECRET. The admin's providers and their credentials live in the database, sealed under it; it is the only storage variable the deployment needs. */
+  MEDIA_VAULT_KEY: z.string().optional(),
+  /** The `MEDIA_DOCUMENTS_*`, `MEDIA_STORAGE_*` and `MEDIA_S3_*` values below only bootstrap: read once to import the provider a deployment already used (`bootstrapFromEnvironment`), never to choose a store afterwards. */
   MEDIA_DOCUMENTS_PREFIX: z.string().default("yomizaka"),
   /** AES-256-GCM key (32 bytes, base64) that encrypts every kept document before it leaves; the provider only holds ciphertext. */
   MEDIA_DOCUMENTS_ENCRYPTION_KEY: z.string().optional(),

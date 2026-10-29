@@ -30,6 +30,10 @@ async function start() {
   const { MODULES } = await import("./lib/modules");
   const { query } = await import("./lib/db");
   await assertModules(query, MODULES);
+  // The environment only bootstraps the storage: its old coordinates become the admin's first provider, once (ADR-005, yomizaka#523).
+  const { bootstrapFromEnvironment } = await import("./app/storage-providers");
+  const imported = await bootstrapFromEnvironment();
+  if (imported) logInfo(`[yomizaka] storage provider imported from the environment: ${imported}`);
   const { seedDatabase } = await import("./lib/flows");
   // Live screening is refused at start unless the compliance gate is open (yomizaka#135).
   const { assertLiveGate } = await import("./lib/screening-checks/gate");
