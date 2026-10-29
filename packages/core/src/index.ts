@@ -152,7 +152,8 @@ export const finding = z.object({
   /** The same sentence in English, for the findings Yomizaka itself writes (the tenant-shield rules, #104); the engine's own are French only. */
   explanationEn: z.string().optional(),
   method: z.string().optional(),
-  citation: z.string().optional(),
+  /** A sentence (1.x), or `{ reference, pinned, notice }` (compliance-check 2.x): the reference is the sentence shown. */
+  citation: z.preprocess((v) => (v && typeof v === "object" && "reference" in v ? (v as { reference: unknown }).reference : v), z.string().optional()),
   /** The line of the document the evidence sits on (1-based), set by Yomizaka while the text is still there (yomizaka#129). */
   line: z.number().int().positive().optional(),
 });
