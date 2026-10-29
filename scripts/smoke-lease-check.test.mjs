@@ -53,3 +53,8 @@ test("a report with no findings fails", async () => {
 test("a failure is described by its status and code, never its body", () => {
   assert.equal(describeFailure("sign-in", 401, { code: "BAD_CREDENTIALS", message: "secret detail" }), "sign-in: HTTP 401, BAD_CREDENTIALS");
 });
+
+test("a printed line has no line break an input could forge", async () => {
+  const { plain } = await import("./smoke-lease-check.mjs");
+  assert.equal(plain("a\nb\r\nc"), "a b  c");
+});

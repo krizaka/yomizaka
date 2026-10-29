@@ -29,8 +29,34 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /** What the smoke says for an answer that is not the expected one: the status and the stable code, never the body in full. Pure. */
 export function describeFailure(step, status, body) {
-  const code = typeof body?.code === "string" ? body.code : typeof body?.error?.code === "string" ? body.error.code : "no code";
+  const code = [body?.code, body?.error?.code].find((c) => typeof c === "string") ?? "no code";
   return `${step}: HTTP ${status}, ${code}`;
+}
+
+/** Waits until the document's text is read (the extraction leaves queued/running), or fails with a stable sentence. */
+async function waitForText({ call, token, documentId, deadline, now, wait }) {
+  for (;;) {
+    const read = await call(`/api/documents/${documentId}`, {}, token);
+    if (!read.res.ok) throw new Error(describeFailure("read the document", read.res.status, read.body));
+    const extraction = read.body.document.extraction;
+    if (extraction === "failed") throw new Error("the text of the lease could not be read");
+    if (extraction !== "queued" && extraction !== "running") return;
+    if (now().getTime() > deadline) throw new Error("the text of the lease was not read in time");
+    await wait(2000);
+  }
+}
+
+/** Polls the lease check until it is no longer running. */
+async function waitForAnalysis({ call, token, documentId, first, deadline, now, wait }) {
+  let analysis = first;
+  while (analysis.status === "running") {
+    if (now().getTime() > deadline) throw new Error("the lease check did not finish in time");
+    await wait(3000);
+    const poll = await call(`/api/documents/${documentId}/analyses/${analysis.id}`, {}, token);
+    if (!poll.res.ok) throw new Error(describeFailure("read the lease check", poll.res.status, poll.body));
+    analysis = poll.body.analysis;
+  }
+  return analysis;
 }
 
 export async function smokeLeaseCheck({ base, email, password, fetchImpl = fetch, now = () => new Date(), wait = sleep, timeoutMs = 240_000, log = () => {} }) {
@@ -53,27 +79,11 @@ export async function smokeLeaseCheck({ base, email, password, fetchImpl = fetch
     documentId = upload.body.document.id;
     log(`uploaded ${documentId}`);
     const deadline = now().getTime() + timeoutMs;
-    for (;;) {
-      const read = await call(`/api/documents/${documentId}`, {}, token);
-      if (!read.res.ok) throw new Error(describeFailure("read the document", read.res.status, read.body));
-      const extraction = read.body.document.extraction;
-      if (extraction === "failed") throw new Error("the text of the lease could not be read");
-      if (extraction !== "queued" && extraction !== "running") break;
-      if (now().getTime() > deadline) throw new Error("the text of the lease was not read in time");
-      await wait(2000);
-    }
+    await waitForText({ call, token, documentId, deadline, now, wait });
     const asOf = montrealDay(now());
     const start = await call(`/api/documents/${documentId}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ studio: "compliance-check", jurisdiction: "QC", ruleset: leaseRefOn(asOf), asOf }) }, token);
     if (!start.res.ok) throw new Error(describeFailure("start the lease check", start.res.status, start.body));
-    let analysis = start.body.analysis;
-    while (analysis.status === "running") {
-      if (now().getTime() > deadline) throw new Error("the lease check did not finish in time");
-      await wait(3000);
-      const poll = await call(`/api/documents/${documentId}/analyses/${analysis.id}`, {}, token);
-      if (!poll.res.ok) throw new Error(describeFailure("read the lease check", poll.res.status, poll.body));
-      analysis = poll.body.analysis;
-    }
-    if (analysis.status !== "succeeded") throw new Error(`the lease check ended ${analysis.status}`);
+    const analysis = await waitForAnalysis({ call, token, documentId, first: start.body.analysis, deadline, now, wait });
     const report = analysis.report;
     if (!report || !Array.isArray(report.findings)) throw new Error("the lease check succeeded without a report with findings");
     return { analysisId: analysis.id, runId: analysis.runId ?? null, findings: report.findings.length, facts: report.facts ? Object.keys(report.facts) : [] };
@@ -82,14 +92,17 @@ export async function smokeLeaseCheck({ base, email, password, fetchImpl = fetch
   }
 }
 
+/** A line safe to print: nothing but printable characters (no line break an input could use to forge a log line). Pure. */
+export const plain = (text) => String(text).replace(/[^\x20-\x7E\u00C0-\u017F]/g, " ");
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const i = process.argv.indexOf("--base");
   const base = (i >= 0 ? process.argv[i + 1] : "https://dev.yomizaka.com").replace(/\/$/, "");
   try {
     const result = await smokeLeaseCheck({ base, email: process.env.SMOKE_EMAIL, password: process.env.SMOKE_PASSWORD, log: console.log });
-    console.log(`lease check on ${base}: succeeded, ${result.findings} findings, facts [${result.facts.join(", ")}], run ${result.runId}`);
+    console.log(`lease check on ${plain(base)}: succeeded, ${result.findings} findings, facts [${result.facts.join(", ")}], run ${result.runId}`);
   } catch (error) {
-    console.error(`lease check on ${base} FAILED: ${error.message}`);
+    console.error(`lease check on ${plain(base)} FAILED: ${plain(error.message)}`);
     process.exitCode = 1;
   }
 }
