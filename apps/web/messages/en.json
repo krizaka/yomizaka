@@ -1527,7 +1527,8 @@
         "securite": "Security",
         "facturation": "Plan and billing",
         "donnees": "My data",
-        "stockage": "Storage"
+        "stockage": "Storage",
+        "signets": "Bookmarks"
       },
       "label": "Account settings",
       "verified": "E-mail verified",
@@ -3102,6 +3103,18 @@
         "once": "on this payment",
         "repeating": "for {months} months",
         "forever": "every month"
+      }
+    },
+    "bookmarks": {
+      "lead": "Your own coloured categories. A bookmark groups files; taking one away never deletes them.",
+      "none": "No bookmark yet.",
+      "edit": "Rename or recolour",
+      "editNamed": "Rename or recolour “{name}”",
+      "deleteNamed": "Delete “{name}”",
+      "deleteKeeps": "The bookmark is taken off its files. The files themselves are kept.",
+      "kinds": {
+        "applicant_file": "Applicant files",
+        "document": "Documents"
       }
     }
   },
