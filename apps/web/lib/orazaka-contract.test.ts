@@ -5,7 +5,7 @@ import { runInputs } from "./analyses";
 import { LEASE_REFS, leaseRefOn } from "../../../scripts/smoke-lease-check.mjs";
 import { rulesFor } from "./check-flow";
 import contract from "./orazaka-contract/compliance-check-inputs.json";
-import { CHECK_KINDS } from "./rulesets";
+import { CHECK_KINDS, rulesetFor } from "./rulesets";
 
 /* The contract test of the Yomizaka -> Orazaka call (the 10-29 refusal « Orazaka refused the document as sent »): every run the UI can
  * start is turned into the Studio's inputs and checked against the Studio's own input schema, the one the engine enforces. */
@@ -60,7 +60,8 @@ describe("what Yomizaka sends to the compliance Studio is what the Studio accept
 
 describe("the post-deploy smoke asks for the lease the way the UI does", () => {
   it.each(DAYS)("the lease reference on %s is the UI's", (day) => {
-    expect(leaseRefOn(day)).toBe(rulesFor("lease", "QC", day)?.ruleset);
+    const choice = rulesetFor("lease", "QC", day);
+    expect(leaseRefOn(day)).toBe(choice.verified ? choice.ruleset : null);
   });
   it("knows every version of the Québec lease", () => {
     expect(LEASE_REFS.map((v) => v.ref)).toEqual(["qc-residential-lease/2024-02-21", "qc-residential-lease/2026-10-24"]);
