@@ -7,10 +7,10 @@ import type { SectionGDeadline } from "./section-g-deadline";
 import { sectionGRequestSummary } from "./section-g-request";
 
 const source = { url: "https://example.test", enteredOn: null, year: 2026 };
-const base = { ruleId: "TS-G-001", citations: [], recourse: { citation: "C.c.Q., art. 1950", authority: "TAL" }, source } as const;
+const base = { ruleId: "TS-G-001" as const, citations: [] as string[], recourse: { citation: "C.c.Q., art. 1950", authority: "TAL" as const }, source };
 const over: SectionGResult = { ...base, status: "finding", code: "over-rate", figures: { previousRentCents: 100_000, newRentCents: 110_000, maxRentCents: 103_100, excessCents: 6_900 } };
 const blank: SectionGResult = { ...base, status: "finding", code: "previous-blank", figures: { newRentCents: 110_000 } };
-const open: SectionGDeadline = { state: "open", basis: "ten-days", lastDay: "2026-07-11", daysLeft: 4, citation: "C.c.Q., art. 1950", sourceUrl: "https://example.test" };
+const open: SectionGDeadline = { state: "open", basis: "ten-days", lastDay: "2026-07-11", daysLeft: 4, citation: "C.c.Q., art. 1950", sourceUrl: "https://www.tal.gouv.qc.ca/fr/signature-d-un-bail/avis-au-nouveau-locataire" as const };
 const noDeadline: SectionGDeadline = { ...open, state: "no-claim", basis: null, lastDay: null, daysLeft: null };
 
 describe("the facts for a request to the TAL (slice 5 of #104)", () => {
