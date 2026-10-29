@@ -10,7 +10,7 @@ import { KEPT_IN, zoneAsked } from "./service";
 import { inZone, zonesOfRegion } from "./zone";
 
 const body = {
-  partnerId: "orochia",
+  partnerId: "partner-one",
   documentType: "CREATOR_PARTNERSHIP_CONTRACT_90_10",
   contractPayload: { terms: { split: { creator: 90, platform: 10 }, currency: "CAD" }, clauses: ["a", "b"], title: "Entente de partenariat" },
   parties: [
@@ -33,7 +33,7 @@ describe("the request", () => {
     ["a party with neither a name nor an account", { parties: [{ role: "CREATOR", signedAt: "2026-10-17T12:05:00Z" }] }],
     ["a role that is not a role", { parties: [{ role: "creator!", name: "x", signedAt: "2026-10-17T12:05:00Z" }] }],
     ["a signing time that is not a time", { parties: [{ role: "CREATOR", name: "x", signedAt: "yesterday" }] }],
-    ["a partner id with capitals", { partnerId: "Orochia" }],
+    ["a partner id with capitals", { partnerId: "Partner-One" }],
     ["a document type in lower case", { documentType: "contract" }],
     ["a field nobody asked for", { extra: 1 }],
     ["a content over 100 000 bytes", { contractPayload: { blob: "x".repeat(100_001) } }],
@@ -65,7 +65,7 @@ describe("a sealed contract", () => {
     expect(pages.at(-1)).toContain("Page de signature");
     const body = pages.slice(0, -1).join(" ");
     for (const word of ["CREATOR_PARTNERSHIP_CONTRACT_90_10", "Plateforme Exemple Inc.", "att_demo_1", "terms.split.creator: 90", "PARTNER-FRAMEWORK-1"]) expect(body).toContain(word);
-    expect(await attestationOf(sealed.bytes)).toMatchObject({ keyId: sealed.attestation.keyId, signature: sealed.attestation.signature, payload: { contractId: when.contractId, zone: "CA-ON", partnerId: "orochia" } });
+    expect(await attestationOf(sealed.bytes)).toMatchObject({ keyId: sealed.attestation.keyId, signature: sealed.attestation.signature, payload: { contractId: when.contractId, zone: "CA-ON", partnerId: "partner-one" } });
   });
 
   it("says what it attests and what it does not — it never says compliant, approved or that someone's identity or age is verified", async () => {
