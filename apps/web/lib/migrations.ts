@@ -1386,4 +1386,26 @@ ALTER TABLE documents ADD COLUMN provider_id uuid;
 CREATE INDEX documents_provider_id ON documents(provider_id) WHERE provider_id IS NOT NULL;
 `,
   },
+  {
+    version: "0061_storage_moves",
+    // ADR-005 §3 (yomizaka#522): the verified move of the documents from a retiring provider to the new default. One row per move; the objects themselves are the catalog (documents.provider_id), so a move resumes from the database and never repeats. At most one move is open at a time.
+    sql: `
+CREATE TABLE storage_moves (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  from_id      uuid NOT NULL,
+  to_id        uuid NOT NULL,
+  status       text NOT NULL CHECK (status IN ('running', 'paused', 'attention', 'done')),
+  total        integer NOT NULL CHECK (total >= 0),
+  moved        integer NOT NULL DEFAULT 0 CHECK (moved >= 0),
+  failures     jsonb NOT NULL DEFAULT '[]'::jsonb,
+  leased_until timestamptz,
+  started_by   text,
+  started_at   timestamptz NOT NULL,
+  updated_at   timestamptz NOT NULL,
+  finished_at  timestamptz,
+  CHECK (from_id <> to_id)
+);
+CREATE UNIQUE INDEX storage_moves_one_open ON storage_moves ((true)) WHERE status <> 'done';
+`,
+  },
 ];

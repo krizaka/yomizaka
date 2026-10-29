@@ -12,8 +12,10 @@ import { errorKey } from "@/lib/client";
 import { formI18n } from "@/lib/form-i18n";
 import { useSay } from "@/lib/i18n-client";
 import type { KindForm } from "@/lib/storage/admin-api";
+import type { MoveView } from "@/lib/storage/provider-move";
 
 import { formatDate } from "../console/format";
+import { StorageMove } from "./StorageMove";
 
 /** A provider as the API returns it: every secret is `set` or `not set`, never a value. */
 interface ProviderView {
@@ -32,6 +34,7 @@ interface Overview {
   providers: ProviderView[];
   defaults: Record<string, string>;
   kinds: KindForm[];
+  move: MoveView | null;
 }
 
 const KEY = ["admin-storage"] as const;
@@ -67,10 +70,11 @@ function useStep(onProblem: (message: string | null) => void) {
 export function StorageView() {
   const { say } = useSay();
   const [problem, setProblem] = useState<string | null>(null);
-  const data = useQuery({ queryKey: KEY, queryFn: () => krizakaFetch("/api/admin/storage", { schema: overview }), retry: false });
+  const step = useStep(setProblem);
+  const data = useQuery({ queryKey: KEY, queryFn: () => krizakaFetch("/api/admin/storage", { schema: overview }), retry: false, refetchInterval: (query) => (query.state.data?.move?.status === "running" ? 3000 : false) });
   if (data.error) return <Alert tone="danger">{say(`errors.${errorKey(data.error)}`)}</Alert>;
   if (!data.data) return null;
-  const { providers, defaults, kinds } = data.data;
+  const { providers, defaults, kinds, move } = data.data;
   return (
     <div className="flex flex-col gap-8" data-testid="storage">
       <div className="flex flex-col gap-2">
@@ -79,6 +83,7 @@ export function StorageView() {
       </div>
       {problem ? <Alert tone="danger">{problem}</Alert> : null}
       {providers.length === 0 ? <Alert tone="warning">{say("adminConsole.storage.none")}</Alert> : null}
+      <StorageMove providers={providers} defaultId={defaults.documents} move={move} busy={step.isPending} onCall={(path, json) => { setProblem(null); step.mutate({ path, method: "POST", ...(json === undefined ? {} : { json }) }); }} />
       <section aria-label={say("adminConsole.storage.providers")} className="flex flex-col gap-4">
         <h2 className="m-0 font-display text-lg font-bold text-fg">{say("adminConsole.storage.providers")}</h2>
         <ul className="m-0 flex list-none flex-col gap-4 p-0">

@@ -4,6 +4,7 @@ import { STORAGE_KIND } from "@yomizaka/core";
 
 import { logError } from "../log";
 import { documentStoreOver } from "./adapter";
+import { dualObjectStore } from "./dual-read";
 import type { DocumentStore } from "./port";
 import { asDescriptor } from "./where";
 
@@ -93,7 +94,7 @@ export async function documentsStoreOver(service: ProviderService, providers: Pi
   if (!provider) return null;
   let objects;
   try {
-    objects = await service.open(id);
+    objects = await dualObjectStore(service, id, ORG_SCOPE);
   } catch (error) {
     if (error instanceof StorageError && (error.code === STORAGE_CODE.notVerified || error.code === STORAGE_CODE.badConfig)) {
       logError(`storage: the default provider of ${dataKind} cannot be opened (${error.code})`);

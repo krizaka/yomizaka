@@ -74,6 +74,12 @@ async function start() {
       const purgedDocuments = await purgeDocuments(sweepQuery, new Date(), documentHolder);
       const purgedResults = await purgeResults(new Date());
       if (purgedDocuments || purgedResults) logInfo(`[yomizaka] retention: ${purgedDocuments} documents, ${purgedResults} results purged`);
+      // The verified move of the documents to a new storage provider advances one batch per look, while an administrator has one open (ADR-005 §3).
+      const { moveDeps } = await import("./app/storage-providers");
+      const { stepMove } = await import("./lib/storage/provider-move");
+      const moving = moveDeps();
+      const step = moving ? await stepMove(moving) : null;
+      if (step) logInfo(`[yomizaka] storage move: ${step.moved}/${step.total} moved, ${step.failed.length} failed (${step.status})`);
       // The screening checks a provider accepted without answering are collected on the same look (yomizaka#134).
       const { collectPending } = await import("./lib/screening-checks/collect");
       const collected = await collectPending(new Date());

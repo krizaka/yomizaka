@@ -7,7 +7,8 @@ import { audit } from "@/lib/audit";
 import { query } from "@/lib/db";
 import { env } from "@/lib/env";
 import type { DocumentStore } from "@/lib/storage/port";
-import { bootstrapStorage, DATA_KIND, documentsStoreOver, vaultFrom } from "@/lib/storage/providers";
+import type { MoveDeps } from "@/lib/storage/provider-move";
+import { bootstrapStorage, DATA_KIND, documentsStoreOver, ORG_SCOPE, vaultFrom } from "@/lib/storage/providers";
 
 import { systemClock } from "./system-clock";
 
@@ -65,4 +66,17 @@ export async function bootstrapFromEnvironment(): Promise<string | null> {
   if (!imported) return null;
   await query("UPDATE documents SET provider_id = $1 WHERE object_key IS NOT NULL AND provider_id IS NULL AND storage_owner = 'krizaka'", [imported.id]);
   return imported.id;
+}
+
+/** What the move of documents between providers runs on (ADR-005 §3), or null when no vault key is deployed. */
+export function moveDeps(): MoveDeps | null {
+  const p = providers();
+  if (!p) return null;
+  return {
+    q: query,
+    service: p.service,
+    defaults: () => p.store.defaults(ORG_SCOPE),
+    audit: (note) => audit({ action: note.action, actorId: note.actor.id, actorLabel: note.actor.label, targetId: note.targetId, detail: note.detail }),
+    now: () => systemClock.now(),
+  };
 }

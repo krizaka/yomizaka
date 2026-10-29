@@ -925,7 +925,10 @@
       "STORAGE_BAD_CONFIG": "The provider is not configured correctly for this kind or this environment.",
       "STORAGE_BAD_ENDPOINT": "The address is refused: use a public https address.",
       "STORAGE_BAD_SECRET_KEY": "The key is not valid.",
-      "STORAGE_TEST_FAILED": "The connection test failed: nothing was saved."
+      "STORAGE_TEST_FAILED": "The connection test failed: nothing was saved.",
+      "STORAGE_MOVE_NOT_ALLOWED": "This move is not allowed: move from a retiring provider to the default of the documents.",
+      "STORAGE_MOVE_OPEN": "A move is already open: finish or pause it first.",
+      "STORAGE_MOVE_NONE": "There is no move to pause or resume."
     },
     "adminConsole": {
       "shell": {
@@ -1262,6 +1265,29 @@
           "accessKeyId": "Access key id",
           "secretAccessKey": "Secret access key",
           "encryptionKey": "Object encryption key"
+        },
+        "move": {
+          "title": "Move the documents",
+          "lead": "Each document is copied to the new provider, read back, and its SHA-256 checked. Only then does it point to the new provider. Nothing is deleted until you retire the old one. Until then, reads try the new provider first and the old one second.",
+          "offer": "{from} is retiring. Move its documents to {to}.",
+          "start": "Move the documents",
+          "label": "Documents moved",
+          "progress": "{moved} of {total} moved",
+          "moved": "Moved",
+          "remaining": "Remaining",
+          "failed": "Failed",
+          "pause": "Pause",
+          "resume": "Resume",
+          "resumeRetry": "Resume and try the failed ones again",
+          "retire": "Retire {provider}",
+          "retireHint": "Its old copies are swept and it is disabled. Refused while a document still reaches it.",
+          "failures": "Documents that could not be moved",
+          "statuses": {
+            "running": "Moving",
+            "paused": "Paused",
+            "attention": "Needs attention",
+            "done": "Done"
+          }
         }
       }
     },
