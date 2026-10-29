@@ -21,7 +21,7 @@ jobs:
   ci:
     permissions:
       contents: read
-    uses: krizaka/.github/.github/workflows/expo-ci.yml@52867e939aae51e061389109d52b1e463f8fe72f # main (merge queue, layout guard)
+    uses: krizaka/.github/.github/workflows/expo-ci.yml@f182d162d3446f254433714bc6f155d55a2e4084 # main (merge queue, layout guard)
     with:
       package-manager: pnpm
       working-directory: apps/mobile
@@ -36,7 +36,7 @@ jobs:
   mobile-e2e:
     permissions:
       contents: read
-    uses: krizaka/.github/.github/workflows/mobile-e2e.yml@52867e939aae51e061389109d52b1e463f8fe72f # main (merge queue, layout guard)
+    uses: krizaka/.github/.github/workflows/mobile-e2e.yml@f182d162d3446f254433714bc6f155d55a2e4084 # main (merge queue, layout guard)
     with:
       app-id: com.krizaka.yomizaka
       app-directory: apps/mobile
