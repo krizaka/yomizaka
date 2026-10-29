@@ -1264,7 +1264,8 @@
           "tokenKey": "Clé des liens",
           "accessKeyId": "Identifiant de clé d'accès",
           "secretAccessKey": "Clé d'accès secrète",
-          "encryptionKey": "Clé de chiffrement des objets"
+          "encryptionKey": "Clé de chiffrement des objets",
+          "root": "Dossier"
         },
         "move": {
           "title": "Déplacer les documents",

@@ -1264,7 +1264,8 @@
           "tokenKey": "Link token key",
           "accessKeyId": "Access key id",
           "secretAccessKey": "Secret access key",
-          "encryptionKey": "Object encryption key"
+          "encryptionKey": "Object encryption key",
+          "root": "Folder"
         },
         "move": {
           "title": "Move the documents",
