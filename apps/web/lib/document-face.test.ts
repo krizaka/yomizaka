@@ -47,6 +47,14 @@ describe("the document's face (the UX review's Y5)", () => {
     expect(verdictOf({ findings: [finding("P1", "PASS"), finding("N1", "NOT_APPLICABLE")] })).toMatchObject({ attention: 0, tone: "success" });
   });
 
+  it("lists a rule once: a repeat is dropped, a second different finding of the rule keeps its own anchor — never the same id twice", () => {
+    const a = { ...finding("TS-P-001", "FAIL", "MAJOR"), explanation: "x" };
+    const list = [a, { ...a }, { ...a, explanation: "y" }, finding("R2", "PASS")];
+    const { attention, passed } = numberFindings(list);
+    expect(attention.map((f) => f.anchor)).toEqual(["finding-TS-P-001", "finding-TS-P-001-2"]);
+    expect(passed.map((f) => `${f.n}:${f.anchor}`)).toEqual(["3:finding-R2"]);
+  });
+
   it("numbers the findings in the order they are read — what needs a look first, then what passed, folded, going on from there", () => {
     const { attention, passed } = numberFindings([finding("P1", "PASS"), finding("M", "FAIL", "MAJOR"), finding("B", "FAIL", "BLOCKING"), finding("P2", "PASS")]);
     expect(attention.map(({ n, finding: f }) => `${n}:${f.ruleId}`)).toEqual(["1:B", "2:M"]);

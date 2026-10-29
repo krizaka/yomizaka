@@ -71,12 +71,12 @@ export interface FindingSelection {
 export function FindingList({ report, selection }: Readonly<{ report: ComplianceReport; selection?: FindingSelection }>) {
   const { say, locale } = useSay();
   const { attention, passed, notApplicable } = numberFindings(report.findings);
-  const item = ({ n, finding: f }: NumberedFinding) => {
+  const item = ({ n, finding: f, anchor }: NumberedFinding) => {
     const s = severityOf(f.severity);
     const active = selection?.activeId === f.ruleId;
     const failed = f.verdict !== "PASS" && f.verdict !== NOT_APPLICABLE;
     return (
-      <li key={f.ruleId} id={`finding-${f.ruleId}`} data-active={active} className="grid grid-cols-[2rem_minmax(0,1fr)] gap-x-2 rounded-lg border border-border-default bg-surface-1 p-3 text-sm data-[active=true]:border-accent data-[active=true]:bg-surface-2">
+      <li key={anchor} id={anchor} data-active={active} className="grid grid-cols-[2rem_minmax(0,1fr)] gap-x-2 rounded-lg border border-border-default bg-surface-1 p-3 text-sm data-[active=true]:border-accent data-[active=true]:bg-surface-2">
         <span aria-hidden="true" className="text-lg font-bold tabular-nums text-accent">
           {n}
         </span>

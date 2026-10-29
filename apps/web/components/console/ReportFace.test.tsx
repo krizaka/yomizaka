@@ -80,6 +80,14 @@ describe("the report's face (the UX review's Y5, the report of #321)", () => {
     expect(readable(html)).not.toContain("Bloquant");
   });
 
+  it("a report never renders the same id twice, even when a rule is listed twice", () => {
+    const dup = finding("TS-P-001", "Clauses de paiement", "FAIL", "MAJOR");
+    const report = { ...REPORT, findings: [...REPORT.findings, dup, dup, { ...dup, explanation: "autre" }] };
+    const ids = [...wrap(<FindingList report={report as never} />).matchAll(/ id="([^"]+)"/g)].map((m) => m[1]);
+    expect(ids.length).toBeGreaterThan(3);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
   it("says each severity as a word — Bloquant · Important · À considérer — and the passage or that none is quoted; no code and no run id on the face", () => {
     const text = readable(wrap(<FindingList report={{ ...REPORT, findings: [...REPORT.findings, finding("R11", "Avis", "FAIL", "INFO")] } as never} />));
     expect(text).toContain("Bloquant");
