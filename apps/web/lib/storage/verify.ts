@@ -5,7 +5,7 @@ import { bucketStore, checkEndpoint as checkEndpointSyntax, describeStore, type 
 
 import { isPrivateAddress } from "../webhooks/address";
 import { documentStoreOver } from "./adapter";
-import { MAX_SIGNED_URL_SECONDS } from "./config";
+import { MAX_SIGNED_URL_SECONDS } from "./providers";
 import { testConnection, type TestStep } from "./connection-test";
 import type { DocumentStore } from "./port";
 import { asDescriptor } from "./where";
