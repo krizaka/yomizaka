@@ -27,3 +27,5 @@ The wording in the product (consent, adverse action, payer rules) is a placehold
   word:** a CDPDJ text about a rent-to-income ratio specifically. The lawyer confirms the position and the wording before any UI wiring.
 
 Tenant shield, lawyer review (yomizaka#562): the deadline to ask the TAL to fix the rent (`lib/rules/section-g-deadline.ts`) rests on the TAL page « Avis au nouveau locataire » (10 days from the conclusion of the lease; two months from the start when no notice; two months from knowing of a false statement). The text of art. 1950 C.c.Q. could not be read (legisquebec answers 403 to the session): confirm the deadlines and how days and months are counted.
+
+Tenant shield, lawyer review (yomizaka#566): the facts to bring to the TAL (`lib/rules/section-g-request.ts`) is a summary of the lease figures, not a filing and not a form. The TAL page « Avis au nouveau locataire » names no form or fee for the rent-fixing request (the page lists a form « Demande » without linking it): confirm which form applies and whether Yomizaka may name it, and the wording « no verdict ».
