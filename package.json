@@ -29,7 +29,9 @@
     "check:admin-live": "node scripts/check-admin-live.mjs",
     "payments:setup": "pnpm --filter @yomizaka/web exec krizaka-payments-setup --catalogue ../../deploy/payments-catalogue.json",
     "check:app-links": "pnpm --filter @yomizaka/web exec vitest run lib/app-links.test.ts",
-    "test:visual": "playwright test -c apps/web/e2e/visual/playwright.config.mjs"
+    "test:visual": "playwright test -c apps/web/e2e/visual/playwright.config.mjs",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,mjs,cjs,json,css}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mjs,cjs,json,css}\""
   },
   "devDependencies": {
     "@ast-grep/cli": "0.51.0",
@@ -43,6 +45,7 @@
     "@vitest/coverage-v8": "4.1.12",
     "dependency-cruiser": "^18.7.0",
     "playwright-core": "1.64.0",
+    "prettier": "^3.9.10",
     "turbo": "^2.11.7",
     "vitest": "^4.1.12"
   },
