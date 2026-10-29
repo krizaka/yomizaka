@@ -91,4 +91,8 @@ Founder decision: « un discount pour les 3 premiers mois pour faire un prix d'a
   offer are always clear). An ended, paused or unknown code announces nothing.
 - Guards: `lib/prices/launch-offer.test.ts` (offer price, 4th month at the regular price, EN/FR rendering with the regular price and
   the end date) and `lib/coupons/coupons.integration.test.ts` (valid, once per account, wrong plan, expired).
+- **Set up on dev with one command**: `pnpm dev:launch-offer -- --base https://admin.yomizaka.com` (`scripts/launch-offer.mjs`, idempotent, refuses a
+  production base) creates `LANCEMENT` through the admin API and sets `pricing.announcedCode`; the admin credentials come from the environment
+  (`QA_ADMIN_EMAIL` / `QA_ADMIN_PASSWORD`), never the command line. The switch `coupons.enabled` must be on, or a checkout with the code answers
+  `COUPON_DISABLED`. Checked on dev with a Stripe test card: Agency 49,00 $ -> 24,50 $ the first month (−50 %, 3 months), tax on the discounted amount.
 - Still to build (yomizaka#548): the administrator's price editor (versions from a date, audit, processor sync in test mode).
