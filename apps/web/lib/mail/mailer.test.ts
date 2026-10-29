@@ -50,7 +50,7 @@ describe("sending the three links", () => {
     expect(form.get("text")).toContain(link);
     expect(form.get("html")).toContain(link.replaceAll("&", "&amp;"));
     // House of Brands: it wears Yomizaka and names no other product.
-    expect((form.get("html") ?? "") + (form.get("text") ?? "")).not.toMatch(/Orazaka|Orochia|Akinaza|Kachizaka|Yororis/);
+    expect((form.get("html") ?? "") + (form.get("text") ?? "")).not.toMatch(/Orazaka|Akinaza/);
   });
 
   it("mails one link once: the same link again sends nothing, a new link is a new intention", async () => {

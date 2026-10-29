@@ -14,7 +14,7 @@ const enabled = process.env.YOMIZAKA_DB_IT === "1" && !!process.env.DATABASE_URL
 const stamp = `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
 
 const contract = {
-  partnerId: "orochia",
+  partnerId: "partner-one",
   documentType: "CREATOR_PARTNERSHIP_CONTRACT_90_10",
   contractPayload: { terms: { split: { creator: 90, platform: 10 } }, note: `contract ${stamp}` },
   parties: [
@@ -99,7 +99,7 @@ describe.runIf(enabled)("sealing a contract for a partner (yomizaka#71)", () => 
     const res = await verifyRoute(get(`/api/verify/contract/${sealed.sha256}`), params({ sha256: sealed.sha256 }));
     expect(res.status).toBe(200);
     const answer = await res.json();
-    expect(answer).toMatchObject({ valid: true, sha256: sealed.sha256, contractId: sealed.contractId, partnerId: "orochia", documentType: "CREATOR_PARTNERSHIP_CONTRACT_90_10" });
+    expect(answer).toMatchObject({ valid: true, sha256: sealed.sha256, contractId: sealed.contractId, partnerId: "partner-one", documentType: "CREATOR_PARTNERSHIP_CONTRACT_90_10" });
     expect(JSON.stringify(answer)).not.toMatch(/Plateforme|c79f|att_demo|PARTNER-FRAMEWORK|terms/);
     expect((await verifyRoute(get("/api/verify/contract/" + "0".repeat(64)), params({ sha256: "0".repeat(64) }))).status).toBe(404);
     expect((await verifyRoute(get("/api/verify/contract/nope"), params({ sha256: "nope" }))).status).toBe(404);
