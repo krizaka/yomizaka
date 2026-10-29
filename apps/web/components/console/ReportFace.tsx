@@ -9,7 +9,7 @@ import { Stat } from "@krizaka/ui/stat";
 import { type Analysis, type ComplianceReport, isSeededCheck, queryKeys } from "@yomizaka/core";
 import { z } from "zod";
 
-import { type NumberedFinding, numberFindings, severityOf, verdictOf, type VerdictTone } from "@/lib/document-face";
+import { NOT_APPLICABLE, type NumberedFinding, numberFindings, severityOf, verdictOf, type VerdictTone } from "@/lib/document-face";
 import { useSay } from "@/lib/i18n-client";
 import { pluralKey } from "@/lib/plural";
 import { ruleExplanation, ruleTitle } from "@/lib/rule-text";
@@ -70,13 +70,13 @@ export interface FindingSelection {
  */
 export function FindingList({ report, selection }: Readonly<{ report: ComplianceReport; selection?: FindingSelection }>) {
   const { say, locale } = useSay();
-  const { attention, passed } = numberFindings(report.findings);
-  const item = ({ n, finding: f }: NumberedFinding) => {
+  const { attention, passed, notApplicable } = numberFindings(report.findings);
+  const item = ({ n, finding: f, anchor }: NumberedFinding) => {
     const s = severityOf(f.severity);
     const active = selection?.activeId === f.ruleId;
-    const failed = f.verdict !== "PASS";
+    const failed = f.verdict !== "PASS" && f.verdict !== NOT_APPLICABLE;
     return (
-      <li key={f.ruleId} id={`finding-${f.ruleId}`} data-active={active} className="grid grid-cols-[2rem_minmax(0,1fr)] gap-x-2 rounded-lg border border-border-default bg-surface-1 p-3 text-sm data-[active=true]:border-accent data-[active=true]:bg-surface-2">
+      <li key={anchor} id={anchor} data-active={active} className="grid grid-cols-[2rem_minmax(0,1fr)] gap-x-2 rounded-lg border border-border-default bg-surface-1 p-3 text-sm data-[active=true]:border-accent data-[active=true]:bg-surface-2">
         <span aria-hidden="true" className="text-lg font-bold tabular-nums text-accent">
           {n}
         </span>
@@ -116,6 +116,14 @@ export function FindingList({ report, selection }: Readonly<{ report: Compliance
           </ol>
         </details>
       ) : null}
+      {notApplicable.length ? (
+        <details className="rounded-lg border border-border-default p-3" data-testid="not-applicable-findings">
+          <summary className="cursor-pointer text-sm font-semibold text-fg">{say(pluralKey("reportFace.notApplicable", notApplicable.length), { count: notApplicable.length })}</summary>
+          <ol start={attention.length + passed.length + 1} className="m-0 mt-3 flex list-none flex-col gap-2 p-0">
+            {notApplicable.map(item)}
+          </ol>
+        </details>
+      ) : null}
     </div>
   );
 }
@@ -141,7 +149,7 @@ export function TechnicalDetails({ documentId, analysis }: Readonly<{ documentId
   const meta = useReportMeta(documentId, analysis, locale);
   const report = analysis.report && "rulesetId" in analysis.report ? analysis.report : null;
   const numbered = report && "findings" in report ? numberFindings(report.findings) : null;
-  const byNumber = numbered ? [...numbered.attention, ...numbered.passed] : [];
+  const byNumber = numbered ? [...numbered.attention, ...numbered.passed, ...numbered.notApplicable] : [];
   return (
     <details className="rounded-lg border border-border-default p-3" data-testid="technical-details">
       <summary className="cursor-pointer text-sm font-semibold text-fg">{say("reportFace.technical")}</summary>

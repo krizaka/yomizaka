@@ -124,7 +124,8 @@
     "verdicts": {
       "PASS": "Requirement met",
       "FAIL": "Requirement not met",
-      "INSUFFICIENT_EVIDENCE": "Insufficient evidence"
+      "INSUFFICIENT_EVIDENCE": "Insufficient evidence",
+      "NOT_APPLICABLE": "Does not apply"
     }
   },
   "privacy": {
@@ -655,7 +656,8 @@
       "verdicts": {
         "PASS": "Requirement met",
         "FAIL": "Requirement not met",
-        "INSUFFICIENT_EVIDENCE": "Insufficient evidence"
+        "INSUFFICIENT_EVIDENCE": "Insufficient evidence",
+      "NOT_APPLICABLE": "Does not apply"
       },
       "severity": "Severity",
       "severities": {
@@ -2872,6 +2874,8 @@
       "rulesOf": "Rules of {jurisdiction} · in force on {date}",
       "passedOne": "{count} rule met",
       "passedMany": "{count} rules met",
+      "notApplicableOne": "{count} rule does not apply to this document",
+      "notApplicableMany": "{count} rules do not apply to this document",
       "unsureOne": "{count} rule could not be checked",
       "unsureMany": "{count} rules could not be checked",
       "technical": "Technical details (run, version, fingerprints)",
@@ -3283,7 +3287,8 @@
     "verdicts": {
       "PASS": "Requirement met",
       "FAIL": "Requirement not met",
-      "INSUFFICIENT_EVIDENCE": "Insufficient evidence"
+      "INSUFFICIENT_EVIDENCE": "Insufficient evidence",
+      "NOT_APPLICABLE": "Does not apply"
     },
     "guaranteeHeading": "What this report guarantees",
     "guarantees": "This report is signed with Yomizaka's key (Ed25519, held by Krizaka). The signature covers the document's SHA-256, the jurisdiction and rules version, the Studio and its version, the Orazaka run id, the date of the check, every finding with its passage and article, and the full text of this report. If a single character of this file changes, verification fails.",
@@ -3933,7 +3938,8 @@
     "verdict": {
       "PASS": "No issue reported",
       "FAIL": "Issue reported",
-      "INSUFFICIENT_EVIDENCE": "Not enough evidence"
+      "INSUFFICIENT_EVIDENCE": "Not enough evidence",
+      "NOT_APPLICABLE": "Does not apply"
     },
     "language": "Language",
     "languageName": {

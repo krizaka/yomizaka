@@ -132,4 +132,10 @@ describe("the plain-language data", () => {
       }
     }
   });
+
+  it("a rule that does not apply is not « could not be checked » (a clean lease says all is fine)", () => {
+    const findings = [{ ruleId: "A", title: "Loyer", severity: SEVERITY.blocking, verdict: VERDICT.pass }, { ruleId: "B", title: "Dépôt", severity: SEVERITY.blocking, verdict: "NOT_APPLICABLE" }] as FindingInput[];
+    const note = buildNote({ kind: NOTE_KIND.compliance, rulesetId: "qc-residential-lease", asOf: "2026-10-29", findings }, "en");
+    expect(JSON.stringify(note)).not.toMatch(/could not be checked|Dépôt/);
+  });
 });

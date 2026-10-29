@@ -42,6 +42,7 @@ const longDate = (iso: string, lang: Lang) => new Intl.DateTimeFormat(say((templ
 
 const stateOf = (verdict: string): FindingState => {
   if (verdict === VERDICT.pass) return FINDING_STATE.ok;
+  if (verdict === VERDICT.notApplicable) return FINDING_STATE.skipped;
   return verdict === VERDICT.fail ? FINDING_STATE.attention : FINDING_STATE.undecided;
 };
 const rank = (severity: string) => {

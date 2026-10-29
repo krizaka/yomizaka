@@ -11,7 +11,7 @@ import { FindingList, TechnicalDetails, VerdictBand } from "./ReportFace";
 
 const MESSAGES = { en: { console: en.console }, fr: { console: fr.console } } as const;
 const readable = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ");
-const finding = (ruleId: string, title: string, verdict: "PASS" | "FAIL" | "INSUFFICIENT_EVIDENCE", severity = "BLOCKING", quote?: string) => ({ ruleId, title, severity, verdict, explanation: `Explication : ${title}.`, citation: `C.c.Q., art. ${ruleId.length}`, method: "DETERMINISTIC", evidenceSpan: quote ? { quote } : null });
+const finding = (ruleId: string, title: string, verdict: "PASS" | "FAIL" | "INSUFFICIENT_EVIDENCE" | "NOT_APPLICABLE", severity = "BLOCKING", quote?: string) => ({ ruleId, title, severity, verdict, explanation: `Explication : ${title}.`, citation: `C.c.Q., art. ${ruleId.length}`, method: "DETERMINISTIC", evidenceSpan: quote ? { quote } : null });
 const REPORT = {
   rulesetId: "qc-residential-lease",
   rulesetVersion: "2026-06-20",
@@ -69,6 +69,23 @@ describe("the report's face (the UX review's Y5, the report of #321)", () => {
     expect(text).toMatch(/3 Durée du bail/);
     expect(html).toContain('data-testid="passed-findings"');
     expect(text).toContain("8 règles respectées");
+  });
+
+  it("rules that do not apply are folded apart, with no severity chip and not counted as things to look at", () => {
+    const report = { ...REPORT, findings: [finding("R1", "Loyer", "PASS"), finding("R2", "Dépôt", "NOT_APPLICABLE", "BLOCKING"), finding("R3", "Chèques", "NOT_APPLICABLE", "BLOCKING")] };
+    const html = wrap(<FindingList report={report as never} />);
+    expect(html).toContain('data-testid="not-applicable-findings"');
+    expect(readable(html)).toContain("2 règles qui ne s'appliquent pas");
+    expect(html).not.toContain('data-testid="finding-list"><ol');
+    expect(readable(html)).not.toContain("Bloquant");
+  });
+
+  it("a report never renders the same id twice, even when a rule is listed twice", () => {
+    const dup = finding("TS-P-001", "Clauses de paiement", "FAIL", "MAJOR");
+    const report = { ...REPORT, findings: [...REPORT.findings, dup, dup, { ...dup, explanation: "autre" }] };
+    const ids = [...wrap(<FindingList report={report as never} />).matchAll(/ id="([^"]+)"/g)].map((m) => m[1]);
+    expect(ids.length).toBeGreaterThan(3);
+    expect(new Set(ids).size).toBe(ids.length);
   });
 
   it("says each severity as a word — Bloquant · Important · À considérer — and the passage or that none is quoted; no code and no run id on the face", () => {

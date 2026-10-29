@@ -124,7 +124,8 @@
     "verdicts": {
       "PASS": "Point respecté",
       "FAIL": "Point non respecté",
-      "INSUFFICIENT_EVIDENCE": "Éléments insuffisants"
+      "INSUFFICIENT_EVIDENCE": "Éléments insuffisants",
+      "NOT_APPLICABLE": "Ne s'applique pas"
     }
   },
   "privacy": {
@@ -655,7 +656,8 @@
       "verdicts": {
         "PASS": "Point respecté",
         "FAIL": "Point non respecté",
-        "INSUFFICIENT_EVIDENCE": "Éléments insuffisants"
+        "INSUFFICIENT_EVIDENCE": "Éléments insuffisants",
+      "NOT_APPLICABLE": "Ne s'applique pas"
       },
       "severity": "Gravité",
       "severities": {
@@ -2872,6 +2874,8 @@
       "rulesOf": "Règles {jurisdiction} · en vigueur le {date}",
       "passedOne": "{count} règle respectée",
       "passedMany": "{count} règles respectées",
+      "notApplicableOne": "{count} règle qui ne s'applique pas à ce document",
+      "notApplicableMany": "{count} règles qui ne s'appliquent pas à ce document",
       "unsureOne": "{count} règle n’a pu être vérifiée",
       "unsureMany": "{count} règles n’ont pu être vérifiées",
       "technical": "Détails techniques (exécution, version, empreintes)",
@@ -3283,7 +3287,8 @@
     "verdicts": {
       "PASS": "Point respecté",
       "FAIL": "Point non respecté",
-      "INSUFFICIENT_EVIDENCE": "Preuve insuffisante"
+      "INSUFFICIENT_EVIDENCE": "Preuve insuffisante",
+      "NOT_APPLICABLE": "Ne s'applique pas"
     },
     "guaranteeHeading": "Ce que ce rapport garantit",
     "guarantees": "Ce rapport est signé avec la clé de Yomizaka (Ed25519, détenue par Krizaka). La signature couvre le SHA-256 du document, la juridiction et la version des règles, le Studio et sa version, l’identifiant d’exécution Orazaka, la date de la vérification, chaque constat avec son passage et son article, et le texte complet de ce rapport. Si un seul caractère de ce fichier change, la vérification échoue.",
@@ -3933,7 +3938,8 @@
     "verdict": {
       "PASS": "Aucun problème signalé",
       "FAIL": "Problème signalé",
-      "INSUFFICIENT_EVIDENCE": "Preuves insuffisantes"
+      "INSUFFICIENT_EVIDENCE": "Preuves insuffisantes",
+      "NOT_APPLICABLE": "Ne s'applique pas"
     },
     "language": "Langue",
     "languageName": {
