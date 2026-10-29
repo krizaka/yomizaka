@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/yomizaka-dark.svg">
-    <img src=".github/assets/yomizaka-light.svg" alt="Yomizaka" width="96">
+    <source media="(prefers-color-scheme: dark)" srcset="https://krizaka-assets.b-cdn.net/brand/yomizaka/logo-dark.svg">
+    <img src="https://krizaka-assets.b-cdn.net/brand/yomizaka/logo-light.svg" alt="Yomizaka" width="96">
   </picture>
 </p>
 
