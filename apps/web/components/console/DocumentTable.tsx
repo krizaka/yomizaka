@@ -50,7 +50,7 @@ function documentColumns(say: Say, locale: Lang, organise: Organise | undefined,
     { id: "kind", header: say("library.columns.kind"), priority: DOCUMENT_COLUMN_PRIORITY.kind, sortable: true, filter: "facet", options: DOCUMENT_KINDS.map((k) => ({ value: k, label: say(`kinds.${k}`) })), value: (d) => d.kind, cell: (d) => say(`kinds.${d.kind}`) },
     { id: "status", header: say("library.columns.status"), type: "status", filter: "facet", options: DOCUMENT_STATUSES.map((k) => ({ value: k, label: say(`statuses.${k}`) })), value: (d) => d.status, cell: (d) => <Badge tone={STATUS_TONE[d.status]}>{say(`statuses.${d.status}`)}</Badge> },
     { id: "size", header: say("library.columns.size"), priority: DOCUMENT_COLUMN_PRIORITY.size, sortable: true, align: "end", value: (d) => d.sizeBytes, cell: (d) => formatBytes(d.sizeBytes, locale) },
-    { id: "added", header: say("library.columns.added"), priority: DOCUMENT_COLUMN_PRIORITY.added, sortable: true, align: "end", value: (d) => d.createdAt, cell: (d) => formatDate(d.createdAt, locale) },
+    { id: "added", header: say("library.columns.added"), priority: DOCUMENT_COLUMN_PRIORITY.added, sortable: true, align: "end", value: (d) => d.createdAt, cell: (d) => <time dateTime={d.createdAt} className="whitespace-nowrap">{formatDate(d.createdAt, locale)}</time> },
     ...(bookmarks && !organise
       ? [
           {

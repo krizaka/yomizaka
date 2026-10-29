@@ -70,6 +70,8 @@ defineJourneyTests({
     { name: "pricing", path: "/fr/pricing", mask: LIVE },
     { name: "sign-in", path: "/fr/sign-in" },
     { name: "app-home", path: "/fr/app", session: true, mask: LIVE },
+    // The library, where the bookmarks live (#339): the guard they lacked.
+    { name: "documents", path: "/fr/app/documents", session: true, mask: LIVE },
     { name: "document-report", path: firstReport, session: true, mask: LIVE },
     // The tenant-shield findings in the report (yomizaka#104): Section G with the deadline and the facts for the TAL; the payment clauses (art. 1904).
     { name: "report-section-g", path: reportTitled("avis du TAL absent"), session: true, mask: LIVE },
