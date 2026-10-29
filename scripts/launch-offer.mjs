@@ -67,8 +67,8 @@ export async function run({ base, email, password, now = new Date() }) {
   try {
     await call(base, token, "/api/admin/settings", { method: "PUT", body: JSON.stringify({ scope: "global", key: "pricing.announcedCode", value: OFFER.code }) });
     console.log(`setting pricing.announcedCode = ${OFFER.code}`);
-  } catch (error) {
-    console.log(`setting pricing.announcedCode NOT set (${String(error?.message ?? "error").replace(/[^\x20-\x7E]/g, " ").slice(0, 120)}) — the app must run the build that declares it (#550); run this again`);
+  } catch {
+    console.log(`setting pricing.announcedCode NOT set — the app must run the build that declares it (#550); run this again`);
   }
 }
 
