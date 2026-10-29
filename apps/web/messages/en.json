@@ -550,7 +550,7 @@
       "added": "Added",
       "fingerprint": "SHA-256",
       "viewer": "The document",
-      "viewerRegion": "Document preview",
+      "viewerRegion": "Pages of the document",
       "text": "Its text",
       "noText": "This PDF has no text layer: the check against the law could not read its clauses. The file itself is still examined.",
       "openFile": "Open the file",
@@ -560,7 +560,6 @@
       "checks": "Checks",
       "checksLead": "Each check is a run of Yomizaka's engine (Orazaka); its id is the trace of what ran.",
       "passageOf": "Passage quoted by {rule}",
-      "viewerRegion": "Pages of the document",
       "loadingPdf": "Loading the document…",
       "pdfFailed": "The file could not be displayed. Open it with the button above.",
       "pageLabel": "Page {page} of {total}",
@@ -918,7 +917,15 @@
       "COUPON_PARTNER_NOT_FOUND": "No such partner.",
       "COUPON_KEY_REUSED": "Try again.",
       "COUPON_NOT_REVOCABLE": "This redemption can't be revoked.",
-      "COUPON_BAD_SETTINGS": "The coupon settings are not valid."
+      "COUPON_BAD_SETTINGS": "The coupon settings are not valid.",
+      "STORAGE_VAULT_MISSING": "Storing credentials is not available: the vault key is not deployed.",
+      "STORAGE_PROVIDER_NOT_FOUND": "This provider no longer exists.",
+      "STORAGE_PROVIDER_IN_USE": "The provider is a default, or documents still reach it.",
+      "STORAGE_PROVIDER_NOT_VERIFIED": "Test the provider first: only a verified one can be used.",
+      "STORAGE_BAD_CONFIG": "The provider is not configured correctly for this kind or this environment.",
+      "STORAGE_BAD_ENDPOINT": "The address is refused: use a public https address.",
+      "STORAGE_BAD_SECRET_KEY": "The key is not valid.",
+      "STORAGE_TEST_FAILED": "The connection test failed: nothing was saved."
     },
     "adminConsole": {
       "shell": {
@@ -940,7 +947,8 @@
           "operations": "Operations",
           "app": "App"
         },
-        "config": "Configuration"
+        "config": "Configuration",
+        "storage": "Storage"
       },
       "overview": {
         "health": "Health",
@@ -1198,6 +1206,62 @@
           "draft": "Draft",
           "published": "Published",
           "retired": "Retired"
+        }
+      },
+      "storage": {
+        "title": "Storage",
+        "lead": "Where documents and avatars are kept. The providers and their keys live in the database, sealed; the environment only holds the vault key. A provider is tested before it can be used, and every change is in the audit log.",
+        "none": "No provider is set: nothing is kept, and uploads answer that storage is not configured.",
+        "providers": "Providers",
+        "kind": "Kind",
+        "preset": "Preset",
+        "residency": "Where the files live",
+        "untested": "Not tested yet",
+        "lastTest": "Last test",
+        "testOk": "Passed",
+        "testFailed": "Failed",
+        "keySet": "set",
+        "keyNotSet": "not set",
+        "fromEnvironment": "Imported from the environment",
+        "devOnly": "development only",
+        "defaultFor": "Default for {kind}",
+        "makeDefault": "Use for {kind}",
+        "test": "Test the connection",
+        "changeKey": "Change a key",
+        "disable": "Disable",
+        "whichKey": "Which key",
+        "newKey": "New key",
+        "newKeyHint": "Typed once, sealed, never shown again. It is tested before anything is saved.",
+        "saveKey": "Test and save the key",
+        "add": "Add a provider",
+        "addLead": "The provider is saved as a draft and tested at once. It can be used only once the test passes. Files are encrypted before they leave, with a key generated here.",
+        "addSubmit": "Add and test",
+        "cancel": "Cancel",
+        "label": "Name",
+        "enteredOnce": "Entered once, sealed, never shown back.",
+        "statuses": {
+          "draft": "Draft",
+          "verified": "Verified",
+          "active": "In use",
+          "retiring": "Retiring",
+          "disabled": "Disabled"
+        },
+        "dataKinds": {
+          "documents": "documents",
+          "avatars": "avatars"
+        },
+        "fields": {
+          "endpoint": "Endpoint",
+          "region": "Region",
+          "bucket": "Bucket",
+          "zone": "Zone",
+          "pullHostname": "Pull zone host",
+          "prefix": "Prefix",
+          "accessKey": "Zone password",
+          "tokenKey": "Link token key",
+          "accessKeyId": "Access key id",
+          "secretAccessKey": "Secret access key",
+          "encryptionKey": "Object encryption key"
         }
       }
     },
