@@ -1,4 +1,5 @@
 import { assertModules, migrate as runMigrations } from "@krizaka/db";
+import { endPool } from "@krizaka/db/testing";
 import pg from "pg";
 import { describe, expect, it } from "vitest";
 
@@ -60,7 +61,7 @@ describe.runIf(enabled)("adopted Krizaka modules", () => {
       expect(await runMigrations(connect, MIGRATIONS, { lockKey: MIGRATION_LOCK_KEY })).toContain("0050_credits_ledger");
       await assertModules(async (text, params) => (await pool.query(text, params)).rows as never, MODULES);
     } finally {
-      await pool.end();
+      await endPool(pool);
       await admin.query(`DROP DATABASE ${name}`);
       await admin.end();
     }

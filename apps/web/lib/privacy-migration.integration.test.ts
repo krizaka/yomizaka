@@ -1,4 +1,5 @@
 import { migrate as runMigrations } from "@krizaka/db";
+import { endPool } from "@krizaka/db/testing";
 import { createPrivacy } from "@krizaka/privacy";
 import pg from "pg";
 import { describe, expect, it } from "vitest";
@@ -55,7 +56,7 @@ describe.runIf(enabled)("0051_privacy_consents", () => {
       // the old table stays one release, untouched
       expect(((await pool.query("SELECT count(*)::int AS n FROM consents")).rows[0] as { n: number }).n).toBe(before);
     } finally {
-      await pool.end();
+      await endPool(pool);
       await admin.query(`DROP DATABASE ${name}`);
       await admin.end();
     }
