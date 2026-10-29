@@ -29,4 +29,14 @@ describe("« Documents » (B2, P14)", () => {
     expect(html).toContain(en.console.documentsPage.empty);
     expect(html).toContain('href="/en/app/check"');
   });
+  it("filters by bookmark: the bar, the bookmarks of each row, and a sentence when none wears them all", () => {
+    const urgent = { id: "t1", name: "Urgent", color: "red" as const };
+    const html = wrap(<AllDocuments documents={[doc(1)]} bookmarks={[urgent]} selected={["t1"]} bookmarksByDocument={{ d1: [urgent] }} path="/fr/app/documents" />, "en");
+    expect(html).toContain('data-testid="place-filters"');
+    expect(html).toContain("Urgent");
+    expect(html).toContain(en.console.documentsPage.bookmarks);
+    const none = wrap(<AllDocuments documents={[]} bookmarks={[urgent]} selected={["t1"]} path="/en/app/documents" />, "en");
+    expect(none).toContain('data-testid="documents-nothing"');
+    expect(none).not.toContain('data-testid="documents-empty"');
+  });
 });
