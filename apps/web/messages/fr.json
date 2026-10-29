@@ -3191,6 +3191,18 @@
         "forever": "chaque mois"
       }
     },
+    "paymentReturn": {
+      "paidTitle": "Merci, votre paiement est passé",
+      "paid": {
+        "document": "Votre vérification de document arrive dans votre compte : le solde se met à jour en quelques secondes, dès que le processeur de paiement confirme.",
+        "agency": "Votre forfait est en cours d'activation : il apparaît dans votre compte en quelques secondes, dès que le processeur de paiement confirme.",
+        "firm": "Votre forfait est en cours d'activation : il apparaît dans votre compte en quelques secondes, dès que le processeur de paiement confirme."
+      },
+      "receipt": "Voir le reçu",
+      "cancelledTitle": "Rien n'a été facturé",
+      "cancelled": "Vous avez quitté le paiement avant de payer. Vous pouvez y revenir depuis votre compte quand vous voulez.",
+      "close": "Fermer"
+    },
     "bookmarks": {
       "lead": "Vos propres catégories colorées. Un signet regroupe des fichiers ; le retirer ne les supprime jamais.",
       "none": "Aucun signet pour l’instant.",
