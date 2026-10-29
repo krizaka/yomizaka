@@ -3766,10 +3766,9 @@
     }
   },
   "affordability": {
-    "within-reference": "Le loyer représente {share} du revenu indiqué, sous la référence de {reference}.",
-    "above-reference": "Le loyer représente {share} du revenu indiqué, au-dessus de la référence de {reference}.",
-    "no-claim": "Aucun constat : le revenu ou le loyer n'est pas donné sous une forme utilisable, donc aucune part n'est calculée.",
-    "note": "La référence est une règle générale, pas une limite légale. Le revenu est un chiffre que le candidat a choisi de donner ; il est utilisé ici et n'est pas conservé.",
+    "share": "Le loyer représente {share} du revenu indiqué. À titre d'information seulement.",
+    "no-claim": "Aucun chiffre : le revenu ou le loyer n'est pas donné sous une forme utilisable, donc aucune part n'est calculée.",
+    "note": "Cette part ne doit pas être le seul critère. Au Québec, décider sur le seul revenu peut constituer de la discrimination fondée sur la condition sociale (Charte des droits et libertés de la personne, art. 10 et 12). Le revenu est un chiffre que le candidat a choisi de donner ; il est utilisé ici et n'est pas conservé.",
     "disclaimer": "Information sur deux chiffres, pas un avis juridique ni un jugement sur le candidat. Le salaire n'est pas exigé pour louer au Québec."
   },
   "brief": {
