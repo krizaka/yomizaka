@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { complianceReport, fromRunStatus, isSeededCheck, isTerminal, passages, queryKeys, reportOf, SEEDED_INPUTS, startAnalysis } from "./index";
+import { complianceReport, finding, fromRunStatus, isSeededCheck, isTerminal, passages, queryKeys, reportOf, SEEDED_INPUTS, startAnalysis } from "./index";
 
 // A report exactly as the compliance Studio assembles it (orazaka-packs document-validation worker, `_assemble`).
 const COMPLIANCE = {
@@ -135,5 +135,13 @@ describe("a seeded check (the demo data set) is shown, never certified", () => {
     expect(isSeededCheck({ inputs: {} })).toBe(false);
     expect(isSeededCheck({ inputs: { seeded: "false" } })).toBe(false);
     expect(isSeededCheck({ inputs: { jurisdiction: "QC", asOf: "2026-10-23" } })).toBe(false);
+  });
+});
+
+describe("a 2.x finding's citation", () => {
+  it("is read as its reference (the live 2.0 report carries an object)", () => {
+    const f = finding.parse({ ruleId: "QC-LANG-001", severity: "ADVISORY", verdict: "PASS", explanation: "ok", citation: { reference: "C.c.Q., art. 1897", pinned: true, notice: {} } });
+    expect(f.citation).toBe("C.c.Q., art. 1897");
+    expect(finding.parse({ ruleId: "R", severity: "ADVISORY", verdict: "PASS", explanation: "ok", citation: "C.c.Q., art. 1" }).citation).toBe("C.c.Q., art. 1");
   });
 });
