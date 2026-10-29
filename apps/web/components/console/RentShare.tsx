@@ -13,7 +13,7 @@ const TAG = { en: "en-CA", fr: "fr-CA" } as const;
 
 /** « 1 250,50 » or « 1250.5 » to integer cents; nothing usable gives `undefined` (the rule then makes no claim). */
 export function centsOf(text: string): number | undefined {
-  const cleaned = text.replace(/[\s $]/g, "").replace(",", ".");
+  const cleaned = text.replace(/[\s$]/g, "").replace(",", ".");
   if (!/^\d+(\.\d{1,2})?$/.test(cleaned)) return undefined;
   const cents = Math.round(Number(cleaned) * 100);
   return cents > 0 ? cents : undefined;
