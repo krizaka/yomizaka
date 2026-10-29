@@ -5,9 +5,11 @@ import { notFound } from "next/navigation";
 import { PricingContent } from "@/components/pricing/PricingContent";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
-import { asLocale, getDictionary } from "@/lib/i18n";
+import { query } from "@/lib/db";
+import { asLocale, format, getDictionary } from "@/lib/i18n";
 import { productStatus } from "@/lib/landing";
 import { appPrices } from "@/lib/prices/catalogue";
+import { activeLaunchOffer, offerLines, offerPrices } from "@/lib/prices/launch-offer";
 import { pricingLines } from "@/lib/prices/page";
 import { PRICING_PUBLISHED } from "@/lib/prices/publication";
 import { pageMetadata, siteJsonLd } from "@/lib/seo";
@@ -29,14 +31,19 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function Pricing({ params }: Readonly<{ params: Promise<{ locale: string }> }>) {
   if (!PRICING_PUBLISHED) notFound();
   const locale = asLocale((await params).locale);
-  const [prices, freeFirst] = await Promise.all([appPrices().catalogue(new Date()), appSettings().get("audit.freeFirst")]);
-  const { sold, soon } = pricingLines(publicCatalogue(prices), locale);
+  const now = new Date();
+  const [prices, freeFirst, announced] = await Promise.all([appPrices().catalogue(now), appSettings().get("audit.freeFirst"), appSettings().get("pricing.announcedCode")]);
+  const publicPrices = publicCatalogue(prices);
+  const { sold, soon } = pricingLines(publicPrices, locale);
+  const offer = announced ? await activeLaunchOffer(query, announced, now) : null;
+  const subscriptions = publicPrices.flatMap((p) => ((p.unit === "month" || p.unit === "year") && p.amountCents !== null ? [{ plan: p.plan, amountCents: p.amountCents }] : []));
+  const launch = offer ? offerLines(offer, offerPrices(offer, subscriptions), locale, getDictionary(locale).pricing.offer, format) : undefined;
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
       <SiteHeader locale={locale} current="pricing" />
       <main id="content">
-        <PricingContent locale={locale} sold={sold} soon={soon} freeFirst={freeFirst === true} status={getDictionary(locale).landing.status[productStatus(preview)]} />
+        <PricingContent locale={locale} sold={sold} soon={soon} freeFirst={freeFirst === true} launch={launch} status={getDictionary(locale).landing.status[productStatus(preview)]} />
       </main>
       <SiteFooter locale={locale} />
     </>
