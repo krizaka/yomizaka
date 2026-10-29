@@ -40,7 +40,7 @@ describe("the price catalogue's admin API (yomizaka#367)", () => {
     const { GET } = await import("../../app/api/admin/prices/route");
     const body = await (await GET(req("GET"))).json();
     expect(body.entries.map((e: { key: string }) => e.key)).toContain(PRICE.api);
-    expect(body.history[PRICE.agency].at(-1)).toMatchObject({ actorLabel: "seed", after: { amountCents: 5900 } });
+    expect(body.history[PRICE.agency].at(-1)).toMatchObject({ actorLabel: "seed", after: { amountCents: 4900 } });
     expect(body.processor).toEqual({ mode: null, amounts: {} });
   });
 
@@ -51,9 +51,9 @@ describe("the price catalogue's admin API (yomizaka#367)", () => {
     expect(state.trail).toEqual(["prices.scheduled"]);
     const body = await (await GET(req("GET"))).json();
     const agency = body.entries.find((e: { key: string }) => e.key === PRICE.agency);
-    expect(agency.amountCents).toBe(5900);
+    expect(agency.amountCents).toBe(4900);
     expect(agency.upcoming).toEqual([expect.objectContaining({ amountCents: 6900, effectiveFrom: LATER })]);
-    expect(body.history[PRICE.agency][0]).toMatchObject({ actorLabel: "admin@yomizaka.test", before: { amountCents: 5900 }, after: { amountCents: 6900 } });
+    expect(body.history[PRICE.agency][0]).toMatchObject({ actorLabel: "admin@yomizaka.test", before: { amountCents: 4900 }, after: { amountCents: 6900 } });
   });
 
   it.each([
