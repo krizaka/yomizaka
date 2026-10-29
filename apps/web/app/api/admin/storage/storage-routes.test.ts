@@ -14,12 +14,17 @@ const calls = vi.hoisted(() => ({ touched: 0 }));
 vi.mock("@/app/storage-providers", () => ({
   storageRuntime: () => "dev",
   providers: () => (calls.touched++, null),
+  moveDeps: () => (calls.touched++, null),
 }));
 
 import { POST as setDefault } from "./[id]/default/route";
 import { PUT as changeKey } from "./[id]/key/route";
+import { POST as retire } from "./[id]/retire/route";
 import { DELETE as disable } from "./[id]/route";
 import { POST as retest } from "./[id]/test/route";
+import { POST as pauseMove } from "./move/pause/route";
+import { POST as resumeMove } from "./move/resume/route";
+import { POST as startMove } from "./move/route";
 import { GET as list, POST as add } from "./route";
 
 const ctx = { params: Promise.resolve({ id: "p1" }) };
@@ -36,6 +41,8 @@ describe("the storage providers API is for administrators only", () => {
       expect((await setDefault(body({ dataKind: "documents" }), ctx)).status).toBe(status);
       expect((await changeKey(body({ credentials: { accessKey: "x" } }), ctx)).status).toBe(status);
       expect((await disable(body({}), ctx)).status).toBe(status);
+      expect((await retire(body({}), ctx)).status).toBe(status);
+      for (const move of [startMove, pauseMove, resumeMove]) expect((await move(body({}))).status).toBe(status);
     }
     expect(calls.touched).toBe(0);
   });
@@ -52,5 +59,6 @@ describe("the storage providers API is for administrators only", () => {
     expect((await setDefault(body({ dataKind: "passwords" }), ctx)).status).toBe(400);
     expect((await changeKey(body({ credentials: { encryptionKey: "x" } }), ctx)).status).toBe(400);
     expect((await add(body({ kind: "", label: "" }))).status).toBe(400);
+    expect((await startMove(body({ from: "not-an-id", to: "x" }))).status).toBe(400);
   });
 });

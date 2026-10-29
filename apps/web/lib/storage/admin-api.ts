@@ -5,6 +5,7 @@ import type { Actor, ProviderService, PublicProvider } from "@krizaka/storage/pr
 import { z } from "zod";
 
 import { type HttpError, refuse } from "../http";
+import type { MoveView } from "./provider-move";
 import { DATA_KIND, ORG_SCOPE } from "./providers";
 
 /** What the admin may type: a kind, a label, the non-secret coordinates and the secrets (entered once, never returned). */
@@ -57,9 +58,9 @@ export async function guarded<T>(run: () => Promise<T>): Promise<T> {
   }
 }
 
-/** The screen's one read: the providers (secrets are `set` or `not set`, nothing else), which one is the default of each kind of data, and the kinds the form offers. */
-export async function overview(service: ProviderService, defaults: () => Promise<Record<string, string>>, kinds: KindForm[]) {
-  return { providers: await service.list(ORG_SCOPE), defaults: await defaults(), kinds };
+/** The screen's one read: the providers (secrets are `set` or `not set`, nothing else), which one is the default of each kind of data, the kinds the form offers, and the move of documents between providers (counts only). */
+export async function overview(service: ProviderService, defaults: () => Promise<Record<string, string>>, kinds: KindForm[], move: () => Promise<MoveView | null> = async () => null) {
+  return { providers: await service.list(ORG_SCOPE), defaults: await defaults(), kinds, move: await move() };
 }
 
 /** Adds a provider as a draft and tests it at once; the object-encryption key is generated here when the admin gives none (every document is encrypted before it leaves). */
@@ -75,3 +76,6 @@ export function managedProviders<T>(get: () => T | null): T {
   if (!p) throw refuse(503, "STORAGE_VAULT_MISSING", "Storing credentials is not available on this deployment: MEDIA_VAULT_KEY is not set");
   return p;
 }
+
+/** The two ids of a move: the retiring provider the documents leave, the default they go to. */
+export const startMoveInput = z.object({ from: z.string().uuid(), to: z.string().uuid() });

@@ -925,7 +925,10 @@
       "STORAGE_BAD_CONFIG": "Le fournisseur n'est pas bien configuré pour ce type ou cet environnement.",
       "STORAGE_BAD_ENDPOINT": "L'adresse est refusée : utilisez une adresse https publique.",
       "STORAGE_BAD_SECRET_KEY": "La clé n'est pas valide.",
-      "STORAGE_TEST_FAILED": "Le test de connexion a échoué : rien n'a été enregistré."
+      "STORAGE_TEST_FAILED": "Le test de connexion a échoué : rien n'a été enregistré.",
+      "STORAGE_MOVE_NOT_ALLOWED": "Ce déplacement n'est pas permis : déplacez depuis un fournisseur en retrait vers le défaut des documents.",
+      "STORAGE_MOVE_OPEN": "Un déplacement est déjà ouvert : terminez-le ou mettez-le en pause.",
+      "STORAGE_MOVE_NONE": "Aucun déplacement à mettre en pause ou à reprendre."
     },
     "adminConsole": {
       "shell": {
@@ -1261,7 +1264,31 @@
           "tokenKey": "Clé des liens",
           "accessKeyId": "Identifiant de clé d'accès",
           "secretAccessKey": "Clé d'accès secrète",
-          "encryptionKey": "Clé de chiffrement des objets"
+          "encryptionKey": "Clé de chiffrement des objets",
+          "root": "Dossier"
+        },
+        "move": {
+          "title": "Déplacer les documents",
+          "lead": "Chaque document est copié vers le nouveau fournisseur, relu, et son SHA-256 est vérifié. Seulement alors il pointe vers le nouveau fournisseur. Rien n'est supprimé avant que vous retiriez l'ancien. D'ici là, la lecture essaie d'abord le nouveau fournisseur, puis l'ancien.",
+          "offer": "{from} est en retrait. Déplacez ses documents vers {to}.",
+          "start": "Déplacer les documents",
+          "label": "Documents déplacés",
+          "progress": "{moved} sur {total} déplacés",
+          "moved": "Déplacés",
+          "remaining": "Restants",
+          "failed": "En échec",
+          "pause": "Pause",
+          "resume": "Reprendre",
+          "resumeRetry": "Reprendre et réessayer ceux en échec",
+          "retire": "Retirer {provider}",
+          "retireHint": "Ses anciennes copies sont balayées et il est désactivé. Refusé tant qu'un document y est encore.",
+          "failures": "Documents qui n'ont pas pu être déplacés",
+          "statuses": {
+            "running": "Déplacement en cours",
+            "paused": "En pause",
+            "attention": "À vérifier",
+            "done": "Terminé"
+          }
         }
       }
     },
