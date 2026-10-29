@@ -1,4 +1,5 @@
 import { migrate as runMigrations } from "@krizaka/db";
+import { endPool } from "@krizaka/db/testing";
 import { createIncidentRegister } from "@krizaka/privacy";
 import pg from "pg";
 import { describe, expect, it } from "vitest";
@@ -33,7 +34,7 @@ describe.runIf(enabled)("0055_privacy_incident_register", () => {
       await expect(register.close(run, "akinaza", mine.id, actor)).rejects.toMatchObject({ code: "INCIDENT_UNKNOWN" });
       await expect(pool.query("DELETE FROM privacy.incident WHERE id = $1", [mine.id])).rejects.toThrow(/retention/);
     } finally {
-      await pool.end();
+      await endPool(pool);
       await admin.query(`DROP DATABASE ${name}`);
       await admin.end();
     }

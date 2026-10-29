@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import type { Connection } from "@krizaka/db";
+import { endPool } from "@krizaka/db/testing";
 import pg from "pg";
 
 /** A throwaway database on the test server (`DATABASE_URL`'s), for a test that runs the migrations up to a point, writes old-shaped rows, then runs the rest. */
@@ -28,7 +29,7 @@ export async function withScratchDatabase<T>(prefix: string, work: (db: ScratchD
   try {
     return await work({ connect, run: async (text, values) => (await pool.query(text, values)).rows as never, pool });
   } finally {
-    await pool.end();
+    await endPool(pool);
     await admin.query(`DROP DATABASE ${name} WITH (FORCE)`);
     await admin.end();
   }
