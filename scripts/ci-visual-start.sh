@@ -13,6 +13,8 @@ APP_REPORT_SIGNING_KEY="$(node -e 'process.stdout.write(require("crypto").genera
 export APP_REPORT_SIGNING_KEY
 pnpm --filter @yomizaka/web build
 export NODE_ENV=production
+# The app's declared public origin (landingRedirect requires it in production: never read from the request's Host).
+export APP_PUBLIC_URL=http://localhost:3000
 trap 'tail -100 web-visual.log || true' ERR
 (cd apps/web && nohup npx next start -p 3000 > ../../web-visual.log 2>&1 &)
 for _ in $(seq 1 90); do curl -sf http://localhost:3000/api/healthz >/dev/null && break; sleep 1; done

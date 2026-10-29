@@ -260,8 +260,8 @@ importers:
         specifier: 0.1.3
         version: 0.1.3(vitest@4.1.11)(zod@4.6.7)
       '@krizaka/auth':
-        specifier: ^0.11.2
-        version: 0.11.2(vitest@4.1.11)(zod@4.6.7)
+        specifier: ^0.12.0
+        version: 0.12.0(vitest@4.1.11)(zod@4.6.7)
       '@krizaka/brief':
         specifier: ^0.1.0
         version: 0.1.0
@@ -1765,8 +1765,8 @@ packages:
       vitest:
         optional: true
 
-  '@krizaka/auth@0.11.2':
-    resolution: {integrity: sha512-PJkHhtVyzzIj3oT69FXfiI4oXnFjId58COynx4sjxqJAGh4WDbQTwZVtIp9qUd1cZJgkPyZn8bd+8WgwYUjclw==}
+  '@krizaka/auth@0.12.0':
+    resolution: {integrity: sha512-aeZHaggqvq7wdzSWZztKFiIOVAnDHFttF1b8cby/XWjDySxtmg+LgTHHnYN+6Ge9ftW1PdYS6h17hEmAVXBt4A==}
     engines: {node: '>=22'}
     peerDependencies:
       vitest: '>=4'
@@ -10241,7 +10241,7 @@ snapshots:
     optionalDependencies:
       vitest: 4.1.11(@types/node@24.19.2)(@vitest/coverage-v8@4.1.11)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.4(@types/node@24.19.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
 
-  '@krizaka/auth@0.11.2(vitest@4.1.11)(zod@4.6.7)':
+  '@krizaka/auth@0.12.0(vitest@4.1.11)(zod@4.6.7)':
     dependencies:
       '@krizaka/db': 0.3.1
       '@krizaka/settings': 0.5.1(zod@4.6.7)

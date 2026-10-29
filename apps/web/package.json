@@ -15,7 +15,7 @@
   "dependencies": {
     "@krizaka/api-keys": "0.3.0",
     "@krizaka/audit": "0.1.3",
-    "@krizaka/auth": "^0.11.2",
+    "@krizaka/auth": "^0.12.0",
     "@krizaka/brief": "^0.1.0",
     "@krizaka/charts": "0.6.2",
     "@krizaka/coupons": "0.1.1",
