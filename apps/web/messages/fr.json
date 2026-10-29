@@ -2550,7 +2550,7 @@
         "fromHint": "Vide ou aujourd’hui : dès maintenant. Un jour plus tard : dès son début.",
         "schedule": "Planifier le changement",
         "charged": "Facturé par le processeur",
-        "chargedHint": "La vente s’arrête tant qu’il diffère du catalogue : créez d’abord le nouveau prix chez le processeur.",
+        "chargedHint": "La vente s’arrête tant qu’il diffère du catalogue : synchronisez le processeur (mode test) ci-dessous.",
         "notFound": "Prix introuvable chez le processeur.",
         "mismatch": "Différent",
         "match": "Égal",
@@ -2575,6 +2575,44 @@
           "fullFile": "Dossier complet du locataire",
           "backgroundCheck": "Vérification des antécédents",
           "screening": "Filtre seul"
+        },
+        "editor": {
+          "edit": "Modifier",
+          "plusTaxes": "plus taxes",
+          "unit": "Unité",
+          "limitsLabel": "Limites",
+          "keepsPrice": "Les abonnements en cours gardent le prix auquel ils ont été vendus.",
+          "cancel": "Annuler",
+          "scheduled": "Changements planifiés ({count})",
+          "history": "Historique",
+          "historyEmpty": "Aucun changement pour l’instant.",
+          "loading": "Chargement…",
+          "historyLine": "{actor}, {at} : {before} → {after}, à partir du {from}",
+          "scheduledLine": "à partir du {from}",
+          "saved": "Enregistré."
+        },
+        "confirm": {
+          "title": "Changer le prix de {name} ?",
+          "now": "Dès maintenant : {before} → {after}. Les nouvelles ventes utilisent aussitôt le nouveau prix ; les abonnements déjà vendus gardent le leur.",
+          "later": "À partir du {date} : {before} → {after}. Rien ne change avant ce jour ; les abonnements déjà vendus gardent leur prix.",
+          "processorTest": "Le processeur (mode test) reçoit le prix correspondant.",
+          "processorLive": "Le processeur est en mode RÉEL : son prix n’est pas changé d’ici, c’est le propriétaire qui le fait.",
+          "confirm": "Oui, changer",
+          "cancel": "Non, garder",
+          "cancelled": "Annulé, rien n’a été changé."
+        },
+        "sync": {
+          "title": "Prix du processeur",
+          "button": "Synchroniser le processeur",
+          "hint": "Crée chez le processeur le prix de chaque entrée vendue qui diffère du catalogue (mode test seulement). Un prix déjà vendu n’est jamais modifié : un nouveau prend sa clé de recherche.",
+          "done": "Synchronisé : {lines}",
+          "live": "Le processeur est en mode réel : seul le propriétaire change ses prix.",
+          "off": "Les paiements ne sont pas configurés ici.",
+          "status": {
+            "exists": "à jour",
+            "created": "créé",
+            "repriced": "nouveau prix"
+          }
         }
       },
       "coupons": {

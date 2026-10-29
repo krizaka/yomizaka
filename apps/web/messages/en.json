@@ -2550,7 +2550,7 @@
         "fromHint": "Empty or today: from now. A later day: from its start.",
         "schedule": "Schedule the change",
         "charged": "Charged by the processor",
-        "chargedHint": "Sales stop while it differs from the catalogue: create the new processor price first.",
+        "chargedHint": "Sales stop while it differs from the catalogue: sync the processor (test mode) below.",
         "notFound": "Price not found at the processor.",
         "mismatch": "Differs",
         "match": "Equal",
@@ -2575,6 +2575,44 @@
           "fullFile": "Full applicant file",
           "backgroundCheck": "Background checks",
           "screening": "Screening alone"
+        },
+        "editor": {
+          "edit": "Change",
+          "plusTaxes": "plus taxes",
+          "unit": "Unit",
+          "limitsLabel": "Limits",
+          "keepsPrice": "Current subscriptions keep the price they were sold at.",
+          "cancel": "Cancel",
+          "scheduled": "Scheduled changes ({count})",
+          "history": "History",
+          "historyEmpty": "No change yet.",
+          "loading": "Loading…",
+          "historyLine": "{actor}, {at}: {before} → {after}, from {from}",
+          "scheduledLine": "from {from}",
+          "saved": "Saved."
+        },
+        "confirm": {
+          "title": "Change the price of {name}?",
+          "now": "From now: {before} → {after}. New sales use the new price at once; subscriptions already sold keep theirs.",
+          "later": "From {date}: {before} → {after}. Nothing changes before that day; subscriptions already sold keep their price.",
+          "processorTest": "The processor (test mode) gets the matching price.",
+          "processorLive": "The processor is in LIVE mode: its price is not changed from here, the owner does it.",
+          "confirm": "Yes, change it",
+          "cancel": "No, keep it",
+          "cancelled": "Cancelled, nothing was changed."
+        },
+        "sync": {
+          "title": "Processor prices",
+          "button": "Sync the processor",
+          "hint": "Creates at the processor the price of each sold entry that differs from the catalogue (test mode only). A price already sold is never edited: a new one takes its lookup key.",
+          "done": "Synced: {lines}",
+          "live": "The processor is in live mode: only the owner changes its prices.",
+          "off": "Payments are not configured here.",
+          "status": {
+            "exists": "up to date",
+            "created": "created",
+            "repriced": "new price"
+          }
         }
       },
       "coupons": {
