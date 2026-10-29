@@ -3911,5 +3911,16 @@
     "closed": "D'après ces dates, le dernier jour pour demander était le {lastDay}. Source : {source}.",
     "no-claim": "Aucune conclusion : une date manque ou est illisible, aucun délai n'est donné.",
     "disclaimer": "Information sur les dates, pas un avis juridique. La façon de compter les jours et les mois est à confirmer auprès du TAL ou d'un avocat."
+  },
+  "sectionGRequest": {
+    "title": "Les faits à apporter au TAL",
+    "rentNew": "Loyer du nouveau bail : {cents}.",
+    "rentPrevious": "Plus bas loyer des douze mois précédents, tel qu'écrit à la section G : {cents}.",
+    "previousBlank": "La section G du bail n'indique pas le loyer précédent.",
+    "previousAltered": "La section G du bail semble biffée ou modifiée.",
+    "rentMax": "Loyer le plus élevé que donne le taux {year} du TAL à partir de ce loyer précédent : {cents}.",
+    "excess": "Écart avec le nouveau loyer : {cents}.",
+    "deadline": "D'après les dates données, le dernier jour pour demander au TAL de fixer le loyer est le {lastDay}.",
+    "disclaimer": "Un résumé des chiffres du bail à garder et à apporter au TAL, qui vous dit le formulaire et les frais éventuels. Yomizaka ne dépose rien. Information, pas un avis juridique."
   }
 }

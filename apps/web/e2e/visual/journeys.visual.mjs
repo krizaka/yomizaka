@@ -47,6 +47,8 @@ defineJourneyTests({
     { name: "pricing", path: "/fr/pricing", mask: LIVE },
     { name: "sign-in", path: "/fr/sign-in" },
     { name: "app-home", path: "/fr/app", session: true, mask: LIVE },
+    // The library, where the bookmarks live (#339): the guard they lacked.
+    { name: "documents", path: "/fr/app/documents", session: true, mask: LIVE },
     { name: "document-report", path: firstReport, session: true, mask: LIVE },
     // The first paint of a signed-in page: the HTML the server sent, and the hydrated page while the account query is pending (krizaka-ui#827).
     { name: "app-home", path: "/fr/app", session: true, firstPaint: true, viewports: ["phone"], mask: LIVE },
