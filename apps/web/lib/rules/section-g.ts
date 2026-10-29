@@ -55,6 +55,10 @@ export interface SectionGResult {
   source: { url: string; enteredOn: string | null; year: number | null };
 }
 
+type Component = TalYear["components"][number];
+const RATE_KINDS: ReadonlySet<string> = new Set(["rate-of-rent"]);
+const isRateOfRent = (c: Component): c is Extract<Component, { basisPoints: number }> => RATE_KINDS.has(c.kind);
+
 type Cap = { maxIncreaseCents: number; entry: TalYear } | { missing: "NO_YEAR" | "NO_BUILDING_COST" };
 
 /** The increase the table allows on a rent for the year — rates of the rent plus costs the caller supplied; none when a figure is missing. */
@@ -63,16 +67,13 @@ function capOf(table: TalTable, year: number, previousCents: number, costs: Sect
   if (!entry) return { missing: "NO_YEAR" };
   let total = 0;
   for (const c of entry.components) {
-    switch (c.kind) {
-      case "rate-of-rent":
-        total += Math.round((previousCents * c.basisPoints) / 10_000);
-        break;
-      default: {
-        const change = costs?.[c.id];
-        if (change === undefined) return { missing: "NO_BUILDING_COST" };
-        total += change;
-      }
+    if (isRateOfRent(c)) {
+      total += Math.round((previousCents * c.basisPoints) / 10_000);
+      continue;
     }
+    const change = costs?.[c.id];
+    if (change === undefined) return { missing: "NO_BUILDING_COST" };
+    total += change;
   }
   return { maxIncreaseCents: Math.max(0, total), entry };
 }

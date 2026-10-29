@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { TAL, type TalTable } from "../brief/tal";
 import en from "../../messages/en.json";
 import fr from "../../messages/fr.json";
-import { checkSectionG, SECTION_G_RULE, sectionGMessageKey, type SectionGCode } from "./section-g";
+import { TAL, type TalTable } from "../brief/tal";
+import { checkSectionG, SECTION_G_RULE, type SectionGCode,sectionGMessageKey } from "./section-g";
 
 /** TEST FIGURES — invented for these tests, never shipped: the shipped table has no year until someone enters the TAL's figures. */
 const rate = (extra: TalTable["years"][number]["components"] = []): TalTable => ({
