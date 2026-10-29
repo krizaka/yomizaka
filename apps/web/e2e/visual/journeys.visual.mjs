@@ -53,6 +53,14 @@ async function firstFile(page, { origin }) {
   if (!id) throw new Error("no seeded applicant file: is the cast seeded?");
   return `/fr/app/dossiers/${id}`;
 }
+/** A finding stays inside its card: no long address pushes the page wider than the screen (the TAL address on a phone). */
+const staysInside = (ruleId) => async (page) => {
+  const wide = await page.evaluate((id) => {
+    const card = document.getElementById(`finding-${id}`);
+    return card ? card.scrollWidth > card.clientWidth + 1 || document.documentElement.scrollWidth > window.innerWidth : true;
+  }, ruleId);
+  expect(wide, `finding ${ruleId} overflows its card`).toBe(false);
+};
 /** Brings a finding of the report to the top of the screen, so the capture shows it and not the header. */
 const showFinding = (ruleId) => async (page) => {
   await page.locator(`#finding-${ruleId}`).scrollIntoViewIfNeeded();
@@ -80,7 +88,7 @@ defineJourneyTests({
     { name: "documents", path: "/fr/app/documents", session: true, mask: LIVE },
     { name: "document-report", path: firstReport, session: true, mask: LIVE },
     // The tenant-shield findings in the report (yomizaka#104): Section G with the deadline and the facts for the TAL; the payment clauses (art. 1904).
-    { name: "report-section-g", path: reportTitled("avis du TAL absent"), session: true, ready: showFinding("TS-G-001"), mask: LIVE },
+    { name: "report-section-g", path: reportTitled("avis du TAL absent"), session: true, ready: async (page) => { await staysInside("TS-G-001")(page); await showFinding("TS-G-001")(page); }, mask: LIVE },
     { name: "report-payment-clauses", path: reportTitled("clause illégale"), session: true, ready: showFinding("TS-P-001"), mask: LIVE },
     { name: "file-rent-share", path: firstFile, session: true, ready: typeRentShare, mask: LIVE },
     // The first paint of a signed-in page: the HTML the server sent, and the hydrated page while the account query is pending (krizaka-ui#827).
