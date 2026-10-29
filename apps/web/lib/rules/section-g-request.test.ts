@@ -31,7 +31,7 @@ describe("the facts for a request to the TAL (slice 5 of #104)", () => {
   });
 
   it("has an EN and FR message for every line, with the same placeholders, and no verdict", () => {
-    for (const key of ["rentNew", "rentPrevious", "previousBlank", "previousAltered", "rentMax", "excess", "deadline", "disclaimer"] as const) {
+    for (const key of ["rentNew", "rentPrevious", "previousBlank", "previousAltered", "rentMax", "excess", "deadline"] as const) {
       const e = en.sectionGRequest[key];
       const f = fr.sectionGRequest[key];
       expect(e && f, key).toBeTruthy();

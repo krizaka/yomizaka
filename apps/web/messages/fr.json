@@ -3899,7 +3899,7 @@
     "not-above-previous": "Le nouveau loyer ne dépasse pas le loyer précédent indiqué à la section G.",
     "no-rate": "Aucune conclusion : le taux du TAL pour cette année n'est pas saisi, ou les montants sont inutilisables, donc l'augmentation n'est pas comparée.",
     "recourse": "Recours : le locataire peut demander au Tribunal administratif du logement de fixer le loyer (C.c.Q., art. 1950).",
-    "disclaimer": "Information sur les montants du bail, pas un avis juridique et aucun jugement sur le locateur. Vérifiez l'article et la page du TAL, ou demandez au TAL."
+    "disclaimer": "Information sur les montants et les dates du bail, pas un avis juridique et aucun jugement sur le locateur. Vérifiez l'article et la page du TAL, ou demandez au TAL : il vous dit le formulaire et les frais éventuels, et comment compter les jours et les mois. Yomizaka ne dépose rien."
   },
   "paymentClauses": {
     "advance-over-one-month": "Le bail demande plus d'un mois de loyer d'avance. Le locateur ne peut exiger d'avance que le premier terme, dans la limite d'un mois (C.c.Q., art. 1904).",
@@ -3915,8 +3915,7 @@
     "open": "D'après ces dates, le dernier jour pour demander est le {lastDay} ({days} jours restants). Source : {source}.",
     "last-day": "D'après ces dates, aujourd'hui ({lastDay}) est le dernier jour pour demander. Source : {source}.",
     "closed": "D'après ces dates, le dernier jour pour demander était le {lastDay}. Source : {source}.",
-    "no-claim": "Aucune conclusion : une date manque ou est illisible, aucun délai n'est donné.",
-    "disclaimer": "Information sur les dates, pas un avis juridique. La façon de compter les jours et les mois est à confirmer auprès du TAL ou d'un avocat."
+    "no-claim": "Aucune conclusion : une date manque ou est illisible, aucun délai n'est donné."
   },
   "sectionGRequest": {
     "title": "Les faits à apporter au TAL :",
@@ -3926,7 +3925,6 @@
     "previousAltered": "La section G du bail semble biffée ou modifiée.",
     "rentMax": "Loyer le plus élevé que donne le taux {year} du TAL à partir de ce loyer précédent : {cents}.",
     "excess": "Écart avec le nouveau loyer : {cents}.",
-    "deadline": "D'après les dates données, le dernier jour pour demander au TAL de fixer le loyer est le {lastDay}.",
-    "disclaimer": "Un résumé des chiffres du bail à garder et à apporter au TAL, qui vous dit le formulaire et les frais éventuels. Yomizaka ne dépose rien. Information, pas un avis juridique."
+    "deadline": "D'après les dates données, le dernier jour pour demander au TAL de fixer le loyer est le {lastDay}."
   }
 }

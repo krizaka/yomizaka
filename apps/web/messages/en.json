@@ -3899,7 +3899,7 @@
     "not-above-previous": "The new rent is not above the previous rent stated in Section G.",
     "no-rate": "No claim: the TAL's rate for this year is not entered, or the figures are not usable, so the increase is not compared.",
     "recourse": "Recourse: the tenant may ask the Tribunal administratif du logement to fix the rent (C.c.Q., art. 1950).",
-    "disclaimer": "Information about the figures of the lease, not legal advice and no judgement on the landlord. Check the article and the TAL's page, or ask the TAL."
+    "disclaimer": "Information about the figures and dates of the lease, not legal advice and no judgement on the landlord. Check the article and the TAL's page, or ask the TAL: it tells you the form and any fee, and how days and months are counted. Yomizaka files nothing."
   },
   "paymentClauses": {
     "advance-over-one-month": "The lease asks for more than one month of rent in advance. A landlord may require only the first term, within one month (C.c.Q., art. 1904).",
@@ -3915,8 +3915,7 @@
     "open": "By these dates, the last day to ask is {lastDay} ({days} days left). Source: {source}.",
     "last-day": "By these dates, today ({lastDay}) is the last day to ask. Source: {source}.",
     "closed": "By these dates, the last day to ask was {lastDay}. Source: {source}.",
-    "no-claim": "No claim: a date is missing or unreadable, so no deadline is given.",
-    "disclaimer": "Information about dates, not legal advice. How days and months are counted is for the TAL or a lawyer to confirm."
+    "no-claim": "No claim: a date is missing or unreadable, so no deadline is given."
   },
   "sectionGRequest": {
     "title": "Facts to take to the TAL:",
@@ -3926,7 +3925,6 @@
     "previousAltered": "Section G of the lease looks crossed out or altered.",
     "rentMax": "Highest rent the TAL's {year} rate gives from that previous rent: {cents}.",
     "excess": "Difference with the new rent: {cents}.",
-    "deadline": "By the dates given, the last day to ask the TAL to fix the rent is {lastDay}.",
-    "disclaimer": "A summary of the lease's figures to keep and to bring to the TAL, which tells you the form and any fee. Yomizaka files nothing. Information, not legal advice."
+    "deadline": "By the dates given, the last day to ask the TAL to fix the rent is {lastDay}."
   }
 }
