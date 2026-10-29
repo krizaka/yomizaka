@@ -26,7 +26,7 @@ jobs:
     if: github.event_name == 'pull_request'
     permissions:
       contents: read
-    uses: krizaka/.github/.github/workflows/tauri-macos.yml@944b6e5283428852f463b108b7ec9cd2647345fe # main
+    uses: krizaka/.github/.github/workflows/tauri-macos.yml@6a458eafcbe9e52b3aa9e068c7256fe0a11bc376 # main
     with:
       working-directory: apps/desktop
       product-name: Yomizaka
@@ -37,7 +37,7 @@ jobs:
     if: github.event_name == 'push'
     permissions:
       contents: write
-    uses: krizaka/.github/.github/workflows/tauri-macos.yml@944b6e5283428852f463b108b7ec9cd2647345fe # main
+    uses: krizaka/.github/.github/workflows/tauri-macos.yml@6a458eafcbe9e52b3aa9e068c7256fe0a11bc376 # main
     with:
       working-directory: apps/desktop
       product-name: Yomizaka
