@@ -3,170 +3,165 @@
 import { krizakaFetch, useQuery, useQueryClient } from "@krizaka/query";
 import { Alert } from "@krizaka/ui/alert";
 import { Badge } from "@krizaka/ui/badge";
-import { DataTable, type DataTableColumn } from "@krizaka/ui/data-table";
-import { DatePicker } from "@krizaka/ui/date-picker";
-import { Input } from "@krizaka/ui/field";
-import { RadioGroup } from "@krizaka/ui/radio-group";
-import { SettingsRow, SettingsSection, useSaveStatus } from "@krizaka/ui/settings-layout";
+import { Button } from "@krizaka/ui/button";
+import { AlertDialog } from "@krizaka/ui/dialog";
+import { PriceCatalogueEditor, type PriceFigures, type PriceHistoryEntry, type PriceScheduleResult } from "@krizaka/ui/price-catalogue-editor";
 import { format } from "date-fns";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { z } from "zod";
 
 import { errorKey } from "@/lib/client";
 import { useSay } from "@/lib/i18n-client";
-import { draftOf, effectiveFromOf, patchOf,type PriceDraft, type PriceFields } from "@/lib/prices/edit";
-import { money } from "@/lib/prices/format";
+import { effectiveFromOf, patchOf, type PriceFields } from "@/lib/prices/edit";
+import { localeTag, money } from "@/lib/prices/format";
 
 const fields = { unit: z.string(), amountCents: z.number().nullable(), availability: z.string(), limits: z.record(z.string(), z.number()) };
-const entry = z.object({ key: z.string(), versionId: z.string(), effectiveFrom: z.string(), ...fields, upcoming: z.array(z.object({ versionId: z.string(), effectiveFrom: z.string(), ...fields })) });
-const line = z.object({ versionId: z.string(), at: z.string(), actorLabel: z.string(), effectiveFrom: z.string(), before: z.object(fields).passthrough().nullable(), after: z.object(fields).passthrough() });
+const version = z.object({ versionId: z.string(), effectiveFrom: z.string(), ...fields });
+const entry = version.extend({ key: z.string(), product: z.string(), plan: z.string(), currency: z.string(), upcoming: z.array(version) });
+const line = z.object({ versionId: z.string(), at: z.string(), actorLabel: z.string(), effectiveFrom: z.string(), before: z.object(fields).nullable(), after: z.object(fields) });
 const answer = z.object({
+  units: z.array(z.string()),
   availabilities: z.array(z.string()),
   entries: z.array(entry),
   history: z.record(z.string(), z.array(line)),
   processor: z.object({ mode: z.enum(["test", "live"]).nullable(), amounts: z.record(z.string(), z.number().nullable()) }),
 });
-type Entry = z.infer<typeof entry>;
-type Line = z.infer<typeof line> & { key: string };
-type Say = (key: string, vars?: Record<string, string | number>) => string;
+const synced = z.object({ sync: z.object({ mode: z.string(), prices: z.array(z.object({ lookupKey: z.string(), status: z.string() })) }) });
 
 const SEED = "seed:";
+const LIMITS = ["included", "founderCap", "feeBps", "feeCapCents"] as const;
+
+/** A change the administrator is asked to confirm: what it is, and the answer that settles the editor's promise. */
+interface Pending {
+  key: string;
+  summary: string;
+  settle: (ok: boolean) => void;
+}
 
 /**
- * The price catalogue (ADR-009, yomizaka#367): each entry with its amount, availability and limits, a change scheduled from a
- * date (never in the past), what the processor charges beside it, and every change with who made it. Composed from
- * `SettingsSection` / `SettingsRow` until Krizaka UI's price-list block exists (krizaka/krizaka-ui#713).
+ * The price catalogue (ADR-009, yomizaka#367 · #548): `PriceCatalogueEditor` of @krizaka/ui draws each entry; a change applies from a
+ * day (never in the past), keeps every version, and is confirmed in a dialog before it can touch what customers pay. The processor's
+ * price is shown beside the catalogue's, with a « Sync » that creates the matching price in test mode (live is the owner's).
  */
 export function PriceCatalogueView() {
-  const { say } = useSay();
+  const { say, locale } = useSay();
+  const client = useQueryClient();
+  const [pending, setPending] = useState<Pending | null>(null);
+  const [note, setNote] = useState<string | null>(null);
   const data = useQuery({ queryKey: ["admin-prices"], queryFn: () => krizakaFetch("/api/admin/prices", { schema: answer }) });
   if (!data.data) return null;
-  const { entries, availabilities, processor, history } = data.data;
+  const { entries, units, availabilities, processor, history } = data.data;
+  const today = format(new Date(), "yyyy-MM-dd");
+  const shown = (cents: number | null) => (cents === null ? say("adminConfig.prices.onQuote") : money(cents, locale));
+  const nameOf = (key: string) => say(`adminConfig.prices.entries.${key.split(".")[1]}`);
+
+  const confirm = (key: string, summary: string) => new Promise<boolean>((settle) => setPending({ key, summary, settle }));
+
+  const onSchedule = async (key: string, change: PriceFigures, from: string): Promise<PriceScheduleResult> => {
+    const saved = entries.find((e) => e.key === key);
+    if (!saved) return { ok: false, message: say("errors.UNKNOWN_PRICE") };
+    const before: PriceFields = { amountCents: saved.amountCents, availability: saved.availability, limits: saved.limits };
+    const patch = patchOf(before, { amount: change.amountCents === null ? "" : String(change.amountCents / 100), availability: change.availability, limits: Object.fromEntries(Object.entries(change.limits).map(([k, v]) => [k, String(v)])), from });
+    if (patch === null) return { ok: false, message: say("errors.BAD_VALUE") };
+    if (Object.keys(patch).length === 0) return { ok: true };
+    const now = from <= today;
+    const date = new Intl.DateTimeFormat(locale, { dateStyle: "long" }).format(new Date(`${from}T12:00:00`));
+    const terms = { name: nameOf(key), before: shown(before.amountCents), after: shown(patch.amountCents === undefined ? before.amountCents : patch.amountCents), date };
+    const processorLine = say(processor.mode === "live" ? "adminConfig.prices.confirm.processorLive" : "adminConfig.prices.confirm.processorTest");
+    const summary = [say(now ? "adminConfig.prices.confirm.now" : "adminConfig.prices.confirm.later", terms), processor.mode === null ? "" : processorLine].join(" ").trim();
+    const ok = await confirm(key, summary);
+    if (!ok) return { ok: false, message: say("adminConfig.prices.confirm.cancelled") };
+    try {
+      await krizakaFetch("/api/admin/prices", { method: "POST", json: { key, ...patch, effectiveFrom: effectiveFromOf(from, today) } });
+    } catch (error) {
+      return { ok: false, message: say(`errors.${errorKey(error)}`) };
+    }
+    await client.invalidateQueries({ queryKey: ["admin-prices"] });
+    return { ok: true };
+  };
+
+  const loadHistory = async (key: string): Promise<PriceHistoryEntry[]> => (history[key] ?? []).filter((l) => !l.versionId.startsWith(SEED));
+
+  const sync = async () => {
+    setNote(null);
+    try {
+      const { sync: result } = await krizakaFetch("/api/admin/prices/sync", { method: "POST", schema: synced });
+      setNote(say("adminConfig.prices.sync.done", { lines: result.prices.map((p) => [p.lookupKey, say(`adminConfig.prices.sync.status.${p.status}`)].join(": ")).join(" · ") }));
+    } catch (error) {
+      setNote(say(`errors.${errorKey(error)}`));
+    }
+    await client.invalidateQueries({ queryKey: ["admin-prices"] });
+  };
+
+  const words = {
+    edit: say("adminConfig.prices.editor.edit"),
+    amount: say("adminConfig.prices.amount"),
+    onQuote: say("adminConfig.prices.onQuote"),
+    plusTaxes: say("adminConfig.prices.editor.plusTaxes"),
+    unit: say("adminConfig.prices.editor.unit"),
+    availability: say("adminConfig.prices.availability"),
+    limits: say("adminConfig.prices.editor.limitsLabel"),
+    from: say("adminConfig.prices.from"),
+    keepsPrice: say("adminConfig.prices.editor.keepsPrice"),
+    save: say("adminConfig.prices.schedule"),
+    cancel: say("adminConfig.prices.editor.cancel"),
+    emptyIsQuote: say("adminConfig.prices.amountHint"),
+    scheduled: say("adminConfig.prices.editor.scheduled"),
+    history: say("adminConfig.prices.editor.history"),
+    historyEmpty: say("adminConfig.prices.editor.historyEmpty"),
+    loading: say("adminConfig.prices.editor.loading"),
+    historyLine: say("adminConfig.prices.editor.historyLine"),
+    scheduledLine: say("adminConfig.prices.editor.scheduledLine"),
+    saved: say("adminConfig.prices.editor.saved"),
+    units: Object.fromEntries(units.map((u) => [u, say(`adminConfig.prices.units.${u}`)])),
+    availabilities: Object.fromEntries(availabilities.map((a) => [a, say(`adminConfig.prices.availabilities.${a}`)])),
+    limitNames: Object.fromEntries(LIMITS.map((k) => [k, say(`adminConfig.prices.limits.${k}`)])),
+  };
+  const mismatched = entries.filter((e) => processor.amounts[e.key] !== undefined && processor.amounts[e.key] !== e.amountCents);
+
   return (
     <div className="flex flex-col gap-6" data-testid="prices-catalogue">
       <div className="flex flex-col gap-1">
         <p className="m-0 max-w-[70ch] text-sm text-fg-secondary">{say("adminConfig.prices.lead")}</p>
         {processor.mode === null ? <Alert tone="info">{say("adminConfig.prices.processorOff")}</Alert> : <p className="m-0 text-sm">{say("adminConfig.prices.processorMode")}: <Badge tone={processor.mode === "live" ? "danger" : "neutral"}>{processor.mode}</Badge></p>}
       </div>
-      {entries.map((e) => (
-        <PriceSection key={`${e.key}:${e.versionId}:${e.upcoming.length}`} entry={e} availabilities={availabilities} charged={processor.amounts[e.key]} />
-      ))}
-      <History lines={entries.flatMap((e) => (history[e.key] ?? []).filter((l) => !l.versionId.startsWith(SEED)).map((l) => ({ ...l, key: e.key })))} />
-    </div>
-  );
-}
-
-function PriceSection({ entry: e, availabilities, charged }: { entry: Entry; availabilities: string[]; charged: number | null | undefined }) {
-  const { say, locale } = useSay();
-  const client = useQueryClient();
-  const save = useSaveStatus();
-  const saved: PriceFields = { amountCents: e.amountCents, availability: e.availability, limits: e.limits };
-  const [draft, setDraft] = useState<PriceDraft>(() => draftOf(saved));
-  const [problem, setProblem] = useState<string | null>(null);
-  const patch = patchOf(saved, draft);
-  const dirty = patch === null || Object.keys(patch).length > 0 || draft.from !== null;
-  const today = format(new Date(), "yyyy-MM-dd");
-  const id = e.key.replace(".", "-");
-  const date = (iso: string) => new Intl.DateTimeFormat(locale, { dateStyle: "long" }).format(new Date(iso));
-  const shown = (cents: number | null) => (cents === null ? say("adminConfig.prices.onQuote") : money(cents, locale));
-  const onSave = () =>
-    void save.track(async () => {
-      setProblem(null);
-      if (patch === null) {
-        setProblem(say("errors.BAD_VALUE"));
-        throw new Error("BAD_VALUE");
-      }
-      try {
-        await krizakaFetch("/api/admin/prices", { method: "POST", json: { key: e.key, ...patch, effectiveFrom: effectiveFromOf(draft.from, today) } });
-      } catch (error) {
-        setProblem(say(`errors.${errorKey(error)}`));
-        throw error;
-      }
-      await client.invalidateQueries({ queryKey: ["admin-prices"] });
-    });
-  return (
-    <SettingsSection
-      variant="flat"
-      title={say(`adminConfig.prices.entries.${e.key.split(".")[1]}`)}
-      description={`${e.key} · ${say(`adminConfig.prices.units.${e.unit}`)} · ${e.versionId.startsWith(SEED) ? say("adminConfig.prices.seed") : say("adminConfig.prices.since", { date: date(e.effectiveFrom) })}`}
-      data-testid={`price-${e.key}`}
-      save={{
-        dirty,
-        status: save.status,
-        onSave,
-        onDiscard: dirty
-          ? () => {
-              setDraft(draftOf(saved));
-              save.reset();
-            }
-          : undefined,
-        labels: { save: say("adminConfig.prices.schedule"), saving: say("settings.save.saving"), saved: say("settings.save.saved"), error: problem ?? say("settings.save.error"), undo: say("settings.save.undo"), discard: say("settings.save.discard") },
-      }}
-    >
-      <SettingsRow label={say("adminConfig.prices.amount")} description={say("adminConfig.prices.amountHint")} htmlFor={`${id}-amount`}>
-        <Input id={`${id}-amount`} inputMode="decimal" value={draft.amount} onChange={(ev) => setDraft({ ...draft, amount: ev.target.value })} />
-      </SettingsRow>
-      <SettingsRow label={say("adminConfig.prices.availability")} description={say("adminConfig.prices.availabilityHint")}>
-        {/* @ephemeral: the value of a price being edited (saved by the section's save), not a view selection */}
-        <RadioGroup.Root variant="segmented" label={`${say("adminConfig.prices.availability")} — ${e.key}`} value={draft.availability} onValueChange={(v: string) => setDraft({ ...draft, availability: v })}>
-          {availabilities.map((a) => (
-            <RadioGroup.Segment key={a} value={a}>
-              {say(`adminConfig.prices.availabilities.${a}`)}
-            </RadioGroup.Segment>
-          ))}
-        </RadioGroup.Root>
-      </SettingsRow>
-      {Object.keys(draft.limits).map((k) => (
-        <SettingsRow key={k} label={say(`adminConfig.prices.limits.${k}`)} htmlFor={`${id}-${k}`}>
-          <Input id={`${id}-${k}`} inputMode="numeric" value={draft.limits[k]} onChange={(ev) => setDraft({ ...draft, limits: { ...draft.limits, [k]: ev.target.value } })} />
-        </SettingsRow>
-      ))}
-      <SettingsRow label={say("adminConfig.prices.from")} description={say("adminConfig.prices.fromHint")}>
-        <DatePicker label={`${say("adminConfig.prices.from")} — ${e.key}`} locale={locale} min={today} clearable value={draft.from} onValueChange={(v) => setDraft({ ...draft, from: v })} />
-      </SettingsRow>
-      {charged !== undefined ? (
-        <SettingsRow label={say("adminConfig.prices.charged")} description={say("adminConfig.prices.chargedHint")}>
-          <span className="flex flex-wrap items-center gap-2 text-sm">
-            {charged === null ? say("adminConfig.prices.notFound") : money(charged, locale)}
-            {charged !== e.amountCents ? <Badge tone="danger">{say("adminConfig.prices.mismatch")}</Badge> : <Badge tone="success">{say("adminConfig.prices.match")}</Badge>}
-          </span>
-        </SettingsRow>
-      ) : null}
-      {e.upcoming.length ? (
-        <SettingsRow label={say("adminConfig.prices.upcoming")}>
+      <PriceCatalogueEditor prices={{ units, availabilities, entries }} words={words} locale={localeTag(locale)} today={today} onSchedule={onSchedule} loadHistory={loadHistory} headingLevel={2} />
+      {processor.mode === null ? null : (
+        <section aria-label={say("adminConfig.prices.sync.title")} className="flex flex-col gap-2" data-testid="prices-sync">
+          <h2 className="m-0 font-display text-lg font-bold text-fg">{say("adminConfig.prices.sync.title")}</h2>
           <ul className="m-0 flex list-none flex-col gap-1 p-0 text-sm">
-            {e.upcoming.map((u) => (
-              <li key={u.versionId}>{say("adminConfig.prices.upcomingLine", { date: date(u.effectiveFrom), amount: shown(u.amountCents), availability: say(`adminConfig.prices.availabilities.${u.availability}`) })}</li>
-            ))}
+            {entries
+              .filter((e) => processor.amounts[e.key] !== undefined)
+              .map((e) => (
+                <li key={e.key} className="flex flex-wrap items-center gap-2">
+                  <span>{nameOf(e.key)}</span>
+                  <span>{say("adminConfig.prices.charged")}: {processor.amounts[e.key] === null ? say("adminConfig.prices.notFound") : money(processor.amounts[e.key] as number, locale)}</span>
+                  <Badge tone={processor.amounts[e.key] === e.amountCents ? "success" : "danger"}>{say(processor.amounts[e.key] === e.amountCents ? "adminConfig.prices.match" : "adminConfig.prices.mismatch")}</Badge>
+                </li>
+              ))}
           </ul>
-        </SettingsRow>
-      ) : null}
-    </SettingsSection>
-  );
-}
-
-const describe = (p: PriceFields, say: Say, locale: "en" | "fr") =>
-  [p.amountCents === null ? say("adminConfig.prices.onQuote") : money(p.amountCents, locale), say(`adminConfig.prices.availabilities.${p.availability}`), ...Object.entries(p.limits).map(([k, v]) => `${say(`adminConfig.prices.limits.${k}`)} ${v}`)].join(" · ");
-
-/** Every change of the catalogue: when, who, which entry, from when, before and after. */
-function History({ lines }: { lines: Line[] }) {
-  const { say, locale } = useSay();
-  const columns = useMemo<DataTableColumn<Line>[]>(
-    () => [
-      { id: "when", header: say("adminConfig.history.when"), value: (l) => l.at, cell: (l) => new Intl.DateTimeFormat(locale, { dateStyle: "short", timeStyle: "short" }).format(new Date(l.at)) },
-      { id: "who", header: say("adminConfig.history.who"), value: (l) => l.actorLabel },
-      { id: "what", header: say("adminConfig.history.what"), value: (l) => l.key, cell: (l) => <code className="text-xs">{l.key}</code> },
-      { id: "from", header: say("adminConfig.prices.from"), value: (l) => l.effectiveFrom, cell: (l) => new Intl.DateTimeFormat(locale, { dateStyle: "short", timeStyle: "short" }).format(new Date(l.effectiveFrom)) },
-      { id: "before", header: say("adminConfig.history.before"), value: (l) => (l.before ? describe(l.before, say, locale) : "—") },
-      { id: "after", header: say("adminConfig.history.after"), value: (l) => describe(l.after, say, locale) },
-    ],
-    [say, locale],
-  );
-  const rows = [...lines].sort((a, b) => b.at.localeCompare(a.at));
-  return (
-    <section aria-label={say("adminConfig.prices.historyTitle")} className="flex flex-col gap-2" data-testid="prices-history">
-      <h2 className="m-0 font-display text-lg font-bold text-fg">{say("adminConfig.prices.historyTitle")}</h2>
-      {rows.length === 0 ? <p className="m-0 text-sm text-fg-secondary">{say("adminConfig.history.empty")}</p> : <DataTable caption={say("adminConfig.prices.historyTitle")} rows={rows} columns={columns} getRowId={(l) => l.versionId} rowLabel={(l) => l.key} />}
-    </section>
+          <p className="m-0 max-w-[70ch] text-sm text-fg-secondary">{say(mismatched.length > 0 ? "adminConfig.prices.chargedHint" : "adminConfig.prices.sync.hint")}</p>
+          {processor.mode === "live" ? <Alert tone="warning">{say("adminConfig.prices.sync.live")}</Alert> : <div><Button variant="secondary" onClick={sync}>{say("adminConfig.prices.sync.button")}</Button></div>}
+          {note ? <p role="status" className="m-0 text-sm">{note}</p> : null}
+        </section>
+      )}
+      <AlertDialog
+        open={pending !== null}
+        onOpenChange={(open) => {
+          if (!open && pending) {
+            pending.settle(false);
+            setPending(null);
+          }
+        }}
+        title={say("adminConfig.prices.confirm.title", { name: pending ? nameOf(pending.key) : "" })}
+        description={pending?.summary}
+        confirmLabel={say("adminConfig.prices.confirm.confirm")}
+        cancelLabel={say("adminConfig.prices.confirm.cancel")}
+        onConfirm={() => {
+          pending?.settle(true);
+          setPending(null);
+        }}
+      />
+    </div>
   );
 }
