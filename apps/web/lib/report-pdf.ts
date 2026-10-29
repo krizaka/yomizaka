@@ -125,14 +125,14 @@ function guaranteeBlocks(labels: ReportLabels): Block[] {
 
 /** The report's text, in reading order: what the pages print and what the signature covers. */
 export function reportBlocks(payload: ReportPayload, labels: ReportLabels): Block[] {
-  const { attention, passed } = numberFindings(payload.findings);
+  const { attention, passed, notApplicable } = numberFindings(payload.findings);
   return [
     ...headerBlocks(payload, labels),
     ...documentBlocks(payload, labels),
     ...checkBlocks(payload, labels),
     block(fill(labels.findingsHeading!, { count: payload.findings.length }), 12, { bold: true, gap: 2 }),
     // In the screen's order (what needs a look first, then what passed) and with the screen's numbers: « 3 » is the same finding on paper.
-    ...[...attention, ...passed].flatMap(({ n, finding }) => findingBlocks(n, finding, labels)),
+    ...[...attention, ...passed, ...notApplicable].flatMap(({ n, finding }) => findingBlocks(n, finding, labels)),
     ...(payload.note ? noteBlocks(payload.note) : []),
     ...guaranteeBlocks(labels),
   ];

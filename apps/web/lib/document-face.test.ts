@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { amountsOnce, displayTitle, numberFindings, orderFindings, severityOf, verdictOf } from "./document-face";
 
-const finding = (ruleId: string, verdict: "PASS" | "FAIL" | "INSUFFICIENT_EVIDENCE", severity = "BLOCKING") => ({ ruleId, severity, verdict, explanation: "", evidenceSpan: null });
+const finding = (ruleId: string, verdict: "PASS" | "FAIL" | "INSUFFICIENT_EVIDENCE" | "NOT_APPLICABLE", severity = "BLOCKING") => ({ ruleId, severity, verdict, explanation: "", evidenceSpan: null });
 const insight = (confidence: "high" | "medium" | "low" | "unknown", parties: { role: string; name: string }[] = [], issuer: string | null = null) => ({
   understanding: { nature: { id: "lease", label: { fr: "Bail de logement", en: "Residential lease" }, confidence, score: 0.9 }, parties, issuer },
 });
@@ -35,6 +35,16 @@ describe("the document's face (the UX review's Y5)", () => {
     const { attention, passed } = orderFindings([finding("P1", "PASS"), finding("U", "INSUFFICIENT_EVIDENCE", "INFO"), finding("M", "FAIL", "MAJOR"), finding("B", "FAIL", "BLOCKING"), finding("P2", "PASS"), finding("B2", "FAIL", "BLOCKING")]);
     expect(attention.map((f) => f.ruleId)).toEqual(["B", "B2", "M", "U"]);
     expect(passed.map((f) => f.ruleId)).toEqual(["P1", "P2"]);
+  });
+
+  it("a rule that does not apply is neither something to look at nor a pass: its own folded group, numbered last (a clean lease must not read as 8 problems)", () => {
+    const list = [finding("N1", "NOT_APPLICABLE"), finding("P1", "PASS"), finding("M", "FAIL", "MAJOR"), finding("N2", "NOT_APPLICABLE", "ADVISORY")];
+    const ordered = orderFindings(list);
+    expect(ordered.attention.map((f) => f.ruleId)).toEqual(["M"]);
+    expect(ordered.passed.map((f) => f.ruleId)).toEqual(["P1"]);
+    expect(ordered.notApplicable.map((f) => f.ruleId)).toEqual(["N1", "N2"]);
+    expect(numberFindings(list).notApplicable.map(({ n, finding: f }) => `${n}:${f.ruleId}`)).toEqual(["3:N1", "4:N2"]);
+    expect(verdictOf({ findings: [finding("P1", "PASS"), finding("N1", "NOT_APPLICABLE")] })).toMatchObject({ attention: 0, tone: "success" });
   });
 
   it("numbers the findings in the order they are read — what needs a look first, then what passed, folded, going on from there", () => {

@@ -35,21 +35,31 @@ export function verdictOf(report: Pick<ComplianceReport, "findings" | "summary">
 
 const SEVERITY_RANK: Record<string, number> = { BLOCKING: 0, MAJOR: 1, MINOR: 2, INFO: 3 };
 const VERDICT_RANK: Record<string, number> = { FAIL: 0, INSUFFICIENT_EVIDENCE: 1, PASS: 2 };
+/** The verdict of a rule the document gives no occasion for: not a point to look at, and not a pass either. */
+export const NOT_APPLICABLE = "NOT_APPLICABLE";
 
-/** The findings in the order the reader needs: what failed first (blocking before the rest), what could not be checked, then what passed — folded (the review's D1). */
-export function orderFindings<F extends Pick<Finding, "verdict" | "severity">>(findings: readonly F[]): { attention: F[]; passed: F[] } {
+/** The findings in the order the reader needs: what failed first (blocking before the rest), what could not be checked, then what passed — folded (the review's D1) — and, apart, the rules that do not apply to this document. */
+export function orderFindings<F extends Pick<Finding, "verdict" | "severity">>(findings: readonly F[]): { attention: F[]; passed: F[]; notApplicable: F[] } {
   const rank = (f: F) => (VERDICT_RANK[f.verdict] ?? 9) * 10 + (SEVERITY_RANK[f.severity] ?? 9);
   const sorted = findings.map((f, i) => ({ f, i })).sort((a, b) => rank(a.f) - rank(b.f) || a.i - b.i).map((x) => x.f);
-  return { attention: sorted.filter((f) => f.verdict !== "PASS"), passed: sorted.filter((f) => f.verdict === "PASS") };
+  return {
+    attention: sorted.filter((f) => f.verdict !== "PASS" && f.verdict !== NOT_APPLICABLE),
+    passed: sorted.filter((f) => f.verdict === "PASS"),
+    notApplicable: sorted.filter((f) => f.verdict === NOT_APPLICABLE),
+  };
 }
 
 /** A finding with its number on the report: numbered in reading order, what needs a look from 1, what passed going on from there (the signed PDF numbers them the same way). */
 export interface NumberedFinding<F extends Pick<Finding, "verdict" | "severity"> = Finding> { n: number; finding: F }
 
 /** The findings of `orderFindings`, numbered (the Cahier's order: numbers only for a sequence, design § 3.2). */
-export function numberFindings<F extends Pick<Finding, "verdict" | "severity">>(findings: readonly F[]): { attention: NumberedFinding<F>[]; passed: NumberedFinding<F>[] } {
-  const { attention, passed } = orderFindings(findings);
-  return { attention: attention.map((finding, i) => ({ n: i + 1, finding })), passed: passed.map((finding, i) => ({ n: attention.length + i + 1, finding })) };
+export function numberFindings<F extends Pick<Finding, "verdict" | "severity">>(findings: readonly F[]): { attention: NumberedFinding<F>[]; passed: NumberedFinding<F>[]; notApplicable: NumberedFinding<F>[] } {
+  const { attention, passed, notApplicable } = orderFindings(findings);
+  return {
+    attention: attention.map((finding, i) => ({ n: i + 1, finding })),
+    passed: passed.map((finding, i) => ({ n: attention.length + i + 1, finding })),
+    notApplicable: notApplicable.map((finding, i) => ({ n: attention.length + passed.length + i + 1, finding })),
+  };
 }
 
 export type SeverityWord = "blocking" | "major" | "advice";
