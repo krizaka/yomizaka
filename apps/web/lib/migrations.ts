@@ -1387,6 +1387,13 @@ CREATE INDEX documents_provider_id ON documents(provider_id) WHERE provider_id I
 `,
   },
   {
+    version: "0060_storage_settings_provider",
+    // yomizaka#527 / ADR-005: a person's own S3 is a provider at user scope of the registry. This column names it; the data move (re-sealing the old secret under the vault) is code, run at start (`migrateOwnS3`), because it needs the keys.
+    sql: `
+ALTER TABLE storage_settings ADD COLUMN provider_id uuid;
+`,
+  },
+  {
     version: "0061_storage_moves",
     // ADR-005 §3 (yomizaka#522): the verified move of the documents from a retiring provider to the new default. One row per move; the objects themselves are the catalog (documents.provider_id), so a move resumes from the database and never repeats. At most one move is open at a time.
     sql: `
