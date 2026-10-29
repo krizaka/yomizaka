@@ -13,6 +13,7 @@ const day = (iso: string, lang: Lang) => longDate(new Date(`${iso}T12:00:00Z`), 
  * The sentences that follow a Section G finding: when the request to the TAL can be made (the basis of the deadline) and the facts to take
  * to it (`sectionGRequestSummary`), in the reader's language. Only a finding with a recourse has any; the deadline's own wording says how
  * days and months are counted is for the TAL or a lawyer to confirm. Yomizaka files nothing: the summary is for the tenant to carry.
+ * These sentences carry no disclaimer of their own: the finding says it once, at its end (`sectionG.disclaimer`, `sectionGFinding`).
  */
 export function requestSentences(result: SectionGResult, deadline: SectionGDeadline | null, lang: Lang, text: { deadline: Messages; request: Messages }): string[] {
   const summary = sectionGRequestSummary(result, deadline ?? { state: "no-claim", basis: null, lastDay: null, daysLeft: null, citation: "C.c.Q., art. 1950", sourceUrl: "https://www.tal.gouv.qc.ca/fr/signature-d-un-bail/avis-au-nouveau-locataire" });
@@ -23,6 +24,6 @@ export function requestSentences(result: SectionGResult, deadline: SectionGDeadl
     if (typeof values.lastDay === "string") values.lastDay = day(values.lastDay, lang);
     return fill(text.request[l.key] ?? "", values);
   });
-  const basis = deadline?.basis ? [text.deadline[deadline.basis] ?? "", text.deadline.disclaimer ?? ""] : [];
-  return [...basis.slice(0, 1), `${text.request.title ?? ""} ${lines.join(" ")}`.trim(), ...basis.slice(1), text.request.disclaimer ?? ""].filter(Boolean);
+  const basis = deadline?.basis ? [text.deadline[deadline.basis] ?? ""] : [];
+  return [...basis, `${text.request.title ?? ""} ${lines.join(" ")}`.trim()].filter(Boolean);
 }

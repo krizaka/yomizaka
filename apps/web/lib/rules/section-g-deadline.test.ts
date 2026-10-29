@@ -49,7 +49,7 @@ describe("deadline to ask the TAL to fix the rent", () => {
     expect(SECTION_G_DEADLINE_SOURCE).toMatchObject({ citation: "C.c.Q., art. 1950", url: expect.stringContaining("tal.gouv.qc.ca") });
     for (const dict of [en, fr] as const) {
       const m = dict.sectionGDeadline as Record<string, string>;
-      for (const k of ["ten-days", "two-months-from-start", "two-months-from-knowledge", "open", "last-day", "closed", "no-claim", "disclaimer"]) expect(m[k], k).toBeTruthy();
+      for (const k of ["ten-days", "two-months-from-start", "two-months-from-knowledge", "open", "last-day", "closed", "no-claim"]) expect(m[k], k).toBeTruthy();
       expect(Object.values(m).join(" ")).not.toMatch(/\b(illegal|illégal|unlawful|abusive|fraud)/i);
     }
   });
