@@ -3898,5 +3898,15 @@
     "deposit": "Le bail demande une somme en plus du loyer (dépôt, clé ou garantie). Le locateur ne peut en exiger aucune (C.c.Q., art. 1904).",
     "postdated-cheques": "Le bail exige des chèques postdatés. Le locateur ne peut pas les exiger (C.c.Q., art. 1904).",
     "disclaimer": "Information sur les clauses du bail, pas un avis juridique ni un jugement sur le locateur. Vérifiez l'article, ou demandez au TAL."
+  },
+  "sectionGDeadline": {
+    "ten-days": "Le locateur a remis l'avis : la demande au TAL se fait dans les 10 jours de la conclusion du bail.",
+    "two-months-from-start": "Aucun avis n'a été remis : la demande au TAL se fait dans les deux mois du début du bail.",
+    "two-months-from-knowledge": "L'avis contenait une fausse déclaration : la demande au TAL se fait dans les deux mois de la connaissance de ce fait.",
+    "open": "D'après ces dates, le dernier jour pour demander est le {lastDay} ({days} jours restants). Source : {source}.",
+    "last-day": "D'après ces dates, aujourd'hui ({lastDay}) est le dernier jour pour demander. Source : {source}.",
+    "closed": "D'après ces dates, le dernier jour pour demander était le {lastDay}. Source : {source}.",
+    "no-claim": "Aucune conclusion : une date manque ou est illisible, aucun délai n'est donné.",
+    "disclaimer": "Information sur les dates, pas un avis juridique. La façon de compter les jours et les mois est à confirmer auprès du TAL ou d'un avocat."
   }
 }

@@ -3898,5 +3898,15 @@
     "deposit": "The lease asks for a sum besides the rent (deposit, key money or guarantee). A landlord may not require one (C.c.Q., art. 1904).",
     "postdated-cheques": "The lease requires postdated cheques. A landlord may not require them (C.c.Q., art. 1904).",
     "disclaimer": "Information about the terms of the lease, not legal advice and no judgement on the landlord. Check the article, or ask the TAL."
+  },
+  "sectionGDeadline": {
+    "ten-days": "The landlord gave the notice: the request to the TAL is made within 10 days of the day the lease was concluded.",
+    "two-months-from-start": "No notice was given: the request to the TAL is made within two months of the start of the lease.",
+    "two-months-from-knowledge": "The notice held a false statement: the request to the TAL is made within two months of learning of it.",
+    "open": "By these dates, the last day to ask is {lastDay} ({days} days left). Source: {source}.",
+    "last-day": "By these dates, today ({lastDay}) is the last day to ask. Source: {source}.",
+    "closed": "By these dates, the last day to ask was {lastDay}. Source: {source}.",
+    "no-claim": "No claim: a date is missing or unreadable, so no deadline is given.",
+    "disclaimer": "Information about dates, not legal advice. How days and months are counted is for the TAL or a lawyer to confirm."
   }
 }
