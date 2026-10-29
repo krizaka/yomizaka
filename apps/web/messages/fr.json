@@ -3151,6 +3151,8 @@
       "toReview": "Règles québécoises encore à faire relire par un juriste : un écran de démonstration, pas un avis juridique."
     },
     "documentsPage": {
+      "dividers": "Signets",
+      "allBookmarks": "Tous",
       "bulk": {
         "label": "Actions sur la sélection",
         "selectedOne": "{count} document sélectionné",

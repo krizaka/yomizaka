@@ -7,7 +7,7 @@ import { pageSession } from "@/lib/access";
 import { query } from "@/lib/db";
 import { documentsByIds } from "@/lib/documents";
 import { asLocale, getDictionary } from "@/lib/i18n";
-import { knownBookmarks, wearingAll } from "@/lib/organisation/bookmarks";
+import { dividers, knownBookmarks, wearingAll } from "@/lib/organisation/bookmarks";
 import { parseView } from "@/lib/organisation/rules";
 import { recentIds } from "@/lib/organisation/store";
 import { KIND } from "@/lib/workspace/decl";
@@ -35,6 +35,7 @@ export default async function DocumentsPage({ params, searchParams }: Readonly<{
   const selected = knownBookmarks(parseView(await searchParams).tags, bookmarks);
   const recent = await recentIds(query, owner, MOST_DOCUMENTS);
   const byDocument = asTags(await workspace.tags.of(owner, KIND.document, recent));
+  const path = `/${locale}/app/documents`;
   const documents = await documentsByIds(owner, wearingAll(recent, byDocument, selected));
-  return <AllDocuments documents={documents} bookmarks={bookmarks} selected={selected} bookmarksByDocument={byDocument} path={`/${locale}/app/documents`} />;
+  return <AllDocuments documents={documents} bookmarks={bookmarks} selected={selected} bookmarksByDocument={byDocument} path={path} tabs={dividers({ bookmarks, ids: recent, tagsByDocument: byDocument, selected, path })} />;
 }
