@@ -5,8 +5,8 @@ set -euo pipefail
 : "${CI_IMAGE:?CI_IMAGE is the image under test}"
 docker run --rm --memory=512m -v "$PWD/deploy/docker/smoke:/smoke:ro" --entrypoint node "$CI_IMAGE" /smoke/photos.cjs
 docker run --rm --memory=512m -v "$PWD/deploy/docker/smoke:/smoke:ro" --entrypoint node "$CI_IMAGE" /smoke/pdf.cjs
-# The image-size budget (deploy/docker/image-size-budget-mb): the uncompressed size of the image just built. Measured 120 MB on 2026-10-28
-# (node:22-alpine, musl). A dependency that ships a native binary (OpenDAL, 59-82 MB) raises it in the same PR, with its reason, never silently.
+# The image-size budget (deploy/docker/image-size-budget-mb): the uncompressed size of the image just built. Measured 310 MB in CI on 2026-10-29
+# (node:22-alpine, musl; the first guess of 120 MB was a local figure). A dependency that ships a native binary (OpenDAL, 59-82 MB) raises it in the same PR, with its reason, never silently.
 budget_mb=$(tr -d '[:space:]' < deploy/docker/image-size-budget-mb)
 size_mb=$(( $(docker image inspect "$CI_IMAGE" --format '{{.Size}}') / 1048576 ))
 echo "image size: ${size_mb} MB (budget ${budget_mb} MB)"
