@@ -30,9 +30,9 @@ const navLinks = (html: string) => {
 };
 
 describe("the settings on SettingsLayout (the UX review's Y2)", () => {
-  it("navigates the six sections as routes, the current one from the route", () => {
+  it("navigates the seven sections as routes, the current one from the route", () => {
     const links = navLinks(render());
-    expect(links.map((l) => l.href)).toEqual(["/fr/app/settings/profil", "/fr/app/settings/apparence", "/fr/app/settings/securite", "/fr/app/settings/facturation", "/fr/app/settings/stockage", "/fr/app/settings/donnees"]);
+    expect(links.map((l) => l.href)).toEqual(["/fr/app/settings/profil", "/fr/app/settings/apparence", "/fr/app/settings/securite", "/fr/app/settings/facturation", "/fr/app/settings/stockage", "/fr/app/settings/signets", "/fr/app/settings/donnees"]);
     expect(links.filter((l) => l.current).map((l) => l.href)).toEqual(["/fr/app/settings/profil"]);
     expect(navLinks(render({ section: "facturation" })).filter((l) => l.current).map((l) => l.href)).toEqual(["/fr/app/settings/facturation"]);
   });
