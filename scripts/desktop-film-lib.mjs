@@ -2,6 +2,7 @@
 // so no address is ever typed in front of the camera), in short takes that skip the engine's wait, joined into one clip.
 // This file holds the parts that can be checked without a Mac: the crop, the recorder's command, the takes, the join.
 import { spawn } from "node:child_process";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 // @fixed: a window smaller than this is a window that is not shown yet (a splash), not a screen worth filming
@@ -30,11 +31,21 @@ export async function windowRect(driver) {
   return cropRect({ x, y, width, height });
 }
 
-/** `screencapture` as a video of the rectangle only (-R), at most `maxSeconds`, stopped earlier by SIGINT. */
-export const screencaptureArgs = (rect, file, maxSeconds = TAKE_MAX_S) => ["-v", "-V", String(maxSeconds), `-R${rect.x},${rect.y},${rect.width},${rect.height}`, file];
+/**
+ * `screencapture` as a video of the screen, at most `maxSeconds`, stopped earlier by SIGINT. `-R` is not accepted with `-v` (the first
+ * run on the runner filmed nothing, run 41071237202): the window is cut out of the screen at the join, from the take's `.crop` file.
+ */
+export const screencaptureArgs = (file, maxSeconds = TAKE_MAX_S) => ["-v", "-V", String(maxSeconds), file];
+
+/** The crop of a take, as the text of its `.crop` file: `x,y,width,height`. */
+export const cropText = (rect) => `${rect.x},${rect.y},${rect.width},${rect.height}`;
+const cropFilter = (text) => {
+  const [x, y, w, h] = text.trim().split(",").map(Number);
+  return `crop=${w}:${h}:${x}:${y},`;
+};
 
 /** The takes of a film: `start(rect)` opens a take on the window, `stop()` ends it; no directory, no film. */
-export function createFilm({ dir, spawnImpl = spawn, sleep = (ms) => new Promise((r) => setTimeout(r, ms)) } = {}) {
+export function createFilm({ dir, spawnImpl = spawn, save = writeFileSync, sleep = (ms) => new Promise((r) => setTimeout(r, ms)) } = {}) {
   const files = [];
   let take;
   return {
@@ -42,7 +53,9 @@ export function createFilm({ dir, spawnImpl = spawn, sleep = (ms) => new Promise
     async start(rect) {
       if (!dir) return;
       const file = join(dir, `mac-take-${files.length + 1}.mov`);
-      const child = spawnImpl("screencapture", screencaptureArgs(cropRect(rect), file), { stdio: "ignore" });
+      const crop = cropRect(rect);
+      save(file.replace(/\.mov$/, ".crop"), cropText(crop));
+      const child = spawnImpl("screencapture", screencaptureArgs(file), { stdio: "ignore" });
       const exited = new Promise((resolve) => child.once("exit", resolve));
       take = { child, exited };
       files.push(file);
@@ -59,10 +72,10 @@ export function createFilm({ dir, spawnImpl = spawn, sleep = (ms) => new Promise
 }
 
 /** `ffmpeg` arguments that join the takes into one mp4 of FILM_SIZE (letterboxed, never stretched). */
-export function joinArgs(files, out) {
+export function joinArgs(files, out, crops = []) {
   const { width, height } = FILM_SIZE;
   const fit = `scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30`;
-  const prepared = files.map((_, i) => `[${i}:v]${fit}[v${i}]`).join(";");
+  const prepared = files.map((_, i) => `[${i}:v]${crops[i] ? cropFilter(crops[i]) : ""}${fit}[v${i}]`).join(";");
   const chain = files.map((_, i) => `[v${i}]`).join("");
   return [
     "-y",
