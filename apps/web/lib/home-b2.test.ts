@@ -10,7 +10,7 @@ import type { ActivityDay } from "./home-figures";
 const MESSAGES = { en: en.console, fr: fr.console } as const;
 const translator = (locale: "en" | "fr") => (key: string, vars: Record<string, string | number> = {}) => {
   const found = key.split(".").reduce<unknown>((o, k) => (o as Record<string, unknown> | undefined)?.[k], MESSAGES[locale]);
-  if (typeof found !== "string") throw new Error(`missing message ${key}`);
+  if (typeof found !== "string") {throw new Error(`missing message ${key}`);}
   return Object.entries(vars).reduce((s, [k, v]) => s.replace(`{${k}}`, String(v)), found);
 };
 const sentence = (todo: Parameters<typeof leadParts>[0], locale: "en" | "fr") => leadParts(todo, locale, translator(locale)).map((p) => p.text).join("");

@@ -28,20 +28,20 @@ interface Environment {
 /** Reads the environment a spec deploys: its App Platform region, its database (the same region) and its documents store. */
 function environmentOf(name: string, spec: string): Environment {
   const region = /^region:\s*(\S+)/m.exec(spec)?.[1];
-  if (!region) throw new Error(`${name}: the spec names no region`);
+  if (!region) {throw new Error(`${name}: the spec names no region`);}
   const env = (key: string) => new RegExp(`key: ${key},[^}]*value: "([^"]*)"`).exec(spec)?.[1];
   const provider = env("MEDIA_DOCUMENTS_PROVIDER") ?? STORAGE_KIND.none;
   let documents: string | null = null;
-  if (provider === STORAGE_KIND.bunny) documents = (env("MEDIA_STORAGE_ENDPOINT") ?? "").split(".")[0] || null;
-  if (provider === STORAGE_KIND.s3) documents = env("MEDIA_S3_REGION") ?? null;
+  if (provider === STORAGE_KIND.bunny) {documents = (env("MEDIA_STORAGE_ENDPOINT") ?? "").split(".")[0] || null;}
+  if (provider === STORAGE_KIND.s3) {documents = env("MEDIA_S3_REGION") ?? null;}
   return { name, database: region, documents };
 }
 
 /** Whether a claim holds in an environment: its region must map to Canada. An unmapped region never holds. */
 function claimHolds(store: Store, env: Environment): boolean {
-  if (store === "configured") return true; // generated from the configured region by code (where.test.ts)
+  if (store === "configured") {return true;} // generated from the configured region by code (where.test.ts)
   const region = store === "database" ? env.database : env.documents;
-  if (region === null) return true; // nothing is kept, so no store to name
+  if (region === null) {return true;} // nothing is kept, so no store to name
   return countryOf(region) === "CA";
 }
 
@@ -64,9 +64,9 @@ const NOT_RESIDENCY: Record<string, string> = {
 };
 
 function leaves(node: unknown, path: string[] = []): Array<[string, string]> {
-  if (typeof node === "string") return [[path.join("."), node]];
-  if (Array.isArray(node)) return node.flatMap((v, i) => leaves(v, [...path, String(i)]));
-  if (node && typeof node === "object") return Object.entries(node).flatMap(([k, v]) => leaves(v, [...path, k]));
+  if (typeof node === "string") {return [[path.join("."), node]];}
+  if (Array.isArray(node)) {return node.flatMap((v, i) => leaves(v, [...path, String(i)]));}
+  if (node && typeof node === "object") {return Object.entries(node).flatMap(([k, v]) => leaves(v, [...path, k]));}
   return [];
 }
 
@@ -85,7 +85,7 @@ describe("public claims about Canada follow the configured regions", () => {
   it("maps every configured region to a country (an unknown region is refused, never guessed)", () => {
     for (const env of ENVIRONMENTS) {
       expect(countryOf(env.database), `${env.name} database region`).toBeDefined();
-      if (env.documents) expect(countryOf(env.documents), `${env.name} documents region`).toBeDefined();
+      if (env.documents) {expect(countryOf(env.documents), `${env.name} documents region`).toBeDefined();}
     }
   });
 
@@ -96,7 +96,7 @@ describe("public claims about Canada follow the configured regions", () => {
 
   it("holds every database claim in every environment: the database region is Canadian", () => {
     for (const path of Object.keys(CLAIMS).filter((p) => CLAIMS[p] === "database")) {
-      for (const env of ENVIRONMENTS) expect(claimHolds("database", env), `${path} in ${env.name}`).toBe(true);
+      for (const env of ENVIRONMENTS) {expect(claimHolds("database", env), `${path} in ${env.name}`).toBe(true);}
     }
   });
 

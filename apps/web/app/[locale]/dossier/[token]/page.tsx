@@ -19,7 +19,7 @@ export default async function ApplicantFilePage({ params }: Readonly<{ params: P
   const locale = asLocale(raw);
   const now = new Date();
   const loaded = await loadApplicantPage(token, now, { fileByToken, applicantFileState, activeConsents });
-  if (!loaded) notFound();
+  if (!loaded) {notFound();}
   const t = getDictionary(locale);
   const expires = new Date(loaded.state.expiresAt).toLocaleDateString(INTL[locale], { dateStyle: "long", timeZone: DISPLAY_TIME_ZONE });
   return (

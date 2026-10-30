@@ -50,16 +50,16 @@ export function ApplicantFile({ token, initial, consents: initialConsents, notic
   const fail = (error: unknown) => setProblem(say(errors, errorKey(error), words.unknown));
   const post = async (body: Record<string, unknown>) => krizakaFetch("/api/applicant", { method: "POST", json: { token, ...body } }) as Promise<{ purposes?: { purpose: Consents[number]; granted: boolean }[]; file?: ApplicantFileState; submitted?: boolean; erased?: boolean }>;
   const adopt = (view: Awaited<ReturnType<typeof post>>) => {
-    if (view.purposes) setConsents(view.purposes.filter((p) => p.granted).map((p) => p.purpose));
-    if (view.file) setFile(view.file);
+    if (view.purposes) {setConsents(view.purposes.filter((p) => p.granted).map((p) => p.purpose));}
+    if (view.file) {setFile(view.file);}
   };
   const act = async (body: Record<string, unknown>, then?: (view: Awaited<ReturnType<typeof post>>) => void) => {
     setProblem(null);
     setBusy(true);
     try {
       const view = await post(body);
-      if (then) then(view);
-      else adopt(view);
+      if (then) {then(view);}
+      else {adopt(view);}
     } catch (error) {
       fail(error);
     } finally {

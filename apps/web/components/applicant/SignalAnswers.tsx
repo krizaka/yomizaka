@@ -27,7 +27,7 @@ type Doc = ApplicantFileState["documents"][number];
  */
 export function SignalAnswers({ documents, words, busy, canAnswer, onAnswer }: Readonly<{ documents: readonly Doc[]; words: SignalAnswerWords; busy: boolean; canAnswer: boolean; onAnswer: (documentId: string, signalId: string, text: string) => void }>) {
   const withSignals = documents.filter((d) => d.signals.length > 0);
-  if (withSignals.length === 0) return null;
+  if (withSignals.length === 0) {return null;}
   const a = words.answer;
   return (
     <section className="flex flex-col gap-3" aria-labelledby="traces-title" data-testid="applicant-traces">

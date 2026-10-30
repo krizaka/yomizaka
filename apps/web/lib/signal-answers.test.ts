@@ -33,7 +33,7 @@ describe("the applicant's answer to a trace (ADR-0014, yomizaka#626)", () => {
   for (const [locale, messages] of [["en", en], ["fr", fr]] as const) {
     it(`uses none of the refused words in the new texts (verdict words), in ${locale}`, () => {
       const texts = [...Object.values(messages.applicantFile.answer), messages.applicant.notice.examined, messages.applicant.notice.examinedTitle, messages.console.analysis.traces.answerLabel, messages.applicantFile.error.ANSWER_CLOSED, messages.applicantFile.error.ANSWER_TOO_LONG, messages.applicantFile.error.SIGNAL_NOT_FOUND];
-      for (const t of texts) expect(VERDICT_WORDS.test(t), t).toBe(false);
+      for (const t of texts) {expect(VERDICT_WORDS.test(t), t).toBe(false);}
     });
   }
 });
