@@ -80,12 +80,12 @@ export function stripOf(series: Record<StripId, readonly ActivityDay[] | null>):
 /** The week chart: the last seven days of the period (all of it when the period is 7 days). */
 export const weekOf = (days: readonly ActivityDay[]): ActivityDay[] => days.slice(-7);
 
-export type CreditsFigure = { kind: "included" } | { kind: "pro"; used: number; cap: number; renewsAt: string | null } | { kind: "credits"; left: number };
+export type CreditsFigure = { kind: "included" } | { kind: "pro"; used: number; cap: number; renewsAt: string | null; cancelled: boolean } | { kind: "credits"; left: number };
 
 /** What the account has, from the billing state: operator-made accounts have their audits included; Pro counts against the fair-use cap; the others have credits (and the free audit while it is unspent). */
 export function creditsFigure(e: Entitlement, usedThisMonth: number, perMonthCap: number): CreditsFigure {
   if (!e.selfServe) return { kind: "included" };
-  if (e.pro) return { kind: "pro", used: usedThisMonth, cap: perMonthCap, renewsAt: e.proUntil };
+  if (e.pro) return { kind: "pro", used: usedThisMonth, cap: perMonthCap, renewsAt: e.proUntil, cancelled: e.cancelsAtPeriodEnd };
   return { kind: "credits", left: e.credits + (e.freeAuditUsed ? 0 : 1) };
 }
 

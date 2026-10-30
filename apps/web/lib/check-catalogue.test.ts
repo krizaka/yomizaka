@@ -62,7 +62,7 @@ describe("the action names the kind in the address and leads to the drop", () =>
 
 describe("the plan strip: its numbers are the billing state's", () => {
   it("Pro: audits used this month against the fair-use cap, in the meter", () => {
-    expect(planStrip({ kind: "pro", used: 18, cap: 100, renewsAt: "2026-11-20T00:00:00.000Z" })).toEqual({ plan: "pro", figures: [], meter: { value: 18, max: 100 } });
+    expect(planStrip({ kind: "pro", used: 18, cap: 100, renewsAt: "2026-11-20T00:00:00.000Z", cancelled: false })).toEqual({ plan: "pro", figures: [], meter: { value: 18, max: 100 } });
   });
   it("credits: the audits left, no meter (there is no ceiling to measure against)", () => {
     expect(planStrip({ kind: "credits", left: 3 })).toEqual({ plan: "credits", figures: [{ id: "left", value: 3 }], meter: null });

@@ -370,6 +370,7 @@
         "leftMany": "{count} audits left",
         "pro": "{used} of {cap} audits this month",
         "renews": "Renews on {date}",
+        "ends": "Ends on {date}",
         "manage": "Credits and usage"
       }
     },
