@@ -15,6 +15,7 @@ import {
   framesInList,
   joinArgs,
   MIN_FRAMES,
+  MIN_SCREENS,
 } from "./desktop-film-lib.mjs";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
@@ -169,7 +170,8 @@ describe("the joined film", () => {
   });
   it("is joined by a script that refuses a film with too few frames and never screen-records", () => {
     const join = read("./desktop-film-join.mjs");
-    assert.match(join, /assertFrames\(framesInList/);
+    assert.match(join, /assertFrames\(framesInList\([^)]*\)[^)]*\), MIN_SCREENS\)/); // the list is collapsed: it counts screens, not raw frames
+    assert.ok(MIN_SCREENS < MIN_FRAMES);
     for (const file of [
       "./desktop-film-lib.mjs",
       "./desktop-film-join.mjs",

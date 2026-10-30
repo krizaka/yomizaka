@@ -11,6 +11,8 @@ import { join } from "node:path";
 export const FPS = 10;
 // @fixed: three seconds of film; fewer frames than this is a film that failed, never a clip to publish
 export const MIN_FRAMES = 30;
+// @fixed: the frame list holds one entry per distinct screen (identical frames are collapsed into one hold); fewer than three screens is not a journey
+export const MIN_SCREENS = 3;
 // @fixed: the joined film is 1280 x 800, the app's window ratio, whatever the window is
 export const FILM_SIZE = { width: 1280, height: 800 };
 export const FRAMES_DIR = "frames";
