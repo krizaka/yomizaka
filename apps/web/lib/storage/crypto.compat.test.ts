@@ -37,7 +37,7 @@ describe("what was kept before the package stays readable", () => {
     await encryptedStore(inner, KEY).put(OBJECT_KEY, Buffer.from("x"), { contentType: "text/plain" });
     const held = Buffer.from((await inner.get(OBJECT_KEY))!.bytes);
     expect(held[0]).toBe(1);
-    expect(held.length).toBe(1 + 12 + 16 + 2 + "text/plain".length + 1);
+    expect(held).toHaveLength(1 + 12 + 16 + 2 + "text/plain".length + 1);
   });
 
   it("opens a credential sealed by the former vault, and seals in the same `v1.` form", () => {

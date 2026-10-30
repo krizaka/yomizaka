@@ -1,7 +1,7 @@
 import { createProviderService, memoryProviderStore } from "@krizaka/storage/provider-admin";
 import { describe, expect, it } from "vitest";
 
-import { addProvider, adminKinds, changeKeyInput, createProviderInput, guarded, overview, storageRefusal } from "./admin-api";
+import { addProvider, adminKinds, assertDefaultResidency, changeKeyInput, createProviderInput, guarded, overview, storageRefusal } from "./admin-api";
 
 const ADMIN = { id: "a1", label: "admin@x.test" };
 const SECRET = "super-secret-zone-password";
@@ -100,5 +100,22 @@ describe("a refusal of something else is not hidden", () => {
   it("is passed on as it is", async () => {
     expect(storageRefusal(new Error("boom"))).toBeNull();
     await expect(guarded(async () => Promise.reject(new Error("boom")))).rejects.toThrow("boom");
+  });
+});
+
+describe("a production default for the documents must be in Canada (yomizaka#524, Loi 25 art. 17)", () => {
+  const tested = (key: string, ok = true) => ({ id: "p1", dataKind: "documents", lastTest: { ok, residency: { key } } }) as never;
+
+  it("lets a tested Canadian provider become the default in production", () => {
+    for (const key of ["canada-on", "canada-qc", "canada-ab", "canada"]) expect(() => assertDefaultResidency("prod", tested(key), "documents")).not.toThrow();
+  });
+  it("refuses an untested, failed, foreign or unknown one in production, in words", () => {
+    for (const bad of [{ id: "p1", lastTest: null }, tested("elsewhere"), tested("unknown"), tested("user-cloud"), tested("canada-on", false)]) {
+      expect(() => assertDefaultResidency("prod", bad as never, "documents")).toThrow(expect.objectContaining({ status: 409, body: expect.objectContaining({ code: "STORAGE_NOT_IN_CANADA" }) }));
+    }
+  });
+  it("leaves development free (fictional data only) and the avatars alone", () => {
+    expect(() => assertDefaultResidency("dev", tested("elsewhere"), "documents")).not.toThrow();
+    expect(() => assertDefaultResidency("prod", tested("elsewhere"), "avatars")).not.toThrow();
   });
 });

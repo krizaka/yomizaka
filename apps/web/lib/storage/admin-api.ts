@@ -77,5 +77,16 @@ export function managedProviders<T>(get: () => T | null): T {
   return p;
 }
 
+/**
+ * In production, the documents are kept in Canada (Loi 25 art. 17, ADR-005): a provider becomes their default only when its last connection
+ * test went through AND found a Canadian region. Development holds fictional data only and stays free; the avatars are not documents.
+ */
+export function assertDefaultResidency(environment: "dev" | "prod", provider: Pick<PublicProvider, "lastTest"> | undefined, dataKind: string): void {
+  if (environment !== "prod" || dataKind !== DATA_KIND.documents) return;
+  const found = provider?.lastTest;
+  if (found?.ok && found.residency.key.startsWith("canada")) return;
+  throw refuse(409, "STORAGE_NOT_IN_CANADA", "In production the documents are kept in Canada: test this provider and check that its region is Canadian first");
+}
+
 /** The two ids of a move: the retiring provider the documents leave, the default they go to. */
 export const startMoveInput = z.object({ from: z.string().uuid(), to: z.string().uuid() });

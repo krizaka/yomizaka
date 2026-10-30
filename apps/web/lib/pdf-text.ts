@@ -40,4 +40,4 @@ export async function readText(mimeType: AcceptedType, bytes: Uint8Array): Promi
 }
 
 /** A PDF starts with `%PDF-` — what is checked, not what the browser declared. */
-export const looksLikePdf = (bytes: Uint8Array) => bytes.length > 5 && String.fromCharCode(...bytes.slice(0, 5)) === "%PDF-";
+export const looksLikePdf = (bytes: Uint8Array) => bytes.length > 5 && String.fromCodePoint(...bytes.slice(0, 5)) === "%PDF-";

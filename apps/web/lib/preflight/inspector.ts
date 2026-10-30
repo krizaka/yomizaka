@@ -111,7 +111,7 @@ function isDocx(bytes: Uint8Array): boolean {
 /** `/Name` tokens of a PDF's raw bytes, with `#xx` escapes decoded (an obfuscated /J#61vaScript is still JavaScript). */
 function pdfNames(raw: string): Set<string> {
   const names = new Set<string>();
-  for (const m of raw.matchAll(/\/([A-Za-z0-9_#.+-]{1,40})/g)) names.add(m[1]!.replace(/#([0-9a-fA-F]{2})/g, (_, h: string) => String.fromCharCode(Number.parseInt(h, 16))));
+  for (const m of raw.matchAll(/\/([A-Za-z0-9_#.+-]{1,40})/g)) names.add(m[1]!.replace(/#([0-9a-fA-F]{2})/g, (_, h: string) => String.fromCodePoint(Number.parseInt(h, 16))));
   return names;
 }
 

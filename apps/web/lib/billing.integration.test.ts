@@ -73,15 +73,27 @@ describe.runIf(enabled)("billing", () => {
     const id = await account();
     await reserveAudit(query, id, NOW, caps());
     await applyPaymentEvent(transaction, { id: `evt-s1-${id}`, type: "subscription_started", accountId: id, customerId: `cus-${id}`, subscriptionId: `sub-${id}`, ...FACTS });
-    await applyPaymentEvent(transaction, { id: `evt-s2-${id}`, type: "subscription_changed", accountId: id, customerId: `cus-${id}`, subscriptionId: `sub-${id}`, status: "active", active: true, periodEnd: Math.floor(NOW.getTime() / 1000) + 86_400 * 30 });
+    await applyPaymentEvent(transaction, { id: `evt-s2-${id}`, type: "subscription_changed", accountId: id, customerId: `cus-${id}`, subscriptionId: `sub-${id}`, status: "active", active: true, cancelAtPeriodEnd: false, periodEnd: Math.floor(NOW.getTime() / 1000) + 86_400 * 30 });
     expect((await entitlementOf(query, id, NOW)).pro).toBe(true);
     expect(await reserveAudit(query, id, NOW, caps())).toBe("pro");
     const [doc] = await query<{ id: string }>("INSERT INTO documents (owner_id, title, filename, mime_type, size_bytes, sha256, content, text) VALUES ($1, 't', 'a.txt', 'text/plain', 1, $2, 'x', 'x') RETURNING id", [id, `h-${id}`]);
     await query("INSERT INTO analyses (document_id, studio, status) VALUES ($1, 'compliance-check', 'succeeded')", [doc!.id]);
     await expect(reserveAudit(query, id, NOW, caps(1))).rejects.toMatchObject({ status: 429, body: { code: "FAIR_USE" } });
-    await applyPaymentEvent(transaction, { id: `evt-s3-${id}`, type: "subscription_changed", accountId: id, customerId: `cus-${id}`, subscriptionId: `sub-${id}`, status: "canceled", active: false, periodEnd: null });
+    await applyPaymentEvent(transaction, { id: `evt-s3-${id}`, type: "subscription_changed", accountId: id, customerId: `cus-${id}`, subscriptionId: `sub-${id}`, status: "canceled", active: false, cancelAtPeriodEnd: false, periodEnd: null });
     expect((await entitlementOf(query, id, NOW)).pro).toBe(false);
     await expect(reserveAudit(query, id, NOW, caps())).rejects.toMatchObject({ status: 402 });
+  });
+  it("a subscription cancelled in the portal stays Pro until the period ends, and says so (yomizaka#139)", async () => {
+    const id = await account();
+    const change = (n: number, cancelAtPeriodEnd: boolean) =>
+      applyPaymentEvent(transaction, { id: `evt-c${n}-${id}`, type: "subscription_changed", accountId: id, customerId: `cus-${id}`, subscriptionId: `sub-${id}`, status: "active", active: true, cancelAtPeriodEnd, periodEnd: Math.floor(NOW.getTime() / 1000) + 86_400 * 10 });
+    await applyPaymentEvent(transaction, { id: `evt-c0-${id}`, type: "subscription_started", accountId: id, customerId: `cus-${id}`, subscriptionId: `sub-${id}`, ...FACTS });
+    await change(1, false);
+    expect(await entitlementOf(query, id, NOW)).toMatchObject({ pro: true, cancelsAtPeriodEnd: false });
+    await change(2, true);
+    expect(await entitlementOf(query, id, NOW)).toMatchObject({ pro: true, cancelsAtPeriodEnd: true });
+    await change(3, false);
+    expect((await entitlementOf(query, id, NOW)).cancelsAtPeriodEnd).toBe(false);
   });
   it("a run that failed gives the free audit back, once", async () => {
     const id = await account();
@@ -139,7 +151,7 @@ describe.runIf(enabled)("billing", () => {
     await applyPaymentEvent(transaction, { id: `evt-sub-${id}`, type: "subscription_started", accountId: id, customerId: `cus-sub-${id}`, subscriptionId: `sub-${id}`, ...FACTS });
     expect(await entitlementOf(query, id, NOW)).toMatchObject({ planKey: "yomizaka.firm", priceVersionId: "seed:yomizaka.firm" });
     await recordCheckout(query, id, { key: "yomizaka.agency", versionId: "7" });
-    await applyPaymentEvent(transaction, { id: `evt-chg-${id}`, type: "subscription_changed", accountId: id, customerId: `cus-sub-${id}`, subscriptionId: `sub-${id}`, status: "active", active: true, periodEnd: null });
+    await applyPaymentEvent(transaction, { id: `evt-chg-${id}`, type: "subscription_changed", accountId: id, customerId: `cus-sub-${id}`, subscriptionId: `sub-${id}`, status: "active", active: true, cancelAtPeriodEnd: false, periodEnd: null });
     expect(await entitlementOf(query, id, NOW)).toMatchObject({ planKey: "yomizaka.firm", priceVersionId: "seed:yomizaka.firm" });
   });
 });
