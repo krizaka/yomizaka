@@ -97,4 +97,13 @@ describe("the journey films the window, after the sign-in, without the engine's 
     }
     assert.equal((journey.match(/film\.stop\(\)/g) ?? []).length >= 4, true);
   });
+  it("accepts the --film flag the action passes (it was lost in a merge: run 41085183044, Unknown option '--film')", () => {
+    assert.match(read("./desktop-journey.mjs"), /film: \{\s*type: "boolean"/);
+    assert.match(read("../.github/actions/desktop-journey/action.yml"), /--film/);
+  });
+  it("the phone showcase finds « Factures 2026 » by scrollUntilVisible alone (a bare scroll first pushed it past the screen)", () => {
+    const flow = read("../apps/mobile/.maestro-showcase/android-documents.yaml");
+    assert.ok(!/^- scroll$/m.test(flow));
+    assert.match(flow, /scrollUntilVisible:\s+element: "Factures 2026"/);
+  });
 });

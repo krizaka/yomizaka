@@ -13,7 +13,7 @@ appId: com.krizaka.yomizaka
     timeout: 30000
 - startRecording: android-documents
 - waitForAnimationToEnd
-- scroll
+# Only scrollUntilVisible: a bare scroll first pushed « Factures 2026 » past the screen and the flow never found it (run 41085183044).
 - scrollUntilVisible:
     element: "Factures 2026"
 - tapOn: "Vérifications|Checks"
