@@ -35,8 +35,8 @@ function useCall<T>(run: (input: T) => Promise<unknown>) {
       try {
         await m.mutateAsync(input);
         setDone(true);
-        if (then) then();
-        else router.refresh();
+        if (then) {then();}
+        else {router.refresh();}
       } catch (error) {
         setProblem(say(`errors.${errorKey(error)}`));
       }
@@ -50,7 +50,7 @@ const emailForm = createKrizakaForm({ schema: z.object({ newEmail: z.string().tr
 const passwordForm = createKrizakaForm({ schema: z.object({ current: z.string().min(1), next: z.string().min(12).max(256) }), defaultValues: { current: "", next: "" } });
 
 /** The address (changed by a link mailed to the new one) and the password: two sections, each with its own save. */
-export function SecuritySection({ email, pendingEmail, notice }: { email: string; pendingEmail: string | null; notice: "changed" | "invalid" | null }) {
+export function SecuritySection({ email, pendingEmail, notice }: Readonly<{ email: string; pendingEmail: string | null; notice: "changed" | "invalid" | null }>) {
   const { say, locale } = useSay();
   const mail = useCall<{ newEmail: string; password: string }>((body) => krizakaFetch("/api/me/email", { method: "POST", json: body }));
   const pass = useCall<{ current: string; next: string }>((body) => krizakaFetch("/api/me/password", { method: "PUT", json: body }));

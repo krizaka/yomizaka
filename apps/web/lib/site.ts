@@ -19,6 +19,6 @@ export function contactHref(source: string): string {
 /** Where sign-in returns to: a path of this site in the page's language, never another address (no open redirect). */
 export function safeNext(next: string | undefined, locale: "en" | "fr"): string {
   const home = `/${locale}/app`;
-  if (!next || !next.startsWith(`/${locale}/`) || next.startsWith("//") || next.includes("\\") || [...next].some((c) => (c.codePointAt(0) ?? 0) < 32)) return home;
+  if (!next || !next.startsWith(`/${locale}/`) || next.startsWith("//") || next.includes("\\") || [...next].some((c) => (c.codePointAt(0) ?? 0) < 32)) {return home;}
   return next;
 }

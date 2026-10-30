@@ -1,5 +1,5 @@
 import { localDay } from "@krizaka/intl";
-import { type Analysis, AUTHENTICITY_MAX_BYTES, COMPLIANCE_MAX_CHARS, DATED_LEASE_RULESET, DOCX_MIME, type ExtractionStatus, fromRunStatus, isExtracting, isTerminal, ODT_MIME, type OrazakaRun, reportOf, type StartAnalysis,type StorageKind } from "@yomizaka/core";
+import { type Analysis, AUTHENTICITY_MAX_BYTES, COMPLIANCE_MAX_CHARS, DATED_LEASE_RULESET, DOCX_MIME, type ExtractionStatus, fromRunStatus, isExtracting, isTerminal, landlordSignals, ODT_MIME, type OrazakaRun, reportOf, type StartAnalysis,type StorageKind } from "@yomizaka/core";
 
 import { holderOf as documentHolder } from "@/app/active-store";
 
@@ -68,7 +68,7 @@ export function keptInputs(request: StartAnalysis, inputs: Record<string, string
 export function searchText(report: ReturnType<typeof reportOf>): string {
   if (!report) return "";
   if ("findings" in report) return report.findings.flatMap((f) => [f.ruleId, f.title ?? "", f.explanation, f.evidenceSpan?.quote ?? "", f.citation ?? ""]).join("\n");
-  return report.signals.flatMap((s) => [s.signalId, s.observation, s.mayIndicate ?? "", s.where ?? ""]).join("\n");
+  return landlordSignals(report.signals).flatMap((s) => [s.signalId, s.observation, s.mayIndicate ?? "", s.where ?? ""]).join("\n");
 }
 
 export async function startAnalysis(ownerId: string, documentId: string, request: StartAnalysis, flowVersionId: string | null = null, billedVia: string | null = null, store?: DocumentStore): Promise<Analysis> {

@@ -1423,4 +1423,29 @@ CREATE UNIQUE INDEX storage_moves_one_open ON storage_moves ((true)) WHERE statu
 ALTER TABLE accounts ADD COLUMN cancel_at_period_end boolean NOT NULL DEFAULT false;
 `,
   },
+  {
+    version: "0063_signal_answers",
+    sql: `
+-- The applicant's answer to a trace found in their document (ADR-0014, yomizaka#626): one short explanation per document and signal id.
+-- It follows the document: deleted with it (cascade), so an erased application erases its explanations. Never written to a log.
+CREATE TABLE signal_answers (
+  document_id uuid NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+  signal_id   text NOT NULL CHECK (char_length(signal_id) BETWEEN 1 AND 64),
+  explanation text NOT NULL CHECK (char_length(explanation) BETWEEN 1 AND 600),
+  answered_at timestamptz NOT NULL,
+  PRIMARY KEY (document_id, signal_id)
+);
+`,
+  },
+  {
+    version: "0064_storage_cloud",
+    // yomizaka#530: a person may connect a cloud (Dropbox, Google Drive, OneDrive) as the home of their kept documents. The connection is a user-scope provider of the registry; the settings row names the connector.
+    sql: `
+ALTER TABLE storage_settings DROP CONSTRAINT storage_settings_mode_check;
+ALTER TABLE storage_settings ADD CONSTRAINT storage_settings_mode_check CHECK (mode IN ('none', 'krizaka', 's3', 'cloud'));
+ALTER TABLE storage_settings ADD COLUMN cloud_connector text;
+ALTER TABLE documents DROP CONSTRAINT documents_storage_check;
+ALTER TABLE documents ADD CONSTRAINT documents_storage_check CHECK (storage IN ('none', 'database', 'bunny', 's3', 'cloud', 'device'));
+`,
+  },
 ];

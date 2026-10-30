@@ -9,9 +9,21 @@ on:
       - "apps/desktop/**"
       - "packages/client/**"
       - "packages/core/**"
+      - "scripts/desktop-journey*"
+      - ".github/actions/desktop-journey/**"
       - ".github/workflows/desktop.yml"
+  # The Mac journey reads the `dev` environment, which only protected branches may use (as the dev smoke): main and by hand.
   push:
+    branches: [main]
+    paths:
+      - "apps/desktop/**"
+      - "packages/client/**"
+      - "packages/core/**"
+      - "scripts/desktop-journey*"
+      - ".github/actions/desktop-journey/**"
+      - ".github/workflows/desktop.yml"
     tags: ["desktop-v*"]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -26,18 +38,43 @@ jobs:
     if: github.event_name == 'pull_request'
     permissions:
       contents: read
-    uses: krizaka/.github/.github/workflows/tauri-macos.yml@3f78a2d25b154a21cabbc5d57b8278f6b1ddf0f1 # main
+    uses: krizaka/.github/.github/workflows/tauri-macos.yml@eabaefb885a73d7f670b5537cf8b56d8247978e3 # main
     with:
       working-directory: apps/desktop
       product-name: Yomizaka
       sign: false
 
+  # Main and by hand: the Mac journey (yomizaka#636): the app with its test driver, the dev persona, a folder pre-granted, one real
+  # lease checked, a relaunch. Real engine and the deployed dev (as the dev smoke): the secrets of the `dev` environment.
+  desktop-journey:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    name: Mac journey
+    runs-on: macos-latest
+    timeout-minutes: 40
+    environment: dev
+    permissions:
+      contents: read
+    env:
+      SMOKE_EMAIL: ${{ secrets.SMOKE_EMAIL }}
+      SMOKE_PASSWORD: ${{ secrets.SMOKE_PASSWORD }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/desktop-journey
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: desktop-journey
+          path: desktop-journey
+          retention-days: 7
+
   # Tag: signed and notarised in the `release` environment, the secrets passed by name.
   desktop-release:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     permissions:
       contents: write
-    uses: krizaka/.github/.github/workflows/tauri-macos.yml@3f78a2d25b154a21cabbc5d57b8278f6b1ddf0f1 # main
+    uses: krizaka/.github/.github/workflows/tauri-macos.yml@eabaefb885a73d7f670b5537cf8b56d8247978e3 # main
     with:
       working-directory: apps/desktop
       product-name: Yomizaka

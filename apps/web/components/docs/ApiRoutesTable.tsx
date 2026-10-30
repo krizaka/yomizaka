@@ -50,12 +50,13 @@ function AnswersCell({ op, shared }: Readonly<{ op: ApiOperation; shared: readon
   );
 }
 
+const routeColumns = (labels: ApiRoutesLabels, shared: readonly string[]): DataTableColumn<ApiOperation>[] => [
+  { id: "route", header: labels.route, type: "title", card: "title", value: (op) => `${op.method} ${op.path}`, cell: (op) => <RouteCell op={op} parametersLabel={labels.parameters} /> },
+  { id: "scope", header: labels.scope, priority: 2, minWidth: 150, value: (op) => op.scope ?? labels.noScope, cell: (op) => <code>{op.scope ?? labels.noScope}</code> },
+  { id: "answers", header: labels.answers, priority: 2, minWidth: 260, value: (op) => op.answers.map((a) => a.status).join(" "), cell: (op) => <AnswersCell op={op} shared={shared} /> },
+];
+
 /** The API's routes as one table (yomizaka#457: one 5 100 px page of repeated sections); an answer several routes share is said once, by the page, under the table. */
 export function ApiRoutesTable({ operations, shared, labels }: Readonly<{ operations: readonly ApiOperation[]; shared: readonly string[]; labels: ApiRoutesLabels }>) {
-  const columns: DataTableColumn<ApiOperation>[] = [
-    { id: "route", header: labels.route, type: "title", card: "title", value: (op) => `${op.method} ${op.path}`, cell: (op) => <RouteCell op={op} parametersLabel={labels.parameters} /> },
-    { id: "scope", header: labels.scope, priority: 2, minWidth: 150, value: (op) => op.scope ?? labels.noScope, cell: (op) => <code>{op.scope ?? labels.noScope}</code> },
-    { id: "answers", header: labels.answers, priority: 2, minWidth: 260, value: (op) => op.answers.map((a) => a.status).join(" "), cell: (op) => <AnswersCell op={op} shared={shared} /> },
-  ];
-  return <DataTable caption={labels.caption} rows={[...operations]} columns={columns} getRowId={(op) => op.id} rowLabel={(op) => `${op.method} ${op.path}`} />;
+  return <DataTable caption={labels.caption} rows={[...operations]} columns={routeColumns(labels, shared)} getRowId={(op) => op.id} rowLabel={(op) => `${op.method} ${op.path}`} />;
 }

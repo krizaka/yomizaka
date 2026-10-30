@@ -4,9 +4,10 @@ import path from "node:path";
 import { PDFDict, PDFDocument, PDFName, PDFString } from "pdf-lib";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { issueOwnerReportPdf, ownerAttestationOfPdf, ownerPayloadOf, ownerReportPayload, verifyOwnerReportPdf } from "./owner-report-pdf";
+import { issueOwnerReportPdf, ownerAttestationOfPdf, ownerPayloadOf, ownerReportBlocks, ownerReportPayload, verifyOwnerReportPdf } from "./owner-report-pdf";
 import { ATTESTATION_KEY } from "./report-pdf";
 import { signingKey } from "./report-signer";
+import { VERDICT_WORDS } from "./signal-cards";
 
 const state = vi.hoisted(() => ({ open: null as unknown, calls: [] as string[] }));
 vi.mock("./owner-report-shares", () => ({
@@ -62,6 +63,23 @@ describe("the owner report PDF (yomizaka#481)", () => {
     expect(text).not.toMatch(/certificat|authentique|certificate|authentic\b/i);
   });
 
+  it.each(["en", "fr"] as const)("carries the traces as cards — family, page, later save, ordinary explanations, what to ask for — and no verdict word, in %s", async (lang) => {
+    const withTraces = {
+      ...report,
+      documents: [{ ...report.documents[0], signals: [{ id: "PDF-REV-002", level: "incohérent", observation: "Synthetic observation.", family: "history", evidence: { page: 2, revision: 2, field: "net" }, box: [1, 2, 3, 4] }, { id: "FILE-001", level: "observé", observation: "Synthetic cross observation." }] }],
+    };
+    const payload = ownerPayloadOf(withTraces as never, lang);
+    expect(payload.documents[0]?.signals[0]?.evidence).toEqual({ page: 2, revision: 2, field: "net" });
+    const text = ownerReportBlocks(payload).map((x) => x.text).join("\n");
+    const w = lang === "fr" ? { page: "Page 2", ask: "Quoi demander", ordinary: "Explications ordinaires", family: "Historique du fichier" } : { page: "Page 2", ask: "What to ask for", ordinary: "Ordinary explanations", family: "File history" };
+    for (const part of Object.values(w)) {expect(text).toContain(part);}
+    expect(text.match(VERDICT_WORDS)).toBeNull();
+    const pdf = await textOf((await issueOwnerReportPdf(payload, signingKey())).bytes);
+    expect(pdf).toContain(w.page);
+    expect(pdf.match(VERDICT_WORDS)).toBeNull();
+    expect(JSON.stringify(payload)).not.toContain("\"box\"");
+  });
+
   it("is deterministic", async () => {
     const payload = ownerPayloadOf(report as never, "fr");
     expect((await issueOwnerReportPdf(payload, signingKey())).fileSha256).toBe((await issueOwnerReportPdf(payload, signingKey())).fileSha256);
@@ -71,7 +89,7 @@ describe("the owner report PDF (yomizaka#481)", () => {
     const payload = ownerPayloadOf(report as never, "fr");
     const { bytes } = await issueOwnerReportPdf(payload, signingKey());
     const everything = `${await textOf(bytes)} ${JSON.stringify(await ownerAttestationOfPdf(bytes))}`;
-    for (const pii of ["Camille", "exemple.test", "talon-camille", "gagne", "dépôt de sécurité", "4 000"]) expect(everything).not.toContain(pii);
+    for (const pii of ["Camille", "exemple.test", "talon-camille", "gagne", "dépôt de sécurité", "4 000"]) {expect(everything).not.toContain(pii);}
     expect(ownerReportPayload.safeParse({ ...payload, candidateName: "Camille" }).success).toBe(false);
   });
 

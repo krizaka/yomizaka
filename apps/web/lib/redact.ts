@@ -26,7 +26,8 @@ export function redactSecrets(text: string): string {
 export function describeError(error: unknown, depth = 0): string {
   if (!(error instanceof Error)) return redactSecrets(typeof error === "string" ? error : "unknown error");
   const code = (error as { code?: unknown }).code;
-  const head = `${error.name}${typeof code === "string" ? ` [${code}]` : ""}: ${redactSecrets(error.message)}`;
+  const codeLabel = typeof code === "string" ? ` [${code}]` : "";
+  const head = `${error.name}${codeLabel}: ${redactSecrets(error.message)}`;
   return depth < 2 && error.cause ? `${head} (cause: ${describeError(error.cause, depth + 1)})` : head;
 }
 

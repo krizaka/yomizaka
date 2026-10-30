@@ -10,16 +10,22 @@ import { Dropzone, formatBytes, UploadList, useUploadQueue } from "@krizaka/ui/f
 import { MAX_FILE_BYTES } from "@yomizaka/core";
 import { useState } from "react";
 
+import { formatDate } from "@/components/console/format";
 import { type ApplicantFileState, applicantPageOf } from "@/lib/applicant-page";
 import { errorKey } from "@/lib/client";
 import type { Messages } from "@/lib/i18n";
+import { sayFrom } from "@/lib/signal-cards";
 
+import { SignalAnswers } from "./SignalAnswers";
 import { sendApplicantDocument } from "./upload";
 
 /** The words the page reads: the slices of the dictionary it needs, passed whole by the server page. */
 export interface ApplicantFileWords {
   applicant: Messages["applicant"];
   file: Messages["applicantFile"];
+  /** The traces' words and the levels' (`console.analysis`), for the section where the applicant answers. */
+  traces: Messages["console"]["analysis"]["traces"];
+  levels: Messages["console"]["analysis"]["levels"];
   unknown: string;
 }
 
@@ -44,16 +50,16 @@ export function ApplicantFile({ token, initial, consents: initialConsents, notic
   const fail = (error: unknown) => setProblem(say(errors, errorKey(error), words.unknown));
   const post = async (body: Record<string, unknown>) => krizakaFetch("/api/applicant", { method: "POST", json: { token, ...body } }) as Promise<{ purposes?: { purpose: Consents[number]; granted: boolean }[]; file?: ApplicantFileState; submitted?: boolean; erased?: boolean }>;
   const adopt = (view: Awaited<ReturnType<typeof post>>) => {
-    if (view.purposes) setConsents(view.purposes.filter((p) => p.granted).map((p) => p.purpose));
-    if (view.file) setFile(view.file);
+    if (view.purposes) {setConsents(view.purposes.filter((p) => p.granted).map((p) => p.purpose));}
+    if (view.file) {setFile(view.file);}
   };
   const act = async (body: Record<string, unknown>, then?: (view: Awaited<ReturnType<typeof post>>) => void) => {
     setProblem(null);
     setBusy(true);
     try {
       const view = await post(body);
-      if (then) then(view);
-      else adopt(view);
+      if (then) {then(view);}
+      else {adopt(view);}
     } catch (error) {
       fail(error);
     } finally {
@@ -97,6 +103,7 @@ export function ApplicantFile({ token, initial, consents: initialConsents, notic
               [notice.whyTitle, notice.why],
               [notice.whoTitle, notice.who],
               [notice.howLongTitle, words.file.page.howLong],
+              [notice.examinedTitle, notice.examined],
               [notice.askTitle, notice.ask],
             ] as const
           ).map(([title, text]) => (
@@ -138,6 +145,14 @@ export function ApplicantFile({ token, initial, consents: initialConsents, notic
           <TypeRow key={row.typeId} token={token} row={row} words={words} locale={locale} canUpload={page.canUpload} onSent={refresh} />
         ))}
       </section>
+
+      <SignalAnswers
+        documents={file.documents}
+        busy={busy}
+        canAnswer={page.canAnswer}
+        onAnswer={(documentId, signalId, text) => act({ action: "answer", documentId, signalId, text }, () => refresh())}
+        words={{ answer: words.file.answer, say: sayFrom(words.traces), levels: words.levels, day: (iso) => formatDate(iso, locale) }}
+      />
 
       {page.open ? (
         <div className="flex flex-col gap-2">

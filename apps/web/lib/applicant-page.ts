@@ -1,5 +1,6 @@
 import { CONSENT_PURPOSE, type ConsentPurpose, LINK, type LinkState } from "./applicant-file-rules";
 import { HttpError } from "./http";
+import type { ApplicantSignal } from "./signal-answers";
 
 /*
  * What the applicant's page shows (yomizaka#341), pure: the types are the request's and no others, the drop opens only once
@@ -13,7 +14,7 @@ export interface ApplicantFileState {
   status: LinkState;
   expiresAt: string;
   types: { id: string; fields: string[]; retentionPolicy: string }[];
-  documents: { id: string; typeId: string | null; filename: string; sizeBytes: number }[];
+  documents: { id: string; typeId: string | null; filename: string; sizeBytes: number; signals: ApplicantSignal[] }[];
 }
 
 export type ClosedCode = "LINK_REVOKED" | "LINK_EXPIRED" | "LINK_USED" | "FILE_CLOSED" | "APPLICATION_ERASED";
@@ -39,6 +40,8 @@ export interface ApplicantPage {
   canSubmit: boolean;
   /** A withdrawal and an erasure are always allowed, until the file is erased. */
   canWithdraw: boolean;
+  /** An explanation of a trace is taken while the link stands or was used, with the consent to the check (ADR-0014, yomizaka#626). */
+  canAnswer: boolean;
   consent: { check: boolean; keep: boolean };
 }
 
@@ -53,6 +56,7 @@ export function applicantPageOf(state: ApplicantFileState, consents: readonly Co
     canUpload: open && check,
     canSubmit: open && check && state.documents.length > 0,
     canWithdraw: state.status !== LINK.erased,
+    canAnswer: check && (open || state.status === LINK.used),
     consent: { check, keep: consents.includes(CONSENT_PURPOSE.DOCUMENT_KEEP) },
   };
 }
@@ -70,7 +74,7 @@ export async function loadApplicantPage(token: string, now: Date, deps: Applican
     const [state, consents] = await Promise.all([deps.applicantFileState(token, now), deps.activeConsents(row.id)]);
     return { state, consents };
   } catch (error) {
-    if (error instanceof HttpError && error.status === 404) return null;
+    if (error instanceof HttpError && error.status === 404) {return null;}
     throw error;
   }
 }

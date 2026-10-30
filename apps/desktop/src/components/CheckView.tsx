@@ -55,7 +55,7 @@ export function CheckView({ documentId, analysisId, go }: Readonly<{ documentId:
   const working = steps.some((step) => step.state === "current");
   const failed = found !== null && found.status !== ANALYSIS_STATUS.running && found.status !== ANALYSIS_STATUS.succeeded;
   return (
-    <div className="flex max-w-3xl flex-col gap-5">
+    <div className="flex max-w-3xl flex-col gap-5" data-testid="check-view" data-status={found?.status ?? "pending"}>
       <Button variant="ghost" size="sm" className="self-start" onClick={() => go({ screen: "library", folder: null })}>
         {t("check.back")}
       </Button>
@@ -69,10 +69,10 @@ export function CheckView({ documentId, analysisId, go }: Readonly<{ documentId:
       {found?.runId ? <p className="break-all text-xs tabular-nums text-fg-muted">{t("check.run", { runId: found.runId })}</p> : null}
       {failed ? <Alert tone="danger">{found.error ?? t("result.failedHint")}</Alert> : null}
       {run.data?.closingNote ? (
-        <>
+        <div className="flex flex-col gap-5" data-testid="check-result">
           <ClosingNote note={run.data.closingNote} />
           {found?.studio === "compliance-check" ? <ReportSave documentId={documentId} analysisId={analysisId} locale={locale} /> : null}
-        </>
+        </div>
       ) : null}
     </div>
   );

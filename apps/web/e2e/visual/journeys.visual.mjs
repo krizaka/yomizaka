@@ -60,13 +60,6 @@ async function settleHeaderLive(page) {
     [...document.images].some((img) => img.getBoundingClientRect().top < 120 && img.complete && img.naturalWidth > 0),
   );
 }
-/** The dates of a list are stamped by the database at seed time (real, not frozen): the masked box still takes the width of its text, and a table sizes its columns from it, so a day with other digits moved the columns by a pixel. They read the same text before the shot. */
-async function fixListDates(page) {
-  await page.locator('time:not([data-testid="today"])').first().waitFor({ state: "attached" });
-  await page.evaluate(() => {
-    for (const t of document.querySelectorAll('time:not([data-testid="today"])')) t.replaceChildren("00 mmm. 0000");
-  });
-}
 /** A finding stays inside its card: no long address pushes the page wider than the screen (the TAL address on a phone). */
 const staysInside = (ruleId) => async (page) => {
   const wide = await page.evaluate((id) => {
@@ -89,6 +82,38 @@ async function typeRentShare(page) {
   await page.evaluate(() => document.getElementById("rent-share-title")?.scrollIntoView({ block: "start" }));
 }
 
+/** Streaming settled: React sends a late part of the page in a hidden `S:` container and moves it into place in a script it may delay by up to 2.3 s; until then the same ids are in the page twice (the report journeys saw `#finding-TS-P-001`, `#rent-share-rent` twice, #635). */
+async function settleStream(page) {
+  await page.waitForFunction(() => !document.querySelector('[hidden][id^="S:"]'));
+}
+/** An id is in a page once (invalid HTML and broken labels otherwise): the duplicates are named with the chain of their parents. */
+async function expectUniqueIds(page) {
+  const duplicates = await page.evaluate(() => {
+    const where = (el) => {
+      const chain = [];
+      for (let n = el; n && n !== document.body && chain.length < 5; n = n.parentElement) chain.push(`${n.localName}${n.id ? `#${n.id}` : ""}${n.hidden ? "[hidden]" : ""}`);
+      return chain.join(" < ");
+    };
+    const seen = new Map();
+    for (const el of document.querySelectorAll("[id]")) seen.set(el.id, [...(seen.get(el.id) ?? []), where(el)]);
+    return [...seen].filter(([, places]) => places.length > 1).map(([id, places]) => `${id}: ${places.join(" | ")}`);
+  });
+  expect(duplicates, "ids that appear twice in the page").toEqual([]);
+}
+/** Every journey with JavaScript starts from a settled page whose ids are unique, then runs its own `ready`. */
+const withSettledDom = (journey) =>
+  journey.firstPaint === true
+    ? journey
+    : {
+        ...journey,
+        ready: async (page) => {
+          await settleStream(page);
+          await expectUniqueIds(page);
+          if (typeof journey.ready === "string") await page.locator(journey.ready).first().waitFor();
+          else if (journey.ready) await journey.ready(page);
+        },
+      };
+
 defineJourneyTests({
   test,
   expect,
@@ -101,7 +126,7 @@ defineJourneyTests({
     { name: "sign-in", path: "/fr/sign-in" },
     { name: "app-home", path: "/fr/app", session: true, mask: LIVE },
     // The library, where the bookmarks live (#339): the guard they lacked.
-    { name: "documents", path: "/fr/app/documents", session: true, ready: fixListDates, mask: LIVE },
+    { name: "documents", path: "/fr/app/documents", session: true, mask: LIVE },
     { name: "document-report", path: firstReport, session: true, mask: LIVE },
     // The tenant-shield findings in the report (yomizaka#104): Section G with the deadline and the facts for the TAL; the payment clauses (art. 1904).
     { name: "report-section-g", path: reportTitled("avis du TAL absent"), session: true, ready: async (page) => { await staysInside("TS-G-001")(page); await showFinding("TS-G-001")(page); }, mask: LIVE },
@@ -110,5 +135,5 @@ defineJourneyTests({
     // The first paint of a signed-in page: the HTML the server sent, and the hydrated page while the account query is pending (krizaka-ui#827).
     { name: "app-home", path: "/fr/app", session: true, firstPaint: true, viewports: ["phone"], mask: LIVE },
     { name: "app-home-pending", path: "/fr/app", session: true, firstPaint: { hold: ["**/api/me"] }, ready: settleHeaderLive, viewports: ["phone"], mask: LIVE },
-  ],
+  ].map(withSettledDom),
 });

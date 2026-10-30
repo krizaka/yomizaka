@@ -33,12 +33,12 @@ export default async function LibraryPage({ params, searchParams }: Readonly<{ p
   const search = await searchParams;
   const session = await pageSession();
   const onboarding = session ? onboardingTarget(session.account.perspective ?? null) : null;
-  if (onboarding) redirect(`/${locale}${onboarding}`);
+  if (onboarding) {redirect(`/${locale}${onboarding}`);}
   const perspective = session?.account.perspective ?? null;
   const flows = await availableFlows(appEnvironment());
   const screeningOffered = !!session && applicantFilesOffered(flows, perspective);
   const owner = session?.account.id;
-  if (!owner) return null;
+  if (!owner) {return null;}
   // The sweep: documents that were not kept and never checked are purged once their window has passed.
   await purgeExpired(query, new Date());
   await org.ensureLibrary(query, owner, getDictionary(locale).console.organisation.library);

@@ -80,7 +80,7 @@ export async function listChecks(q: Query, owner: string, limit = 500): Promise<
             coalesce(a.finished_at, a.created_at) AS at
        FROM analyses a JOIN documents d ON d.id = a.document_id
       WHERE d.owner_id = $1
-      ORDER BY coalesce(a.finished_at, a.created_at) DESC, a.id
+      ORDER BY coalesce(a.finished_at, a.created_at) DESC, a.created_at DESC, d.title, a.studio, a.run_id NULLS LAST, a.id
       LIMIT $2`,
     [owner, limit],
   );

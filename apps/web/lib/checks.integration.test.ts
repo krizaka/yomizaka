@@ -41,4 +41,17 @@ describe.runIf(enabled)("the list of checks (Vérifications)", () => {
     expect(await listChecks(query, "00000000-0000-0000-0000-000000000000")).toEqual([]);
     expect(await listChecks(query, owner, 2)).toHaveLength(2);
   });
+
+  it("reads the same order on every run when two checks finished at the very same instant (#641: a tie must not decide)", async () => {
+    const owner = await account();
+    const b = await document(owner, "B — second by title", "lease");
+    const a = await document(owner, "A — first by title", "lease");
+    await analysis(b, "compliance-check", "succeeded", false, "2026-10-21T10:00:00Z", "run_b");
+    await analysis(a, "compliance-check", "succeeded", false, "2026-10-21T10:00:00Z", "run_a");
+    const first = (await listChecks(query, owner)).map((c) => c.title);
+    for (let i = 0; i < 5; i++) {
+      expect((await listChecks(query, owner)).map((c) => c.title)).toEqual(first);
+    }
+    expect(first).toEqual(["A — first by title", "B — second by title"]);
+  });
 });

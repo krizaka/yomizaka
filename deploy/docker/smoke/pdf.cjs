@@ -1,7 +1,7 @@
 // The PDF reader inside the built image (yomizaka#21): pdf.js (unpdf) runs in a worker thread with its own heap limit, as
 // lib/extraction/isolated.ts starts it. Run by scripts/ci-container-smoke.sh with the fixtures of deploy/docker/smoke at /smoke.
-const path = require("path"), fs = require("fs");
-const { Worker } = require("worker_threads");
+const path = require("node:path"), fs = require("node:fs");
+const { Worker } = require("node:worker_threads");
 const root = "/app/node_modules/.pnpm";
 const unpdf = path.join(root, fs.readdirSync(root).find((d) => d.startsWith("unpdf@")), "node_modules", "unpdf");
 const source = `

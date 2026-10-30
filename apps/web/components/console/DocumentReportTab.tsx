@@ -11,6 +11,7 @@ import { buildNote, noteInputOf, noteSourceOf } from "@/lib/closing-note/build";
 import { useSay } from "@/lib/i18n-client";
 import type { LeaseBundle } from "@/lib/lease-bundle";
 import { wordingOf } from "@/lib/perspective-defaults";
+import type { Answer } from "@/lib/signal-answers";
 
 import { AuthenticitySignals } from "./AuthenticitySignals";
 import type { DocumentFacts } from "./document-view-model";
@@ -23,7 +24,7 @@ import { FindingList, type FindingSelection, TechnicalDetails, VerdictBand } fro
  * authenticity report alone; or « Pas encore vérifié » with the checks to start. Once a report is shown, the other checks are
  * the aside's actions (design § 5.3): no form in this column.
  */
-export function DocumentReportTab({ doc, facts, selection, perspective, bundle = null, startCards }: Readonly<{ doc: DocumentView; facts: DocumentFacts; selection: FindingSelection; perspective: Audience | null; bundle?: LeaseBundle | null; startCards: ReactNode }>) {
+export function DocumentReportTab({ doc, facts, selection, perspective, bundle = null, answers, startCards }: Readonly<{ doc: DocumentView; facts: DocumentFacts; selection: FindingSelection; perspective: Audience | null; bundle?: LeaseBundle | null; answers?: Record<string, Answer>; startCards: ReactNode }>) {
   const { say, locale } = useSay();
   const { latestCompliance, latestReport, latestAuthenticity, runningStudio, failures } = facts;
   // The notes at the foot (design § 3.5): the review note first (the verdict points to it, REVIEW_NOTE), then a demo check's note — never a box above the report.
@@ -35,7 +36,7 @@ export function DocumentReportTab({ doc, facts, selection, perspective, bundle =
           <>
             <VerdictBand report={latestReport} />
             <FindingList report={latestReport} selection={selection} />
-            {latestAuthenticity?.report && "signals" in latestAuthenticity.report ? <AuthenticitySignals report={latestAuthenticity.report} /> : null}
+            {latestAuthenticity?.report && "signals" in latestAuthenticity.report ? <AuthenticitySignals report={latestAuthenticity.report} runId={latestAuthenticity.runId} answers={answers} /> : null}
             <TechnicalDetails documentId={doc.id} analysis={latestCompliance} />
             <details className="rounded-lg border border-border-default p-3">
               <summary className="cursor-pointer text-sm font-semibold text-fg">{say("document.details")}</summary>
@@ -49,7 +50,7 @@ export function DocumentReportTab({ doc, facts, selection, perspective, bundle =
     if (latestAuthenticity?.report && "signals" in latestAuthenticity.report) {
       return (
           <>
-            <AuthenticitySignals report={latestAuthenticity.report} />
+            <AuthenticitySignals report={latestAuthenticity.report} runId={latestAuthenticity.runId} answers={answers} />
             <TechnicalDetails documentId={doc.id} analysis={latestAuthenticity} />
           </>
       );

@@ -11,7 +11,7 @@ export function readFilterParams(params: URLSearchParams, keys: readonly string[
 }
 
 const listOf = (value: string | readonly string[] | null | undefined): string[] => {
-  if (value == null) return [];
+  if (value == null) {return [];}
   return typeof value === "string" ? [value] : [...value];
 };
 
@@ -20,9 +20,9 @@ export function writeFilterParams(base: URLSearchParams, filters: Record<string,
   const next = new URLSearchParams(base);
   for (const [key, value] of Object.entries(filters)) {
     const list = listOf(value);
-    if (list.filter(Boolean).length === 0) next.delete(key);
-    else next.set(key, list.filter(Boolean).join(","));
+    if (list.filter(Boolean).length === 0) {next.delete(key);}
+    else {next.set(key, list.filter(Boolean).join(","));}
   }
-  if (resetKey) next.delete(resetKey);
+  if (resetKey) {next.delete(resetKey);}
   return next;
 }

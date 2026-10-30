@@ -267,7 +267,7 @@
           },
           "authenticity": {
             "title": "Authenticité du fichier",
-            "line": "Le fichier PDF lui-même : producteur, dates, enregistrements successifs, polices."
+            "line": "Le fichier PDF lui-même : producteur, dates, enregistrements successifs."
           }
         }
       },
@@ -370,6 +370,7 @@
         "leftMany": "{count} vérifications restantes",
         "pro": "{used} sur {cap} vérifications ce mois-ci",
         "renews": "Se renouvelle le {date}",
+        "ends": "Se termine le {date}",
         "manage": "Crédits et usage"
       }
     },
@@ -617,7 +618,7 @@
         "premises-condition": "un état des lieux"
       },
       "authenticityTitle": "Traces de modification",
-      "authenticityText": "Le fichier PDF lui-même : producteur, dates, enregistrements successifs, polices.",
+      "authenticityText": "Le fichier PDF lui-même : producteur, dates, enregistrements successifs.",
       "jurisdiction": "Juridiction",
       "documentType": "Nature du document",
       "documentTypes": {
@@ -696,6 +697,46 @@
       "exportUnavailable": "Ce rapport ne peut pas être produit pour l’instant.",
       "exportPdf": "Télécharger le PDF",
       "reused": "Résultat réutilisé : ce document exact a déjà été vérifié avec les mêmes règles, aucune nouvelle vérification n’a été lancée.",
+      "traces": {
+        "title": "Traces de modification",
+        "notTitle": "Ce que cette vérification n'est pas",
+        "notItems": {
+          "alteration": "Ce n'est pas un constat qu'un document a été modifié de mauvaise foi, et elle ne dit rien de la personne.",
+          "ordinary": "Beaucoup d'étapes ordinaires laissent les mêmes traces : signer, remplir un formulaire, fusionner des pages, compresser, convertir depuis un courriel, réimprimer.",
+          "absence": "Un document sans trace n'est pas déclaré authentique : un fichier refait de zéro n'en laisse aucune.",
+          "person": "Une personne décide. Yomizaka ne décide rien."
+        },
+        "notExamined": "Non examiné : {list}.",
+        "families": {
+          "history": "Historique du fichier",
+          "layout": "Mise en page et polices",
+          "images": "Images",
+          "figures": "Montants",
+          "across": "D'un document à l'autre"
+        },
+        "observed": "Ce que nous avons observé",
+        "page": "Page {page}",
+        "revision": "Enregistré de nouveau : révision {revision}",
+        "field": "Champ : {field}",
+        "ordinaryLabel": "Explications ordinaires",
+        "askForLabel": "Quoi demander",
+        "run": "Exécution Orazaka {runId}",
+        "answerLabel": "Explication de la personne, {date}",
+        "ordinary": {
+          "history": "Signer, remplir un formulaire, fusionner des pages, compresser le fichier ou le convertir depuis un courriel laissent les mêmes traces qu'une modification.",
+          "layout": "Une autre police sur une ligne peut venir d'un gabarit, d'un champ de formulaire, d'un tampon ou d'une page ajoutée plus tard par l'émetteur.",
+          "images": "Une photo enregistrée de nouveau, recadrée, pivotée ou envoyée par une messagerie change les mêmes données.",
+          "figures": "Un arrondi, une prime, un rappel de paie, un deuxième employeur ou une correction du service de la paie peuvent expliquer des montants qui diffèrent.",
+          "across": "Deux emplois, un dépôt fractionné, un autre compte bancaire ou une augmentation peuvent expliquer deux documents qui ne concordent pas."
+        },
+        "askFor": {
+          "history": "Demandez le document téléchargé depuis le portail de l'émetteur (le portail de paie pour un talon de paie), ou le fichier d'origine tel que l'émetteur l'a envoyé.",
+          "layout": "Demandez le fichier d'origine tel que l'émetteur l'a produit, et non une copie ouverte puis enregistrée de nouveau.",
+          "images": "Demandez le fichier d'origine, ou une nouvelle photo du document entier, à plat et bien éclairé.",
+          "figures": "Appelez l'émetteur à un numéro que vous avez trouvé vous-même et demandez une copie tirée de ses dossiers.",
+          "across": "Appelez l'employeur à un numéro que vous avez trouvé vous-même et demandez au candidat d'expliquer l'écart."
+        }
+      },
       "photoOrigin": {
         "header": "Lu sur vos photos à l'importation, avant que leurs métadonnées soient retirées : des faits sur les fichiers, pas une expertise. Ils ne disent pas si le document est authentique.",
         "where": "Métadonnées des photos, lues à l'importation",
@@ -935,6 +976,10 @@
       "STORAGE_MOVE_OPEN": "Un déplacement est déjà ouvert : terminez-le ou mettez-le en pause.",
       "STORAGE_MOVE_NONE": "Aucun déplacement à mettre en pause ou à reprendre.",
       "FLOW_NOT_OFFERED": "Cette vérification n'est pas offerte sur votre compte.",
+      "CLOUD_NOT_OFFERED": "Ce nuage n'est pas offert ici.",
+      "CLOUD_STATE_EXPIRED": "La connexion a pris trop de temps. Recommencez.",
+      "CLOUD_STATE_INVALID": "La connexion n'a pas pu être confirmée. Recommencez.",
+      "STORAGE_DISCONNECTED": "Ce stockage est déconnecté. Reconnectez-le.",
       "CONSENT_REQUIRED": "Aucun document n'est vérifié sans votre consentement pour cette finalité.",
       "APPLICATION_ERASED": "Cette demande a été effacée.",
       "BAD_NOTIFICATION": "La notification n'a pas été acceptée.",
@@ -946,6 +991,9 @@
       "FILE_NOT_ACCEPTED": "Ce type de fichier n'est pas accepté.",
       "FLOW_EXISTS": "Cette vérification existe déjà.",
       "HAS_ANNEXES": "Ce document a encore des annexes.",
+      "ANSWER_CLOSED": "Ce dossier n'accepte plus d'explications.",
+      "ANSWER_TOO_LONG": "Cette explication est trop longue.",
+      "SIGNAL_NOT_FOUND": "Cette trace n'est plus dans le dossier.",
       "LINK_USED": "Ce lien a déjà été utilisé.",
       "LIVE_PRICES_ARE_THE_OWNERS": "Seul le propriétaire change les prix en vigueur.",
       "NOTICE_CHANGED": "L'avis a changé depuis votre lecture. Lisez-le de nouveau.",
@@ -1688,7 +1736,19 @@
         "keepDefault": "Cocher « Conserver mes documents » par défaut",
         "save": "Enregistrer",
         "saved": "Enregistré.",
-        "noKey": "Cette installation ne peut pas enregistrer d'identifiants : le stockage S3 personnel est indisponible."
+        "noKey": "Cette installation ne peut pas enregistrer d'identifiants : le stockage S3 personnel est indisponible.",
+        "cloudTitleConnected": "Votre nuage",
+        "cloudTitle": "Ou connecter un nuage que vous avez déjà",
+        "cloudLead": "Dropbox, Google Drive ou OneDrive : vos documents gardés vont dans un dossier de votre propre nuage, pas chez nous.",
+        "cloudConnect": "Connecter {cloud}",
+        "cloudDisconnect": "Déconnecter",
+        "cloudConnected": "Connecté à {cloud}. Vos documents gardés vont dans un dossier de l'application dans votre nuage.",
+        "cloudWasDisconnected": "{cloud} a été déconnecté. Les documents gardés là ne peuvent plus être ouverts avant de le reconnecter ; les nouveaux vont au stockage de Krizaka.",
+        "cloudScope": "Vous vous connectez sur la page de votre fournisseur. Yomizaka ne voit que le dossier qu'il crée ; vous pouvez déconnecter à tout moment, et vos fichiers restent où ils sont.",
+        "cloudResultConnected": "Votre nuage est connecté.",
+        "cloudResultDenied": "La connexion n'a pas été autorisée, ou a été annulée. Rien n'a changé.",
+        "cloudResultFailed": "La connexion n'a pas pu aboutir. Rien n'a changé : réessayez.",
+        "clouds": {"dropbox": "Dropbox", "google-drive": "Google Drive", "onedrive": "OneDrive"}
       },
       "appearance": {
         "lead": "L’allure de l’application sur cet appareil. Gardé dans ce navigateur.",
@@ -2485,6 +2545,12 @@
           "refundRestoresUse": {
             "label": "Un remboursement complet rend l'utilisation",
             "hint": "Désactivé par défaut, pour qu'un remboursement ne remette pas un code à usage unique en jeu."
+          }
+        },
+        "storage": {
+          "userConnectors": {
+            "label": "Connexions à un nuage (Dropbox, Google Drive, OneDrive)",
+            "hint": "Permet de connecter un nuage que la personne a déjà pour garder ses documents. Fermé tant que les inscriptions des applications ne sont pas faites."
           }
         }
       },
@@ -3406,6 +3472,8 @@
       "howLong": "Par défaut, un document est supprimé dès que sa vérification est terminée. Si vous consentez à le garder (« Garder mes documents jusqu'à la décision du propriétaire »), il est gardé jusqu'à la décision du propriétaire, puis supprimé. Un résultat est supprimé {days} jours après avoir été donné. Vous pouvez toujours en demander la suppression. [À RÉVISER PAR L'AVOCAT]",
       "askTitle": "Comment demander la suppression",
       "ask": "Utilisez l'action « Supprimer mes documents » du lien que vous avez reçu. Elle supprime immédiatement vos documents et le résultat, et ne garde qu'une trace sans renseignement personnel. Vous pouvez aussi retirer un consentement ici, et demander l'accès à vos renseignements ou leur rectification.",
+      "examinedTitle": "Comment vos documents sont examinés",
+      "examined": "Chaque document est aussi examiné comme un fichier : la façon dont il a été enregistré et, pour certains, si ses chiffres concordent. Quand quelque chose est remarqué, vous le voyez ici, dans les mêmes mots que le propriétaire, et vous pouvez ajouter une explication à côté. Le rapport dit ce qui a été observé; il ne conclut rien sur un document ni sur vous, et Yomizaka ne décide de rien : c'est une personne chez le propriétaire.",
       "notAsked": "Jamais demandés : votre numéro d'assurance sociale (NAS), les renseignements de votre carte ou de votre compte bancaire, vos renseignements de santé ou familiaux.",
       "law": "Le présent avis suit la Loi sur la protection des renseignements personnels dans le secteur privé (Québec, telle que modifiée par la Loi 25). Ce n'est pas un avis juridique."
     },
@@ -3500,10 +3568,24 @@
       "closed": "Clos",
       "erased": "Supprimé"
     },
+    "answer": {
+      "title": "Ce que nous avons remarqué dans vos documents",
+      "lead": "Beaucoup d'étapes ordinaires laissent ces traces : signer, remplir un formulaire, convertir depuis un courriel, enregistrer de nouveau. Elles ne disent rien sur vous. Vous pouvez expliquer chacune ci-dessous; le propriétaire lit vos mots à côté de la trace. Si vous avez l'original de l'émetteur, envoyez-le avec la zone de dépôt de son type plus haut.",
+      "label": "Votre explication (facultatif)",
+      "placeholder": "Par exemple : téléchargé depuis le portail de paie, puis signé.",
+      "save": "Enregistrer mon explication",
+      "remove": "Retirer mon explication",
+      "saved": "Enregistrée le {date}",
+      "count": "{n} / {max}",
+      "document": "Document : {name}"
+    },
     "error": {
       "LINK_REVOKED": "Ce lien a été révoqué.",
       "LINK_EXPIRED": "Ce lien a expiré.",
       "LINK_USED": "Ce dossier a déjà été envoyé.",
+      "ANSWER_CLOSED": "Ce dossier n'accepte plus d'explications.",
+      "ANSWER_TOO_LONG": "Cette explication est trop longue.",
+      "SIGNAL_NOT_FOUND": "Cette trace n'est plus dans votre dossier.",
       "FILE_CLOSED": "Ce dossier a été clos.",
       "APPLICATION_ERASED": "Cette demande a été supprimée.",
       "TYPE_NOT_REQUESTED": "Ce document n'a pas été demandé.",
@@ -3946,7 +4028,7 @@
     "versionNone": "non précisée",
     "ruleset": "Jeu de règles {id} version {version} ({jurisdiction})",
     "reviewStatus": "État de relecture du jeu de règles : {status}. Il doit être relu par un avocat avant qu'on s'y fie.",
-    "limits": "Ce que ce rapport ne montre pas : les documents eux-mêmes, le nom ou les coordonnées de la personne, tout pointage ou classement. Les signaux sont des observations sur un fichier, jamais un jugement sur une personne.",
+    "limits": "Ce que ce rapport ne montre pas : les documents eux-mêmes, le nom ou les coordonnées de la personne, toute cote ou tout classement. Les signaux sont des observations sur un fichier, jamais un jugement sur une personne.",
     "download": "Télécharger le PDF signé",
     "expires": "Ce lien est valable jusqu’au {date}.",
     "guarantees": "Ce PDF est signé avec la clé de Yomizaka (Ed25519, détenue par Krizaka). La signature couvre chaque élément de ce rapport (documents, signaux, règles vérifiées, exécutions, versions), l’expiration du lien et le texte complet des pages. Si un seul caractère change, la vérification échoue.",

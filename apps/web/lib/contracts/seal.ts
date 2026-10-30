@@ -62,14 +62,14 @@ export function payloadOf(request: SealRequest, input: { contractId: string; sea
 
 /** The order of the keys: by UTF-16 code unit, the same on every machine (the seal is hashed). */
 const compareKeys = (a: string, b: string): number => {
-  if (a < b) return -1;
+  if (a < b) {return -1;}
   return a > b ? 1 : 0;
 };
 
 /** The content as `path: value` lines, keys in order: indentation does not survive a PDF's wrapping, a path does. */
 export function flatten(value: unknown, path = ""): string[] {
-  if (path === "" && value !== null && typeof value === "object" && Object.keys(value).length === 0) return ["{}"];
-  if (Array.isArray(value)) return value.length ? value.flatMap((v, i) => flatten(v, `${path}[${i}]`)) : [`${path}: []`];
+  if (path === "" && value !== null && typeof value === "object" && Object.keys(value).length === 0) {return ["{}"];}
+  if (Array.isArray(value)) {return value.length ? value.flatMap((v, i) => flatten(v, `${path}[${i}]`)) : [`${path}: []`];}
   if (value !== null && typeof value === "object") {
     const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) => compareKeys(a, b));
     return entries.length ? entries.flatMap(([k, v]) => flatten(v, path ? `${path}.${k}` : k)) : [`${path}: {}`];
@@ -166,7 +166,7 @@ export async function attestationOf(bytes: Uint8Array): Promise<ContractAttestat
   try {
     const doc = await PDFDocument.load(bytes, { updateMetadata: false });
     const raw = doc.context.lookup(doc.context.trailerInfo.Info, PDFDict).get(PDFName.of(CONTRACT_ATTESTATION_KEY));
-    if (!(raw instanceof PDFString)) return null;
+    if (!(raw instanceof PDFString)) {return null;}
     return attestationSchema.parse(JSON.parse(Buffer.from(raw.asString(), "base64").toString("utf8")));
   } catch {
     return null;
@@ -176,14 +176,14 @@ export async function attestationOf(bytes: Uint8Array): Promise<ContractAttestat
 /** Checks a sealed file: the signature first, then the text of its pages against the signed hash. */
 export async function verifySeal(bytes: Uint8Array, key: Pick<SigningKey, "keyId" | "publicKey">): Promise<SealVerdict> {
   const attestation = await attestationOf(bytes);
-  if (!attestation) return { valid: false, reason: "NOT_A_SEAL" };
-  if (attestation.keyId !== key.keyId) return { valid: false, reason: "UNKNOWN_KEY" };
-  if (!crypto.verify(null, messageOf(attestation.payload, attestation.bodySha256), key.publicKey, Buffer.from(attestation.signature, "base64"))) return { valid: false, reason: "BAD_SIGNATURE" };
+  if (!attestation) {return { valid: false, reason: "NOT_A_SEAL" };}
+  if (attestation.keyId !== key.keyId) {return { valid: false, reason: "UNKNOWN_KEY" };}
+  if (!crypto.verify(null, messageOf(attestation.payload, attestation.bodySha256), key.publicKey, Buffer.from(attestation.signature, "base64"))) {return { valid: false, reason: "BAD_SIGNATURE" };}
   try {
     const { extractText, getDocumentProxy } = await import("unpdf");
     const pages = (await extractText(await getDocumentProxy(new Uint8Array(bytes)), { mergePages: false })).text as string[];
     const body = signedBodyOf(pages);
-    if (body === null || sha256(body) !== attestation.bodySha256) return { valid: false, reason: "ALTERED" };
+    if (body === null || sha256(body) !== attestation.bodySha256) {return { valid: false, reason: "ALTERED" };}
   } catch {
     return { valid: false, reason: "ALTERED" };
   }

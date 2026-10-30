@@ -17,7 +17,7 @@ const summary = z.object({ paymentsOn: z.boolean(), couponsOn: z.boolean().defau
 const redirect = z.object({ url: z.string().url() });
 
 /** The second audit: pay for this document or subscribe — at the catalogue's prices. Without payment configured it says so — no button that leads nowhere. */
-export function Paywall({ reason }: { reason: "PAYWALL" | "FAIR_USE" }) {
+export function Paywall({ reason }: Readonly<{ reason: "PAYWALL" | "FAIR_USE" }>) {
   const { say, locale } = useSay();
   const [problem, setProblem] = useState<string | null>(null);
   const [code, setCode] = useState<string | null>(null);

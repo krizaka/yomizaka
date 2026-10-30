@@ -55,7 +55,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     permissions:
       contents: read
-    uses: krizaka/.github/.github/workflows/mobile-e2e.yml@3f78a2d25b154a21cabbc5d57b8278f6b1ddf0f1 # main (krizaka/.github#318)
+    uses: krizaka/.github/.github/workflows/mobile-e2e.yml@eabaefb885a73d7f670b5537cf8b56d8247978e3 # main (krizaka/.github#318)
     with:
       app-id: com.krizaka.yomizaka
       app-directory: apps/mobile
@@ -73,20 +73,55 @@ jobs:
         EXPO_PUBLIC_APP_URL=http://localhost:3000
         EXPO_PUBLIC_APP_ENV=dev
 
+  # The Mac's video (yomizaka#636): the Mac journey filmed on a macOS runner (screencapture), on main only, never required.
+  showcase-mac:
+    name: Showcase video (Mac)
+    if: github.ref == 'refs/heads/main'
+    runs-on: macos-latest
+    timeout-minutes: 40
+    # A recorder or a runner that fails must not take the web and phone videos down with it (app-videos needs this job).
+    continue-on-error: true
+    environment: dev
+    permissions:
+      contents: read
+    env:
+      SMOKE_EMAIL: ${{ secrets.SMOKE_EMAIL }}
+      SMOKE_PASSWORD: ${{ secrets.SMOKE_PASSWORD }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: main
+      - uses: ./.github/actions/desktop-journey
+        with:
+          out: showcase-mac
+          record: "true"
+      - name: The film as mp4 (the app-videos workflow names files <platform>-<flow>)
+        run: |
+          brew install ffmpeg
+          node scripts/desktop-film-join.mjs showcase-mac showcase-mac/mac-library.mp4
+          rm showcase-mac/mac-take-*.mov
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: showcase-mac
+          path: showcase-mac/mac-library.mp4
+          retention-days: 7
+
   app-videos:
     name: Download page videos
-    needs: [showcase-web, mobile-showcase]
+    needs: [showcase-web, mobile-showcase, showcase-mac]
     if: github.ref == 'refs/heads/main'
     permissions:
       contents: write
       pull-requests: write
-    uses: krizaka/.github/.github/workflows/app-videos.yml@3f78a2d25b154a21cabbc5d57b8278f6b1ddf0f1 # main (krizaka/.github#374: sites/<product>/download)
+    uses: krizaka/.github/.github/workflows/app-videos.yml@eabaefb885a73d7f670b5537cf8b56d8247978e3 # main (krizaka/.github#374: sites/<product>/download)
     with:
       product: yomizaka
       manifest: apps/web/content/app-videos.json
       artifacts: |
         showcase-web
         maestro-showcase
+        showcase-mac
     secrets:
       MEDIA_STORAGE_API_KEY: ${{ secrets.MEDIA_STORAGE_API_KEY }}
       MEDIA_STORAGE_ZONE: ${{ secrets.MEDIA_STORAGE_ZONE }}

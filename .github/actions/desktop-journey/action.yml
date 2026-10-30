@@ -1,0 +1,55 @@
+# The Mac journey (yomizaka#636, ADR-017): the debug build with the embedded WebDriver (tauri-plugin-webdriver, cargo feature
+# `webdriver`, never a release), the persona of the dev environment, the folder pre-granted through the kit's scope.json, one
+# real lease checked, a relaunch. The caller's job passes SMOKE_EMAIL / SMOKE_PASSWORD as environment variables (the `dev`
+# environment). With `record: true` the app's window (only, from the signed-in library, in short takes) is filmed to <out>/mac-take-N.mov
+# (scripts/desktop-film-lib.mjs); desktop-film-join.mjs joins them for the download page.
+name: Mac journey
+description: Build Yomizaka for the Mac with its test driver and run the journey as the dev persona.
+inputs:
+  out:
+    description: Directory for the screenshots (and the film).
+    default: desktop-journey
+  record:
+    description: Film the screen (true or false).
+    default: "false"
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version-file: .nvmrc
+        cache: pnpm
+    - shell: bash
+      run: |
+        pnpm install --frozen-lockfile --prefer-offline
+        rustup toolchain install stable --profile minimal
+        rustup default stable
+    # An unsigned debug build asks for the Keychain password at each launch: a throwaway keychain, unlocked, the default one.
+    - name: A throwaway keychain
+      shell: bash
+      run: |
+        kc="$RUNNER_TEMP/journey.keychain-db"
+        pw="$(openssl rand -hex 16)"
+        echo "::add-mask::$pw"
+        security create-keychain -p "$pw" "$kc"
+        security set-keychain-settings -lut 21600 "$kc"
+        security unlock-keychain -p "$pw" "$kc"
+        security default-keychain -s "$kc"
+        security list-keychains -d user -s "$kc"
+    - name: Build the app with its test driver
+      shell: bash
+      working-directory: apps/desktop
+      env:
+        VITE_APP_ENV: dev
+      run: pnpm exec tauri build --debug --no-bundle --features webdriver
+    - name: Run the journey
+      shell: bash
+      env:
+        JOURNEY_OUT: ${{ inputs.out }}
+        JOURNEY_RECORD: ${{ inputs.record }}
+      run: |
+        mkdir -p "$JOURNEY_OUT"
+        film=""
+        if [ "$JOURNEY_RECORD" = "true" ]; then film="--film"; fi
+        node scripts/desktop-journey.mjs --app apps/desktop/src-tauri/target/debug/yomizaka-desktop --out "$JOURNEY_OUT" $film

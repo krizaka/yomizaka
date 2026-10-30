@@ -24,7 +24,7 @@ export function paymentLine(p: PaymentLine, say: Say, locale: string) {
 export function PaymentHistory({ enabled }: Readonly<{ enabled: boolean }>) {
   const { say, locale } = useSay();
   const history = useQuery({ queryKey: ["billing-payments"], queryFn: () => krizakaFetch("/api/billing/payments", { schema: payments }), enabled });
-  if (!enabled || !history.data) return null;
+  if (!enabled || !history.data) {return null;}
   const lines = history.data.payments.map((p) => paymentLine(p, say, locale));
   return (
     <SettingsRow label={say("settings.billing.history.title")} description={lines.length === 0 ? say("settings.billing.history.empty") : undefined}>

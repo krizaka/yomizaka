@@ -217,14 +217,63 @@ export const complianceReport = z.preprocess(flatten, complianceReportShape);
 export type ComplianceReport = z.infer<typeof complianceReportShape>;
 
 export const SIGNAL_LEVELS = ["observé", "inhabituel", "incohérent"] as const;
+/** The families of a signal (ADR-0014 §2), in the order a report reads them. */
+export const SIGNAL_FAMILIES = ["history", "layout", "images", "figures", "across"] as const;
+export type SignalFamily = (typeof SIGNAL_FAMILIES)[number];
+/** Where a signal sits in the file: a page, a box in PDF points [x0, y0, x1, y1], the revision of a later save, the field it concerns. All optional; an old report has none. */
+export const signalEvidence = z.object({
+  page: z.number().int().min(1).optional(),
+  box: z.tuple([z.number(), z.number(), z.number(), z.number()]).optional(),
+  revision: z.number().int().min(1).optional(),
+  field: z.string().optional(),
+});
+export type SignalEvidence = z.infer<typeof signalEvidence>;
 export const signal = z.object({
   signalId: z.string(),
   level: z.string(),
   observation: z.string(),
   mayIndicate: z.string().optional(),
   where: z.string().optional(),
+  family: z.string().optional(),
+  evidence: signalEvidence.optional(),
+  askFor: z.string().optional(),
 });
 export type Signal = z.infer<typeof signal>;
+
+const FAMILY_BY_PREFIX: ReadonlyArray<readonly [string, SignalFamily]> = [
+  ["PDF-FONT", "layout"],
+  ["PDF-LAYER", "layout"],
+  ["DOC-PROFILE", "layout"],
+  ["IMG-", "images"],
+  ["CONTENT-", "figures"],
+  ["REG-", "figures"],
+  ["FILE-", "across"],
+];
+/** A signal's family: the one the engine names, else read from the case id (PDF structure and metadata are the file's history). */
+export function signalFamily(s: Pick<Signal, "signalId" | "family">): SignalFamily {
+  const named = SIGNAL_FAMILIES.find((f) => f === s.family);
+  return named ?? FAMILY_BY_PREFIX.find(([p]) => s.signalId.startsWith(p))?.[1] ?? "history";
+}
+
+/**
+ * The signals the landlord does not see (yomizaka#651, CTO 2026-10-30, Law 25: no automated verdict, and a false alarm on 1 genuine
+ * document in 8 is not a fact about the applicant). Each measured over the 5 % false-positive bar on the 280 genuine documents of
+ * the forensic corpus (orazaka-packs#191, #176); the run keeps them for measurement and the operator reads them there. `level`
+ * limits the withholding to the case measured (the « absent » cases are `inhabituel`; the « declared » ones are plain facts).
+ * A signal returns to the landlord's view when its measured rate passes the bar: remove its line, with the measurement linked in the PR.
+ */
+export const WITHHELD_FROM_LANDLORD: ReadonlyArray<{ signalId: string; level?: string; falsePositiveRate: number; measurement: string }> = [
+  { signalId: "PDF-ID-001", falsePositiveRate: 0.12, measurement: "https://github.com/krizaka/orazaka-packs/pull/191" },
+  { signalId: "PDF-META-001", level: "inhabituel", falsePositiveRate: 0.125, measurement: "https://github.com/krizaka/orazaka-packs/pull/191" },
+  { signalId: "IMG-META-001", level: "inhabituel", falsePositiveRate: 0.06, measurement: "https://github.com/krizaka/orazaka-packs/pull/191" },
+];
+
+/** Whether a signal is withheld from the landlord's view (applicant, console, report, note, export, search). */
+export const isWithheldFromLandlord = (s: Pick<Signal, "signalId" | "level">): boolean =>
+  WITHHELD_FROM_LANDLORD.some((w) => w.signalId === s.signalId && (w.level === undefined || w.level === s.level));
+
+/** The signals the landlord may see: the same list without the withheld ones. */
+export const landlordSignals = <T extends Pick<Signal, "signalId" | "level">>(signals: readonly T[]): T[] => signals.filter((s) => !isWithheldFromLandlord(s));
 
 export const authenticityReport = z.object({
   header: z.string().optional(),
@@ -342,7 +391,7 @@ export type DocumentInsight = z.infer<typeof documentInsight>;
 const valuesOf = <T extends Record<string, string>>(set: T) => Object.values(set) as [T[keyof T], ...T[keyof T][]];
 
 /** Where a document lives: the DocumentStore adapters, the database (the home of a document kept with Krizaka) and the person's device. */
-export const STORAGE_KIND = { none: "none", database: "database", bunny: "bunny", s3: "s3", device: "device" } as const;
+export const STORAGE_KIND = { none: "none", database: "database", bunny: "bunny", s3: "s3", cloud: "cloud", device: "device" } as const;
 export type StorageKind = (typeof STORAGE_KIND)[keyof typeof STORAGE_KIND];
 
 /** Whose storage it is: Krizaka's, the workspace's own cloud, or the person's device. */
@@ -358,8 +407,8 @@ export type StorageResidency = (typeof STORAGE_RESIDENCY)[keyof typeof STORAGE_R
 export const STORAGE_PROVIDERS = [STORAGE_KIND.none, STORAGE_KIND.bunny, STORAGE_KIND.s3] as const;
 export type StorageProvider = (typeof STORAGE_PROVIDERS)[number];
 
-/** What a person chooses for their kept documents: nothing, Krizaka's store, or their own S3. */
-export const STORAGE_MODE = { none: "none", krizaka: "krizaka", s3: "s3" } as const;
+/** What a person chooses for their kept documents: nothing, Krizaka's store, their own S3, or a cloud they connected (Dropbox, Google Drive, OneDrive). */
+export const STORAGE_MODE = { none: "none", krizaka: "krizaka", s3: "s3", cloud: "cloud" } as const;
 export type StorageMode = (typeof STORAGE_MODE)[keyof typeof STORAGE_MODE];
 export const STORAGE_MODES = valuesOf(STORAGE_MODE);
 

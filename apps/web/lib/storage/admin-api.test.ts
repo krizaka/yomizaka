@@ -10,13 +10,13 @@ const SECRET = "super-secret-zone-password";
 function zone(failWith = 0) {
   const objects = new Map<string, Uint8Array>();
   return async (url: string, init?: RequestInit) => {
-    if (failWith) return new Response("no", { status: failWith });
+    if (failWith) {return new Response("no", { status: failWith });}
     const method = init?.method ?? "GET";
     if (method === "PUT") {
       objects.set(url, new Uint8Array(init?.body as ArrayBuffer));
       return new Response(null, { status: 201 });
     }
-    if (method === "DELETE") return new Response(null, { status: objects.delete(url) ? 200 : 404 });
+    if (method === "DELETE") {return new Response(null, { status: objects.delete(url) ? 200 : 404 });}
     const found = objects.get(url);
     return found ? new Response(found as BodyInit, { status: 200 }) : new Response("missing", { status: 404 });
   };
@@ -43,13 +43,13 @@ const bunny = createProviderInput.parse({ kind: "bunny", label: "Dev zone", coor
 
 describe("the kinds the form offers", () => {
   it("hide a dev-only kind in production, and offer only what an admin can open", () => {
-    expect(adminKinds("server", "dev").map((k) => k.kind).sort()).toEqual(["bunny", "s3"]);
-    expect(adminKinds("server", "prod").map((k) => k.kind)).toEqual(["s3"]);
+    expect(adminKinds("server", "dev").map((k) => k.kind).sort()).toEqual(["azblob", "b2", "bunny", "gcs", "s3", "webdav"]);
+    expect(adminKinds("server", "prod").map((k) => k.kind).sort()).toEqual(["azblob", "b2", "gcs", "s3", "webdav"]);
     expect(adminKinds("server", "dev").map((k) => k.kind)).not.toContain("folder");
     expect(adminKinds("dev", "dev").map((k) => k.kind)).not.toContain("device");
   });
   it("carry the field names only, so no value can ride along", () => {
-    for (const kind of adminKinds("server", "dev")) expect(JSON.stringify(kind)).not.toMatch(/secret-|password/);
+    for (const kind of adminKinds("server", "dev")) {expect(JSON.stringify(kind).replaceAll(/"name":"[^"]*"/g, "")).not.toMatch(/secret-|password/);}
   });
 });
 
@@ -107,7 +107,7 @@ describe("a production default for the documents must be in Canada (yomizaka#524
   const tested = (key: string, ok = true) => ({ id: "p1", dataKind: "documents", lastTest: { ok, residency: { key } } }) as never;
 
   it("lets a tested Canadian provider become the default in production", () => {
-    for (const key of ["canada-on", "canada-qc", "canada-ab", "canada"]) expect(() => assertDefaultResidency("prod", tested(key), "documents")).not.toThrow();
+    for (const key of ["canada-on", "canada-qc", "canada-ab", "canada"]) {expect(() => assertDefaultResidency("prod", tested(key), "documents")).not.toThrow();}
   });
   it("refuses an untested, failed, foreign or unknown one in production, in words", () => {
     for (const bad of [{ id: "p1", lastTest: null }, tested("elsewhere"), tested("unknown"), tested("user-cloud"), tested("canada-on", false)]) {

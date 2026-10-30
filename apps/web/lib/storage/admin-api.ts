@@ -45,7 +45,7 @@ const STATUS: Record<string, number> = {
 };
 export function storageRefusal(error: unknown): HttpError | null {
   const e = error as { name?: unknown; code?: unknown; message?: unknown } | null;
-  if (!e || (e.name !== "StorageError" && !(error instanceof StorageError)) || typeof e.code !== "string") return null;
+  if (!e || (e.name !== "StorageError" && !(error instanceof StorageError)) || typeof e.code !== "string") {return null;}
   return refuse(STATUS[e.code] ?? 502, e.code, typeof e.message === "string" ? e.message : e.code);
 }
 
@@ -73,7 +73,7 @@ export async function addProvider(service: ProviderService, actor: Actor, input:
 /** The providers of this deployment, or a 503 that says why there are none to manage: storing credentials needs the vault key. */
 export function managedProviders<T>(get: () => T | null): T {
   const p = get();
-  if (!p) throw refuse(503, "STORAGE_VAULT_MISSING", "Storing credentials is not available on this deployment: MEDIA_VAULT_KEY is not set");
+  if (!p) {throw refuse(503, "STORAGE_VAULT_MISSING", "Storing credentials is not available on this deployment: MEDIA_VAULT_KEY is not set");}
   return p;
 }
 
@@ -82,9 +82,9 @@ export function managedProviders<T>(get: () => T | null): T {
  * test went through AND found a Canadian region. Development holds fictional data only and stays free; the avatars are not documents.
  */
 export function assertDefaultResidency(environment: "dev" | "prod", provider: Pick<PublicProvider, "lastTest"> | undefined, dataKind: string): void {
-  if (environment !== "prod" || dataKind !== DATA_KIND.documents) return;
+  if (environment !== "prod" || dataKind !== DATA_KIND.documents) {return;}
   const found = provider?.lastTest;
-  if (found?.ok && found.residency.key.startsWith("canada")) return;
+  if (found?.ok && found.residency.key.startsWith("canada")) {return;}
   throw refuse(409, "STORAGE_NOT_IN_CANADA", "In production the documents are kept in Canada: test this provider and check that its region is Canadian first");
 }
 

@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 
-import { type AcceptedType, type Analysis, type AnalysisStatus, type AuthenticityReport, type CloudOwner, type ComplianceReport, type DocumentDetail, type DocumentInsight, type DocumentKind, type DocumentStatus, type DocumentSummary, DOCX_MIME, type ExtractionStatus, ODT_MIME, type StorageKind, type Studio, type TextSource } from "@yomizaka/core";
+import { type AcceptedType, landlordSignals, type Signal, type Analysis, type AnalysisStatus, type AuthenticityReport, type CloudOwner, type ComplianceReport, type DocumentDetail, type DocumentInsight, type DocumentKind, type DocumentStatus, type DocumentSummary, DOCX_MIME, type ExtractionStatus, ODT_MIME, type StorageKind, type Studio, type TextSource } from "@yomizaka/core";
 
 import { query } from "./db";
 import { ExtractionError } from "./extraction/isolated";
@@ -87,6 +87,8 @@ function summary(row: DocumentRow): DocumentSummary {
 export function toAnalysis(row: AnalysisRow): Analysis {
   const report = { ...((row.report ?? {}) as Record<string, unknown>) };
   delete report.attention;
+  // The signals over the false-positive bar stay in the stored report (the run, for measurement) and are never given on (yomizaka#651).
+  if (Array.isArray(report.signals)) {report.signals = landlordSignals(report.signals as Signal[]);}
   return {
     id: row.id,
     studio: row.studio,

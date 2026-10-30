@@ -97,14 +97,14 @@ const needsAttention = (report) => ("findings" in report ? report.findings.some(
  * a second process waits on the account's advisory lock, then finds everything already there (idempotent). Returns what is
  * there after the run.
  */
-export async function seedPersona(q, { persona = "eric", email, locale = "fr", messagesByLocale, reset = false, passwordHash = null, seed = DEFAULT_SEED }) {
+export async function seedPersona(q, { persona = "eric", email, locale = "fr", messagesByLocale, reset = false, passwordHash = null, seed = DEFAULT_SEED, now = new Date() }) {
   const def = PERSONAS[persona];
   if (!def) throw new Error(`unknown persona "${persona}" (known: ${Object.keys(PERSONAS).join(", ")})`);
   const address = (email ?? DEFAULT_EMAILS[persona]).trim().toLowerCase();
   await q("BEGIN");
   try {
     await q("SELECT pg_advisory_xact_lock(hashtext($1))", [`demo-seed:${address}`]);
-    const result = await seedInTransaction(q, def, { persona, address, locale, messagesByLocale, reset, passwordHash, seed });
+    const result = await seedInTransaction(q, def, { persona, address, locale, messagesByLocale, reset, passwordHash, seed, now });
     await q("COMMIT");
     return result;
   } catch (error) {
@@ -114,7 +114,10 @@ export async function seedPersona(q, { persona = "eric", email, locale = "fr", m
   }
 }
 
-async function seedInTransaction(q, def, { persona, address, locale, messagesByLocale, reset, passwordHash, seed }) {
+/** The instant `minutesAgo` before the injected clock: every stamp the seed writes comes from `now`, never from the database's own clock. */
+export const stampBefore = (now, minutesAgo) => new Date(new Date(now).getTime() - minutesAgo * 60_000).toISOString();
+
+async function seedInTransaction(q, def, { persona, address, locale, messagesByLocale, reset, passwordHash, seed, now }) {
   // An existing account keeps what the person chose (language, password, perspective, name); the seed only fills what is missing.
   const [account] = await q(
     `INSERT INTO accounts (email, locale, email_verified_at, password_hash, perspective, name) VALUES ($1, $2, now(), $3, 'landlord', $4)
@@ -134,8 +137,11 @@ async function seedInTransaction(q, def, { persona, address, locale, messagesByL
 
   const [library] = await q("SELECT id FROM libraries WHERE owner_id = $1 ORDER BY created_at, id LIMIT 1", [owner]);
   const counts = {};
-  // Each report is stamped one minute after the previous one: a list ordered by date reads the same on every run (ties made the visual baselines flicker).
+  // Each document and its report are stamped one minute apart, counted back from the injected clock `now`: the dates the lists write
+  // are the same on every run and every day, and a list ordered by date never has a tie (yomizaka#641).
+  const total = def.collections.reduce((n, c) => n + c.documents.length, 0);
   let minute = 0;
+  let documentIndex = 0;
   for (const collection of def.collections) {
     const { name, description } = words(collection.key);
     const [row] = await q(
@@ -149,9 +155,9 @@ async function seedInTransaction(q, def, { persona, address, locale, messagesByL
       const docId = randomUUID();
       const key = `${owner}/${docId}/original.pdf`;
       const inserted = await q(
-        `INSERT INTO documents (id, owner_id, title, filename, mime_type, kind, size_bytes, sha256, pages, content, object_key, text, collection_id)
-         VALUES ($1, $2, $3, $4, 'application/pdf', $5, $6, $7, $8, ''::bytea, $9, $10, $11) ON CONFLICT (owner_id, sha256) DO NOTHING RETURNING id`,
-        [docId, owner, doc.title, doc.filename, doc.kind, doc.bytes.length, doc.sha256, doc.pages, key, doc.text, row.id],
+        `INSERT INTO documents (id, owner_id, title, filename, mime_type, kind, size_bytes, sha256, pages, content, object_key, text, collection_id, created_at)
+         VALUES ($1, $2, $3, $4, 'application/pdf', $5, $6, $7, $8, ''::bytea, $9, $10, $11, $12) ON CONFLICT (owner_id, sha256) DO NOTHING RETURNING id`,
+        [docId, owner, doc.title, doc.filename, doc.kind, doc.bytes.length, doc.sha256, doc.pages, key, doc.text, row.id, stampBefore(now, total - documentIndex++)],
       );
       if (inserted.length > 0) await putBytes(key, doc.bytes);
       const [stored] = await q("SELECT id FROM documents WHERE owner_id = $1 AND sha256 = $2", [owner, doc.sha256]);
@@ -160,10 +166,10 @@ async function seedInTransaction(q, def, { persona, address, locale, messagesByL
         const studio = doc.family === "lease" ? "compliance-check" : "document-authenticity";
         const runId = `${SEEDED_RUN_PREFIX}${id}`;
         await q(
-          `INSERT INTO analyses (document_id, studio, status, run_id, blueprint_version, inputs, report, search_text, finished_at)
-           SELECT $1, $2, 'succeeded', $3, NULL, $4, $5, $6, now() - make_interval(mins => $7)
+          `INSERT INTO analyses (document_id, studio, status, run_id, blueprint_version, inputs, report, search_text, created_at, finished_at)
+           SELECT $1, $2, 'succeeded', $3, NULL, $4, $5, $6, $7::timestamptz, $7::timestamptz
             WHERE NOT EXISTS (SELECT 1 FROM analyses WHERE document_id = $1 AND run_id = $3)`,
-          [stored.id, studio, runId, JSON.stringify(SEEDED_INPUTS), JSON.stringify({ ...report, attention: needsAttention(report) }), searchTextOf(report), def.collections.reduce((n, c) => n + c.documents.length, 0) - minute++],
+          [stored.id, studio, runId, JSON.stringify(SEEDED_INPUTS), JSON.stringify({ ...report, attention: needsAttention(report) }), searchTextOf(report), stampBefore(now, total - minute++)],
         );
       }
     }
@@ -179,9 +185,9 @@ async function seedInTransaction(q, def, { persona, address, locale, messagesByL
  * set of `seedPersona`; the administrator gets an account named after its persona. Idempotent; the caller refuses production
  * (`assertNotProduction`) before it connects. Returns the fingerprint of what is there for the cast's accounts.
  */
-export async function seedCast(q, { env, hashPassword, locale = undefined, messagesByLocale, reset = false }) {
+export async function seedCast(q, { env, hashPassword, locale = undefined, messagesByLocale, reset = false, now = new Date() }) {
   const [member, admin, camille] = castAccounts(env);
-  const result = await seedPersona(q, { persona: member.persona.id, email: member.email, locale: locale ?? member.persona.locale, messagesByLocale, reset, passwordHash: await hashPassword(member.password) });
+  const result = await seedPersona(q, { persona: member.persona.id, email: member.email, locale: locale ?? member.persona.locale, messagesByLocale, reset, passwordHash: await hashPassword(member.password), now });
   // The other accounts keep the name the person chose; the role and the credentials follow the environment.
   const upsert = async (a) =>
     (
