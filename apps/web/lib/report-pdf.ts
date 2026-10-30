@@ -102,7 +102,7 @@ function findingBlocks(n: number, f: ReportPayload["findings"][number], labels: 
     block(f.explanation, 9),
     block(`${labels.rule}: ${f.ruleId} · ${f.severity}${method}`, 8),
   ];
-  if (f.citation) blocks.push(block(`${labels.article}: ${f.citation}`, 8));
+  if (f.citation) {blocks.push(block(`${labels.article}: ${f.citation}`, 8));}
   blocks.push(block(`${labels.passage}: ${passage}`, 8, { gap: 6 }));
   return blocks;
 }
@@ -155,7 +155,7 @@ export interface IssuedPdf {
 }
 
 const faceOf = (b: Block): Face => {
-  if (b.mono) return "mono";
+  if (b.mono) {return "mono";}
   return b.bold ? "bold" : "regular";
 };
 
@@ -225,7 +225,7 @@ export async function attestationOfPdf(bytes: Uint8Array): Promise<Attestation |
     const doc = await PDFDocument.load(bytes, { updateMetadata: false });
     const info = doc.context.lookup(doc.context.trailerInfo.Info, PDFDict);
     const raw = info.get(PDFName.of(ATTESTATION_KEY));
-    if (!(raw instanceof PDFString)) return null;
+    if (!(raw instanceof PDFString)) {return null;}
     return attestationSchema.parse(JSON.parse(Buffer.from(raw.asString(), "base64").toString("utf8"))) as Attestation;
   } catch {
     return null;
@@ -236,11 +236,11 @@ export async function attestationOfPdf(bytes: Uint8Array): Promise<Attestation |
 export async function verifyPdf(bytes: Uint8Array, key: Pick<SigningKey, "keyId" | "publicKey">, document?: Uint8Array | null): Promise<Verification> {
   const fileSha256 = sha256(bytes);
   const fail = (reason: VerifyFailure): Verification => ({ ok: false, reason, fileSha256 });
-  if (!(bytes.length > 5 && Buffer.from(bytes.subarray(0, 5)).toString("latin1") === "%PDF-")) return fail("NOT_A_REPORT");
+  if (!(bytes.length > 5 && Buffer.from(bytes.subarray(0, 5)).toString("latin1") === "%PDF-")) {return fail("NOT_A_REPORT");}
   const attestation = await attestationOfPdf(bytes);
-  if (!attestation) return fail("UNREADABLE");
-  if (attestation.keyId !== key.keyId) return fail("UNKNOWN_KEY");
-  if (!crypto.verify(null, signedMessage(attestation.payload, attestation.bodySha256), key.publicKey, Buffer.from(attestation.signature, "base64"))) return fail("BAD_SIGNATURE");
+  if (!attestation) {return fail("UNREADABLE");}
+  if (attestation.keyId !== key.keyId) {return fail("UNKNOWN_KEY");}
+  if (!crypto.verify(null, signedMessage(attestation.payload, attestation.bodySha256), key.publicKey, Buffer.from(attestation.signature, "base64"))) {return fail("BAD_SIGNATURE");}
   // The pages the signature covers: every page but the last (the visible signature page).
   const { extractText, getDocumentProxy } = await import("unpdf");
   let text: string;
@@ -249,13 +249,13 @@ export async function verifyPdf(bytes: Uint8Array, key: Pick<SigningKey, "keyId"
     const pages = (await extractText(pdf, { mergePages: false })).text as string[];
     // Each page starts with its folio (« 2 / 4 »): it must be the right one for its place, and it is not part of what was signed.
     const body = signedBodyOf(pages);
-    if (body === null) return fail("ALTERED");
+    if (body === null) {return fail("ALTERED");}
     text = body;
   } catch {
     return fail("UNREADABLE");
   }
-  if (sha256(text) !== attestation.bodySha256) return fail("ALTERED");
-  if (attestation.payload.specimen) return fail("SPECIMEN");
+  if (sha256(text) !== attestation.bodySha256) {return fail("ALTERED");}
+  if (attestation.payload.specimen) {return fail("SPECIMEN");}
   return { ok: true, fileSha256, keyId: attestation.keyId, payload: attestation.payload, documentMatch: document ? sha256(document) === attestation.payload.document.sha256 : null };
 }
 

@@ -44,7 +44,7 @@ export function applicantSignalsOf(report: { signals?: readonly Signal[] } | nul
 /** The answers of some documents: document id → signal id → answer. */
 export async function answersOf(documentIds: readonly string[]): Promise<Map<string, Map<string, Answer>>> {
   const out = new Map<string, Map<string, Answer>>();
-  if (!documentIds.length) return out;
+  if (!documentIds.length) {return out;}
   const rows = await query<{ document_id: string; signal_id: string; explanation: string; answered_at: Date }>("SELECT document_id, signal_id, explanation, answered_at FROM signal_answers WHERE document_id = ANY($1::uuid[])", [documentIds]);
   for (const r of rows) {
     const byDoc = out.get(r.document_id) ?? new Map<string, Answer>();
@@ -73,14 +73,14 @@ export interface AnswerInput {
  */
 export async function answerSignal(link: { id: string; landlord_id: string; status: string; expires_at: Date; revoked_at: Date | null; submitted_at: Date | null; closed_at: Date | null }, input: AnswerInput, now: Date, headers?: Headers): Promise<{ answered: boolean }> {
   const state = linkState(link, now);
-  if (state !== LINK.open && state !== LINK.used) throw refuse(409, state === LINK.erased ? "APPLICATION_ERASED" : "ANSWER_CLOSED", "This file no longer takes answers");
-  if (!hasConsent(await activeConsents(link.id), CONSENT_PURPOSE.DOCUMENT_CHECK)) throw refuse(403, "CONSENT_REQUIRED", "The applicant has not consented to this purpose", { purpose: CONSENT_PURPOSE.DOCUMENT_CHECK });
+  if (state !== LINK.open && state !== LINK.used) {throw refuse(409, state === LINK.erased ? "APPLICATION_ERASED" : "ANSWER_CLOSED", "This file no longer takes answers");}
+  if (!hasConsent(await activeConsents(link.id), CONSENT_PURPOSE.DOCUMENT_CHECK)) {throw refuse(403, "CONSENT_REQUIRED", "The applicant has not consented to this purpose", { purpose: CONSENT_PURPOSE.DOCUMENT_CHECK });}
   const text = cleanAnswer(input.text);
-  if (text.length > ANSWER_MAX) throw refuse(422, "ANSWER_TOO_LONG", "The explanation is too long", { max: ANSWER_MAX });
-  if (!isUuid(input.documentId)) throw refuse(404, "SIGNAL_NOT_FOUND", "No such trace");
+  if (text.length > ANSWER_MAX) {throw refuse(422, "ANSWER_TOO_LONG", "The explanation is too long", { max: ANSWER_MAX });}
+  if (!isUuid(input.documentId)) {throw refuse(404, "SIGNAL_NOT_FOUND", "No such trace");}
   const [doc] = await query<{ id: string }>("SELECT id FROM documents WHERE id = $1 AND screening_id = $2 AND owner_id = $3", [input.documentId, link.id, link.landlord_id]);
   const report = doc ? await authenticityReportOf(doc.id) : null;
-  if (!doc || !report?.signals?.some((s) => s.signalId === input.signalId)) throw refuse(404, "SIGNAL_NOT_FOUND", "No such trace");
+  if (!doc || !report?.signals?.some((s) => s.signalId === input.signalId)) {throw refuse(404, "SIGNAL_NOT_FOUND", "No such trace");}
   if (text) {
     await query("INSERT INTO signal_answers (document_id, signal_id, explanation, answered_at) VALUES ($1, $2, $3, $4) ON CONFLICT (document_id, signal_id) DO UPDATE SET explanation = EXCLUDED.explanation, answered_at = EXCLUDED.answered_at", [doc.id, input.signalId, text, now]);
   } else {

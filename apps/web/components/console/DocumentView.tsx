@@ -49,15 +49,15 @@ type Facts = ReturnType<typeof documentFacts>;
 type StartProps = Parameters<typeof StartCheckActions>[0];
 
 function retentionText(doc: DocumentViewData, say: Say, locale: Parameters<typeof formatDate>[1]): string {
-  if (doc.purged) return say("document.where.retentionNotKept");
-  if (doc.retainUntil) return say("document.where.retentionUntil", { date: formatDate(doc.retainUntil, locale) });
+  if (doc.purged) {return say("document.where.retentionNotKept");}
+  if (doc.retainUntil) {return say("document.where.retentionUntil", { date: formatDate(doc.retainUntil, locale) });}
   return say("document.where.retentionNone");
 }
 
 /** « Voir dans le fichier »: on a narrow screen the file sits above the findings, bring it into view; the viewer scrolls to the passage itself. */
 function bringIntoView(id: string, viewer: HTMLElement | null, textShown: boolean) {
-  if (globalThis.matchMedia?.("(max-width: 1279px)").matches) viewer?.scrollIntoView({ block: "start", behavior: globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
-  if (textShown) document.getElementById(`passage-${id}`)?.scrollIntoView({ block: "center" });
+  if (globalThis.matchMedia?.("(max-width: 1279px)").matches) {viewer?.scrollIntoView({ block: "start", behavior: globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });}
+  if (textShown) {document.getElementById(`passage-${id}`)?.scrollIntoView({ block: "center" });}
 }
 
 /** The aside of a reported document: its facts, the other checks as actions and the sharing (design § 5.3). */
@@ -122,7 +122,7 @@ export function DocumentView({ initial, tab, place = null, perspective = null, b
     activeId,
     onSelect: (id) => {
       setActiveId(id);
-      if (!id) return;
+      if (!id) {return;}
       go("document", `?finding=${encodeURIComponent(id)}`);
       bringIntoView(id, viewerRef.current, !isPdf || Boolean(doc.textSource));
     },

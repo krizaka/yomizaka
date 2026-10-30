@@ -21,14 +21,14 @@ function fakeS3() {
   const state = { down: false };
   const fetchLike: FetchLike = async (url, init) => {
     const reply = (status: number, bytes?: Uint8Array) => ({ ok: status < 300, status, headers: { get: () => null }, arrayBuffer: async () => new Uint8Array(bytes ?? []).buffer, text: async () => "" });
-    if (state.down) return reply(403);
+    if (state.down) {return reply(403);}
     const key = new URL(url).pathname;
     if (init.method === "PUT") {
       objects.set(key, init.body!);
       return reply(200);
     }
-    if (init.method === "GET") return objects.has(key) ? reply(200, objects.get(key)) : reply(404);
-    if (init.method === "DELETE") return reply(objects.delete(key) ? 204 : 404);
+    if (init.method === "GET") {return objects.has(key) ? reply(200, objects.get(key)) : reply(404);}
+    if (init.method === "DELETE") {return reply(objects.delete(key) ? 204 : 404);}
     return reply(405);
   };
   return { objects, state, fetchLike };
@@ -59,7 +59,7 @@ describe.runIf(enabled)("a person's own S3 in the registry (ADR-005)", () => {
   const sealedInRow = async (owner: string) => (await query<{ s: string | null }>("SELECT s3_secret_sealed AS s FROM storage_settings WHERE owner_id = $1", [owner]))[0]!.s;
 
   it("defaults to Krizaka's store, keeping off by default", async () => {
-    expect(await loadSettings(query, await account())).toEqual({ mode: "krizaka", keepDefault: false, s3: null, testedAt: null });
+    expect(await loadSettings(query, await account())).toEqual({ mode: "krizaka", keepDefault: false, s3: null, cloud: null, testedAt: null });
   });
 
   it("saves an own S3 as a user-scope provider: sealed in the registry, never in the settings row, never returned", async () => {

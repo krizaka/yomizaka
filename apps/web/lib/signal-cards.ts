@@ -29,7 +29,7 @@ export function groupByFamily<T extends Pick<Signal, "signalId" | "family">>(sig
 /** Where the signal sits in the file, as words: the page, the later save, the field. Empty when the engine gave no evidence. */
 export function evidenceLines(say: TraceSay, s: Pick<Signal, "evidence">): string[] {
   const e = s.evidence;
-  if (!e) return [];
+  if (!e) {return [];}
   return [e.page ? say("page", { page: e.page }) : "", e.revision ? say("revision", { revision: e.revision }) : "", e.field ? say("field", { field: e.field }) : ""].filter(Boolean);
 }
 

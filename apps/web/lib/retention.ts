@@ -14,11 +14,11 @@ import type { StoreDescriptor } from "./storage/port";
 export type Query = <T extends QueryResultRow>(text: string, values?: unknown[]) => Promise<T[]>;
 
 /** The stores that hold a document's file outside the database. */
-export const EXTERNAL = new Set<StorageKind>([STORAGE_KIND.bunny, STORAGE_KIND.s3]);
+export const EXTERNAL = new Set<StorageKind>([STORAGE_KIND.bunny, STORAGE_KIND.s3, STORAGE_KIND.cloud]);
 
 /** Where a new document goes, from the person's choice and the store configured now. */
 export function storageFor(keep: boolean, active: StoreDescriptor): StorageKind {
-  if (!keep) return STORAGE_KIND.none;
+  if (!keep) {return STORAGE_KIND.none;}
   return EXTERNAL.has(active.kind) ? active.kind : STORAGE_KIND.database;
 }
 
@@ -42,13 +42,13 @@ async function purgeWhere(q: Query, condition: string, values: unknown[], holder
   const candidates = await q<{ id: string; owner_id: string; storage: string; storage_owner: string; object_key: string | null }>(`SELECT id, owner_id, storage, storage_owner, object_key FROM documents WHERE storage = 'none' AND ${condition} AND (${HOLDS_BYTES} OR text <> '')`, values);
   const ready: string[] = [];
   for (const c of candidates) {
-    if (c.object_key && !(await removeObject(c, holder))) continue;
+    if (c.object_key && !(await removeObject(c, holder))) {continue;}
     ready.push(c.id);
   }
-  if (ready.length === 0) return [];
+  if (ready.length === 0) {return [];}
   const rows = await q<{ id: string }>("UPDATE documents SET content = ''::bytea, text = '', object_key = NULL, retain_until = NULL WHERE id = ANY($1::uuid[]) AND storage = 'none' RETURNING id", [ready]);
   // The purge is verifiable: one audit row per document (the file and its text go; the hash, the report and the signed certificate stay).
-  for (const r of rows) await record(String(r.id));
+  for (const r of rows) {await record(String(r.id));}
   return rows.map((r) => String(r.id));
 }
 

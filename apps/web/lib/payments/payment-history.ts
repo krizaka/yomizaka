@@ -30,7 +30,15 @@ interface RawCharge {
 
 /** The processor's state of a charge that went through. */
 const CHARGE_DONE = new Set(["succeeded"]);
-const RECEIPT_HOST = /^https:\/\/[a-z0-9.-]*stripe\.com\//;
+/** A receipt link is kept only when it is an https address on stripe.com or one of its subdomains. */
+function isStripeReceipt(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && (url.hostname === "stripe.com" || url.hostname.endsWith(".stripe.com"));
+  } catch {
+    return false;
+  }
+}
 
 export function paymentHistoryOf(charges: readonly RawCharge[]): PaymentRow[] {
   return charges
@@ -42,7 +50,7 @@ export function paymentHistoryOf(charges: readonly RawCharge[]): PaymentRow[] {
       amountCents: c.amount as number,
       currency: typeof c.currency === "string" ? c.currency : "cad",
       state: c.refunded === true ? ("refunded" as const) : ("paid" as const),
-      receiptUrl: typeof c.receipt_url === "string" && RECEIPT_HOST.test(c.receipt_url) ? c.receipt_url : null,
+      receiptUrl: typeof c.receipt_url === "string" && isStripeReceipt(c.receipt_url) ? c.receipt_url : null,
     }));
 }
 

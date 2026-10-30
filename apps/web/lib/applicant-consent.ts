@@ -32,7 +32,7 @@ export const hasConsent = (active: readonly string[], purpose: ConsentPurpose): 
 /** Refuses the purpose unless the application has an active consent for it. Enforced in the services, never only in a route. */
 export async function requireConsent(screeningId: string, purpose: ConsentPurpose): Promise<void> {
   const [row] = await query("SELECT 1 FROM application_consents WHERE screening_id = $1 AND purpose = $2 AND withdrawn_at IS NULL", [screeningId, purpose]);
-  if (!row) throw refuse(403, "CONSENT_REQUIRED", "The applicant has not consented to this purpose", { purpose });
+  if (!row) {throw refuse(403, "CONSENT_REQUIRED", "The applicant has not consented to this purpose", { purpose });}
 }
 
 /** The purposes an application has active right now. */
@@ -43,12 +43,12 @@ export async function activeConsents(screeningId: string): Promise<ConsentPurpos
 
 /** Records a consent. The notice version must be the current one; a repeat of an active consent changes nothing. */
 export async function grantConsent(screeningId: string, purpose: ConsentPurpose, input: { noticeVersion: string; means: string; priceCents?: number; currency?: string; payer?: string }, now: Date, headers?: Headers): Promise<boolean> {
-  if (input.noticeVersion !== NOTICE_VERSION) throw refuse(409, "NOTICE_CHANGED", "The notice changed: read it again before consenting", { noticeVersion: NOTICE_VERSION });
+  if (input.noticeVersion !== NOTICE_VERSION) {throw refuse(409, "NOTICE_CHANGED", "The notice changed: read it again before consenting", { noticeVersion: NOTICE_VERSION });}
   const rows = await query<{ id: string }>(
     "INSERT INTO application_consents (screening_id, purpose, notice_version, means, granted_at, price_cents, currency, payer) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (screening_id, purpose) WHERE withdrawn_at IS NULL DO NOTHING RETURNING id",
     [screeningId, purpose, input.noticeVersion, input.means, now, input.priceCents ?? null, input.currency ?? null, input.payer ?? null],
   );
-  if (rows.length) await audit({ action: "consent.granted", actorId: null, actorLabel: "applicant", targetId: screeningId, detail: { purpose, noticeVersion: input.noticeVersion, means: input.means, priceCents: input.priceCents ?? null, payer: input.payer ?? null }, headers });
+  if (rows.length) {await audit({ action: "consent.granted", actorId: null, actorLabel: "applicant", targetId: screeningId, detail: { purpose, noticeVersion: input.noticeVersion, means: input.means, priceCents: input.priceCents ?? null, payer: input.payer ?? null }, headers });}
   return rows.length > 0;
 }
 
@@ -58,7 +58,7 @@ export async function grantConsent(screeningId: string, purpose: ConsentPurpose,
  */
 export async function withdrawConsent(screeningId: string, purpose: ConsentPurpose, now: Date, headers?: Headers): Promise<boolean> {
   const rows = await query<{ id: string }>("UPDATE application_consents SET withdrawn_at = $3 WHERE screening_id = $1 AND purpose = $2 AND withdrawn_at IS NULL RETURNING id", [screeningId, purpose, now]);
-  if (!rows.length) return false;
+  if (!rows.length) {return false;}
   // Only the check purposes decline a pending request or delete a held result; the document purposes stop their analyses only.
   if (purpose === CONSENT_PURPOSE.COURT_RECORDS || purpose === CONSENT_PURPOSE.CREDIT) {
     await query("UPDATE screenings SET status = 'declined' WHERE id = $1 AND status = 'requested'", [screeningId]);
@@ -74,10 +74,10 @@ export async function withdrawConsent(screeningId: string, purpose: ConsentPurpo
  * DOCUMENT_CHECK consent. Refused before any byte is stored.
  */
 export async function assertUploadForApplication(ownerId: string, screeningId: string): Promise<void> {
-  if (!isUuid(screeningId)) throw refuse(404, "NOT_FOUND", "No such application");
+  if (!isUuid(screeningId)) {throw refuse(404, "NOT_FOUND", "No such application");}
   const [app] = await query<{ landlord_id: string; status: string }>("SELECT landlord_id, status FROM screenings WHERE id = $1", [screeningId]);
-  if (app?.landlord_id !== ownerId) throw refuse(404, "NOT_FOUND", "No such application");
-  if (app.status === APPLICATION_ERASED) throw refuse(410, "APPLICATION_ERASED", "This application was erased");
+  if (app?.landlord_id !== ownerId) {throw refuse(404, "NOT_FOUND", "No such application");}
+  if (app.status === APPLICATION_ERASED) {throw refuse(410, "APPLICATION_ERASED", "This application was erased");}
   await requireConsent(screeningId, CONSENT_PURPOSE.DOCUMENT_CHECK);
 }
 
@@ -94,7 +94,7 @@ export async function attachToApplication(ownerId: string, documentId: string, s
 
 /** The analysis gate: a document of an application runs a check only while its DOCUMENT_CHECK consent stands. */
 export async function assertAnalysisAllowed(screeningId: string | null): Promise<void> {
-  if (screeningId) await requireConsent(screeningId, CONSENT_PURPOSE.DOCUMENT_CHECK);
+  if (screeningId) {await requireConsent(screeningId, CONSENT_PURPOSE.DOCUMENT_CHECK);}
 }
 
 /**
@@ -103,7 +103,7 @@ export async function assertAnalysisAllowed(screeningId: string | null): Promise
  */
 export async function eraseApplication(screeningId: string, ownerId: string, store: DocumentStore | undefined, now: Date, headers?: Headers): Promise<{ documents: number }> {
   const docs = await query<{ id: string }>("SELECT id FROM documents WHERE screening_id = $1 AND owner_id = $2", [screeningId, ownerId]);
-  for (const d of docs) await deleteDocument(ownerId, d.id, store);
+  for (const d of docs) {await deleteDocument(ownerId, d.id, store);}
   await query("UPDATE application_consents SET withdrawn_at = $2 WHERE screening_id = $1 AND withdrawn_at IS NULL", [screeningId, now]);
   await query(
     "UPDATE screenings SET status = 'erased', tenant_name = '', tenant_email = $2, result = NULL, result_expires_at = NULL, contest_comment = NULL, purged_at = $3 WHERE id = $1 AND status <> 'erased'",

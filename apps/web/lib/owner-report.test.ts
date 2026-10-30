@@ -30,7 +30,7 @@ describe("the owner's report (yomizaka#128)", () => {
   });
 
   it("redacts the name, the e-mail, the file name and every quoted passage", () => {
-    for (const leak of ["Camille", "Fictif", "exemple.test", "talon-camille", "900", "kept out"]) expect(text).not.toContain(leak);
+    for (const leak of ["Camille", "Fictif", "exemple.test", "talon-camille", "900", "kept out"]) {expect(text).not.toContain(leak);}
     expect(report.reference).toBe(referenceOf("0a1b2c3d-0000-4000-8000-000000000000"));
     expect(report.reference).toBe("0A1B2C3D");
   });
@@ -44,7 +44,7 @@ describe("the owner's report (yomizaka#128)", () => {
   it("never says certificate, conformity or approval, and states the notice, in both languages", () => {
     for (const w of [en.ownerReport, fr.ownerReport]) {
       const words = JSON.stringify(w).toLowerCase();
-      for (const banned of ["conforme", "conformity", "compliant", "certificat", "certificate", "authentique", "genuine", "approuvé", "approved", "refusé", "rejected", "faux", "fake", "forged"]) expect(words).not.toContain(banned);
+      for (const banned of ["conforme", "conformity", "compliant", "certificat", "certificate", "authentique", "genuine", "approuvé", "approved", "refusé", "rejected", "faux", "fake", "forged"]) {expect(words).not.toContain(banned);}
     }
     expect(en.ownerReport.notice).toContain("not legal advice");
     expect(fr.ownerReport.notice).toContain("ce n'est pas un avis juridique");

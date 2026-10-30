@@ -35,8 +35,8 @@ function useCall<T>(run: (input: T) => Promise<unknown>) {
       try {
         await m.mutateAsync(input);
         setDone(true);
-        if (then) then();
-        else router.refresh();
+        if (then) {then();}
+        else {router.refresh();}
       } catch (error) {
         setProblem(say(`errors.${errorKey(error)}`));
       }

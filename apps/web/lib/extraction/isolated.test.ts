@@ -22,7 +22,7 @@ describe("PDF extraction off the web process", () => {
     let reading = true;
     const spin = () => {
       turns++;
-      if (reading) setImmediate(spin);
+      if (reading) {setImmediate(spin);}
     };
     setImmediate(spin);
     await extractPdfText(HEAVY, { timeoutMs: 60_000 });
@@ -33,7 +33,7 @@ describe("PDF extraction off the web process", () => {
   it("serves a batch of files with one worker, and starts a fresh one after a file that ended it", async () => {
     const before = extractionWorkersStarted();
     await extractPdfText(textPdf(["Un"]));
-    for (const n of [1, 2, 3, 4]) await expect(extractPdfText(textPdf([`Fichier ${n}`]))).resolves.toMatchObject({ pages: 1 });
+    for (const n of [1, 2, 3, 4]) {await expect(extractPdfText(textPdf([`Fichier ${n}`]))).resolves.toMatchObject({ pages: 1 });}
     expect(extractionWorkersStarted() - before).toBeLessThanOrEqual(1);
     await expect(extractPdfText(HEAVY, { timeoutMs: 1 })).rejects.toMatchObject({ code: "TIMEOUT" });
     await expect(extractPdfText(textPdf(["Après"]))).resolves.toMatchObject({ pages: 1 });

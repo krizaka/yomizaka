@@ -23,7 +23,7 @@ export function normaliseQuery(q: string): string {
 
 export async function search(ownerId: string, q: string): Promise<SearchHit[]> {
   const words = normaliseQuery(q);
-  if (words.length < 2) return [];
+  if (words.length < 2) {return [];}
   const options = `StartSel=${START}, StopSel=${STOP}, MaxWords=28, MinWords=10, MaxFragments=1`;
   const rows = await query<{ document_id: string; title: string; kind: SearchHit["kind"]; source: SearchHit["source"]; passage: string; rank: number }>(
     `WITH q AS (SELECT websearch_to_tsquery('simple', $2) AS tsq)

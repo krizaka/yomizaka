@@ -77,22 +77,22 @@ export async function documentTypes(): Promise<DocumentType[]> {
 
 async function documentTypeOf(id: string): Promise<DocumentType> {
   const type = (await documentTypes()).find((t) => t.id === id);
-  if (!type) throw refuse(422, "TYPE_UNKNOWN", "No such document type", { type: id });
+  if (!type) {throw refuse(422, "TYPE_UNKNOWN", "No such document type", { type: id });}
   return type;
 }
 
 /** The link's row, by its token: only a file, never a screening (its answers keep their own route). */
 export async function fileByToken(token: string): Promise<FileRow> {
   const [row] = await query<FileRow>("SELECT id, landlord_id, tenant_name, tenant_email, status, created_at, expires_at, requested_types, revoked_at, submitted_at, closed_at FROM screenings WHERE token_hash = $1 AND flow = 'file'", [hash(token)]);
-  if (!row) throw refuse(404, "NOT_FOUND", "No such link");
+  if (!row) {throw refuse(404, "NOT_FOUND", "No such link");}
   return row;
 }
 
 /** A file of the manager's own: another manager's file is « not found », never « forbidden » (no existence leak). */
 async function ownedFile(landlordId: string, id: string): Promise<FileRow> {
-  if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such applicant file");
+  if (!isUuid(id)) {throw refuse(404, "NOT_FOUND", "No such applicant file");}
   const [row] = await query<FileRow>("SELECT id, landlord_id, tenant_name, tenant_email, status, created_at, expires_at, requested_types, revoked_at, submitted_at, closed_at FROM screenings WHERE id = $1 AND landlord_id = $2 AND flow = 'file'", [id, landlordId]);
-  if (!row) throw refuse(404, "NOT_FOUND", "No such applicant file");
+  if (!row) {throw refuse(404, "NOT_FOUND", "No such applicant file");}
   return row;
 }
 
@@ -178,7 +178,7 @@ async function runChecks(ownerId: string, documentId: string, studios: Studio[],
 export async function uploadApplicantDocument(token: string, typeId: string, file: UploadFile, ctx: UploadContext, now: Date, headers?: Headers) {
   const link = await fileByToken(token);
   assertOpen(linkState(link, now));
-  if (!link.requested_types.includes(typeId)) throw refuse(422, "TYPE_NOT_REQUESTED", "This document was not asked for", { type: typeId });
+  if (!link.requested_types.includes(typeId)) {throw refuse(422, "TYPE_NOT_REQUESTED", "This document was not asked for", { type: typeId });}
   const type = await documentTypeOf(typeId);
   // The consent to the document check comes first (yomizaka#131): no byte is stored without it.
   await assertUploadForApplication(link.landlord_id, link.id);
@@ -188,11 +188,11 @@ export async function uploadApplicantDocument(token: string, typeId: string, fil
 
   return withBlockingLock(`applicant-file:${link.id}`, async () => {
     const [count] = await query<{ n: number }>("SELECT count(*)::int AS n FROM documents WHERE screening_id = $1", [link.id]);
-    if ((count?.n ?? 0) >= MAX_DOCUMENTS_PER_FILE) throw refuse(409, "TOO_MANY_DOCUMENTS", "This file holds as many documents as it can");
+    if ((count?.n ?? 0) >= MAX_DOCUMENTS_PER_FILE) {throw refuse(409, "TOO_MANY_DOCUMENTS", "This file holds as many documents as it can");}
     const { fileKind } = await inspectUpload({ name: file.name, type: file.type, size: file.size }, file.bytes, ctx.rules);
-    if (!type.acceptedKinds.includes(fileKind)) throw refuse(415, "FILE_NOT_ACCEPTED", "This document must be sent as a PDF", { type: typeId });
+    if (!type.acceptedKinds.includes(fileKind)) {throw refuse(415, "FILE_NOT_ACCEPTED", "This document must be sent as a PDF", { type: typeId });}
     const { summary, duplicate } = await storeDocument(link.landlord_id, { name: file.name, type: file.type, size: file.size }, file.bytes, "other", { keep, store: ctx.store, working: ctx.working, now, purgeAfterHours: ctx.purgeAfterHours, rules: ctx.rules });
-    if (duplicate) throw refuse(409, "DUPLICATE_DOCUMENT", "This file was already sent");
+    if (duplicate) {throw refuse(409, "DUPLICATE_DOCUMENT", "This file was already sent");}
     // Linked to the application, then the consent is checked again: a withdrawal during the upload deletes it.
     await attachToApplication(link.landlord_id, summary.id, link.id, ctx.store);
     await query("UPDATE documents SET document_type = $2, retention_policy = $3 WHERE id = $1", [summary.id, typeId, retention]);
@@ -210,16 +210,16 @@ export async function submitApplicantFile(token: string, now: Date, headers?: He
   const link = await fileByToken(token);
   assertOpen(linkState(link, now));
   const [count] = await query<{ n: number }>("SELECT count(*)::int AS n FROM documents WHERE screening_id = $1", [link.id]);
-  if (!count?.n) throw refuse(409, "NO_DOCUMENT", "Send at least one document before submitting");
+  if (!count?.n) {throw refuse(409, "NO_DOCUMENT", "Send at least one document before submitting");}
   const updated = await query<{ id: string }>("UPDATE screenings SET submitted_at = $2 WHERE id = $1 AND submitted_at IS NULL AND revoked_at IS NULL AND closed_at IS NULL RETURNING id", [link.id, now]);
-  if (!updated.length) throw refuse(409, "LINK_USED", "This file was already sent");
+  if (!updated.length) {throw refuse(409, "LINK_USED", "This file was already sent");}
   await audit({ action: "applicant_file.submitted", actorId: null, actorLabel: "applicant", targetId: link.id, detail: { documents: count.n }, headers });
 }
 
 /** The manager revokes a link: no upload or submission after it. A closed file cannot be revoked (it is already decided). */
 export async function revokeApplicantFile(landlordId: string, id: string, now: Date, headers?: Headers): Promise<void> {
   const row = await ownedFile(landlordId, id);
-  if (row.closed_at) throw refuse(409, "FILE_CLOSED", "This file was closed");
+  if (row.closed_at) {throw refuse(409, "FILE_CLOSED", "This file was closed");}
   await query("UPDATE screenings SET revoked_at = $3 WHERE id = $1 AND landlord_id = $2 AND revoked_at IS NULL", [id, landlordId, now]);
   await audit({ action: "applicant_file.revoked", actorId: landlordId, actorLabel: "manager", targetId: id, headers });
 }
@@ -236,25 +236,25 @@ export async function purgeApplicationFiles(ownerId: string, screeningId: string
   for (const d of docs) {
     // A file in the store (ADR-0012) leaves it first; a store that does not answer keeps the file whole.
     if (d.object_key) {
-      if (!(await removeObject({ owner_id: ownerId, storage: d.storage, storage_owner: d.storage_owner, object_key: d.object_key }, documentHolder))) throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds these documents is not available");
+      if (!(await removeObject({ owner_id: ownerId, storage: d.storage, storage_owner: d.storage_owner, object_key: d.object_key }, documentHolder))) {throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds these documents is not available");}
       continue;
     }
-    if (!EXTERNAL.has(d.storage as StorageKind)) continue;
-    if (store?.describe().kind !== d.storage) throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds these documents is not available");
+    if (!EXTERNAL.has(d.storage as StorageKind)) {continue;}
+    if (store?.describe().kind !== d.storage) {throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds these documents is not available");}
     await store.delete(objectKey(ownerId, d.id, d.mime_type));
   }
   const purged = await query<{ id: string }>(
     `UPDATE documents SET content = ''::bytea, text = '', object_key = NULL, storage = 'none', retain_until = NULL WHERE owner_id = $1 AND screening_id = $2 AND (storage <> 'none' OR ${HOLDS_BYTES} OR text <> '') RETURNING id`,
     [ownerId, screeningId],
   );
-  for (const p of purged) await audit({ action: "document.purged", actorId: ownerId, actorLabel: "decision", targetId: p.id, detail: { reason: "after-decision", application: screeningId } });
+  for (const p of purged) {await audit({ action: "document.purged", actorId: ownerId, actorLabel: "decision", targetId: p.id, detail: { reason: "after-decision", application: screeningId } });}
   return purged.length;
 }
 
 /** The manager's decision: the file is closed (the link with it) and every document is purged; its reports stay. Idempotent. */
 export async function closeApplicantFile(landlordId: string, id: string, store: DocumentStore | undefined, now: Date, headers?: Headers): Promise<{ purged: number }> {
   const row = await ownedFile(landlordId, id);
-  if (row.closed_at) return { purged: 0 };
+  if (row.closed_at) {return { purged: 0 };}
   await query("UPDATE screenings SET closed_at = $3, revoked_at = coalesce(revoked_at, $3) WHERE id = $1 AND landlord_id = $2 AND closed_at IS NULL", [id, landlordId, now]);
   const purged = await purgeApplicationFiles(landlordId, id, store);
   await audit({ action: "applicant_file.closed", actorId: landlordId, actorLabel: "manager", targetId: id, detail: { purged }, headers });

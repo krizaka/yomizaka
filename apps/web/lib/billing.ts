@@ -40,7 +40,7 @@ const ROW = `SELECT (terms_accepted_at IS NOT NULL) AS self_serve, plan,
 
 export async function entitlementOf(query: Query, accountId: string, now: Date): Promise<Entitlement> {
   const [r] = await query<{ self_serve: boolean; plan: string; subscription_status: string | null; current_period_end: Date | null; cancel_at_period_end: boolean; has_customer: boolean; subscription_price_key: string | null; subscription_price_version: string | null }>(ROW, [accountId]);
-  if (!r) throw refuse(404, "NOT_FOUND", "No such account");
+  if (!r) {throw refuse(404, "NOT_FOUND", "No such account");}
   const live = r.subscription_status === "active" || r.subscription_status === "trialing";
   const pro = r.plan === "PRO" && live && (!r.current_period_end || r.current_period_end > now);
   const { credits, freeAuditUsed } = await ledgerState(query, accountId, now);
@@ -84,32 +84,32 @@ const COUNT_SINCE = "SELECT count(*) AS n FROM analyses a JOIN documents d ON d.
  */
 export async function reserveAudit(query: Query, accountId: string, now: Date, capsOf: CapsOf): Promise<AuditVia> {
   const e = await entitlementOf(query, accountId, now);
-  if (!e.selfServe) return "exempt";
+  if (!e.selfServe) {return "exempt";}
   const caps = await capsOf(e.pro ? "pro" : "free", e);
   const used = async (period: "day" | "month") => (period === "month" ? auditsUsedThisMonth(query, accountId, now) : Number((await query<{ n: string }>(COUNT_SINCE, [accountId, now, period]))[0]?.n ?? 0));
-  if (caps.perDay > 0 && (await used("day")) >= caps.perDay) throw refuse(429, "DAILY_LIMIT", "Daily limit reached", { limit: caps.perDay });
+  if (caps.perDay > 0 && (await used("day")) >= caps.perDay) {throw refuse(429, "DAILY_LIMIT", "Daily limit reached", { limit: caps.perDay });}
   if (e.pro) {
-    if ((await used("month")) >= caps.perMonth) throw refuse(429, "FAIR_USE", "Monthly fair-use limit reached", { limit: caps.perMonth });
+    if ((await used("month")) >= caps.perMonth) {throw refuse(429, "FAIR_USE", "Monthly fair-use limit reached", { limit: caps.perMonth });}
     return "pro";
   }
   return transaction(async (tx) => {
-    if (caps.freeFirst) await ensureFreeAudit(tx, accountId);
+    if (caps.freeFirst) {await ensureFreeAudit(tx, accountId);}
     return spendAudit(tx, accountId);
   });
 }
 
 /** Gives the audit back when the run could not start: the free first audit or the paid credit it spent (Pro and exempt spent nothing). */
 export async function releaseAudit(_query: Query, accountId: string, via: AuditVia): Promise<void> {
-  if (via === "free" || via === "credit") await transaction((tx) => giveBackAudit(tx, accountId, via));
+  if (via === "free" || via === "credit") {await transaction((tx) => giveBackAudit(tx, accountId, via));}
 }
 
 /** A run that failed gives its audit back, once: the free audit or the credit it spent (Pro and exempt accounts spent nothing). The mark and the give-back commit together. */
 export async function refundFailedAudit(_query: Query, analysisId: string): Promise<boolean> {
   return transaction(async (tx) => {
     const [done] = await tx<{ billed_via: string; document_id: string }>("UPDATE analyses SET billed_via = billed_via || '-refunded' WHERE id = $1 AND billed_via IN ('free', 'credit') RETURNING billed_via, document_id", [analysisId]);
-    if (!done) return false;
+    if (!done) {return false;}
     const [owner] = await tx<{ owner_id: string }>("SELECT owner_id FROM documents WHERE id = $1", [done.document_id]);
-    if (!owner) return false;
+    if (!owner) {return false;}
     return giveBackAudit(tx, owner.owner_id, done.billed_via.startsWith("free") ? "free" : "credit");
   });
 }
@@ -137,14 +137,14 @@ export async function applyPaymentEvent(transaction: Transaction, event: Payment
       payment_paid: async (e, tx) => {
         await confirmCoupon(tx, e);
         const credits = CREDITS_PER_KIND[e.kind];
-        if (!credits) return "ignored";
-        if (e.customerId) await tx("UPDATE accounts SET payment_customer_id = COALESCE(payment_customer_id, $2) WHERE id = $1", [e.accountId, e.customerId]);
+        if (!credits) {return "ignored";}
+        if (e.customerId) {await tx("UPDATE accounts SET payment_customer_id = COALESCE(payment_customer_id, $2) WHERE id = $1", [e.accountId, e.customerId]);}
         await addPurchased(tx, e.accountId, credits, `pay-${e.id}`);
         return undefined;
       },
       subscription_started: async (e, tx) => {
         await confirmCoupon(tx, e);
-        if (e.customerId) await tx("UPDATE accounts SET payment_customer_id = COALESCE(payment_customer_id, $2) WHERE id = $1", [e.accountId, e.customerId]);
+        if (e.customerId) {await tx("UPDATE accounts SET payment_customer_id = COALESCE(payment_customer_id, $2) WHERE id = $1", [e.accountId, e.customerId]);}
         await tx(
           `UPDATE accounts SET plan = 'PRO', payment_subscription_id = $2, subscription_status = COALESCE(subscription_status, 'active'),
              subscription_price_key = checkout_price_key, subscription_price_version = checkout_price_version WHERE id = $1`,

@@ -10,7 +10,7 @@ import type { ActivityDay } from "./home-figures";
 const MESSAGES = { en: en.console, fr: fr.console } as const;
 const translator = (locale: "en" | "fr") => (key: string, vars: Record<string, string | number> = {}) => {
   const found = key.split(".").reduce<unknown>((o, k) => (o as Record<string, unknown> | undefined)?.[k], MESSAGES[locale]);
-  if (typeof found !== "string") throw new Error(`missing message ${key}`);
+  if (typeof found !== "string") {throw new Error(`missing message ${key}`);}
   return Object.entries(vars).reduce((s, [k, v]) => s.replace(`{${k}}`, String(v)), found);
 };
 const sentence = (todo: Parameters<typeof leadParts>[0], locale: "en" | "fr") => leadParts(todo, locale, translator(locale)).map((p) => p.text).join("");
@@ -96,7 +96,10 @@ describe("the credits: what the account has, said as the billing state says it",
     expect(creditsFigure(e({ selfServe: false }), 4, 100)).toEqual({ kind: "included" });
   });
   it("Pro: audits used this month against the fair-use cap, and when it renews", () => {
-    expect(creditsFigure(e({ pro: true, proUntil: "2026-11-20T00:00:00.000Z" }), 12, 100)).toEqual({ kind: "pro", used: 12, cap: 100, renewsAt: "2026-11-20T00:00:00.000Z" });
+    expect(creditsFigure(e({ pro: true, proUntil: "2026-11-20T00:00:00.000Z" }), 12, 100)).toEqual({ kind: "pro", used: 12, cap: 100, renewsAt: "2026-11-20T00:00:00.000Z", cancelled: false });
+  });
+  it("Pro cancelled at period end: the same date, said as the end", () => {
+    expect(creditsFigure(e({ pro: true, proUntil: "2026-11-20T00:00:00.000Z", cancelsAtPeriodEnd: true }), 3, 100)).toEqual({ kind: "pro", used: 3, cap: 100, renewsAt: "2026-11-20T00:00:00.000Z", cancelled: true });
   });
   it("otherwise the audits left: the credits, plus the free audit while it is unspent", () => {
     expect(creditsFigure(e({ credits: 3 }), 0, 100)).toEqual({ kind: "credits", left: 3 });

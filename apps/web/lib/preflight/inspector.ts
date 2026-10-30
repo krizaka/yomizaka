@@ -18,16 +18,16 @@ export const MAX_OFFICE_PART_BYTES = 20 * 1024 * 1024;
 
 /** What the bytes are — not what the name or the browser said. */
 export function sniff(bytes: Uint8Array): FileKind {
-  if (startsWith(bytes, [0x25, 0x50, 0x44, 0x46, 0x2d])) return "pdf";
-  if (startsWith(bytes, [0x4d, 0x5a]) || startsWith(bytes, [0x7f, 0x45, 0x4c, 0x46]) || startsWith(bytes, [0x23, 0x21]) || startsWith(bytes, [0xcf, 0xfa, 0xed, 0xfe]) || startsWith(bytes, [0xca, 0xfe, 0xba, 0xbe])) return "executable";
-  if (startsWith(bytes, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) return "png";
-  if (startsWith(bytes, [0xff, 0xd8, 0xff])) return "jpeg";
-  if (isHeif(bytes)) return "heic";
+  if (startsWith(bytes, [0x25, 0x50, 0x44, 0x46, 0x2d])) {return "pdf";}
+  if (startsWith(bytes, [0x4d, 0x5a]) || startsWith(bytes, [0x7f, 0x45, 0x4c, 0x46]) || startsWith(bytes, [0x23, 0x21]) || startsWith(bytes, [0xcf, 0xfa, 0xed, 0xfe]) || startsWith(bytes, [0xca, 0xfe, 0xba, 0xbe])) {return "executable";}
+  if (startsWith(bytes, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) {return "png";}
+  if (startsWith(bytes, [0xff, 0xd8, 0xff])) {return "jpeg";}
+  if (isHeif(bytes)) {return "heic";}
   if (startsWith(bytes, [0x50, 0x4b, 0x03, 0x04])) {
-    if (zipEntryBytes(bytes, "mimetype", ODT_MIME.length)?.toString("utf8") === ODT_MIME) return "odt";
+    if (zipEntryBytes(bytes, "mimetype", ODT_MIME.length)?.toString("utf8") === ODT_MIME) {return "odt";}
     return isDocx(bytes) ? "docx" : "zip";
   }
-  if (bytes.includes(0)) return "unknown";
+  if (bytes.includes(0)) {return "unknown";}
   try {
     new TextDecoder("utf-8", { fatal: true }).decode(bytes);
     return "text";
@@ -42,7 +42,7 @@ const MIME: Record<string, FileKind> = { "application/pdf": "pdf", "text/plain":
 /** The kind the client claims (extension first, then MIME type), or null when it claims nothing we know. */
 function claimed(declared: { name: string; type: string }): FileKind | null {
   const ext = /\.([a-z0-9]+)$/i.exec(declared.name)?.[1]?.toLowerCase();
-  for (const [kind, exts] of Object.entries(EXTENSIONS)) if (ext && exts.includes(ext)) return kind as FileKind;
+  for (const [kind, exts] of Object.entries(EXTENSIONS)) {if (ext && exts.includes(ext)) {return kind as FileKind;}}
   return MIME[declared.type] ?? null;
 }
 
@@ -65,12 +65,12 @@ export function zipEntries(bytes: Uint8Array): ZipEntry[] | null {
       break;
     }
   }
-  if (eocd < 0) return null;
+  if (eocd < 0) {return null;}
   const count = view.getUint16(eocd + 10, true);
   let offset = view.getUint32(eocd + 16, true);
   const entries: ZipEntry[] = [];
   for (let n = 0; n < count; n++) {
-    if (offset + 46 > bytes.length || view.getUint32(offset, true) !== 0x02014b50) return null;
+    if (offset + 46 > bytes.length || view.getUint32(offset, true) !== 0x02014b50) {return null;}
     const nameLength = view.getUint16(offset + 28, true);
     const extra = view.getUint16(offset + 30, true);
     const comment = view.getUint16(offset + 32, true);
@@ -83,17 +83,17 @@ export function zipEntries(bytes: Uint8Array): ZipEntry[] | null {
 /** One stored or deflated entry, bounded independently of the sizes claimed by the directory. */
 export function zipEntryBytes(bytes: Uint8Array, name: string, maxBytes: number): Buffer | null {
   const entry = zipEntries(bytes)?.find((e) => e.name === name);
-  if (!entry || entry.uncompressed > maxBytes) return null;
+  if (!entry || entry.uncompressed > maxBytes) {return null;}
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const at = entry.offset;
-  if (at + 30 > bytes.length || view.getUint32(at, true) !== 0x04034b50) return null;
+  if (at + 30 > bytes.length || view.getUint32(at, true) !== 0x04034b50) {return null;}
   const method = view.getUint16(at + 8, true);
   const start = at + 30 + view.getUint16(at + 26, true) + view.getUint16(at + 28, true);
-  if (start + entry.compressed > bytes.length) return null;
+  if (start + entry.compressed > bytes.length) {return null;}
   const data = bytes.subarray(start, start + entry.compressed);
   try {
     const unpack = () => {
-      if (method === 0) return data.length <= maxBytes ? Buffer.from(data) : null;
+      if (method === 0) {return data.length <= maxBytes ? Buffer.from(data) : null;}
       return method === 8 ? inflateRawSync(data, { maxOutputLength: maxBytes }) : null;
     };
     const result = unpack();
@@ -111,7 +111,7 @@ function isDocx(bytes: Uint8Array): boolean {
 /** `/Name` tokens of a PDF's raw bytes, with `#xx` escapes decoded (an obfuscated /J#61vaScript is still JavaScript). */
 function pdfNames(raw: string): Set<string> {
   const names = new Set<string>();
-  for (const m of raw.matchAll(/\/([A-Za-z0-9_#.+-]{1,40})/g)) names.add(m[1]!.replace(/#([0-9a-fA-F]{2})/g, (_, h: string) => String.fromCodePoint(Number.parseInt(h, 16))));
+  for (const m of raw.matchAll(/\/([A-Za-z0-9_#.+-]{1,40})/g)) {names.add(m[1]!.replace(/#([0-9a-fA-F]{2})/g, (_, h: string) => String.fromCodePoint(Number.parseInt(h, 16))));}
   return names;
 }
 
@@ -128,7 +128,7 @@ function pdfFacts(doc: PDFDocument, raw: string): PdfFacts {
 /** Whether the catalogue itself runs something when the file opens (an open action, additional actions, scripts or attachments). */
 function catalogHasActiveContent(doc: PDFDocument, active: ReadonlySet<string>): boolean {
   const catalog = doc.catalog;
-  for (const key of ["OpenAction", "AA"]) if (active.has(key) && catalog.has(PDFName.of(key))) return true;
+  for (const key of ["OpenAction", "AA"]) {if (active.has(key) && catalog.has(PDFName.of(key))) {return true;}}
   const names = catalog.lookupMaybe(PDFName.of("Names"), PDFDict);
   return !!names && ["JavaScript", "EmbeddedFiles"].some((key) => active.has(key) && names.has(PDFName.of(key)));
 }
@@ -139,7 +139,7 @@ function pageHasActiveAnnotation(page: PDFPage, active: ReadonlySet<string>): bo
   for (let i = 0; annots && i < annots.size(); i++) {
     const action = annots.lookupMaybe(i, PDFDict)?.lookupMaybe(PDFName.of("A"), PDFDict);
     const type = action?.get(PDFName.of("S"))?.toString().slice(1);
-    if (type && active.has(type)) return true;
+    if (type && active.has(type)) {return true;}
   }
   return false;
 }
@@ -155,27 +155,27 @@ const IMAGE_KINDS: ReadonlySet<FileKind> = new Set<FileKind>(["png", "jpeg", "he
 
 /** Size limits, before anything reads the bytes. */
 function sizeRejection(bytes: Uint8Array, rules: PreflightRules): Inspection | null {
-  if (bytes.length === 0) return reject("EMPTY");
+  if (bytes.length === 0) {return reject("EMPTY");}
   return bytes.length > rules.maxBytes ? reject("TOO_LARGE", String(bytes.length)) : null;
 }
 
 /** An OpenDocument's main part must be readable within its bound and carry no script. */
 function odtRejection(bytes: Uint8Array): Inspection | null {
   const xml = zipEntryBytes(bytes, "content.xml", MAX_OFFICE_PART_BYTES)?.toString("utf8");
-  if (xml === undefined) return reject("CORRUPT");
+  if (xml === undefined) {return reject("CORRUPT");}
   return /<(?:[\w.-]+:)?(?:script|event-listener)(?=[\s/>])/i.test(xml) ? reject("ACTIVE_CONTENT") : null;
 }
 
 /** What the bytes are against what was claimed, the archive guards and the kinds the workspace accepts. */
 function typeRejection(bytes: Uint8Array, detected: FileKind, declared: { name: string; type: string }, rules: PreflightRules): Inspection | null {
-  if (detected === "executable") return reject("EXECUTABLE");
+  if (detected === "executable") {return reject("EXECUTABLE");}
   const said = claimed(declared);
-  if (said && said !== detected && !(said === "text" && detected === "unknown")) return reject("TYPE_MISMATCH", `${said} ≠ ${detected}`);
+  if (said && said !== detected && !(said === "text" && detected === "unknown")) {return reject("TYPE_MISMATCH", `${said} ≠ ${detected}`);}
   if (ARCHIVE_KINDS.has(detected)) {
     const problem = archiveProblem(bytes, rules);
-    if (problem) return reject(problem);
+    if (problem) {return reject(problem);}
   }
-  if (!rules.allowedKinds.includes(detected)) return reject("UNSUPPORTED_TYPE", detected);
+  if (!rules.allowedKinds.includes(detected)) {return reject("UNSUPPORTED_TYPE", detected);}
   return detected === "odt" ? odtRejection(bytes) : null;
 }
 
@@ -193,9 +193,9 @@ function inspectOther(bytes: Uint8Array, detected: FileKind, sha256: string, rul
 /** The PDF's raw bytes: a cut file, an encrypted one, one that names an active action. */
 function pdfRawRejection(raw: string, active: ReadonlySet<string>): Inspection | null {
   const tail = raw.slice(-2048);
-  if (!/startxref/.test(tail) || !/%%EOF/.test(tail)) return reject("TRUNCATED");
+  if (!/startxref/.test(tail) || !/%%EOF/.test(tail)) {return reject("TRUNCATED");}
   const names = pdfNames(raw);
-  if (names.has("Encrypt")) return reject("ENCRYPTED");
+  if (names.has("Encrypt")) {return reject("ENCRYPTED");}
   const found = [...names].filter((n) => active.has(n));
   found.sort((a, b) => (a < b ? -1 : Number(a > b)));
   return found.length ? reject("ACTIVE_CONTENT", found.join(", ")) : null;
@@ -209,8 +209,8 @@ function pdfTreeRejection(doc: PDFDocument, rules: PreflightRules, active: Reado
   } catch {
     return reject("CORRUPT", "page tree");
   }
-  if (pages < 1) return reject("CORRUPT", "no page");
-  if (pages > rules.maxPages) return reject("TOO_MANY_PAGES", String(pages));
+  if (pages < 1) {return reject("CORRUPT", "no page");}
+  if (pages > rules.maxPages) {return reject("TOO_MANY_PAGES", String(pages));}
   try {
     return treeHasActiveContent(doc, active, rules.maxPages) ? reject("ACTIVE_CONTENT", "object tree") : null;
   } catch {
@@ -221,7 +221,7 @@ function pdfTreeRejection(doc: PDFDocument, rules: PreflightRules, active: Reado
 async function inspectPdf(bytes: Uint8Array, sha256: string, rules: PreflightRules, active: ReadonlySet<string>): Promise<Inspection> {
   const raw = ascii(bytes, 0, bytes.length);
   const rawRejection = pdfRawRejection(raw, active);
-  if (rawRejection) return rawRejection;
+  if (rawRejection) {return rawRejection;}
   let doc: PDFDocument;
   try {
     doc = await PDFDocument.load(bytes, { updateMetadata: false, throwOnInvalidObject: true });
@@ -229,7 +229,7 @@ async function inspectPdf(bytes: Uint8Array, sha256: string, rules: PreflightRul
     return error instanceof EncryptedPDFError ? reject("ENCRYPTED") : reject("CORRUPT");
   }
   const treeRejection = pdfTreeRejection(doc, rules, active);
-  if (treeRejection) return treeRejection;
+  if (treeRejection) {return treeRejection;}
   return { kind: "accepted", fileKind: "pdf", sha256, pages: doc.getPageCount(), facts: pdfFacts(doc, raw) };
 }
 
@@ -238,10 +238,10 @@ export function createInspector(rules: PreflightRules): DocumentPreflight {
   return {
     async inspect(bytes, declared) {
       const tooBig = sizeRejection(bytes, rules);
-      if (tooBig) return tooBig;
+      if (tooBig) {return tooBig;}
       const detected = sniff(bytes);
       const refused = typeRejection(bytes, detected, declared, rules);
-      if (refused) return refused;
+      if (refused) {return refused;}
       const sha256 = crypto.createHash("sha256").update(bytes).digest("hex");
       return detected === "pdf" ? inspectPdf(bytes, sha256, rules, active) : inspectOther(bytes, detected, sha256, rules);
     },
@@ -251,11 +251,11 @@ export function createInspector(rules: PreflightRules): DocumentPreflight {
 /** The archive guards: entries, total size, ratio — from the directory alone, never inflating. */
 export function archiveProblem(bytes: Uint8Array, rules: PreflightRules): RejectReason | null {
   const entries = zipEntries(bytes);
-  if (!entries) return "CORRUPT";
-  if (entries.length > rules.maxArchiveEntries) return "ARCHIVE_BOMB";
+  if (!entries) {return "CORRUPT";}
+  if (entries.length > rules.maxArchiveEntries) {return "ARCHIVE_BOMB";}
   const total = entries.reduce((sum, e) => sum + e.uncompressed, 0);
-  if (total > rules.maxArchiveBytes) return "ARCHIVE_BOMB";
-  if (entries.some((e) => e.compressed > 0 && e.uncompressed / e.compressed > rules.maxArchiveRatio)) return "ARCHIVE_BOMB";
-  if (entries.some((e) => /vbaProject\.bin$|ActiveX|\.exe$|^(?:Basic|Scripts)\//i.test(e.name))) return "ACTIVE_CONTENT";
+  if (total > rules.maxArchiveBytes) {return "ARCHIVE_BOMB";}
+  if (entries.some((e) => e.compressed > 0 && e.uncompressed / e.compressed > rules.maxArchiveRatio)) {return "ARCHIVE_BOMB";}
+  if (entries.some((e) => /vbaProject\.bin$|ActiveX|\.exe$|^(?:Basic|Scripts)\//i.test(e.name))) {return "ACTIVE_CONTENT";}
   return null;
 }

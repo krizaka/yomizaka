@@ -55,7 +55,7 @@ export async function exportData(q: Query, accountId: string, stores: StoresOf, 
     "SELECT id, email, name, locale, perspective, created_at, terms_accepted_at, privacy_accepted_at, plan, subscription_status, current_period_end FROM accounts WHERE id = $1",
     [accountId],
   );
-  if (!a) throw refuse(404, "NOT_FOUND", "No such account");
+  if (!a) {throw refuse(404, "NOT_FOUND", "No such account");}
   const ledger = await ledgerState(q, accountId, now);
   const libs = await q<{ id: string; name: string }>("SELECT id, name FROM libraries WHERE owner_id = $1 ORDER BY created_at", [accountId]);
   const cols = await q<{ id: string; library_id: string; name: string; is_default: boolean }>("SELECT c.id, c.library_id, c.name, c.is_default FROM collections c WHERE c.owner_id = $1 ORDER BY c.name", [accountId]);
@@ -64,14 +64,14 @@ export async function exportData(q: Query, accountId: string, stores: StoresOf, 
   const tagged = async (table: string, column: string) => {
     const rows = await q<{ target: string; tag: string }>(`SELECT x.${column} AS target, t.name AS tag FROM ${table} x JOIN tags t ON t.id = x.tag_id WHERE t.owner_id = $1`, [accountId]);
     const map = new Map<string, string[]>();
-    for (const r of rows) map.set(r.target, [...(map.get(r.target) ?? []), r.tag]);
+    for (const r of rows) {map.set(r.target, [...(map.get(r.target) ?? []), r.tag]);}
     return map;
   };
   const [colTags, folderTags] = await Promise.all([tagged("collections_tags", "collection_id"), tagged("folder_tags", "folder_id")]);
   // The documents' tags are the workspace's (yomizaka#324): the account's own tags of kind « document », worn through the layer's join table.
   const docTagRows = await q<{ target: string; tag: string }>("SELECT w.entity_id AS target, t.name AS tag FROM organize.document_tag w JOIN organize.tag t ON t.id = w.tag_id WHERE t.scope_id = $1 AND t.kind = 'document'", [accountId]);
   const docTags = new Map<string, string[]>();
-  for (const r of docTagRows) docTags.set(r.target, [...(docTags.get(r.target) ?? []), r.tag]);
+  for (const r of docTagRows) {docTags.set(r.target, [...(docTags.get(r.target) ?? []), r.tag]);}
   const docs = await q<{ id: string; title: string; filename: string; mime_type: string; kind: string; size_bytes: number; sha256: string; pages: number | null; created_at: Date; storage: StorageKind; storage_owner: CloudOwner; retain_until: Date | null; collection_id: string | null; folder_id: string | null; text: string; content: Buffer; object_key: string | null }>(
     "SELECT id, title, filename, mime_type, kind, size_bytes, sha256, pages, created_at, storage, storage_owner, retain_until, collection_id, folder_id, text, content, object_key FROM documents WHERE owner_id = $1 ORDER BY created_at",
     [accountId],
@@ -80,7 +80,11 @@ export async function exportData(q: Query, accountId: string, stores: StoresOf, 
   const fileOf = async (d: (typeof docs)[number]) => {
     // A file in the store (ADR-0012) is read by its key from whoever holds it.
     if (d.object_key) {
-      const held = await (await holderFrom(stores)({ owner_id: accountId, storage: d.storage, storage_owner: d.storage_owner, object_key: d.object_key }))?.get(d.object_key);
+      // A cloud the person disconnected cannot be read: the export says so for that file instead of failing as a whole (the file is in their own cloud).
+      const held = await (await holderFrom(stores)({ owner_id: accountId, storage: d.storage, storage_owner: d.storage_owner, object_key: d.object_key }))?.get(d.object_key).catch((error: unknown) => {
+        if ((error as { body?: { code?: unknown } }).body?.code === "STORAGE_DISCONNECTED") {return null;}
+        throw error;
+      });
       return held ? { contentType: d.mime_type, base64: Buffer.from(held.bytes).toString("base64") } : null;
     }
     const store = stores(d.storage_owner);

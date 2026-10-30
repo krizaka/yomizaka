@@ -74,7 +74,7 @@ export async function loadApplicantPage(token: string, now: Date, deps: Applican
     const [state, consents] = await Promise.all([deps.applicantFileState(token, now), deps.activeConsents(row.id)]);
     return { state, consents };
   } catch (error) {
-    if (error instanceof HttpError && error.status === 404) return null;
+    if (error instanceof HttpError && error.status === 404) {return null;}
     throw error;
   }
 }

@@ -64,7 +64,7 @@ function startOfYearIn(zone: string, now: Date): Date {
 
 /** When a period starts, from `now`: the last 7 or 30 days (instants — no local calendar, no DST shift), or this year in the console's zone. */
 export function periodStart(period: CheckPeriod, now: Date, zone = DISPLAY_TIME_ZONE): Date {
-  if (period === "year") return startOfYearIn(zone, now);
+  if (period === "year") {return startOfYearIn(zone, now);}
   const days = period === "7d" ? 7 : 30;
   return subHours(now, HOURS_IN_DAY * days);
 }
@@ -79,8 +79,8 @@ export interface DraftState {
   seen: string;
 }
 export function reconcileDraft(state: DraftState, q: string): DraftState {
-  if (q === state.seen) return state;
-  if (q === state.pending) return { ...state, seen: q, draft: state.draft === q ? null : state.draft };
+  if (q === state.seen) {return state;}
+  if (q === state.pending) {return { ...state, seen: q, draft: state.draft === q ? null : state.draft };}
   return { draft: null, pending: q, seen: q };
 }
 
@@ -96,10 +96,10 @@ export function applyCheckFilters(rows: readonly CheckSummary[], f: CheckFilters
   const words = fold(f.q).split(/\s+/).filter(Boolean);
   const since = f.period ? periodStart(f.period, now) : null;
   return rows.filter((c) => {
-    if (words.length && !words.every((w) => fold(c.title).includes(w))) return false;
-    if (f.result.length && !f.result.includes(c.result)) return false;
-    if (f.kind.length && !f.kind.includes(c.kind)) return false;
-    if (since && isBefore(new Date(c.at), since)) return false;
+    if (words.length && !words.every((w) => fold(c.title).includes(w))) {return false;}
+    if (f.result.length && !f.result.includes(c.result)) {return false;}
+    if (f.kind.length && !f.kind.includes(c.kind)) {return false;}
+    if (since && isBefore(new Date(c.at), since)) {return false;}
     return true;
   });
 }
@@ -108,7 +108,7 @@ export function applyCheckFilters(rows: readonly CheckSummary[], f: CheckFilters
 export function countByValue(rows: readonly CheckSummary[], f: CheckFilters, key: "result" | "kind", now: Date): Record<string, number> {
   const base = applyCheckFilters(rows, { ...f, [key]: [] }, now);
   const counts: Record<string, number> = {};
-  for (const c of base) counts[c[key]] = (counts[c[key]] ?? 0) + 1;
+  for (const c of base) {counts[c[key]] = (counts[c[key]] ?? 0) + 1;}
   return counts;
 }
 

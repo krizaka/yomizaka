@@ -104,7 +104,7 @@ describe("the queue: one row per file, its stage in words (yomizaka#326, P9)", (
 });
 
 const tenant = catalogueOf(offerOf(SEED_FLOWS.filter((f) => f.definition.audiences.includes("tenant")).map((f) => f.definition)));
-const withCatalogue = (props: Partial<Parameters<typeof CheckView>[0]> = {}, locale: "en" | "fr" = "fr") => wrap(<CheckView catalogue={tenant} credits={{ kind: "pro", used: 18, cap: 100, renewsAt: null }} now="2026-10-25T16:00:00.000Z" {...props} />, locale);
+const withCatalogue = (props: Partial<Parameters<typeof CheckView>[0]> = {}, locale: "en" | "fr" = "fr") => wrap(<CheckView catalogue={tenant} credits={{ kind: "pro", used: 18, cap: 100, renewsAt: null, cancelled: false }} now="2026-10-25T16:00:00.000Z" {...props} />, locale);
 
 describe("« Vérifier un document », B2: the plan strip, the catalogue, the drop and the run (yomizaka#333)", () => {
   it("shows where the account stands: its plan and its audits from the billing state, with the meter", () => {

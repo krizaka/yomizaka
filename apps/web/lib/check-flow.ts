@@ -12,7 +12,7 @@ export type CheckableKind = CheckKind;
 /** The request that starts a check of `kind` on `asOf`, or null when no ruleset is in force for it: never another kind's rules. */
 export function rulesFor(kind: CheckKind, jurisdiction: Jurisdiction = "QC", asOf: string): StartAnalysis | null {
   const choice = rulesetFor(kind, jurisdiction, asOf);
-  if (!choice.verified) return null;
+  if (!choice.verified) {return null;}
   return { studio: "compliance-check", jurisdiction: kind === "lease" ? jurisdiction : "QC", ...(choice.ruleset ? { ruleset: choice.ruleset } : {}), asOf };
 }
 
@@ -35,12 +35,12 @@ export interface CheckPlan {
  */
 export function planCheck({ declared, detected, jurisdictions = ["QC"], asOf }: { declared: DocumentKind | "auto"; detected: CheckKind | null; jurisdictions?: readonly Jurisdiction[]; asOf: string }): CheckPlan {
   const tab = "verifications" as const;
-  if (declared !== "auto" && detected && detected !== declared) return { start: null, confirm: true, tab, mismatch: { declared, detected }, unsupported: false };
+  if (declared !== "auto" && detected && detected !== declared) {return { start: null, confirm: true, tab, mismatch: { declared, detected }, unsupported: false };}
   const kind: string | null = declared === "auto" ? detected : declared;
-  if (!kind) return { start: null, confirm: true, tab, mismatch: null, unsupported: false };
-  if (!isCheckKind(kind)) return { start: null, confirm: true, tab, mismatch: null, unsupported: true };
+  if (!kind) {return { start: null, confirm: true, tab, mismatch: null, unsupported: false };}
+  if (!isCheckKind(kind)) {return { start: null, confirm: true, tab, mismatch: null, unsupported: true };}
   // A lease's rules are its jurisdiction's: established only when the person is offered one; several, and the report tab asks.
-  if (kind === "lease" && jurisdictions.length !== 1) return { start: null, confirm: true, tab, mismatch: null, unsupported: false };
+  if (kind === "lease" && jurisdictions.length !== 1) {return { start: null, confirm: true, tab, mismatch: null, unsupported: false };}
   const start = rulesFor(kind, jurisdictions[0], asOf);
   return start ? { start, confirm: false, tab, mismatch: null, unsupported: false } : { start: null, confirm: true, tab, mismatch: null, unsupported: true };
 }

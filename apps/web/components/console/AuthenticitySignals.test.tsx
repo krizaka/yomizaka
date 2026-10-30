@@ -75,8 +75,8 @@ describe("the traces of editing (ADR-0014, yomizaka#625)", () => {
   });
 
   it("has a guard that really catches the verdict words, whole words only", () => {
-    for (const w of ["This was forged", "a fake stub", "fraud", "fraudulent", "falsified", "counterfeit", "risk score", "un faux talon", "falsifié", "frauduleux", "contrefait", "trafiqué", "12 %"]) expect(w).toMatch(VERDICT_WORDS);
-    for (const w of ["Page 2", "the platform"]) expect(w).not.toMatch(VERDICT_WORDS);
+    for (const w of ["This was forged", "a fake stub", "fraud", "fraudulent", "falsified", "counterfeit", "risk score", "un faux talon", "falsifié", "frauduleux", "contrefait", "trafiqué", "12 %"]) {expect(w).toMatch(VERDICT_WORDS);}
+    for (const w of ["Page 2", "the platform"]) {expect(w).not.toMatch(VERDICT_WORDS);}
   });
 
   it("uses no verdict word in any message of the traces, the levels and the photo origin, EN and FR", () => {
