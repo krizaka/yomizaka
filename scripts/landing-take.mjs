@@ -259,7 +259,7 @@ execFileSync(
   ],
   { stdio: "inherit" },
 ); // NOSONAR S4036: a developer-machine script, PATH is the developer's own
-const probed = execFileSync("ffprobe", [
+const probeArgs = [
   "-v",
   "error",
   "-select_streams",
@@ -269,7 +269,8 @@ const probed = execFileSync("ffprobe", [
   "-of",
   "csv=p=0",
   raw,
-])
+];
+const probed = execFileSync("ffprobe", probeArgs) // NOSONAR S4036: a developer-machine script, PATH is the developer's own
   .toString()
   .trim()
   .replace(/,+$/, ""); // NOSONAR S4036: a developer-machine script

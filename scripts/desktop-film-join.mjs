@@ -14,7 +14,7 @@ const takes = readdirSync(dir)
   .map((name) => join(dir, name));
 if (takes.length === 0) throw new Error(`no take in ${dir}: the journey filmed nothing`);
 const run = spawnSync(
-  "ffmpeg",
+  "ffmpeg", // NOSONAR S4036: a developer-machine script, PATH is the developer's own
   joinArgs(
     takes,
     out,

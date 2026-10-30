@@ -122,7 +122,7 @@ export async function createTake({
     const f = path.join(sayDir, `${id}.aiff`);
     execFileSync("say", ["-v", voices[locale], "-r", String(SPEECH_RATE[locale]), "-o", f, w[locale]]); // NOSONAR S4036: a developer-machine script, PATH is the developer's own
     speech[id] = Number(
-      execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", f])
+      execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", f]) // NOSONAR S4036: a developer-machine script, PATH is the developer's own
         .toString()
         .trim(),
     ); // NOSONAR S4036: a developer-machine script, PATH is the developer's own

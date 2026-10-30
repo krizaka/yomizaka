@@ -89,7 +89,7 @@ const KIND_BEFORE: readonly { kind: DateFact["kind"]; pattern: RegExp }[] = [
   { kind: "due", pattern: /[ée]ch[ée]ance|due\s+date|payable\s+avant|payer\s+avant|due\b/iu },
   {
     kind: "effective",
-    pattern: /en\s+vigueur|d[ée]but|effectif|date\s+d['’]effet|[àa]\s+compter\s+du|effective|starting|du\s*$/iu,
+    pattern: /(?:en\s+vigueur|d[ée]but|effectif|date\s+d['’]effet|[àa]\s+compter\s+du|effective|starting|du\s*$)/iu,
   },
   {
     kind: "issued",
