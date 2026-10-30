@@ -188,13 +188,13 @@ function ChangeKey({ provider, onDone, onProblem }: Readonly<{ provider: Provide
   });
   return (
     <form.Form aria-label={say("adminConsole.storage.changeKey")} className="flex flex-col gap-3">
-      <div className="flex flex-wrap gap-2" role="group" aria-label={say("adminConsole.storage.whichKey")}>
+      <fieldset className="m-0 flex min-w-0 flex-wrap gap-2 border-0 p-0" aria-label={say("adminConsole.storage.whichKey")}>
         {names.map((n) => (
           <Button key={n} type="button" variant={n === name ? "primary" : "ghost"} size="sm" onClick={() => setName(n)}>
             {say(`adminConsole.storage.fields.${n}`)}
           </Button>
         ))}
-      </div>
+      </fieldset>
       <form.TextField name="value" label={say("adminConsole.storage.newKey")} hint={say("adminConsole.storage.newKeyHint")} type="password" autoComplete="off" />
       <div>
         <form.Submit size="md">{say("adminConsole.storage.saveKey")}</form.Submit>
@@ -238,22 +238,22 @@ function AddProvider({ kinds, onProblem }: Readonly<{ kinds: KindForm[]; onProbl
     <section aria-label={say("adminConsole.storage.add")} className="flex flex-col gap-3" data-testid="storage-new">
       <h2 className="m-0 font-display text-lg font-bold text-fg">{say("adminConsole.storage.add")}</h2>
       <p className="m-0 max-w-[70ch] text-sm text-fg-secondary">{say("adminConsole.storage.addLead")}</p>
-      <div className="flex flex-wrap gap-2" role="group" aria-label={say("adminConsole.storage.kind")}>
+      <fieldset className="m-0 flex min-w-0 flex-wrap gap-2 border-0 p-0" aria-label={say("adminConsole.storage.kind")}>
         {kinds.map((k) => (
           <Button key={k.kind} type="button" variant={k.kind === kindName ? "primary" : "ghost"} size="sm" onClick={() => { setKindName(k.kind); setPreset(""); }}>
             {k.kind}
             {k.devOnly ? ` · ${say("adminConsole.storage.devOnly")}` : ""}
           </Button>
         ))}
-      </div>
+      </fieldset>
       {kind && kind.presets.length > 0 ? (
-        <div className="flex flex-wrap gap-2" role="group" aria-label={say("adminConsole.storage.preset")}>
+        <fieldset className="m-0 flex min-w-0 flex-wrap gap-2 border-0 p-0" aria-label={say("adminConsole.storage.preset")}>
           {kind.presets.map((p) => (
             <Button key={p.id} type="button" variant={p.id === preset ? "primary" : "ghost"} size="sm" onClick={() => setPreset(p.id)}>
               {p.id}
             </Button>
           ))}
-        </div>
+        </fieldset>
       ) : null}
       <form.Form aria-label={say("adminConsole.storage.add")} className="flex flex-col gap-4">
         <form.TextField name="label" label={say("adminConsole.storage.label")} autoComplete="off" />

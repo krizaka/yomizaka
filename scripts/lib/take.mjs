@@ -19,7 +19,8 @@ export function vtt(beats, words, locale, endAt) {
   const cues = beats
     .map((b, i) => ({ text: words[b.id]?.[locale], start: b.at, end: Math.min(beats[i + 1]?.at ?? endAt, endAt) }))
     .filter((c) => c.text && c.end > c.start + 0.2);
-  return `WEBVTT\n\n${cues.map((c, i) => `${i + 1}\n${vttTime(c.start)} --> ${vttTime(c.end - 0.1)}\n${c.text}\n`).join("\n")}`;
+  const blocks = cues.map((c, i) => `${i + 1}\n${vttTime(c.start)} --> ${vttTime(c.end - 0.1)}\n${c.text}\n`);
+  return `WEBVTT\n\n${blocks.join("\n")}`;
 }
 
 /** Output time of a capture time, with the spans `[from, to, speed]` played faster. */
@@ -130,7 +131,8 @@ export async function createTake({ chromium, base, viewport, scale = 2, locale, 
         const dt = (retime(next, spans) - retime(f.t, spans)) || 1 / 120;
         list += `file '${file}'\nduration ${Math.max(dt, 1 / 120).toFixed(5)}\n`;
       });
-      list += `file '${path.join(frameDir, `${pad(frames.length - 1, 5)}.jpg`)}'\n`;
+      const lastFrame = path.join(frameDir, `${pad(frames.length - 1, 5)}.jpg`);
+      list += `file '${lastFrame}'\n`;
       writeFileSync(path.join(frameDir, "list.txt"), list);
       const outEnd = retime(end, spans);
       const outBeats = beats.map((b) => ({ id: b.id, at: Number(retime(b.at, spans).toFixed(3)) }));
@@ -149,7 +151,9 @@ export async function createTake({ chromium, base, viewport, scale = 2, locale, 
         });
         const args = [];
         parts.forEach((p) => args.push("-i", p.aiff));
-        const filter = `${parts.map((p, i) => `[${i + 1}:a]adelay=${Math.round(p.at * 1000)}|${Math.round(p.at * 1000)}[a${i}]`).join(";")};${parts.map((_, i) => `[a${i}]`).join("")}amix=inputs=${parts.length}:normalize=0[voice]`;
+        const delays = parts.map((p, i) => `[${i + 1}:a]adelay=${Math.round(p.at * 1000)}|${Math.round(p.at * 1000)}[a${i}]`).join(";");
+        const inputs = parts.map((_, i) => `[a${i}]`).join("");
+        const filter = `${delays};${inputs}amix=inputs=${parts.length}:normalize=0[voice]`;
         ff("-i", `${base0}.mp4`, ...args, "-filter_complex", filter, "-map", "0:v", "-map", "[voice]", "-c:v", "copy", "-c:a", "aac", "-b:a", "128k", "-shortest", `${base0}.narrated.mp4`);
       }
       rmSync(frameDir, { recursive: true, force: true });

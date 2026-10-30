@@ -118,6 +118,22 @@ function LibraryActions({ firstId, secondary }: Readonly<{ firstId?: string; sec
   );
 }
 
+/** The two examples offered under the drop zone (a tenant's lease, a landlord's file): a chip each adds it to the drop. */
+const examplesSlot = (examples: ExampleDocuments | undefined, order: readonly ("tenant" | "landlord")[], say: ReturnType<typeof useSay>["say"]) =>
+  function ExamplesSlot(add: (files: File[]) => void) {
+    return examples ? (
+    <div className="flex flex-wrap items-center gap-2" data-testid="library-examples">
+      <span className="text-sm text-fg-secondary">{say("library.tryExamples")}</span>
+      {order.map((role) => (
+        <Chip key={role} size="sm" selected={false} onClick={() => add([new File([examples[role].text], examples[role].filename, { type: "text/plain" })])}>
+          {say(role === "tenant" ? "library.exampleTenant" : "library.exampleLandlord")}
+        </Chip>
+      ))}
+      <span className="text-xs text-fg-muted">{say("library.examplesNote")}</span>
+    </div>
+  ) : null;
+  };
+
 /** Nothing at all yet: the owl, one sentence, the only drop zone, and two examples. */
 function LibraryEmpty({ jurisdictions, examples, order }: Readonly<{ jurisdictions: readonly Jurisdiction[]; examples?: ExampleDocuments; order: readonly ("tenant" | "landlord")[] }>) {
   const { say } = useSay();
@@ -127,19 +143,7 @@ function LibraryEmpty({ jurisdictions, examples, order }: Readonly<{ jurisdictio
       <LibraryDrop
         zone
         jurisdictions={jurisdictions}
-        examples={(add) =>
-          examples ? (
-            <div className="flex flex-wrap items-center gap-2" data-testid="library-examples">
-              <span className="text-sm text-fg-secondary">{say("library.tryExamples")}</span>
-              {order.map((role) => (
-                <Chip key={role} size="sm" selected={false} onClick={() => add([new File([examples[role].text], examples[role].filename, { type: "text/plain" })])}>
-                  {say(role === "tenant" ? "library.exampleTenant" : "library.exampleLandlord")}
-                </Chip>
-              ))}
-              <span className="text-xs text-fg-muted">{say("library.examplesNote")}</span>
-            </div>
-          ) : null
-        }
+        examples={examplesSlot(examples, order, say)}
       />
     </section>
   );

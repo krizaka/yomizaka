@@ -252,7 +252,7 @@ export function issueReport(payload: ReportPayload, labels: ReportLabels, key: S
   const signature = crypto.sign(null, signedMessage(payload, bodySha256), key.privateKey).toString("base64");
   const attestation: Attestation = { schema: REPORT_SCHEMA, algorithm: "Ed25519", keyId: key.keyId, payload, bodySha256, signature };
   // `<` is escaped so the JSON can never close its own script element; it parses back to the same value.
-  const json = JSON.stringify(attestation).replace(/</g, String.raw`\u003c`);
+  const json = JSON.stringify(attestation).replaceAll("<", String.raw`\u003c`);
   const block = `<script type="application/json" id="yomizaka-attestation">${json}</script>`;
   const html = body.replace(ATTESTATION_MARKER, block);
   return { html, fileSha256: sha256(html), attestation };

@@ -113,7 +113,8 @@ async function openDoc(file) {
 /** Runs the check and waits for Orazaka's report (its ruleset line appears with the findings). */
 async function check(type, ruleset, announce = false) {
   const seen = (re) => (document.body.innerText.match(new RegExp(re, "g")) ?? []).length;
-  const before = await page.evaluate(`(${seen.toString()})(${JSON.stringify(`${ruleset} ·`)})`);
+  const marker = JSON.stringify(`${ruleset} ·`);
+  const before = await page.evaluate(`(${seen.toString()})(${marker})`);
   const form = page.locator("form[aria-label]").first();
   await form.scrollIntoViewIfNeeded();
   await form.locator("select").first().selectOption(type);

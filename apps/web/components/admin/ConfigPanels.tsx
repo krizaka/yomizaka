@@ -24,7 +24,7 @@ const SCOPE_CHOICES = [SCOPE.global, SCOPE.workspace, SCOPE.user] as const;
 /** The scope the settings are shown and changed at: global, a workspace or a person — it is in the URL (`?scope=user&id=…`). */
 const idForm = createKrizakaForm({ schema: z.object({ id: z.string().trim().min(1).max(80) }), defaultValues: { id: "" } });
 
-function ScopeId({ scope, onGo }: { scope: ScopeState; onGo: (scope: Scope, id: string) => void }) {
+function ScopeId({ scope, onGo }: Readonly<{ scope: ScopeState; onGo: (scope: Scope, id: string) => void }>) {
   const { say, locale } = useSay();
   const form = idForm.useForm({ ...formI18n(say, locale), defaultValues: { id: scope.id }, onSubmit: (v) => onGo(scope.scope, v.id) });
   return (
@@ -37,7 +37,7 @@ function ScopeId({ scope, onGo }: { scope: ScopeState; onGo: (scope: Scope, id: 
   );
 }
 
-export function ScopeBar({ scope }: { scope: ScopeState }) {
+export function ScopeBar({ scope }: Readonly<{ scope: ScopeState }>) {
   const { say } = useSay();
   const router = useRouter();
   const path = usePathname() ?? "";
@@ -62,7 +62,7 @@ export function ScopeBar({ scope }: { scope: ScopeState }) {
 }
 
 /** Each rules pack is a flow: this turns it on or off in an environment, at once (the same switch as the flows page). */
-export function PacksPanel({ flows, environment }: { flows: AdminFlow[]; environment: "dev" | "prod" }) {
+export function PacksPanel({ flows, environment }: Readonly<{ flows: AdminFlow[]; environment: "dev" | "prod" }>) {
   const { say, locale } = useSay();
   const router = useRouter();
   const [problem, setProblem] = useState<string | null>(null);
