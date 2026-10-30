@@ -19,4 +19,10 @@ describe("the download videos workflow", () => {
   it("never writes the demo password to GITHUB_ENV", () => {
     assert.doesNotMatch(code, /GITHUB_ENV/);
   });
+  // yomizaka#575: the poster is the frame at 2 s; a film that opens on the sign-in made a sign-in the poster of the binder.
+  it("films the binder already signed in and opens the report film on the report (the poster is the frame at 2 s)", () => {
+    assert.match(code, /showcase-web\.mjs[^\n]*--sign-in off/);
+    const script = readFileSync(new URL("./showcase-web.mjs", import.meta.url), "utf8");
+    assert.match(script, /goto\(`\$\{base\}\/\$\{locale\}\$\{reportPath\}\/rapport`/);
+  });
 });
