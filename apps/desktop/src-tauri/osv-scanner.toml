@@ -1,0 +1,22 @@
+# Known vulnerabilities we accept for now (krizaka/.github#372). Each entry has a reason and a date: the ignore EXPIRES, then CI
+# fails again (the shared osv-scan workflow fails on high/critical). Never extend a date without checking for a fix first.
+
+[[IgnoredVulns]]
+id = "GHSA-qwgh-2vcv-g2f7"
+ignoreUntil = 2026-12-15
+reason = "Linux GTK3 stack pinned by Tauri 2 (desktop app); no fixed release without a Tauri major, Linux-only code path"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0429"
+ignoreUntil = 2026-12-15
+reason = "Linux GTK3 stack pinned by Tauri 2 (desktop app); no fixed release without a Tauri major, Linux-only code path"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0370"
+ignoreUntil = 2026-12-15
+reason = "Linux GTK3 stack pinned by Tauri 2 (desktop app); no fixed release without a Tauri major, Linux-only code path"
+
+[[IgnoredVulns]]
+id = "GHSA-wrw7-89jp-8q8g"
+ignoreUntil = 2026-12-15
+reason = "Linux GTK3 stack pinned by Tauri 2 (desktop app); no fixed release without a Tauri major, Linux-only code path"
