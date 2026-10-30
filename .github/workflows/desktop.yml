@@ -9,6 +9,8 @@ on:
       - "apps/desktop/**"
       - "packages/client/**"
       - "packages/core/**"
+      - "scripts/desktop-journey*"
+      - ".github/actions/desktop-journey/**"
       - ".github/workflows/desktop.yml"
   push:
     tags: ["desktop-v*"]
@@ -31,6 +33,31 @@ jobs:
       working-directory: apps/desktop
       product-name: Yomizaka
       sign: false
+
+  # Pull request: the Mac journey (yomizaka#636): the app with its test driver, the dev persona, a folder pre-granted, one real
+  # lease checked, a relaunch. Real engine and the deployed dev (as the dev smoke): the secrets of the `dev` environment.
+  desktop-journey:
+    if: github.event_name == 'pull_request'
+    name: Mac journey
+    runs-on: macos-latest
+    timeout-minutes: 40
+    environment: dev
+    permissions:
+      contents: read
+    env:
+      SMOKE_EMAIL: ${{ secrets.SMOKE_EMAIL }}
+      SMOKE_PASSWORD: ${{ secrets.SMOKE_PASSWORD }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/desktop-journey
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: desktop-journey
+          path: desktop-journey
+          retention-days: 7
 
   # Tag: signed and notarised in the `release` environment, the secrets passed by name.
   desktop-release:
