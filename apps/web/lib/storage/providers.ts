@@ -10,8 +10,8 @@ import { asDescriptor } from "./where";
 
 /** The scope of the deployment's providers (ADR-005): the admin's, not a user's. */
 export const ORG_SCOPE = "org";
-/** The kinds of data this product keeps in a provider. */
-export const DATA_KIND = { documents: "documents", avatars: "avatars" } as const;
+/** The kinds of data this product keeps in a provider. `backups` is the nightly encrypted dump (deploy/backup, #513): a second, independent place, in Canada. */
+export const DATA_KIND = { documents: "documents", avatars: "avatars", backups: "backups" } as const;
 
 /** A signed link lives at most this long, whatever the admin asks: a document is personal data. */
 // @fixed: a link to personal data that outlives a reading session is a leak

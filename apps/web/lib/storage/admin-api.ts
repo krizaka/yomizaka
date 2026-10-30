@@ -17,7 +17,7 @@ export const createProviderInput = z.object({
   credentials: z.record(z.string().max(200), z.string().max(500)).default({}),
 });
 export const changeKeyInput = z.object({ credentials: z.record(z.string().max(200), z.string().min(1).max(500)).refine((c) => Object.keys(c).length > 0 && !("encryptionKey" in c), "at least one credential, never the object-encryption key (the stored objects would no longer open)") });
-export const setDefaultInput = z.object({ dataKind: z.enum([DATA_KIND.documents, DATA_KIND.avatars]) });
+export const setDefaultInput = z.object({ dataKind: z.enum([DATA_KIND.documents, DATA_KIND.avatars, DATA_KIND.backups]) });
 
 /** A kind as the screen draws its form: the fields, never a value. */
 export interface KindForm {

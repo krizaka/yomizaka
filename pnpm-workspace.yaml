@@ -1,6 +1,7 @@
 packages:
   - "apps/*"
   - "packages/*"
+  - "deploy/backup"
 onlyBuiltDependencies:
   - esbuild
   - sharp

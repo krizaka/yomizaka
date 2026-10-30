@@ -39,7 +39,7 @@ interface Overview {
 
 const KEY = ["admin-storage"] as const;
 const overview = z.custom<Overview>();
-const DATA_KINDS = ["documents", "avatars"] as const;
+const DATA_KINDS = ["documents", "avatars", "backups"] as const;
 const TONE = { draft: "neutral", verified: "accent", active: "success", retiring: "warning", disabled: "neutral" } as const;
 
 /** Every field a kind can ask for, as the form knows them: the registry says which ones a kind shows (the screen reads it, never lists a kind). */

@@ -1,7 +1,7 @@
 import { createProviderService, memoryProviderStore } from "@krizaka/storage/provider-admin";
 import { describe, expect, it } from "vitest";
 
-import { addProvider, adminKinds, assertDefaultResidency, changeKeyInput, createProviderInput, guarded, overview, storageRefusal } from "./admin-api";
+import { addProvider, adminKinds, assertDefaultResidency, changeKeyInput, createProviderInput, guarded, overview, setDefaultInput, storageRefusal } from "./admin-api";
 
 const ADMIN = { id: "a1", label: "admin@x.test" };
 const SECRET = "super-secret-zone-password";
@@ -117,5 +117,13 @@ describe("a production default for the documents must be in Canada (yomizaka#524
   it("leaves development free (fictional data only) and the avatars alone", () => {
     expect(() => assertDefaultResidency("dev", tested("elsewhere"), "documents")).not.toThrow();
     expect(() => assertDefaultResidency("prod", tested("elsewhere"), "avatars")).not.toThrow();
+  });
+});
+
+describe("the data kinds an admin can make a default for", () => {
+  it("includes the nightly backups (a second, independent place, #513) and refuses an unknown kind", () => {
+    expect(setDefaultInput.safeParse({ dataKind: "backups" }).success).toBe(true);
+    expect(setDefaultInput.safeParse({ dataKind: "documents" }).success).toBe(true);
+    expect(setDefaultInput.safeParse({ dataKind: "secrets" }).success).toBe(false);
   });
 });

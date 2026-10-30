@@ -1290,7 +1290,8 @@
         },
         "dataKinds": {
           "documents": "documents",
-          "avatars": "avatars"
+          "avatars": "avatars",
+          "backups": "the nightly backups"
         },
         "fields": {
           "endpoint": "Endpoint",
