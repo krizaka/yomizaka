@@ -12,6 +12,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
+import { applyTheme, themesOf } from "./lib/recording-kit.mjs";
 
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright-core");
@@ -23,6 +24,7 @@ const flag = (name, fallback) => {
 };
 const outRoot = path.resolve(args[0] ?? "take");
 const locale = flag("locale", "fr");
+const [theme] = themesOf(flag("theme", "dark")); // a video is one theme; run it twice for both
 const BASE = process.env.APP_BASE_URL ?? "https://dev.yomizaka.com";
 const email = process.env.YOMIZAKA_USER_EMAIL;
 const password = process.env.YOMIZAKA_USER_PASSWORD;
@@ -51,7 +53,7 @@ const file = path.join(os.tmpdir(), "bail-exemple-fictif.txt");
 (await import("node:fs")).writeFileSync(file, lease);
 
 const browser = await chromium.launch();
-const base = { viewport: VIEWPORT, deviceScaleFactor: SCALE, colorScheme: "dark", locale, isMobile: true, hasTouch: true };
+const base = { viewport: VIEWPORT, deviceScaleFactor: SCALE, colorScheme: theme, locale, isMobile: true, hasTouch: true };
 
 // Sign in once, off camera, and choose a side so the onboarding card does not cover the library.
 const auth = await browser.newContext(base);
@@ -76,6 +78,7 @@ const hideEmail = () => {
 };
 
 const ctx = await browser.newContext({ ...base, storageState });
+await applyTheme(ctx, theme);
 await ctx.addInitScript(hideEmail);
 const page = await ctx.newPage();
 // Playwright's recorder and the protocol's screencast film a phone in CSS pixels (a 390 px page would be blurry), and

@@ -17,3 +17,27 @@ export const hideEmail = () => {
     new MutationObserver(hide).observe(document.body, { childList: true, subtree: true, characterData: true });
   });
 };
+
+/** The themes a capture can be taken in; `both` means one pass per theme (every shot is checked dark and light). */
+export const THEMES = ["dark", "light"];
+
+/** `--theme dark|light|both` -> the list of themes to capture (dark by default). */
+export const themesOf = (value = "dark") => {
+  if (value === "both") return [...THEMES];
+  if (!THEMES.includes(value)) throw new Error(`--theme must be dark, light or both, got "${value}"`);
+  return [value];
+};
+
+/** Init script (run before the page loads, with the theme as its argument): the visitor's `kz-theme` choice. */
+export const presetTheme = (theme) => {
+  try {
+    localStorage.setItem("kz-theme", theme);
+  } catch {
+    /* storage blocked: the colour scheme below still decides */
+  }
+};
+
+/** Applies a theme to a Playwright context before any page loads: the browser scheme and the stored `kz-theme`. */
+export const applyTheme = async (ctx, theme) => {
+  await ctx.addInitScript(presetTheme, theme);
+};

@@ -14,7 +14,7 @@ import { mkdirSync, renameSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 
-import { flagReader, hideEmail } from "./lib/recording-kit.mjs";
+import { applyTheme, flagReader, hideEmail, themesOf } from "./lib/recording-kit.mjs";
 
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright-core");
@@ -25,6 +25,7 @@ const outDir = path.resolve(args[0] ?? "showcase-web");
 const base = flag("base", "http://localhost:3000");
 const locale = flag("locale", "en");
 const signInMode = flag("sign-in", "camera");
+const [theme] = themesOf(flag("theme", "dark")); // a video is one theme; run it twice for both
 const email = process.env.E2E_EMAIL;
 const password = process.env.E2E_PASSWORD;
 if (!email || !password) throw new Error("E2E_EMAIL and E2E_PASSWORD are required (the seeded persona, never a real account)");
@@ -47,7 +48,8 @@ async function signIn(page, { slow }) {
 
 /** Signed-in state, made off camera, for the journeys that start inside the app. */
 async function session() {
-  const ctx = await browser.newContext({ viewport: VIEWPORT, colorScheme: "dark", locale });
+  const ctx = await browser.newContext({ viewport: VIEWPORT, colorScheme: theme, locale });
+  await applyTheme(ctx, theme);
   const page = await ctx.newPage();
   await signIn(page, { slow: false });
   const state = await ctx.storageState();
@@ -57,7 +59,8 @@ async function session() {
 
 /** One journey = one context = one video; the file is renamed <id>.webm in the out directory. */
 async function record(id, act, storageState) {
-  const ctx = await browser.newContext({ viewport: VIEWPORT, colorScheme: "dark", locale, storageState, recordVideo: { dir: outDir, size: VIEWPORT } });
+  const ctx = await browser.newContext({ viewport: VIEWPORT, colorScheme: theme, locale, storageState, recordVideo: { dir: outDir, size: VIEWPORT } });
+  await applyTheme(ctx, theme);
   await ctx.addInitScript(hideEmail);
   const page = await ctx.newPage();
   await act(page);
