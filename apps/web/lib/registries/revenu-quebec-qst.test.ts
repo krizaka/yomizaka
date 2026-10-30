@@ -75,11 +75,11 @@ describe("revenuQuebecQstAdapter", () => {
   it("caches a definitive answer for the window, and only that", async () => {
     let t = new Date("2026-10-30T10:00:00Z").getTime();
     const f = fake([ok("R"), ok("R"), { status: 503, text: "" }]);
-    const registry = revenuQuebecQstAdapter({ fetch: f.fetch, now: () => new Date(t), cacheMs: 1000 });
+    const registry = revenuQuebecQstAdapter({ fetch: f.fetch, now: () => new Date(t), cacheHours: 1 });
     await registry.lookupQst(NUMBER);
     await registry.lookupQst(NUMBER);
     expect(f.urls).toHaveLength(1);
-    t += 2000;
+    t += 2 * 3_600_000;
     await registry.lookupQst(NUMBER);
     expect(f.urls).toHaveLength(2);
   });

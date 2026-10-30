@@ -1,4 +1,4 @@
-import { addMilliseconds, isBefore } from "date-fns";
+import { addHours, isBefore } from "@krizaka/time";
 import { z } from "zod";
 
 import { ANSWER, type BusinessRegistry, NOT_LOOKED_UP, type RegistryAnswer } from "./model";
@@ -13,7 +13,7 @@ export const QST_ENDPOINT = "https://svcnab2b.revenuquebec.ca/2019/02/Validation
 // @fixed: the API answers in well under a second; a slow register must not hold a report
 const TIMEOUT_MS = 5000;
 // @fixed: a status changes rarely and a number is looked up once per document: hours, not days
-const CACHE_MS = 6 * 3_600_000;
+const CACHE_HOURS = 6;
 
 const message = z.object({ CodeMessage: z.string().optional(), DescriptionMessage: z.string().optional() });
 const envelope = z.object({
@@ -41,7 +41,7 @@ export interface QstAdapterOptions {
   /** The injected clock. */
   now: () => Date;
   timeoutMs?: number;
-  cacheMs?: number;
+  cacheHours?: number;
 }
 
 /** The adapter. 200 "R" → registered, "A" → struck; 404 no data → unknown; 5xx, timeout, anything unreadable → not looked up (never a signal). */
@@ -49,7 +49,7 @@ export function revenuQuebecQstAdapter(options: QstAdapterOptions): BusinessRegi
   const doFetch = options.fetch ?? globalThis.fetch;
   const now = options.now;
   const timeoutMs = options.timeoutMs ?? TIMEOUT_MS;
-  const cacheMs = options.cacheMs ?? CACHE_MS;
+  const cacheHours = options.cacheHours ?? CACHE_HOURS;
   const cache = new Map<string, { expiresAt: Date; answer: RegistryAnswer }>();
 
   async function call(number: string): Promise<Response | null> {
@@ -100,7 +100,7 @@ export function revenuQuebecQstAdapter(options: QstAdapterOptions): BusinessRegi
       }
       const answer = await read(res);
       if (answer.kind !== ANSWER.notLookedUp) {
-        cache.set(number, { expiresAt: addMilliseconds(now(), cacheMs), answer });
+        cache.set(number, { expiresAt: addHours(now(), cacheHours), answer });
       }
       return answer;
     },
