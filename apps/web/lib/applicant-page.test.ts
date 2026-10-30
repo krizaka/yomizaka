@@ -9,7 +9,7 @@ const state = (over: Partial<{ status: LinkState; types: string[]; documents: { 
   status: over.status ?? LINK.open,
   expiresAt: "2026-11-07T15:00:00.000Z",
   types: (over.types ?? ["pay-stub", "bank-statement"]).map((id) => ({ id, fields: [], retentionPolicy: "after-check" })),
-  documents: over.documents ?? [],
+  documents: (over.documents ?? []).map((d) => ({ signals: [], ...d })),
 });
 const checked = [CONSENT_PURPOSE.DOCUMENT_CHECK];
 
@@ -81,5 +81,12 @@ describe("the applicant's page (yomizaka#341)", () => {
   it("lets any other failure through", async () => {
     const deps = { fileByToken: async () => Promise.reject(new Error("db down")), applicantFileState: async () => state(), activeConsents: async () => [] };
     await expect(loadApplicantPage("t", new Date(), deps)).rejects.toThrow("db down");
+  });
+
+  it("takes an explanation of a trace while the link stands or was used, with the consent to the check, and not otherwise (yomizaka#626)", () => {
+    expect(applicantPageOf(state(), checked).canAnswer).toBe(true);
+    expect(applicantPageOf(state({ status: LINK.used }), checked).canAnswer).toBe(true);
+    expect(applicantPageOf(state(), []).canAnswer).toBe(false);
+    for (const status of [LINK.revoked, LINK.expired, LINK.closed, LINK.erased]) expect(applicantPageOf(state({ status }), checked).canAnswer).toBe(false);
   });
 });

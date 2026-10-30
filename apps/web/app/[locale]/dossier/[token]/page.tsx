@@ -26,7 +26,7 @@ export default async function ApplicantFilePage({ params }: Readonly<{ params: P
     <>
       <SiteHeader locale={locale} current="home" />
       <main id="content" className="mx-auto w-full max-w-(--kz-page-max,72rem) px-(--kz-page-gutter,1rem) pb-16 pt-28">
-        <ApplicantFile token={token} initial={loaded.state} consents={loaded.consents} noticeVersion={NOTICE_VERSION} words={{ applicant: t.applicant, file: t.applicantFile, unknown: t.console.errors.UNKNOWN }} locale={locale} expires={expires} />
+        <ApplicantFile token={token} initial={loaded.state} consents={loaded.consents} noticeVersion={NOTICE_VERSION} words={{ applicant: t.applicant, file: t.applicantFile, traces: t.console.analysis.traces, levels: t.console.analysis.levels, unknown: t.console.errors.UNKNOWN }} locale={locale} expires={expires} />
       </main>
       <SiteFooter locale={locale} />
     </>

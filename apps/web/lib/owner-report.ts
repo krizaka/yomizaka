@@ -20,6 +20,8 @@ export interface OwnerSignal {
   /** The family and where in the file (page, later save, field): facts, never a value of the document. The box stays in the person's own report. */
   family?: string;
   evidence?: { page?: number; revision?: number; field?: string };
+  /** The applicant's own explanation of this trace and its date (ADR-0014, yomizaka#626), shown next to it. */
+  answer?: { text: string; at: string };
 }
 export interface OwnerFinding {
   ruleId: string;
@@ -79,7 +81,7 @@ export function ownerReportOf(file: ApplicantFileView, hashes: ReadonlyMap<strin
     for (const c of done) {
       doc.runs.push({ studio: c.studio, runId: c.runId!, studioVersion: c.blueprintVersion, finishedAt: c.finishedAt });
       if (isAuthenticity(c.report)) {
-        doc.signals.push(...c.report.signals.map(ownerSignalOf));
+        doc.signals.push(...c.report.signals.map((s) => ({ ...ownerSignalOf(s), ...(d.answers[s.signalId] ? { answer: d.answers[s.signalId] } : {}) })));
         const ne = c.report.notExamined;
         doc.notExamined.push(...asList(ne));
       } else if (isCompliance(c.report)) {

@@ -1,7 +1,7 @@
 import { memoryStore, type OrazakaRun } from "@yomizaka/core";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { CONSENT_MEANS, CONSENT_PURPOSE, type ConsentPurpose, grantConsent, NOTICE_VERSION } from "./applicant-consent";
+import { CONSENT_MEANS, CONSENT_PURPOSE, type ConsentPurpose, eraseApplication, grantConsent, NOTICE_VERSION, withdrawConsent } from "./applicant-consent";
 import { activeConsents } from "./applicant-consent";
 import { applicantFileOf, closeApplicantFile, listApplicantFiles, requestApplicantFile, revokeApplicantFile, submitApplicantFile, uploadApplicantDocument,type UploadContext } from "./applicant-file";
 import { applicantFileState } from "./applicant-file";
@@ -11,6 +11,7 @@ import { migrate, query } from "./db";
 import { useOrazakaClient } from "./orazaka";
 import { cleanPdf } from "./preflight/fixtures";
 import { consent as screeningConsent, requestScreening } from "./screening";
+import { answerSignal,answersOf } from "./signal-answers";
 
 /** yomizaka#127 against the real database (CI's service; locally YOMIZAKA_DB_IT=1 DATABASE_URL=…). Orazaka is a fake that records the runs. */
 const enabled = process.env.YOMIZAKA_DB_IT === "1" && !!process.env.DATABASE_URL;
@@ -181,5 +182,55 @@ describe.runIf(enabled)("the applicant file (yomizaka#127)", () => {
     expect(page?.consents).toContain(CONSENT_PURPOSE.DOCUMENT_CHECK);
     const screening = await requestScreening(landlordA, { tenantName: "Camille Fictif", tenantEmail: `s-${stamp}@yomizaka.test`, scope: ["payment-history"] }, NOW);
     expect(await loadApplicantPage(screening.token, NOW, deps)).toBeNull();
+  });
+
+  describe("the applicant's answer to a trace (ADR-0014, yomizaka#626)", () => {
+    const REPORT = { header: "x", signals: [{ signalId: "PDF-REV-002", level: "incohérent", observation: "A later save replaced an object.", evidence: { page: 1, revision: 2 } }], notExamined: [] };
+    /** A file with one received document whose authenticity check found one trace. */
+    const withTrace = async () => {
+      const made = await askWithConsent(["pay-stub"]);
+      const { document } = await uploadApplicantDocument(made.token, "pay-stub", await pdf(`TRACE ${++seq}`), ctx(), NOW);
+      await query("DELETE FROM analyses WHERE document_id = $1", [document.id]);
+      await query("INSERT INTO analyses (document_id, studio, status, run_id, report, finished_at) VALUES ($1, 'document-authenticity', 'succeeded', $2, $3::jsonb, $4)", [document.id, `run-trace-${seq}`, JSON.stringify(REPORT), NOW]);
+      return { made, documentId: document.id, link: await fileByToken(made.token) };
+    };
+    const ASK = (documentId: string, text: string, signalId = "PDF-REV-002") => ({ documentId, signalId, text });
+
+    it("shows the applicant the trace and their answer, and the owner the answer next to the signal, dated", async () => {
+      const { made, documentId, link } = await withTrace();
+      expect((await applicantFileState(made.token, NOW)).documents[0]!.signals).toMatchObject([{ id: "PDF-REV-002", family: "history", answer: null }]);
+      await answerSignal(link, ASK(documentId, "  Signed   after I downloaded it. "), NOW);
+      expect((await applicantFileState(made.token, NOW)).documents[0]!.signals[0]!.answer).toEqual({ text: "Signed after I downloaded it.", at: NOW.toISOString() });
+      expect((await applicantFileOf(landlordA.id, made.id, NOW)).documents[0]!.answers).toEqual({ "PDF-REV-002": { text: "Signed after I downloaded it.", at: NOW.toISOString() } });
+      await answerSignal(link, ASK(documentId, "Re-issued by my employer."), new Date(NOW.getTime() + 1000));
+      expect((await answersOf([documentId])).get(documentId)?.get("PDF-REV-002")?.text).toBe("Re-issued by my employer.");
+      await answerSignal(link, ASK(documentId, "  "), NOW);
+      expect((await answersOf([documentId])).size).toBe(0);
+    });
+
+    it("refuses a trace that is not in the file, another application's document, too long a text, a missing consent and a closed link", async () => {
+      const { made, documentId, link } = await withTrace();
+      expect(await codeOf(answerSignal(link, ASK(documentId, "x", "NOPE-001"), NOW))).toBe("404 SIGNAL_NOT_FOUND");
+      const other = await withTrace();
+      expect(await codeOf(answerSignal(link, ASK(other.documentId, "x"), NOW))).toBe("404 SIGNAL_NOT_FOUND");
+      expect(await codeOf(answerSignal(link, ASK(documentId, "x".repeat(601)), NOW))).toBe("422 ANSWER_TOO_LONG");
+      await withdrawConsent(made.id, CONSENT_PURPOSE.DOCUMENT_CHECK, NOW);
+      expect(await codeOf(answerSignal(link, ASK(documentId, "x"), NOW))).toBe("403 CONSENT_REQUIRED");
+      const closed = await withTrace();
+      await revokeApplicantFile(landlordA.id, closed.made.id, NOW);
+      expect(await codeOf(answerSignal(await fileByToken(closed.made.token), ASK(closed.documentId, "x"), NOW))).toBe("409 ANSWER_CLOSED");
+    });
+
+    it("keeps the explanation out of the audit line (ids only) and erases it with the application", async () => {
+      const { made, documentId, link } = await withTrace();
+      await answerSignal(link, ASK(documentId, "Explication à ne jamais journaliser."), NOW);
+      const lines = await query<{ detail: unknown }>("SELECT detail FROM audit_log WHERE target_id = $1 AND action = 'signal.answered'", [made.id]);
+      expect(lines).toHaveLength(1);
+      expect(JSON.stringify(lines[0]!.detail)).not.toContain("journaliser");
+      expect(lines[0]!.detail).toEqual({ document: documentId, signal: "PDF-REV-002" });
+      await eraseApplication(made.id, landlordA.id, store, NOW);
+      const left = await query("SELECT 1 FROM signal_answers WHERE document_id = $1", [documentId]);
+      expect(left).toEqual([]);
+    });
   });
 });

@@ -17,7 +17,7 @@ export { CONSENT_PURPOSE, type ConsentPurpose };
 export const CONSENT_PURPOSES = Object.values(CONSENT_PURPOSE) as ConsentPurpose[];
 
 /** The version of the notice (messages `applicant.notice`). Changing the text changes this, and a consent to an old one is refused. */
-export const NOTICE_VERSION = "2026-10-24.2";
+export const NOTICE_VERSION = "2026-10-30.1";
 /** The application status once erased: defined with the file's pure rules, which the browser reads too. */
 export { APPLICATION_ERASED };
 /** How consent was given: the applicant's own form, on the link they received. */
