@@ -40,11 +40,11 @@ export function StorageSection() {
   const { say, locale } = useSay();
   const router = useRouter();
   const info = useQuery({ queryKey: ["storage-settings"], queryFn: () => krizakaFetch("/api/me/storage", { schema: current }), staleTime: 0 });
-  if (!info.data) return null;
+  if (!info.data) {return null;}
   const refresh = () => { void info.refetch(); router.refresh(); };
   const { settings, clouds } = info.data;
   // A connected cloud is the home of the kept documents: its panel replaces the choice until the person disconnects it.
-  if (settings.mode === STORAGE_MODE.cloud) return <CloudPanel settings={settings} clouds={clouds} say={say} onChanged={refresh} />;
+  if (settings.mode === STORAGE_MODE.cloud) {return <CloudPanel settings={settings} clouds={clouds} say={say} onChanged={refresh} />;}
   return (
     <>
       <StorageForm key={settings.testedAt ?? "new"} initial={settings} canStoreCredentials={info.data.canStoreCredentials} say={say} locale={locale} onSaved={refresh} />
@@ -59,8 +59,8 @@ const CLOUD_LABEL_KEY = (connector: string) => `settings.storage.clouds.${connec
 /** The return of the provider's consent screen: `?cloud=connected`, or the reason it did not end in a connection. */
 function CloudResult({ say }: Readonly<{ say: Say }>) {
   const result = useSearchParams().get("cloud");
-  if (!result) return null;
-  if (result === "connected") return null; // the connected panel says it
+  if (!result) {return null;}
+  if (result === "connected") {return null;} // the connected panel says it
   return <Alert tone="danger">{say(result === "denied" ? "settings.storage.cloudResultDenied" : "settings.storage.cloudResultFailed")}</Alert>;
 }
 
@@ -125,7 +125,7 @@ function s3Defaults(s3: S3Settings) {
 }
 
 function stepOutcome(s: Verification["steps"][number], say: Say): string {
-  if (s.ok) return say("settings.storage.stepOk");
+  if (s.ok) {return say("settings.storage.stepOk");}
   const detail = s.error ? ` (${s.error})` : "";
   return `${say("settings.storage.stepFail")}${detail}`;
 }
@@ -178,7 +178,7 @@ function StorageForm({ initial, canStoreCredentials, say, locale, onSaved }: Rea
     try {
       const out = await test.mutateAsync();
       setVerified(out.verification);
-      if (out.verification.error) setProblem(say(`errors.${out.verification.error}`));
+      if (out.verification.error) {setProblem(say(`errors.${out.verification.error}`));}
     } catch (error) {
       setProblem(say(`errors.${errorKey(error)}`));
     }

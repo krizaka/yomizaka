@@ -68,7 +68,7 @@ export interface SettingsInput {
  * the same bucket go through `changeKey` (tested first), and none given keeps the ones already stored. `s3` mode needs all its fields.
  */
 export async function saveSettings(q: Query, owner: string, input: SettingsInput, own: OwnProviders | null, actor: Actor, now: Date): Promise<StorageSettings> {
-  if (input.keepDefault && input.mode === STORAGE_MODE.none) throw refuse(400, "BAD_REQUEST", "Nothing can be kept by default when keeping is off");
+  if (input.keepDefault && input.mode === STORAGE_MODE.none) {throw refuse(400, "BAD_REQUEST", "Nothing can be kept by default when keeping is off");}
   if (input.mode !== STORAGE_MODE.s3) {
     await q(
       `INSERT INTO storage_settings (owner_id, mode, keep_default, updated_at) VALUES ($1, $2, $3, $4)
@@ -78,8 +78,8 @@ export async function saveSettings(q: Query, owner: string, input: SettingsInput
     return loadSettings(q, owner);
   }
   const s3 = input.s3;
-  if (!s3?.endpoint || !s3.region || !s3.bucket || !s3.accessKeyId) throw refuse(400, "BAD_REQUEST", "Endpoint, region, bucket and access key are required");
-  if (!own) throw refuse(503, "SETTINGS_KEY_MISSING", "Storing credentials is not available on this deployment");
+  if (!s3?.endpoint || !s3.region || !s3.bucket || !s3.accessKeyId) {throw refuse(400, "BAD_REQUEST", "Endpoint, region, bucket and access key are required");}
+  if (!own) {throw refuse(503, "SETTINGS_KEY_MISSING", "Storing credentials is not available on this deployment");}
   const [existing] = await q<Row>(`SELECT ${COLUMNS} FROM storage_settings WHERE owner_id = $1`, [owner]);
   const providerId = await registerOrKeep(own, actor, owner, s3, existing);
   await q(
@@ -96,16 +96,16 @@ export async function saveSettings(q: Query, owner: string, input: SettingsInput
 async function registerOrKeep(own: OwnProviders, actor: Actor, owner: string, s3: OwnS3 & { secretAccessKey?: string }, existing: Row | undefined): Promise<string> {
   const current = existing?.provider_id ?? null;
   const sameBucket = !!current && existing?.s3_endpoint === s3.endpoint && existing.s3_region === s3.region && existing.s3_bucket === s3.bucket;
-  if (sameBucket && !s3.secretAccessKey && existing?.s3_access_key_id === s3.accessKeyId) return current!;
+  if (sameBucket && !s3.secretAccessKey && existing?.s3_access_key_id === s3.accessKeyId) {return current!;}
   const secretAccessKey = s3.secretAccessKey || (await storedSecret(own, current));
-  if (!secretAccessKey) throw refuse(400, "BAD_REQUEST", "The secret access key is required");
+  if (!secretAccessKey) {throw refuse(400, "BAD_REQUEST", "The secret access key is required");}
   const credentials = { accessKeyId: s3.accessKeyId, secretAccessKey };
   if (sameBucket) {
     await replaceOwnS3Key(own, actor, current!, credentials);
     return current!;
   }
   const id = await registerOwnS3(own, actor, owner, { endpoint: s3.endpoint, region: s3.region, bucket: s3.bucket, ...credentials });
-  if (current) await own.service.disable(actor, current).catch(() => undefined);
+  if (current) {await own.service.disable(actor, current).catch(() => undefined);}
   return id;
 }
 
@@ -116,20 +116,20 @@ async function registerOrKeep(own: OwnProviders, actor: Actor, owner: string, s3
  */
 export async function ownS3Store(q: Query, owner: string, own: OwnProviders | null): Promise<DocumentStore | null> {
   const [row] = await q<Row>(`SELECT ${COLUMNS} FROM storage_settings WHERE owner_id = $1`, [owner]);
-  if (!row) return null;
-  if (row.cloud_connector && row.mode !== STORAGE_MODE.cloud) return disconnectedStore(row.cloud_connector);
-  if (row.mode === STORAGE_MODE.cloud) return row.provider_id && own ? cloudBucketStore(own, row.provider_id, row.cloud_connector ?? "") : null;
-  if (row.mode !== STORAGE_MODE.s3 || !row.s3_endpoint || !row.provider_id || !own) return null;
+  if (!row) {return null;}
+  if (row.cloud_connector && row.mode !== STORAGE_MODE.cloud) {return disconnectedStore(row.cloud_connector);}
+  if (row.mode === STORAGE_MODE.cloud) {return row.provider_id && own ? cloudBucketStore(own, row.provider_id, row.cloud_connector ?? "") : null;}
+  if (row.mode !== STORAGE_MODE.s3 || !row.s3_endpoint || !row.provider_id || !own) {return null;}
   return ownBucketStore(own, row.provider_id, { endpoint: row.s3_endpoint, region: row.s3_region ?? "" });
 }
 
 /** The store an owner's documents use: nothing (kept off), the deployment's own (Krizaka), or the owner's S3. */
 export async function storeForOwner(q: Query, owner: string, own: OwnProviders | null, krizaka: DocumentStore): Promise<{ store: DocumentStore; settings: StorageSettings }> {
   const settings = await loadSettings(q, owner);
-  if (settings.mode === STORAGE_MODE.none) return { store: noneStore(), settings };
+  if (settings.mode === STORAGE_MODE.none) {return { store: noneStore(), settings };}
   if (settings.mode === STORAGE_MODE.s3 || settings.mode === STORAGE_MODE.cloud) {
     const theirs = await ownS3Store(q, owner, own);
-    if (!theirs) throw refuse(503, "STORAGE_UNAVAILABLE", "The workspace's storage is not available");
+    if (!theirs) {throw refuse(503, "STORAGE_UNAVAILABLE", "The workspace's storage is not available");}
     return { store: theirs, settings };
   }
   return { store: krizaka, settings };

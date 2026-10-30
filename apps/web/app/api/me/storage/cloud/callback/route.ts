@@ -22,13 +22,13 @@ export const GET = (req: Request) =>
     const back = (result: string) => Response.redirect(new URL(`/${session.account.locale}/app/settings/stockage?cloud=${encodeURIComponent(result)}`, env().APP_PUBLIC_URL), 303);
     const code = url.searchParams.get("code");
     const state = url.searchParams.get("state");
-    if (url.searchParams.get("error") || !code || !state) return back("denied");
+    if (url.searchParams.get("error") || !code || !state) {return back("denied");}
     try {
       await assertFeature("ownStorage", session.account.id);
       await assertUserConnectors();
       const flow = cloudFlow();
       const own = providers();
-      if (!flow || !own) throw refuse(503, "SETTINGS_KEY_MISSING", "Connecting a cloud is not available on this deployment");
+      if (!flow || !own) {throw refuse(503, "SETTINGS_KEY_MISSING", "Connecting a cloud is not available on this deployment");}
       const grant = await completeConnection(flow, session.account.id, { code, state });
       const connector = CLOUD[grant.cloud];
       const providerId = await registerCloud(own, actorOf(session.account), session.account.id, { connector, clientId: grant.clientId, clientSecret: grant.clientSecret, refreshToken: grant.refreshToken });

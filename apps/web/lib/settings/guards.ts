@@ -24,12 +24,12 @@ export const featureOn = async (feature: Feature, userId: string | null): Promis
 
 /** 403 FEATURE_OFF when the feature is switched off for this person. */
 export async function assertFeature(feature: Feature, userId: string | null): Promise<void> {
-  if (!(await featureOn(feature, userId))) throw refuse(403, "FEATURE_OFF", "This feature is switched off", { feature });
+  if (!(await featureOn(feature, userId))) {throw refuse(403, "FEATURE_OFF", "This feature is switched off", { feature });}
 }
 
 /** 403 FEATURE_OFF when the administrator has not opened user cloud connections (`storage.userConnectors`, off by default: a new data flow is opened on purpose). */
 export async function assertUserConnectors(): Promise<void> {
-  if ((await appSettings().get("storage.userConnectors" as SettingKey)) !== true) throw refuse(403, "FEATURE_OFF", "Connecting a cloud is switched off", { feature: "storage.userConnectors" });
+  if ((await appSettings().get("storage.userConnectors" as SettingKey)) !== true) {throw refuse(403, "FEATURE_OFF", "Connecting a cloud is switched off", { feature: "storage.userConnectors" });}
 }
 
 /** The two feature switches the document view depends on, resolved for this person. */
@@ -46,7 +46,7 @@ const ADMIN = "ADMIN";
 
 /** 503 MAINTENANCE while the app is closed for consumers (an administrator is never locked out). */
 export async function assertOpen(account: { role: "USER" | "ADMIN" }): Promise<void> {
-  if (account.role === ADMIN) return;
+  if (account.role === ADMIN) {return;}
   const m = await maintenance();
-  if (m.on) throw refuse(503, "MAINTENANCE", "The app is in maintenance", { message: m.message });
+  if (m.on) {throw refuse(503, "MAINTENANCE", "The app is in maintenance", { message: m.message });}
 }

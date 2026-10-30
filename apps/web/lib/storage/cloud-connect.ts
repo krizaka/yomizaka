@@ -63,8 +63,8 @@ export function openState(key: Uint8Array, state: string, owner: string, now: Da
   } catch {
     throw refuse(400, "CLOUD_STATE_INVALID", "This connection link is not valid");
   }
-  if (isBefore(new Date(payload.until), now)) throw refuse(400, "CLOUD_STATE_EXPIRED", "This connection link has expired: start again");
-  if (payload.owner !== owner || !isCloudName(payload.cloud)) throw refuse(400, "CLOUD_STATE_INVALID", "This connection link is not valid");
+  if (isBefore(new Date(payload.until), now)) {throw refuse(400, "CLOUD_STATE_EXPIRED", "This connection link has expired: start again");}
+  if (payload.owner !== owner || !isCloudName(payload.cloud)) {throw refuse(400, "CLOUD_STATE_INVALID", "This connection link is not valid");}
   return payload;
 }
 
@@ -82,7 +82,7 @@ export const connectorOf = (name: CloudName): CloudConnector => cloudConnector(C
 /** Step 1: the address to send the person to. */
 export function beginConnection(flow: CloudFlow, owner: string, name: CloudName): { url: string } {
   const app = flow.registration(name);
-  if (!app) throw refuse(404, "CLOUD_NOT_OFFERED", "This cloud is not available on this deployment");
+  if (!app) {throw refuse(404, "CLOUD_NOT_OFFERED", "This cloud is not available on this deployment");}
   const { url, verifier } = startConnection(flow.connector(name), app);
   // The provider's own `state` is replaced by ours: the verifier travels sealed inside it.
   const target = new URL(url);
@@ -101,7 +101,7 @@ export interface Connected {
 export async function completeConnection(flow: CloudFlow, owner: string, input: { code: string; state: string }): Promise<Connected> {
   const payload = openState(flow.vaultKey, input.state, owner, flow.now());
   const app = flow.registration(payload.cloud);
-  if (!app) throw refuse(404, "CLOUD_NOT_OFFERED", "This cloud is not available on this deployment");
+  if (!app) {throw refuse(404, "CLOUD_NOT_OFFERED", "This cloud is not available on this deployment");}
   const tokens = await finishConnection(flow.connector(payload.cloud), app, { code: input.code, verifier: payload.verifier });
   return { cloud: payload.cloud, refreshToken: tokens.refreshToken!, clientId: app.clientId, clientSecret: app.clientSecret };
 }
@@ -109,7 +109,7 @@ export async function completeConnection(flow: CloudFlow, owner: string, input: 
 /** The person's disconnect, provider side: the grant is revoked where the cloud allows it. A refusal there never keeps the person connected: the caller forgets the token either way. */
 export async function revokeGrant(flow: CloudFlow, name: CloudName, refreshToken: string): Promise<boolean> {
   const app = flow.registration(name);
-  if (!app) return false;
+  if (!app) {return false;}
   try {
     await revokeConnection(flow.connector(name), app, refreshToken);
     return true;
