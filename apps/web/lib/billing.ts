@@ -26,6 +26,8 @@ export interface Entitlement {
   credits: number;
   pro: boolean;
   proUntil: string | null;
+  /** The subscription was cancelled and stays active until `proUntil`: nothing renews. */
+  cancelsAtPeriodEnd: boolean;
   subscriptionStatus: string | null;
   hasCustomer: boolean;
   /** The catalogue entry and version the subscription was sold at (null: none recorded — one sold before the catalogue). */
@@ -34,15 +36,15 @@ export interface Entitlement {
 }
 
 const ROW = `SELECT (terms_accepted_at IS NOT NULL) AS self_serve, plan,
-  subscription_status, current_period_end, (payment_customer_id IS NOT NULL) AS has_customer, subscription_price_key, subscription_price_version FROM accounts WHERE id = $1`;
+  subscription_status, current_period_end, cancel_at_period_end, (payment_customer_id IS NOT NULL) AS has_customer, subscription_price_key, subscription_price_version FROM accounts WHERE id = $1`;
 
 export async function entitlementOf(query: Query, accountId: string, now: Date): Promise<Entitlement> {
-  const [r] = await query<{ self_serve: boolean; plan: string; subscription_status: string | null; current_period_end: Date | null; has_customer: boolean; subscription_price_key: string | null; subscription_price_version: string | null }>(ROW, [accountId]);
+  const [r] = await query<{ self_serve: boolean; plan: string; subscription_status: string | null; current_period_end: Date | null; cancel_at_period_end: boolean; has_customer: boolean; subscription_price_key: string | null; subscription_price_version: string | null }>(ROW, [accountId]);
   if (!r) throw refuse(404, "NOT_FOUND", "No such account");
   const live = r.subscription_status === "active" || r.subscription_status === "trialing";
   const pro = r.plan === "PRO" && live && (!r.current_period_end || r.current_period_end > now);
   const { credits, freeAuditUsed } = await ledgerState(query, accountId, now);
-  return { selfServe: r.self_serve, freeAuditUsed, credits, pro, proUntil: r.current_period_end?.toISOString() ?? null, subscriptionStatus: r.subscription_status, hasCustomer: r.has_customer, planKey: r.subscription_price_key, priceVersionId: r.subscription_price_version };
+  return { selfServe: r.self_serve, freeAuditUsed, credits, pro, proUntil: r.current_period_end?.toISOString() ?? null, cancelsAtPeriodEnd: r.cancel_at_period_end, subscriptionStatus: r.subscription_status, hasCustomer: r.has_customer, planKey: r.subscription_price_key, priceVersionId: r.subscription_price_version };
 }
 
 /** The calendar the ledger counts a pot's daily and monthly use in: not read here (the audit pots have no caps), so the day in UTC. */
@@ -153,10 +155,10 @@ export async function applyPaymentEvent(transaction: Transaction, event: Payment
       payment_refunded: (e, tx) => refundCoupon(tx, e),
       subscription_changed: async (e, tx) => {
         const rows = await tx(
-          `UPDATE accounts SET plan = $3, subscription_status = $4, payment_subscription_id = $5, current_period_end = to_timestamp($6),
+          `UPDATE accounts SET plan = $3, subscription_status = $4, payment_subscription_id = $5, current_period_end = to_timestamp($6), cancel_at_period_end = $7,
              subscription_price_key = COALESCE(subscription_price_key, checkout_price_key), subscription_price_version = COALESCE(subscription_price_version, checkout_price_version)
              WHERE payment_customer_id = $1 OR id::text = $2 RETURNING id`,
-          [e.customerId, e.accountId, e.active ? "PRO" : "FREE", e.status, e.subscriptionId, e.periodEnd],
+          [e.customerId, e.accountId, e.active ? "PRO" : "FREE", e.status, e.subscriptionId, e.periodEnd, e.cancelAtPeriodEnd],
         );
         return rows.length ? undefined : "ignored";
       },

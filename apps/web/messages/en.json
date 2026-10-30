@@ -1618,6 +1618,7 @@
         "freeAudit": "Free audit",
         "creditsLabel": "Paid audits left",
         "renewal": "Renewal",
+        "ends": "Ends on",
         "planFree": "Free",
         "credits": "Paid audits left: {count}",
         "freeAvailable": "Your free audit is available.",

@@ -89,7 +89,7 @@ export function SecuritySection({ email, pendingEmail, notice }: { email: string
 // ── billing ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 const billing = z.object({
-  entitlement: z.object({ credits: z.number(), pro: z.boolean(), proUntil: z.string().nullable(), freeAuditUsed: z.boolean(), selfServe: z.boolean(), hasCustomer: z.boolean(), planKey: z.string().nullable() }),
+  entitlement: z.object({ credits: z.number(), pro: z.boolean(), proUntil: z.string().nullable(), cancelsAtPeriodEnd: z.boolean(), freeAuditUsed: z.boolean(), selfServe: z.boolean(), hasCustomer: z.boolean(), planKey: z.string().nullable() }),
   paymentsOn: z.boolean(),
   couponsOn: z.boolean().default(false),
   paymentsDisplay: z.string().optional(),
@@ -106,7 +106,7 @@ export function billingRows(e: Entitlement, say: Say, date: (iso: string) => str
     { id: "plan", label: say("settings.billing.plan"), value: say(e.pro ? `settings.billing.plans.${planOf(e)}` : "settings.billing.planFree") },
     ...(e.selfServe ? [{ id: "free", label: say("settings.billing.freeAudit"), value: say(e.freeAuditUsed ? "settings.billing.freeUsed" : "settings.billing.freeAvailable") }] : []),
     { id: "credits", label: say("settings.billing.creditsLabel"), value: String(e.credits) },
-    ...(e.pro && e.proUntil ? [{ id: "until", label: say("settings.billing.renewal"), value: date(e.proUntil) }] : []),
+    ...(e.pro && e.proUntil ? [{ id: "until", label: say(e.cancelsAtPeriodEnd ? "settings.billing.ends" : "settings.billing.renewal"), value: date(e.proUntil) }] : []),
   ];
 }
 
