@@ -233,32 +233,29 @@ frames.forEach((f, i) => {
 const lastFrame = path.join(tmp, `${String(frames.length - 1).padStart(5, "0")}.jpg`);
 list.push(`file '${lastFrame}'`);
 writeFileSync(path.join(tmp, "list.txt"), `${list.join("\n")}\n`);
-execFileSync(
-  "ffmpeg",
-  [
-    "-y",
-    "-v",
-    "error",
-    "-f",
-    "concat",
-    "-safe",
-    "0",
-    "-i",
-    path.join(tmp, "list.txt"),
-    "-vf",
-    "fps=30,scale=trunc(iw/2)*2:trunc(ih/2)*2",
-    "-c:v",
-    "libx264",
-    "-crf",
-    "12",
-    "-preset",
-    "fast",
-    "-pix_fmt",
-    "yuv420p",
-    raw,
-  ],
-  { stdio: "inherit" },
-); // NOSONAR S4036: a developer-machine script, PATH is the developer's own
+const ffmpegArgs = [
+  "-y",
+  "-v",
+  "error",
+  "-f",
+  "concat",
+  "-safe",
+  "0",
+  "-i",
+  path.join(tmp, "list.txt"),
+  "-vf",
+  "fps=30,scale=trunc(iw/2)*2:trunc(ih/2)*2",
+  "-c:v",
+  "libx264",
+  "-crf",
+  "12",
+  "-preset",
+  "fast",
+  "-pix_fmt",
+  "yuv420p",
+  raw,
+];
+execFileSync("ffmpeg", ffmpegArgs, { stdio: "inherit" }); // NOSONAR S4036: a developer-machine script, PATH is the developer's own
 const probeArgs = [
   "-v",
   "error",
