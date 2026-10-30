@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { LibraryView } from "@/components/console/LibraryView";
+import { PaymentProblem } from "@/components/console/PaymentProblem";
 import { PaymentReturn } from "@/components/console/PaymentReturn";
 import { SAMPLES } from "@/content/recorded-runs/samples.mjs";
 import { pageSession } from "@/lib/access";
+import { entitlementOf } from "@/lib/billing";
 import { listChecks } from "@/lib/checks";
 import { creditsOf } from "@/lib/credits";
 import { query } from "@/lib/db";
@@ -17,6 +19,7 @@ import { asLocale, getDictionary } from "@/lib/i18n";
 import { onboardingTarget } from "@/lib/library-screen";
 import * as org from "@/lib/organisation/store";
 import { PAID_KEY, paymentReturnOf } from "@/lib/payment-return";
+import { paymentProblemOf } from "@/lib/payment-problem";
 import { purgeExpired } from "@/lib/retention";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -40,16 +43,18 @@ export default async function LibraryPage({ params, searchParams }: Readonly<{ p
   await org.ensureLibrary(query, owner, getDictionary(locale).console.organisation.library);
   const period = homePeriodOf(typeof search[HOME_PERIOD_KEY] === "string" ? search[HOME_PERIOD_KEY] : null);
   const now = new Date();
-  const [libraries, tags, latest, todo, series, credits] = await Promise.all([
+  const [libraries, tags, latest, todo, series, credits, entitlement] = await Promise.all([
     org.overview(query, owner),
     org.listTags(query, owner),
     listChecks(query, owner, 5),
     toDo(query, owner, now, { applicantFiles: screeningOffered }),
     activityStrip(query, owner, period, now, { applicantFiles: screeningOffered }),
     creditsOf(owner, now),
+    entitlementOf(query, owner, now),
   ]);
   const documents = libraries.reduce((n, l) => n + l.collections.reduce((m, c) => m + c.files, 0), 0);
   const paid = paymentReturnOf(search[PAID_KEY]);
   const view = <LibraryView libraries={libraries} documents={documents} latest={latest} tags={tags} perspective={perspective} screening={screeningOffered} examples={SAMPLES} jurisdictions={offerFor(flows, perspective).jurisdictions} todo={todo} activity={series.checks} strip={stripOf(series)} credits={credits} period={period} chosen={typeof search[BINDER_KEY] === "string" ? search[BINDER_KEY] : null} now={now.toISOString()} />;
-  return paid ? <><PaymentReturn result={paid} />{view}</> : view;
+  const problem = paymentProblemOf(entitlement);
+  return paid || problem ? <>{problem ? <PaymentProblem /> : null}{paid ? <PaymentReturn result={paid} /> : null}{view}</> : view;
 }

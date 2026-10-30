@@ -3243,6 +3243,11 @@
         "forever": "every month"
       }
     },
+    "paymentProblem": {
+      "title": "Your last payment did not go through",
+      "text": "The processor could not charge your card, so your plan is paused until it is updated. Nothing else changes: your documents and reports stay as they are.",
+      "fix": "Update my card"
+    },
     "paymentReturn": {
       "paidTitle": "Thank you, your payment went through",
       "paid": {
