@@ -20,7 +20,9 @@ export interface PrintedIssuer {
 /** The NEQ prefix tells who registered: 11 legal person, 22 sole proprietorship, 33 partnership or group. */
 export function registrantOfNeq(neq: string | null | undefined): PrintedIssuer["registrant"] {
   const prefix = (neq ?? "").replaceAll(/\D/g, "").slice(0, 2);
-  if (prefix === "22") return "individual";
+  if (prefix === "22") {
+    return "individual";
+  }
   return prefix === "11" || prefix === "33" ? "business" : "unknown";
 }
 
@@ -57,7 +59,9 @@ export function registrySignals(answer: RegistryAnswer, issuer: PrintedIssuer, s
       },
     ];
   }
-  if (answer.kind !== ANSWER.found) return [];
+  if (answer.kind !== ANSWER.found) {
+    return [];
+  }
   const signals: Signal[] = [];
   if (answer.status === FOUND_STATUS.struck && answer.statusDate && issuer.documentDate && answer.statusDate.slice(0, 10) <= issuer.documentDate) {
     signals.push({

@@ -62,13 +62,19 @@ export function revenuQuebecQstAdapter(options: QstAdapterOptions): BusinessRegi
 
   async function read(res: Response): Promise<RegistryAnswer> {
     const parsed = wrapped.safeParse(await res.json().catch(() => null));
-    if (!parsed.success) return lookedUpNot(NOT_LOOKED_UP.unavailable);
+    if (!parsed.success) {
+      return lookedUpNot(NOT_LOOKED_UP.unavailable);
+    }
     const body = parsed.data;
     const codes = (body.MessagesFonctionnels ?? []).map((m) => m.CodeMessage);
     if (res.status === 404 || codes.includes(NO_DATA)) return { kind: ANSWER.unknown };
     const r = body.Resultat;
-    if (!res.ok || !r) return lookedUpNot(NOT_LOOKED_UP.unavailable);
-    if (r.StatutSousDossierUsager !== "R" && r.StatutSousDossierUsager !== "A") return lookedUpNot(NOT_LOOKED_UP.unavailable);
+    if (!res.ok || !r) {
+      return lookedUpNot(NOT_LOOKED_UP.unavailable);
+    }
+    if (r.StatutSousDossierUsager !== "R" && r.StatutSousDossierUsager !== "A") {
+      return lookedUpNot(NOT_LOOKED_UP.unavailable);
+    }
     return { kind: ANSWER.found, status: r.StatutSousDossierUsager === "R" ? "registered" : "struck", statusDate: r.DateStatut ?? null, legalName: r.RaisonSociale ?? null, tradeName: r.NomEntreprise ?? null };
   }
 
@@ -76,14 +82,24 @@ export function revenuQuebecQstAdapter(options: QstAdapterOptions): BusinessRegi
     source: "Revenu Québec",
     async lookupQst(printed) {
       const number = normaliseQstNumber(printed);
-      if (!number) return lookedUpNot(NOT_LOOKED_UP.badFormat);
+      if (!number) {
+        return lookedUpNot(NOT_LOOKED_UP.badFormat);
+      }
       const hit = cache.get(number);
-      if (hit && isBefore(now(), hit.expiresAt)) return hit.answer;
+      if (hit && isBefore(now(), hit.expiresAt)) {
+        return hit.answer;
+      }
       let res = await call(number);
-      if (!res || res.status >= 500) res = await call(number);
-      if (!res || res.status >= 500) return lookedUpNot(NOT_LOOKED_UP.unavailable);
+      if (!res || res.status >= 500) {
+        res = await call(number);
+      }
+      if (!res || res.status >= 500) {
+        return lookedUpNot(NOT_LOOKED_UP.unavailable);
+      }
       const answer = await read(res);
-      if (answer.kind !== ANSWER.notLookedUp) cache.set(number, { expiresAt: addMilliseconds(now(), cacheMs), answer });
+      if (answer.kind !== ANSWER.notLookedUp) {
+        cache.set(number, { expiresAt: addMilliseconds(now(), cacheMs), answer });
+      }
       return answer;
     },
   };

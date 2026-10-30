@@ -48,7 +48,9 @@ describe("registry signals", () => {
 
   it("never uses a verdict word", () => {
     const all = [...registrySignals({ kind: "unknown" }, issuer, "Revenu Québec"), ...registrySignals(found({ status: "struck", legalName: "Autre" }), issuer, "Revenu Québec")];
-    for (const s of all) expect([s.observation, s.mayIndicate, s.askFor, s.where].join(" ")).not.toMatch(VERDICT_WORDS);
+    for (const s of all) {
+      expect([s.observation, s.mayIndicate, s.askFor, s.where].join(" ")).not.toMatch(VERDICT_WORDS);
+    }
   });
 });
 

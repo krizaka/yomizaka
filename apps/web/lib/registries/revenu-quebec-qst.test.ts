@@ -14,7 +14,9 @@ function fake(answers: Scripted[]) {
   const fetch = (async (url: string) => {
     urls.push(url);
     const next = answers.shift();
-    if (!next || next === "down") throw new TypeError("connection refused");
+    if (!next || next === "down") {
+      throw new TypeError("connection refused");
+    }
     return new Response(next.text ?? JSON.stringify(next.body), { status: next.status ?? 200 });
   }) as unknown as typeof globalThis.fetch;
   return { urls, fetch };
