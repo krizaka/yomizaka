@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { afterUpload, groupingOffered, optionsShown, planCheck, rulesFor } from "./check-flow";
+import { afterUpload, groupingOffered, keepAppliesToNext, optionsShown, planCheck, rulesFor } from "./check-flow";
 
 const file = (name: string, type: string) => ({ name, type });
 const DAY = "2026-10-24";
@@ -43,6 +43,15 @@ describe("the check flow (the UX review's Y4)", () => {
     expect(groupingOffered([file("p1.jpg", "image/jpeg")])).toBe(false);
     expect(groupingOffered([file("p1.jpg", "image/jpeg"), file("p2.heic", "")])).toBe(true);
     expect(groupingOffered([file("bail.pdf", "application/pdf"), file("p1.png", "image/png")])).toBe(false);
+  });
+});
+
+describe("the keep choice and the files already sent", () => {
+  it("a tick after the drop applies to the next documents, and the page says so; before the drop it applies to the file", () => {
+    expect(keepAppliesToNext([{ name: "bail.pdf" }], false)).toBe(true);
+    expect(keepAppliesToNext([], false)).toBe(false);
+    // « Vérifier un document » asks the defaults before the drop: the choice is the file's own.
+    expect(keepAppliesToNext([{ name: "bail.pdf" }], true)).toBe(false);
   });
 });
 

@@ -60,5 +60,11 @@ export function afterUpload({ requested, insight, jurisdictions = ["QC"], asOf }
 /** The checking options (keep the document, photos as pages) are asked once the files are known, never before (the review's B4). */
 export const optionsShown = (files: readonly { name: string }[]): boolean => files.length > 0;
 
+/**
+ * The keep choice is read when a file leaves, which is when it is dropped. Asked after the drop (the library's options), a tick
+ * cannot reach the files already sent: it is said to apply to the next ones. « Vérifier un document » asks before the drop.
+ */
+export const keepAppliesToNext = (files: readonly { name: string }[], defaultsFirst: boolean): boolean => !defaultsFirst && files.length > 0;
+
 /** « These photos are the pages of one document » makes sense with two photos or more, and nothing else in the drop (the review's C3). */
 export const groupingOffered = (files: readonly { name: string; type?: string }[]): boolean => files.length >= 2 && files.every(isPhotoFile);
