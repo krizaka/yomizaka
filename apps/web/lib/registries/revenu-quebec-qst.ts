@@ -67,7 +67,9 @@ export function revenuQuebecQstAdapter(options: QstAdapterOptions): BusinessRegi
     }
     const body = parsed.data;
     const codes = (body.MessagesFonctionnels ?? []).map((m) => m.CodeMessage);
-    if (res.status === 404 || codes.includes(NO_DATA)) return { kind: ANSWER.unknown };
+    if (res.status === 404 || codes.includes(NO_DATA)) {
+      return { kind: ANSWER.unknown };
+    }
     const r = body.Resultat;
     if (!res.ok || !r) {
       return lookedUpNot(NOT_LOOKED_UP.unavailable);
