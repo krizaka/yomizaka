@@ -2,7 +2,55 @@
 const wholeWords = (words: readonly string[]) => new RegExp(String.raw`\b(${words.join("|")})\b`, "giu");
 
 /** The French function words (and the few words of a lease or an invoice) whose count says a text is French. */
-export const FR_WORDS = wholeWords(["le", "la", "les", "des", "du", "de", "et", "est", "pour", "une", "un", "dans", "sur", "avec", "par", "au", "aux", "ce", "cette", "entre", "loyer", "facture"]);
+export const FR_WORDS = wholeWords([
+  "le",
+  "la",
+  "les",
+  "des",
+  "du",
+  "de",
+  "et",
+  "est",
+  "pour",
+  "une",
+  "un",
+  "dans",
+  "sur",
+  "avec",
+  "par",
+  "au",
+  "aux",
+  "ce",
+  "cette",
+  "entre",
+  "loyer",
+  "facture",
+]);
 
 /** The same for English. */
-export const EN_WORDS = wholeWords(["the", "of", "and", "is", "for", "with", "this", "that", "between", "to", "in", "on", "by", "an", "agreement", "invoice", "rent", "tenant", "number", "payment", "terms", "due", "subtotal", "total"]);
+export const EN_WORDS = wholeWords([
+  "the",
+  "of",
+  "and",
+  "is",
+  "for",
+  "with",
+  "this",
+  "that",
+  "between",
+  "to",
+  "in",
+  "on",
+  "by",
+  "an",
+  "agreement",
+  "invoice",
+  "rent",
+  "tenant",
+  "number",
+  "payment",
+  "terms",
+  "due",
+  "subtotal",
+  "total",
+]);

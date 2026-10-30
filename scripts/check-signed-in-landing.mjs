@@ -40,22 +40,39 @@ export async function check({ base, locale = "fr", email, password }) {
     const page = await context.newPage();
     // Signed out first: the public page does offer « Sign in » (so the next checks mean something).
     await loadSettled(page, `${base}/${locale}/terms`);
-    await page.waitForFunction(() => document.querySelector('header a[href$="/sign-in"], nav a[href$="/sign-in"]') !== null, null, { timeout: 15_000 }).catch(() => {
-      problems.push(`/${locale}/terms signed out: no « Sign in » link in the bar (the guard would pass for nothing)`);
-    });
+    await page
+      .waitForFunction(
+        () => document.querySelector('header a[href$="/sign-in"], nav a[href$="/sign-in"]') !== null,
+        null,
+        { timeout: 15_000 },
+      )
+      .catch(() => {
+        problems.push(`/${locale}/terms signed out: no « Sign in » link in the bar (the guard would pass for nothing)`);
+      });
     await signIn(page, base, locale, email, password);
     for (const from of ["/", `/${locale}`]) {
       await loadSettled(page, `${base}${from}`);
-      if (pathOf(page.url()) !== `/${locale}/app`) problems.push(`${from} signed in: landed on ${pathOf(page.url())}, expected /${locale}/app`);
+      if (pathOf(page.url()) !== `/${locale}/app`)
+        problems.push(`${from} signed in: landed on ${pathOf(page.url())}, expected /${locale}/app`);
     }
     // The server answers the redirect itself: 307, private, varying with the cookie (no HTML of the landing page at all).
     const raw = await page.request.get(`${base}/${locale}`, { maxRedirects: 0 });
-    if (raw.status() !== 307) problems.push(`/${locale} signed in: expected a 307 from the server, got ${raw.status()}`);
-    if (raw.headers()["cache-control"] !== "private, no-store") problems.push(`/${locale} signed in: Cache-Control must be « private, no-store », got ${raw.headers()["cache-control"]}`);
-    if (!/cookie/i.test(raw.headers().vary ?? "")) problems.push(`/${locale} signed in: Vary must name Cookie, got ${raw.headers().vary}`);
+    if (raw.status() !== 307)
+      problems.push(`/${locale} signed in: expected a 307 from the server, got ${raw.status()}`);
+    if (raw.headers()["cache-control"] !== "private, no-store")
+      problems.push(
+        `/${locale} signed in: Cache-Control must be « private, no-store », got ${raw.headers()["cache-control"]}`,
+      );
+    if (!/cookie/i.test(raw.headers().vary ?? ""))
+      problems.push(`/${locale} signed in: Vary must name Cookie, got ${raw.headers().vary}`);
     await loadSettled(page, `${base}/${locale}/terms`);
-    await page.waitForFunction(() => document.querySelector('header button, nav button, header [data-state]') !== null, null, { timeout: 15_000 }).catch(() => {});
-    if (await page.evaluate(() => window.__sawSignIn)) problems.push(`/${locale}/terms signed in: the bar drew « Sign in » for an instant`);
+    await page
+      .waitForFunction(() => document.querySelector("header button, nav button, header [data-state]") !== null, null, {
+        timeout: 15_000,
+      })
+      .catch(() => {});
+    if (await page.evaluate(() => window.__sawSignIn))
+      problems.push(`/${locale}/terms signed in: the bar drew « Sign in » for an instant`);
     await context.close();
   } finally {
     await browser.close();
@@ -64,7 +81,12 @@ export async function check({ base, locale = "fr", email, password }) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const problems = await check({ base: arg("base", "http://localhost:3000"), locale: arg("locale", "fr"), email: process.env.E2E_EMAIL, password: process.env.E2E_PASSWORD });
+  const problems = await check({
+    base: arg("base", "http://localhost:3000"),
+    locale: arg("locale", "fr"),
+    email: process.env.E2E_EMAIL,
+    password: process.env.E2E_PASSWORD,
+  });
   if (problems.length) {
     console.error(`${problems.length} problem(s):\n  ${problems.join("\n  ")}`);
     process.exit(1);

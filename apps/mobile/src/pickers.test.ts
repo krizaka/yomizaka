@@ -1,4 +1,4 @@
-import { pageHtml,PDF_NAME } from "./pickers";
+import { pageHtml, PDF_NAME } from "./pickers";
 
 jest.mock("expo-document-picker", () => ({}));
 jest.mock("expo-image-picker", () => ({}));

@@ -31,7 +31,9 @@ export const DOCUMENT_TYPES: readonly DocumentTypeDef[] = [
       { pattern: String.raw`conditions?\s+de\s+paiement|payment\s+terms`, weight: 1 },
       { pattern: String.raw`n[°o]\.?\s*(?:de\s+)?facture|invoice\s*(?:no\.?|number|#)`, weight: 2 },
     ],
-    issuerPatterns: [String.raw`(?:[ée]metteur|fournisseur|vendeur|issued\s+by|supplier)\s*(?:/\s*[A-Za-z ]+)?\s*:\s*\n?\s*([^\n,/]{3,80})`],
+    issuerPatterns: [
+      String.raw`(?:[ée]metteur|fournisseur|vendeur|issued\s+by|supplier)\s*(?:/\s*[A-Za-z ]+)?\s*:\s*\n?\s*([^\n,/]{3,80})`,
+    ],
     check: { studio: "compliance-check", documentType: "invoice", ruleset: "qc-invoice" },
   },
   {
@@ -63,7 +65,10 @@ export const DOCUMENT_TYPES: readonly DocumentTypeDef[] = [
     id: "pay-stub",
     label: { fr: "Talon de paie", en: "Pay stub" },
     signals: [
-      { pattern: String.raw`talon\s+de\s+paie|bulletin\s+de\s+paie|relev[ée]\s+de\s+paie|pay\s*stub|payslip`, weight: 5 },
+      {
+        pattern: String.raw`talon\s+de\s+paie|bulletin\s+de\s+paie|relev[ée]\s+de\s+paie|pay\s*stub|payslip`,
+        weight: 5,
+      },
       { pattern: String.raw`salaire\s+(?:brut|net)|gross\s+pay|net\s+pay`, weight: 2 },
       { pattern: String.raw`\bRRQ\b|\bQPP\b|assurance[- ]emploi|\bCPP\b`, weight: 2 },
       { pattern: "employeur|employer", weight: 1 },
@@ -76,7 +81,10 @@ export const DOCUMENT_TYPES: readonly DocumentTypeDef[] = [
     label: { fr: "Relevé de compte bancaire", en: "Bank statement" },
     signals: [
       { pattern: String.raw`relev[ée]\s+de\s+compte|bank\s+statement|account\s+statement`, weight: 5 },
-      { pattern: String.raw`solde\s+(?:d['’]ouverture|de\s+cl[ôo]ture|final)|opening\s+balance|closing\s+balance`, weight: 3 },
+      {
+        pattern: String.raw`solde\s+(?:d['’]ouverture|de\s+cl[ôo]ture|final)|opening\s+balance|closing\s+balance`,
+        weight: 3,
+      },
       { pattern: String.raw`\btransit\b|\binstitution\b|\bIBAN\b`, weight: 1 },
       { pattern: "d[ée]p[ôo]t|retrait|withdrawal", weight: 1 },
     ],
@@ -87,7 +95,10 @@ export const DOCUMENT_TYPES: readonly DocumentTypeDef[] = [
     id: "identity-document",
     label: { fr: "Pièce d’identité", en: "Identity document" },
     signals: [
-      { pattern: String.raw`permis\s+de\s+conduire|driver['’]s\s+licen[cs]e|carte\s+d['’]assurance\s+maladie|passeport|passport|carte\s+d['’]identit[ée]|identity\s+card`, weight: 5 },
+      {
+        pattern: String.raw`permis\s+de\s+conduire|driver['’]s\s+licen[cs]e|carte\s+d['’]assurance\s+maladie|passeport|passport|carte\s+d['’]identit[ée]|identity\s+card`,
+        weight: 5,
+      },
       { pattern: String.raw`date\s+de\s+naissance|date\s+of\s+birth`, weight: 2 },
     ],
     check: null,
@@ -110,7 +121,10 @@ export const DOCUMENT_TYPES: readonly DocumentTypeDef[] = [
     label: { fr: "État des lieux", en: "Condition report of the premises" },
     signals: [
       { pattern: String.raw`[ée]tat\s+des\s+lieux|condition\s+report|move[- ]in\s+inspection`, weight: 5 },
-      { pattern: String.raw`constat\s+d['’][ée]tat|[ée]tat\s+du\s+logement|condition\s+of\s+the\s+(?:dwelling|premises)`, weight: 3 },
+      {
+        pattern: String.raw`constat\s+d['’][ée]tat|[ée]tat\s+du\s+logement|condition\s+of\s+the\s+(?:dwelling|premises)`,
+        weight: 3,
+      },
       { pattern: String.raw`entr[ée]e\s+en\s+jouissance|move[- ]in`, weight: 2 },
       { pattern: String.raw`bon\s+[ée]tat|mauvais\s+[ée]tat|good\s+condition|damaged`, weight: 1 },
     ],
@@ -120,11 +134,23 @@ export const DOCUMENT_TYPES: readonly DocumentTypeDef[] = [
 
 /** Identifiers read from the text (group 1 is the value). */
 export const IDENTIFIERS: readonly IdentifierDef[] = [
-  { kind: "neq", label: { fr: "NEQ", en: "NEQ" }, pattern: String.raw`(?:\bNEQ\b|num[ée]ro\s+d['’]entreprise\s+du\s+qu[ée]bec)\D{0,25}(\d{10})\b` },
+  {
+    kind: "neq",
+    label: { fr: "NEQ", en: "NEQ" },
+    pattern: String.raw`(?:\bNEQ\b|num[ée]ro\s+d['’]entreprise\s+du\s+qu[ée]bec)\D{0,25}(\d{10})\b`,
+  },
   { kind: "gst", label: { fr: "N° de TPS", en: "GST no." }, pattern: String.raw`(\b\d{9}\s?RT\s?\d{4}\b)` },
   { kind: "qst", label: { fr: "N° de TVQ", en: "QST no." }, pattern: String.raw`(\b\d{10}\s?TQ\s?\d{4}\b)` },
-  { kind: "invoice-number", label: { fr: "N° de facture", en: "Invoice no." }, pattern: String.raw`(?:n[°o]\.?\s*(?:de\s+)?facture|facture\s*(?:n[°o]\.?|#)|invoice\s*(?:no\.?|number|#))\s*:?\s*([A-Z0-9][A-Z0-9-]{2,})` },
-  { kind: "reference", label: { fr: "N° de référence", en: "Reference no." }, pattern: String.raw`(?:n[°o]\.?\s*de\s+r[ée]f[ée]rence|r[ée]f[ée]rence\s*(?:n[°o]\.?)?|reference\s*(?:no\.?|number|#))\s*:?\s*([A-Z0-9][A-Z0-9-]{4,})` },
+  {
+    kind: "invoice-number",
+    label: { fr: "N° de facture", en: "Invoice no." },
+    pattern: String.raw`(?:n[°o]\.?\s*(?:de\s+)?facture|facture\s*(?:n[°o]\.?|#)|invoice\s*(?:no\.?|number|#))\s*:?\s*([A-Z0-9][A-Z0-9-]{2,})`,
+  },
+  {
+    kind: "reference",
+    label: { fr: "N° de référence", en: "Reference no." },
+    pattern: String.raw`(?:n[°o]\.?\s*de\s+r[ée]f[ée]rence|r[ée]f[ée]rence\s*(?:n[°o]\.?)?|reference\s*(?:no\.?|number|#))\s*:?\s*([A-Z0-9][A-Z0-9-]{4,})`,
+  },
 ];
 
 /** Roles of the parties a document names (`Role : Name`). */

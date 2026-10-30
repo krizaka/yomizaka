@@ -12,7 +12,21 @@ import { contactHref } from "@/lib/site";
  * development, so the call to action is sign-in and the status line says the same as the home. Above the largest included volume
  * there is no figure (the code bills no usage, #373): a quiet line leads to the contact form (#360).
  */
-export function PricingContent({ locale, sold, soon, freeFirst, launch, status }: Readonly<{ locale: Locale; sold: PricingPlan[]; soon: PricingSoon[]; freeFirst: boolean; launch?: { headline: string; ends: string; lines: { plan: string; text: string }[] }; status: string }>) {
+export function PricingContent({
+  locale,
+  sold,
+  soon,
+  freeFirst,
+  launch,
+  status,
+}: Readonly<{
+  locale: Locale;
+  sold: PricingPlan[];
+  soon: PricingSoon[];
+  freeFirst: boolean;
+  launch?: { headline: string; ends: string; lines: { plan: string; text: string }[] };
+  status: string;
+}>) {
   const p = getDictionary(locale).pricing;
   const words = (plan: string) => p.plans[plan as keyof typeof p.plans];
   const soonWords = (plan: string) => p.soon.items[plan as keyof typeof p.soon.items];

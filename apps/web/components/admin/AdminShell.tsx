@@ -6,7 +6,7 @@ import { YomizakaLogo } from "@krizaka/ui";
 import { AppShell } from "@krizaka/ui/app-shell";
 import { Badge } from "@krizaka/ui/badge";
 import { Button } from "@krizaka/ui/button";
-import { languagesFor,LanguageSwitch } from "@krizaka/ui/language-switch";
+import { languagesFor, LanguageSwitch } from "@krizaka/ui/language-switch";
 import { ThemeToggle } from "@krizaka/ui/theme";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -18,7 +18,11 @@ import { useSay } from "@/lib/i18n-client";
 const VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? "";
 
 /** admin.yomizaka.com: @krizaka/ui's AppShell console — overview, people, documents, Orazaka runs, audit — and a DEV badge. */
-export function AdminShell({ locale, email, children }: Readonly<{ locale: "en" | "fr"; email: string; children: React.ReactNode }>) {
+export function AdminShell({
+  locale,
+  email,
+  children,
+}: Readonly<{ locale: "en" | "fr"; email: string; children: React.ReactNode }>) {
   const { say } = useSay();
   const router = useRouter();
   const path = usePathname() ?? "";
@@ -31,9 +35,21 @@ export function AdminShell({ locale, email, children }: Readonly<{ locale: "en" 
       router.refresh();
     },
   });
-  const ICONS = { overview: <HomeIcon />, users: <UsersIcon />, documents: <KeepIcon />, flows: <ShieldIcon />, config: <ServerIcon />, storage: <KeepIcon />, runs: <ServerIcon />, operations: <ShieldIcon />, incidents: <ShieldIcon />, audit: <ClockIcon /> };
+  const ICONS = {
+    overview: <HomeIcon />,
+    users: <UsersIcon />,
+    documents: <KeepIcon />,
+    flows: <ShieldIcon />,
+    config: <ServerIcon />,
+    storage: <KeepIcon />,
+    runs: <ServerIcon />,
+    operations: <ShieldIcon />,
+    incidents: <ShieldIcon />,
+    audit: <ClockIcon />,
+  };
   const pages = ADMIN_PAGES.map((p) => ({ ...p, to: `${home}${p.path}`, icon: ICONS[p.key], exact: p.path === "" }));
-  const isCurrent = (p: (typeof pages)[number]) => (p.exact ? path === p.to : path === p.to || path.startsWith(`${p.to}/`));
+  const isCurrent = (p: (typeof pages)[number]) =>
+    p.exact ? path === p.to : path === p.to || path.startsWith(`${p.to}/`);
   const current = pages.find(isCurrent) ?? pages[0]!;
   return (
     <AppShell.Root skipLabel={say("shell.skip")}>
@@ -41,7 +57,8 @@ export function AdminShell({ locale, email, children }: Readonly<{ locale: "en" 
         label={say("adminConsole.shell.title")}
         brand={
           <Link href={home} className="inline-flex items-center gap-2">
-            <YomizakaLogo size={24} animated={false} /> Yomizaka <Badge tone="warning">{say("adminConsole.shell.dev")}</Badge>
+            <YomizakaLogo size={24} animated={false} /> Yomizaka{" "}
+            <Badge tone="warning">{say("adminConsole.shell.dev")}</Badge>
           </Link>
         }
         closeLabel={say("shell.closeMenu")}
@@ -61,7 +78,13 @@ export function AdminShell({ locale, email, children }: Readonly<{ locale: "en" 
             {group.pages.map((g) => {
               const p = pages.find((x) => x.key === g.key)!;
               return (
-                <AppShell.Item key={p.key} asChild label={say(`adminConsole.shell.${p.key}`)} icon={p.icon} current={isCurrent(p)}>
+                <AppShell.Item
+                  key={p.key}
+                  asChild
+                  label={say(`adminConsole.shell.${p.key}`)}
+                  icon={p.icon}
+                  current={isCurrent(p)}
+                >
                   <Link href={p.to}>{say(`adminConsole.shell.${p.key}`)}</Link>
                 </AppShell.Item>
               );
@@ -75,7 +98,12 @@ export function AdminShell({ locale, email, children }: Readonly<{ locale: "en" 
           menuLabel={say("shell.openMenu")}
           actions={
             <>
-              <LanguageSwitch label={say("shell.language")} current={locale} languages={languagesFor(`/${locale}${rest}`)} linkAs={Link} />
+              <LanguageSwitch
+                label={say("shell.language")}
+                current={locale}
+                languages={languagesFor(`/${locale}${rest}`)}
+                linkAs={Link}
+              />
               <ThemeToggle label={say("shell.theme")} variant="ghost" />
               <Button size="sm" variant="secondary" loading={signOut.isPending} onClick={() => signOut.mutate()}>
                 <LogoutIcon size={16} /> <span className="hidden sm:inline">{say("adminConsole.shell.signOut")}</span>

@@ -11,7 +11,10 @@ export function registerBatchWebhooks(serverSecret: string): void {
   setBatchObserver({
     async finished(ownerId, batch, now) {
       if (!(await featureOn("webhooks", ownerId))) return;
-      const hooks = webhooksFor(serverSecret, (await settingsFor(ownerId))["limits.webhookMaxAttempts"].value as number);
+      const hooks = webhooksFor(
+        serverSecret,
+        (await settingsFor(ownerId))["limits.webhookMaxAttempts"].value as number,
+      );
       for (const event of eventsOfFinishedBatch(batch)) await hooks.emit(ownerId, event, now);
     },
   });
@@ -21,7 +24,11 @@ export function registerBatchWebhooks(serverSecret: string): void {
 const DELIVERY_LOCK = 73193;
 
 /** Sends what is due, one instance at a time. */
-export async function deliverWebhooks(serverSecret: string, now: Date, options: { timeoutMs: number; send?: ReturnType<typeof safeSend> }) {
+export async function deliverWebhooks(
+  serverSecret: string,
+  now: Date,
+  options: { timeoutMs: number; send?: ReturnType<typeof safeSend> },
+) {
   return withAdvisoryLock(DELIVERY_LOCK, async () => {
     const hooks = webhooksFor(serverSecret, (await appSettings().get("limits.webhookMaxAttempts")) as number);
     return hooks.deliverDue(now, options.send ?? safeSend({ timeoutMs: options.timeoutMs }), { limit: 50 });

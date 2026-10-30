@@ -32,7 +32,10 @@ export const SEEDED_RUN_PREFIX = "seeded-";
 export const SEEDED_INPUTS = { seeded: "true" };
 
 /** The demo tokens of the owner link of a persona's seeded file (yomizaka#128): one that opens, one that was revoked. Demo values, never a real link. */
-export const demoOwnerTokens = (persona) => ({ live: `demo-owner-live-${persona}-0123456789abcdef`, revoked: `demo-owner-revoked-${persona}-0123456789abcdef` });
+export const demoOwnerTokens = (persona) => ({
+  live: `demo-owner-live-${persona}-0123456789abcdef`,
+  revoked: `demo-owner-revoked-${persona}-0123456789abcdef`,
+});
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 
 /** A fictitious applicant file with its two owner links, so the public report page can be audited (idempotent: the links are renewed). The tokens are fixed, so the seed that ran last owns them: two seeds in one database (tests, the cast) never leave the file with the wrong landlord. */
@@ -44,7 +47,10 @@ async function seedOwnerFile(q, owner, persona) {
     [owner, sha256(`demo-file-${persona}`)],
   );
   const tokens = demoOwnerTokens(persona);
-  for (const [name, revoked] of [["live", false], ["revoked", true]]) {
+  for (const [name, revoked] of [
+    ["live", false],
+    ["revoked", true],
+  ]) {
     await q(
       `INSERT INTO file_report_shares (screening_id, landlord_id, recipient, token_hash, expires_at, revoked_at)
        VALUES ($1, $2, 'Demo', $3, now() + interval '30 days', ${revoked ? "now()" : "NULL"})
@@ -57,7 +63,8 @@ async function seedOwnerFile(q, owner, persona) {
 /** The seed works on dev and local only: anything that says it is production is refused, and so is a value it does not know. */
 export function assertNotProduction(env) {
   const environment = env.APP_ENVIRONMENT ?? "dev";
-  if (environment !== "dev") throw new Error(`demo:seed works only on dev and local, and APP_ENVIRONMENT is "${environment}" — refused`);
+  if (environment !== "dev")
+    throw new Error(`demo:seed works only on dev and local, and APP_ENVIRONMENT is "${environment}" — refused`);
 }
 
 /** The words of the persona (collection names and descriptions) in a language, from the app's messages. */
@@ -72,24 +79,64 @@ const COMPLIANCE_SOURCE = "Jeu de données de démonstration — résultat marqu
 /** A finished check's report, in the shape the two Studios return, built from the findings recorded next to the document. */
 export function seededReport(doc) {
   if (doc.family === "lease") {
-    const failed = doc.findings.map((f) => ({ ruleId: f.code, title: f.title, severity: f.severity, verdict: "FAIL", explanation: f.explanation, method: "SEEDED", ...(f.present?.[0] ? { evidenceSpan: { quote: f.present[0] } } : {}) }));
-    const passed = failed.length === 0 ? [{ ruleId: "DEMO-LEASE-OK", title: "Aucun écart relevé", severity: "INFO", verdict: "PASS", explanation: "Le bail du jeu de données ne présente aucun des écarts recherchés.", method: "SEEDED" }] : [];
+    const failed = doc.findings.map((f) => ({
+      ruleId: f.code,
+      title: f.title,
+      severity: f.severity,
+      verdict: "FAIL",
+      explanation: f.explanation,
+      method: "SEEDED",
+      ...(f.present?.[0] ? { evidenceSpan: { quote: f.present[0] } } : {}),
+    }));
+    const passed =
+      failed.length === 0
+        ? [
+            {
+              ruleId: "DEMO-LEASE-OK",
+              title: "Aucun écart relevé",
+              severity: "INFO",
+              verdict: "PASS",
+              explanation: "Le bail du jeu de données ne présente aucun des écarts recherchés.",
+              method: "SEEDED",
+            },
+          ]
+        : [];
     const findings = [...failed, ...passed, ...(TENANT_SHIELD[doc.id] ?? [])];
     const byVerdict = {};
     for (const f of findings) byVerdict[f.verdict] = (byVerdict[f.verdict] ?? 0) + 1;
-    return { rulesetId: "demo-seeded", rulesetVersion: "1", jurisdiction: "QC", asOf: AS_OF, source: COMPLIANCE_SOURCE, reviewStatus: "TO_REVIEW_BY_LAWYER", summary: { byVerdict, blockingFailures: failed.length, rulesEvaluated: findings.length }, findings, ...(doc.facts ? { facts: doc.facts } : {}) };
+    return {
+      rulesetId: "demo-seeded",
+      rulesetVersion: "1",
+      jurisdiction: "QC",
+      asOf: AS_OF,
+      source: COMPLIANCE_SOURCE,
+      reviewStatus: "TO_REVIEW_BY_LAWYER",
+      summary: { byVerdict, blockingFailures: failed.length, rulesEvaluated: findings.length },
+      findings,
+      ...(doc.facts ? { facts: doc.facts } : {}),
+    };
   }
   return {
     header: COMPLIANCE_SOURCE,
     pages: doc.pages,
-    signals: doc.findings.map((f) => ({ signalId: f.code, level: "incohérent", observation: f.explanation, where: f.present?.[0] })),
+    signals: doc.findings.map((f) => ({
+      signalId: f.code,
+      level: "incohérent",
+      observation: f.explanation,
+      where: f.present?.[0],
+    })),
     notExamined: ["Authenticité de l'émetteur (jeu de données fictif)"],
   };
 }
 
 const searchTextOf = (report) =>
-  "findings" in report ? report.findings.flatMap((f) => [f.ruleId, f.title, f.explanation, f.evidenceSpan?.quote ?? ""]).join("\n") : report.signals.flatMap((s) => [s.signalId, s.observation, s.where ?? ""]).join("\n");
-const needsAttention = (report) => ("findings" in report ? report.findings.some((f) => f.verdict === "FAIL" && f.severity === "BLOCKING") : report.signals.some((s) => s.level === "incohérent"));
+  "findings" in report
+    ? report.findings.flatMap((f) => [f.ruleId, f.title, f.explanation, f.evidenceSpan?.quote ?? ""]).join("\n")
+    : report.signals.flatMap((s) => [s.signalId, s.observation, s.where ?? ""]).join("\n");
+const needsAttention = (report) =>
+  "findings" in report
+    ? report.findings.some((f) => f.verdict === "FAIL" && f.severity === "BLOCKING")
+    : report.signals.some((s) => s.level === "incohérent");
 
 /**
  * Seeds the persona into the database behind `q` (`(sql, values) => Promise<rows>`, ONE connection: the seed is one transaction).
@@ -97,14 +144,35 @@ const needsAttention = (report) => ("findings" in report ? report.findings.some(
  * a second process waits on the account's advisory lock, then finds everything already there (idempotent). Returns what is
  * there after the run.
  */
-export async function seedPersona(q, { persona = "eric", email, locale = "fr", messagesByLocale, reset = false, passwordHash = null, seed = DEFAULT_SEED, now = new Date() }) {
+export async function seedPersona(
+  q,
+  {
+    persona = "eric",
+    email,
+    locale = "fr",
+    messagesByLocale,
+    reset = false,
+    passwordHash = null,
+    seed = DEFAULT_SEED,
+    now = new Date(),
+  },
+) {
   const def = PERSONAS[persona];
   if (!def) throw new Error(`unknown persona "${persona}" (known: ${Object.keys(PERSONAS).join(", ")})`);
   const address = (email ?? DEFAULT_EMAILS[persona]).trim().toLowerCase();
   await q("BEGIN");
   try {
     await q("SELECT pg_advisory_xact_lock(hashtext($1))", [`demo-seed:${address}`]);
-    const result = await seedInTransaction(q, def, { persona, address, locale, messagesByLocale, reset, passwordHash, seed, now });
+    const result = await seedInTransaction(q, def, {
+      persona,
+      address,
+      locale,
+      messagesByLocale,
+      reset,
+      passwordHash,
+      seed,
+      now,
+    });
     await q("COMMIT");
     return result;
   } catch (error) {
@@ -117,7 +185,11 @@ export async function seedPersona(q, { persona = "eric", email, locale = "fr", m
 /** The instant `minutesAgo` before the injected clock: every stamp the seed writes comes from `now`, never from the database's own clock. */
 export const stampBefore = (now, minutesAgo) => new Date(new Date(now).getTime() - minutesAgo * 60_000).toISOString();
 
-async function seedInTransaction(q, def, { persona, address, locale, messagesByLocale, reset, passwordHash, seed, now }) {
+async function seedInTransaction(
+  q,
+  def,
+  { persona, address, locale, messagesByLocale, reset, passwordHash, seed, now },
+) {
   // An existing account keeps what the person chose (language, password, perspective, name); the seed only fills what is missing.
   const [account] = await q(
     `INSERT INTO accounts (email, locale, email_verified_at, password_hash, perspective, name) VALUES ($1, $2, now(), $3, 'landlord', $4)
@@ -131,7 +203,9 @@ async function seedInTransaction(q, def, { persona, address, locale, messagesByL
 
   if (reset) {
     await q("DELETE FROM documents WHERE owner_id = $1", [owner]);
-    const names = def.collections.flatMap((c) => Object.values(messagesByLocale).map((m) => collectionWords(m, persona, c.key).name));
+    const names = def.collections.flatMap((c) =>
+      Object.values(messagesByLocale).map((m) => collectionWords(m, persona, c.key).name),
+    );
     await q("DELETE FROM collections WHERE owner_id = $1 AND NOT is_default AND name = ANY($2)", [owner, names]);
   }
 
@@ -157,7 +231,20 @@ async function seedInTransaction(q, def, { persona, address, locale, messagesByL
       const inserted = await q(
         `INSERT INTO documents (id, owner_id, title, filename, mime_type, kind, size_bytes, sha256, pages, content, object_key, text, collection_id, created_at)
          VALUES ($1, $2, $3, $4, 'application/pdf', $5, $6, $7, $8, ''::bytea, $9, $10, $11, $12) ON CONFLICT (owner_id, sha256) DO NOTHING RETURNING id`,
-        [docId, owner, doc.title, doc.filename, doc.kind, doc.bytes.length, doc.sha256, doc.pages, key, doc.text, row.id, stampBefore(now, total - documentIndex++)],
+        [
+          docId,
+          owner,
+          doc.title,
+          doc.filename,
+          doc.kind,
+          doc.bytes.length,
+          doc.sha256,
+          doc.pages,
+          key,
+          doc.text,
+          row.id,
+          stampBefore(now, total - documentIndex++),
+        ],
       );
       if (inserted.length > 0) await putBytes(key, doc.bytes);
       const [stored] = await q("SELECT id FROM documents WHERE owner_id = $1 AND sha256 = $2", [owner, doc.sha256]);
@@ -169,7 +256,15 @@ async function seedInTransaction(q, def, { persona, address, locale, messagesByL
           `INSERT INTO analyses (document_id, studio, status, run_id, blueprint_version, inputs, report, search_text, created_at, finished_at)
            SELECT $1, $2, 'succeeded', $3, NULL, $4, $5, $6, $7::timestamptz, $7::timestamptz
             WHERE NOT EXISTS (SELECT 1 FROM analyses WHERE document_id = $1 AND run_id = $3)`,
-          [stored.id, studio, runId, JSON.stringify(SEEDED_INPUTS), JSON.stringify({ ...report, attention: needsAttention(report) }), searchTextOf(report), stampBefore(now, total - minute++)],
+          [
+            stored.id,
+            studio,
+            runId,
+            JSON.stringify(SEEDED_INPUTS),
+            JSON.stringify({ ...report, attention: needsAttention(report) }),
+            searchTextOf(report),
+            stampBefore(now, total - minute++),
+          ],
         );
       }
     }
@@ -185,9 +280,20 @@ async function seedInTransaction(q, def, { persona, address, locale, messagesByL
  * set of `seedPersona`; the administrator gets an account named after its persona. Idempotent; the caller refuses production
  * (`assertNotProduction`) before it connects. Returns the fingerprint of what is there for the cast's accounts.
  */
-export async function seedCast(q, { env, hashPassword, locale = undefined, messagesByLocale, reset = false, now = new Date() }) {
+export async function seedCast(
+  q,
+  { env, hashPassword, locale = undefined, messagesByLocale, reset = false, now = new Date() },
+) {
   const [member, admin, camille] = castAccounts(env);
-  const result = await seedPersona(q, { persona: member.persona.id, email: member.email, locale: locale ?? member.persona.locale, messagesByLocale, reset, passwordHash: await hashPassword(member.password), now });
+  const result = await seedPersona(q, {
+    persona: member.persona.id,
+    email: member.email,
+    locale: locale ?? member.persona.locale,
+    messagesByLocale,
+    reset,
+    passwordHash: await hashPassword(member.password),
+    now,
+  });
   // The other accounts keep the name the person chose; the role and the credentials follow the environment.
   const upsert = async (a) =>
     (
@@ -200,5 +306,10 @@ export async function seedCast(q, { env, hashPassword, locale = undefined, messa
     )[0].id;
   const others = [await upsert(admin), await upsert(camille)];
   const print = await fingerprintOf(q, [result.owner, ...others]);
-  return { ...print, member: result, admin: { email: admin.email, name: admin.persona.displayName }, camille: { email: camille.email, name: camille.persona.displayName } };
+  return {
+    ...print,
+    member: result,
+    admin: { email: admin.email, name: admin.persona.displayName },
+    camille: { email: camille.email, name: camille.persona.displayName },
+  };
 }

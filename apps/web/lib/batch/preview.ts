@@ -42,37 +42,74 @@ export interface BatchFile {
   bytes: Uint8Array;
 }
 
-const preflightCode = (error: unknown) => (error instanceof HttpError ? String((error.body as { code?: string })?.code ?? "REFUSED") : "REFUSED");
+const preflightCode = (error: unknown) =>
+  error instanceof HttpError ? String((error.body as { code?: string })?.code ?? "REFUSED") : "REFUSED";
 
-export async function previewBatch(ownerId: string, manifestText: string, files: readonly BatchFile[], settings: Snapshot, now: Date): Promise<BatchPreview> {
+export async function previewBatch(
+  ownerId: string,
+  manifestText: string,
+  files: readonly BatchFile[],
+  settings: Snapshot,
+  now: Date,
+): Promise<BatchPreview> {
   const manifest = readBatchManifest(manifestText);
   const maxRows = settings["limits.batchMaxRows"].value as number;
-  if (manifest.rows.length > maxRows) throw refuse(413, "BATCH_TOO_LARGE", `A batch has at most ${maxRows} rows`, { limit: maxRows });
-  const { rows, unnamedFiles } = matchBatchFiles(manifest, files.map((f) => f.name));
+  if (manifest.rows.length > maxRows)
+    throw refuse(413, "BATCH_TOO_LARGE", `A batch has at most ${maxRows} rows`, { limit: maxRows });
+  const { rows, unnamedFiles } = matchBatchFiles(
+    manifest,
+    files.map((f) => f.name),
+  );
   const byName = new Map(files.map((f) => [f.name.toLowerCase(), f]));
 
   const preview: PreviewRow[] = [];
-  for (const row of rows) preview.push(await previewRow(ownerId, row, byName.get(row.file.toLowerCase()), settings, now));
+  for (const row of rows)
+    preview.push(await previewRow(ownerId, row, byName.get(row.file.toLowerCase()), settings, now));
 
   const counts = { check: 0, reuse: 0, refused: 0 };
   for (const r of preview) counts[r.state]++;
   const entitlement = await entitlementOf(query, ownerId, now);
   const freeFirst = (settings["audit.freeFirst"].value as boolean) && !entitlement.freeAuditUsed ? 1 : 0;
   const covered = entitlement.pro || entitlement.credits + freeFirst >= counts.check;
-  return { rows: preview, missingColumns: manifest.missingColumns, unknownColumns: manifest.unknownColumns, unnamedFiles, counts, cost: { audits: counts.check, covered, credits: entitlement.credits, pro: entitlement.pro } };
+  return {
+    rows: preview,
+    missingColumns: manifest.missingColumns,
+    unknownColumns: manifest.unknownColumns,
+    unnamedFiles,
+    counts,
+    cost: { audits: counts.check, covered, credits: entitlement.credits, pro: entitlement.pro },
+  };
 }
 
-async function previewRow(ownerId: string, row: BatchRow, file: BatchFile | undefined, settings: Snapshot, now: Date): Promise<PreviewRow> {
+async function previewRow(
+  ownerId: string,
+  row: BatchRow,
+  file: BatchFile | undefined,
+  settings: Snapshot,
+  now: Date,
+): Promise<PreviewRow> {
   const base = { line: row.line, file: row.file, studio: row.request?.studio ?? null, reference: row.reference };
-  if (row.errors.length || !row.request || !file) return { ...base, state: PREVIEW_ROW.refused, errors: row.errors.length ? row.errors : [BATCH_ROW_ERROR.fileNotSent] };
+  if (row.errors.length || !row.request || !file)
+    return {
+      ...base,
+      state: PREVIEW_ROW.refused,
+      errors: row.errors.length ? row.errors : [BATCH_ROW_ERROR.fileNotSent],
+    };
   let sha256: string;
   try {
     // The workspace's own pre-flight rules (size, allowed types), as a single upload applies them.
-    ({ sha256 } = await inspectUpload({ name: file.name, type: file.type, size: file.bytes.length }, file.bytes, preflightRulesFrom(YOMIZAKA_RULES, settings)));
+    ({ sha256 } = await inspectUpload(
+      { name: file.name, type: file.type, size: file.bytes.length },
+      file.bytes,
+      preflightRulesFrom(YOMIZAKA_RULES, settings),
+    ));
   } catch (error) {
     return { ...base, state: PREVIEW_ROW.refused, errors: [preflightCode(error)] };
   }
-  const [known] = await query<{ id: string }>("SELECT id FROM documents WHERE owner_id = $1 AND sha256 = $2", [ownerId, sha256]);
+  const [known] = await query<{ id: string }>("SELECT id FROM documents WHERE owner_id = $1 AND sha256 = $2", [
+    ownerId,
+    sha256,
+  ]);
   if (known) {
     const r = row.request;
     const reusable = await findReusableAnalysis(query, {

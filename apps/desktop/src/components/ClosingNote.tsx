@@ -13,7 +13,11 @@ export function ClosingNote({ note }: Readonly<{ note: Note }>) {
         {note.next.none ? <p>{note.next.none}</p> : null}
         {note.next.items.map((item) => (
           <div key={`${item.problem}-${item.advice}`} className="flex flex-col gap-1">
-            {item.important ? <Badge tone="warning">{item.problem}</Badge> : <p className="font-medium">{item.problem}</p>}
+            {item.important ? (
+              <Badge tone="warning">{item.problem}</Badge>
+            ) : (
+              <p className="font-medium">{item.problem}</p>
+            )}
             <p className="text-fg-secondary">{item.advice}</p>
           </div>
         ))}

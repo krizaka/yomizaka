@@ -21,7 +21,12 @@ export default function Settings() {
     <Screen header={<AppHeader title={t("settings.title")} />}>
       <View style={{ gap: 8 }}>
         <Txt variant="label">{t("settings.language")}</Txt>
-        <Segmented aria-label={t("settings.language")} options={LOCALES.map((value) => ({ value, label: t(`settings.languages.${value}`) }))} value={locale} onValueChange={setLocale} />
+        <Segmented
+          aria-label={t("settings.language")}
+          options={LOCALES.map((value) => ({ value, label: t(`settings.languages.${value}`) }))}
+          value={locale}
+          onValueChange={setLocale}
+        />
       </View>
       <Card.Root>
         <Card.Body>
@@ -29,8 +34,16 @@ export default function Settings() {
           <Txt tone="secondary">{t("settings.storageBody")}</Txt>
         </Card.Body>
       </Card.Root>
-      <Button variant="ghost" label={t("settings.privacy")} onPress={() => void Linking.openURL(webUrl(`/${locale}/privacy`))} />
-      <Button variant="secondary" label={t("settings.signOut")} onPress={() => void signOut().then(() => router.replace("/sign-in"))} />
+      <Button
+        variant="ghost"
+        label={t("settings.privacy")}
+        onPress={() => void Linking.openURL(webUrl(`/${locale}/privacy`))}
+      />
+      <Button
+        variant="secondary"
+        label={t("settings.signOut")}
+        onPress={() => void signOut().then(() => router.replace("/sign-in"))}
+      />
       <Txt tone="muted" variant="caption">
         {t("settings.version", { version: APP_VERSION })}
       </Txt>

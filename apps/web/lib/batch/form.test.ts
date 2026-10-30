@@ -10,7 +10,11 @@ const codeOf = async (p: Promise<unknown>) => {
     await p;
     return null;
   } catch (error) {
-    return (error as { status: number; body: { code: string } }).status + " " + (error as { body: { code: string } }).body.code;
+    return (
+      (error as { status: number; body: { code: string } }).status +
+      " " +
+      (error as { body: { code: string } }).body.code
+    );
   }
 };
 
@@ -23,7 +27,9 @@ describe("readCheckForm (yomizaka#202)", () => {
     const read = await readCheckForm(post(form));
     expect(read.files.map((f) => f.name)).toEqual(["bail A.pdf"]);
     expect(read.name).toBe("R-12");
-    expect(readBatchManifest(read.manifest).rows).toMatchObject([{ line: 2, file: "bail A.pdf", reference: "R-12", errors: [] }]);
+    expect(readBatchManifest(read.manifest).rows).toMatchObject([
+      { line: 2, file: "bail A.pdf", reference: "R-12", errors: [] },
+    ]);
   });
 
   it("quotes what would break the CSV: a comma, a quote, a semicolon, a line break in a name or a reference", async () => {
@@ -50,7 +56,9 @@ describe("readCheckForm (yomizaka#202)", () => {
     const noCheck = new FormData();
     noCheck.set("file", pdf("a.pdf"));
     expect(await codeOf(readCheckForm(post(noCheck)))).toBe("400 BAD_REQUEST");
-    expect(await codeOf(readCheckForm(new Request("http://localhost/x", { method: "POST", body: "not a form" })))).toBe("400 BAD_REQUEST");
+    expect(await codeOf(readCheckForm(new Request("http://localhost/x", { method: "POST", body: "not a form" })))).toBe(
+      "400 BAD_REQUEST",
+    );
   });
 
   it("an unknown check word is the row's own refusal (UNKNOWN_CHECK), not a crash", async () => {

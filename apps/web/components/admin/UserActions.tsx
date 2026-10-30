@@ -23,7 +23,11 @@ export function UserActions({ user, onChange }: Readonly<{ user: UserDetail; onC
     setProblem(say(`errors.${errorKey(e)}`));
   };
   const role = useMutation({
-    mutationFn: () => krizakaFetch(`/api/admin/users/${user.id}/role`, { method: "POST", json: { role: user.role === "ADMIN" ? "USER" : "ADMIN" } }) as Promise<{ user: UserDetail }>,
+    mutationFn: () =>
+      krizakaFetch(`/api/admin/users/${user.id}/role`, {
+        method: "POST",
+        json: { role: user.role === "ADMIN" ? "USER" : "ADMIN" },
+      }) as Promise<{ user: UserDetail }>,
     onSuccess: (r) => {
       onChange(r.user);
       setProblem(null);
@@ -31,7 +35,11 @@ export function UserActions({ user, onChange }: Readonly<{ user: UserDetail; onC
     onError: fail,
   });
   const plan = useMutation({
-    mutationFn: () => krizakaFetch(`/api/admin/users/${user.id}/plan`, { method: "POST", json: { plan: user.plan === "PRO" ? "FREE" : "PRO" } }) as Promise<{ user: UserDetail }>,
+    mutationFn: () =>
+      krizakaFetch(`/api/admin/users/${user.id}/plan`, {
+        method: "POST",
+        json: { plan: user.plan === "PRO" ? "FREE" : "PRO" },
+      }) as Promise<{ user: UserDetail }>,
     onSuccess: (r) => {
       onChange(r.user);
       setProblem(null);
@@ -39,7 +47,11 @@ export function UserActions({ user, onChange }: Readonly<{ user: UserDetail; onC
     onError: fail,
   });
   const revoke = useMutation({
-    mutationFn: () => krizakaFetch(`/api/admin/users/${user.id}/sessions`, { method: "DELETE" }) as Promise<{ revoked: number; user: UserDetail }>,
+    mutationFn: () =>
+      krizakaFetch(`/api/admin/users/${user.id}/sessions`, { method: "DELETE" }) as Promise<{
+        revoked: number;
+        user: UserDetail;
+      }>,
     onSuccess: (r) => {
       onChange(r.user);
       setProblem(null);
@@ -48,7 +60,8 @@ export function UserActions({ user, onChange }: Readonly<{ user: UserDetail; onC
     onError: fail,
   });
   const erase = useMutation({
-    mutationFn: () => krizakaFetch(`/api/admin/users/${user.id}`, { method: "DELETE", json: { confirmEmail: confirm } }),
+    mutationFn: () =>
+      krizakaFetch(`/api/admin/users/${user.id}`, { method: "DELETE", json: { confirmEmail: confirm } }),
     onSuccess: () => router.push(`/${locale}/users`),
     onError: fail,
   });
@@ -72,15 +85,30 @@ export function UserActions({ user, onChange }: Readonly<{ user: UserDetail; onC
           </a>
         </Button>
       </div>
-      <section className="flex flex-col gap-2 border-t border-border-subtle pt-4" aria-label={say("adminConsole.user.dangerTitle")}>
+      <section
+        className="flex flex-col gap-2 border-t border-border-subtle pt-4"
+        aria-label={say("adminConsole.user.dangerTitle")}
+      >
         <h3 className="font-display text-sm font-bold text-fg">{say("adminConsole.user.dangerTitle")}</h3>
         <p className="text-sm text-fg-secondary">{say("adminConsole.user.dangerLead")}</p>
         <Field.Root>
           <Field.Label htmlFor="confirm-email">{say("adminConsole.user.confirmLabel")}</Field.Label>
-          <Input id="confirm-email" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="off" spellCheck={false} />
+          <Input
+            id="confirm-email"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            autoComplete="off"
+            spellCheck={false}
+          />
         </Field.Root>
         <div>
-          <Button variant="danger" size="sm" loading={erase.isPending} disabled={confirm.trim().toLowerCase() !== user.email} onClick={() => erase.mutate()}>
+          <Button
+            variant="danger"
+            size="sm"
+            loading={erase.isPending}
+            disabled={confirm.trim().toLowerCase() !== user.email}
+            onClick={() => erase.mutate()}
+          >
             {say("adminConsole.user.deleteAccount")}
           </Button>
         </div>

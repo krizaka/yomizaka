@@ -21,13 +21,19 @@ const TONE: Record<BatchItemState, "neutral" | "accent" | "success" | "danger" |
   [BATCH_ITEM.refused]: "warning",
 };
 
-const FINISHED: ReadonlySet<BatchItemState> = new Set([BATCH_ITEM.done, BATCH_ITEM.reused, BATCH_ITEM.failed, BATCH_ITEM.refused]);
+const FINISHED: ReadonlySet<BatchItemState> = new Set([
+  BATCH_ITEM.done,
+  BATCH_ITEM.reused,
+  BATCH_ITEM.failed,
+  BATCH_ITEM.refused,
+]);
 
 /** The batches of the account, newest first. */
 export function BatchesView({ go: _go }: Readonly<{ go: (route: Route) => void }>) {
   const { t, locale } = useI18n();
   const list = useQuery(queries.batches());
-  const when = (iso: string) => new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(iso));
+  const when = (iso: string) =>
+    new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(iso));
   return (
     <div className="flex max-w-3xl flex-col gap-4">
       <p className="text-fg-secondary">{t("batch.lead")}</p>
@@ -46,7 +52,11 @@ export function BatchesView({ go: _go }: Readonly<{ go: (route: Route) => void }
             title: b.name,
             description: when(b.createdAt),
             href: hashOf({ screen: "batch", batchId: b.id }),
-            meta: <Badge tone={b.finishedAt ? "success" : "accent"}>{t("batch.progress", { done: b.done, total: b.items })}</Badge>,
+            meta: (
+              <Badge tone={b.finishedAt ? "success" : "accent"}>
+                {t("batch.progress", { done: b.done, total: b.items })}
+              </Badge>
+            ),
           })}
         />
       )}
@@ -65,7 +75,10 @@ export function BatchView({ batchId, go: _go }: Readonly<{ batchId: string; go: 
   return (
     <div className="flex max-w-3xl flex-col gap-4">
       <h1 className="text-xl font-semibold">{data?.name ?? t("batch.title")}</h1>
-      <Progress value={total ? Math.round((finished / total) * 100) : undefined} label={t("batch.progress", { done: finished, total })} />
+      <Progress
+        value={total ? Math.round((finished / total) * 100) : undefined}
+        label={t("batch.progress", { done: finished, total })}
+      />
       <p className="text-sm text-fg-secondary">{t("batch.progress", { done: finished, total })}</p>
       {kept > 0 ? <Alert tone="warning">{t("batch.refusedHere", { count: kept })}</Alert> : null}
       {data?.pausedBy ? <Alert tone="warning">{t("batch.paused", { reason: data.pausedBy })}</Alert> : null}
@@ -78,7 +91,10 @@ export function BatchView({ batchId, go: _go }: Readonly<{ batchId: string; go: 
         row={(i) => ({
           title: i.file,
           description: i.error ?? undefined,
-          href: i.documentId && i.analysisId && FINISHED.has(i.state) ? hashOf({ screen: "check", documentId: i.documentId, analysisId: i.analysisId }) : undefined,
+          href:
+            i.documentId && i.analysisId && FINISHED.has(i.state)
+              ? hashOf({ screen: "check", documentId: i.documentId, analysisId: i.analysisId })
+              : undefined,
           meta: <Badge tone={TONE[i.state]}>{t(`batch.state.${i.state}`)}</Badge>,
         })}
       />

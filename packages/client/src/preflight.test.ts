@@ -1,12 +1,22 @@
 import { describe, expect, it } from "vitest";
 
-import { DEFAULT_LIMITS, limitsFromConfig, mimeTypeOf, type PickedFile, PREFLIGHT_REASON, preflight } from "./preflight";
+import {
+  DEFAULT_LIMITS,
+  limitsFromConfig,
+  mimeTypeOf,
+  type PickedFile,
+  PREFLIGHT_REASON,
+  preflight,
+} from "./preflight";
 
 const pdf: PickedFile = { uri: "file:///bail.pdf", name: "bail.pdf", mimeType: "application/pdf", size: 120_000 };
 
 describe("the limits the server answers", () => {
   it("names the types by family: they become the MIME types the picker reports, unknown ones dropped", () => {
-    expect(limitsFromConfig({ maxFileBytes: 10, allowedTypes: ["pdf", "text", "docx"] })).toEqual({ maxFileBytes: 10, allowedTypes: ["application/pdf", "text/plain"] });
+    expect(limitsFromConfig({ maxFileBytes: 10, allowedTypes: ["pdf", "text", "docx"] })).toEqual({
+      maxFileBytes: 10,
+      allowedTypes: ["application/pdf", "text/plain"],
+    });
   });
 });
 
@@ -21,7 +31,10 @@ describe("the type of a file the picker did not type", () => {
 
   it("lets an untyped PDF through and refuses an untyped image", () => {
     expect(preflight({ ...pdf, mimeType: null }).ok).toBe(true);
-    expect(preflight({ ...pdf, name: "scan.heic", mimeType: null })).toEqual({ ok: false, reason: PREFLIGHT_REASON.unsupportedType });
+    expect(preflight({ ...pdf, name: "scan.heic", mimeType: null })).toEqual({
+      ok: false,
+      reason: PREFLIGHT_REASON.unsupportedType,
+    });
   });
 });
 
@@ -43,8 +56,16 @@ describe("the pre-flight of a picked file", () => {
   });
 
   it("follows the limits the server answered, never more than the types it can read", () => {
-    expect(preflight({ ...pdf, size: 2_000 }, { maxFileBytes: 1_000, allowedTypes: ["application/pdf"] })).toEqual({ ok: false, reason: PREFLIGHT_REASON.tooLarge });
-    expect(preflight(pdf, { maxFileBytes: 1_000_000, allowedTypes: ["text/plain"] })).toEqual({ ok: false, reason: PREFLIGHT_REASON.unsupportedType });
-    expect(preflight({ ...pdf, mimeType: "image/png" }, { maxFileBytes: 1_000_000, allowedTypes: ["image/png"] }).ok).toBe(false);
+    expect(preflight({ ...pdf, size: 2_000 }, { maxFileBytes: 1_000, allowedTypes: ["application/pdf"] })).toEqual({
+      ok: false,
+      reason: PREFLIGHT_REASON.tooLarge,
+    });
+    expect(preflight(pdf, { maxFileBytes: 1_000_000, allowedTypes: ["text/plain"] })).toEqual({
+      ok: false,
+      reason: PREFLIGHT_REASON.unsupportedType,
+    });
+    expect(
+      preflight({ ...pdf, mimeType: "image/png" }, { maxFileBytes: 1_000_000, allowedTypes: ["image/png"] }).ok,
+    ).toBe(false);
   });
 });

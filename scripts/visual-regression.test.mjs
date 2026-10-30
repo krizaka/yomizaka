@@ -27,7 +27,8 @@ describe("the visual regression", () => {
 
   it("covers the main journeys: public, signed-in, a report, and the first paint of a signed-in page, in both themes", () => {
     const journeys = read("apps/web/e2e/visual/journeys.visual.mjs");
-    for (const name of ["landing", "pricing", "sign-in", "app-home", "document-report", "app-home-pending"]) expect(journeys).toContain(`name: "${name}"`);
+    for (const name of ["landing", "pricing", "sign-in", "app-home", "document-report", "app-home-pending"])
+      expect(journeys).toContain(`name: "${name}"`);
     expect(journeys).toContain("firstPaint: true");
     expect(journeys).toContain('hold: ["**/api/me"]');
     expect(journeys).toContain("mask: LIVE");

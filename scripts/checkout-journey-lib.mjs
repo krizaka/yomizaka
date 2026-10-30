@@ -2,14 +2,21 @@
 // (scripts/checkout-journey-guard.mjs): what a Stripe TEST key is, what « bought » looks like, when a red run opens an issue.
 
 /** The Stripe TEST card the hosted page accepts (Stripe's documented success card). Never a real card. */
-export const TEST_CARD = { number: "4242424242424242", expiry: "12 / 34", cvc: "123", name: "Persona Yomizaka", postal: "H2X 1Y4" };
+export const TEST_CARD = {
+  number: "4242424242424242",
+  expiry: "12 / 34",
+  cvc: "123",
+  name: "Persona Yomizaka",
+  postal: "H2X 1Y4",
+};
 
 /** The plan the persona buys: the cheapest subscription of the catalogue (apps/web/lib/pricing.ts, SOLD). */
 export const PLAN = { kind: "agency", priceKey: "yomizaka.agency" };
 
 /** A processor key is accepted only if it is a TEST key: the journey never touches live mode. Pure. */
 export function assertTestKey(key) {
-  if (typeof key !== "string" || !/^sk_test_[A-Za-z0-9]{10,}$/.test(key)) throw new Error("the Stripe key must be a test key (sk_test_...): the checkout journey never runs in live mode");
+  if (typeof key !== "string" || !/^sk_test_[A-Za-z0-9]{10,}$/.test(key))
+    throw new Error("the Stripe key must be a test key (sk_test_...): the checkout journey never runs in live mode");
   return key;
 }
 
@@ -25,12 +32,18 @@ export function isHostedCheckout(value) {
 
 /** Whether the account's entitlement (GET /api/billing) is the subscription the persona bought. Pure. */
 export function isSubscribed(entitlement, plan = PLAN) {
-  return Boolean(entitlement?.pro) && entitlement.subscriptionStatus === "active" && entitlement.planKey === plan.priceKey;
+  return (
+    Boolean(entitlement?.pro) && entitlement.subscriptionStatus === "active" && entitlement.planKey === plan.priceKey
+  );
 }
 
 /** The paid row of the account's payment history that carries a receipt (GET /api/billing/payments), or null. Pure. */
 export function paidReceipt(payments) {
-  return (Array.isArray(payments) ? payments : []).find((p) => p?.state === "paid" && typeof p.receiptUrl === "string" && p.receiptUrl.startsWith("https://")) ?? null;
+  return (
+    (Array.isArray(payments) ? payments : []).find(
+      (p) => p?.state === "paid" && typeof p.receiptUrl === "string" && p.receiptUrl.startsWith("https://"),
+    ) ?? null
+  );
 }
 
 /** A signed report answer is a PDF with its fingerprint. Pure. */
@@ -40,7 +53,10 @@ export function isSignedPdf({ contentType, bytes, sha256 }) {
 }
 
 /** A line safe to print: printable characters only, no line break an input could use to forge a log line. Pure. */
-export const plain = (text) => String(text).replace(/[^\x20-\x7EÀ-ſ]/g, " ").slice(0, 300);
+export const plain = (text) =>
+  String(text)
+    .replace(/[^\x20-\x7EÀ-ſ]/g, " ")
+    .slice(0, 300);
 
 /** Where a red run is a finding: the default branch only (a dispatch or a schedule runs there), never a pull request. Pure. */
 export function shouldOpenIssue({ eventName, ref }) {

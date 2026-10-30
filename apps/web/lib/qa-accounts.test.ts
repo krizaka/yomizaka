@@ -12,7 +12,12 @@ describe("the QA accounts script", () => {
   });
 
   it("asks for both accounts, valid addresses, passwords of 12 characters", () => {
-    const env = { QA_USER_EMAIL: "QA+User@Yomizaka.com", QA_USER_PASSWORD: "x".repeat(16), QA_ADMIN_EMAIL: "qa+admin@yomizaka.com", QA_ADMIN_PASSWORD: "y".repeat(16) };
+    const env = {
+      QA_USER_EMAIL: "QA+User@Yomizaka.com",
+      QA_USER_PASSWORD: "x".repeat(16),
+      QA_ADMIN_EMAIL: "qa+admin@yomizaka.com",
+      QA_ADMIN_PASSWORD: "y".repeat(16),
+    };
     expect(accountsFromEnv(env).map((a: { email: string; role: string }) => [a.email, a.role])).toEqual([
       ["qa+user@yomizaka.com", "USER"],
       ["qa+admin@yomizaka.com", "ADMIN"],

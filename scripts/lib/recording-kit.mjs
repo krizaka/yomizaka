@@ -9,7 +9,8 @@ export const flagReader = (args) => (name, fallback) => {
 export const hideEmail = () => {
   const hide = () => {
     for (const el of document.querySelectorAll("body *")) {
-      if (el.childElementCount === 0 && /@[a-z0-9.-]+\.[a-z]{2,}/i.test(el.textContent ?? "")) el.style.visibility = "hidden";
+      if (el.childElementCount === 0 && /@[a-z0-9.-]+\.[a-z]{2,}/i.test(el.textContent ?? ""))
+        el.style.visibility = "hidden";
     }
   };
   document.addEventListener("DOMContentLoaded", () => {

@@ -16,5 +16,10 @@ export function formatBytes(bytes: number, locale: "en" | "fr"): string {
 
 export function formatDate(iso: string | null | undefined, locale: "en" | "fr", withTime = false): string {
   if (!iso) return "";
-  return new Date(iso).toLocaleString(INTL[locale], withTime ? { dateStyle: "medium", timeStyle: "short", timeZone: DISPLAY_TIME_ZONE } : { dateStyle: "medium", timeZone: DISPLAY_TIME_ZONE });
+  return new Date(iso).toLocaleString(
+    INTL[locale],
+    withTime
+      ? { dateStyle: "medium", timeStyle: "short", timeZone: DISPLAY_TIME_ZONE }
+      : { dateStyle: "medium", timeZone: DISPLAY_TIME_ZONE },
+  );
 }

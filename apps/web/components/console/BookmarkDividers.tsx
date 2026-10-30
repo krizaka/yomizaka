@@ -14,7 +14,12 @@ export function BookmarkDividers({ tabs, path }: Readonly<{ tabs: readonly Divid
   const { say } = useSay();
   const active = tabs.find((t) => t.on);
   return (
-    <Tabs.Nav label={say("documentsPage.dividers")} current={active?.id ? `${path}?tags=${active.id}` : path} variant="binder" data-testid="bookmark-dividers">
+    <Tabs.Nav
+      label={say("documentsPage.dividers")}
+      current={active?.id ? `${path}?tags=${active.id}` : path}
+      variant="binder"
+      data-testid="bookmark-dividers"
+    >
       {tabs.map((tab) => (
         <Tabs.NavLink key={tab.id ?? "all"} href={tab.href} hue={tab.hue} asChild>
           <Link href={tab.href} scroll={false}>

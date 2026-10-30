@@ -19,13 +19,20 @@ const APP = join(WEB, "app/[locale]/(app)/app");
 
 function segments(dir: string): string[] {
   const here = readdirSync(dir).includes("page.tsx") ? [dir] : [];
-  return [...here, ...readdirSync(dir).filter((f) => statSync(join(dir, f)).isDirectory()).flatMap((f) => segments(join(dir, f)))];
+  return [
+    ...here,
+    ...readdirSync(dir)
+      .filter((f) => statSync(join(dir, f)).isDirectory())
+      .flatMap((f) => segments(join(dir, f))),
+  ];
 }
 function sources(dir: string): { name: string; source: string }[] {
   return readdirSync(dir).flatMap((f) => {
     const full = join(dir, f);
     if (statSync(full).isDirectory()) return sources(full);
-    return /\.tsx?$/.test(f) && !f.includes(".test.") ? [{ name: relative(WEB, full), source: readFileSync(full, "utf8") }] : [];
+    return /\.tsx?$/.test(f) && !f.includes(".test.")
+      ? [{ name: relative(WEB, full), source: readFileSync(full, "utf8") }]
+      : [];
   });
 }
 
@@ -36,7 +43,12 @@ const inI18n = (node: React.ReactNode, locale: "en" | "fr" = "fr") =>
       {node}
     </I18nProvider>,
   );
-const readable = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ");
+const readable = (html: string) =>
+  html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&#x27;|&#39;/g, "'")
+    .replace(/&[a-z#0-9]+;/gi, " ")
+    .replace(/\s+/g, " ");
 
 describe("every segment of the app has its loading and its error boundary (P11)", () => {
   const all = segments(APP);
@@ -82,7 +94,10 @@ describe("the skeletons: the page's shape, announced once, no spinner", () => {
 
 describe("an error stays in place, with its cause and the way back", () => {
   it("is a danger Alert with the words and « Réessayer », in each language", () => {
-    for (const [locale, d] of [["fr", fr], ["en", en]] as const) {
+    for (const [locale, d] of [
+      ["fr", fr],
+      ["en", en],
+    ] as const) {
       const html = inI18n(<SegmentError error={new Error("boom")} retry={() => {}} />, locale);
       expect(html).toContain('role="alert"');
       const text = readable(html);
@@ -98,13 +113,19 @@ describe("an error stays in place, with its cause and the way back", () => {
 describe("no spinner outside a button", () => {
   it("no Spinner and no spinning class in the app's components and pages (a button's `loading` is the only spinner)", () => {
     const files = [...sources(join(WEB, "components")), ...sources(join(WEB, "app/[locale]"))];
-    expect(files.filter((f) => /@krizaka\/ui\/spinner|\bSpinner\b|animate-spin/.test(f.source)).map((f) => f.name)).toEqual([]);
+    expect(
+      files.filter((f) => /@krizaka\/ui\/spinner|\bSpinner\b|animate-spin/.test(f.source)).map((f) => f.name),
+    ).toEqual([]);
   });
 });
 
 describe("the NO_TEXT partial state says why, and what still runs", () => {
   it("names the missing text layer, the law check that could not read the clauses, and the file's examination that still runs", () => {
-    expect(fr.console.document.noText).toBe("Ce PDF n'a pas de couche texte : la vérification au regard de la loi n'a pas pu lire ses clauses. L'examen du fichier, lui, a lieu.");
-    expect(en.console.document.noText).toBe("This PDF has no text layer: the check against the law could not read its clauses. The file itself is still examined.");
+    expect(fr.console.document.noText).toBe(
+      "Ce PDF n'a pas de couche texte : la vérification au regard de la loi n'a pas pu lire ses clauses. L'examen du fichier, lui, a lieu.",
+    );
+    expect(en.console.document.noText).toBe(
+      "This PDF has no text layer: the check against the law could not read its clauses. The file itself is still examined.",
+    );
   });
 });

@@ -2,10 +2,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { resetRateLimits } from "../limits";
 
-const state = vi.hoisted(() => ({ session: null as null | { account: { id: string; email: string; perspective: string | null } }, calls: [] as string[] }));
+const state = vi.hoisted(() => ({
+  session: null as null | { account: { id: string; email: string; perspective: string | null } },
+  calls: [] as string[],
+}));
 
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => undefined }) }));
-vi.mock("../session", async (orig) => ({ ...(await orig<typeof import("../session")>()), resolveSession: async () => state.session }));
+vi.mock("../session", async (orig) => ({
+  ...(await orig<typeof import("../session")>()),
+  resolveSession: async () => state.session,
+}));
 vi.mock("../audit", () => ({ audit: async () => undefined }));
 vi.mock("../db", () => ({
   query: async (text: string) => {
@@ -14,13 +20,20 @@ vi.mock("../db", () => ({
   },
 }));
 
-const json = (method: string, body?: unknown) => new Request("https://dev.yomizaka.com/x", { method, body: body === undefined ? undefined : JSON.stringify(body), headers: { "x-forwarded-for": "203.0.113.9", "content-type": "application/json" } });
+const json = (method: string, body?: unknown) =>
+  new Request("https://dev.yomizaka.com/x", {
+    method,
+    body: body === undefined ? undefined : JSON.stringify(body),
+    headers: { "x-forwarded-for": "203.0.113.9", "content-type": "application/json" },
+  });
 const ctx = (id = "11111111-1111-4111-8111-111111111111") => ({ params: Promise.resolve({ id }) });
 
 beforeEach(() => {
   resetRateLimits();
   state.calls = [];
-  state.session = { account: { id: "22222222-2222-4222-8222-222222222222", email: "eric@yomizaka.test", perspective: "tenant" } };
+  state.session = {
+    account: { id: "22222222-2222-4222-8222-222222222222", email: "eric@yomizaka.test", perspective: "tenant" },
+  };
 });
 
 describe("the organisation routes", () => {

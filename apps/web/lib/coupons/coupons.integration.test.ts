@@ -16,7 +16,15 @@ import { coupons } from "./instance";
 const enabled = process.env.YOMIZAKA_DB_IT === "1" && !!process.env.DATABASE_URL;
 const NOW = new Date();
 const ADMIN = { id: null, label: "admin@yomizaka.test" };
-const FACTS = { checkoutRef: null, paymentRef: null, invoiceRef: null, amountTotal: null, amountDiscount: 0, currency: null, metadata: {} } as const;
+const FACTS = {
+  checkoutRef: null,
+  paymentRef: null,
+  invoiceRef: null,
+  amountTotal: null,
+  amountDiscount: 0,
+  currency: null,
+  metadata: {},
+} as const;
 // @fixed: a day, to start a coupon's window in the past
 const DAY_MS = 86_400_000;
 const START = new Date(NOW.getTime() - DAY_MS);
@@ -27,21 +35,57 @@ describe.runIf(enabled)("coupons", () => {
     await appSettings().set(ADMIN, GLOBAL, "coupons.enabled", true, NOW);
   });
   const account = async () => {
-    const [a] = await query<{ id: string }>("INSERT INTO accounts (email, password_hash, email_verified_at, terms_accepted_at) VALUES ($1, 'x', now(), now()) RETURNING id", [`c-${randomUUID()}@yomizaka.test`]);
+    const [a] = await query<{ id: string }>(
+      "INSERT INTO accounts (email, password_hash, email_verified_at, terms_accepted_at) VALUES ($1, 'x', now(), now()) RETURNING id",
+      [`c-${randomUUID()}@yomizaka.test`],
+    );
     return a!.id;
   };
   const code = () => `T${randomUUID().replaceAll("-", "").slice(0, 10).toUpperCase()}`;
-  const ip = () => `10.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}`;
+  const ip = () =>
+    `10.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}`;
   const discount = (over: Record<string, unknown> = {}) =>
-    transaction((tx) => coupons.admin.create(tx, ADMIN, { code: code(), kind: "discount", purpose: "promo", startsAt: START, percentOffBp: 2000, duration: "once", ...over }));
+    transaction((tx) =>
+      coupons.admin.create(tx, ADMIN, {
+        code: code(),
+        kind: "discount",
+        purpose: "promo",
+        startsAt: START,
+        percentOffBp: 2000,
+        duration: "once",
+        ...over,
+      }),
+    );
   const credit = (over: Record<string, unknown> = {}) =>
-    transaction((tx) => coupons.admin.create(tx, ADMIN, { code: code(), kind: "credit", purpose: "demo", startsAt: START, credits: 20, capPerDay: 2, creditsValidDays: 30, onExhausted: "stop", ...over }));
-  const reserveFor = (accountId: string, c: { code: string }) => reserve({ code: c.code, accountId, plan: "document", amountMinor: 6500, currency: "cad", ip: ip() });
+    transaction((tx) =>
+      coupons.admin.create(tx, ADMIN, {
+        code: code(),
+        kind: "credit",
+        purpose: "demo",
+        startsAt: START,
+        credits: 20,
+        capPerDay: 2,
+        creditsValidDays: 30,
+        onExhausted: "stop",
+        ...over,
+      }),
+    );
+  const reserveFor = (accountId: string, c: { code: string }) =>
+    reserve({ code: c.code, accountId, plan: "document", amountMinor: 6500, currency: "cad", ip: ip() });
   const redemption = async (id: string) =>
-    (await query<{ status: string; over_limit: boolean; amount_refunded_minor: string; use_restored: boolean; payment_ref: string | null; account_id: string | null }>(
-      "SELECT status, over_limit, amount_refunded_minor, use_restored, payment_ref, account_id FROM coupons.redemption WHERE id = $1",
-      [id],
-    ))[0]!;
+    (
+      await query<{
+        status: string;
+        over_limit: boolean;
+        amount_refunded_minor: string;
+        use_restored: boolean;
+        payment_ref: string | null;
+        account_id: string | null;
+      }>(
+        "SELECT status, over_limit, amount_refunded_minor, use_restored, payment_ref, account_id FROM coupons.redemption WHERE id = $1",
+        [id],
+      )
+    )[0]!;
   const paid = (accountId: string, redemptionId: string, extra: Record<string, unknown> = {}): PaymentEvent =>
     ({
       id: `evt-${randomUUID()}`,
@@ -58,8 +102,14 @@ describe.runIf(enabled)("coupons", () => {
       metadata: { redemption_id: redemptionId },
       ...extra,
     }) as PaymentEvent;
-  const redeemCredit = (c: { code: string }, accountId: string) => transaction((tx) => coupons.redeemCredit(tx, { code: c.code, accountId, idempotencyKey: `redeem-${randomUUID()}`, ip: ip() }));
-  const spend = (accountId: string) => transaction((tx) => ledger.consume(tx, { accountId, amount: 1, reason: "audit", idempotencyKey: `spend-${randomUUID()}` }));
+  const redeemCredit = (c: { code: string }, accountId: string) =>
+    transaction((tx) =>
+      coupons.redeemCredit(tx, { code: c.code, accountId, idempotencyKey: `redeem-${randomUUID()}`, ip: ip() }),
+    );
+  const spend = (accountId: string) =>
+    transaction((tx) =>
+      ledger.consume(tx, { accountId, amount: 1, reason: "audit", idempotencyKey: `spend-${randomUUID()}` }),
+    );
 
   it("a paid checkout confirms the use once, whatever the number of deliveries, and still credits the document", async () => {
     const c = await discount({ maxRedemptions: 5 });
@@ -73,7 +123,9 @@ describe.runIf(enabled)("coupons", () => {
     // a second event for the same payment (another event id) cannot confirm it twice
     expect(await applyPaymentEvent(transaction, { ...event, id: `evt-${randomUUID()}` })).toBe("applied");
     expect((await redemption(r.applied.redemptionId)).status).toBe("confirmed");
-    expect(await query("SELECT 1 FROM coupons.redemption WHERE coupon_id = $1 AND status = 'confirmed'", [c.id])).toHaveLength(1);
+    expect(
+      await query("SELECT 1 FROM coupons.redemption WHERE coupon_id = $1 AND status = 'confirmed'", [c.id]),
+    ).toHaveLength(1);
     expect((await entitlementOf(query, id, NOW)).credits).toBe(2);
   });
 
@@ -98,7 +150,13 @@ describe.runIf(enabled)("coupons", () => {
     const second = await account();
     const r = await reserveFor(first, c);
     await expect(reserveFor(second, c)).rejects.toMatchObject({ body: { code: "COUPON_EXHAUSTED" } });
-    const expired = { id: `evt-${randomUUID()}`, type: "checkout_expired", checkoutRef: `cs_${r.applied.redemptionId}`, accountId: first, metadata: { redemption_id: r.applied.redemptionId } } as never;
+    const expired = {
+      id: `evt-${randomUUID()}`,
+      type: "checkout_expired",
+      checkoutRef: `cs_${r.applied.redemptionId}`,
+      accountId: first,
+      metadata: { redemption_id: r.applied.redemptionId },
+    } as never;
     expect(await applyPaymentEvent(transaction, expired)).toBe("applied");
     expect((await redemption(r.applied.redemptionId)).status).toBe("released");
     const other = await reserveFor(second, c);
@@ -126,19 +184,55 @@ describe.runIf(enabled)("coupons", () => {
   });
 
   it("the launch offer: -50 % for 3 months on the monthly plans, once per account, refused for another plan or when over (#548)", async () => {
-    const launch = await discount({ percentOffBp: 5000, duration: "repeating", durationMonths: 3, plans: ["agency", "firm"], maxPerAccount: 1 });
-    const monthly = (accountId: string, plan: string) => reserve({ code: launch.code.toLowerCase(), accountId, plan, amountMinor: 4900, currency: "cad", ip: ip() });
+    const launch = await discount({
+      percentOffBp: 5000,
+      duration: "repeating",
+      durationMonths: 3,
+      plans: ["agency", "firm"],
+      maxPerAccount: 1,
+    });
+    const monthly = (accountId: string, plan: string) =>
+      reserve({ code: launch.code.toLowerCase(), accountId, plan, amountMinor: 4900, currency: "cad", ip: ip() });
     const id = await account();
     // valid: the processor is told 50 % for 3 months, so the 4th invoice is the regular price
     const ok = await monthly(id, "agency");
-    expect(ok.applied.discount).toMatchObject({ couponId: launch.id, percentOffBp: 5000, duration: "repeating", durationMonths: 3 });
+    expect(ok.applied.discount).toMatchObject({
+      couponId: launch.id,
+      percentOffBp: 5000,
+      duration: "repeating",
+      durationMonths: 3,
+    });
     // already used by this account
     await expect(monthly(id, "firm")).rejects.toMatchObject({ body: { code: "COUPON_ACCOUNT_LIMIT" } });
     // wrong plan: the single document is not in the offer
-    await expect(reserve({ code: launch.code, accountId: await account(), plan: "document", amountMinor: 499, currency: "cad", ip: ip() })).rejects.toMatchObject({ body: { code: "COUPON_NOT_FOR_PLAN" } });
+    await expect(
+      reserve({
+        code: launch.code,
+        accountId: await account(),
+        plan: "document",
+        amountMinor: 499,
+        currency: "cad",
+        ip: ip(),
+      }),
+    ).rejects.toMatchObject({ body: { code: "COUPON_NOT_FOR_PLAN" } });
     // expired: the window has closed
-    const over = await discount({ percentOffBp: 5000, duration: "repeating", durationMonths: 3, startsAt: new Date(NOW.getTime() - 3 * DAY_MS), endsAt: new Date(NOW.getTime() - DAY_MS) });
-    await expect(reserve({ code: over.code, accountId: await account(), plan: "agency", amountMinor: 4900, currency: "cad", ip: ip() })).rejects.toMatchObject({ body: { code: "COUPON_EXPIRED" } });
+    const over = await discount({
+      percentOffBp: 5000,
+      duration: "repeating",
+      durationMonths: 3,
+      startsAt: new Date(NOW.getTime() - 3 * DAY_MS),
+      endsAt: new Date(NOW.getTime() - DAY_MS),
+    });
+    await expect(
+      reserve({
+        code: over.code,
+        accountId: await account(),
+        plan: "agency",
+        amountMinor: 4900,
+        currency: "cad",
+        ip: ip(),
+      }),
+    ).rejects.toMatchObject({ body: { code: "COUPON_EXPIRED" } });
   });
 
   it("a refund adds up and never gives the use back unless the admin allowed it", async () => {
@@ -147,11 +241,28 @@ describe.runIf(enabled)("coupons", () => {
     const r = await reserveFor(id, c);
     await applyPaymentEvent(transaction, paid(id, r.applied.redemptionId));
     const refund = (amount: number) =>
-      applyPaymentEvent(transaction, { id: `evt-${randomUUID()}`, type: "payment_refunded", paymentRef: `pi_${r.applied.redemptionId}`, invoiceRef: null, chargeRef: "ch_x", amountRefunded: amount, amountCharged: 5200, currency: "cad", metadata: {} } as never);
+      applyPaymentEvent(transaction, {
+        id: `evt-${randomUUID()}`,
+        type: "payment_refunded",
+        paymentRef: `pi_${r.applied.redemptionId}`,
+        invoiceRef: null,
+        chargeRef: "ch_x",
+        amountRefunded: amount,
+        amountCharged: 5200,
+        currency: "cad",
+        metadata: {},
+      } as never);
     await refund(1000);
-    expect(await redemption(r.applied.redemptionId)).toMatchObject({ status: "confirmed", amount_refunded_minor: "1000", use_restored: false });
+    expect(await redemption(r.applied.redemptionId)).toMatchObject({
+      status: "confirmed",
+      amount_refunded_minor: "1000",
+      use_restored: false,
+    });
     await refund(5200);
-    expect(await redemption(r.applied.redemptionId)).toMatchObject({ amount_refunded_minor: "5200", use_restored: false });
+    expect(await redemption(r.applied.redemptionId)).toMatchObject({
+      amount_refunded_minor: "5200",
+      use_restored: false,
+    });
     await expect(reserveFor(await account(), c)).rejects.toMatchObject({ body: { code: "COUPON_EXHAUSTED" } });
   });
 
@@ -161,7 +272,10 @@ describe.runIf(enabled)("coupons", () => {
     const first = await redeemCredit(c, id);
     expect(first.credits).toBe(20);
     await expect(redeemCredit(c, id)).rejects.toMatchObject({ code: "COUPON_ACCOUNT_LIMIT" });
-    const [grant] = await query<{ cap_per_day: string; expires_at: Date; on_exhausted: string; bucket: string }>(`SELECT cap_per_day, expires_at, on_exhausted, bucket FROM credits."grant" WHERE id = $1`, [first.grantId]);
+    const [grant] = await query<{ cap_per_day: string; expires_at: Date; on_exhausted: string; bucket: string }>(
+      `SELECT cap_per_day, expires_at, on_exhausted, bucket FROM credits."grant" WHERE id = $1`,
+      [first.grantId],
+    );
     expect(grant).toMatchObject({ cap_per_day: "2", on_exhausted: "stop", bucket: "granted" });
     expect(grant!.expires_at.getTime()).toBeGreaterThan(NOW.getTime());
     await spend(id);
@@ -181,7 +295,9 @@ describe.runIf(enabled)("coupons", () => {
 
   it("a free discount cannot be stored: 100 % and a fixed amount that runs forever are refused", async () => {
     await expect(discount({ percentOffBp: 10000 })).rejects.toBeTruthy();
-    await expect(discount({ percentOffBp: null, amountOffMinor: 500, currency: "cad", duration: "forever" })).rejects.toBeTruthy();
+    await expect(
+      discount({ percentOffBp: null, amountOffMinor: 500, currency: "cad", duration: "forever" }),
+    ).rejects.toBeTruthy();
   });
 
   it("erasing the account leaves the redemption (the use and the revenue stay) under no one", async () => {
@@ -197,7 +313,9 @@ describe.runIf(enabled)("coupons", () => {
   it("the sweeper releases the reservations nobody paid for once their deadline passed", async () => {
     const c = await discount({ maxRedemptions: 1 });
     const r = await reserveFor(await account(), c);
-    await query("UPDATE coupons.redemption SET reserved_until = now() - interval '1 minute' WHERE id = $1", [r.applied.redemptionId]);
+    await query("UPDATE coupons.redemption SET reserved_until = now() - interval '1 minute' WHERE id = $1", [
+      r.applied.redemptionId,
+    ]);
     const { sweepCoupons } = await import("./sweep");
     expect(await sweepCoupons()).toBeGreaterThanOrEqual(1);
     expect((await redemption(r.applied.redemptionId)).status).toBe("released");

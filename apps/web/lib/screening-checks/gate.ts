@@ -37,7 +37,10 @@ export function lawyerCleared(blocker: string | null, rows: readonly GateRow[]):
   return !!row && hasEvidence(row);
 }
 
-export const loadGate = () => query<GateRow>("SELECT blocker, required_live, status, evidence_on, evidence_ref FROM compliance_gate ORDER BY blocker");
+export const loadGate = () =>
+  query<GateRow>(
+    "SELECT blocker, required_live, status, evidence_on, evidence_ref FROM compliance_gate ORDER BY blocker",
+  );
 
 /** Oussama's switch (`features.screeningLive`, a setting, off by default). */
 export const liveFlag = async (): Promise<boolean> => (await appSettings().get("features.screeningLive")) === true;
@@ -50,5 +53,8 @@ export async function liveGate(): Promise<GateState> {
 export async function assertLiveGate(): Promise<void> {
   if (!(await liveFlag())) return;
   const state = gateState(true, await loadGate());
-  if (!state.open) throw new Error(`features.screeningLive is on but the compliance gate is closed: ${state.blockers.join(", ") || "no blocker declared"}`);
+  if (!state.open)
+    throw new Error(
+      `features.screeningLive is on but the compliance gate is closed: ${state.blockers.join(", ") || "no blocker declared"}`,
+    );
 }

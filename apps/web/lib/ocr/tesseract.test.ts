@@ -11,7 +11,10 @@ import { tesseractEngine } from "./tesseract";
 describe("tesseract engine", () => {
   const engine = tesseractEngine();
   it("reads a skewed photo of a lease in French, accents included, with its confidence", async () => {
-    const { page } = await createImageCleaner(YOMIZAKA_IMAGE_RULES).clean({ bytes: await photoOfPage({ degrees: 5 }), kind: "jpeg" });
+    const { page } = await createImageCleaner(YOMIZAKA_IMAGE_RULES).clean({
+      bytes: await photoOfPage({ degrees: 5 }),
+      kind: "jpeg",
+    });
     const r = await engine.read([page.jpeg], YOMIZAKA_OCR_RULES.languages);
     expect(r.text).toContain("BAIL DE LOGEMENT");
     expect(r.text).toMatch(/situé/);
@@ -27,6 +30,8 @@ describe("tesseract engine", () => {
     expect(r.text.match(/BAIL DE LOGEMENT/g)).toHaveLength(2);
   }, 60_000);
   it("fails with a stable code on bytes that are not an image", async () => {
-    await expect(engine.read([new Uint8Array([1, 2, 3])], YOMIZAKA_OCR_RULES.languages)).rejects.toBeInstanceOf(OcrError);
+    await expect(engine.read([new Uint8Array([1, 2, 3])], YOMIZAKA_OCR_RULES.languages)).rejects.toBeInstanceOf(
+      OcrError,
+    );
   }, 60_000);
 });

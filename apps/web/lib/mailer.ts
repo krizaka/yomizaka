@@ -23,7 +23,15 @@ export type AccountMail =
   | { kind: "confirmEmail"; to: string; locale: "en" | "fr"; url: string; hours: number }
   | { kind: "passwordReset"; to: string; locale: "en" | "fr"; url: string; minutes: number }
   | { kind: "emailChange"; to: string; locale: "en" | "fr"; url: string; hours: number }
-  | { kind: "reportLink"; to: string; locale: "en" | "fr"; url: string; senderName: string; expiresOn: string; message?: string };
+  | {
+      kind: "reportLink";
+      to: string;
+      locale: "en" | "fr";
+      url: string;
+      senderName: string;
+      expiresOn: string;
+      message?: string;
+    };
 
 export type Mailer = (mail: AccountMail) => Promise<void>;
 
@@ -51,7 +59,14 @@ export const mailEnvOf = (e: MailConfig): MailEnv => ({
 });
 
 /** One key per intention: the same link is mailed once (a double click, a retry), a new link is a new intention. */
-export const intentionOf = (mail: AccountMail): string => mail.kind + ":" + crypto.createHash("sha256").update(mail.to.toLowerCase() + "\n" + mail.url).digest("hex").slice(0, 32);
+export const intentionOf = (mail: AccountMail): string =>
+  mail.kind +
+  ":" +
+  crypto
+    .createHash("sha256")
+    .update(mail.to.toLowerCase() + "\n" + mail.url)
+    .digest("hex")
+    .slice(0, 32);
 
 type Options = Parameters<typeof sendEmail>[2];
 
@@ -66,7 +81,17 @@ function send(mail: AccountMail, options: Options) {
     case "emailChange":
       return sendEmail("emailChange", { brand, confirmUrl: mail.url, hours: mail.hours }, options);
     case "reportLink":
-      return sendEmail("shareLink", { brand, senderName: mail.senderName, shareUrl: mail.url, expiresOn: mail.expiresOn, ...(mail.message ? { message: mail.message } : {}) }, options);
+      return sendEmail(
+        "shareLink",
+        {
+          brand,
+          senderName: mail.senderName,
+          shareUrl: mail.url,
+          expiresOn: mail.expiresOn,
+          ...(mail.message ? { message: mail.message } : {}),
+        },
+        options,
+      );
   }
 }
 
@@ -82,19 +107,21 @@ export interface MailDeps {
  * The mailer of this deployment. A delivery that fails throws — sign-up must not pretend a mail left; an address on the suppression
  * list, or a link already mailed, is not an error: nothing is sent and the answer is the same (no disclosure).
  */
-export const mailerFor = (e: MailConfig, deps: MailDeps = {}): Mailer => async (mail) => {
-  const options = {
-    to: mail.to,
-    locale: mail.locale,
-    env: mailEnvOf(e),
-    idempotencyKey: intentionOf(mail),
-    log: deps.log ?? consoleLog(),
-    suppression: deps.suppression ?? pgSuppression,
-    idempotency: deps.idempotency ?? pgIdempotency,
-    ...(deps.fetch ? { fetch: deps.fetch } : {}),
-    ...(deps.now ? { now: deps.now } : {}),
+export const mailerFor =
+  (e: MailConfig, deps: MailDeps = {}): Mailer =>
+  async (mail) => {
+    const options = {
+      to: mail.to,
+      locale: mail.locale,
+      env: mailEnvOf(e),
+      idempotencyKey: intentionOf(mail),
+      log: deps.log ?? consoleLog(),
+      suppression: deps.suppression ?? pgSuppression,
+      idempotency: deps.idempotency ?? pgIdempotency,
+      ...(deps.fetch ? { fetch: deps.fetch } : {}),
+      ...(deps.now ? { now: deps.now } : {}),
+    };
+    const result = await send(mail, options);
+    // sent, or not sent on purpose (suppressed, already mailed): the same answer
+    if ("error" in result) throw new Error("Mail provider failed: " + result.error);
   };
-  const result = await send(mail, options);
-  // sent, or not sent on purpose (suppressed, already mailed): the same answer
-  if ("error" in result) throw new Error("Mail provider failed: " + result.error);
-};

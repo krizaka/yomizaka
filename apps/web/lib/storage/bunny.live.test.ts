@@ -14,19 +14,38 @@ import { asDescriptor } from "./where";
  */
 const e = process.env;
 const enabled = !!e.STORAGE_IT_BUNNY_ZONE && !!e.STORAGE_IT_BUNNY_ACCESS;
-const DESCRIPTOR = asDescriptor({ kind: "bunny", endpoint: null, region: null, residency: "elsewhere", encrypted: false, owner: "krizaka", devOnly: true });
+const DESCRIPTOR = asDescriptor({
+  kind: "bunny",
+  endpoint: null,
+  region: null,
+  residency: "elsewhere",
+  encrypted: false,
+  owner: "krizaka",
+  devOnly: true,
+});
 const objects = () =>
-  remoteStore({ endpoint: e.STORAGE_IT_BUNNY_ENDPOINT ?? "storage.bunnycdn.com", zone: e.STORAGE_IT_BUNNY_ZONE!, accessKey: e.STORAGE_IT_BUNNY_ACCESS!, prefix: "yomizaka/it", fetch: fetch as unknown as FetchLike, clock: { now: () => new Date() } });
+  remoteStore({
+    endpoint: e.STORAGE_IT_BUNNY_ENDPOINT ?? "storage.bunnycdn.com",
+    zone: e.STORAGE_IT_BUNNY_ZONE!,
+    accessKey: e.STORAGE_IT_BUNNY_ACCESS!,
+    prefix: "yomizaka/it",
+    fetch: fetch as unknown as FetchLike,
+    clock: { now: () => new Date() },
+  });
 const make = () => documentStoreOver(objects(), DESCRIPTOR, MAX_SIGNED_URL_SECONDS);
 
 describe.runIf(enabled)("http store (real zone, fictional data)", () => {
   documentStoreContract("bunny live", make);
-  documentStoreContract("bunny live + encryption", () => documentStoreOver(encryptedStore(objects(), crypto.randomBytes(32)), DESCRIPTOR, MAX_SIGNED_URL_SECONDS));
+  documentStoreContract("bunny live + encryption", () =>
+    documentStoreOver(encryptedStore(objects(), crypto.randomBytes(32)), DESCRIPTOR, MAX_SIGNED_URL_SECONDS),
+  );
 
   it("what it holds is not publicly readable through the pull zone without the zone's authentication", async () => {
     const store = make();
     await store.put("it/public-check/doc.txt", new TextEncoder().encode("fictional"), { contentType: "text/plain" });
-    const anonymous = await fetch(`https://${e.STORAGE_IT_BUNNY_ENDPOINT ?? "storage.bunnycdn.com"}/${e.STORAGE_IT_BUNNY_ZONE}/yomizaka/it/it/public-check/doc.txt`);
+    const anonymous = await fetch(
+      `https://${e.STORAGE_IT_BUNNY_ENDPOINT ?? "storage.bunnycdn.com"}/${e.STORAGE_IT_BUNNY_ZONE}/yomizaka/it/it/public-check/doc.txt`,
+    );
     expect(anonymous.status).toBe(401);
     await store.delete("it/public-check/doc.txt");
   });

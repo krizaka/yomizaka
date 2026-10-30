@@ -1,4 +1,12 @@
-import { API_KEY_CODE, type ApiKeyCode, ApiKeyError, type ApiKeys, type Clock, createApiKeys, pgApiKeyStore } from "@krizaka/api-keys";
+import {
+  API_KEY_CODE,
+  type ApiKeyCode,
+  ApiKeyError,
+  type ApiKeys,
+  type Clock,
+  createApiKeys,
+  pgApiKeyStore,
+} from "@krizaka/api-keys";
 
 import { YOMIZAKA_API_KEY_RULES } from "./api-keys";
 import { entitlementOf } from "./billing";
@@ -11,7 +19,8 @@ import { assertFeature, settingsFor } from "./settings/guards";
  * API keys in Yomizaka (ADR-0011): the generic module (`lib/api-keys`) wired to this app's database, plans, switches and rate
  * limits. The module knows nothing of any of them; this file is the only place that does.
  */
-export const apiKeys = (clock: Clock): ApiKeys => createApiKeys({ store: pgApiKeyStore(query), rules: YOMIZAKA_API_KEY_RULES, clock });
+export const apiKeys = (clock: Clock): ApiKeys =>
+  createApiKeys({ store: pgApiKeyStore(query), rules: YOMIZAKA_API_KEY_RULES, clock });
 
 /** The HTTP answer of each refusal: stable codes the page translates and the API documents. */
 const ANSWER: Record<ApiKeyCode, number> = {
@@ -59,13 +68,18 @@ export async function assertKeysAllowed(accountId: string, now: Date): Promise<n
  * that is missing, wrong, expired, revoked or replaced, 403 for a scope it lacks, a switch that is off or a plan without an API,
  * 429 past the per-minute limit. A refused key costs a rate-limit hit on the caller's address, so guessing is slow.
  */
-export async function requireApiKey(req: Request, scope: string, clock: Clock): Promise<{ ownerId: string; keyId: string }> {
+export async function requireApiKey(
+  req: Request,
+  scope: string,
+  clock: Clock,
+): Promise<{ ownerId: string; keyId: string }> {
   await limit("apiKeyAuth", req, null);
   const result = await apiKeys(clock).authenticate(req.headers.get("authorization"), scope);
   if (!result.ok) throw keyRefusal(result.code);
   const { ownerId, id } = result.key;
   await assertFeature("apiKeys", ownerId);
-  if ((await maxActiveKeys(ownerId, clock.now())) < 1) throw refuse(403, "API_PLAN", "Your plan does not include API keys");
+  if ((await maxActiveKeys(ownerId, clock.now())) < 1)
+    throw refuse(403, "API_PLAN", "Your plan does not include API keys");
   const perMinute = (await settingsFor(ownerId))["limits.apiRequestsPerMinute"].value as number;
   await limitWith("apiKey", req, id, perMinute * 2, perMinute, 60);
   return { ownerId, keyId: id };

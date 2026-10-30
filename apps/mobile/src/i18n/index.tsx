@@ -10,8 +10,18 @@ import ownEn from "./en.json";
 import ownFr from "./fr.json";
 
 /** What the iPhone, Android and Mac apps say the same way (the checks, the stages, the result) comes from `@yomizaka/client`. */
-const fr = { ...ownFr, ...sharedFr, document: { ...ownFr.document, ...sharedFr.document }, common: { ...ownFr.common, ...sharedFr.common } };
-const en = { ...ownEn, ...sharedEn, document: { ...ownEn.document, ...sharedEn.document }, common: { ...ownEn.common, ...sharedEn.common } };
+const fr = {
+  ...ownFr,
+  ...sharedFr,
+  document: { ...ownFr.document, ...sharedFr.document },
+  common: { ...ownFr.common, ...sharedFr.common },
+};
+const en = {
+  ...ownEn,
+  ...sharedEn,
+  document: { ...ownEn.document, ...sharedEn.document },
+  common: { ...ownEn.common, ...sharedEn.common },
+};
 
 export type Messages = typeof fr;
 export type MessageKey = KeyOf<Messages>;

@@ -33,7 +33,9 @@ describe("the administration's audit trail", () => {
     const isExport = file.includes("/export/");
     if (!changes && !isExport) continue;
     it(`${file.slice(root.length + 1)} writes an audit entry`, () => {
-      const imports = [...source.matchAll(/import \{([^}]+)\} from "@\/lib\/([a-z-]+)"/g)].filter(([, , mod]) => !["access", "http", "documents"].includes(mod!));
+      const imports = [...source.matchAll(/import \{([^}]+)\} from "@\/lib\/([a-z-]+)"/g)].filter(
+        ([, , mod]) => !["access", "http", "documents"].includes(mod!),
+      );
       const audited = imports.some(([, names, mod]) => {
         const lib = readFileSync(join(root, "lib", `${mod}.ts`), "utf8");
         return names!

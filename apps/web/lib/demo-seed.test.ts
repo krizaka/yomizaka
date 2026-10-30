@@ -3,13 +3,27 @@ import { describe, expect, it } from "vitest";
 
 import { generateDocument, PERSONA_ERIC } from "../../../scripts/demo-documents/index.mjs";
 import { CAST_MEMBER } from "../../../scripts/demo-seed/cast.mjs";
-import { assertNotProduction, collectionWords, PERSONAS, SEEDED_INPUTS as SEED_MARKER, seededReport, seedPersona, stampBefore } from "../../../scripts/demo-seed/seed.mjs";
+import {
+  assertNotProduction,
+  collectionWords,
+  PERSONAS,
+  SEEDED_INPUTS as SEED_MARKER,
+  seededReport,
+  seedPersona,
+  stampBefore,
+} from "../../../scripts/demo-seed/seed.mjs";
 import en from "../messages/en.json";
 import fr from "../messages/fr.json";
 
 describe("the demo seed", () => {
   it("refuses production, and anything that is not dev", () => {
-    expect(() => assertNotProduction({ APP_ENVIRONMENT: "prod", APP_DEMO_ACCOUNT_EMAIL: "demo@example.test", APP_DEMO_ACCOUNT_PASSWORD: "long-enough-password" })).toThrow(/refused/);
+    expect(() =>
+      assertNotProduction({
+        APP_ENVIRONMENT: "prod",
+        APP_DEMO_ACCOUNT_EMAIL: "demo@example.test",
+        APP_DEMO_ACCOUNT_PASSWORD: "long-enough-password",
+      }),
+    ).toThrow(/refused/);
     expect(() => assertNotProduction({ APP_ENVIRONMENT: "staging" })).toThrow(/refused/);
   });
 
@@ -48,7 +62,10 @@ describe("the demo seed", () => {
       const report = seededReport(doc);
       const parsed = doc.family === "lease" ? complianceReport.safeParse(report) : authenticityReport.safeParse(report);
       expect(parsed.success, id).toBe(true);
-      const flagged = "findings" in report ? report.findings?.some((f: { verdict: string }) => f.verdict === "FAIL") : report.signals?.some((s: { level: string }) => s.level === "incohérent");
+      const flagged =
+        "findings" in report
+          ? report.findings?.some((f: { verdict: string }) => f.verdict === "FAIL")
+          : report.signals?.some((s: { level: string }) => s.level === "incohérent");
       expect(flagged, id).toBe(doc.flaw !== null);
     }
   });
@@ -95,4 +112,3 @@ describe("the demo seed", () => {
     expect(stampBefore(now, 3)).toBe("2026-10-30T11:57:00.000Z");
   });
 });
-

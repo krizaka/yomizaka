@@ -28,28 +28,70 @@ describe("an endpoint's secret at rest (yomizaka#241)", () => {
 });
 
 describe("addresses a webhook must never reach", () => {
-  it.each(["127.0.0.1", "10.1.2.3", "172.16.0.9", "172.31.255.255", "192.168.1.1", "169.254.169.254", "100.64.0.1", "0.0.0.0", "224.0.0.1", "255.255.255.255", "::1", "::", "fe80::1", "fc00::1", "fd12:3456::1", "::ffff:127.0.0.1", "::ffff:10.0.0.1", "not-an-ip"])("%s is refused", (ip) => {
+  it.each([
+    "127.0.0.1",
+    "10.1.2.3",
+    "172.16.0.9",
+    "172.31.255.255",
+    "192.168.1.1",
+    "169.254.169.254",
+    "100.64.0.1",
+    "0.0.0.0",
+    "224.0.0.1",
+    "255.255.255.255",
+    "::1",
+    "::",
+    "fe80::1",
+    "fc00::1",
+    "fd12:3456::1",
+    "::ffff:127.0.0.1",
+    "::ffff:10.0.0.1",
+    "not-an-ip",
+  ])("%s is refused", (ip) => {
     expect(isPrivateAddress(ip)).toBe(true);
   });
 
-  it.each(["8.8.8.8", "1.1.1.1", "172.32.0.1", "172.15.255.255", "192.169.0.1", "100.63.255.255", "2606:4700:4700::1111", "::ffff:8.8.8.8"])("%s is public", (ip) => {
+  it.each([
+    "8.8.8.8",
+    "1.1.1.1",
+    "172.32.0.1",
+    "172.15.255.255",
+    "192.169.0.1",
+    "100.63.255.255",
+    "2606:4700:4700::1111",
+    "::ffff:8.8.8.8",
+  ])("%s is public", (ip) => {
     expect(isPrivateAddress(ip)).toBe(false);
   });
 });
 
 describe("the call itself", () => {
-  const request = { url: "https://hooks.example.test/yomizaka", body: "{}", headers: { "x-krizaka-event": "batch.finished" } };
+  const request = {
+    url: "https://hooks.example.test/yomizaka",
+    body: "{}",
+    headers: { "x-krizaka-event": "batch.finished" },
+  };
 
   it("refuses a name that resolves to the server's own network — checked at connect time, not when the endpoint was saved", async () => {
     const send = safeSend({ timeoutMs: 1000, lookup: async () => [{ address: "10.0.0.5", family: 4 }] });
     await expect(send(request)).rejects.toThrow(/private address/);
-    const mixed = safeSend({ timeoutMs: 1000, lookup: async () => [{ address: "8.8.8.8", family: 4 }, { address: "169.254.169.254", family: 4 }] });
+    const mixed = safeSend({
+      timeoutMs: 1000,
+      lookup: async () => [
+        { address: "8.8.8.8", family: 4 },
+        { address: "169.254.169.254", family: 4 },
+      ],
+    });
     await expect(mixed(request)).rejects.toThrow(/private address/);
   });
 
   it("refuses anything but https, and an unresolvable name is a failure to retry", async () => {
-    await expect(safeSend({ timeoutMs: 1000 })({ ...request, url: "http://hooks.example.test/x" })).rejects.toThrow(/https/);
-    await expect(safeSend({ timeoutMs: 1000, lookup: async () => Promise.reject(new Error("ENOTFOUND")) })(request)).rejects.toThrow(/ENOTFOUND/);
+    await expect(safeSend({ timeoutMs: 1000 })({ ...request, url: "http://hooks.example.test/x" })).rejects.toThrow(
+      /https/,
+    );
+    await expect(
+      safeSend({ timeoutMs: 1000, lookup: async () => Promise.reject(new Error("ENOTFOUND")) })(request),
+    ).rejects.toThrow(/ENOTFOUND/);
   });
 });
 
@@ -63,13 +105,35 @@ const batch = (items: BatchView["items"], patch: Partial<BatchView> = {}): Batch
   pausedBy: null,
   ...patch,
 });
-const row = (patch: Partial<BatchView["items"][number]> = {}): BatchView["items"][number] => ({ id: "i1", line: 2, file: "bail.pdf", reference: "LAURIER-101", state: "done", error: null, documentId: "d1", analysisId: "a1", ...patch });
+const row = (patch: Partial<BatchView["items"][number]> = {}): BatchView["items"][number] => ({
+  id: "i1",
+  line: 2,
+  file: "bail.pdf",
+  reference: "LAURIER-101",
+  state: "done",
+  error: null,
+  documentId: "d1",
+  analysisId: "a1",
+  ...patch,
+});
 
 describe("what a finished batch tells the customer's system", () => {
   it("a batch gives batch.finished with ids, counts and the customer's references — never a document or a report", () => {
-    const events = eventsOfFinishedBatch(batch([row(), row({ line: 3, file: "talon.pdf", reference: null, state: "failed", error: "FAILED" })], { counts: { pending: 0, reused: 0, running: 0, done: 1, failed: 1, refused: 0 } }));
+    const events = eventsOfFinishedBatch(
+      batch([row(), row({ line: 3, file: "talon.pdf", reference: null, state: "failed", error: "FAILED" })], {
+        counts: { pending: 0, reused: 0, running: 0, done: 1, failed: 1, refused: 0 },
+      }),
+    );
     expect(events.map((e) => [e.id, e.type])).toEqual([["batch:b1", WEBHOOK_EVENT.batchFinished]]);
-    expect(events[0]!.payload).toMatchObject({ id: "b1", name: "Immeuble Laurier", counts: { done: 1, failed: 1 }, rows: [{ line: 2, reference: "LAURIER-101", state: "done" }, { line: 3, state: "failed", error: "FAILED" }] });
+    expect(events[0]!.payload).toMatchObject({
+      id: "b1",
+      name: "Immeuble Laurier",
+      counts: { done: 1, failed: 1 },
+      rows: [
+        { line: 2, reference: "LAURIER-101", state: "done" },
+        { line: 3, state: "failed", error: "FAILED" },
+      ],
+    });
     const text = JSON.stringify(events);
     expect(text).not.toContain("d1");
     expect(text).not.toContain("a1");
@@ -82,7 +146,13 @@ describe("what a finished batch tells the customer's system", () => {
       ["batch:b1", "batch.finished"],
       ["check:b1", "check.finished"],
     ]);
-    expect(events[1]!.payload).toEqual({ id: "b1", state: "done", reference: "LAURIER-101", error: null, finishedAt: "2026-10-23T10:05:00.000Z" });
+    expect(events[1]!.payload).toEqual({
+      id: "b1",
+      state: "done",
+      reference: "LAURIER-101",
+      error: null,
+      finishedAt: "2026-10-23T10:05:00.000Z",
+    });
     expect(eventsOfFinishedBatch(batch([row()])).map((e) => e.id)).toEqual(events.map((e) => e.id));
   });
 });

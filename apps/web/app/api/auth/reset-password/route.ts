@@ -9,7 +9,10 @@ import { assertOpen } from "@/lib/settings/guards";
 
 export const dynamic = "force-dynamic";
 
-const body = z.object({ token: z.string().refine((value) => isLinkToken("ye", value)), password: z.string().min(1).max(1024) });
+const body = z.object({
+  token: z.string().refine((value) => isLinkToken("ye", value)),
+  password: z.string().min(1).max(1024),
+});
 
 /** The new password, from the mailed link: single use, time-limited, every session signed out. Then the person signs in. */
 export function POST(req: Request) {

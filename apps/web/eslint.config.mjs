@@ -10,7 +10,17 @@ const config = [
   // The stack rules (server state through @krizaka/query, tables and forms through @krizaka/ui) and the words in messages.
   ...krizakaStack({ complexity: "warn", sonar: "warn", codeRules: "off" }),
   // Tests compare locales to assert on both catalogues.
-  ...noLocaleTernary({ files: ["**/*.{js,jsx,ts,tsx}"], routing: ["**/proxy.ts", "**/middleware.ts", "**/i18n.ts", "**/seo.ts", "**/I18nProvider.tsx", "**/*.test.{ts,tsx}"] }),
+  ...noLocaleTernary({
+    files: ["**/*.{js,jsx,ts,tsx}"],
+    routing: [
+      "**/proxy.ts",
+      "**/middleware.ts",
+      "**/i18n.ts",
+      "**/seo.ts",
+      "**/I18nProvider.tsx",
+      "**/*.test.{ts,tsx}",
+    ],
+  }),
   { files: [".dependency-cruiser.cjs"], rules: { "@typescript-eslint/no-require-imports": "off" } },
   { ignores: [".next/**", "next-env.d.ts"] },
 ];

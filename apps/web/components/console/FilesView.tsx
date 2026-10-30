@@ -75,7 +75,13 @@ export function useFileFacts() {
 }
 // The link's state is a priority-1 column: on a phone the list puts it in the row's detail, whole. At priority 2 it became the one-line
 // « facts » under the name, truncated beside the decision chip and the toggle, and the layout audit saw it cut off (yomizaka#496).
-function fileColumns(say: Say, base: string, facts: ReturnType<typeof useFileFacts>, workspace: FilesWorkspace | undefined, locale: Lang): DataTableColumn<FileSummary>[] {
+function fileColumns(
+  say: Say,
+  base: string,
+  facts: ReturnType<typeof useFileFacts>,
+  workspace: FilesWorkspace | undefined,
+  locale: Lang,
+): DataTableColumn<FileSummary>[] {
   return [
     {
       id: "candidate",
@@ -85,12 +91,21 @@ function fileColumns(say: Say, base: string, facts: ReturnType<typeof useFileFac
       card: "title",
       value: (f) => f.candidateName,
       cell: (f) => (
-        <Link href={`${base}/${f.id}`} className="font-semibold text-fg hover:text-fg-accent hover:underline" aria-label={say("dossiers.open", { name: f.candidateName })}>
+        <Link
+          href={`${base}/${f.id}`}
+          className="font-semibold text-fg hover:text-fg-accent hover:underline"
+          aria-label={say("dossiers.open", { name: f.candidateName })}
+        >
           {f.candidateName}
         </Link>
       ),
     },
-    { id: "link", header: say("dossiers.columns.link"), value: (f) => f.status, cell: (f) => <span data-testid="file-link">{facts.link(f)}</span> },
+    {
+      id: "link",
+      header: say("dossiers.columns.link"),
+      value: (f) => f.status,
+      cell: (f) => <span data-testid="file-link">{facts.link(f)}</span>,
+    },
     ...(workspace
       ? [
           {
@@ -100,11 +115,19 @@ function fileColumns(say: Say, base: string, facts: ReturnType<typeof useFileFac
             sortable: true,
             // The set's order, never a check's result (krizaka-ts ADR-003 § 2).
             value: (f: FileSummary) => decisionOrder(workspace.set, f.decision),
-            cell: (f: FileSummary) => <StatusChip set={workspace.set} state={f.decision} role={OWNER_ROLE} locale={locale} />,
+            cell: (f: FileSummary) => (
+              <StatusChip set={workspace.set} state={f.decision} role={OWNER_ROLE} locale={locale} />
+            ),
           } satisfies DataTableColumn<FileSummary>,
         ]
       : []),
-    { id: "documents", header: say("dossiers.columns.documents"), priority: 3, value: (f) => f.documents, cell: (f) => <span className="tabular-nums">{facts.documents(f.documents, f.requested)}</span> },
+    {
+      id: "documents",
+      header: say("dossiers.columns.documents"),
+      priority: 3,
+      value: (f) => f.documents,
+      cell: (f) => <span className="tabular-nums">{facts.documents(f.documents, f.requested)}</span>,
+    },
     ...(workspace
       ? [
           {
@@ -116,7 +139,14 @@ function fileColumns(say: Say, base: string, facts: ReturnType<typeof useFileFac
           } satisfies DataTableColumn<FileSummary>,
         ]
       : []),
-    { id: "asked", header: say("dossiers.columns.asked"), priority: 3, align: "end", value: (f) => f.createdAt, cell: (f) => <span className="tabular-nums">{facts.date(f.createdAt)}</span> },
+    {
+      id: "asked",
+      header: say("dossiers.columns.asked"),
+      priority: 3,
+      align: "end",
+      value: (f) => f.createdAt,
+      cell: (f) => <span className="tabular-nums">{facts.date(f.createdAt)}</span>,
+    },
   ];
 }
 
@@ -126,7 +156,19 @@ function fileColumns(say: Say, base: string, facts: ReturnType<typeof useFileFac
  * result), the documents in against those asked, the tags with their markers, the day it was asked — the views, the filters of the
  * address, the selection bar and « Demander des documents ».
  */
-export function FilesView({ files: all, states = [], types, origin, workspace }: Readonly<{ files: readonly FileSummary[]; states?: readonly LinkState[]; types: readonly AskableType[]; origin: string; workspace?: FilesWorkspace }>) {
+export function FilesView({
+  files: all,
+  states = [],
+  types,
+  origin,
+  workspace,
+}: Readonly<{
+  files: readonly FileSummary[];
+  states?: readonly LinkState[];
+  types: readonly AskableType[];
+  origin: string;
+  workspace?: FilesWorkspace;
+}>) {
   // The link-state filter of the address (`?state=used`), the door of the home's « À traiter » (yomizaka#325).
   const files = filesInStates(all, states);
   const { say, locale } = useSay();
@@ -136,14 +178,29 @@ export function FilesView({ files: all, states = [], types, origin, workspace }:
   const [selected, setSelected] = useState<string[]>([]);
   const [bulkResult, setBulkResult] = useState("");
   const filters: ViewFilters = workspace?.resolved.filters ?? {};
-  const go = (next: ViewFilters) => router.push(viewHref(base, next, workspace?.resolved.active?.id ?? null), { scroll: false });
-  const views = useSavedViews({ path: base, system: (workspace?.system ?? []).filter((v) => (v.filters.status?.length ?? 0) !== 1 || !!v.filters.tags?.length), mine: workspace?.saved ?? [], resolved: workspace?.resolved ?? NO_VIEW, kind: KIND.applicantFile });
+  const go = (next: ViewFilters) =>
+    router.push(viewHref(base, next, workspace?.resolved.active?.id ?? null), { scroll: false });
+  const views = useSavedViews({
+    path: base,
+    system: (workspace?.system ?? []).filter((v) => (v.filters.status?.length ?? 0) !== 1 || !!v.filters.tags?.length),
+    mine: workspace?.saved ?? [],
+    resolved: workspace?.resolved ?? NO_VIEW,
+    kind: KIND.applicantFile,
+  });
   const decisionLabel = (key: string) => workspace?.set.states.find((st) => st.key === key)?.label[locale] ?? key;
-  const columns = useMemo(() => fileColumns(say, base, facts, workspace, locale), [say, base, facts, workspace, locale]);
+  const columns = useMemo(
+    () => fileColumns(say, base, facts, workspace, locale),
+    [say, base, facts, workspace, locale],
+  );
   const labels = useMemo(
     () => ({
       ...tableLabels(say),
-      selection: { bar: say("dossiers.bulk.label"), selected: (count: number) => say(pluralKey("dossiers.bulk.selected", count), { count }), clear: say("dossiers.bulk.clear"), tooMany: (max: number) => say("dossiers.bulk.tooMany", { max }) },
+      selection: {
+        bar: say("dossiers.bulk.label"),
+        selected: (count: number) => say(pluralKey("dossiers.bulk.selected", count), { count }),
+        clear: say("dossiers.bulk.clear"),
+        tooMany: (max: number) => say("dossiers.bulk.tooMany", { max }),
+      },
     }),
     [say],
   );
@@ -160,7 +217,11 @@ export function FilesView({ files: all, states = [], types, origin, workspace }:
   );
   return (
     <div className="flex flex-col gap-6" data-testid="files-view">
-      <PageHeader title={say("dossiers.title")} description={say("dossiers.lead")} actions={all.length ? ask("secondary") : null} />
+      <PageHeader
+        title={say("dossiers.title")}
+        description={say("dossiers.lead")}
+        actions={all.length ? ask("secondary") : null}
+      />
       {workspace ? <Binder workspace={workspace} base={base} /> : null}
       {workspace ? (
         <FilterBar
@@ -173,8 +234,20 @@ export function FilesView({ files: all, states = [], types, origin, workspace }:
           views={views}
           data-testid="files-filters"
         >
-          {workspace.tags.length ? <FilterMenu label={say("dossiers.filters.tags")} options={workspace.tags.map((t) => ({ value: t.id, label: t.name }))} value={filters.tags ?? []} onValueChange={(tags) => go({ ...filters, tags })} /> : null}
-          <FilterMenu label={say("dossiers.filters.decision")} options={workspace.set.states.map((st) => ({ value: st.key, label: st.label[locale] }))} value={filters.status ?? []} onValueChange={(status) => go({ ...filters, status })} />
+          {workspace.tags.length ? (
+            <FilterMenu
+              label={say("dossiers.filters.tags")}
+              options={workspace.tags.map((t) => ({ value: t.id, label: t.name }))}
+              value={filters.tags ?? []}
+              onValueChange={(tags) => go({ ...filters, tags })}
+            />
+          ) : null}
+          <FilterMenu
+            label={say("dossiers.filters.decision")}
+            options={workspace.set.states.map((st) => ({ value: st.key, label: st.label[locale] }))}
+            value={filters.status ?? []}
+            onValueChange={(status) => go({ ...filters, status })}
+          />
         </FilterBar>
       ) : null}
       {states.length ? (
@@ -191,38 +264,100 @@ export function FilesView({ files: all, states = [], types, origin, workspace }:
         filtered={Boolean(workspace) && hasActiveFilter(filters)}
         columns={columns}
         labels={labels}
-        table={workspace ? { workspace, selected, onSelectedChange: setSelected, bulkResult, onBulkResult: setBulkResult } : null}
-        empty={<EmptyState icon={<Mascot bird="owl" mood="empty" size={120} />} title={say("dossiers.empty.title")} description={say("dossiers.empty.text")} action={ask("primary")} data-testid="files-empty" />}
+        table={
+          workspace
+            ? { workspace, selected, onSelectedChange: setSelected, bulkResult, onBulkResult: setBulkResult }
+            : null
+        }
+        empty={
+          <EmptyState
+            icon={<Mascot bird="owl" mood="empty" size={120} />}
+            title={say("dossiers.empty.title")}
+            description={say("dossiers.empty.text")}
+            action={ask("primary")}
+            data-testid="files-empty"
+          />
+        }
       />
     </div>
   );
 }
 
-const hasActiveFilter = (filters: ViewFilters) => Object.values(filters).some((v) => (Array.isArray(v) ? v.length : !!v));
+const hasActiveFilter = (filters: ViewFilters) =>
+  Object.values(filters).some((v) => (Array.isArray(v) ? v.length : !!v));
 
 /** The chips of the filter bar: a removable one per tag and per decision state in the address. */
-function activeFilters(filters: ViewFilters, tags: readonly TagOption[], decisionLabel: (key: string) => string, go: (next: ViewFilters) => void): ActiveFilter[] {
+function activeFilters(
+  filters: ViewFilters,
+  tags: readonly TagOption[],
+  decisionLabel: (key: string) => string,
+  go: (next: ViewFilters) => void,
+): ActiveFilter[] {
   const byTag = (filters.tags ?? []).flatMap((id): ActiveFilter[] => {
     const tag = tags.find((t) => t.id === id);
-    return tag ? [{ id: `tag:${id}`, label: tag.name, onRemove: () => go({ ...filters, tags: (filters.tags ?? []).filter((x) => x !== id) }) }] : [];
+    return tag
+      ? [
+          {
+            id: `tag:${id}`,
+            label: tag.name,
+            onRemove: () => go({ ...filters, tags: (filters.tags ?? []).filter((x) => x !== id) }),
+          },
+        ]
+      : [];
   });
-  const byStatus = (filters.status ?? []).map((key): ActiveFilter => ({ id: `status:${key}`, label: decisionLabel(key), onRemove: () => go({ ...filters, status: (filters.status ?? []).filter((x) => x !== key) }) }));
+  const byStatus = (filters.status ?? []).map((key): ActiveFilter => ({
+    id: `status:${key}`,
+    label: decisionLabel(key),
+    onRemove: () => go({ ...filters, status: (filters.status ?? []).filter((x) => x !== key) }),
+  }));
   return [...byTag, ...byStatus];
 }
 
-type TableSelection = { workspace: FilesWorkspace; selected: string[]; onSelectedChange: (ids: string[]) => void; bulkResult: string; onBulkResult: (message: string) => void };
+type TableSelection = {
+  workspace: FilesWorkspace;
+  selected: string[];
+  onSelectedChange: (ids: string[]) => void;
+  bulkResult: string;
+  onBulkResult: (message: string) => void;
+};
 
 /** The selection bar's actions for the dossiers, bound to the table's workspace and to where the outcome is said. */
 function bulkActionsOf(table: TableSelection) {
   return function FileBulkActions({ selected: ids, clear }: { selected: string[]; clear: () => void }) {
-    return <BulkActions kind={KIND.applicantFile} ids={ids} set={table.workspace.set} tags={table.workspace.tags} onResult={table.onBulkResult} onDone={clear} />;
+    return (
+      <BulkActions
+        kind={KIND.applicantFile}
+        ids={ids}
+        set={table.workspace.set}
+        tags={table.workspace.tags}
+        onResult={table.onBulkResult}
+        onDone={clear}
+      />
+    );
   };
 }
 
 /** What sits under the filters: why nothing is listed, the table (selectable in a workspace), or the empty state. */
-function FilesBody({ files, states, filtered, columns, labels, table, empty }: Readonly<{ files: readonly FileSummary[]; states: readonly LinkState[]; filtered: boolean; columns: DataTableColumn<FileSummary>[]; labels: ReturnType<typeof tableLabels>; table: TableSelection | null; empty: React.ReactNode }>) {
+function FilesBody({
+  files,
+  states,
+  filtered,
+  columns,
+  labels,
+  table,
+  empty,
+}: Readonly<{
+  files: readonly FileSummary[];
+  states: readonly LinkState[];
+  filtered: boolean;
+  columns: DataTableColumn<FileSummary>[];
+  labels: ReturnType<typeof tableLabels>;
+  table: TableSelection | null;
+  empty: React.ReactNode;
+}>) {
   const { say } = useSay();
-  if (!files.length && states.length) return <p className="m-0 text-sm text-fg-secondary">{say("dossiers.filter.none")}</p>;
+  if (!files.length && states.length)
+    return <p className="m-0 text-sm text-fg-secondary">{say("dossiers.filter.none")}</p>;
   if (!files.length && filtered) {
     return (
       <p className="m-0 text-sm text-fg-secondary" data-testid="files-nothing">
@@ -232,7 +367,15 @@ function FilesBody({ files, states, filtered, columns, labels, table, empty }: R
   }
   if (!files.length) return <>{empty}</>;
   return (
-    <DataTable caption={say("dossiers.caption")} rows={[...files]} columns={columns} getRowId={(f) => f.id} rowLabel={(f) => f.candidateName} pageSize={12} labels={labels} phone="list"
+    <DataTable
+      caption={say("dossiers.caption")}
+      rows={[...files]}
+      columns={columns}
+      getRowId={(f) => f.id}
+      rowLabel={(f) => f.candidateName}
+      pageSize={12}
+      labels={labels}
+      phone="list"
       {...(table
         ? {
             selectable: true,
@@ -262,7 +405,10 @@ function Binder({ workspace, base }: Readonly<{ workspace: FilesWorkspace; base:
         {plan.tabs.map((tab, i) => (
           <Tabs.NavLink key={tab.state ?? "all"} href={`${base}?status=${tab.state ?? ""}`} hue={tab.hue} asChild>
             <Link href={viewHref(base, tab.filters, null)} scroll={false}>
-              {tab.label ? tab.label[locale] : say("dossiers.binder.all")} <span className="tabular-nums" data-testid="binder-count">{counts.tabs[i] ?? 0}</span>
+              {tab.label ? tab.label[locale] : say("dossiers.binder.all")}{" "}
+              <span className="tabular-nums" data-testid="binder-count">
+                {counts.tabs[i] ?? 0}
+              </span>
             </Link>
           </Tabs.NavLink>
         ))}

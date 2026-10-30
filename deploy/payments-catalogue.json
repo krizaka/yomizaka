@@ -1,9 +1,29 @@
 {
   "product": "yomizaka",
   "plans": [
-    { "lookupKey": "yomizaka_document_pilot_cad", "name": "Yomizaka — one document verified", "amount": 499, "currency": "cad", "taxCode": "txcd_10103001" },
-    { "lookupKey": "yomizaka_agency_monthly_pilot_cad", "name": "Yomizaka Agency — monthly", "amount": 4900, "currency": "cad", "interval": "month", "taxCode": "txcd_10103001" },
-    { "lookupKey": "yomizaka_firm_monthly_pilot_cad", "name": "Yomizaka Building manager — monthly", "amount": 14900, "currency": "cad", "interval": "month", "taxCode": "txcd_10103001" }
+    {
+      "lookupKey": "yomizaka_document_pilot_cad",
+      "name": "Yomizaka — one document verified",
+      "amount": 499,
+      "currency": "cad",
+      "taxCode": "txcd_10103001"
+    },
+    {
+      "lookupKey": "yomizaka_agency_monthly_pilot_cad",
+      "name": "Yomizaka Agency — monthly",
+      "amount": 4900,
+      "currency": "cad",
+      "interval": "month",
+      "taxCode": "txcd_10103001"
+    },
+    {
+      "lookupKey": "yomizaka_firm_monthly_pilot_cad",
+      "name": "Yomizaka Building manager — monthly",
+      "amount": 14900,
+      "currency": "cad",
+      "interval": "month",
+      "taxCode": "txcd_10103001"
+    }
   ],
   "portal": { "headline": "Manage your Yomizaka subscription and invoices", "cancel": "at_period_end" }
 }

@@ -3,7 +3,14 @@ import { z } from "zod";
 import { extractionStatus } from "./extraction";
 import { DOCUMENT_KINDS, DOCUMENT_STATUSES } from "./vocabulary";
 
-export { DOCUMENT_KINDS, DOCUMENT_STATUSES, DOCUMENT_TABS, type DocumentTab, movedDocumentTab, OLD_DOCUMENT_TABS } from "./vocabulary";
+export {
+  DOCUMENT_KINDS,
+  DOCUMENT_STATUSES,
+  DOCUMENT_TABS,
+  type DocumentTab,
+  movedDocumentTab,
+  OLD_DOCUMENT_TABS,
+} from "./vocabulary";
 
 /*
  * Yomizaka's contracts — what the API answers and the web reads, validated on both sides. Structure only: the words are
@@ -44,7 +51,12 @@ export type Perspective = z.infer<typeof perspective>;
 export const AUDIENCES = ["tenant", "landlord", "freelancer", "business"] as const;
 export const audience = z.enum(AUDIENCES);
 export type Audience = z.infer<typeof audience>;
-export const AUDIENCE_STATUS = { tenant: "available", landlord: "available", freelancer: "available", business: "available" } as const satisfies Record<Audience, "available" | "soon">;
+export const AUDIENCE_STATUS = {
+  tenant: "available",
+  landlord: "available",
+  freelancer: "available",
+  business: "available",
+} as const satisfies Record<Audience, "available" | "soon">;
 
 /**
  * A flow is data administered in the database (ADR-0003): who it is offered to, the Orazaka Studio and the rulesets of each
@@ -57,7 +69,10 @@ export const FLOW_VERSION_STATUSES = ["draft", "published", "retired"] as const;
 export const flowVersionStatus = z.enum(FLOW_VERSION_STATUSES);
 export type FlowVersionStatus = z.infer<typeof flowVersionStatus>;
 /** Named values, so no code compares a field to a magic string. */
-export const VERSION_STATUS = { draft: "draft", published: "published", retired: "retired" } as const satisfies Record<FlowVersionStatus, FlowVersionStatus>;
+export const VERSION_STATUS = { draft: "draft", published: "published", retired: "retired" } as const satisfies Record<
+  FlowVersionStatus,
+  FlowVersionStatus
+>;
 export const FLOW_STATUS = { available: "available", soon: "soon" } as const;
 export const STEP_KIND = { studio: "studio", provider: "provider" } as const;
 
@@ -69,7 +84,10 @@ export const flowStep = z.object({
   studio: z.enum(["compliance-check", "document-authenticity"]).optional(),
   pack: z.string().max(60).optional(),
   /** The rulesets of the compliance Studio, by jurisdiction — data of the pack, never code here. */
-  jurisdictions: z.array(z.object({ code: z.enum(["QC", "FR", "BE-WAL"]), ruleset: z.string().min(1).max(80) })).max(10).default([]),
+  jurisdictions: z
+    .array(z.object({ code: z.enum(["QC", "FR", "BE-WAL"]), ruleset: z.string().min(1).max(80) }))
+    .max(10)
+    .default([]),
   provider: z.string().max(60).optional(),
 });
 export type FlowStep = z.infer<typeof flowStep>;
@@ -79,14 +97,26 @@ export const flowDefinition = z.object({
   status: z.enum(["available", "soon"]),
   audiences: z.array(z.enum(["tenant", "landlord", "freelancer", "business"])).min(1),
   steps: z.array(flowStep).max(12),
-  consents: z.array(z.string().regex(/^[a-z0-9-]{1,40}$/)).max(8).default([]),
+  consents: z
+    .array(z.string().regex(/^[a-z0-9-]{1,40}$/))
+    .max(8)
+    .default([]),
   providers: z.array(z.string().max(60)).max(8).default([]),
-  pricing: z.object({ model: z.enum(["free", "per-run", "subscription"]), amountCents: z.number().int().min(0).max(1_000_000).optional() }).default({ model: "free" }),
+  pricing: z
+    .object({
+      model: z.enum(["free", "per-run", "subscription"]),
+      amountCents: z.number().int().min(0).max(1_000_000).optional(),
+    })
+    .default({ model: "free" }),
 });
 export type FlowDefinition = z.infer<typeof flowDefinition>;
 
 /** What flows offer on a document: the Studios and, for the compliance Studio, the jurisdictions (with their rulesets). A « soon » flow offers the steps that run today. */
-export function offerOf(definitions: readonly FlowDefinition[]): { studios: Studio[]; jurisdictions: Jurisdiction[]; rulesets: string[] } {
+export function offerOf(definitions: readonly FlowDefinition[]): {
+  studios: Studio[];
+  jurisdictions: Jurisdiction[];
+  rulesets: string[];
+} {
   const studios = new Set<Studio>();
   const jurisdictions = new Set<Jurisdiction>();
   const rulesets = new Set<string>();
@@ -100,7 +130,11 @@ export function offerOf(definitions: readonly FlowDefinition[]): { studios: Stud
       }
     }
   }
-  return { studios: STUDIOS.filter((s) => studios.has(s)), jurisdictions: JURISDICTIONS.filter((j) => jurisdictions.has(j)), rulesets: [...rulesets] };
+  return {
+    studios: STUDIOS.filter((s) => studios.has(s)),
+    jurisdictions: JURISDICTIONS.filter((j) => jurisdictions.has(j)),
+    rulesets: [...rulesets],
+  };
 }
 
 /** The two Orazaka Studios of the document-validation pack Yomizaka runs. */
@@ -115,7 +149,12 @@ export type Jurisdiction = z.infer<typeof jurisdiction>;
 
 export const ANALYSIS_STATUSES = ["running", "succeeded", "failed", "cancelled"] as const;
 /** The same four words as a vocabulary, for comparisons (`status === ANALYSIS_STATUS.running`). */
-export const ANALYSIS_STATUS = { running: "running", succeeded: "succeeded", failed: "failed", cancelled: "cancelled" } as const satisfies Record<(typeof ANALYSIS_STATUSES)[number], (typeof ANALYSIS_STATUSES)[number]>;
+export const ANALYSIS_STATUS = {
+  running: "running",
+  succeeded: "succeeded",
+  failed: "failed",
+  cancelled: "cancelled",
+} as const satisfies Record<(typeof ANALYSIS_STATUSES)[number], (typeof ANALYSIS_STATUSES)[number]>;
 export const analysisStatus = z.enum(ANALYSIS_STATUSES);
 export type AnalysisStatus = z.infer<typeof analysisStatus>;
 
@@ -147,13 +186,19 @@ export const finding = z.object({
   title: z.string().optional(),
   severity: z.string(),
   verdict: z.string(),
-  evidenceSpan: z.object({ start: z.number().nullish(), end: z.number().nullish(), quote: z.string() }).nullable().optional(),
+  evidenceSpan: z
+    .object({ start: z.number().nullish(), end: z.number().nullish(), quote: z.string() })
+    .nullable()
+    .optional(),
   explanation: z.string(),
   /** The same sentence in English, for the findings Yomizaka itself writes (the tenant-shield rules, #104); the engine's own are French only. */
   explanationEn: z.string().optional(),
   method: z.string().optional(),
   /** A sentence (1.x), or `{ reference, pinned, notice }` (compliance-check 2.x): the reference is the sentence shown. */
-  citation: z.preprocess((v) => (v && typeof v === "object" && "reference" in v ? (v as { reference: unknown }).reference : v), z.string().optional()),
+  citation: z.preprocess(
+    (v) => (v && typeof v === "object" && "reference" in v ? (v as { reference: unknown }).reference : v),
+    z.string().optional(),
+  ),
   /** The line of the document the evidence sits on (1-based), set by Yomizaka while the text is still there (yomizaka#129). */
   line: z.number().int().positive().optional(),
 });
@@ -185,7 +230,10 @@ const complianceReportShape = z.object({
   /** `TO_REVIEW_BY_LAWYER` while the ruleset awaits a lawyer's review (the Québec one does). */
   reviewStatus: z.string().optional(),
   reviewNote: z.string().optional(),
-  summary: z.object({ byVerdict: z.record(z.string(), z.number()), blockingFailures: z.number(), rulesEvaluated: z.number() }).partial().optional(),
+  summary: z
+    .object({ byVerdict: z.record(z.string(), z.number()), blockingFailures: z.number(), rulesEvaluated: z.number() })
+    .partial()
+    .optional(),
   findings: z.array(finding),
   /** The figures the ruleset declares it reads; a shape this version does not know is dropped, never the report. */
   facts: z.record(z.string(), reportFact).optional().catch(undefined),
@@ -201,7 +249,10 @@ function flatten(raw: unknown): unknown {
   if (!raw || typeof raw !== "object" || !("contract" in raw || "outcome" in raw)) return raw;
   const r = raw as Record<string, unknown>;
   const ruleset = (r.ruleset && typeof r.ruleset === "object" ? r.ruleset : {}) as Record<string, unknown>;
-  const identified = (r.identification && typeof r.identification === "object" ? r.identification : {}) as Record<string, unknown>;
+  const identified = (r.identification && typeof r.identification === "object" ? r.identification : {}) as Record<
+    string,
+    unknown
+  >;
   return {
     ...r,
     rulesetId: r.rulesetId ?? ruleset.id ?? "",
@@ -262,10 +313,25 @@ export function signalFamily(s: Pick<Signal, "signalId" | "family">): SignalFami
  * limits the withholding to the case measured (the « absent » cases are `inhabituel`; the « declared » ones are plain facts).
  * A signal returns to the landlord's view when its measured rate passes the bar: remove its line, with the measurement linked in the PR.
  */
-export const WITHHELD_FROM_LANDLORD: ReadonlyArray<{ signalId: string; level?: string; falsePositiveRate: number; measurement: string }> = [
+export const WITHHELD_FROM_LANDLORD: ReadonlyArray<{
+  signalId: string;
+  level?: string;
+  falsePositiveRate: number;
+  measurement: string;
+}> = [
   { signalId: "PDF-ID-001", falsePositiveRate: 0.12, measurement: "https://github.com/krizaka/orazaka-packs/pull/191" },
-  { signalId: "PDF-META-001", level: "inhabituel", falsePositiveRate: 0.125, measurement: "https://github.com/krizaka/orazaka-packs/pull/191" },
-  { signalId: "IMG-META-001", level: "inhabituel", falsePositiveRate: 0.06, measurement: "https://github.com/krizaka/orazaka-packs/pull/191" },
+  {
+    signalId: "PDF-META-001",
+    level: "inhabituel",
+    falsePositiveRate: 0.125,
+    measurement: "https://github.com/krizaka/orazaka-packs/pull/191",
+  },
+  {
+    signalId: "IMG-META-001",
+    level: "inhabituel",
+    falsePositiveRate: 0.06,
+    measurement: "https://github.com/krizaka/orazaka-packs/pull/191",
+  },
 ];
 
 /** Whether a signal is withheld from the landlord's view (applicant, console, report, note, export, search). */
@@ -273,7 +339,8 @@ export const isWithheldFromLandlord = (s: Pick<Signal, "signalId" | "level">): b
   WITHHELD_FROM_LANDLORD.some((w) => w.signalId === s.signalId && (w.level === undefined || w.level === s.level));
 
 /** The signals the landlord may see: the same list without the withheld ones. */
-export const landlordSignals = <T extends Pick<Signal, "signalId" | "level">>(signals: readonly T[]): T[] => signals.filter((s) => !isWithheldFromLandlord(s));
+export const landlordSignals = <T extends Pick<Signal, "signalId" | "level">>(signals: readonly T[]): T[] =>
+  signals.filter((s) => !isWithheldFromLandlord(s));
 
 export const authenticityReport = z.object({
   header: z.string().optional(),
@@ -285,7 +352,12 @@ export const authenticityReport = z.object({
 export type AuthenticityReport = z.infer<typeof authenticityReport>;
 
 /** One output of an Orazaka run (orazaka-studio RunArtefactResponse). */
-export const runArtefact = z.object({ key: z.string(), label: z.string().nullable().optional(), type: z.string(), value: z.string().nullable().optional() });
+export const runArtefact = z.object({
+  key: z.string(),
+  label: z.string().nullable().optional(),
+  type: z.string(),
+  value: z.string().nullable().optional(),
+});
 export type RunArtefact = z.infer<typeof runArtefact>;
 
 /** An Orazaka run, as the edge answers it (`GET /api/v1/studios/runs/{id}`). Only what Yomizaka reads. */
@@ -315,7 +387,10 @@ const json = (value: string | null | undefined): unknown => {
  * report, wrapped in `{ report }` or bare), the authenticity Studio's `signals` (JSON). A shape Orazaka did not send is
  * `null`, never a guess.
  */
-export function reportOf(studioKey: Studio, outputs: readonly RunArtefact[]): ComplianceReport | AuthenticityReport | null {
+export function reportOf(
+  studioKey: Studio,
+  outputs: readonly RunArtefact[],
+): ComplianceReport | AuthenticityReport | null {
   const pick = (key: string) => outputs.find((o) => o.key === key)?.value;
   if (studioKey === "compliance-check") {
     const raw = json(pick("report")) as { report?: unknown } | undefined;
@@ -370,16 +445,35 @@ export type DocumentSummary = z.infer<typeof documentSummary>;
 const labelled = z.object({ fr: z.string(), en: z.string() });
 export const documentInsight = z.object({
   understanding: z.object({
-    nature: z.object({ id: z.string(), label: labelled, confidence: z.enum(["high", "medium", "low", "unknown"]), score: z.number() }).nullable(),
+    nature: z
+      .object({
+        id: z.string(),
+        label: labelled,
+        confidence: z.enum(["high", "medium", "low", "unknown"]),
+        score: z.number(),
+      })
+      .nullable(),
     alternative: z.object({ id: z.string(), label: labelled }).nullable(),
     language: z.enum(["fr", "en", "unknown"]),
     pages: z.number().nullable(),
     issuer: z.string().nullable(),
-    dates: z.array(z.object({ kind: z.enum(["issued", "effective", "due", "period", "other"]), value: z.string(), text: z.string() })),
+    dates: z.array(
+      z.object({
+        kind: z.enum(["issued", "effective", "due", "period", "other"]),
+        value: z.string(),
+        text: z.string(),
+      }),
+    ),
     parties: z.array(z.object({ role: z.string(), name: z.string() })),
     references: z.array(z.object({ kind: z.string(), value: z.string() })),
     amounts: z.array(z.object({ kind: z.string(), cents: z.number(), text: z.string() })),
-    check: z.object({ studio: z.literal("compliance-check"), documentType: z.enum(["lease", "invoice", "contract", "visit-notice", "premises-condition"]), ruleset: z.string().nullable() }).nullable(),
+    check: z
+      .object({
+        studio: z.literal("compliance-check"),
+        documentType: z.enum(["lease", "invoice", "contract", "visit-notice", "premises-condition"]),
+        ruleset: z.string().nullable(),
+      })
+      .nullable(),
     authenticity: z.boolean(),
     needsModel: z.boolean(),
   }),
@@ -391,7 +485,14 @@ export type DocumentInsight = z.infer<typeof documentInsight>;
 const valuesOf = <T extends Record<string, string>>(set: T) => Object.values(set) as [T[keyof T], ...T[keyof T][]];
 
 /** Where a document lives: the DocumentStore adapters, the database (the home of a document kept with Krizaka) and the person's device. */
-export const STORAGE_KIND = { none: "none", database: "database", bunny: "bunny", s3: "s3", cloud: "cloud", device: "device" } as const;
+export const STORAGE_KIND = {
+  none: "none",
+  database: "database",
+  bunny: "bunny",
+  s3: "s3",
+  cloud: "cloud",
+  device: "device",
+} as const;
 export type StorageKind = (typeof STORAGE_KIND)[keyof typeof STORAGE_KIND];
 
 /** Whose storage it is: Krizaka's, the workspace's own cloud, or the person's device. */
@@ -400,7 +501,12 @@ export type StorageOwner = (typeof STORAGE_OWNER)[keyof typeof STORAGE_OWNER];
 /** The owners of a store a server talks to (a device is never one). */
 export type CloudOwner = Exclude<StorageOwner, "device">;
 
-export const STORAGE_RESIDENCY = { canada: "canada", elsewhere: "elsewhere", unknown: "unknown", device: "device" } as const;
+export const STORAGE_RESIDENCY = {
+  canada: "canada",
+  elsewhere: "elsewhere",
+  unknown: "unknown",
+  device: "device",
+} as const;
 export type StorageResidency = (typeof STORAGE_RESIDENCY)[keyof typeof STORAGE_RESIDENCY];
 
 /** The adapters a deployment can be configured with (`MEDIA_DOCUMENTS_PROVIDER`): nothing kept, or an external store. */
@@ -425,7 +531,13 @@ export const storageDescriptor = z.object({
 export type StorageDescriptor = z.infer<typeof storageDescriptor>;
 
 /** Where a photo came from, read before its metadata was dropped (never a verdict): the device, the last editor, the dates, and whether a GPS position was there (never the position). */
-export const photoOrigin = z.object({ software: z.string().nullable(), device: z.string().nullable(), takenAt: z.string().nullable(), modifiedAt: z.string().nullable(), hadGps: z.boolean() });
+export const photoOrigin = z.object({
+  software: z.string().nullable(),
+  device: z.string().nullable(),
+  takenAt: z.string().nullable(),
+  modifiedAt: z.string().nullable(),
+  hadGps: z.boolean(),
+});
 export type PhotoOrigin = z.infer<typeof photoOrigin>;
 
 /** How a document's text was read when it was not a text layer: by local character recognition, or — when that was not reliable — by Orazaka's vision model (with its run). */
@@ -435,11 +547,29 @@ export const TEXT_SOURCE = { ocr: "ocr", vision: "vision" } as const;
 /** The avatar set: seeds the UI turns into a picture (Krizaka UI's default avatars in the product's colours); the administrator chooses which are offered. */
 export const AVATAR_SEEDS = ["v1", "v2", "v3", "v4", "v5", "v6"] as const;
 export const AVATAR_KIND = { set: "set", image: "image" } as const;
-export const collectionAvatar = z.discriminatedUnion("kind", [z.object({ kind: z.literal(AVATAR_KIND.set), seed: z.string().regex(/^[a-z0-9-]{1,24}$/) }), z.object({ kind: z.literal(AVATAR_KIND.image), version: z.number().int().min(1) })]);
+export const collectionAvatar = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal(AVATAR_KIND.set), seed: z.string().regex(/^[a-z0-9-]{1,24}$/) }),
+  z.object({ kind: z.literal(AVATAR_KIND.image), version: z.number().int().min(1) }),
+]);
 export type CollectionAvatar = z.infer<typeof collectionAvatar>;
 export const textSource = z.discriminatedUnion("kind", [
-  z.object({ kind: z.literal(TEXT_SOURCE.ocr), engine: z.string(), confidence: z.number(), photos: z.number().int(), lowConfidence: z.boolean(), origin: photoOrigin.nullable() }),
-  z.object({ kind: z.literal(TEXT_SOURCE.vision), by: z.literal("orazaka"), runId: z.string(), model: z.string().nullable(), localConfidence: z.number(), photos: z.number().int(), origin: photoOrigin.nullable() }),
+  z.object({
+    kind: z.literal(TEXT_SOURCE.ocr),
+    engine: z.string(),
+    confidence: z.number(),
+    photos: z.number().int(),
+    lowConfidence: z.boolean(),
+    origin: photoOrigin.nullable(),
+  }),
+  z.object({
+    kind: z.literal(TEXT_SOURCE.vision),
+    by: z.literal("orazaka"),
+    runId: z.string(),
+    model: z.string().nullable(),
+    localConfidence: z.number(),
+    photos: z.number().int(),
+    origin: photoOrigin.nullable(),
+  }),
 ]);
 export type TextSource = z.infer<typeof textSource>;
 
@@ -466,19 +596,32 @@ export const documentView = documentDetail.extend({
 export type DocumentView = z.infer<typeof documentView>;
 
 /** The rulesets the Studio takes by name besides each jurisdiction's lease (orazaka-packs `document-validation`): Québec's supplier invoice, service contract, visit notice and état des lieux (orazaka-packs#128). */
-export const NAMED_RULESETS = ["qc-invoice", "qc-service-contract", "qc-visit-notice", "qc-premises-condition"] as const;
+export const NAMED_RULESETS = [
+  "qc-invoice",
+  "qc-service-contract",
+  "qc-visit-notice",
+  "qc-premises-condition",
+] as const;
 export const namedRuleset = z.enum(NAMED_RULESETS);
 /** Québec's lease at a version in force (`qc-residential-lease/2026-10-24`, ADR-089): the date picks it, the check records it. */
 export const DATED_LEASE_RULESET = /^qc-residential-lease\/\d{4}-\d{2}-\d{2}$/;
 
 export const startAnalysis = z.discriminatedUnion("studio", [
-  z.object({
-    studio: z.literal("compliance-check"),
-    jurisdiction,
-    asOf: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-    /** Not the jurisdiction's lease but this document type's rules; the Québec invoice belongs to QC only. */
-    ruleset: z.union([namedRuleset, z.string().regex(DATED_LEASE_RULESET)]).optional(),
-  }).refine((r) => !r.ruleset || r.jurisdiction === "QC", { message: "The named rulesets are Québec's", path: ["ruleset"] }),
+  z
+    .object({
+      studio: z.literal("compliance-check"),
+      jurisdiction,
+      asOf: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/)
+        .optional(),
+      /** Not the jurisdiction's lease but this document type's rules; the Québec invoice belongs to QC only. */
+      ruleset: z.union([namedRuleset, z.string().regex(DATED_LEASE_RULESET)]).optional(),
+    })
+    .refine((r) => !r.ruleset || r.jurisdiction === "QC", {
+      message: "The named rulesets are Québec's",
+      path: ["ruleset"],
+    }),
   z.object({
     studio: z.literal("document-authenticity"),
     expectedIssuer: z.string().trim().max(120).optional(),
@@ -522,11 +665,17 @@ export const queryKeys = {
  * A quote is found by its offsets when they still match the text, else by its first occurrence; a quote that is not in
  * the text is left out (it is shown in the finding, never invented in the document).
  */
-export function passages(text: string, quotes: readonly { id: string; quote: string; start?: number | null; end?: number | null }[]): { text: string; mark?: string }[] {
+export function passages(
+  text: string,
+  quotes: readonly { id: string; quote: string; start?: number | null; end?: number | null }[],
+): { text: string; mark?: string }[] {
   const spans: { start: number; end: number; id: string }[] = [];
   for (const q of quotes) {
     if (!q.quote) continue;
-    const start = typeof q.start === "number" && text.slice(q.start, q.start + q.quote.length) === q.quote ? q.start : text.indexOf(q.quote);
+    const start =
+      typeof q.start === "number" && text.slice(q.start, q.start + q.quote.length) === q.quote
+        ? q.start
+        : text.indexOf(q.quote);
     if (start < 0) continue;
     const end = start + q.quote.length;
     if (spans.some((s) => start < s.end && end > s.start)) continue;
@@ -551,4 +700,15 @@ export * from "./document-store";
 export * from "./extraction";
 export { memoryStore } from "./document-store-memory";
 
-export { CHECKS_TABS, type ChecksTab, PLATFORMS, type Platform, type Section, SECTION_IDS, type SectionId, SECTIONS, sectionShortcut, sectionsFor } from "./sections";
+export {
+  CHECKS_TABS,
+  type ChecksTab,
+  PLATFORMS,
+  type Platform,
+  type Section,
+  SECTION_IDS,
+  type SectionId,
+  SECTIONS,
+  sectionShortcut,
+  sectionsFor,
+} from "./sections";

@@ -24,50 +24,83 @@ import { FindingList, type FindingSelection, TechnicalDetails, VerdictBand } fro
  * authenticity report alone; or « Pas encore vérifié » with the checks to start. Once a report is shown, the other checks are
  * the aside's actions (design § 5.3): no form in this column.
  */
-export function DocumentReportTab({ doc, facts, selection, perspective, bundle = null, answers, startCards }: Readonly<{ doc: DocumentView; facts: DocumentFacts; selection: FindingSelection; perspective: Audience | null; bundle?: LeaseBundle | null; answers?: Record<string, Answer>; startCards: ReactNode }>) {
+export function DocumentReportTab({
+  doc,
+  facts,
+  selection,
+  perspective,
+  bundle = null,
+  answers,
+  startCards,
+}: Readonly<{
+  doc: DocumentView;
+  facts: DocumentFacts;
+  selection: FindingSelection;
+  perspective: Audience | null;
+  bundle?: LeaseBundle | null;
+  answers?: Record<string, Answer>;
+  startCards: ReactNode;
+}>) {
   const { say, locale } = useSay();
   const { latestCompliance, latestReport, latestAuthenticity, runningStudio, failures } = facts;
   // The notes at the foot (design § 3.5): the review note first (the verdict points to it, REVIEW_NOTE), then a demo check's note — never a box above the report.
   const shown = latestCompliance && latestReport ? latestCompliance : latestAuthenticity;
-  const notes = [...(latestReport?.reviewStatus ? [say("analysis.toReview")] : []), ...(shown && isSeededCheck(shown) ? [say("analysis.seededNote")] : [])];
+  const notes = [
+    ...(latestReport?.reviewStatus ? [say("analysis.toReview")] : []),
+    ...(shown && isSeededCheck(shown) ? [say("analysis.seededNote")] : []),
+  ];
   const body = () => {
     if (latestCompliance && latestReport) {
       return (
-          <>
-            <VerdictBand report={latestReport} />
-            <FindingList report={latestReport} selection={selection} />
-            {latestAuthenticity?.report && "signals" in latestAuthenticity.report ? <AuthenticitySignals report={latestAuthenticity.report} runId={latestAuthenticity.runId} answers={answers} /> : null}
-            <TechnicalDetails documentId={doc.id} analysis={latestCompliance} />
-            <details className="rounded-lg border border-border-default p-3">
-              <summary className="cursor-pointer text-sm font-semibold text-fg">{say("document.details")}</summary>
-              <div className="mt-3">
-                <ClosingNoteView note={buildNote(noteInputOf(latestReport, noteSourceOf(doc.textSource)), locale)} />
-              </div>
-            </details>
-          </>
+        <>
+          <VerdictBand report={latestReport} />
+          <FindingList report={latestReport} selection={selection} />
+          {latestAuthenticity?.report && "signals" in latestAuthenticity.report ? (
+            <AuthenticitySignals
+              report={latestAuthenticity.report}
+              runId={latestAuthenticity.runId}
+              answers={answers}
+            />
+          ) : null}
+          <TechnicalDetails documentId={doc.id} analysis={latestCompliance} />
+          <details className="rounded-lg border border-border-default p-3">
+            <summary className="cursor-pointer text-sm font-semibold text-fg">{say("document.details")}</summary>
+            <div className="mt-3">
+              <ClosingNoteView note={buildNote(noteInputOf(latestReport, noteSourceOf(doc.textSource)), locale)} />
+            </div>
+          </details>
+        </>
       );
     }
     if (latestAuthenticity?.report && "signals" in latestAuthenticity.report) {
       return (
-          <>
-            <AuthenticitySignals report={latestAuthenticity.report} runId={latestAuthenticity.runId} answers={answers} />
-            <TechnicalDetails documentId={doc.id} analysis={latestAuthenticity} />
-          </>
+        <>
+          <AuthenticitySignals report={latestAuthenticity.report} runId={latestAuthenticity.runId} answers={answers} />
+          <TechnicalDetails documentId={doc.id} analysis={latestAuthenticity} />
+        </>
       );
     }
     return (
-        <>
-          <div>
-            <h2 className="font-display text-lg font-bold text-fg">{say("reportFace.notChecked")}</h2>
-            <p className="text-sm text-fg-secondary">{say(`document.checksLeadBy.${wordingOf(perspective)}`)}</p>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2">{startCards}</div>
-        </>
+      <>
+        <div>
+          <h2 className="font-display text-lg font-bold text-fg">{say("reportFace.notChecked")}</h2>
+          <p className="text-sm text-fg-secondary">{say(`document.checksLeadBy.${wordingOf(perspective)}`)}</p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">{startCards}</div>
+      </>
     );
   };
   return (
-    <section aria-label={say("document.tabs.rapport")} className="flex min-w-0 flex-col gap-4" data-testid="tab-rapport">
-      {runningStudio ? <CheckSteps steps={checkSteps({ hasText: doc.hasText, analysis: { studio: runningStudio, status: "running" } })} /> : null}
+    <section
+      aria-label={say("document.tabs.rapport")}
+      className="flex min-w-0 flex-col gap-4"
+      data-testid="tab-rapport"
+    >
+      {runningStudio ? (
+        <CheckSteps
+          steps={checkSteps({ hasText: doc.hasText, analysis: { studio: runningStudio, status: "running" } })}
+        />
+      ) : null}
       {failures.map((a) => (
         <Alert key={a.id} tone="danger">
           {a.error}
@@ -76,7 +109,14 @@ export function DocumentReportTab({ doc, facts, selection, perspective, bundle =
       {body()}
       {bundle && bundle.documents.length > 1 ? <LeaseBundleSection bundle={bundle} /> : null}
       <p className="m-0 text-xs text-fg-muted">{say("library.informative")}</p>
-      {notes.length ? <Footnotes className="[&_ol]:list-decimal" notes={notes} label={say("reportFace.notes")} backLabel={say("reportFace.backToText")} /> : null}
+      {notes.length ? (
+        <Footnotes
+          className="[&_ol]:list-decimal"
+          notes={notes}
+          label={say("reportFace.notes")}
+          backLabel={say("reportFace.backToText")}
+        />
+      ) : null}
     </section>
   );
 }

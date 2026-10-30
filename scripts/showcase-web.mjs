@@ -28,7 +28,8 @@ const signInMode = flag("sign-in", "camera");
 const [theme] = themesOf(flag("theme", "dark")); // a video is one theme; run it twice for both
 const email = process.env.E2E_EMAIL;
 const password = process.env.E2E_PASSWORD;
-if (!email || !password) throw new Error("E2E_EMAIL and E2E_PASSWORD are required (the seeded persona, never a real account)");
+if (!email || !password)
+  throw new Error("E2E_EMAIL and E2E_PASSWORD are required (the seeded persona, never a real account)");
 mkdirSync(outDir, { recursive: true });
 
 const VIEWPORT = { width: 1280, height: 800 };
@@ -59,7 +60,13 @@ async function session() {
 
 /** One journey = one context = one video; the file is renamed <id>.webm in the out directory. */
 async function record(id, act, storageState) {
-  const ctx = await browser.newContext({ viewport: VIEWPORT, colorScheme: theme, locale, storageState, recordVideo: { dir: outDir, size: VIEWPORT } });
+  const ctx = await browser.newContext({
+    viewport: VIEWPORT,
+    colorScheme: theme,
+    locale,
+    storageState,
+    recordVideo: { dir: outDir, size: VIEWPORT },
+  });
   await applyTheme(ctx, theme);
   await ctx.addInitScript(hideEmail);
   const page = await ctx.newPage();

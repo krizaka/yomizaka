@@ -4,12 +4,35 @@ import en from "@/messages/en.json";
 import fr from "@/messages/fr.json";
 
 import { SETTINGS } from "../settings/registry";
-import { closedBilling, invoiceLine, isChargeable, isRefundable, PAYER, payerAllowed, quoteOf, totalCents } from "./billing";
+import {
+  closedBilling,
+  invoiceLine,
+  isChargeable,
+  isRefundable,
+  PAYER,
+  payerAllowed,
+  quoteOf,
+  totalCents,
+} from "./billing";
 import { type CheckTypeRow, priceCents } from "./catalogue";
 
 const type = (key: string, cost: number, margin: number, over: Partial<CheckTypeRow> = {}): CheckTypeRow => ({
-  key, provider_id: "engine", purpose: "CREDIT", label_fr: key, label_en: key, provider_cost_cents: cost, margin_cents: margin, currency: "CAD", region: "QC",
-  consent_notice_version: "v1", enabled: true, default_on: true, requires_lawyer: null, applicant_may_pay: false, note: null, ...over,
+  key,
+  provider_id: "engine",
+  purpose: "CREDIT",
+  label_fr: key,
+  label_en: key,
+  provider_cost_cents: cost,
+  margin_cents: margin,
+  currency: "CAD",
+  region: "QC",
+  consent_notice_version: "v1",
+  enabled: true,
+  default_on: true,
+  requires_lawyer: null,
+  applicant_may_pay: false,
+  note: null,
+  ...over,
 });
 
 describe("per-check billing (yomizaka#133) — test fixtures only, flag off", () => {
@@ -26,7 +49,9 @@ describe("per-check billing (yomizaka#133) — test fixtures only, flag off", ()
   it("lets the applicant pay only where every priced check allows it", () => {
     expect(payerAllowed(PAYER.owner, [type("a", 100, 100)])).toBe(true);
     expect(payerAllowed(PAYER.applicant, [type("a", 100, 100)])).toBe(false);
-    expect(payerAllowed(PAYER.applicant, [type("a", 100, 100, { applicant_may_pay: true }), type("free", 0, 0)])).toBe(true);
+    expect(payerAllowed(PAYER.applicant, [type("a", 100, 100, { applicant_may_pay: true }), type("free", 0, 0)])).toBe(
+      true,
+    );
   });
   it("charges a check the provider accepted, never an error, a refusal or « not available yet »", () => {
     expect(isChargeable("answered", 1900)).toBe(true);
@@ -40,10 +65,21 @@ describe("per-check billing (yomizaka#133) — test fixtures only, flag off", ()
     expect(isRefundable("answered")).toBe(false);
   });
   it("words the invoice line as a service by Krizaka, in both languages", () => {
-    expect(invoiceLine(fr.screening.invoice.line, "Rapport de crédit")).toBe("Vérification : Rapport de crédit — service Krizaka");
+    expect(invoiceLine(fr.screening.invoice.line, "Rapport de crédit")).toBe(
+      "Vérification : Rapport de crédit — service Krizaka",
+    );
     expect(invoiceLine(en.screening.invoice.line, "Credit report")).toBe("Check: Credit report — a Krizaka service");
   });
   it("the closed port refuses, so a flag turned on by mistake bills nothing", async () => {
-    await expect(closedBilling.charge({ key: "k", payer: "owner", amountCents: 100, currency: "cad", description: "d", taxCode: "software-as-a-service" })).rejects.toMatchObject({ status: 503 });
+    await expect(
+      closedBilling.charge({
+        key: "k",
+        payer: "owner",
+        amountCents: 100,
+        currency: "cad",
+        description: "d",
+        taxCode: "software-as-a-service",
+      }),
+    ).rejects.toMatchObject({ status: 503 });
   });
 });

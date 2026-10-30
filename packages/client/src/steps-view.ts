@@ -1,7 +1,12 @@
 import { CHECK_STEP, type CheckStep, STEP_STATE } from "@yomizaka/core";
 
 /** The states of the contract (`@yomizaka/core` `checkSteps`) as the Krizaka `Stepper` names them, on the web, the phone and the Mac. */
-export const STEPPER_STATUS = { [STEP_STATE.done]: "done", [STEP_STATE.current]: "current", [STEP_STATE.upcoming]: "upcoming", [STEP_STATE.failed]: "error" } as const;
+export const STEPPER_STATUS = {
+  [STEP_STATE.done]: "done",
+  [STEP_STATE.current]: "current",
+  [STEP_STATE.upcoming]: "upcoming",
+  [STEP_STATE.failed]: "error",
+} as const;
 
 export interface StepperStep {
   title: string;

@@ -19,10 +19,14 @@ export default async function ChecksPage({ params }: Readonly<{ params: Promise<
   const locale = asLocale((await params).locale);
   const session = await pageSession();
   if (!session) redirect(`/${locale}/sign-in`);
-  const [listed, batches] = await Promise.all([listChecks(query, session.account.id), featureOn("batches", session.account.id)]);
+  const [listed, batches] = await Promise.all([
+    listChecks(query, session.account.id),
+    featureOn("batches", session.account.id),
+  ]);
   // A running check is refreshed from Orazaka here (as its own page does), so the list never stays « Analysing » after the run ended.
   const running = runningChecks(listed);
-  if (running.length) await Promise.all(running.map((c) => getAnalysis(session.account.id, c.documentId, c.id).catch(() => null)));
+  if (running.length)
+    await Promise.all(running.map((c) => getAnalysis(session.account.id, c.documentId, c.id).catch(() => null)));
   const checks = running.length ? await listChecks(query, session.account.id) : listed;
   return <ChecksView checks={checks} batches={batches} now={new Date().toISOString()} />;
 }

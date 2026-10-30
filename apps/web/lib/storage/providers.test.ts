@@ -33,14 +33,32 @@ describe("the environment's old coordinates", () => {
   it("become the dev Bunny zone provider, the encryption key a sealed credential", () => {
     const imported = envProvider(bunnyEnv)!;
     expect(imported.kind).toBe("bunny");
-    expect(imported.coordinates).toMatchObject({ zone: "yomizaka-docs-dev", endpoint: "storage.bunnycdn.com", prefix: "yomizaka", pullHostname: "yomizaka-docs-dev.b-cdn.net" });
+    expect(imported.coordinates).toMatchObject({
+      zone: "yomizaka-docs-dev",
+      endpoint: "storage.bunnycdn.com",
+      prefix: "yomizaka",
+      pullHostname: "yomizaka-docs-dev.b-cdn.net",
+    });
     expect(imported.credentials).toEqual({ accessKey: "zone-password", tokenKey: "token-key", encryptionKey: KEY_B });
     expect(imported.dataKinds).toEqual(["documents", "avatars"]);
   });
   it("become an s3 provider", () => {
-    const imported = envProvider({ MEDIA_DOCUMENTS_PROVIDER: "s3", MEDIA_DOCUMENTS_PREFIX: "yomizaka", MEDIA_STORAGE_ENDPOINT: "x", MEDIA_S3_ENDPOINT: "https://tor1.digitaloceanspaces.com", MEDIA_S3_REGION: "tor1", MEDIA_S3_BUCKET: "docs", MEDIA_S3_ACCESS_KEY_ID: "id", MEDIA_S3_SECRET_ACCESS_KEY: "secret" })!;
+    const imported = envProvider({
+      MEDIA_DOCUMENTS_PROVIDER: "s3",
+      MEDIA_DOCUMENTS_PREFIX: "yomizaka",
+      MEDIA_STORAGE_ENDPOINT: "x",
+      MEDIA_S3_ENDPOINT: "https://tor1.digitaloceanspaces.com",
+      MEDIA_S3_REGION: "tor1",
+      MEDIA_S3_BUCKET: "docs",
+      MEDIA_S3_ACCESS_KEY_ID: "id",
+      MEDIA_S3_SECRET_ACCESS_KEY: "secret",
+    })!;
     expect(imported.kind).toBe("s3");
-    expect(imported.coordinates).toMatchObject({ endpoint: "https://tor1.digitaloceanspaces.com", region: "tor1", bucket: "docs" });
+    expect(imported.coordinates).toMatchObject({
+      endpoint: "https://tor1.digitaloceanspaces.com",
+      region: "tor1",
+      bucket: "docs",
+    });
     expect(imported.credentials).toEqual({ accessKeyId: "id", secretAccessKey: "secret" });
   });
   it("import nothing when keeping is off or the values are missing", () => {
@@ -60,7 +78,12 @@ describe("the documents store, chosen from the admin's providers", () => {
       clock: { now: () => new Date("2026-10-28T12:00:00Z") },
       newId: () => `00000000-0000-4000-8000-${String(++n).padStart(12, "0")}`,
       audit: async (note) => void notes.push(note.action),
-      open: { runtime: "dev", environment: "dev", fetch: async () => new Response(null, { status: 200 }), clock: { now: () => new Date("2026-10-28T12:00:00Z") } },
+      open: {
+        runtime: "dev",
+        environment: "dev",
+        fetch: async () => new Response(null, { status: 200 }),
+        clock: { now: () => new Date("2026-10-28T12:00:00Z") },
+      },
       probeId: () => "probe",
       references: async () => 0,
     });

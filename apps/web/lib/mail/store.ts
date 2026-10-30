@@ -13,13 +13,19 @@ export const pgSuppression: SuppressionList = {
     return !!row;
   },
   async add(email, reason: SuppressionReason) {
-    await query("INSERT INTO mail_suppressions (email, reason) VALUES ($1, $2) ON CONFLICT (email) DO NOTHING", [email.trim().toLowerCase(), reason]);
+    await query("INSERT INTO mail_suppressions (email, reason) VALUES ($1, $2) ON CONFLICT (email) DO NOTHING", [
+      email.trim().toLowerCase(),
+      reason,
+    ]);
   },
 };
 
 export const pgIdempotency: IdempotencyStore = {
   async claim(key) {
-    const rows = await query("INSERT INTO mail_intentions (key) VALUES ($1) ON CONFLICT (key) DO NOTHING RETURNING key", [key]);
+    const rows = await query(
+      "INSERT INTO mail_intentions (key) VALUES ($1) ON CONFLICT (key) DO NOTHING RETURNING key",
+      [key],
+    );
     return rows.length > 0;
   },
   async release(key) {

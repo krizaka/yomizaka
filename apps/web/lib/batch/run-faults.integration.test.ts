@@ -32,7 +32,12 @@ describe.runIf(enabled)("a batch against a busy engine and awkward files", () =>
 
   const run = (id: string): OrazakaRun => {
     const r = runs.get(id)!;
-    const outputs = r.status !== "SUCCEEDED" ? [] : r.studio === "compliance-check" ? [{ key: "report", type: "JSON", value: REPORT }] : [{ key: "signals", type: "JSON", value: JSON.stringify({ header: "h", signals: [] }) }];
+    const outputs =
+      r.status !== "SUCCEEDED"
+        ? []
+        : r.studio === "compliance-check"
+          ? [{ key: "report", type: "JSON", value: REPORT }]
+          : [{ key: "signals", type: "JSON", value: JSON.stringify({ header: "h", signals: [] }) }];
     return { id, studioKey: r.studio, blueprintVersion: "1.0.0", status: r.status, outputs };
   };
 
@@ -49,14 +54,22 @@ describe.runIf(enabled)("a batch against a busy engine and awkward files", () =>
       },
       getRun: async (id: string) => run(id),
     } as never);
-    const [row] = await query<{ id: string }>("INSERT INTO accounts (email) VALUES ($1) RETURNING id", [`batch-faults-${Date.now()}-${Math.random().toString(16).slice(2, 8)}@yomizaka.test`]);
+    const [row] = await query<{ id: string }>("INSERT INTO accounts (email) VALUES ($1) RETURNING id", [
+      `batch-faults-${Date.now()}-${Math.random().toString(16).slice(2, 8)}@yomizaka.test`,
+    ]);
     account = { id: row!.id, perspective: null };
   });
   afterAll(() => useOrazakaClient(null));
 
   it("a busy engine pauses the batch with its reason — no row fails — and the rows start by themselves once there is room", async () => {
     state.busy = true;
-    const created = await createBatch(account, "Occupé", "file,check\nbusy-a.pdf,compliance\nbusy-b.pdf,compliance", [await pdf("busy-a.pdf", "BAIL BUSY A"), await pdf("busy-b.pdf", "BAIL BUSY B")], await ctx());
+    const created = await createBatch(
+      account,
+      "Occupé",
+      "file,check\nbusy-a.pdf,compliance\nbusy-b.pdf,compliance",
+      [await pdf("busy-a.pdf", "BAIL BUSY A"), await pdf("busy-b.pdf", "BAIL BUSY B")],
+      await ctx(),
+    );
     expect(created.pausedBy).toBe("ORAZAKA_BUSY");
     expect(created.items.map((i) => i.state)).toEqual(["pending", "pending"]);
     expect(created.counts.failed).toBe(0);
@@ -71,12 +84,18 @@ describe.runIf(enabled)("a batch against a busy engine and awkward files", () =>
   });
 
   it("a photo in a row goes through the quality gate (a blank one is refused as blurred, nothing stored); a file that cannot be stored refuses its row only", async () => {
-    const jpeg = await sharp({ create: { width: 640, height: 480, channels: 3, background: "#f4f0e6" } }).jpeg().toBuffer();
+    const jpeg = await sharp({ create: { width: 640, height: 480, channels: 3, background: "#f4f0e6" } })
+      .jpeg()
+      .toBuffer();
     const created = await createBatch(
       account,
       "Photos",
       "file,check\nlease-photo.jpg,compliance\nnotes.exe,compliance\nlease-ok.pdf,compliance",
-      [{ name: "lease-photo.jpg", type: "image/jpeg", bytes: new Uint8Array(jpeg) }, { name: "notes.exe", type: "application/octet-stream", bytes: new Uint8Array([0x4d, 0x5a, 0x90, 0x00]) }, await pdf("lease-ok.pdf", "BAIL PHOTOS OK")],
+      [
+        { name: "lease-photo.jpg", type: "image/jpeg", bytes: new Uint8Array(jpeg) },
+        { name: "notes.exe", type: "application/octet-stream", bytes: new Uint8Array([0x4d, 0x5a, 0x90, 0x00]) },
+        await pdf("lease-ok.pdf", "BAIL PHOTOS OK"),
+      ],
       await ctx(),
     );
     // A flat photo has no edges: the gate of yomizaka#8 refuses its row before anything is stored or read.
@@ -90,10 +109,22 @@ describe.runIf(enabled)("a batch against a busy engine and awkward files", () =>
   });
 
   it("one lease listed for compliance and for authenticity is not purged by the first check", async () => {
-    const created = await createBatch(account, "Deux vérifications", "file,check\nboth.pdf,compliance\nboth.pdf,authenticity", [await pdf("both.pdf", "BAIL DEUX VERIFICATIONS")], { ...(await ctx()), settings: { ...(await settingsFor(account.id)), "limits.batchConcurrency": { value: 1 } } as never });
+    const created = await createBatch(
+      account,
+      "Deux vérifications",
+      "file,check\nboth.pdf,compliance\nboth.pdf,authenticity",
+      [await pdf("both.pdf", "BAIL DEUX VERIFICATIONS")],
+      {
+        ...(await ctx()),
+        settings: { ...(await settingsFor(account.id)), "limits.batchConcurrency": { value: 1 } } as never,
+      },
+    );
     expect(created.items.map((i) => i.state)).toEqual(["running", "pending"]);
     finishAll();
-    const next = await advanceBatch(account, created.id, { ...(await ctx()), settings: { ...(await settingsFor(account.id)), "limits.batchConcurrency": { value: 1 } } as never });
+    const next = await advanceBatch(account, created.id, {
+      ...(await ctx()),
+      settings: { ...(await settingsFor(account.id)), "limits.batchConcurrency": { value: 1 } } as never,
+    });
     expect(next.items.map((i) => [i.state, i.error])).toEqual([
       ["done", null],
       ["running", null],
@@ -102,18 +133,30 @@ describe.runIf(enabled)("a batch against a busy engine and awkward files", () =>
     const done = await advanceBatch(account, created.id, await ctx());
     expect(done.items.map((i) => i.state)).toEqual(["done", "done"]);
     // and once nothing needs it any more, the not-kept document is purged
-    const [doc] = await query<{ text: string }>("SELECT text FROM documents WHERE id = $1", [done.items[0]!.documentId]);
+    const [doc] = await query<{ text: string }>("SELECT text FROM documents WHERE id = $1", [
+      done.items[0]!.documentId,
+    ]);
     expect(doc!.text).toBe("");
   });
 
   it("two advances at once (the tick and a reader) start a row once and fail nothing (#266)", async () => {
     state.busy = true;
-    const created = await createBatch(account, "Concurrence", "file,check\nrace-a.pdf,compliance", [await pdf("race-a.pdf", "BAIL RACE A")], await ctx());
+    const created = await createBatch(
+      account,
+      "Concurrence",
+      "file,check\nrace-a.pdf,compliance",
+      [await pdf("race-a.pdf", "BAIL RACE A")],
+      await ctx(),
+    );
     expect(created.items[0]!.state).toBe("pending");
     state.busy = false;
     const before = state.started.length;
     // the batch route accepts an upper-case id: it is the same batch and the same lock
-    const both = await Promise.all([advanceBatch(account, created.id, await ctx()), advanceBatch(account, created.id.toUpperCase(), await ctx()), advanceBatch(account, created.id, await ctx())]);
+    const both = await Promise.all([
+      advanceBatch(account, created.id, await ctx()),
+      advanceBatch(account, created.id.toUpperCase(), await ctx()),
+      advanceBatch(account, created.id, await ctx()),
+    ]);
     expect(state.started.length - before).toBe(1);
     for (const view of both) expect(view.counts.failed).toBe(0);
     const [row] = await query<{ state: string }>("SELECT state FROM batch_items WHERE batch_id = $1", [created.id]);
@@ -124,12 +167,24 @@ describe.runIf(enabled)("a batch against a busy engine and awkward files", () =>
 
   it("a check already running on the document waits for it — and when Orazaka has finished it meanwhile the row moves on (#266)", async () => {
     state.busy = true;
-    const created = await createBatch(account, "Déjà en cours", "file,check\nrunning-a.pdf,compliance\nrunning-b.pdf,compliance", [await pdf("running-a.pdf", "BAIL DEJA EN COURS A"), await pdf("running-b.pdf", "BAIL DEJA EN COURS B")], await ctx());
+    const created = await createBatch(
+      account,
+      "Déjà en cours",
+      "file,check\nrunning-a.pdf,compliance\nrunning-b.pdf,compliance",
+      [await pdf("running-a.pdf", "BAIL DEJA EN COURS A"), await pdf("running-b.pdf", "BAIL DEJA EN COURS B")],
+      await ctx(),
+    );
     state.busy = false;
     runs.set("run-elsewhere-live", { studio: "compliance-check", status: "RUNNING" });
     runs.set("run-elsewhere-done", { studio: "compliance-check", status: "SUCCEEDED" });
-    await query("INSERT INTO analyses (document_id, studio, status, run_id) VALUES ($1, 'compliance-check', 'running', 'run-elsewhere-live')", [created.items[0]!.documentId]);
-    await query("INSERT INTO analyses (document_id, studio, status, run_id) VALUES ($1, 'compliance-check', 'running', 'run-elsewhere-done')", [created.items[1]!.documentId]);
+    await query(
+      "INSERT INTO analyses (document_id, studio, status, run_id) VALUES ($1, 'compliance-check', 'running', 'run-elsewhere-live')",
+      [created.items[0]!.documentId],
+    );
+    await query(
+      "INSERT INTO analyses (document_id, studio, status, run_id) VALUES ($1, 'compliance-check', 'running', 'run-elsewhere-done')",
+      [created.items[1]!.documentId],
+    );
     const advanced = await advanceBatch(account, created.id, await ctx());
     expect(advanced.counts.failed).toBe(0);
     // still running at Orazaka: the row waits
@@ -140,7 +195,17 @@ describe.runIf(enabled)("a batch against a busy engine and awkward files", () =>
 
   it("many batches advanced at once never starve the connection pool (#266)", async () => {
     state.busy = true;
-    const batches = await Promise.all(Array.from({ length: 12 }, async (_, n) => createBatch(account, `Pool ${n}`, `file,check\npool-${n}.pdf,compliance`, [await pdf(`pool-${n}.pdf`, `BAIL POOL ${n} ${Date.now()}`)], await ctx())));
+    const batches = await Promise.all(
+      Array.from({ length: 12 }, async (_, n) =>
+        createBatch(
+          account,
+          `Pool ${n}`,
+          `file,check\npool-${n}.pdf,compliance`,
+          [await pdf(`pool-${n}.pdf`, `BAIL POOL ${n} ${Date.now()}`)],
+          await ctx(),
+        ),
+      ),
+    );
     state.busy = false;
     const views = await Promise.all(batches.map(async (b) => advanceBatch(account, b.id, await ctx())));
     expect(views).toHaveLength(12);
@@ -157,7 +222,10 @@ describe.runIf(enabled)("a batch against a busy engine and awkward files", () =>
       [await pdf("in-building.pdf", "BAIL IMMEUBLE"), await pdf("elsewhere.pdf", "BAIL AILLEURS")],
       await ctx(),
     );
-    const placed = await query<{ id: string; collection_id: string }>("SELECT id, collection_id FROM documents WHERE id = ANY($1)", [created.items.map((i) => i.documentId)]);
+    const placed = await query<{ id: string; collection_id: string }>(
+      "SELECT id, collection_id FROM documents WHERE id = ANY($1)",
+      [created.items.map((i) => i.documentId)],
+    );
     const of = (row: number) => placed.find((d) => d.id === created.items[row]!.documentId)!.collection_id;
     expect(of(0)).toBe(building.id);
     expect(of(1)).not.toBe(building.id);

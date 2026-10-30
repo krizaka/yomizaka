@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest";
 
 import { readCheckFilters } from "./check-filters";
-import { activityOf, filesInStates, HOME_PERIODS, homePeriodOf, nothingToDo, readFileStates, toDoLinks } from "./home-figures";
+import {
+  activityOf,
+  filesInStates,
+  HOME_PERIODS,
+  homePeriodOf,
+  nothingToDo,
+  readFileStates,
+  toDoLinks,
+} from "./home-figures";
 
 /** The home's figures (yomizaka#325, P8 of the design direction): each one a door to the view it counts. */
 describe("« À traiter »: each figure's link carries its view's filter", () => {
@@ -40,12 +48,25 @@ describe("the activity per period", () => {
   const now = new Date("2026-10-25T03:30:00Z"); // 23:30 on the 24th in Québec
   it("offers 7, 30 and 90 days, 30 by default, from the address", () => {
     expect(HOME_PERIODS).toEqual(["7d", "30d", "90d"]);
-    expect([homePeriodOf("7d"), homePeriodOf("90d"), homePeriodOf(null), homePeriodOf("1y")]).toEqual(["7d", "90d", "30d", "30d"]);
+    expect([homePeriodOf("7d"), homePeriodOf("90d"), homePeriodOf(null), homePeriodOf("1y")]).toEqual([
+      "7d",
+      "90d",
+      "30d",
+      "30d",
+    ]);
   });
   it("counts the checks of each day in Québec, oldest first, every day present, nothing outside the period", () => {
     const at = ["2026-10-25T02:00:00Z", "2026-10-24T15:00:00Z", "2026-10-20T12:00:00Z", "2026-10-01T12:00:00Z"];
     const days = activityOf(at, "7d", now);
-    expect(days.map((d) => d.day)).toEqual(["2026-10-18", "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-24"]);
+    expect(days.map((d) => d.day)).toEqual([
+      "2026-10-18",
+      "2026-10-19",
+      "2026-10-20",
+      "2026-10-21",
+      "2026-10-22",
+      "2026-10-23",
+      "2026-10-24",
+    ]);
     expect(days.map((d) => d.checks)).toEqual([0, 0, 1, 0, 0, 0, 2]);
     expect(activityOf(at, "30d", now)).toHaveLength(30);
     expect(activityOf(at, "30d", now).reduce((n, d) => n + d.checks, 0)).toBe(4);

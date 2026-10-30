@@ -4,7 +4,13 @@ import { type KindConfig, kindConfigProblems, type Marker, MARKERS, type StatusS
 import { krizakaFetch, useMutation, useQuery } from "@krizaka/query";
 import { Alert } from "@krizaka/ui/alert";
 import { Button } from "@krizaka/ui/button";
-import { StatusSetEditor, type StatusSetEditorLabels, TagSetEditor, type TagSetEditorLabels, type TagSetValue } from "@krizaka/ui/kind-config-editor";
+import {
+  StatusSetEditor,
+  type StatusSetEditorLabels,
+  TagSetEditor,
+  type TagSetEditorLabels,
+  type TagSetValue,
+} from "@krizaka/ui/kind-config-editor";
 import { useState } from "react";
 import { z } from "zod";
 
@@ -29,7 +35,10 @@ function editorLabels(say: Say): { tags: Partial<TagSetEditorLabels>; status: Pa
       presets: t("tags.presets"),
       name: (position) => t("tags.name", { position }),
       marker: (name) => t("tags.marker", { name }),
-      markerNames: Object.fromEntries(MARKERS.map((m) => [m, say(`dossiers.tagsEdit.markers.${m}`)])) as Record<Marker, string>,
+      markerNames: Object.fromEntries(MARKERS.map((m) => [m, say(`dossiers.tagsEdit.markers.${m}`)])) as Record<
+        Marker,
+        string
+      >,
       moveUp: (name) => t("moveUp", { name }),
       moveDown: (name) => t("moveDown", { name }),
       remove: (name) => t("remove", { name }),
@@ -50,7 +59,13 @@ function editorLabels(say: Say): { tags: Partial<TagSetEditorLabels>; status: Pa
       languages: { fr: t("status.languages.fr"), en: t("status.languages.en") },
       stateLabel: (language, position) => t("status.stateLabel", { language, position }),
       tone: (position) => t("status.tone", { position }),
-      tones: { neutral: t("status.tones.neutral"), accent: t("status.tones.accent"), success: t("status.tones.success"), warning: t("status.tones.warning"), danger: t("status.tones.danger") },
+      tones: {
+        neutral: t("status.tones.neutral"),
+        accent: t("status.tones.accent"),
+        success: t("status.tones.success"),
+        warning: t("status.tones.warning"),
+        danger: t("status.tones.danger"),
+      },
       final: (position) => t("status.final", { position }),
       finalHint: t("status.finalHint"),
       initial: (position) => t("status.initial", { position }),
@@ -90,7 +105,14 @@ function KindEditor({ kind, initial, version: first }: Readonly<{ kind: Kind; in
   const labels = editorLabels(say);
   const roles = [{ key: OWNER_ROLE, label: say("adminConfig.organisation.owner") }];
   const problems = kindConfigProblems(config);
-  const save = useMutation({ mutationFn: () => krizakaFetch(`/api/admin/organize/${kind}/config`, { method: "PUT", json: { config, expected: version }, schema: savedAnswer }) });
+  const save = useMutation({
+    mutationFn: () =>
+      krizakaFetch(`/api/admin/organize/${kind}/config`, {
+        method: "PUT",
+        json: { config, expected: version },
+        schema: savedAnswer,
+      }),
+  });
   const submit = async () => {
     setRefused(null);
     setSaved(false);
@@ -109,8 +131,24 @@ function KindEditor({ kind, initial, version: first }: Readonly<{ kind: Kind; in
   return (
     <section className="flex max-w-3xl flex-col gap-6" data-testid={`organisation-${kind}`}>
       <h2 className="m-0 font-display text-lg font-bold text-fg">{say(`adminConfig.organisation.kinds.${kind}`)}</h2>
-      <TagSetEditor value={config.tags as TagSetValue} onChange={(tags) => edit({ tags })} variant={VARIANT} roles={roles} problems={problems} labels={labels.tags} />
-      {config.status ? <StatusSetEditor value={config.status} onChange={(status: StatusSet) => edit({ status })} roles={roles} locale={locale} problems={problems} labels={labels.status} /> : null}
+      <TagSetEditor
+        value={config.tags as TagSetValue}
+        onChange={(tags) => edit({ tags })}
+        variant={VARIANT}
+        roles={roles}
+        problems={problems}
+        labels={labels.tags}
+      />
+      {config.status ? (
+        <StatusSetEditor
+          value={config.status}
+          onChange={(status: StatusSet) => edit({ status })}
+          roles={roles}
+          locale={locale}
+          problems={problems}
+          labels={labels.status}
+        />
+      ) : null}
       {refused ? <Alert tone="danger">{refused}</Alert> : null}
       {saved ? <Alert tone="success">{say("adminConfig.organisation.saved", { version })}</Alert> : null}
       <div>
@@ -124,7 +162,10 @@ function KindEditor({ kind, initial, version: first }: Readonly<{ kind: Kind; in
 
 function KindSection({ kind }: Readonly<{ kind: Kind }>) {
   const { say } = useSay();
-  const config = useQuery({ queryKey: ["admin-organize-config", kind], queryFn: () => krizakaFetch(`/api/admin/organize/${kind}/config`, { schema: stored }) });
+  const config = useQuery({
+    queryKey: ["admin-organize-config", kind],
+    queryFn: () => krizakaFetch(`/api/admin/organize/${kind}/config`, { schema: stored }),
+  });
   if (!config.data) return null;
   const found = config.data.configuration;
   if (!found) return <p className="m-0 text-sm text-fg-secondary">{say("adminConfig.organisation.notSeeded")}</p>;

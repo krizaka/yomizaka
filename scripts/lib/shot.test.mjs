@@ -36,5 +36,11 @@ test("shoot takes one file per theme, the theme set before the page loads", asyn
   };
   const files = await shoot(browser, { dir: "/o", name: "g", open: async () => {} });
   assert.deepEqual(files, [shotFile("/o", "g", "dark"), shotFile("/o", "g", "light")]);
-  assert.deepEqual(log.filter((l) => l[0] === "init"), [["init", "dark", "dark"], ["init", "light", "light"]]);
+  assert.deepEqual(
+    log.filter((l) => l[0] === "init"),
+    [
+      ["init", "dark", "dark"],
+      ["init", "light", "light"],
+    ],
+  );
 });

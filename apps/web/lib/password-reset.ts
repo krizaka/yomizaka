@@ -19,15 +19,28 @@ export const resetLinkMinutes = (): Promise<number> => appSettings().get("auth.p
  * effect a stranger can see: the audit line, the limit (counted for any address), a failing mail (swallowed: a 500 only
  * for known addresses would tell). The line names no address and no token. 3 requests an hour per address, 10 per client.
  */
-export async function requestReset(deps: ResetDeps, input: { email: string }, req: { headers: Headers }, now: Date): Promise<{ ok: true }> {
+export async function requestReset(
+  deps: ResetDeps,
+  input: { email: string },
+  req: { headers: Headers },
+  now: Date,
+): Promise<{ ok: true }> {
   await limit("forgotPassword", req, input.email);
   try {
     await deps.accounts.requestPasswordReset(input.email, now);
   } catch (error) {
     // Never the message: a mail provider's error often names its recipient.
-    console.error("password reset: the link could not be issued or mailed", error instanceof Error ? error.name : "unknown");
+    console.error(
+      "password reset: the link could not be issued or mailed",
+      error instanceof Error ? error.name : "unknown",
+    );
   }
-  await deps.audit({ action: "auth.password_reset_requested", actorId: null, actorLabel: "password reset form", headers: req.headers });
+  await deps.audit({
+    action: "auth.password_reset_requested",
+    actorId: null,
+    actorLabel: "password reset form",
+    headers: req.headers,
+  });
   return { ok: true };
 }
 
@@ -35,7 +48,12 @@ export async function requestReset(deps: ResetDeps, input: { email: string }, re
  * The mailed link's page sets the new password. The package checks the password before using the link up, ends every
  * session, and answers INVALID for an expired, used or unknown link alike. The audit line says only the result.
  */
-export async function applyReset(deps: ResetDeps, input: { token: string; password: string }, req: { headers: Headers }, now: Date): Promise<{ ok: true }> {
+export async function applyReset(
+  deps: ResetDeps,
+  input: { token: string; password: string },
+  req: { headers: Headers },
+  now: Date,
+): Promise<{ ok: true }> {
   await limit("resetPassword", req, null);
   let result: "CHANGED" | "INVALID";
   try {
@@ -44,7 +62,13 @@ export async function applyReset(deps: ResetDeps, input: { token: string; passwo
     if (error instanceof AccountError) throw refuse(error.status, error.code, error.message);
     throw error;
   }
-  await deps.audit({ action: "auth.password_reset", actorId: null, actorLabel: "password reset link", detail: { result: result.toLowerCase() }, headers: req.headers });
+  await deps.audit({
+    action: "auth.password_reset",
+    actorId: null,
+    actorLabel: "password reset link",
+    detail: { result: result.toLowerCase() },
+    headers: req.headers,
+  });
   if (result === "INVALID") throw refuse(400, "RESET_INVALID", "This link is invalid or has expired");
   return { ok: true };
 }

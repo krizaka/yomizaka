@@ -11,7 +11,16 @@ const say = (key: string, vars?: Record<string, string | number>) => {
   return Object.entries(vars ?? {}).reduce((s, [k, v]) => s.replace(`{${k}}`, String(v)), words ?? key);
 };
 const date = (iso: string) => iso.slice(0, 10);
-const FREE: Entitlement = { credits: 0, pro: false, proUntil: null, freeAuditUsed: false, selfServe: true, hasCustomer: false, planKey: null, cancelsAtPeriodEnd: false };
+const FREE: Entitlement = {
+  credits: 0,
+  pro: false,
+  proUntil: null,
+  freeAuditUsed: false,
+  selfServe: true,
+  hasCustomer: false,
+  planKey: null,
+  cancelsAtPeriodEnd: false,
+};
 
 describe("billing as flat rows (the review's E3)", () => {
   it("a free self-serve account: the plan, the free audit, the paid audits left — no renewal", () => {
@@ -20,11 +29,25 @@ describe("billing as flat rows (the review's E3)", () => {
       ["Audit gratuit", fr.console.settings.billing.freeAvailable],
       ["Audits payés restants", "0"],
     ]);
-    expect(billingRows({ ...FREE, freeAuditUsed: true, credits: 3 }, say, date).map((r) => r.value)).toEqual(["Gratuit", fr.console.settings.billing.freeUsed, "3"]);
+    expect(billingRows({ ...FREE, freeAuditUsed: true, credits: 3 }, say, date).map((r) => r.value)).toEqual([
+      "Gratuit",
+      fr.console.settings.billing.freeUsed,
+      "3",
+    ]);
   });
   it("a subscribed account: its plan, named by the catalogue entry it was sold at, and its renewal; an account that is not self-serve has no free audit row", () => {
-    expect(billingRows({ ...FREE, pro: true, planKey: "yomizaka.firm", proUntil: "2026-11-23T00:00:00.000Z", selfServe: false }, say, date)[0]!.value).toBe(fr.console.settings.billing.plans.firm);
-    expect(billingRows({ ...FREE, pro: true, proUntil: "2026-11-23T00:00:00.000Z", selfServe: false }, say, date).map((r) => [r.id, r.value])).toEqual([
+    expect(
+      billingRows(
+        { ...FREE, pro: true, planKey: "yomizaka.firm", proUntil: "2026-11-23T00:00:00.000Z", selfServe: false },
+        say,
+        date,
+      )[0]!.value,
+    ).toBe(fr.console.settings.billing.plans.firm);
+    expect(
+      billingRows({ ...FREE, pro: true, proUntil: "2026-11-23T00:00:00.000Z", selfServe: false }, say, date).map(
+        (r) => [r.id, r.value],
+      ),
+    ).toEqual([
       ["plan", fr.console.settings.billing.plans.agency],
       ["credits", "0"],
       ["until", "2026-11-23"],
@@ -33,19 +56,35 @@ describe("billing as flat rows (the review's E3)", () => {
 });
 
 describe("a subscription cancelled at the end of the period (yomizaka#139)", () => {
-  const CANCELLED = { ...FREE, pro: true, proUntil: "2026-11-23T00:00:00.000Z", selfServe: false, cancelsAtPeriodEnd: true };
+  const CANCELLED = {
+    ...FREE,
+    pro: true,
+    proUntil: "2026-11-23T00:00:00.000Z",
+    selfServe: false,
+    cancelsAtPeriodEnd: true,
+  };
   it("says when it ends, never « renewal »", () => {
-    expect(billingRows(CANCELLED, say, date).find((r) => r.id === "until")).toEqual({ id: "until", label: fr.console.settings.billing.ends, value: "2026-11-23" });
+    expect(billingRows(CANCELLED, say, date).find((r) => r.id === "until")).toEqual({
+      id: "until",
+      label: fr.console.settings.billing.ends,
+      value: "2026-11-23",
+    });
     expect(fr.console.settings.billing.ends).not.toBe(fr.console.settings.billing.renewal);
   });
   it("keeps « renewal » while nothing is cancelled", () => {
-    expect(billingRows({ ...CANCELLED, cancelsAtPeriodEnd: false }, say, date).find((r) => r.id === "until")?.label).toBe(fr.console.settings.billing.renewal);
+    expect(
+      billingRows({ ...CANCELLED, cancelsAtPeriodEnd: false }, say, date).find((r) => r.id === "until")?.label,
+    ).toBe(fr.console.settings.billing.renewal);
   });
 });
 
 describe("the billing buttons (extracted from BillingSection, behaviour unchanged)", () => {
   const call = { pending: false, go: () => undefined };
-  const html = (e: Entitlement | undefined) => renderToStaticMarkup(createElement(BillingActions, { entitlement: e, buy: call, portal: call, say })).replaceAll("&#x27;", "'");
+  const html = (e: Entitlement | undefined) =>
+    renderToStaticMarkup(createElement(BillingActions, { entitlement: e, buy: call, portal: call, say })).replaceAll(
+      "&#x27;",
+      "'",
+    );
   it("a free account is offered the three purchases and no portal until it is a customer", () => {
     const out = html(FREE);
     expect(out).toContain(fr.console.paywall.agency);

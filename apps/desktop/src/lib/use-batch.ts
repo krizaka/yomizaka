@@ -27,7 +27,11 @@ export interface BatchRequest {
 export function useBatch(onStarted: (route: Route) => void) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ name, paths, check = "compliance" }: BatchRequest): Promise<{ route: Route; refused: number }> => {
+    mutationFn: async ({
+      name,
+      paths,
+      check = "compliance",
+    }: BatchRequest): Promise<{ route: Route; refused: number }> => {
       const limits = await yomizaka.fetchLimits().catch(() => DEFAULT_LIMITS);
       // A file that cannot be read or is refused by the pre-flight stays on the Mac; the others go.
       const prepared = await Promise.all(paths.map((path) => prepare(path, limits).catch(() => null)));
@@ -52,7 +56,10 @@ export function useBatch(onStarted: (route: Route) => void) {
 }
 
 /** Each row's document with the file of the Mac it came from (matched by name, as the server matched the rows). */
-export function rememberFiles(items: readonly { file: string; documentId: string | null }[], files: readonly Pick<Prepared, "name" | "path">[]): void {
+export function rememberFiles(
+  items: readonly { file: string; documentId: string | null }[],
+  files: readonly Pick<Prepared, "name" | "path">[],
+): void {
   const byName = new Map(files.map((f) => [f.name.toLowerCase(), f.path]));
   for (const item of items) {
     const path = byName.get(item.file.toLowerCase());

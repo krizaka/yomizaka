@@ -7,7 +7,10 @@ describe("host routing", () => {
     expect(isAdminHost("admin.yomizaka.com")).toBe(true);
     expect(isAdminHost("dev.yomizaka.com")).toBe(false);
     expect(routeFor("admin.yomizaka.com", "/en", "en")).toEqual({ kind: "rewrite", path: "/en/console" });
-    expect(routeFor("admin.yomizaka.com", "/fr/users/42", "en")).toEqual({ kind: "rewrite", path: "/fr/console/users/42" });
+    expect(routeFor("admin.yomizaka.com", "/fr/users/42", "en")).toEqual({
+      kind: "rewrite",
+      path: "/fr/console/users/42",
+    });
     expect(routeFor("admin.yomizaka.com", "/", "fr")).toEqual({ kind: "redirect", path: "/fr" });
     expect(routeFor("admin.yomizaka.com", "/en/console/runs", "en")).toEqual({ kind: "redirect", path: "/en/runs" });
   });

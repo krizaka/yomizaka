@@ -13,7 +13,9 @@ describe("plural keys", () => {
   it.each([
     [1, "1 fichier"],
     [3, "3 fichiers"],
-  ])("fills the count: %i -> %s", (n, text) => expect(countLabel({ filesOne: "{count} fichier", filesMany: "{count} fichiers" }, "files", n)).toBe(text));
+  ])("fills the count: %i -> %s", (n, text) =>
+    expect(countLabel({ filesOne: "{count} fichier", filesMany: "{count} fichiers" }, "files", n)).toBe(text),
+  );
 
   it("says nothing for a message that is missing or is not a text", () => {
     expect(countLabel({}, "files", 2)).toBe("");

@@ -6,9 +6,25 @@ const source = readFileSync(new URL("./record-krizaka-review.mjs", import.meta.u
 
 test("the walkthrough says every beat in English and in French", () => {
   const beats = [...source.matchAll(/take\.beat\("(\w+)"\)/g)].map((m) => m[1]);
-  for (const beat of ["intro", "drop", "invoice", "running", "invoiceFindings", "akinaza", "akinazaFindings", "contract", "contractFindings", "notes", "outro"]) {
+  for (const beat of [
+    "intro",
+    "drop",
+    "invoice",
+    "running",
+    "invoiceFindings",
+    "akinaza",
+    "akinazaFindings",
+    "contract",
+    "contractFindings",
+    "notes",
+    "outro",
+  ]) {
     assert.ok(beats.includes(beat), `beat ${beat}`);
-    assert.match(source, new RegExp(`${beat}: \\{\\n    en: "[^"]{10,}",\\n    fr: "[^"]{10,}"`), `words ${beat} (en + fr)`);
+    assert.match(
+      source,
+      new RegExp(`${beat}: \\{\\n    en: "[^"]{10,}",\\n    fr: "[^"]{10,}"`),
+      `words ${beat} (en + fr)`,
+    );
   }
 });
 

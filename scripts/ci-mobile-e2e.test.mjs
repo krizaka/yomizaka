@@ -48,7 +48,11 @@ describe("the phone's Maestro flows in CI", () => {
       try {
         execFileSync("node", ["scripts/demo-seed/cli.mjs", "--persona", "eric"], {
           cwd: fileURLToPath(new URL("..", import.meta.url)),
-          env: { PATH: process.env.PATH, APP_ENVIRONMENT: environment, DATABASE_URL: "postgresql://nobody@127.0.0.1:1/none" },
+          env: {
+            PATH: process.env.PATH,
+            APP_ENVIRONMENT: environment,
+            DATABASE_URL: "postgresql://nobody@127.0.0.1:1/none",
+          },
           stdio: "pipe",
         });
       } catch (error) {

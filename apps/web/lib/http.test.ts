@@ -16,7 +16,8 @@ describe("fieldText", () => {
 });
 
 describe("codeOf", () => {
-  it("is the code an HttpError answers with", () => expect(codeOf(refuse(400, "BAD_REQUEST", "no"), "FALLBACK")).toBe("BAD_REQUEST"));
+  it("is the code an HttpError answers with", () =>
+    expect(codeOf(refuse(400, "BAD_REQUEST", "no"), "FALLBACK")).toBe("BAD_REQUEST"));
   it("is the fallback when the body names no text code", () => {
     expect(codeOf(new HttpError(500, "no"), "FALLBACK")).toBe("FALLBACK");
     expect(codeOf(new HttpError(500, "no", { code: { nested: true } }), "FALLBACK")).toBe("FALLBACK");

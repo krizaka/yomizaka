@@ -25,14 +25,29 @@ export type CatalogueFilter = (typeof CATALOGUE_FILTERS)[number];
 
 /** Every route-state of the app, so one test table covers them all. */
 export const ROUTE_STATES = {
-  checkKind: { path: "/app/check", state: { key: "type", values: CHECK_KINDS, fallback: "auto" } satisfies RouteState<CheckKind> },
+  checkKind: {
+    path: "/app/check",
+    state: { key: "type", values: CHECK_KINDS, fallback: "auto" } satisfies RouteState<CheckKind>,
+  },
   /** The chip of the check catalogue that is chosen (« Toutes » by default). */
-  catalogueGroup: { path: "/app/check", state: { key: "groupe", values: CATALOGUE_FILTERS, fallback: "all" } satisfies RouteState<CatalogueFilter> },
+  catalogueGroup: {
+    path: "/app/check",
+    state: { key: "groupe", values: CATALOGUE_FILTERS, fallback: "all" } satisfies RouteState<CatalogueFilter>,
+  },
   /** Several photos dropped together are the pages of one document (the default), or separate documents. */
-  groupPhotos: { path: "/app/check", state: { key: "pages", values: GROUP_CHOICES, fallback: "1" } satisfies RouteState<GroupChoice> },
-  keepDocuments: { path: "/app/check", state: { key: "conserver", values: KEEP_CHOICES, fallback: "0" } satisfies RouteState<KeepChoice> },
+  groupPhotos: {
+    path: "/app/check",
+    state: { key: "pages", values: GROUP_CHOICES, fallback: "1" } satisfies RouteState<GroupChoice>,
+  },
+  keepDocuments: {
+    path: "/app/check",
+    state: { key: "conserver", values: KEEP_CHOICES, fallback: "0" } satisfies RouteState<KeepChoice>,
+  },
   /** The tab of the Vérifications destination: the list of checks, or the batches (« Lots »). */
-  checksTab: { path: "/app/verifications", state: { key: CHECKS_TAB_KEY, values: CHECKS_TABS, fallback: "checks" } satisfies RouteState<ChecksTab> },
+  checksTab: {
+    path: "/app/verifications",
+    state: { key: CHECKS_TAB_KEY, values: CHECKS_TABS, fallback: "checks" } satisfies RouteState<ChecksTab>,
+  },
 } as const;
 
 /** The value in the address; an unknown or missing one is the default (a stale link never breaks the page). */
@@ -42,7 +57,12 @@ export function readRouteValue<V extends string>(search: string, { key, values, 
 }
 
 /** The address with `value` chosen: the other parameters stay, the default leaves the address clean. */
-export function routeHref<V extends string>(path: string, search: string, { key, fallback }: RouteState<V>, value: V): string {
+export function routeHref<V extends string>(
+  path: string,
+  search: string,
+  { key, fallback }: RouteState<V>,
+  value: V,
+): string {
   const params = new URLSearchParams(search);
   if (value === fallback) params.delete(key);
   else params.set(key, value);

@@ -31,12 +31,44 @@ export const LIMIT = { included: "included" } as const;
 
 export const PRICES = definePrices([
   { product: "yomizaka", plan: "document", unit: UNIT.document, amountCents: 499, availability: AVAILABILITY.public },
-  { product: "yomizaka", plan: "agency", unit: UNIT.month, amountCents: 4900, availability: AVAILABILITY.public, limits: { [LIMIT.included]: 100 } },
-  { product: "yomizaka", plan: "firm", unit: UNIT.month, amountCents: 14900, availability: AVAILABILITY.public, limits: { [LIMIT.included]: 500 } },
+  {
+    product: "yomizaka",
+    plan: "agency",
+    unit: UNIT.month,
+    amountCents: 4900,
+    availability: AVAILABILITY.public,
+    limits: { [LIMIT.included]: 100 },
+  },
+  {
+    product: "yomizaka",
+    plan: "firm",
+    unit: UNIT.month,
+    amountCents: 14900,
+    availability: AVAILABILITY.public,
+    limits: { [LIMIT.included]: 500 },
+  },
   { product: "yomizaka", plan: "api", unit: UNIT.document, amountCents: 22, availability: AVAILABILITY.internal },
-  { product: "yomizaka", plan: "fullFile", unit: UNIT.document, amountCents: null, availability: AVAILABILITY.preparing },
-  { product: "yomizaka", plan: "backgroundCheck", unit: UNIT.document, amountCents: null, availability: AVAILABILITY.preparing },
-  { product: "yomizaka", plan: "screening", unit: UNIT.document, amountCents: null, availability: AVAILABILITY.preparing },
+  {
+    product: "yomizaka",
+    plan: "fullFile",
+    unit: UNIT.document,
+    amountCents: null,
+    availability: AVAILABILITY.preparing,
+  },
+  {
+    product: "yomizaka",
+    plan: "backgroundCheck",
+    unit: UNIT.document,
+    amountCents: null,
+    availability: AVAILABILITY.preparing,
+  },
+  {
+    product: "yomizaka",
+    plan: "screening",
+    unit: UNIT.document,
+    amountCents: null,
+    availability: AVAILABILITY.preparing,
+  },
 ]);
 
 /**

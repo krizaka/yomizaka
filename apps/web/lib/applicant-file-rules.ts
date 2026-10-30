@@ -7,14 +7,26 @@ import { refuse } from "./http";
  */
 
 /** The purposes a consent is given for. Here, with the pure rules, so the applicant's page (a client component) reads them without the database. */
-export const CONSENT_PURPOSE = { DOCUMENT_CHECK: "DOCUMENT_CHECK", COURT_RECORDS: "COURT_RECORDS", CREDIT: "CREDIT", DOCUMENT_KEEP: "DOCUMENT_KEEP" } as const;
+export const CONSENT_PURPOSE = {
+  DOCUMENT_CHECK: "DOCUMENT_CHECK",
+  COURT_RECORDS: "COURT_RECORDS",
+  CREDIT: "CREDIT",
+  DOCUMENT_KEEP: "DOCUMENT_KEEP",
+} as const;
 export type ConsentPurpose = (typeof CONSENT_PURPOSE)[keyof typeof CONSENT_PURPOSE];
 
 /** The application status once erased (its personal fields are gone). Here, not in applicant-consent (which reads the database), so the browser can read the rules. */
 export const APPLICATION_ERASED = "erased" as const;
 
 /** The link of an applicant file: open, or refused for one reason. Erasure of the application is its own state. */
-export const LINK = { open: "open", revoked: "revoked", expired: "expired", used: "used", closed: "closed", erased: "erased" } as const;
+export const LINK = {
+  open: "open",
+  revoked: "revoked",
+  expired: "expired",
+  used: "used",
+  closed: "closed",
+  erased: "erased",
+} as const;
 export type LinkState = (typeof LINK)[keyof typeof LINK];
 
 export interface LinkRow {
@@ -54,7 +66,14 @@ export function assertOpen(state: LinkState): void {
  * Documents a request never asks for, whatever the catalogue holds: they are not needed for the check (Loi 25
  * minimisation; the Charter limits what a landlord may require). Their codes are refused by the request.
  */
-export const NOT_NECESSARY_TYPES: readonly string[] = ["sin", "health-card", "passport", "driver-licence", "void-cheque", "bank-details"];
+export const NOT_NECESSARY_TYPES: readonly string[] = [
+  "sin",
+  "health-card",
+  "passport",
+  "driver-licence",
+  "void-cheque",
+  "bank-details",
+];
 
 /** A document of a file, at most: a bound on what one application can hold (a fixed value, not a business parameter). */
 // @fixed: a rental file needs a handful of documents; twelve covers several pay stubs and statements with room to spare.
@@ -69,7 +88,10 @@ export function requestedTypes(asked: readonly string[], catalogue: readonly str
   const unique = [...new Set(asked)];
   if (unique.length === 0) throw refuse(400, "BAD_REQUEST", "Ask for at least one document");
   const notNecessary = unique.find((t) => NOT_NECESSARY_TYPES.includes(t));
-  if (notNecessary) throw refuse(422, "TYPE_NOT_NECESSARY", "This document is not necessary for the check and cannot be asked for", { type: notNecessary });
+  if (notNecessary)
+    throw refuse(422, "TYPE_NOT_NECESSARY", "This document is not necessary for the check and cannot be asked for", {
+      type: notNecessary,
+    });
   const unknown = unique.find((t) => !catalogue.includes(t));
   if (unknown) throw refuse(422, "TYPE_UNKNOWN", "No such document type", { type: unknown });
   return unique;
@@ -97,4 +119,5 @@ export const SEED_FIELDS: Record<(typeof SEED_DOCUMENT_TYPES)[number], readonly 
 };
 
 /** Whether a field key is one the minimisation refuses: an identifier, a health, a passport, a licence or a bank field. */
-export const isRefusedField = (key: string): boolean => /(^|[-_])(sin|nas|health|passport|licen[cs]e|bank|account|iban|void)/i.test(key);
+export const isRefusedField = (key: string): boolean =>
+  /(^|[-_])(sin|nas|health|passport|licen[cs]e|bank|account|iban|void)/i.test(key);

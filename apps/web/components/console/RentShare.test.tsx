@@ -8,7 +8,8 @@ import fr from "@/messages/fr.json";
 import { centsOf, RentShare, rentShareSentences } from "./RentShare";
 
 // Guardrail (yomizaka#557/#559): the share is information, never a verdict, a score, a threshold or a reason to refuse.
-const VERDICT_WORDS = /\b(approv|accept|refus|reject|declin|reçu|rejet|accepté|approuv|qualif|éligib|eligib|afford|abordable|risk|risqu|score|too high|trop élev|pass|fail|échec|good|bad|bon\b|mauvais)/i;
+const VERDICT_WORDS =
+  /\b(approv|accept|refus|reject|declin|reçu|rejet|accepté|approuv|qualif|éligib|eligib|afford|abordable|risk|risqu|score|too high|trop élev|pass|fail|échec|good|bad|bon\b|mauvais)/i;
 
 describe("the rent share on an applicant's file", () => {
   it("reads typed amounts to cents and nothing else", () => {
@@ -32,8 +33,17 @@ describe("the rent share on an applicant's file", () => {
   });
 
   it("never speaks like a verdict, at any share", () => {
-    for (const [rent, income] of [["500", "9000"], ["1000", "4000"], ["1500", "2000"], ["1500", "1000"], ["1000", ""]]) {
-      for (const [locale, words] of [["en", en.affordability], ["fr", fr.affordability]] as const) {
+    for (const [rent, income] of [
+      ["500", "9000"],
+      ["1000", "4000"],
+      ["1500", "2000"],
+      ["1500", "1000"],
+      ["1000", ""],
+    ]) {
+      for (const [locale, words] of [
+        ["en", en.affordability],
+        ["fr", fr.affordability],
+      ] as const) {
         expect(rentShareSentences(rent!, income!, locale, words)!.join(" ")).not.toMatch(VERDICT_WORDS);
       }
     }
@@ -42,8 +52,15 @@ describe("the rent share on an applicant's file", () => {
 
 describe("RentShare, as drawn", () => {
   it("shows its two fields and no result until figures are typed, in both languages", () => {
-    for (const [locale, messages] of [["en", en], ["fr", fr]] as const) {
-      const html = renderToStaticMarkup(<I18nProvider locale={locale} messages={messages as never}><RentShare words={messages.affordability} /></I18nProvider>);
+    for (const [locale, messages] of [
+      ["en", en],
+      ["fr", fr],
+    ] as const) {
+      const html = renderToStaticMarkup(
+        <I18nProvider locale={locale} messages={messages as never}>
+          <RentShare words={messages.affordability} />
+        </I18nProvider>,
+      );
       expect(html).toContain('data-testid="rent-share"');
       expect(html).toContain('data-rule="TS-A-001"');
       expect(html).toContain(messages.console.dossiers.rentShare.title);

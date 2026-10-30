@@ -11,7 +11,12 @@ import { useSay } from "@/lib/i18n-client";
  * The document's actions: « Rapport signé » as the one primary action when a real run has one, the rest in a menu (open the
  * file, the PDF, delete); a deletion asks once more, in place.
  */
-export function DocumentActions({ fileUrl, reportHref, onDelete, deleting }: Readonly<{ fileUrl: string; reportHref: string | null; onDelete: () => void; deleting: boolean }>) {
+export function DocumentActions({
+  fileUrl,
+  reportHref,
+  onDelete,
+  deleting,
+}: Readonly<{ fileUrl: string; reportHref: string | null; onDelete: () => void; deleting: boolean }>) {
   const { say } = useSay();
   const [confirming, setConfirming] = useState(false);
   return (

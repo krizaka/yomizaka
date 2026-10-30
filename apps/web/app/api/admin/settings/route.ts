@@ -10,7 +10,10 @@ import { type ScopeRef } from "@/lib/settings/service";
 
 export const dynamic = "force-dynamic";
 
-const scope = z.object({ scope: z.enum([SCOPE.global, SCOPE.workspace, SCOPE.user]), id: z.string().max(80).default("") });
+const scope = z.object({
+  scope: z.enum([SCOPE.global, SCOPE.workspace, SCOPE.user]),
+  id: z.string().max(80).default(""),
+});
 const asRef = ({ scope: s, id }: z.infer<typeof scope>): ScopeRef => ({ scope: s, id: s === SCOPE.global ? "" : id });
 
 /** The administration's own errors: a refused value, setting or scope answers with its code, never a 500. */
@@ -31,7 +34,9 @@ export const GET = (req: Request) =>
   run(async () => {
     await requireAdmin(req);
     const url = new URL(req.url);
-    const ref = asRef(scope.parse({ scope: url.searchParams.get("scope") ?? SCOPE.global, id: url.searchParams.get("id") ?? "" }));
+    const ref = asRef(
+      scope.parse({ scope: url.searchParams.get("scope") ?? SCOPE.global, id: url.searchParams.get("id") ?? "" }),
+    );
     const service = appSettings();
     const contextOf = () => {
       if (ref.scope === SCOPE.user) return { userId: ref.id };
@@ -39,7 +44,14 @@ export const GET = (req: Request) =>
       return {};
     };
     const context = contextOf();
-    return Response.json({ definitions: describeSettings(), overrides: await service.overrides(ref), effective: await service.snapshot(context) }, { headers: { "Cache-Control": "private, no-store" } });
+    return Response.json(
+      {
+        definitions: describeSettings(),
+        overrides: await service.overrides(ref),
+        effective: await service.snapshot(context),
+      },
+      { headers: { "Cache-Control": "private, no-store" } },
+    );
   });
 
 const change = scope.extend({ key: z.string().max(80), value: z.unknown() });
@@ -47,7 +59,13 @@ export const PUT = (req: Request) =>
   run(async () => {
     const session = await requireAdmin(req);
     const input = await readJson(req, change);
-    await appSettings().set({ id: session.account.id, label: session.account.email }, asRef(input), input.key, input.value, new Date());
+    await appSettings().set(
+      { id: session.account.id, label: session.account.email },
+      asRef(input),
+      input.key,
+      input.value,
+      new Date(),
+    );
     return Response.json({ ok: true });
   });
 
@@ -55,6 +73,11 @@ export const DELETE = (req: Request) =>
   run(async () => {
     const session = await requireAdmin(req);
     const input = await readJson(req, scope.extend({ key: z.string().max(80) }));
-    await appSettings().reset({ id: session.account.id, label: session.account.email }, asRef(input), input.key, new Date());
+    await appSettings().reset(
+      { id: session.account.id, label: session.account.email },
+      asRef(input),
+      input.key,
+      new Date(),
+    );
     return Response.json({ ok: true });
   });

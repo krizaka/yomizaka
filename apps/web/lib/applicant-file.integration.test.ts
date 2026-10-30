@@ -1,9 +1,26 @@
 import { memoryStore, type OrazakaRun } from "@yomizaka/core";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { CONSENT_MEANS, CONSENT_PURPOSE, type ConsentPurpose, eraseApplication, grantConsent, NOTICE_VERSION, withdrawConsent } from "./applicant-consent";
+import {
+  CONSENT_MEANS,
+  CONSENT_PURPOSE,
+  type ConsentPurpose,
+  eraseApplication,
+  grantConsent,
+  NOTICE_VERSION,
+  withdrawConsent,
+} from "./applicant-consent";
 import { activeConsents } from "./applicant-consent";
-import { applicantFileOf, closeApplicantFile, listApplicantFiles, requestApplicantFile, revokeApplicantFile, submitApplicantFile, uploadApplicantDocument,type UploadContext } from "./applicant-file";
+import {
+  applicantFileOf,
+  closeApplicantFile,
+  listApplicantFiles,
+  requestApplicantFile,
+  revokeApplicantFile,
+  submitApplicantFile,
+  uploadApplicantDocument,
+  type UploadContext,
+} from "./applicant-file";
 import { applicantFileState } from "./applicant-file";
 import { fileByToken } from "./applicant-file";
 import { loadApplicantPage } from "./applicant-page";
@@ -11,7 +28,7 @@ import { migrate, query } from "./db";
 import { useOrazakaClient } from "./orazaka";
 import { cleanPdf } from "./preflight/fixtures";
 import { consent as screeningConsent, requestScreening } from "./screening";
-import { answerSignal,answersOf } from "./signal-answers";
+import { answerSignal, answersOf } from "./signal-answers";
 
 /** yomizaka#127 against the real database (CI's service; locally YOMIZAKA_DB_IT=1 DATABASE_URL=…). Orazaka is a fake that records the runs. */
 const enabled = process.env.YOMIZAKA_DB_IT === "1" && !!process.env.DATABASE_URL;
@@ -21,10 +38,21 @@ const DAY_MS = 86_400_000;
 describe.runIf(enabled)("the applicant file (yomizaka#127)", () => {
   const runs = new Map<string, string>();
   let n = 0;
-  const run = (id: string, status: string): OrazakaRun => ({ id, studioKey: "x", blueprintVersion: "1.0.0", status, outputs: [] });
+  const run = (id: string, status: string): OrazakaRun => ({
+    id,
+    studioKey: "x",
+    blueprintVersion: "1.0.0",
+    status,
+    outputs: [],
+  });
   const store = memoryStore();
   const stamp = Date.now();
-  const ctx = (keepAllowed = true): UploadContext => ({ store, purgeAfterHours: 24, keepAllowed, auditCaps: () => ({ perMonth: 1000, perDay: 0, freeFirst: false }) });
+  const ctx = (keepAllowed = true): UploadContext => ({
+    store,
+    purgeAfterHours: 24,
+    keepAllowed,
+    auditCaps: () => ({ perMonth: 1000, perDay: 0, freeFirst: false }),
+  });
   let landlordA: { id: string; email: string };
   let landlordB: { id: string; email: string };
 
@@ -41,7 +69,10 @@ describe.runIf(enabled)("the applicant file (yomizaka#127)", () => {
     const [a, b] = await Promise.all(
       ["a", "b"].map(async (who) => {
         const email = `file-${who}-${stamp}@yomizaka.test`;
-        const [row] = await query<{ id: string }>("INSERT INTO accounts (email, audit_credits) VALUES ($1, 50) RETURNING id", [email]);
+        const [row] = await query<{ id: string }>(
+          "INSERT INTO accounts (email, audit_credits) VALUES ($1, 50) RETURNING id",
+          [email],
+        );
         return { id: row!.id, email };
       }),
     );
@@ -52,53 +83,118 @@ describe.runIf(enabled)("the applicant file (yomizaka#127)", () => {
 
   let seq = 0;
   /** A new applicant file for landlord A, with the consent to the document check already given (the applicant read the notice). */
-  const askWithConsent = async (types: string[] = ["pay-stub", "employment-letter"], purposes: ConsentPurpose[] = [CONSENT_PURPOSE.DOCUMENT_CHECK]) => {
-    const made = await requestApplicantFile(landlordA, { candidateName: "Camille Fictif", candidateEmail: `c${++seq}-${stamp}@exemple.test`, types }, NOW);
-    for (const purpose of purposes) {await grantConsent(made.id, purpose, { noticeVersion: NOTICE_VERSION, means: CONSENT_MEANS.WEB_FORM }, NOW);}
+  const askWithConsent = async (
+    types: string[] = ["pay-stub", "employment-letter"],
+    purposes: ConsentPurpose[] = [CONSENT_PURPOSE.DOCUMENT_CHECK],
+  ) => {
+    const made = await requestApplicantFile(
+      landlordA,
+      { candidateName: "Camille Fictif", candidateEmail: `c${++seq}-${stamp}@exemple.test`, types },
+      NOW,
+    );
+    for (const purpose of purposes) {
+      await grantConsent(made.id, purpose, { noticeVersion: NOTICE_VERSION, means: CONSENT_MEANS.WEB_FORM }, NOW);
+    }
     return made;
   };
   const pdf = async (text: string) => {
     const bytes = await cleanPdf(text);
     return { name: `${text}.pdf`, type: "application/pdf", size: bytes.length, bytes };
   };
-  const documentsOf = (id: string) => query<{ id: string; storage: string; content_len: number; in_store: boolean; text: string; document_type: string; retention_policy: string }>(
-    "SELECT id, storage, octet_length(content) AS content_len, object_key IS NOT NULL AS in_store, text, document_type, retention_policy FROM documents WHERE screening_id = $1 ORDER BY created_at",
-    [id],
-  );
-  const refusal = (promise: Promise<unknown>) => expect(promise).rejects.toMatchObject({ body: expect.objectContaining({ code: expect.any(String) }) });
+  const documentsOf = (id: string) =>
+    query<{
+      id: string;
+      storage: string;
+      content_len: number;
+      in_store: boolean;
+      text: string;
+      document_type: string;
+      retention_policy: string;
+    }>(
+      "SELECT id, storage, octet_length(content) AS content_len, object_key IS NOT NULL AS in_store, text, document_type, retention_policy FROM documents WHERE screening_id = $1 ORDER BY created_at",
+      [id],
+    );
+  const refusal = (promise: Promise<unknown>) =>
+    expect(promise).rejects.toMatchObject({ body: expect.objectContaining({ code: expect.any(String) }) });
   const codeOf = async (promise: Promise<unknown>) => {
     try {
       await promise;
     } catch (error) {
-      return (error as { body?: { code?: string }; status?: number }).status + " " + (error as { body?: { code?: string } }).body?.code;
+      return (
+        (error as { body?: { code?: string }; status?: number }).status +
+        " " +
+        (error as { body?: { code?: string } }).body?.code
+      );
     }
     return "no error";
   };
 
   it("asks for known documents only: a SIN, a health card, a passport or an unknown type is refused", async () => {
-    expect(await codeOf(requestApplicantFile(landlordA, { candidateName: "A", candidateEmail: `x-${stamp}@exemple.test`, types: ["sin"] }, NOW))).toBe("422 TYPE_NOT_NECESSARY");
-    expect(await codeOf(requestApplicantFile(landlordA, { candidateName: "A", candidateEmail: `x-${stamp}@exemple.test`, types: ["pay-stub", "health-card"] }, NOW))).toBe("422 TYPE_NOT_NECESSARY");
-    expect(await codeOf(requestApplicantFile(landlordA, { candidateName: "A", candidateEmail: `x-${stamp}@exemple.test`, types: ["passport"] }, NOW))).toBe("422 TYPE_NOT_NECESSARY");
-    expect(await codeOf(requestApplicantFile(landlordA, { candidateName: "A", candidateEmail: `x-${stamp}@exemple.test`, types: ["no-such-type"] }, NOW))).toBe("422 TYPE_UNKNOWN");
+    expect(
+      await codeOf(
+        requestApplicantFile(
+          landlordA,
+          { candidateName: "A", candidateEmail: `x-${stamp}@exemple.test`, types: ["sin"] },
+          NOW,
+        ),
+      ),
+    ).toBe("422 TYPE_NOT_NECESSARY");
+    expect(
+      await codeOf(
+        requestApplicantFile(
+          landlordA,
+          { candidateName: "A", candidateEmail: `x-${stamp}@exemple.test`, types: ["pay-stub", "health-card"] },
+          NOW,
+        ),
+      ),
+    ).toBe("422 TYPE_NOT_NECESSARY");
+    expect(
+      await codeOf(
+        requestApplicantFile(
+          landlordA,
+          { candidateName: "A", candidateEmail: `x-${stamp}@exemple.test`, types: ["passport"] },
+          NOW,
+        ),
+      ),
+    ).toBe("422 TYPE_NOT_NECESSARY");
+    expect(
+      await codeOf(
+        requestApplicantFile(
+          landlordA,
+          { candidateName: "A", candidateEmail: `x-${stamp}@exemple.test`, types: ["no-such-type"] },
+          NOW,
+        ),
+      ),
+    ).toBe("422 TYPE_UNKNOWN");
   });
 
   it("no upload without consent: refused before any byte is stored", async () => {
-    const made = await requestApplicantFile(landlordA, { candidateName: "Sans Consentement", candidateEmail: `nc-${stamp}@exemple.test`, types: ["pay-stub"] }, NOW);
-    expect(await codeOf(uploadApplicantDocument(made.token, "pay-stub", await pdf("PAY NC"), ctx(), NOW))).toBe("403 CONSENT_REQUIRED");
+    const made = await requestApplicantFile(
+      landlordA,
+      { candidateName: "Sans Consentement", candidateEmail: `nc-${stamp}@exemple.test`, types: ["pay-stub"] },
+      NOW,
+    );
+    expect(await codeOf(uploadApplicantDocument(made.token, "pay-stub", await pdf("PAY NC"), ctx(), NOW))).toBe(
+      "403 CONSENT_REQUIRED",
+    );
     expect(await documentsOf(made.id)).toEqual([]);
   });
 
   it("an expired link is refused, even with the consent given", async () => {
     const made = await askWithConsent(["pay-stub"]);
     const later = new Date(NOW.getTime() + 15 * DAY_MS);
-    expect(await codeOf(uploadApplicantDocument(made.token, "pay-stub", await pdf("PAY EXP"), ctx(), later))).toBe("410 LINK_EXPIRED");
+    expect(await codeOf(uploadApplicantDocument(made.token, "pay-stub", await pdf("PAY EXP"), ctx(), later))).toBe(
+      "410 LINK_EXPIRED",
+    );
     expect(await documentsOf(made.id)).toEqual([]);
   });
 
   it("a revoked link is refused, and the manager's view says so", async () => {
     const made = await askWithConsent(["pay-stub"]);
     await revokeApplicantFile(landlordA.id, made.id, NOW);
-    expect(await codeOf(uploadApplicantDocument(made.token, "pay-stub", await pdf("PAY REV"), ctx(), NOW))).toBe("410 LINK_REVOKED");
+    expect(await codeOf(uploadApplicantDocument(made.token, "pay-stub", await pdf("PAY REV"), ctx(), NOW))).toBe(
+      "410 LINK_REVOKED",
+    );
     expect(await codeOf(submitApplicantFile(made.token, NOW))).toBe("410 LINK_REVOKED");
     expect((await applicantFileOf(landlordA.id, made.id, NOW)).status).toBe("revoked");
   });
@@ -108,13 +204,17 @@ describe.runIf(enabled)("the applicant file (yomizaka#127)", () => {
     expect(await codeOf(submitApplicantFile(made.token, NOW))).toBe("409 NO_DOCUMENT");
     await uploadApplicantDocument(made.token, "pay-stub", await pdf("PAY ONCE"), ctx(), NOW);
     await submitApplicantFile(made.token, NOW);
-    expect(await codeOf(uploadApplicantDocument(made.token, "pay-stub", await pdf("PAY TWICE"), ctx(), NOW))).toBe("409 LINK_USED");
+    expect(await codeOf(uploadApplicantDocument(made.token, "pay-stub", await pdf("PAY TWICE"), ctx(), NOW))).toBe(
+      "409 LINK_USED",
+    );
     expect(await codeOf(submitApplicantFile(made.token, NOW))).toBe("409 LINK_USED");
   });
 
   it("a document of a type that was not asked for is refused", async () => {
     const made = await askWithConsent(["pay-stub"]);
-    expect(await codeOf(uploadApplicantDocument(made.token, "bank-statement", await pdf("BANK NA"), ctx(), NOW))).toBe("422 TYPE_NOT_REQUESTED");
+    expect(await codeOf(uploadApplicantDocument(made.token, "bank-statement", await pdf("BANK NA"), ctx(), NOW))).toBe(
+      "422 TYPE_NOT_REQUESTED",
+    );
   });
 
   it("a pay stub runs its authenticity check; its compliance check is skipped as KIND_NOT_VERIFIED (no lease ruleset), and the purge runs once the check ends", async () => {
@@ -127,7 +227,9 @@ describe.runIf(enabled)("the applicant file (yomizaka#127)", () => {
     expect(doc).toMatchObject({ document_type: "pay-stub", retention_policy: "after-check", storage: "none" });
     expect(doc).toMatchObject({ content_len: 0, in_store: true });
     // The checks end: both runs fail at Orazaka here, which is an end of the check all the same.
-    for (const id of runs.keys()) {runs.set(id, "FAILED");}
+    for (const id of runs.keys()) {
+      runs.set(id, "FAILED");
+    }
     const view = await applicantFileOf(landlordA.id, made.id, NOW);
     expect(view.documents[0]).toMatchObject({ purged: true, retention: "after-check" });
     expect(view.documents[0]!.checks.map((c) => c.status)).toEqual(["failed"]);
@@ -149,12 +251,19 @@ describe.runIf(enabled)("the applicant file (yomizaka#127)", () => {
     const [after] = await documentsOf(made.id);
     expect(after).toMatchObject({ content_len: 0, in_store: false, text: "", storage: "none" });
     expect((await applicantFileOf(landlordA.id, made.id, NOW)).status).toBe("closed");
-    expect(await codeOf(uploadApplicantDocument(made.token, "pay-stub", await pdf("PAY LATE"), ctx(), NOW))).toBe("410 FILE_CLOSED");
-    expect((await query("SELECT action FROM audit_log WHERE target_id = $1 AND action = 'applicant_file.closed'", [made.id]))).toHaveLength(1);
+    expect(await codeOf(uploadApplicantDocument(made.token, "pay-stub", await pdf("PAY LATE"), ctx(), NOW))).toBe(
+      "410 FILE_CLOSED",
+    );
+    expect(
+      await query("SELECT action FROM audit_log WHERE target_id = $1 AND action = 'applicant_file.closed'", [made.id]),
+    ).toHaveLength(1);
   });
 
   it("an identity document is never kept, even with the keeping consent", async () => {
-    const made = await askWithConsent(["identity-document"], [CONSENT_PURPOSE.DOCUMENT_CHECK, CONSENT_PURPOSE.DOCUMENT_KEEP]);
+    const made = await askWithConsent(
+      ["identity-document"],
+      [CONSENT_PURPOSE.DOCUMENT_CHECK, CONSENT_PURPOSE.DOCUMENT_KEEP],
+    );
     await uploadApplicantDocument(made.token, "identity-document", await pdf("ID KEPT"), ctx(), NOW);
     const [doc] = await documentsOf(made.id);
     expect(doc).toMatchObject({ retention_policy: "after-check", storage: "none" });
@@ -180,30 +289,63 @@ describe.runIf(enabled)("the applicant file (yomizaka#127)", () => {
     const page = await loadApplicantPage(made.token, NOW, deps);
     expect(page?.state.types.map((t) => t.id)).toEqual(["pay-stub"]);
     expect(page?.consents).toContain(CONSENT_PURPOSE.DOCUMENT_CHECK);
-    const screening = await requestScreening(landlordA, { tenantName: "Camille Fictif", tenantEmail: `s-${stamp}@yomizaka.test`, scope: ["payment-history"] }, NOW);
+    const screening = await requestScreening(
+      landlordA,
+      { tenantName: "Camille Fictif", tenantEmail: `s-${stamp}@yomizaka.test`, scope: ["payment-history"] },
+      NOW,
+    );
     expect(await loadApplicantPage(screening.token, NOW, deps)).toBeNull();
   });
 
   describe("the applicant's answer to a trace (ADR-0014, yomizaka#626)", () => {
-    const REPORT = { header: "x", signals: [{ signalId: "PDF-REV-002", level: "incohérent", observation: "A later save replaced an object.", evidence: { page: 1, revision: 2 } }], notExamined: [] };
+    const REPORT = {
+      header: "x",
+      signals: [
+        {
+          signalId: "PDF-REV-002",
+          level: "incohérent",
+          observation: "A later save replaced an object.",
+          evidence: { page: 1, revision: 2 },
+        },
+      ],
+      notExamined: [],
+    };
     /** A file with one received document whose authenticity check found one trace. */
     const withTrace = async () => {
       const made = await askWithConsent(["pay-stub"]);
-      const { document } = await uploadApplicantDocument(made.token, "pay-stub", await pdf(`TRACE ${++seq}`), ctx(), NOW);
+      const { document } = await uploadApplicantDocument(
+        made.token,
+        "pay-stub",
+        await pdf(`TRACE ${++seq}`),
+        ctx(),
+        NOW,
+      );
       await query("DELETE FROM analyses WHERE document_id = $1", [document.id]);
-      await query("INSERT INTO analyses (document_id, studio, status, run_id, report, finished_at) VALUES ($1, 'document-authenticity', 'succeeded', $2, $3::jsonb, $4)", [document.id, `run-trace-${seq}`, JSON.stringify(REPORT), NOW]);
+      await query(
+        "INSERT INTO analyses (document_id, studio, status, run_id, report, finished_at) VALUES ($1, 'document-authenticity', 'succeeded', $2, $3::jsonb, $4)",
+        [document.id, `run-trace-${seq}`, JSON.stringify(REPORT), NOW],
+      );
       return { made, documentId: document.id, link: await fileByToken(made.token) };
     };
     const ASK = (documentId: string, text: string, signalId = "PDF-REV-002") => ({ documentId, signalId, text });
 
     it("shows the applicant the trace and their answer, and the owner the answer next to the signal, dated", async () => {
       const { made, documentId, link } = await withTrace();
-      expect((await applicantFileState(made.token, NOW)).documents[0]!.signals).toMatchObject([{ id: "PDF-REV-002", family: "history", answer: null }]);
+      expect((await applicantFileState(made.token, NOW)).documents[0]!.signals).toMatchObject([
+        { id: "PDF-REV-002", family: "history", answer: null },
+      ]);
       await answerSignal(link, ASK(documentId, "  Signed   after I downloaded it. "), NOW);
-      expect((await applicantFileState(made.token, NOW)).documents[0]!.signals[0]!.answer).toEqual({ text: "Signed after I downloaded it.", at: NOW.toISOString() });
-      expect((await applicantFileOf(landlordA.id, made.id, NOW)).documents[0]!.answers).toEqual({ "PDF-REV-002": { text: "Signed after I downloaded it.", at: NOW.toISOString() } });
+      expect((await applicantFileState(made.token, NOW)).documents[0]!.signals[0]!.answer).toEqual({
+        text: "Signed after I downloaded it.",
+        at: NOW.toISOString(),
+      });
+      expect((await applicantFileOf(landlordA.id, made.id, NOW)).documents[0]!.answers).toEqual({
+        "PDF-REV-002": { text: "Signed after I downloaded it.", at: NOW.toISOString() },
+      });
       await answerSignal(link, ASK(documentId, "Re-issued by my employer."), new Date(NOW.getTime() + 1000));
-      expect((await answersOf([documentId])).get(documentId)?.get("PDF-REV-002")?.text).toBe("Re-issued by my employer.");
+      expect((await answersOf([documentId])).get(documentId)?.get("PDF-REV-002")?.text).toBe(
+        "Re-issued by my employer.",
+      );
       await answerSignal(link, ASK(documentId, "  "), NOW);
       expect((await answersOf([documentId])).size).toBe(0);
     });
@@ -218,13 +360,18 @@ describe.runIf(enabled)("the applicant file (yomizaka#127)", () => {
       expect(await codeOf(answerSignal(link, ASK(documentId, "x"), NOW))).toBe("403 CONSENT_REQUIRED");
       const closed = await withTrace();
       await revokeApplicantFile(landlordA.id, closed.made.id, NOW);
-      expect(await codeOf(answerSignal(await fileByToken(closed.made.token), ASK(closed.documentId, "x"), NOW))).toBe("409 ANSWER_CLOSED");
+      expect(await codeOf(answerSignal(await fileByToken(closed.made.token), ASK(closed.documentId, "x"), NOW))).toBe(
+        "409 ANSWER_CLOSED",
+      );
     });
 
     it("keeps the explanation out of the audit line (ids only) and erases it with the application", async () => {
       const { made, documentId, link } = await withTrace();
       await answerSignal(link, ASK(documentId, "Explication à ne jamais journaliser."), NOW);
-      const lines = await query<{ detail: unknown }>("SELECT detail FROM audit_log WHERE target_id = $1 AND action = 'signal.answered'", [made.id]);
+      const lines = await query<{ detail: unknown }>(
+        "SELECT detail FROM audit_log WHERE target_id = $1 AND action = 'signal.answered'",
+        [made.id],
+      );
       expect(lines).toHaveLength(1);
       expect(JSON.stringify(lines[0]!.detail)).not.toContain("journaliser");
       expect(lines[0]!.detail).toEqual({ document: documentId, signal: "PDF-REV-002" });

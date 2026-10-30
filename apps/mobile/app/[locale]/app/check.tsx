@@ -1,12 +1,19 @@
 import { ApiError } from "@krizaka/app-client";
 import { useMutation, useQuery, useQueryClient } from "@krizaka/query";
 import { Badge, Button, Card, Screen, Txt } from "@krizaka/ui/native";
-import { availableChecks, DEFAULT_LIMITS, keys, preflight, PREFLIGHT_REASON, type PreflightReason } from "@yomizaka/client";
+import {
+  availableChecks,
+  DEFAULT_LIMITS,
+  keys,
+  preflight,
+  PREFLIGHT_REASON,
+  type PreflightReason,
+} from "@yomizaka/client";
 import { useRouter } from "expo-router";
 import * as React from "react";
 import { View } from "react-native";
 
-import { queries,yomizaka } from "@/config";
+import { queries, yomizaka } from "@/config";
 import { deviceStore } from "@/data/expo-files";
 import { uploadForm } from "@/data/upload";
 import { routes } from "@/domain/links";
@@ -24,7 +31,11 @@ class Refused extends Error {
 
 const PAYWALL_STATUS = 402;
 const CONFLICT_STATUS = 409;
-const SOURCES: readonly { source: Source; label: "verify.camera" | "verify.photo" | "verify.pdf"; variant: "primary" | "secondary" }[] = [
+const SOURCES: readonly {
+  source: Source;
+  label: "verify.camera" | "verify.photo" | "verify.pdf";
+  variant: "primary" | "secondary";
+}[] = [
   { source: SOURCE.camera, label: "verify.camera", variant: "primary" },
   { source: SOURCE.photo, label: "verify.photo", variant: "secondary" },
   { source: SOURCE.pdf, label: "verify.pdf", variant: "secondary" },
@@ -79,7 +90,15 @@ export default function Verify() {
       </View>
       <View style={{ gap: 12 }}>
         {SOURCES.map(({ source, label, variant }) => (
-          <Button key={source} variant={variant} size="lg" label={t(label)} loading={check.isPending && check.variables === source} disabled={check.isPending} onPress={() => check.mutate(source)} />
+          <Button
+            key={source}
+            variant={variant}
+            size="lg"
+            label={t(label)}
+            loading={check.isPending && check.variables === source}
+            disabled={check.isPending}
+            onPress={() => check.mutate(source)}
+          />
         ))}
       </View>
       {check.isPending ? <Txt tone="secondary">{t("verify.preparing")}</Txt> : null}
@@ -109,6 +128,7 @@ export default function Verify() {
 function refusalText(reason: Refused["reason"], maxFileBytes: number, t: ReturnType<typeof useI18n>["t"]): string {
   if (reason === "paywall") return t("verify.paywall");
   if (reason === "failed") return t("verify.failed");
-  if (reason === PREFLIGHT_REASON.tooLarge) return t("preflight.tooLarge", { megabytes: Math.round(maxFileBytes / 1024 / 1024) });
+  if (reason === PREFLIGHT_REASON.tooLarge)
+    return t("preflight.tooLarge", { megabytes: Math.round(maxFileBytes / 1024 / 1024) });
   return t(`preflight.${reason}`);
 }

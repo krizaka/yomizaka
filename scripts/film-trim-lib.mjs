@@ -27,7 +27,10 @@ export function parseFreezes(log, duration) {
 
 /** The blacks `[ {start, end} ]` a blackdetect log reports. */
 export function parseBlacks(log) {
-  return [...log.matchAll(/black_start:([\d.]+) black_end:([\d.]+)/g)].map((m) => ({ start: Number(m[1]), end: Number(m[2]) }));
+  return [...log.matchAll(/black_start:([\d.]+) black_end:([\d.]+)/g)].map((m) => ({
+    start: Number(m[1]),
+    end: Number(m[2]),
+  }));
 }
 
 /**
@@ -54,5 +57,8 @@ export function trimFilter(cuts) {
 /** Fails when the film opens blank or idle: a freeze or a black from its first frame lasting more than START_S. */
 export function assertStart({ freezes, blacks = [] }) {
   const idle = [...freezes, ...blacks].find((r) => r.start < 0.1 && r.end - r.start > START_S);
-  if (idle) throw new Error(`the film opens idle or blank for ${(idle.end - idle.start).toFixed(1)} s: it must start on its first meaningful frame`);
+  if (idle)
+    throw new Error(
+      `the film opens idle or blank for ${(idle.end - idle.start).toFixed(1)} s: it must start on its first meaningful frame`,
+    );
 }

@@ -15,11 +15,16 @@ export function GET(req: Request, { params }: Ctx) {
   return handle(async () => {
     const session = await requireSession(req);
     const { id, analysisId } = await params;
-    return Response.json(await listSharing(session.account.id, id, analysisId, new Date()), { headers: { "Cache-Control": "private, no-store" } });
+    return Response.json(await listSharing(session.account.id, id, analysisId, new Date()), {
+      headers: { "Cache-Control": "private, no-store" },
+    });
   });
 }
 
-const body = z.object({ email: z.string().trim().toLowerCase().email().max(254), expiresAt: z.iso.datetime({ offset: true }).nullable().optional() });
+const body = z.object({
+  email: z.string().trim().toLowerCase().email().max(254),
+  expiresAt: z.iso.datetime({ offset: true }).nullable().optional(),
+});
 
 /** Shares the report with an e-mail. A member has access at once; an address with no account is an invitation, honoured when the account exists. */
 export function POST(req: Request, { params }: Ctx) {
@@ -28,8 +33,30 @@ export function POST(req: Request, { params }: Ctx) {
     await limit("reportGrant", req, session.account.id);
     const { id, analysisId } = await params;
     const input = await readJson(req, body);
-    const made = await createGrant({ id: session.account.id, email: session.account.email }, id, analysisId, { email: input.email, expiresAt: input.expiresAt ? new Date(input.expiresAt) : null }, new Date());
-    await audit({ action: "report.access_granted", actorId: session.account.id, actorLabel: session.account.email, targetId: analysisId, detail: { grantId: made.grantId, grantee: input.email, member: made.member, runId: made.runId, expiresAt: input.expiresAt ?? null }, headers: req.headers });
-    return Response.json({ grantId: made.grantId, status: made.member ? "member" : "invited" }, { status: 201, headers: { "Cache-Control": "no-store" } });
+    const made = await createGrant(
+      { id: session.account.id, email: session.account.email },
+      id,
+      analysisId,
+      { email: input.email, expiresAt: input.expiresAt ? new Date(input.expiresAt) : null },
+      new Date(),
+    );
+    await audit({
+      action: "report.access_granted",
+      actorId: session.account.id,
+      actorLabel: session.account.email,
+      targetId: analysisId,
+      detail: {
+        grantId: made.grantId,
+        grantee: input.email,
+        member: made.member,
+        runId: made.runId,
+        expiresAt: input.expiresAt ?? null,
+      },
+      headers: req.headers,
+    });
+    return Response.json(
+      { grantId: made.grantId, status: made.member ? "member" : "invited" },
+      { status: 201, headers: { "Cache-Control": "no-store" } },
+    );
   });
 }

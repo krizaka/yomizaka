@@ -26,14 +26,30 @@ export interface VerifyLabels {
   okTitle: string;
   failTitle: string;
   reasons: Record<string, string>;
-  facts: Record<"fileSha" | "keyId" | "documentSha" | "runId" | "ruleset" | "checked" | "findings" | "jurisdiction" | "issued" | "expires", string>;
+  facts: Record<
+    | "fileSha"
+    | "keyId"
+    | "documentSha"
+    | "runId"
+    | "ruleset"
+    | "checked"
+    | "findings"
+    | "jurisdiction"
+    | "issued"
+    | "expires",
+    string
+  >;
   documentMatch: Record<"yes" | "no" | "none", string>;
   noAccess: { title: string; text: string; request: string; requested: string };
   drop: { reportTitle: string; documentTitle: string; browse: string; remove: string; hint: string };
 }
 
 const form = createKrizakaForm({
-  schema: z.object({ reportFiles: z.array(z.instanceof(File)).max(1), reportText: z.string().max(2_000_000), documentFiles: z.array(z.instanceof(File)).max(1) }),
+  schema: z.object({
+    reportFiles: z.array(z.instanceof(File)).max(1),
+    reportText: z.string().max(2_000_000),
+    documentFiles: z.array(z.instanceof(File)).max(1),
+  }),
   defaultValues: { reportFiles: [] as File[], reportText: "", documentFiles: [] as File[] },
 });
 
@@ -58,8 +74,13 @@ export function VerifyForm({ labels, locale }: Readonly<{ labels: VerifyLabels; 
       try {
         const res = await fetch("/api/verify", { method: "POST", body });
         if (res.status === 403) {
-          const refusal = (await res.json().catch(() => null)) as { code?: string; runId?: string; documentSha256?: string } | null;
-          if (refusal?.code === "NO_ACCESS" && refusal.runId && refusal.documentSha256) return setDenied({ runId: refusal.runId, documentSha256: refusal.documentSha256 });
+          const refusal = (await res.json().catch(() => null)) as {
+            code?: string;
+            runId?: string;
+            documentSha256?: string;
+          } | null;
+          if (refusal?.code === "NO_ACCESS" && refusal.runId && refusal.documentSha256)
+            return setDenied({ runId: refusal.runId, documentSha256: refusal.documentSha256 });
         }
         if (!res.ok) return setProblem(res.status === 413 ? labels.tooLarge : labels.empty);
         setResult(((await res.json()) as { result: Verification | OwnerVerificationView }).result);
@@ -71,13 +92,30 @@ export function VerifyForm({ labels, locale }: Readonly<{ labels: VerifyLabels; 
   return (
     <div className="flex flex-col gap-6">
       <f.Form aria-label={labels.submit} className="flex flex-col gap-4">
-        <f.FileUpload name="reportFiles" label={labels.reportFile} title={labels.drop.reportTitle} browseLabel={labels.drop.browse} hint={labels.drop.hint} accept=".html,.pdf,text/html,application/pdf" maxSize={2 * 1024 * 1024} removeLabel={(name) => labels.drop.remove.replace("{name}", name)} refusalLabel={() => labels.tooLarge} />
+        <f.FileUpload
+          name="reportFiles"
+          label={labels.reportFile}
+          title={labels.drop.reportTitle}
+          browseLabel={labels.drop.browse}
+          hint={labels.drop.hint}
+          accept=".html,.pdf,text/html,application/pdf"
+          maxSize={2 * 1024 * 1024}
+          removeLabel={(name) => labels.drop.remove.replace("{name}", name)}
+          refusalLabel={() => labels.tooLarge}
+        />
         <f.TextArea name="reportText" label={labels.reportPaste} rows={4} />
-        <f.FileUpload name="documentFiles" label={labels.documentFile} title={labels.drop.documentTitle} browseLabel={labels.drop.browse} hint={labels.documentHint} maxSize={10 * 1024 * 1024} removeLabel={(name) => labels.drop.remove.replace("{name}", name)} refusalLabel={() => labels.tooLarge} />
+        <f.FileUpload
+          name="documentFiles"
+          label={labels.documentFile}
+          title={labels.drop.documentTitle}
+          browseLabel={labels.drop.browse}
+          hint={labels.documentHint}
+          maxSize={10 * 1024 * 1024}
+          removeLabel={(name) => labels.drop.remove.replace("{name}", name)}
+          refusalLabel={() => labels.tooLarge}
+        />
         {problem ? <Alert tone="danger">{problem}</Alert> : null}
-        <f.Submit>
-          {labels.submit}
-        </f.Submit>
+        <f.Submit>{labels.submit}</f.Submit>
       </f.Form>
       {denied ? (
         <Alert tone="warning" title={labels.noAccess.title} data-testid="verify-no-access">
@@ -89,7 +127,11 @@ export function VerifyForm({ labels, locale }: Readonly<{ labels: VerifyLabels; 
               className="mt-3"
               size="sm"
               onClick={async () => {
-                await fetch("/api/verify/request-access", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(denied) }).catch(() => undefined);
+                await fetch("/api/verify/request-access", {
+                  method: "POST",
+                  headers: { "content-type": "application/json" },
+                  body: JSON.stringify(denied),
+                }).catch(() => undefined);
                 setAsked(true);
               }}
             >
@@ -103,7 +145,10 @@ export function VerifyForm({ labels, locale }: Readonly<{ labels: VerifyLabels; 
   );
 }
 
-function VerifyResult({ result, labels }: Readonly<{ result: Verification | OwnerVerificationView; labels: VerifyLabels }>) {
+function VerifyResult({
+  result,
+  labels,
+}: Readonly<{ result: Verification | OwnerVerificationView; labels: VerifyLabels }>) {
   if (result.ok && "kind" in result) return <OwnerResult result={result} labels={labels} />;
   if (!result.ok) {
     return (
@@ -128,10 +173,19 @@ function VerifyResult({ result, labels }: Readonly<{ result: Verification | Owne
       {result.documentMatch === false ? <Alert tone="danger">{labels.documentMatch.no}</Alert> : null}
       <DescriptionList
         items={[
-          { term: labels.facts.fileSha, details: <code className="break-all font-mono text-xs">{result.fileSha256}</code> },
+          {
+            term: labels.facts.fileSha,
+            details: <code className="break-all font-mono text-xs">{result.fileSha256}</code>,
+          },
           { term: labels.facts.keyId, details: <code className="font-mono text-xs">{result.keyId}</code> },
-          { term: labels.facts.documentSha, details: <code className="break-all font-mono text-xs">{payload.document.sha256}</code> },
-          { term: labels.facts.runId, details: <code className="break-all font-mono text-xs">{payload.check.runId}</code> },
+          {
+            term: labels.facts.documentSha,
+            details: <code className="break-all font-mono text-xs">{payload.document.sha256}</code>,
+          },
+          {
+            term: labels.facts.runId,
+            details: <code className="break-all font-mono text-xs">{payload.check.runId}</code>,
+          },
           { term: labels.facts.jurisdiction, details: `${payload.check.jurisdiction} · ${payload.check.asOf}` },
           { term: labels.facts.ruleset, details: `${payload.check.rulesetId} · ${payload.check.rulesetVersion}` },
           { term: labels.facts.checked, details: payload.check.finishedAt },
@@ -143,14 +197,23 @@ function VerifyResult({ result, labels }: Readonly<{ result: Verification | Owne
   );
 }
 
-function OwnerResult({ result, labels }: Readonly<{ result: Extract<OwnerVerificationView, { ok: true }>; labels: VerifyLabels }>) {
-  const findings = Object.entries(result.summary.findings).map(([verdict, n]) => `${verdict}: ${n}`).join(" · ") || "0";
+function OwnerResult({
+  result,
+  labels,
+}: Readonly<{ result: Extract<OwnerVerificationView, { ok: true }>; labels: VerifyLabels }>) {
+  const findings =
+    Object.entries(result.summary.findings)
+      .map(([verdict, n]) => `${verdict}: ${n}`)
+      .join(" · ") || "0";
   return (
     <Card.Root className="flex flex-col gap-4 p-4" data-testid="verify-ok">
       <Alert tone="success" title={labels.okTitle} />
       <DescriptionList
         items={[
-          { term: labels.facts.fileSha, details: <code className="break-all font-mono text-xs">{result.fileSha256}</code> },
+          {
+            term: labels.facts.fileSha,
+            details: <code className="break-all font-mono text-xs">{result.fileSha256}</code>,
+          },
           { term: labels.facts.keyId, details: <code className="font-mono text-xs">{result.keyId}</code> },
           { term: labels.facts.issued, details: result.issuedAt },
           { term: labels.facts.expires, details: result.expiresAt },

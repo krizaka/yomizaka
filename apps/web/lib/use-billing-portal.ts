@@ -13,7 +13,9 @@ const redirect = z.object({ url: z.string().url() });
 export function useBillingPortal() {
   const { say } = useSay();
   const [problem, setProblem] = useState<string | null>(null);
-  const portal = useMutation({ mutationFn: () => krizakaFetch("/api/billing/portal", { method: "POST", schema: redirect }) });
+  const portal = useMutation({
+    mutationFn: () => krizakaFetch("/api/billing/portal", { method: "POST", schema: redirect }),
+  });
   const open = async () => {
     setProblem(null);
     try {

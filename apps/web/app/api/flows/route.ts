@@ -12,7 +12,11 @@ export function GET(req: Request) {
     const flows = await availableFlows(appEnvironment(), { fallback: false });
     const mine = flowsFor(flows, session.account.perspective);
     return Response.json(
-      { flows: mine.map((f) => ({ key: f.key, version: f.version, ...f.definition })), offer: offerFor(flows, session.account.perspective), consents: await grantedConsents(session.account.id) },
+      {
+        flows: mine.map((f) => ({ key: f.key, version: f.version, ...f.definition })),
+        offer: offerFor(flows, session.account.perspective),
+        consents: await grantedConsents(session.account.id),
+      },
       { headers: { "Cache-Control": "private, no-store" } },
     );
   });

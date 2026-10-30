@@ -21,25 +21,47 @@ describe.runIf(enabled)("0051_privacy_consents", () => {
     const pool = new pg.Pool({ connectionString: url.toString(), max: 2 });
     const connect = async () => {
       const client = await pool.connect();
-      return { query: (text: string, values?: unknown[]) => client.query(text, values), release: () => client.release() };
+      return {
+        query: (text: string, values?: unknown[]) => client.query(text, values),
+        release: () => client.release(),
+      };
     };
     const run = async (text: string, values?: unknown[]) => (await pool.query(text, values)).rows as never;
     try {
-      await runMigrations(connect, MIGRATIONS.filter((m) => m.version < "0051_privacy_consents"), { lockKey: MIGRATION_LOCK_KEY });
-      const account = async (email: string) => ((await pool.query("INSERT INTO accounts (email) VALUES ($1) RETURNING id", [email])).rows[0] as { id: string }).id;
+      await runMigrations(
+        connect,
+        MIGRATIONS.filter((m) => m.version < "0051_privacy_consents"),
+        { lockKey: MIGRATION_LOCK_KEY },
+      );
+      const account = async (email: string) =>
+        ((await pool.query("INSERT INTO accounts (email) VALUES ($1) RETURNING id", [email])).rows[0] as { id: string })
+          .id;
       const eric = await account("eric@yomizaka.test");
       const ana = await account("ana@yomizaka.test");
-      const consent = (id: string, key: string, granted: string, revoked: string | null) => pool.query("INSERT INTO consents (account_id, key, granted_at, revoked_at) VALUES ($1, $2, $3, $4)", [id, key, granted, revoked]);
+      const consent = (id: string, key: string, granted: string, revoked: string | null) =>
+        pool.query("INSERT INTO consents (account_id, key, granted_at, revoked_at) VALUES ($1, $2, $3, $4)", [
+          id,
+          key,
+          granted,
+          revoked,
+        ]);
       await consent(eric, "screening-landlord-undertaking", "2026-09-01T10:00:00Z", null); // live
       await consent(eric, "marketing", "2026-09-02T10:00:00Z", "2026-09-05T10:00:00Z"); // withdrawn
       await consent(eric, "marketing", "2026-09-10T10:00:00Z", null); // given again
       await consent(ana, "2fa-notice", "2026-09-03T10:00:00Z", null); // starts with a digit
       await consent(ana, "reminders", "2026-09-04T10:00:00Z", "2026-09-04T10:00:00Z"); // given and withdrawn at the same instant: the withdrawal has the last word
       const before = ((await pool.query("SELECT count(*)::int AS n FROM consents")).rows[0] as { n: number }).n;
-      expect(await runMigrations(connect, MIGRATIONS, { lockKey: MIGRATION_LOCK_KEY })).toContain("0051_privacy_consents");
+      expect(await runMigrations(connect, MIGRATIONS, { lockKey: MIGRATION_LOCK_KEY })).toContain(
+        "0051_privacy_consents",
+      );
 
       const purposes = ["screening-landlord-undertaking", "marketing", purposeOfKey("2fa-notice"), "reminders"];
-      const privacy = createPrivacy({ clock: { now: () => new Date("2026-10-27T12:00:00Z") }, purposes, contributors: [], transaction: async (work) => work(run) });
+      const privacy = createPrivacy({
+        clock: { now: () => new Date("2026-10-27T12:00:00Z") },
+        purposes,
+        contributors: [],
+        transaction: async (work) => work(run),
+      });
       const subject = (id: string) => ({ kind: "account", id });
       expect(await privacy.hasConsent(run, subject(eric), "screening-landlord-undertaking")).toBe(true);
       expect(await privacy.hasConsent(run, subject(eric), "marketing")).toBe(true);

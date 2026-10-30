@@ -28,8 +28,14 @@ export function BookmarksSection({ groups }: Readonly<{ groups: readonly Bookmar
   return (
     <div className="flex flex-col gap-6" data-testid="bookmarks">
       {groups.map((group) => (
-        <SettingsSection key={group.kind} title={say(`bookmarks.kinds.${group.kind}`)} description={say("bookmarks.lead")}>
-          {group.bookmarks.length === 0 ? <p className="m-0 text-sm text-fg-secondary">{say("bookmarks.none")}</p> : null}
+        <SettingsSection
+          key={group.kind}
+          title={say(`bookmarks.kinds.${group.kind}`)}
+          description={say("bookmarks.lead")}
+        >
+          {group.bookmarks.length === 0 ? (
+            <p className="m-0 text-sm text-fg-secondary">{say("bookmarks.none")}</p>
+          ) : null}
           <ul className="m-0 flex list-none flex-col gap-2 p-0">
             {group.bookmarks.map((b) => (
               <BookmarkRow key={b.id} kind={group.kind} bookmark={b} />
@@ -53,26 +59,54 @@ function BookmarkRow({ kind, bookmark }: Readonly<{ kind: Kind; bookmark: Bookma
         {bookmark.name}
       </TagChip>
       <div className="flex flex-wrap gap-2">
-        <Button variant="ghost" size="sm" aria-label={say("bookmarks.editNamed", { name: bookmark.name })} onClick={() => setDialog("edit")}>
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label={say("bookmarks.editNamed", { name: bookmark.name })}
+          onClick={() => setDialog("edit")}
+        >
           {say("bookmarks.edit")}
         </Button>
-        <Button variant="ghost" size="sm" aria-label={say("bookmarks.deleteNamed", { name: bookmark.name })} onClick={() => setDialog("delete")}>
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label={say("bookmarks.deleteNamed", { name: bookmark.name })}
+          onClick={() => setDialog("delete")}
+        >
           {say("organisation.delete")}
         </Button>
       </div>
       {dialog === "edit" ? (
-        <NameDialog open onOpenChange={(o) => !o && setDialog(null)} title={say("bookmarks.edit")} initial={bookmark.name} color={bookmark.color} submit={(name, color) => krizakaFetch(`/api/organize/${kind}/tags/${bookmark.id}`, { method: "PATCH", json: { name, marker: color ?? bookmark.color } })} />
+        <NameDialog
+          open
+          onOpenChange={(o) => !o && setDialog(null)}
+          title={say("bookmarks.edit")}
+          initial={bookmark.name}
+          color={bookmark.color}
+          submit={(name, color) =>
+            krizakaFetch(`/api/organize/${kind}/tags/${bookmark.id}`, {
+              method: "PATCH",
+              json: { name, marker: color ?? bookmark.color },
+            })
+          }
+        />
       ) : null}
       {dialog === "delete" ? <DeleteBookmark kind={kind} bookmark={bookmark} onClose={() => setDialog(null)} /> : null}
     </li>
   );
 }
 
-function DeleteBookmark({ kind, bookmark, onClose }: Readonly<{ kind: Kind; bookmark: Bookmark; onClose: () => void }>) {
+function DeleteBookmark({
+  kind,
+  bookmark,
+  onClose,
+}: Readonly<{ kind: Kind; bookmark: Bookmark; onClose: () => void }>) {
   const { say } = useSay();
   const router = useRouter();
   const [problem, setProblem] = useState<string | null>(null);
-  const remove = useMutation({ mutationFn: () => krizakaFetch(`/api/organize/${kind}/tags/${bookmark.id}`, { method: "DELETE" }) });
+  const remove = useMutation({
+    mutationFn: () => krizakaFetch(`/api/organize/${kind}/tags/${bookmark.id}`, { method: "DELETE" }),
+  });
   const confirm = async () => {
     setProblem(null);
     try {

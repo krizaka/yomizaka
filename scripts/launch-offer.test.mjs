@@ -5,11 +5,21 @@ import { addMonths, assertNotProductionBase, OFFER, offerBody } from "./launch-o
 describe("the launch offer created through the admin API (yomizaka#548)", () => {
   it("is -50 % for 3 months on Agence and Gestionnaire, once per account", () => {
     const body = offerBody(new Date("2026-10-29T12:00:00Z"));
-    expect(body).toMatchObject({ code: "LANCEMENT", percentOffBp: 5000, duration: "repeating", durationMonths: 3, plans: ["agency", "firm"], maxPerAccount: 1, endsAt: "2027-01-29T12:00:00.000Z" });
+    expect(body).toMatchObject({
+      code: "LANCEMENT",
+      percentOffBp: 5000,
+      duration: "repeating",
+      durationMonths: 3,
+      plans: ["agency", "firm"],
+      maxPerAccount: 1,
+      endsAt: "2027-01-29T12:00:00.000Z",
+    });
   });
 
   it("ends 3 calendar months after today, clamped to the last day of a short month", () => {
-    expect(addMonths(new Date("2026-11-30T00:00:00Z"), OFFER.endsInMonths).toISOString()).toBe("2027-02-28T00:00:00.000Z");
+    expect(addMonths(new Date("2026-11-30T00:00:00Z"), OFFER.endsInMonths).toISOString()).toBe(
+      "2027-02-28T00:00:00.000Z",
+    );
     expect(addMonths(new Date("2026-10-31T00:00:00Z"), 3).toISOString()).toBe("2027-01-31T00:00:00.000Z");
   });
 

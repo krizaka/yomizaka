@@ -6,8 +6,20 @@ import { closedRegistry } from "./model";
 import { normaliseQstNumber } from "./qst-number";
 import { checkIssuer, comparableName, registrantOfNeq, registrySignals } from "./signals";
 
-const found = (over: Record<string, unknown> = {}) => ({ kind: "found" as const, status: "registered" as const, statusDate: "2020-03-01", legalName: "9999-9999 Québec inc.", tradeName: "Atelier Exemple", ...over });
-const issuer = { number: "0000000000TQ0001", name: "Atelier Exemple Inc.", registrant: "business" as const, documentDate: "2026-09-15" };
+const found = (over: Record<string, unknown> = {}) => ({
+  kind: "found" as const,
+  status: "registered" as const,
+  statusDate: "2020-03-01",
+  legalName: "9999-9999 Québec inc.",
+  tradeName: "Atelier Exemple",
+  ...over,
+});
+const issuer = {
+  number: "0000000000TQ0001",
+  name: "Atelier Exemple Inc.",
+  registrant: "business" as const,
+  documentDate: "2026-09-15",
+};
 
 describe("registry signals", () => {
   it("raises nothing for a registered number with the same name", () => {
@@ -21,8 +33,16 @@ describe("registry signals", () => {
   });
 
   it("REG-003 only when the status took effect on or before the document's date", () => {
-    expect(registrySignals(found({ status: "struck", statusDate: "2026-01-01" }), issuer, "Revenu Québec").map((s) => s.signalId)).toEqual(["REG-003"]);
-    expect(registrySignals(found({ status: "struck", statusDate: "2026-09-15" }), issuer, "Revenu Québec").map((s) => s.signalId)).toEqual(["REG-003"]);
+    expect(
+      registrySignals(found({ status: "struck", statusDate: "2026-01-01" }), issuer, "Revenu Québec").map(
+        (s) => s.signalId,
+      ),
+    ).toEqual(["REG-003"]);
+    expect(
+      registrySignals(found({ status: "struck", statusDate: "2026-09-15" }), issuer, "Revenu Québec").map(
+        (s) => s.signalId,
+      ),
+    ).toEqual(["REG-003"]);
     expect(registrySignals(found({ status: "struck", statusDate: "2027-01-01" }), issuer, "Revenu Québec")).toEqual([]);
   });
 
@@ -35,9 +55,19 @@ describe("registry signals", () => {
 
   it("never shows nor compares the registered name of a sole proprietor or an unknown registrant", () => {
     for (const registrant of ["individual", "unknown"] as const) {
-      expect(registrySignals(found({ legalName: "Jean Exemple", tradeName: null }), { ...issuer, registrant }, "Revenu Québec")).toEqual([]);
+      expect(
+        registrySignals(
+          found({ legalName: "Jean Exemple", tradeName: null }),
+          { ...issuer, registrant },
+          "Revenu Québec",
+        ),
+      ).toEqual([]);
     }
-    const struck = registrySignals(found({ status: "struck", legalName: "Jean Exemple" }), { ...issuer, registrant: "individual" }, "Revenu Québec");
+    const struck = registrySignals(
+      found({ status: "struck", legalName: "Jean Exemple" }),
+      { ...issuer, registrant: "individual" },
+      "Revenu Québec",
+    );
     expect(JSON.stringify(struck)).not.toContain("Jean Exemple");
   });
 
@@ -47,7 +77,10 @@ describe("registry signals", () => {
   });
 
   it("never uses a verdict word", () => {
-    const all = [...registrySignals({ kind: "unknown" }, issuer, "Revenu Québec"), ...registrySignals(found({ status: "struck", legalName: "Autre" }), issuer, "Revenu Québec")];
+    const all = [
+      ...registrySignals({ kind: "unknown" }, issuer, "Revenu Québec"),
+      ...registrySignals(found({ status: "struck", legalName: "Autre" }), issuer, "Revenu Québec"),
+    ];
     for (const s of all) {
       expect([s.observation, s.mayIndicate, s.askFor, s.where].join(" ")).not.toMatch(VERDICT_WORDS);
     }

@@ -22,7 +22,12 @@ export default async function WelcomePage({ params }: Readonly<{ params: Promise
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-4">
       <PageHeader title={getDictionary(locale).console.shell.titles.welcome} />
-      <PerspectiveChooser current={null} audiences={audiencesOf(await availableFlows(appEnvironment()))} onboarding next={`/${locale}/app`} />
+      <PerspectiveChooser
+        current={null}
+        audiences={audiencesOf(await availableFlows(appEnvironment()))}
+        onboarding
+        next={`/${locale}/app`}
+      />
     </div>
   );
 }

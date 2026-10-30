@@ -32,11 +32,35 @@ export function CheckPlanStrip({ credits }: Readonly<{ credits: CreditsFigure }>
       label={say("check.plan.label")}
       figures={[
         { id: "plan", label: say("check.plan.plan"), value: say(`check.plan.names.${plan.plan}`) },
-        ...plan.figures.map((f) => ({ id: f.id, label: say(`check.plan.${f.id}`), value: new Intl.NumberFormat(INTL[locale]).format(f.value) })),
+        ...plan.figures.map((f) => ({
+          id: f.id,
+          label: say(`check.plan.${f.id}`),
+          value: new Intl.NumberFormat(INTL[locale]).format(f.value),
+        })),
         ...(plan.plan === "included" ? [{ id: "included", label: say("check.plan.included"), value: "" }] : []),
-        { id: "manage", label: say("check.plan.manage"), value: <Link href={`/${locale}/app/settings/facturation`} className="font-semibold text-fg-accent hover:underline">{say("check.plan.open")} →</Link> },
+        {
+          id: "manage",
+          label: say("check.plan.manage"),
+          value: (
+            <Link href={`/${locale}/app/settings/facturation`} className="font-semibold text-fg-accent hover:underline">
+              {say("check.plan.open")} →
+            </Link>
+          ),
+        },
       ]}
-      {...(plan.meter ? { meter: { label: say("check.plan.meterLabel"), value: plan.meter.value, min: 0, max: plan.meter.max, valueText: say("check.plan.meterText", { used: plan.meter.value, cap: plan.meter.max }), showLabel: true, thresholds: { low: 0.8, high: 0.95 } } } : {})}
+      {...(plan.meter
+        ? {
+            meter: {
+              label: say("check.plan.meterLabel"),
+              value: plan.meter.value,
+              min: 0,
+              max: plan.meter.max,
+              valueText: say("check.plan.meterText", { used: plan.meter.value, cap: plan.meter.max }),
+              showLabel: true,
+              thresholds: { low: 0.8, high: 0.95 },
+            },
+          }
+        : {})}
       data-testid="plan-strip"
     />
   );
@@ -57,11 +81,26 @@ export function CheckCatalogue({ items }: Readonly<{ items: readonly CatalogueIt
       <h2 id="catalogue-title" className="m-0 font-display text-lg font-bold text-fg">
         {say("check.catalogue.title")}
       </h2>
-      <SearchField label={say("check.catalogue.searchLabel")} placeholder={say("check.catalogue.searchPlaceholder")} value={q} onValueChange={setQ} />
-      <Chip.Group type="single" required label={say("check.catalogue.groupsLabel")} value={filter} onValueChange={(v) => setFilter(v as (typeof CATALOGUE_FILTERS)[number])} routeKey={ROUTE_STATES.catalogueGroup.state.key} routeValues={CATALOGUE_FILTERS} data-testid="catalogue-chips">
+      <SearchField
+        label={say("check.catalogue.searchLabel")}
+        placeholder={say("check.catalogue.searchPlaceholder")}
+        value={q}
+        onValueChange={setQ}
+      />
+      <Chip.Group
+        type="single"
+        required
+        label={say("check.catalogue.groupsLabel")}
+        value={filter}
+        onValueChange={(v) => setFilter(v as (typeof CATALOGUE_FILTERS)[number])}
+        routeKey={ROUTE_STATES.catalogueGroup.state.key}
+        routeValues={CATALOGUE_FILTERS}
+        data-testid="catalogue-chips"
+      >
         {chips.map((c) => (
           <Chip key={c.group ?? "all"} value={c.group ?? "all"} size="sm">
-            {c.group ? say(`check.catalogue.groups.${c.group}`) : say("check.catalogue.all")} · <span className="tabular-nums">{c.count}</span>
+            {c.group ? say(`check.catalogue.groups.${c.group}`) : say("check.catalogue.all")} ·{" "}
+            <span className="tabular-nums">{c.count}</span>
           </Chip>
         ))}
       </Chip.Group>
@@ -80,7 +119,12 @@ export function CheckCatalogue({ items }: Readonly<{ items: readonly CatalogueIt
           ),
           actions: (
             <Button asChild variant={chosen(i) ? "primary" : "secondary"} size="sm">
-              <Link href={checkHref(locale, i.kind)} aria-label={say("check.catalogue.actionFor", { title: titleOf(i) })} aria-current={chosen(i) ? "true" : undefined} scroll>
+              <Link
+                href={checkHref(locale, i.kind)}
+                aria-label={say("check.catalogue.actionFor", { title: titleOf(i) })}
+                aria-current={chosen(i) ? "true" : undefined}
+                scroll
+              >
                 {say("check.catalogue.action")}
               </Link>
             </Button>
@@ -90,4 +134,3 @@ export function CheckCatalogue({ items }: Readonly<{ items: readonly CatalogueIt
     </section>
   );
 }
-

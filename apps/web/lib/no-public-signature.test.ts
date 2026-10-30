@@ -13,7 +13,10 @@ import { signingKey } from "./report-signer";
  * public may carry the key material or the fingerprint of one. A sample is a visual specimen, never a signed file.
  */
 const ROOT = join(__dirname, "..");
-const routes = (dir: string): string[] => readdirSync(dir).flatMap((n) => (statSync(join(dir, n)).isDirectory() ? routes(join(dir, n)) : n === "route.ts" ? [join(dir, n)] : []));
+const routes = (dir: string): string[] =>
+  readdirSync(dir).flatMap((n) =>
+    statSync(join(dir, n)).isDirectory() ? routes(join(dir, n)) : n === "route.ts" ? [join(dir, n)] : [],
+  );
 const API = join(ROOT, "app/api");
 const isPrivate = (src: string) => /requireSession|requireAdmin|apiCaller/.test(src);
 /**
@@ -37,18 +40,26 @@ describe("no public route serves a signed artifact", () => {
   });
 
   it("every route that is not behind a session leaves the signing code alone", () => {
-    const publicRoutes = routes(API).filter((f) => !isPrivate(readFileSync(f, "utf8")) && f !== CONTRACT_CHECK && f !== OWNER_PDF);
+    const publicRoutes = routes(API).filter(
+      (f) => !isPrivate(readFileSync(f, "utf8")) && f !== CONTRACT_CHECK && f !== OWNER_PDF,
+    );
     expect(publicRoutes.length).toBeGreaterThan(0);
     for (const f of publicRoutes) {
       // A vendor's webhook checks the vendor's signature (a payment, a bounce): the word is theirs, not a report's. It still never touches ours.
       const vendorWebhook = f.startsWith(join(API, "webhooks"));
-      expect(readFileSync(f, "utf8"), f).not.toMatch(vendorWebhook ? /report-signer|issueReport|recordedReport|showcaseReport|reportFor|attestation/i : /issueReport|recordedReport|showcaseReport|signingKey|reportFor|attestation|signature/i);
+      expect(readFileSync(f, "utf8"), f).not.toMatch(
+        vendorWebhook
+          ? /report-signer|issueReport|recordedReport|showcaseReport|reportFor|attestation/i
+          : /issueReport|recordedReport|showcaseReport|signingKey|reportFor|attestation|signature/i,
+      );
     }
   });
 
   it("the public check of a sealed contract answers about a hash and serves no file, no report and no personal information", () => {
     const src = readFileSync(CONTRACT_CHECK, "utf8");
-    expect(src).not.toMatch(/issueReport|recordedReport|showcaseReport|reportFor|reportPdfFor|new Response\(|content-disposition/i);
+    expect(src).not.toMatch(
+      /issueReport|recordedReport|showcaseReport|reportFor|reportPdfFor|new Response\(|content-disposition/i,
+    );
     expect(src).not.toMatch(/parties|\.name\b|userId|attestationId|contractPayload/);
     expect(src).toContain("limit(");
   });
@@ -60,14 +71,33 @@ describe("no public route serves a signed artifact", () => {
 
   it("the public components never import the signing modules", () => {
     for (const f of ["components/home/BeforeAfter.tsx", "app/[locale]/page.tsx"]) {
-      expect(readFileSync(join(ROOT, f), "utf8"), f).not.toMatch(/report-signer|issueReport|recordedReport|recordedRunView|\/report\?lang|api\/recorded-runs/);
+      expect(readFileSync(join(ROOT, f), "utf8"), f).not.toMatch(
+        /report-signer|issueReport|recordedReport|recordedRunView|\/report\?lang|api\/recorded-runs/,
+      );
     }
   });
 });
 
 describe("a specimen is never an attestation", () => {
   const doc = { sha256: sha256("x"), filename: "f.txt", title: "T", sizeBytes: 1, pages: null };
-  const analysis = { id: "a", studio: "compliance-check" as const, status: "succeeded" as const, runId: "r1", blueprintVersion: "1", inputs: {}, report: { rulesetId: "qc", rulesetVersion: "1", jurisdiction: "QC", asOf: "2026-10-17", findings: [{ ruleId: "x", severity: "BLOCKING", verdict: "FAIL", explanation: "e" }] }, error: null, createdAt: "2026-10-17T10:00:00.000Z", finishedAt: "2026-10-17T10:00:01.000Z" };
+  const analysis = {
+    id: "a",
+    studio: "compliance-check" as const,
+    status: "succeeded" as const,
+    runId: "r1",
+    blueprintVersion: "1",
+    inputs: {},
+    report: {
+      rulesetId: "qc",
+      rulesetVersion: "1",
+      jurisdiction: "QC",
+      asOf: "2026-10-17",
+      findings: [{ ruleId: "x", severity: "BLOCKING", verdict: "FAIL", explanation: "e" }],
+    },
+    error: null,
+    createdAt: "2026-10-17T10:00:00.000Z",
+    finishedAt: "2026-10-17T10:00:01.000Z",
+  };
 
   it("verification rejects a payload marked specimen, even with a valid signature", () => {
     const payload = { ...buildPayload(doc, analysis, "en"), specimen: true as const };
@@ -85,7 +115,8 @@ describe("the samples are obviously fictitious", () => {
   it("every named party carries « (fictif) »", () => {
     for (const side of ["tenant", "landlord"] as const) {
       const text = recordedRun(side).document.text;
-      for (const name of text.match(/(?:Monsieur|Madame) [A-ZÉ][\wéèï-]+ [A-ZÉ][\wéèï-]+/g) ?? []) expect(text, name).toContain(`${name} (fictif)`);
+      for (const name of text.match(/(?:Monsieur|Madame) [A-ZÉ][\wéèï-]+ [A-ZÉ][\wéèï-]+/g) ?? [])
+        expect(text, name).toContain(`${name} (fictif)`);
     }
   });
 

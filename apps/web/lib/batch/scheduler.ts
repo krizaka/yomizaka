@@ -6,7 +6,12 @@ export interface Scheduler {
   stop(): void;
 }
 
-export function startScheduler(options: { seconds: () => Promise<number>; run: () => Promise<unknown>; onError?: (error: unknown) => void; idleSeconds?: number }): Scheduler {
+export function startScheduler(options: {
+  seconds: () => Promise<number>;
+  run: () => Promise<unknown>;
+  onError?: (error: unknown) => void;
+  idleSeconds?: number;
+}): Scheduler {
   let stopped = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
   // @fixed: how often an off switch is looked at again — the loop still reads the setting, it just sleeps meanwhile

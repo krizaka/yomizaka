@@ -9,14 +9,32 @@ import fr from "@/messages/fr.json";
 import { BatchProgress } from "./BatchProgress";
 
 const MESSAGES = { en: { console: en.console }, fr: { console: fr.console } } as const;
-const readable = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ");
-const item = (line: number, state: string, patch: Record<string, unknown> = {}) => ({ id: `i${line}`, line, file: `f${line}.pdf`, reference: `R-${line}`, state, error: null, documentId: `d${line}`, ...patch });
+const readable = (html: string) =>
+  html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&#x27;|&#39;/g, "'")
+    .replace(/&[a-z#0-9]+;/gi, " ")
+    .replace(/\s+/g, " ");
+const item = (line: number, state: string, patch: Record<string, unknown> = {}) => ({
+  id: `i${line}`,
+  line,
+  file: `f${line}.pdf`,
+  reference: `R-${line}`,
+  state,
+  error: null,
+  documentId: `d${line}`,
+  ...patch,
+});
 const batch = (patch: Record<string, unknown> = {}) => ({
   id: "b1",
   name: "Immeuble Laurier",
   finishedAt: null,
   pausedBy: null,
-  items: [item(2, "done"), item(3, "running"), item(4, "refused", { error: "UNKNOWN_CHECK,FILE_NOT_SENT", documentId: null })],
+  items: [
+    item(2, "done"),
+    item(3, "running"),
+    item(4, "refused", { error: "UNKNOWN_CHECK,FILE_NOT_SENT", documentId: null }),
+  ],
   counts: { pending: 0, reused: 0, running: 1, done: 1, failed: 0, refused: 1 },
   ...patch,
 });
@@ -34,7 +52,14 @@ describe("a batch's page (yomizaka#232)", () => {
     const text = readable(render(batch()));
     expect(text).toContain("Immeuble Laurier");
     expect(text).toContain("1 sur 2");
-    for (const word of ["Vérifié", "En cours", "Refusé", "Vérification inconnue", "Ce fichier n'a pas été déposé avec le CSV."]) expect(text).toContain(word);
+    for (const word of [
+      "Vérifié",
+      "En cours",
+      "Refusé",
+      "Vérification inconnue",
+      "Ce fichier n'a pas été déposé avec le CSV.",
+    ])
+      expect(text).toContain(word);
     expect(readable(render(batch(), "en"))).toContain("1 of 2");
   });
 
@@ -45,7 +70,9 @@ describe("a batch's page (yomizaka#232)", () => {
   });
 
   it("says when it is done, and why it waits when the account cannot pay", () => {
-    expect(readable(render(batch({ finishedAt: "2026-10-23T05:00:00Z" })))).toContain("Lot terminé : 1 vérifié(s), 0 en échec, 1 refusé(s).");
+    expect(readable(render(batch({ finishedAt: "2026-10-23T05:00:00Z" })))).toContain(
+      "Lot terminé : 1 vérifié(s), 0 en échec, 1 refusé(s).",
+    );
     expect(render(batch({ pausedBy: "PAYWALL" }))).toContain('href="/fr/app/settings/facturation"');
   });
 });

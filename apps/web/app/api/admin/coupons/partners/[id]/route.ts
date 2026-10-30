@@ -15,12 +15,21 @@ export const GET = (req: Request, { params }: Ctx) =>
     const { id } = await params;
     if (new URL(req.url).searchParams.get("export") === "1") {
       const exported = await guarded(() => coupons.admin.partners.export(query, id));
-      return Response.json(exported, { headers: { "Cache-Control": "private, no-store", "Content-Disposition": `attachment; filename="partner-${id}.json"` } });
+      return Response.json(exported, {
+        headers: {
+          "Cache-Control": "private, no-store",
+          "Content-Disposition": `attachment; filename="partner-${id}.json"`,
+        },
+      });
     }
     const partner = await guarded(() => coupons.admin.partners.get(query, id));
     if (!partner) throw refuse(404, "COUPON_PARTNER_NOT_FOUND", "No such partner");
     const period = parseParams(periodQuery, req.url);
-    const rows = await guarded(() => transaction((tx) => coupons.admin.partners.report(tx, { id: session.account.id, label: session.account.email }, id, period)));
+    const rows = await guarded(() =>
+      transaction((tx) =>
+        coupons.admin.partners.report(tx, { id: session.account.id, label: session.account.email }, id, period),
+      ),
+    );
     return Response.json({ partner, rows }, { headers: { "Cache-Control": "private, no-store" } });
   });
 

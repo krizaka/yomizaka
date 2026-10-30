@@ -28,7 +28,11 @@ export function ReportsView({ go: _go }: Readonly<{ go: (route: Route) => void }
           loading={documents.isPending}
           chevrons
           error={documents.isError ? t("common.offline") : undefined}
-          row={(d) => ({ title: d.title || d.filename, description: when(d.createdAt), href: hashOf({ screen: "document", documentId: d.id }) })}
+          row={(d) => ({
+            title: d.title || d.filename,
+            description: when(d.createdAt),
+            href: hashOf({ screen: "document", documentId: d.id }),
+          })}
         />
       )}
     </div>
@@ -47,10 +51,13 @@ const SHOWN: Record<AnalysisStatus, { state: "done" | "current" | "error"; tone:
 export function DocumentView({ documentId, go: _go }: Readonly<{ documentId: string; go: (route: Route) => void }>) {
   const { t, locale } = useI18n();
   const document = useQuery(queries.document(documentId));
-  const when = (iso: string) => new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(iso));
+  const when = (iso: string) =>
+    new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(iso));
   return (
     <div className="flex max-w-3xl flex-col gap-4">
-      <h1 className="text-xl font-semibold">{document.data ? document.data.title || document.data.filename : t("reports.title")}</h1>
+      <h1 className="text-xl font-semibold">
+        {document.data ? document.data.title || document.data.filename : t("reports.title")}
+      </h1>
       <h2 className="text-sm font-semibold">{t("reports.checks")}</h2>
       <List
         aria-label={t("reports.checks")}

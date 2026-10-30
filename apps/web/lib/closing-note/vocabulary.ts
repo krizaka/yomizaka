@@ -4,7 +4,12 @@ export type Lang = (typeof LANG)[keyof typeof LANG];
 export const LANGS = Object.values(LANG);
 
 /** How a finding came out in Orazaka's report (the verdicts of the packs). */
-export const VERDICT = { pass: "PASS", fail: "FAIL", undecided: "INSUFFICIENT_EVIDENCE", notApplicable: "NOT_APPLICABLE" } as const;
+export const VERDICT = {
+  pass: "PASS",
+  fail: "FAIL",
+  undecided: "INSUFFICIENT_EVIDENCE",
+  notApplicable: "NOT_APPLICABLE",
+} as const;
 
 /** How much a failed rule matters, most important first. */
 export const SEVERITY = { blocking: "BLOCKING", major: "MAJOR", advisory: "ADVISORY" } as const;

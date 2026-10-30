@@ -29,13 +29,24 @@ export function castAccounts(env) {
   const pick = (role, persona, emailKeys, passwordKeys) => {
     const email = emailKeys.map((k) => env[k]).find(Boolean) ?? `${persona.id}@demo.yomizaka.test`;
     const password = passwordKeys.map((k) => env[k]).find(Boolean) ?? (local ? LOCAL_PASSWORD : undefined);
-    if (!password || password.length < 12) throw new Error(`the ${role} password is missing or shorter than 12 characters (${passwordKeys.join(" or ")})`);
+    if (!password || password.length < 12)
+      throw new Error(`the ${role} password is missing or shorter than 12 characters (${passwordKeys.join(" or ")})`);
     if (!/^[^@\s]+@[^@\s]+$/.test(email)) throw new Error(`the ${role} e-mail is invalid (${emailKeys.join(" or ")})`);
     return { persona, role, email: email.trim().toLowerCase(), password };
   };
   return [
-    pick("USER", CAST_MEMBER, ["APP_DEMO_ACCOUNT_EMAIL", "QA_USER_EMAIL"], ["APP_DEMO_ACCOUNT_PASSWORD", "QA_USER_PASSWORD"]),
-    pick("ADMIN", CAST_ADMIN, ["APP_DEMO_ADMIN_EMAIL", "QA_ADMIN_EMAIL"], ["APP_DEMO_ADMIN_PASSWORD", "QA_ADMIN_PASSWORD"]),
+    pick(
+      "USER",
+      CAST_MEMBER,
+      ["APP_DEMO_ACCOUNT_EMAIL", "QA_USER_EMAIL"],
+      ["APP_DEMO_ACCOUNT_PASSWORD", "QA_USER_PASSWORD"],
+    ),
+    pick(
+      "ADMIN",
+      CAST_ADMIN,
+      ["APP_DEMO_ADMIN_EMAIL", "QA_ADMIN_EMAIL"],
+      ["APP_DEMO_ADMIN_PASSWORD", "QA_ADMIN_PASSWORD"],
+    ),
     pick("USER", CAST_CAMILLE, ["QA_CAMILLE_EMAIL"], ["QA_CAMILLE_PASSWORD"]),
   ];
 }
@@ -45,7 +56,8 @@ export const FINGERPRINT_QUERIES = {
   accounts: "SELECT count(*)::int AS n FROM accounts WHERE id = ANY($1)",
   collections: "SELECT count(*)::int AS n FROM collections WHERE owner_id = ANY($1)",
   documents: "SELECT count(*)::int AS n FROM documents WHERE owner_id = ANY($1)",
-  analyses: "SELECT count(*)::int AS n FROM analyses WHERE document_id IN (SELECT id FROM documents WHERE owner_id = ANY($1))",
+  analyses:
+    "SELECT count(*)::int AS n FROM analyses WHERE document_id IN (SELECT id FROM documents WHERE owner_id = ANY($1))",
   screenings: "SELECT count(*)::int AS n FROM screenings WHERE landlord_id = ANY($1)",
   file_report_shares: "SELECT count(*)::int AS n FROM file_report_shares WHERE landlord_id = ANY($1)",
 };
@@ -63,7 +75,15 @@ export async function fingerprintOf(q, ownerIds) {
  * there »: the accounts exactly, every other count at least.
  */
 export function matchesRecorded(fingerprint, expected, exact) {
-  const counts = (text) => Object.fromEntries(text.split(";").map((pair) => pair.split("=")).map(([k, v]) => [k, Number(v)]));
+  const counts = (text) =>
+    Object.fromEntries(
+      text
+        .split(";")
+        .map((pair) => pair.split("="))
+        .map(([k, v]) => [k, Number(v)]),
+    );
   const got = counts(fingerprint);
-  return Object.entries(counts(expected)).every(([table, n]) => (exact || table === "accounts" ? got[table] === n : got[table] >= n));
+  return Object.entries(counts(expected)).every(([table, n]) =>
+    exact || table === "accounts" ? got[table] === n : got[table] >= n,
+  );
 }

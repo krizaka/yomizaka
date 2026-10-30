@@ -4,7 +4,20 @@ import { join } from "node:path";
 import { movedDocumentTab, OLD_DOCUMENT_TABS, SECTIONS } from "@yomizaka/core";
 import { describe, expect, it } from "vitest";
 
-import { activeNav, CHECKS_TABS, checksTabHref, checksTabOf, CONSOLE_ROUTES, DOCUMENT_TABS, isDocumentTab, isSettingsSection, movedDocumentHref, searchOf,SETTINGS_SECTIONS, withoutLocale } from "./console-nav";
+import {
+  activeNav,
+  CHECKS_TABS,
+  checksTabHref,
+  checksTabOf,
+  CONSOLE_ROUTES,
+  DOCUMENT_TABS,
+  isDocumentTab,
+  isSettingsSection,
+  movedDocumentHref,
+  searchOf,
+  SETTINGS_SECTIONS,
+  withoutLocale,
+} from "./console-nav";
 import { ROUTE_STATES } from "./route-state";
 
 const ROOT = join(__dirname, "..");
@@ -53,13 +66,16 @@ describe("Vérifications is a destination; its « Lots » tab lives in the addre
     expect(checksTabOf("nope")).toBe("checks");
     expect(checksTabHref("fr", "checks")).toBe("/fr/app/verifications");
     expect(checksTabHref("en", "lots")).toBe("/en/app/verifications?tab=lots");
-    expect(ROUTE_STATES.checksTab).toEqual({ path: "/app/verifications", state: { key: "tab", values: CHECKS_TABS, fallback: "checks" } });
+    expect(ROUTE_STATES.checksTab).toEqual({
+      path: "/app/verifications",
+      state: { key: "tab", values: CHECKS_TABS, fallback: "checks" },
+    });
   });
   it("has its page, and the old batches address answers 308 to the tab (a batch's own page keeps its address)", () => {
     expect(existsSync(app("verifications/page.tsx"))).toBe(true);
     const old = readFileSync(app("check/batches/page.tsx"), "utf8");
     expect(old).toContain("permanentRedirect(");
-    expect(old).toContain('checksTabHref(');
+    expect(old).toContain("checksTabHref(");
     expect(old).toContain('"lots"');
     expect(existsSync(app("check/batches/[id]/page.tsx"))).toBe(true);
     expect(read("components/console/CheckView.tsx")).toContain('checksTabHref(locale, "lots")');
@@ -83,12 +99,19 @@ describe("tabs are routes: the URL is the state", () => {
     expect(movedDocumentTab("verifications")).toBe("rapport");
     expect(movedDocumentTab("constructor")).toBeNull();
     expect(movedDocumentTab("rapport")).toBeNull();
-    expect(movedDocumentHref("fr", "d1", "verifications", "refused=PAYWALL&analysis=a0")).toBe("/fr/app/documents/d1/rapport?refused=PAYWALL&analysis=a0");
+    expect(movedDocumentHref("fr", "d1", "verifications", "refused=PAYWALL&analysis=a0")).toBe(
+      "/fr/app/documents/d1/rapport?refused=PAYWALL&analysis=a0",
+    );
     expect(movedDocumentHref("en", "d1", "infos")).toBe("/en/app/documents/d1/document");
     expect(movedDocumentHref("fr", "d1", "toString")).toBeNull();
     expect(searchOf({ a: "1", b: ["2", "3"], c: undefined }).toString()).toBe("a=1&b=2&b=3");
     expect(page).toMatch(/isDocumentTab\(tab\)\) \{\s*notFound\(\);?\s*\}/);
-    expect(OLD_DOCUMENT_TABS).toEqual({ infos: "document", fichier: "document", texte: "document", verifications: "rapport" });
+    expect(OLD_DOCUMENT_TABS).toEqual({
+      infos: "document",
+      fichier: "document",
+      texte: "document",
+      verifications: "rapport",
+    });
   });
   it("the view takes its tab from the route and a click navigates (no local tab state)", () => {
     // The view and the run it follows (yomizaka#320: the polling is its own component, LiveAnalysis).
@@ -122,14 +145,24 @@ describe("tabs are routes: the URL is the state", () => {
 
 describe("the settings' sections are routes", () => {
   it("lists them in order and knows only them", () => {
-    expect(SETTINGS_SECTIONS).toEqual(["profil", "apparence", "securite", "facturation", "stockage", "signets", "donnees"]);
+    expect(SETTINGS_SECTIONS).toEqual([
+      "profil",
+      "apparence",
+      "securite",
+      "facturation",
+      "stockage",
+      "signets",
+      "donnees",
+    ]);
     expect(isSettingsSection("securite")).toBe(true);
     expect(isSettingsSection("admin")).toBe(false);
   });
   it("each section has its page route, and the settings index redirects to the first", () => {
     const page = (p: string) => existsSync(join(ROOT, "app/[locale]/(app)/app/settings", p, "page.tsx"));
     expect(page("[section]")).toBe(true);
-    expect(readFileSync(join(ROOT, "app/[locale]/(app)/app/settings/page.tsx"), "utf8")).toContain("/app/settings/profil");
+    expect(readFileSync(join(ROOT, "app/[locale]/(app)/app/settings/page.tsx"), "utf8")).toContain(
+      "/app/settings/profil",
+    );
   });
   it("every section is under the account entry of the rail", () => {
     for (const s of SETTINGS_SECTIONS) expect(activeNav(`/fr/app/settings/${s}`)).toBe("account");
@@ -149,7 +182,9 @@ describe("the shell follows Orazaka's pattern (krizaka/yomizaka#278, the UX revi
     expect(shell).toContain('name="Yomizaka"');
     expect(shell).not.toContain("titleOf(");
     expect(shell).toMatch(/chips=\{[\s\S]*data-testid="app-version"/);
-    expect(shell).toMatch(/<ButtonLink\b(?=[^>]*\bvariant="gradient")(?=[^>]*\bshape="cut")(?=[^>]*aria-label=\{say\("shell\.checkAction"\)\})[^>]*data-testid="header-check"/);
+    expect(shell).toMatch(
+      /<ButtonLink\b(?=[^>]*\bvariant="gradient")(?=[^>]*\bshape="cut")(?=[^>]*aria-label=\{say\("shell\.checkAction"\)\})[^>]*data-testid="header-check"/,
+    );
   });
   it("the account menu has profile, settings, credits and usage, a labelled theme row and sign out; the name shows only when there is one; nothing sends the owner elsewhere", () => {
     for (const id of ["profile", "settings", "billing"]) expect(shell).toMatch(new RegExp(`${id}: \\{`));
@@ -173,7 +208,17 @@ describe("the shell follows Orazaka's pattern (krizaka/yomizaka#278, the UX revi
     expect(ROUTE_STATES.checkKind.state.fallback).toBe("auto");
   });
   it("every signed-in page draws its h1 with PageHeader — the document with DetailLayout's title (Y5) — (the header names the product, never the page)", () => {
-    for (const file of ["components/console/LibraryView.tsx", "components/console/CheckView.tsx", "components/console/ChecksView.tsx", "components/console/SearchView.tsx", "components/console/AllDocuments.tsx", "components/console/PlaceView.tsx", "components/console/BatchProgress.tsx", "app/[locale]/(app)/app/settings/[section]/page.tsx", "app/[locale]/(app)/app/welcome/page.tsx"]) {
+    for (const file of [
+      "components/console/LibraryView.tsx",
+      "components/console/CheckView.tsx",
+      "components/console/ChecksView.tsx",
+      "components/console/SearchView.tsx",
+      "components/console/AllDocuments.tsx",
+      "components/console/PlaceView.tsx",
+      "components/console/BatchProgress.tsx",
+      "app/[locale]/(app)/app/settings/[section]/page.tsx",
+      "app/[locale]/(app)/app/welcome/page.tsx",
+    ]) {
       expect(read(file), file).toContain('from "@krizaka/ui/page-header"');
       expect(read(file), file).toMatch(/<PageHeader\b/);
       expect(read(file), file).not.toMatch(/<h1\b/);

@@ -25,7 +25,9 @@ describe("the Mac app wears the plain product faces", () => {
   });
 
   it("finds the product override of the faces in the installed blocks.css", () => {
-    const rule = /:is\([^)]*\[data-surface="product"\][^)]*\)\s*\{[^}]*--kz-font-display:\s*var\(--kz-font-sans\)/.exec(blocks);
+    const rule = /:is\([^)]*\[data-surface="product"\][^)]*\)\s*\{[^}]*--kz-font-display:\s*var\(--kz-font-sans\)/.exec(
+      blocks,
+    );
     expect(rule).not.toBeNull();
   });
 });

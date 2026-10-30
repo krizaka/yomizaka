@@ -23,7 +23,21 @@ async function verifyOwner(input: Uint8Array | null, who: { id: string; email: s
   const pdf = input && (await ownerKindOrRefuse(input)) ? input : null;
   if (!pdf) return null;
   const result = await verifyOwnerPdfView(pdf, signingKey());
-  await audit({ action: "report.verified", actorId: who.id, actorLabel: who.email, targetId: null, detail: { runId: null, schema: "owner-report", ok: result.ok, ...(result.ok ? {} : { reason: result.reason }), via: "none", fileSha256: result.fileSha256 }, headers: req.headers });
+  await audit({
+    action: "report.verified",
+    actorId: who.id,
+    actorLabel: who.email,
+    targetId: null,
+    detail: {
+      runId: null,
+      schema: "owner-report",
+      ok: result.ok,
+      ...(result.ok ? {} : { reason: result.reason }),
+      via: "none",
+      fileSha256: result.fileSha256,
+    },
+    headers: req.headers,
+  });
   return Response.json({ result }, { headers: { "Cache-Control": "no-store" } });
 }
 
@@ -39,7 +53,8 @@ export function POST(req: Request) {
     const session = await requireSession(req);
     const who = { id: session.account.id, email: session.account.email };
     await limit("verify", req, who.id);
-    if (Number(req.headers.get("content-length") ?? "0") > MAX_BODY_BYTES) throw refuse(413, "FILE_TOO_LARGE", "Too large");
+    if (Number(req.headers.get("content-length") ?? "0") > MAX_BODY_BYTES)
+      throw refuse(413, "FILE_TOO_LARGE", "Too large");
     let form: FormData;
     try {
       form = await req.formData();
@@ -52,14 +67,27 @@ export function POST(req: Request) {
     if (ownerAnswer) return ownerAnswer;
     // A PDF carries its attestation in its Info dictionary; an HTML report in its script block.
     const embedded = pdf ? await attestationOfPdf(pdf) : null;
-    const embeddedReference = embedded ? { runId: embedded.payload.check.runId, documentSha256: embedded.payload.document.sha256 } : null;
+    const embeddedReference = embedded
+      ? { runId: embedded.payload.check.runId, documentSha256: embedded.payload.document.sha256 }
+      : null;
     const reference = pdf ? embeddedReference : referenceOf(text);
     // A file that is not a report holds nothing to protect: it fails like before (NOT_A_REPORT / UNREADABLE).
     const target = reference ? await loadTarget(reference.runId, reference.documentSha256) : null;
     const access = target ? accessTo(target, who, new Date()) : ({ allowed: false } as const);
     if (reference && !access.allowed) {
-      await audit({ action: "report.verify_denied", actorId: who.id, actorLabel: who.email, targetId: target?.analysisId ?? null, detail: { runId: reference.runId, known: target !== null }, headers: req.headers });
-      throw refuse(403, "NO_ACCESS", "You do not have access to this report", { requestable: true, runId: reference.runId, documentSha256: reference.documentSha256 });
+      await audit({
+        action: "report.verify_denied",
+        actorId: who.id,
+        actorLabel: who.email,
+        targetId: target?.analysisId ?? null,
+        detail: { runId: reference.runId, known: target !== null },
+        headers: req.headers,
+      });
+      throw refuse(403, "NO_ACCESS", "You do not have access to this report", {
+        requestable: true,
+        runId: reference.runId,
+        documentSha256: reference.documentSha256,
+      });
     }
     const result = pdf ? await verifyPdf(pdf, signingKey(), document) : verifyReport(text, signingKey(), document);
     await audit({
@@ -67,7 +95,14 @@ export function POST(req: Request) {
       actorId: who.id,
       actorLabel: who.email,
       targetId: target?.analysisId ?? null,
-      detail: { runId: reference?.runId ?? null, ok: result.ok, ...(result.ok ? {} : { reason: result.reason }), via: access.allowed ? access.via : "none", ...(access.allowed && access.via === "grant" ? { grantId: access.grantId } : {}), fileSha256: result.fileSha256 },
+      detail: {
+        runId: reference?.runId ?? null,
+        ok: result.ok,
+        ...(result.ok ? {} : { reason: result.reason }),
+        via: access.allowed ? access.via : "none",
+        ...(access.allowed && access.via === "grant" ? { grantId: access.grantId } : {}),
+        fileSha256: result.fileSha256,
+      },
       headers: req.headers,
     });
     return Response.json({ result }, { headers: { "Cache-Control": "no-store" } });

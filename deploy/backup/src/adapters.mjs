@@ -25,7 +25,11 @@ function run(program, args, env = {}) {
     child.stdout.on("data", (c) => (out += c));
     child.stderr.on("data", (c) => (err += c));
     child.on("error", (e) => reject(new BackupError("TOOL_MISSING", `${program}: ${e.message}`)));
-    child.on("close", (code) => (code === 0 ? resolve(out) : reject(new BackupError("TOOL_FAILED", `${program} exited ${code}: ${err.trim().slice(-600)}`))));
+    child.on("close", (code) =>
+      code === 0
+        ? resolve(out)
+        : reject(new BackupError("TOOL_FAILED", `${program} exited ${code}: ${err.trim().slice(-600)}`)),
+    );
   });
 }
 
@@ -37,17 +41,30 @@ export function connectionOf(env, caPath, database) {
   const ssl = env.DATABASE_CA_CERT ? { ca: env.DATABASE_CA_CERT, rejectUnauthorized: true } : undefined;
   const user = decodeURIComponent(url.username);
   const password = decodeURIComponent(url.password);
-  const libpq = { PGHOST: url.hostname, PGPORT: url.port || "5432", PGUSER: user, PGPASSWORD: password, PGDATABASE: name, ...(caPath ? { PGSSLMODE: "verify-full", PGSSLROOTCERT: caPath } : {}) };
-  return { options: { host: url.hostname, port: Number(url.port || 5432), user, password, database: name, ssl }, libpq };
+  const libpq = {
+    PGHOST: url.hostname,
+    PGPORT: url.port || "5432",
+    PGUSER: user,
+    PGPASSWORD: password,
+    PGDATABASE: name,
+    ...(caPath ? { PGSSLMODE: "verify-full", PGSSLROOTCERT: caPath } : {}),
+  };
+  return {
+    options: { host: url.hostname, port: Number(url.port || 5432), user, password, database: name, ssl },
+    libpq,
+  };
 }
 
-const TABLES = "SELECT n.nspname AS schema, c.relname AS name FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE c.relkind IN ('r', 'p') AND n.nspname NOT IN ('pg_catalog', 'information_schema') AND n.nspname NOT LIKE 'pg_toast%' ORDER BY 1, 2";
+const TABLES =
+  "SELECT n.nspname AS schema, c.relname AS name FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE c.relkind IN ('r', 'p') AND n.nspname NOT IN ('pg_catalog', 'information_schema') AND n.nspname NOT LIKE 'pg_toast%' ORDER BY 1, 2";
 
 async function countTables(client) {
   const counts = {};
   for (const { schema, name } of (await client.query(TABLES)).rows) {
     const qualified = `${pg.escapeIdentifier(schema)}.${pg.escapeIdentifier(name)}`;
-    counts[`${schema}.${name}`] = Number((await client.query(`SELECT count(*)::text AS n FROM ${qualified}`)).rows[0].n);
+    counts[`${schema}.${name}`] = Number(
+      (await client.query(`SELECT count(*)::text AS n FROM ${qualified}`)).rows[0].n,
+    );
   }
   return counts;
 }
@@ -83,7 +100,11 @@ export async function realPorts(env) {
     clientMajor: async () => majorOf(await run("pg_dump", ["--version"])),
     async dump(snapshotId) {
       const out = join(dir, "yomizaka.dump");
-      await run("pg_dump", ["--format=custom", "--no-owner", "--no-acl", `--snapshot=${snapshotId}`, `--file=${out}`], main.libpq);
+      await run(
+        "pg_dump",
+        ["--format=custom", "--no-owner", "--no-acl", `--snapshot=${snapshotId}`, `--file=${out}`],
+        main.libpq,
+      );
       return out;
     },
     async encrypt(plainPath, recipient) {
@@ -99,7 +120,11 @@ export async function realPorts(env) {
       await query(`CREATE DATABASE ${pg.escapeIdentifier(name)}`);
     },
     async restore(name, dumpPath) {
-      await run("pg_restore", ["--no-owner", "--no-acl", "--exit-on-error", `--dbname=${name}`, dumpPath], connectionOf(env, caPath, name).libpq);
+      await run(
+        "pg_restore",
+        ["--no-owner", "--no-acl", "--exit-on-error", `--dbname=${name}`, dumpPath],
+        connectionOf(env, caPath, name).libpq,
+      );
     },
     async count(name) {
       const client = new pg.Client(connectionOf(env, caPath, name).options);
@@ -115,7 +140,10 @@ export async function realPorts(env) {
     },
   };
 
-  const files = { read: async (path) => new Uint8Array(await readFile(path)), sha256: (bytes) => createHash("sha256").update(bytes).digest("hex") };
+  const files = {
+    read: async (path) => new Uint8Array(await readFile(path)),
+    sha256: (bytes) => createHash("sha256").update(bytes).digest("hex"),
+  };
   const destination = await destinationOf(env, query, clock);
   const close = async () => {
     await pool.end();
@@ -126,7 +154,8 @@ export async function realPorts(env) {
 
 /** The admin's default provider for « backups »: its store, its record and where it is (never guessed in Canada's favour). */
 export async function destinationOf(env, query, clock) {
-  if (!env.MEDIA_VAULT_KEY) throw new BackupError("NO_VAULT_KEY", "the storage vault key is not set: the storage credentials cannot be opened");
+  if (!env.MEDIA_VAULT_KEY)
+    throw new BackupError("NO_VAULT_KEY", "the storage vault key is not set: the storage credentials cannot be opened");
   const vaultKey = parseVaultKey(env.MEDIA_VAULT_KEY);
   const service = createProviderService({
     store: dbProviderStore(query),
@@ -141,6 +170,12 @@ export async function destinationOf(env, query, clock) {
   const opened = await service.openDefault(ORG_SCOPE, DATA_KIND_BACKUPS);
   if (!opened) return { provider: null, store: null, residency: "elsewhere" };
   const provider = (await service.list(ORG_SCOPE)).find((p) => p.id === opened.id) ?? null;
-  const residency = provider ? residencyOfConfig({ provider: provider.kind === "bunny" ? "http" : "s3", endpoint: provider.coordinates.endpoint ?? "", region: provider.coordinates.region ?? "" }) : "elsewhere";
+  const residency = provider
+    ? residencyOfConfig({
+        provider: provider.kind === "bunny" ? "http" : "s3",
+        endpoint: provider.coordinates.endpoint ?? "",
+        region: provider.coordinates.region ?? "",
+      })
+    : "elsewhere";
   return { provider, store: opened.store, residency };
 }

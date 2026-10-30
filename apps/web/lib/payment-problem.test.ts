@@ -12,7 +12,15 @@ describe("paymentProblemOf", () => {
   });
 
   it("is not one for a live, cancelled, absent or still-completing subscription", () => {
-    for (const subscriptionStatus of ["active", "trialing", "canceled", "incomplete", "incomplete_expired", "paused", null]) {
+    for (const subscriptionStatus of [
+      "active",
+      "trialing",
+      "canceled",
+      "incomplete",
+      "incomplete_expired",
+      "paused",
+      null,
+    ]) {
       expect(paymentProblemOf({ subscriptionStatus, hasCustomer: true })).toBe(false);
     }
   });
@@ -25,7 +33,9 @@ describe("paymentProblemOf", () => {
     for (const dict of [en, fr]) {
       const band = (dict as unknown as { console: { paymentProblem: Record<string, string> } }).console.paymentProblem;
       expect(Object.keys(band).sort()).toEqual(["fix", "text", "title"]);
-      for (const v of Object.values(band)) {expect(v.length).toBeGreaterThan(10);}
+      for (const v of Object.values(band)) {
+        expect(v.length).toBeGreaterThan(10);
+      }
     }
   });
 });

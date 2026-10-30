@@ -6,7 +6,14 @@ import { clientAddress } from "./client-address";
 import { query } from "./db";
 import { logError } from "./log";
 
-type Entry = { action: string; actorId: string | null; actorLabel: string; targetId?: string | null; detail?: Record<string, unknown>; headers?: Headers };
+type Entry = {
+  action: string;
+  actorId: string | null;
+  actorLabel: string;
+  targetId?: string | null;
+  detail?: Record<string, unknown>;
+  headers?: Headers;
+};
 
 /** The trail of what matters (`@krizaka/audit`, table `audit.entry`): who did what, when, from which address. Append-only. */
 export const trail = createAudit({

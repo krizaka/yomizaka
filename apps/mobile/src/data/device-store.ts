@@ -1,4 +1,12 @@
-import { assertKey, type DocumentStore, isId, STORAGE_KIND, STORAGE_OWNER, STORAGE_RESIDENCY, type StoreDescriptor } from "@yomizaka/core";
+import {
+  assertKey,
+  type DocumentStore,
+  isId,
+  STORAGE_KIND,
+  STORAGE_OWNER,
+  STORAGE_RESIDENCY,
+  type StoreDescriptor,
+} from "@yomizaka/core";
 
 /** What the device store needs from the file system: the app's sandbox, never a path outside it. */
 export interface FilePort {
@@ -14,9 +22,21 @@ export interface FilePort {
 }
 
 /** What the info panel says of where the documents live. */
-export const DEVICE_PLACE = { kind: STORAGE_KIND.device, owner: STORAGE_OWNER.device, residency: STORAGE_RESIDENCY.device } as const;
+export const DEVICE_PLACE = {
+  kind: STORAGE_KIND.device,
+  owner: STORAGE_OWNER.device,
+  residency: STORAGE_RESIDENCY.device,
+} as const;
 
-const DESCRIPTOR: StoreDescriptor = { kind: STORAGE_KIND.device, endpoint: null, region: null, residency: STORAGE_RESIDENCY.device, encrypted: false, owner: STORAGE_OWNER.device, devOnly: false };
+const DESCRIPTOR: StoreDescriptor = {
+  kind: STORAGE_KIND.device,
+  endpoint: null,
+  region: null,
+  residency: STORAGE_RESIDENCY.device,
+  encrypted: false,
+  owner: STORAGE_OWNER.device,
+  devOnly: false,
+};
 
 /**
  * The `DocumentStore` port of ADR-0007 for the phone (yomizaka#155): objects live in the app's sandbox and nowhere else — the
@@ -37,8 +57,14 @@ const SEPARATOR = "@";
 
 export function createPhoneStore(files: FilePort, root: string): PhoneStore {
   const directory = `${root.replace(/\/$/, "")}/store`;
-  const nameFor = (key: string, contentType: string) => `${encodeURIComponent(assertKey(key))}${SEPARATOR}${encodeURIComponent(contentType)}`;
-  const entries = () => files.names(directory).map((name) => ({ name, key: decodeURIComponent(name.slice(0, name.indexOf(SEPARATOR))), contentType: decodeURIComponent(name.slice(name.indexOf(SEPARATOR) + 1)) }));
+  const nameFor = (key: string, contentType: string) =>
+    `${encodeURIComponent(assertKey(key))}${SEPARATOR}${encodeURIComponent(contentType)}`;
+  const entries = () =>
+    files.names(directory).map((name) => ({
+      name,
+      key: decodeURIComponent(name.slice(0, name.indexOf(SEPARATOR))),
+      contentType: decodeURIComponent(name.slice(name.indexOf(SEPARATOR) + 1)),
+    }));
   const entryOf = (key: string) => entries().find((e) => e.key === assertKey(key));
   const drop = (key: string) => {
     const entry = entryOf(key);
@@ -71,7 +97,10 @@ export function createPhoneStore(files: FilePort, root: string): PhoneStore {
       const entry = entryOf(key);
       return entry ? `${directory}/${entry.name}` : null;
     },
-    keysWith: (prefix) => entries().map((e) => e.key).filter((k) => k.startsWith(prefix)),
+    keysWith: (prefix) =>
+      entries()
+        .map((e) => e.key)
+        .filter((k) => k.startsWith(prefix)),
   };
 }
 
@@ -80,7 +109,16 @@ export function extensionOf(name: string): string {
   return /\.([a-z0-9]{1,5})$/i.exec(name)?.[1]?.toLowerCase() ?? "bin";
 }
 
-const CONTENT_TYPES: Readonly<Record<string, string>> = { pdf: "application/pdf", png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", heic: "image/heic", txt: "text/plain", docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", odt: "application/vnd.oasis.opendocument.text" };
+const CONTENT_TYPES: Readonly<Record<string, string>> = {
+  pdf: "application/pdf",
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  heic: "image/heic",
+  txt: "text/plain",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  odt: "application/vnd.oasis.opendocument.text",
+};
 
 /**
  * What the screens use: documents kept by the id the server gave them. The same store, under `documents/<id>.<extension>`: the file
@@ -105,7 +143,11 @@ export function createDeviceStore(files: FilePort, root: string): DeviceStore {
   return {
     keep(documentId, sourceName, sourceUri) {
       const extension = extensionOf(sourceName);
-      store.copyIn(`documents/${guard(documentId)}.${extension}`, sourceUri, CONTENT_TYPES[extension] ?? "application/octet-stream");
+      store.copyIn(
+        `documents/${guard(documentId)}.${extension}`,
+        sourceUri,
+        CONTENT_TYPES[extension] ?? "application/octet-stream",
+      );
     },
     uriOf(documentId) {
       const key = keyOf(documentId);

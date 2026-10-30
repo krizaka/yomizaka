@@ -8,7 +8,16 @@ import { describe, it } from "vitest";
 // (krizaka/.github docs/standards/default-media.md). No source of the app names a default-media path.
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
 const SKIP = new Set(["node_modules", ".next", "dist", ".turbo", "coverage", "ios", "android"]);
-const sources = (dir) => readdirSync(join(ROOT, dir), { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? (SKIP.has(e.name) ? [] : sources(join(dir, e.name))) : /\.(tsx?|mjs|css)$/.test(e.name) && !/\.test\.[a-z]+$/.test(e.name) ? [join(dir, e.name)] : []));
+const sources = (dir) =>
+  readdirSync(join(ROOT, dir), { withFileTypes: true }).flatMap((e) =>
+    e.isDirectory()
+      ? SKIP.has(e.name)
+        ? []
+        : sources(join(dir, e.name))
+      : /\.(tsx?|mjs|css)$/.test(e.name) && !/\.test\.[a-z]+$/.test(e.name)
+        ? [join(dir, e.name)]
+        : [],
+  );
 const FORBIDDEN = /people\/defaults|krizaka-defaults|krizaka-assets[^/"'\s]*\/defaults\/|\/defaults\/v\d+\//;
 
 describe("default media are read from the Krizaka org JSON", () => {

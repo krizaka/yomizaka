@@ -21,9 +21,14 @@ export const elementId = (reference) => reference?.[ELEMENT] ?? reference?.ELEME
 /** A client of the WebDriver server inside the app: sessions, elements, scripts, screenshots. */
 export function client(base = WEBDRIVER, fetchImpl = fetch) {
   const call = async (method, path, body) => {
-    const res = await fetchImpl(`${base}${path}`, { method, headers: { "content-type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body) });
+    const res = await fetchImpl(`${base}${path}`, {
+      method,
+      headers: { "content-type": "application/json" },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
     const json = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(`webdriver ${method} ${path}: HTTP ${res.status} ${json?.value?.message ?? ""}`.trim());
+    if (!res.ok)
+      throw new Error(`webdriver ${method} ${path}: HTTP ${res.status} ${json?.value?.message ?? ""}`.trim());
     return json.value;
   };
   return {
@@ -48,7 +53,11 @@ export function client(base = WEBDRIVER, fetchImpl = fetch) {
 }
 
 /** Waits until `check` answers truthy, polling; the error names what was awaited (a stable sentence for the log). */
-export async function until(what, check, { timeoutMs, everyMs = 500, sleep = (ms) => new Promise((r) => setTimeout(r, ms)), now = Date.now } = {}) {
+export async function until(
+  what,
+  check,
+  { timeoutMs, everyMs = 500, sleep = (ms) => new Promise((r) => setTimeout(r, ms)), now = Date.now } = {},
+) {
   const deadline = now() + timeoutMs;
   let last;
   for (;;) {

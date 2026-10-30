@@ -7,7 +7,10 @@ import type { ComplianceReport, Finding } from "@yomizaka/core";
 export function lineOf(text: string, finding: Pick<Finding, "evidenceSpan">): number | null {
   const span = finding.evidenceSpan;
   if (!span?.quote) return null;
-  const at = typeof span.start === "number" && text.slice(span.start, span.start + span.quote.length) === span.quote ? span.start : text.indexOf(span.quote);
+  const at =
+    typeof span.start === "number" && text.slice(span.start, span.start + span.quote.length) === span.quote
+      ? span.start
+      : text.indexOf(span.quote);
   if (at < 0) return null;
   return text.slice(0, at).split("\n").length;
 }

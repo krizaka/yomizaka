@@ -13,7 +13,12 @@ export function pickReportLang(asked: string | undefined, acceptLanguage: string
     .split(",")
     .map((part, i) => {
       const [tag = "", ...params] = part.trim().split(";");
-      const q = Number(params.find((p) => p.trim().startsWith("q="))?.trim().slice(2) ?? 1);
+      const q = Number(
+        params
+          .find((p) => p.trim().startsWith("q="))
+          ?.trim()
+          .slice(2) ?? 1,
+      );
       return { lang: tag.trim().toLowerCase().split("-")[0], q: Number.isFinite(q) ? q : 0, i };
     })
     .filter((r) => r.q > 0)

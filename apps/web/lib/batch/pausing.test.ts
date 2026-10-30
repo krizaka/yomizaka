@@ -10,7 +10,8 @@ describe("why a batch waits (yomizaka#248)", () => {
   });
 
   it("a refusal about one row (no text, not kept, a bad key…) is that row's own and does not pause the batch", () => {
-    for (const code of ["NO_TEXT", "NOT_KEPT", "ORAZAKA_KEY", "ORAZAKA_INPUT", "FAILED", "UNSUPPORTED_TYPE"]) expect(pausesBatch(code), code).toBe(false);
+    for (const code of ["NO_TEXT", "NOT_KEPT", "ORAZAKA_KEY", "ORAZAKA_INPUT", "FAILED", "UNSUPPORTED_TYPE"])
+      expect(pausesBatch(code), code).toBe(false);
   });
 
   it("the page offers billing only for the account's pause, and keeps polling for the engine's", () => {

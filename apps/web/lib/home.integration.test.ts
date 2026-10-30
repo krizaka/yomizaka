@@ -14,13 +14,36 @@ describe.runIf(enabled)("the home's figures", () => {
     await migrate();
   });
 
-  const account = async () => (await query<{ id: string }>("INSERT INTO accounts (email) VALUES ($1) RETURNING id", [`home-${Math.random().toString(36).slice(2)}@example.test`]))[0]!.id;
+  const account = async () =>
+    (
+      await query<{ id: string }>("INSERT INTO accounts (email) VALUES ($1) RETURNING id", [
+        `home-${Math.random().toString(36).slice(2)}@example.test`,
+      ])
+    )[0]!.id;
   const document = async (owner: string) =>
-    (await query<{ id: string }>("INSERT INTO documents (owner_id, title, filename, mime_type, kind, size_bytes, sha256, pages, content, text) VALUES ($1, 'Bail', 'bail.pdf', 'application/pdf', 'lease', 3, $2, 1, $3, 'texte') RETURNING id", [owner, Math.random().toString(16).slice(2).padEnd(64, "0").slice(0, 64), Buffer.from("pdf")]))[0]!.id;
+    (
+      await query<{ id: string }>(
+        "INSERT INTO documents (owner_id, title, filename, mime_type, kind, size_bytes, sha256, pages, content, text) VALUES ($1, 'Bail', 'bail.pdf', 'application/pdf', 'lease', 3, $2, 1, $3, 'texte') RETURNING id",
+        [owner, Math.random().toString(16).slice(2).padEnd(64, "0").slice(0, 64), Buffer.from("pdf")],
+      )
+    )[0]!.id;
   const analysis = (documentId: string, status: string, attention: boolean | null, at: string) =>
-    query("INSERT INTO analyses (document_id, studio, status, run_id, report, created_at, finished_at) VALUES ($1, 'compliance-check', $2, $3, $4, $5, $6)", [documentId, status, `run_${Math.random().toString(36).slice(2)}`, attention === null ? null : JSON.stringify({ attention }), at, status === "running" ? null : at]);
+    query(
+      "INSERT INTO analyses (document_id, studio, status, run_id, report, created_at, finished_at) VALUES ($1, 'compliance-check', $2, $3, $4, $5, $6)",
+      [
+        documentId,
+        status,
+        `run_${Math.random().toString(36).slice(2)}`,
+        attention === null ? null : JSON.stringify({ attention }),
+        at,
+        status === "running" ? null : at,
+      ],
+    );
   const file = (owner: string, patch: { expires: string; submitted?: string; closed?: string }) =>
-    query("INSERT INTO screenings (landlord_id, tenant_name, tenant_email, scope, provider, token_hash, expires_at, flow, requested_types, submitted_at, closed_at) VALUES ($1, 'Camille', 'camille@example.test', '{}', 'applicant-file', $2, $3, 'file', '{pay-stub}', $4, $5)", [owner, Math.random().toString(16).slice(2), patch.expires, patch.submitted ?? null, patch.closed ?? null]);
+    query(
+      "INSERT INTO screenings (landlord_id, tenant_name, tenant_email, scope, provider, token_hash, expires_at, flow, requested_types, submitted_at, closed_at) VALUES ($1, 'Camille', 'camille@example.test', '{}', 'applicant-file', $2, $3, 'file', '{pay-stub}', $4, $5)",
+      [owner, Math.random().toString(16).slice(2), patch.expires, patch.submitted ?? null, patch.closed ?? null],
+    );
   const NOW = new Date("2026-10-24T16:00:00Z");
 
   it("counts the checks to look at as the rows Vérifications shows under its filter — and nothing of anyone else", async () => {
@@ -44,9 +67,18 @@ describe.runIf(enabled)("the home's figures", () => {
     await file(owner, { expires: "2026-11-07T12:00:00Z" });
     await file(owner, { expires: "2026-11-02T12:00:00Z" });
     await file(owner, { expires: "2026-11-01T12:00:00Z", submitted: "2026-10-23T12:00:00Z" });
-    await file(owner, { expires: "2026-11-01T12:00:00Z", submitted: "2026-10-22T12:00:00Z", closed: "2026-10-23T12:00:00Z" });
+    await file(owner, {
+      expires: "2026-11-01T12:00:00Z",
+      submitted: "2026-10-22T12:00:00Z",
+      closed: "2026-10-23T12:00:00Z",
+    });
     await file(owner, { expires: "2026-10-20T12:00:00Z" });
-    expect(await toDo(query, owner, NOW, { applicantFiles: true })).toEqual({ toReview: 0, toDecide: 1, openLinks: 2, nextExpiry: "2026-11-02T12:00:00.000Z" });
+    expect(await toDo(query, owner, NOW, { applicantFiles: true })).toEqual({
+      toReview: 0,
+      toDecide: 1,
+      openLinks: 2,
+      nextExpiry: "2026-11-02T12:00:00.000Z",
+    });
   });
 
   it("counts the rail's badge by one query, as the home's « Dossiers à décider », and only the account's own files", async () => {
@@ -54,7 +86,11 @@ describe.runIf(enabled)("the home's figures", () => {
     await file(owner, { expires: "2026-11-07T12:00:00Z" });
     await file(owner, { expires: "2026-11-01T12:00:00Z", submitted: "2026-10-23T12:00:00Z" });
     await file(owner, { expires: "2026-11-01T12:00:00Z", submitted: "2026-10-23T12:00:00Z" });
-    await file(owner, { expires: "2026-11-01T12:00:00Z", submitted: "2026-10-22T12:00:00Z", closed: "2026-10-23T12:00:00Z" });
+    await file(owner, {
+      expires: "2026-11-01T12:00:00Z",
+      submitted: "2026-10-22T12:00:00Z",
+      closed: "2026-10-23T12:00:00Z",
+    });
     await file(owner, { expires: "2026-10-20T12:00:00Z", submitted: "2026-10-19T12:00:00Z" });
     await file(await account(), { expires: "2026-11-01T12:00:00Z", submitted: "2026-10-23T12:00:00Z" });
     expect(await filesToDecide(query, owner, NOW)).toBe(2);

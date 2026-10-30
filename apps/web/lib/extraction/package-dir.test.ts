@@ -7,7 +7,9 @@ import { findPackageDir } from "./package-dir";
 
 const made: string[] = [];
 afterEach(() => {
-  for (const dir of made.splice(0)) {rmSync(dir, { recursive: true, force: true });}
+  for (const dir of made.splice(0)) {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 /** A tree shaped like the standalone image of the web app (2026-10-29): the package only under `.pnpm` and a hashed alias in `.next/node_modules`, never a plain `node_modules/unpdf`. */
@@ -24,7 +26,9 @@ function standalone(): string {
 describe("findPackageDir", () => {
   it("finds a package that only the .pnpm store holds, from the folder the server runs in (the production image)", async () => {
     const root = standalone();
-    expect(await findPackageDir("unpdf", join(root, "apps/web"))).toBe(join(root, "node_modules/.pnpm/unpdf@1.8.1_x/node_modules/unpdf"));
+    expect(await findPackageDir("unpdf", join(root, "apps/web"))).toBe(
+      join(root, "node_modules/.pnpm/unpdf@1.8.1_x/node_modules/unpdf"),
+    );
   });
 
   it("prefers the package linked at node_modules/<name> (a workspace install)", async () => {

@@ -19,7 +19,19 @@ import { useFileFacts } from "./FilesView";
 /** The expiries offered: the default first, the maximum last (the server enforces the same bounds). */
 export const SHARE_CHOICES = [SHARE_DEFAULT_DAYS, 14, SHARE_MAX_DAYS] as const;
 
-const shares = z.object({ shares: z.array(z.object({ id: z.string(), recipient: z.string(), state: z.enum(["live", "expired", "revoked"]), createdAt: z.string(), expiresAt: z.string(), emailedTo: z.string().nullable(), views: z.number() })) });
+const shares = z.object({
+  shares: z.array(
+    z.object({
+      id: z.string(),
+      recipient: z.string(),
+      state: z.enum(["live", "expired", "revoked"]),
+      createdAt: z.string(),
+      expiresAt: z.string(),
+      emailedTo: z.string().nullable(),
+      views: z.number(),
+    }),
+  ),
+});
 const LANGS = ["en", "fr"] as const;
 const sent = z.object({ sentTo: z.string() });
 const created = z.object({ id: z.string(), token: z.string(), expiresAt: z.string() });
@@ -42,9 +54,20 @@ export function OwnerShare({ fileId, origin }: Readonly<{ fileId: string; origin
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const list = useQuery({ queryKey: key, queryFn: () => krizakaFetch(base, { schema: shares }) });
-  const create = useMutation({ mutationFn: () => krizakaFetch(base, { method: "POST", json: { days }, schema: created }) });
-  const mail = useMutation({ mutationFn: () => krizakaFetch(`${base}/send`, { method: "POST", json: { token, email: to, locale: lang, ...(note.trim() ? { message: note.trim() } : {}) }, schema: sent }) });
-  const revoke = useMutation({ mutationFn: (shareId: string) => krizakaFetch(base, { method: "DELETE", json: { shareId } }) });
+  const create = useMutation({
+    mutationFn: () => krizakaFetch(base, { method: "POST", json: { days }, schema: created }),
+  });
+  const mail = useMutation({
+    mutationFn: () =>
+      krizakaFetch(`${base}/send`, {
+        method: "POST",
+        json: { token, email: to, locale: lang, ...(note.trim() ? { message: note.trim() } : {}) },
+        schema: sent,
+      }),
+  });
+  const revoke = useMutation({
+    mutationFn: (shareId: string) => krizakaFetch(base, { method: "DELETE", json: { shareId } }),
+  });
   const fail = (error: unknown) => setProblem(say(`errors.${errorKey(error)}`));
   const make = async () => {
     setProblem(null);
@@ -92,12 +115,21 @@ export function OwnerShare({ fileId, origin }: Readonly<{ fileId: string; origin
   const live = (list.data?.shares ?? []).filter((s) => s.state === "live");
   return (
     <section aria-labelledby="owner-share-title" className="flex flex-col gap-3" data-testid="owner-share">
-      <h2 id="owner-share-title" className="m-0 text-lg font-bold text-fg">{say("dossiers.share.title")}</h2>
+      <h2 id="owner-share-title" className="m-0 text-lg font-bold text-fg">
+        {say("dossiers.share.title")}
+      </h2>
       <p className="m-0 text-sm text-fg-secondary">{say("dossiers.share.lead")}</p>
       {/* @ephemeral: the expiry of the link about to be created, a form choice, not a view of the page */}
-      <RadioGroup.Root variant="segmented" label={say("dossiers.share.expiry")} value={String(days)} onValueChange={(v: string) => setDays(Number(v))}>
+      <RadioGroup.Root
+        variant="segmented"
+        label={say("dossiers.share.expiry")}
+        value={String(days)}
+        onValueChange={(v: string) => setDays(Number(v))}
+      >
         {SHARE_CHOICES.map((d) => (
-          <RadioGroup.Segment key={d} value={String(d)}>{say("dossiers.share.days", { count: d })}</RadioGroup.Segment>
+          <RadioGroup.Segment key={d} value={String(d)}>
+            {say("dossiers.share.days", { count: d })}
+          </RadioGroup.Segment>
         ))}
       </RadioGroup.Root>
       <div>
@@ -110,23 +142,56 @@ export function OwnerShare({ fileId, origin }: Readonly<{ fileId: string; origin
         <div className="flex flex-col gap-2" data-testid="owner-share-link">
           <output className="m-0 block text-sm text-fg-secondary">{say("dossiers.share.created")}</output>
           <div className="flex flex-wrap items-center gap-2">
-            <Input readOnly aria-label={say("dossiers.share.linkLabel")} value={link} className="min-w-0 flex-1" onFocus={(e) => e.currentTarget.select()} />
-            <Button variant="secondary" size="md" onClick={() => void copy()}>{say(copied ? "dossiers.share.copied" : "dossiers.share.copy")}</Button>
+            <Input
+              readOnly
+              aria-label={say("dossiers.share.linkLabel")}
+              value={link}
+              className="min-w-0 flex-1"
+              onFocus={(e) => e.currentTarget.select()}
+            />
+            <Button variant="secondary" size="md" onClick={() => void copy()}>
+              {say(copied ? "dossiers.share.copied" : "dossiers.share.copy")}
+            </Button>
           </div>
           <div className="flex flex-col gap-2" data-testid="owner-share-email">
             <h3 className="m-0 text-base font-bold text-fg">{say("dossiers.share.email.title")}</h3>
-            <Input type="email" autoComplete="off" aria-label={say("dossiers.share.email.address")} placeholder={say("dossiers.share.email.address")} value={to} onChange={(e) => setTo(e.target.value)} />
-            <Textarea maxLength={500} rows={2} aria-label={say("dossiers.share.email.message")} placeholder={say("dossiers.share.email.message")} value={note} onChange={(e) => setNote(e.target.value)} />
+            <Input
+              type="email"
+              autoComplete="off"
+              aria-label={say("dossiers.share.email.address")}
+              placeholder={say("dossiers.share.email.address")}
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+            />
+            <Textarea
+              maxLength={500}
+              rows={2}
+              aria-label={say("dossiers.share.email.message")}
+              placeholder={say("dossiers.share.email.message")}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
             {/* @ephemeral: the language of the e-mail about to be sent, a form choice */}
-            <RadioGroup.Root variant="segmented" label={say("dossiers.share.email.language")} value={lang} onValueChange={(v: string) => setLang(LANGS.find((l) => l === v) ?? "en")}>
+            <RadioGroup.Root
+              variant="segmented"
+              label={say("dossiers.share.email.language")}
+              value={lang}
+              onValueChange={(v: string) => setLang(LANGS.find((l) => l === v) ?? "en")}
+            >
               <RadioGroup.Segment value="en">English</RadioGroup.Segment>
               <RadioGroup.Segment value="fr">Français</RadioGroup.Segment>
             </RadioGroup.Root>
             <p className="m-0 text-sm text-fg-secondary">{say("dossiers.share.email.hint")}</p>
             <div>
-              <Button variant="secondary" size="md" onClick={() => void send()} disabled={mail.isPending || !to.trim()}>{say(mail.isPending ? "dossiers.share.email.sending" : "dossiers.share.email.send")}</Button>
+              <Button variant="secondary" size="md" onClick={() => void send()} disabled={mail.isPending || !to.trim()}>
+                {say(mail.isPending ? "dossiers.share.email.sending" : "dossiers.share.email.send")}
+              </Button>
             </div>
-            {sentTo ? <output className="m-0 block text-sm text-fg-secondary">{say("dossiers.share.email.sent", { email: sentTo })}</output> : null}
+            {sentTo ? (
+              <output className="m-0 block text-sm text-fg-secondary">
+                {say("dossiers.share.email.sent", { email: sentTo })}
+              </output>
+            ) : null}
           </div>
         </div>
       ) : null}
@@ -144,10 +209,16 @@ export function OwnerShare({ fileId, origin }: Readonly<{ fileId: string; origin
               <span className="flex flex-wrap items-center gap-2">
                 <Badge tone="success">{say("dossiers.share.state.live")}</Badge>
                 {s.emailedTo ? <span>{say("dossiers.share.email.sentTo", { email: s.emailedTo })}</span> : null}
-                <span>{say(s.views === 1 ? "dossiers.share.viewsOne" : "dossiers.share.views", { count: s.views })}</span>
+                <span>
+                  {say(s.views === 1 ? "dossiers.share.viewsOne" : "dossiers.share.views", { count: s.views })}
+                </span>
               </span>
             ),
-            actions: <Button variant="ghost" size="sm" onClick={() => void remove(s.id)} disabled={revoke.isPending}>{say("dossiers.share.revoke")}</Button>,
+            actions: (
+              <Button variant="ghost" size="sm" onClick={() => void remove(s.id)} disabled={revoke.isPending}>
+                {say("dossiers.share.revoke")}
+              </Button>
+            ),
           })}
         />
       ) : (

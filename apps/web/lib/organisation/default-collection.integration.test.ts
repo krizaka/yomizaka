@@ -11,10 +11,25 @@ describe.runIf(enabled)("the default collection", () => {
   beforeAll(async () => {
     await migrate();
   });
-  const account = async (locale = "fr") => (await query<{ id: string }>("INSERT INTO accounts (email, password_hash, email_verified_at, locale) VALUES ($1, 'x', now(), $2) RETURNING id", [`d-${Math.random().toString(36).slice(2)}@yomizaka.test`, locale]))[0]!.id;
-  const doc = async (owner: string) => (await query<{ id: string }>("INSERT INTO documents (owner_id, title, filename, mime_type, size_bytes, sha256, content) VALUES ($1, 't', 'f.txt', 'text/plain', 1, $2, 'x') RETURNING id", [owner, Math.random().toString(36)]))[0]!.id;
-  const defaults = (owner: string) => query<{ id: string; name: string }>("SELECT id, name FROM collections WHERE owner_id = $1 AND is_default", [owner]);
-  const collectionOf = async (id: string) => (await query<{ collection_id: string | null }>("SELECT collection_id FROM documents WHERE id = $1", [id]))[0]!.collection_id;
+  const account = async (locale = "fr") =>
+    (
+      await query<{ id: string }>(
+        "INSERT INTO accounts (email, password_hash, email_verified_at, locale) VALUES ($1, 'x', now(), $2) RETURNING id",
+        [`d-${Math.random().toString(36).slice(2)}@yomizaka.test`, locale],
+      )
+    )[0]!.id;
+  const doc = async (owner: string) =>
+    (
+      await query<{ id: string }>(
+        "INSERT INTO documents (owner_id, title, filename, mime_type, size_bytes, sha256, content) VALUES ($1, 't', 'f.txt', 'text/plain', 1, $2, 'x') RETURNING id",
+        [owner, Math.random().toString(36)],
+      )
+    )[0]!.id;
+  const defaults = (owner: string) =>
+    query<{ id: string; name: string }>("SELECT id, name FROM collections WHERE owner_id = $1 AND is_default", [owner]);
+  const collectionOf = async (id: string) =>
+    (await query<{ collection_id: string | null }>("SELECT collection_id FROM documents WHERE id = $1", [id]))[0]!
+      .collection_id;
 
   it("is created with the account, in its language, whatever created the account", async () => {
     const fr = await account("fr");
@@ -43,7 +58,10 @@ describe.runIf(enabled)("the default collection", () => {
   it("is never deleted: refused by the store (409 DEFAULT_COLLECTION), by the library's deletion and by the database itself", async () => {
     const owner = await account();
     const [home] = await defaults(owner);
-    await expect(org.deleteCollection(query, owner, home!.id, { files: "delete" })).rejects.toMatchObject({ status: 409, body: { code: "DEFAULT_COLLECTION" } });
+    await expect(org.deleteCollection(query, owner, home!.id, { files: "delete" })).rejects.toMatchObject({
+      status: 409,
+      body: { code: "DEFAULT_COLLECTION" },
+    });
     await expect(query("DELETE FROM collections WHERE id = $1", [home!.id])).rejects.toThrow(/DEFAULT_COLLECTION/);
     const [lib] = await query<{ id: string }>("SELECT id FROM libraries WHERE owner_id = $1", [owner]);
     const second = await org.createLibrary(query, owner, "Autre");
@@ -74,8 +92,12 @@ describe.runIf(enabled)("the default collection", () => {
     await org.deleteCollection(query, owner, home!.id, { files: "move", to: null });
     expect(await collectionOf(d)).toBe(other.id);
     // an account cannot be left without one, even by hand
-    await expect(query("UPDATE collections SET is_default = false WHERE id = $1", [other.id])).rejects.toThrow(/DEFAULT_COLLECTION/);
-    await expect(org.setDefaultCollection(query, owner, "00000000-0000-4000-8000-000000000000")).rejects.toMatchObject({ status: 404 });
+    await expect(query("UPDATE collections SET is_default = false WHERE id = $1", [other.id])).rejects.toThrow(
+      /DEFAULT_COLLECTION/,
+    );
+    await expect(org.setDefaultCollection(query, owner, "00000000-0000-4000-8000-000000000000")).rejects.toMatchObject({
+      status: 404,
+    });
     expect(await defaults(owner)).toHaveLength(1);
   });
 

@@ -31,8 +31,22 @@ const ANALYSIS: Analysis = {
     reviewStatus: "TO_REVIEW_BY_LAWYER",
     summary: { byVerdict: { FAIL: 1, PASS: 1 }, blockingFailures: 1, rulesEvaluated: 2 },
     findings: [
-      { ruleId: "qc.no-children-clause", title: "Clause interdisant les enfants", severity: "BLOCKING", verdict: "FAIL", citation: "C.c.Q., art. 1899", explanation: "Une telle clause est réputée non écrite <b>.", evidenceSpan: { start: 10, end: 62, quote: "Il est interdit d'avoir des enfants dans le logement." } },
-      { ruleId: "qc.deposit", severity: "BLOCKING", verdict: "PASS", explanation: "Aucun dépôt en sus du premier loyer.", evidenceSpan: null },
+      {
+        ruleId: "qc.no-children-clause",
+        title: "Clause interdisant les enfants",
+        severity: "BLOCKING",
+        verdict: "FAIL",
+        citation: "C.c.Q., art. 1899",
+        explanation: "Une telle clause est réputée non écrite <b>.",
+        evidenceSpan: { start: 10, end: 62, quote: "Il est interdit d'avoir des enfants dans le logement." },
+      },
+      {
+        ruleId: "qc.deposit",
+        severity: "BLOCKING",
+        verdict: "PASS",
+        explanation: "Aucun dépôt en sus du premier loyer.",
+        evidenceSpan: null,
+      },
     ],
   },
   error: null,
@@ -49,8 +63,19 @@ describe("the report's payload", () => {
   it("carries the document hash, the check, the run id and every finding with its passage and article", () => {
     const p = buildPayload(DOC, ANALYSIS, "fr");
     expect(p.document.sha256).toBe(DOC.sha256);
-    expect(p.check).toMatchObject({ runId: ANALYSIS.runId, studioVersion: "1.1.1", jurisdiction: "QC", rulesetVersion: "2026.2", finishedAt: ANALYSIS.finishedAt });
-    expect(p.findings[0]).toMatchObject({ ruleId: "qc.no-children-clause", citation: "C.c.Q., art. 1899", quote: "Il est interdit d'avoir des enfants dans le logement.", verdict: "FAIL" });
+    expect(p.check).toMatchObject({
+      runId: ANALYSIS.runId,
+      studioVersion: "1.1.1",
+      jurisdiction: "QC",
+      rulesetVersion: "2026.2",
+      finishedAt: ANALYSIS.finishedAt,
+    });
+    expect(p.findings[0]).toMatchObject({
+      ruleId: "qc.no-children-clause",
+      citation: "C.c.Q., art. 1899",
+      quote: "Il est interdit d'avoir des enfants dans le logement.",
+      verdict: "FAIL",
+    });
     expect(p.findings[1]).toMatchObject({ quote: null, citation: null });
   });
 
@@ -74,7 +99,9 @@ describe("determinism", () => {
   });
 
   it("is independent of key order in the stored report (canonical JSON)", () => {
-    expect(canonicalJson({ b: 1, a: { d: [2, { y: 1, x: 2 }], c: null } })).toBe('{"a":{"c":null,"d":[2,{"x":2,"y":1}]},"b":1}');
+    expect(canonicalJson({ b: 1, a: { d: [2, { y: 1, x: 2 }], c: null } })).toBe(
+      '{"a":{"c":null,"d":[2,{"x":2,"y":1}]},"b":1}',
+    );
   });
 
   it("changes when anything the report states changes", () => {
@@ -86,7 +113,16 @@ describe("determinism", () => {
 describe("the report's content", () => {
   const html = issue().html;
   it("prints the document hash, the rules version, the date, the run id, each passage and article — escaped", () => {
-    for (const needle of [DOC.sha256, "2026.2", "2026-10-14T15:00:41.000Z", ANALYSIS.runId!, "Studio", "C.c.Q., art. 1899", "Il est interdit d&#39;avoir".replace("&#39;", "'"), "réputée non écrite &lt;b&gt;."]) {
+    for (const needle of [
+      DOC.sha256,
+      "2026.2",
+      "2026-10-14T15:00:41.000Z",
+      ANALYSIS.runId!,
+      "Studio",
+      "C.c.Q., art. 1899",
+      "Il est interdit d&#39;avoir".replace("&#39;", "'"),
+      "réputée non écrite &lt;b&gt;.",
+    ]) {
       expect(html).toContain(needle);
     }
     expect(html).not.toContain("<b>.");
@@ -102,7 +138,12 @@ describe("verification", () => {
   it("accepts an untouched report and tells which document it is about", () => {
     const { html, fileSha256 } = issue();
     const bytes = Buffer.from("the lease");
-    expect(verifyReport(html, key, bytes)).toMatchObject({ ok: true, fileSha256, keyId: key.keyId, documentMatch: true });
+    expect(verifyReport(html, key, bytes)).toMatchObject({
+      ok: true,
+      fileSha256,
+      keyId: key.keyId,
+      documentMatch: true,
+    });
     expect(verifyReport(html, key, Buffer.from("another lease"))).toMatchObject({ ok: true, documentMatch: false });
     expect(verifyReport(html, key)).toMatchObject({ ok: true, documentMatch: null });
   });
@@ -113,7 +154,12 @@ describe("verification", () => {
 
   it("fails a report whose visible text was edited (a verdict, a word, a space)", () => {
     const { html } = issue();
-    for (const [from, to] of [["Point non respecté", "Point respecté"], ["art. 1899", "art. 1900"], ["8f6b1c2e", "8f6b1c2f"], ["</body>", " </body>"]] as const) {
+    for (const [from, to] of [
+      ["Point non respecté", "Point respecté"],
+      ["art. 1899", "art. 1900"],
+      ["8f6b1c2e", "8f6b1c2f"],
+      ["</body>", " </body>"],
+    ] as const) {
       expect(html).toContain(from);
       expect(verifyReport(html.replace(from, to), key)).toMatchObject({ ok: false, reason: "ALTERED" });
     }
@@ -124,12 +170,35 @@ describe("verification", () => {
     const tamper = (mutate: (a: typeof attestation) => void) => {
       const copy = structuredClone(attestation);
       mutate(copy);
-      return html.replace(/(<script type="application\/json" id="yomizaka-attestation">)[^<]*(<\/script>)/, `$1${JSON.stringify(copy).replace(/</g, "\\u003c")}$2`);
+      return html.replace(
+        /(<script type="application\/json" id="yomizaka-attestation">)[^<]*(<\/script>)/,
+        `$1${JSON.stringify(copy).replace(/</g, "\\u003c")}$2`,
+      );
     };
-    expect(verifyReport(tamper((a) => (a.payload.document.sha256 = sha256("forged"))), key)).toMatchObject({ ok: false, reason: "BAD_SIGNATURE" });
-    expect(verifyReport(tamper((a) => (a.payload.check.runId = "forged-run")), key)).toMatchObject({ ok: false, reason: "BAD_SIGNATURE" });
-    expect(verifyReport(tamper((a) => (a.payload.findings[0]!.verdict = "PASS")), key)).toMatchObject({ ok: false, reason: "BAD_SIGNATURE" });
-    expect(verifyReport(tamper((a) => (a.bodySha256 = sha256("x"))), key)).toMatchObject({ ok: false, reason: "BAD_SIGNATURE" });
+    expect(
+      verifyReport(
+        tamper((a) => (a.payload.document.sha256 = sha256("forged"))),
+        key,
+      ),
+    ).toMatchObject({ ok: false, reason: "BAD_SIGNATURE" });
+    expect(
+      verifyReport(
+        tamper((a) => (a.payload.check.runId = "forged-run")),
+        key,
+      ),
+    ).toMatchObject({ ok: false, reason: "BAD_SIGNATURE" });
+    expect(
+      verifyReport(
+        tamper((a) => (a.payload.findings[0]!.verdict = "PASS")),
+        key,
+      ),
+    ).toMatchObject({ ok: false, reason: "BAD_SIGNATURE" });
+    expect(
+      verifyReport(
+        tamper((a) => (a.bodySha256 = sha256("x"))),
+        key,
+      ),
+    ).toMatchObject({ ok: false, reason: "BAD_SIGNATURE" });
   });
 
   it("fails a report re-signed by another key, a swapped signature, a second block, and a body re-hashed by a forger", () => {
@@ -138,27 +207,50 @@ describe("verification", () => {
     expect(verifyReport(forged.html, key)).toMatchObject({ ok: false, reason: "UNKNOWN_KEY" });
     const relabeled = forged.html.replace(other.keyId, key.keyId);
     expect(verifyReport(relabeled, key)).toMatchObject({ ok: false, reason: "BAD_SIGNATURE" });
-    expect(verifyReport(html.replace("</body>", `${html.match(/<script type="application\/json" id="yomizaka-attestation">[^<]*<\/script>/)![0]}</body>`), key)).toMatchObject({ ok: false });
+    expect(
+      verifyReport(
+        html.replace(
+          "</body>",
+          `${html.match(/<script type="application\/json" id="yomizaka-attestation">[^<]*<\/script>/)![0]}</body>`,
+        ),
+        key,
+      ),
+    ).toMatchObject({ ok: false });
     // A forger edits the text AND recomputes bodySha256, but cannot recompute the signature.
     const edited = html.replace("Point non respecté", "Point respecté");
-    const rehashed = edited.replace(/(<script type="application\/json" id="yomizaka-attestation">)([^<]*)(<\/script>)/, (_m, a: string, json: string, c: string) => {
-      const att = JSON.parse(json);
-      att.bodySha256 = sha256(edited.replace(/<script type="application\/json" id="yomizaka-attestation">[^<]*<\/script>/, "<!--yomizaka-attestation-->"));
-      return a + JSON.stringify(att).replace(/</g, "\\u003c") + c;
-    });
+    const rehashed = edited.replace(
+      /(<script type="application\/json" id="yomizaka-attestation">)([^<]*)(<\/script>)/,
+      (_m, a: string, json: string, c: string) => {
+        const att = JSON.parse(json);
+        att.bodySha256 = sha256(
+          edited.replace(
+            /<script type="application\/json" id="yomizaka-attestation">[^<]*<\/script>/,
+            "<!--yomizaka-attestation-->",
+          ),
+        );
+        return a + JSON.stringify(att).replace(/</g, "\\u003c") + c;
+      },
+    );
     expect(verifyReport(rehashed, key)).toMatchObject({ ok: false, reason: "BAD_SIGNATURE" });
   });
 
   it("answers, never throws, on what is not a report", () => {
     expect(verifyReport("", key)).toMatchObject({ ok: false, reason: "NOT_A_REPORT" });
     expect(verifyReport("<html>hello</html>", key)).toMatchObject({ ok: false, reason: "NOT_A_REPORT" });
-    expect(verifyReport('<script type="application/json" id="yomizaka-attestation">{nope</script>', key)).toMatchObject({ ok: false, reason: "UNREADABLE" });
-    expect(verifyReport('<script type="application/json" id="yomizaka-attestation">{"schema":"x"}</script>', key)).toMatchObject({ ok: false, reason: "UNREADABLE" });
+    expect(verifyReport('<script type="application/json" id="yomizaka-attestation">{nope</script>', key)).toMatchObject(
+      { ok: false, reason: "UNREADABLE" },
+    );
+    expect(
+      verifyReport('<script type="application/json" id="yomizaka-attestation">{"schema":"x"}</script>', key),
+    ).toMatchObject({ ok: false, reason: "UNREADABLE" });
   });
 
   it("a signature can be checked without the site: Ed25519 over the canonical text", () => {
     const { attestation } = issue();
-    const message = Buffer.from(canonicalJson({ bodySha256: attestation.bodySha256, payload: attestation.payload }), "utf8");
+    const message = Buffer.from(
+      canonicalJson({ bodySha256: attestation.bodySha256, payload: attestation.payload }),
+      "utf8",
+    );
     expect(crypto.verify(null, message, key.publicKey, Buffer.from(attestation.signature, "base64"))).toBe(true);
   });
 });
@@ -175,7 +267,10 @@ describe("the signing key", () => {
     } catch (e) {
       expect(String(e)).not.toContain("SECRETVALUE");
     }
-    const rsa = crypto.generateKeyPairSync("rsa", { modulusLength: 2048 }).privateKey.export({ type: "pkcs8", format: "der" }).toString("base64");
+    const rsa = crypto
+      .generateKeyPairSync("rsa", { modulusLength: 2048 })
+      .privateKey.export({ type: "pkcs8", format: "der" })
+      .toString("base64");
     expect(() => parseSigningKey(rsa)).toThrow(/Ed25519/);
   });
 });

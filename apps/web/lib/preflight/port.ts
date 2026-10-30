@@ -63,5 +63,10 @@ export type PreflightOutcome = Inspection | { kind: "reused"; runId: string; ana
 
 /** Where an earlier result for the same bytes, tenant and rules version may be found (the application's data). */
 export interface ReuseStore {
-  find(query: { tenantId: string; sha256: string; studio: string; rulesKey: string }): Promise<{ runId: string; analysisId: string } | null>;
+  find(query: {
+    tenantId: string;
+    sha256: string;
+    studio: string;
+    rulesKey: string;
+  }): Promise<{ runId: string; analysisId: string } | null>;
 }

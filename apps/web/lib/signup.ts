@@ -40,7 +40,10 @@ export const isVerifyToken = (v: string | undefined | null): v is string => !!v 
 
 /** Creates the account (or re-sends the link of an unverified one) and mails the link. Always resolves the same way. */
 export async function signUp(deps: SignUpDeps, input: SignUpInput, now: Date): Promise<{ accountId: string | null }> {
-  const [existing] = await deps.query<{ id: string; email_verified_at: Date | null }>("SELECT id, email_verified_at FROM accounts WHERE email = $1", [input.email]);
+  const [existing] = await deps.query<{ id: string; email_verified_at: Date | null }>(
+    "SELECT id, email_verified_at FROM accounts WHERE email = $1",
+    [input.email],
+  );
   if (existing?.email_verified_at) return { accountId: null }; // a real account: say nothing, send nothing
   let id = existing?.id;
   if (!id) {
@@ -51,20 +54,30 @@ export async function signUp(deps: SignUpDeps, input: SignUpInput, now: Date): P
     id = row!.id;
   }
   const token = (deps.token ?? newVerifyToken)();
-  await deps.query("INSERT INTO email_verifications (account_id, token_hash, expires_at) VALUES ($1, $2, $3::timestamptz + make_interval(hours => $4))", [id, tokenHash(token), now, VERIFY_TTL_HOURS]);
+  await deps.query(
+    "INSERT INTO email_verifications (account_id, token_hash, expires_at) VALUES ($1, $2, $3::timestamptz + make_interval(hours => $4))",
+    [id, tokenHash(token), now, VERIFY_TTL_HOURS],
+  );
   const url = `${deps.baseUrl.replace(/\/$/, "")}/${input.locale}/verify-email?token=${encodeURIComponent(token)}`;
   await deps.mail({ kind: "confirmEmail", to: input.email, locale: input.locale, url, hours: VERIFY_TTL_HOURS });
   return { accountId: id };
 }
 
 /** Confirms an address from its link: single use, not expired. */
-export async function verifyEmail(deps: Pick<SignUpDeps, "query">, token: string, now: Date): Promise<"VERIFIED" | "INVALID"> {
+export async function verifyEmail(
+  deps: Pick<SignUpDeps, "query">,
+  token: string,
+  now: Date,
+): Promise<"VERIFIED" | "INVALID"> {
   if (!isVerifyToken(token)) return "INVALID";
   const [row] = await deps.query<{ id: string; account_id: string }>(
     "UPDATE email_verifications SET used_at = $2 WHERE token_hash = $1 AND used_at IS NULL AND expires_at > $2 RETURNING id, account_id",
     [tokenHash(token), now],
   );
   if (!row) return "INVALID";
-  await deps.query("UPDATE accounts SET email_verified_at = COALESCE(email_verified_at, $2) WHERE id = $1", [row.account_id, now]);
+  await deps.query("UPDATE accounts SET email_verified_at = COALESCE(email_verified_at, $2) WHERE id = $1", [
+    row.account_id,
+    now,
+  ]);
   return "VERIFIED";
 }

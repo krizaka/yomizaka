@@ -2,7 +2,7 @@ import { SIGNAL_LEVELS } from "@yomizaka/core";
 
 import { formatDate } from "@/components/console/format";
 
-import { type Locale,translator } from "./i18n";
+import { type Locale, translator } from "./i18n";
 import type { OwnerSignal } from "./owner-report";
 import { askForOf, evidenceLines, groupByFamily, ordinaryOf, type TraceSay } from "./signal-cards";
 
@@ -20,17 +20,31 @@ export interface OwnerTraceGroup {
 export function traceCardsOf(signals: readonly OwnerSignal[], lang: Locale): OwnerTraceGroup[] {
   const t = translator(lang) as unknown as (key: string, vars?: Record<string, string | number>) => string;
   const say: TraceSay = (key, vars) => t(`console.analysis.traces.${key}`, vars);
-  const asSignal = (s: OwnerSignal) => ({ signalId: s.id, level: s.level, observation: s.observation, family: s.family, evidence: s.evidence, answer: s.answer });
+  const asSignal = (s: OwnerSignal) => ({
+    signalId: s.id,
+    level: s.level,
+    observation: s.observation,
+    family: s.family,
+    evidence: s.evidence,
+    answer: s.answer,
+  });
   return groupByFamily(signals.map(asSignal)).map((g) => ({
     family: g.family,
     title: say(`families.${g.family}`),
     cards: g.signals.map((s) => {
       const where = evidenceLines(say, s).join(" · ");
-      const level = (SIGNAL_LEVELS as readonly string[]).includes(s.level) ? t(`console.analysis.levels.${s.level}`) : s.level;
+      const level = (SIGNAL_LEVELS as readonly string[]).includes(s.level)
+        ? t(`console.analysis.levels.${s.level}`)
+        : s.level;
       const head = `${level}: ${s.observation}`;
-      const lines = [where ? `${head} (${where})` : head, `${say("ordinaryLabel")}: ${ordinaryOf(say, s)}`, `${say("askForLabel")}: ${askForOf(say, s)}`];
-      return s.answer ? [...lines, `${say("answerLabel", { date: formatDate(s.answer.at, lang) })}: ${s.answer.text}`] : lines;
+      const lines = [
+        where ? `${head} (${where})` : head,
+        `${say("ordinaryLabel")}: ${ordinaryOf(say, s)}`,
+        `${say("askForLabel")}: ${askForOf(say, s)}`,
+      ];
+      return s.answer
+        ? [...lines, `${say("answerLabel", { date: formatDate(s.answer.at, lang) })}: ${s.answer.text}`]
+        : lines;
     }),
   }));
 }
-

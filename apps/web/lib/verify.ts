@@ -39,7 +39,9 @@ async function readOriginal(form: FormData): Promise<Uint8Array | null> {
  * document's bytes. Everything is read in memory, checked and dropped: nothing is stored, nothing reaches a model
  * (verification is Ed25519 and SHA-256 only). Who may verify is decided before the signature is checked (lib/report-access.ts).
  */
-export async function readVerifyForm(form: FormData): Promise<{ text: string; pdf: Uint8Array | null; document: Uint8Array | null }> {
+export async function readVerifyForm(
+  form: FormData,
+): Promise<{ text: string; pdf: Uint8Array | null; document: Uint8Array | null }> {
   const { text, pdf } = await readReport(form);
   const document = await readOriginal(form);
   return { text, pdf, document };

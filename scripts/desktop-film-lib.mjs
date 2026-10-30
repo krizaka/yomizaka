@@ -20,7 +20,8 @@ const frameName = (n) => `frame-${String(n).padStart(5, "0")}.png`;
 
 /** Fails loudly when the film holds fewer frames than `min`: an empty film is an error, never a green job with no clip. */
 export function assertFrames(count, min = MIN_FRAMES) {
-  if (!Number.isInteger(count) || count < min) throw new Error(`the film holds ${count} frame(s), at least ${min} are needed: the journey filmed nothing`);
+  if (!Number.isInteger(count) || count < min)
+    throw new Error(`the film holds ${count} frame(s), at least ${min} are needed: the journey filmed nothing`);
   return count;
 }
 
@@ -41,20 +42,22 @@ export function trimStart(frames) {
  */
 export function assertLivelyStart(frames, n = 2) {
   const head = frames.slice(0, n);
-  if (head.length < n) throw new Error(`the film opens on ${head.length} frame(s), at least ${n} are needed to judge its start`);
+  if (head.length < n)
+    throw new Error(`the film opens on ${head.length} frame(s), at least ${n} are needed to judge its start`);
   if (head.some((f) => f.size < BLANK_BYTES)) throw new Error("the film opens on a blank window");
-  if (new Set(head.map((f) => f.hash)).size < 2) throw new Error(`the first ${n} frames are the same picture: the film opens idle`);
+  if (new Set(head.map((f) => f.hash)).size < 2)
+    throw new Error(`the first ${n} frames are the same picture: the film opens idle`);
 }
 
 /**
  * The collapsed film: the blank start is cut, and a screen that stays the same is one frame shown for at most HOLD_S (idle
- * stretches are dropped, a moving screen keeps its pace). `frames` = `[{ file, at, hash, size }]`, `at` in milliseconds. 
+ * stretches are dropped, a moving screen keeps its pace). `frames` = `[{ file, at, hash, size }]`, `at` in milliseconds.
  */
 export function collapse(input, fps = FPS) {
   const interval = 1000 / fps;
   const frames = trimStart(input);
   const entries = [];
-  for (let i = 0; i < frames.length; ) {
+  for (let i = 0; i < frames.length;) {
     let j = i;
     while (j + 1 < frames.length && frames[j + 1].hash === frames[i].hash) j += 1;
     const next = frames[j + 1];
@@ -104,7 +107,12 @@ export function createFilm({
           const file = join(FRAMES_DIR, frameName(frames.length + 1));
           const bytes = Buffer.from(png, "base64");
           save(join(dir, file), bytes);
-          frames.push({ file, at: began - origin, size: bytes.length, hash: createHash("sha1").update(bytes).digest("hex") });
+          frames.push({
+            file,
+            at: began - origin,
+            size: bytes.length,
+            hash: createHash("sha1").update(bytes).digest("hex"),
+          });
         }
       } catch {
         // a screenshot the window could not give (a transition): the next one will do

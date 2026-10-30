@@ -20,7 +20,12 @@ export function RunId({ id }: Readonly<{ id: string | null | undefined }>) {
       <code className="min-w-0 truncate font-mono text-xs tabular-nums text-fg-muted" title={id}>
         {id.length > SHOWN ? `${id.slice(0, SHOWN)}…` : id}
       </code>
-      <IconButton label={copied ? say("checks.runCopied") : say("checks.runCopy", { id: id.slice(0, SHOWN) })} variant="ghost" size="icon" onClick={copy}>
+      <IconButton
+        label={copied ? say("checks.runCopied") : say("checks.runCopy", { id: id.slice(0, SHOWN) })}
+        variant="ghost"
+        size="icon"
+        onClick={copy}
+      >
         <CopyIcon aria-hidden="true" />
       </IconButton>
     </span>

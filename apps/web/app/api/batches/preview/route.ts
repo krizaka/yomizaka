@@ -17,11 +17,16 @@ export function POST(req: Request) {
     await limit("batchPreview", req, session.account.id);
     const form = await req.formData().catch(() => null);
     const manifest = form?.get("manifest");
-    if (!(manifest instanceof File) && typeof manifest !== "string") throw refuse(400, "BAD_REQUEST", "A CSV is expected in the field `manifest`");
+    if (!(manifest instanceof File) && typeof manifest !== "string")
+      throw refuse(400, "BAD_REQUEST", "A CSV is expected in the field `manifest`");
     const text = typeof manifest === "string" ? manifest : await manifest.text();
     const files = await Promise.all(
-      (form?.getAll("files") ?? []).filter((f): f is File => f instanceof File).map(async (f) => ({ name: f.name, type: f.type, bytes: new Uint8Array(await f.arrayBuffer()) })),
+      (form?.getAll("files") ?? [])
+        .filter((f): f is File => f instanceof File)
+        .map(async (f) => ({ name: f.name, type: f.type, bytes: new Uint8Array(await f.arrayBuffer()) })),
     );
-    return Response.json(await previewBatch(session.account.id, text, files, await settingsFor(session.account.id), new Date()));
+    return Response.json(
+      await previewBatch(session.account.id, text, files, await settingsFor(session.account.id), new Date()),
+    );
   });
 }

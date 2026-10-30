@@ -1,6 +1,6 @@
 "use client";
 
-import { type Marker,MARKERS } from "@krizaka/organize/contract";
+import { type Marker, MARKERS } from "@krizaka/organize/contract";
 import { krizakaFetch, useMutation } from "@krizaka/query";
 import { Alert } from "@krizaka/ui/alert";
 import { Button } from "@krizaka/ui/button";
@@ -17,20 +17,32 @@ import { TagChips } from "../console/TagChips";
 type TagOption = { id: string; name: string; color: "blue" | "green" | "amber" | "red" | "violet" | "gray" };
 
 /** The tags of one file, with their markers, and the dialog that sets them (the account's tags of kind « applicant_file »). */
-export function FileTags({ fileId, tags, current }: Readonly<{ fileId: string; tags: readonly TagOption[]; current: readonly string[] }>) {
+export function FileTags({
+  fileId,
+  tags,
+  current,
+}: Readonly<{ fileId: string; tags: readonly TagOption[]; current: readonly string[] }>) {
   const { say } = useSay();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState<string[]>([...current]);
   const [created, setCreated] = useState<readonly TagOption[]>([]);
   const [problem, setProblem] = useState<string | null>(null);
-  const save = useMutation({ mutationFn: (tagIds: string[]) => krizakaFetch("/api/organize/applicant_file/tags/set", { method: "PUT", json: { id: fileId, tagIds } }) });
-  const create = useMutation({ mutationFn: (tag: { name: string; marker: Marker }) => krizakaFetch("/api/organize/applicant_file/tags", { method: "POST", json: tag }) });
+  const save = useMutation({
+    mutationFn: (tagIds: string[]) =>
+      krizakaFetch("/api/organize/applicant_file/tags/set", { method: "PUT", json: { id: fileId, tagIds } }),
+  });
+  const create = useMutation({
+    mutationFn: (tag: { name: string; marker: Marker }) =>
+      krizakaFetch("/api/organize/applicant_file/tags", { method: "POST", json: tag }),
+  });
   const all = [...tags, ...created];
   const addTag = async (name: string, marker: Marker) => {
     setProblem(null);
     try {
-      const { tag } = (await create.mutateAsync({ name, marker })) as { tag: { id: string; name: string; marker: Marker } };
+      const { tag } = (await create.mutateAsync({ name, marker })) as {
+        tag: { id: string; name: string; marker: Marker };
+      };
       setCreated((list) => [...list, { id: tag.id, name: tag.name, color: tag.marker }]);
       setValue((ids) => [...ids, tag.id]);
     } catch (error) {
@@ -53,7 +65,11 @@ export function FileTags({ fileId, tags, current }: Readonly<{ fileId: string; t
       <h2 id="file-tags-title" className="m-0 text-lg font-bold text-fg">
         {say("dossiers.tagsEdit.title")}
       </h2>
-      {worn.length ? <TagChips tags={worn} /> : <p className="m-0 text-sm text-fg-secondary">{say("dossiers.tagsEdit.none")}</p>}
+      {worn.length ? (
+        <TagChips tags={worn} />
+      ) : (
+        <p className="m-0 text-sm text-fg-secondary">{say("dossiers.tagsEdit.none")}</p>
+      )}
       <div>
         <Button variant="secondary" size="md" onClick={() => setOpen(true)}>
           {say("dossiers.tagsEdit.edit")}
@@ -78,7 +94,12 @@ export function FileTags({ fileId, tags, current }: Readonly<{ fileId: string; t
                 inputLabel={say("dossiers.tagsEdit.inputLabel")}
                 placeholder={say("dossiers.tagsEdit.placeholder")}
                 createLabel={(name) => say("dossiers.tagsEdit.createLabel", { name })}
-                markerNames={Object.fromEntries(MARKERS.map((m) => [m, say(`dossiers.tagsEdit.markers.${m}`)])) as Record<Marker, string>}
+                markerNames={
+                  Object.fromEntries(MARKERS.map((m) => [m, say(`dossiers.tagsEdit.markers.${m}`)])) as Record<
+                    Marker,
+                    string
+                  >
+                }
                 markerLabel={say("dossiers.tagsEdit.markerLabel")}
                 emptyLabel={say("dossiers.tagsEdit.emptyLabel")}
               />

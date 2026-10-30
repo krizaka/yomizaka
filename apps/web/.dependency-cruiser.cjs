@@ -4,6 +4,12 @@ const preset = require("@krizaka/config/dependency-cruiser");
 
 // A contract suite (`*.contract.ts`, e.g. the DocumentStore contract every adapter runs) is test code: it may import vitest.
 const withContractSuites = (rule) =>
-  rule.name === "not-to-dev-dep" ? { ...rule, from: { ...rule.from, pathNot: [...[rule.from?.pathNot ?? []].flat(), "[.]contract[.]ts$"] } } : rule;
+  rule.name === "not-to-dev-dep"
+    ? { ...rule, from: { ...rule.from, pathNot: [...[rule.from?.pathNot ?? []].flat(), "[.]contract[.]ts$"] } }
+    : rule;
 
-module.exports = { ...preset, forbidden: preset.forbidden.map(withContractSuites), options: { ...preset.options, tsConfig: { fileName: "tsconfig.json" } } };
+module.exports = {
+  ...preset,
+  forbidden: preset.forbidden.map(withContractSuites),
+  options: { ...preset.options, tsConfig: { fileName: "tsconfig.json" } },
+};

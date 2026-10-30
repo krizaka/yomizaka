@@ -8,5 +8,10 @@ export const FOLDER_BRAND = "yomizaka" as const;
  * product's gradient), never a person's silhouette (yomizaka#433). `label(n)` names the n-th tile for assistive technology.
  */
 export function folderAvatarOptions(seeds: readonly string[], label: (n: number) => string): AvatarOption[] {
-  return seeds.map((seed, i) => ({ id: seed, label: label(i + 1), kind: "folder", defaultAvatar: { brand: FOLDER_BRAND, kind: "folder", seed } }));
+  return seeds.map((seed, i) => ({
+    id: seed,
+    label: label(i + 1),
+    kind: "folder",
+    defaultAvatar: { brand: FOLDER_BRAND, kind: "folder", seed },
+  }));
 }

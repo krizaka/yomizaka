@@ -17,7 +17,8 @@ const closedRobots = () => new NextResponse(CLOSED_ROBOTS, { headers: { "content
 const notFound = () => new NextResponse("Not found", { status: 404 });
 /** krizaka-ui#827: a signed-in person never sees the public landing page; the cookie is a hint, the app and the API still resolve the session. */
 const LANDING = ["/", "/fr", "/en"] as const;
-const hinted = <T extends NextResponse>(response: T, request: NextRequest): T => sessionHint(response, request, { cookie: SESSION_COOKIE, secure: process.env.NODE_ENV === "production" });
+const hinted = <T extends NextResponse>(response: T, request: NextRequest): T =>
+  sessionHint(response, request, { cookie: SESSION_COOKIE, secure: process.env.NODE_ENV === "production" });
 const seal = <T extends Response>(response: T, closed: boolean): T => {
   if (closed) response.headers.set("x-robots-tag", NOINDEX_HEADER);
   return response;
@@ -26,7 +27,12 @@ const seal = <T extends Response>(response: T, closed: boolean): T => {
 /** dev.yomizaka.com (APP_DEV_HOST): robots.txt closes everything; a page goes to www (308); healthz keeps serving. */
 function devResponse(request: NextRequest): NextResponse {
   if (request.nextUrl.pathname === "/robots.txt") return closedRobots();
-  const to = devRedirect(request.method, request.nextUrl.pathname, request.nextUrl.search, process.env.APP_PUBLIC_URL ?? SITE_URL);
+  const to = devRedirect(
+    request.method,
+    request.nextUrl.pathname,
+    request.nextUrl.search,
+    process.env.APP_PUBLIC_URL ?? SITE_URL,
+  );
   return to ? NextResponse.redirect(to, 308) : NextResponse.next();
 }
 
@@ -60,7 +66,14 @@ export function proxy(request: NextRequest) {
   if (dev) return seal(devResponse(request), closed);
   if (!admin && closed && pathname === "/robots.txt") return seal(closedRobots(), closed);
   if (!admin && closed && pathname === "/sitemap.xml") return seal(notFound(), closed);
-  const home = admin ? null : landingRedirect(request, { cookie: SESSION_COOKIE, landing: LANDING, home: () => `/${isLocale(pathname.split("/")[1]) ? pathname.split("/")[1] : chosen}/app`, origin: process.env.APP_PUBLIC_URL ?? SITE_URL });
+  const home = admin
+    ? null
+    : landingRedirect(request, {
+        cookie: SESSION_COOKIE,
+        landing: LANDING,
+        home: () => `/${isLocale(pathname.split("/")[1]) ? pathname.split("/")[1] : chosen}/app`,
+        origin: process.env.APP_PUBLIC_URL ?? SITE_URL,
+      });
   if (home) return seal(home, closed);
   const route = routeFor(host, pathname, chosen);
   const direct = directResponse(request, route, host);
@@ -69,7 +82,10 @@ export function proxy(request: NextRequest) {
   const segment = pathname.split("/")[1];
   const forwarded = new Headers(request.headers);
   forwarded.set("x-locale", isLocale(segment) ? segment : chosen);
-  const response = route.kind === "rewrite" ? NextResponse.rewrite(new URL(route.path, request.url), { request: { headers: forwarded } }) : NextResponse.next({ request: { headers: forwarded } });
+  const response =
+    route.kind === "rewrite"
+      ? NextResponse.rewrite(new URL(route.path, request.url), { request: { headers: forwarded } })
+      : NextResponse.next({ request: { headers: forwarded } });
   if (isLocale(segment) && request.cookies.get("NEXT_LOCALE")?.value !== segment) {
     response.cookies.set("NEXT_LOCALE", segment, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
   }
@@ -78,5 +94,13 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   // Every localised address too, even with a dot in a segment (`/fr/screening/missing.pdf`): its 404 needs the language (Y10).
-  matcher: ["/api/:path*", "/((?!api|_next/static|_next/image|og.png|favicon.ico|icon.svg|.*\\..*).*)", "/(en|fr)/:path*", "/robots.txt", "/sitemap.xml", "/llms.txt", "/.well-known/:path*"],
+  matcher: [
+    "/api/:path*",
+    "/((?!api|_next/static|_next/image|og.png|favicon.ico|icon.svg|.*\\..*).*)",
+    "/(en|fr)/:path*",
+    "/robots.txt",
+    "/sitemap.xml",
+    "/llms.txt",
+    "/.well-known/:path*",
+  ],
 };

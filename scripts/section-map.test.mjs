@@ -11,13 +11,20 @@ const json = (p) => JSON.parse(read(p));
 
 /** One section map, read by the three apps (§ 3.6 of the design direction, yomizaka#319). */
 describe("the web, the phone and the Mac draw the same section map", () => {
-  const readers = { web: "apps/web/components/console/ConsoleShell.tsx", phone: "apps/mobile/src/domain/tabs.ts", mac: "apps/desktop/src/lib/menu.ts" };
+  const readers = {
+    web: "apps/web/components/console/ConsoleShell.tsx",
+    phone: "apps/mobile/src/domain/tabs.ts",
+    mac: "apps/desktop/src/lib/menu.ts",
+  };
 
-  it.each(Object.entries(readers))("%s imports the list from @yomizaka/core and asks for its own platform", (platform, file) => {
-    const src = read(file);
-    expect(src).toMatch(/import \{[^}]*\bsectionsFor\b[^}]*\} from "@yomizaka\/core"/);
-    expect(src).toContain(`sectionsFor("${platform}"`);
-  });
+  it.each(Object.entries(readers))(
+    "%s imports the list from @yomizaka/core and asks for its own platform",
+    (platform, file) => {
+      const src = read(file);
+      expect(src).toMatch(/import \{[^}]*\bsectionsFor\b[^}]*\} from "@yomizaka\/core"/);
+      expect(src).toContain(`sectionsFor("${platform}"`);
+    },
+  );
 
   it("keeps no destination list of its own: the phone's tab bar and the Mac's sidebar are drawn from the map", () => {
     const phone = read("apps/mobile/app/[locale]/app/_layout.tsx");

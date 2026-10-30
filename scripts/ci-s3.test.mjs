@@ -9,7 +9,14 @@ describe("CI runs the S3 adapter against a real S3 server", () => {
   it("has a storage-s3 job: an S3 server from scripts/ci-s3.sh, the STORAGE_IT_S3_* values, the S3 tests, required", () => {
     expect(ci).toMatch(/^ {2}storage-s3:/m);
     expect(ci).toContain("scripts/ci-s3.sh");
-    for (const key of ["STORAGE_IT_S3_ENDPOINT", "STORAGE_IT_S3_USER", "STORAGE_IT_S3_PASS", "STORAGE_IT_S3_BUCKET", "STORAGE_IT_S3_REQUIRED"]) expect(ci, key).toContain(key);
+    for (const key of [
+      "STORAGE_IT_S3_ENDPOINT",
+      "STORAGE_IT_S3_USER",
+      "STORAGE_IT_S3_PASS",
+      "STORAGE_IT_S3_BUCKET",
+      "STORAGE_IT_S3_REQUIRED",
+    ])
+      expect(ci, key).toContain(key);
     expect(ci).toContain("lib/storage/s3.test.ts");
   });
   it("the S3 tests fail rather than skip when the job is required and its variables are missing", () => {

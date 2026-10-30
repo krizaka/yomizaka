@@ -10,7 +10,10 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 
 test("every test id the take uses is drawn by its component", () => {
   for (const [key, { id, source }] of Object.entries(CHECK_TEST_IDS)) {
-    assert.ok(readFileSync(path.join(root, source), "utf8").includes(`data-testid="${id}"`), `${key}: ${id} is gone from ${source}`);
+    assert.ok(
+      readFileSync(path.join(root, source), "utf8").includes(`data-testid="${id}"`),
+      `${key}: ${id} is gone from ${source}`,
+    );
   }
 });
 

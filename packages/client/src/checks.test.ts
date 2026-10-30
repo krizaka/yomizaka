@@ -6,7 +6,10 @@ const doc = { kind: "lease", hasText: true, mimeType: "application/pdf" } as con
 
 describe("what a document can be checked for", () => {
   it("checks a lease against Québec's own rules, then its authenticity", () => {
-    expect(availableChecks(doc)).toEqual([{ studio: "compliance-check", jurisdiction: "QC" }, { studio: "document-authenticity" }]);
+    expect(availableChecks(doc)).toEqual([
+      { studio: "compliance-check", jurisdiction: "QC" },
+      { studio: "document-authenticity" },
+    ]);
   });
 
   it.each([
@@ -21,7 +24,9 @@ describe("what a document can be checked for", () => {
   });
 
   it("offers no authenticity check for a text file", () => {
-    expect(availableChecks({ ...doc, mimeType: "text/plain" })).toEqual([{ studio: "compliance-check", jurisdiction: "QC" }]);
+    expect(availableChecks({ ...doc, mimeType: "text/plain" })).toEqual([
+      { studio: "compliance-check", jurisdiction: "QC" },
+    ]);
   });
 
   it("offers no compliance check for another kind: no ruleset is in force for it, and the lease's rules are never its fallback", () => {

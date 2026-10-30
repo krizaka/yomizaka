@@ -31,7 +31,9 @@ describe("skew", () => {
     }
   });
   it("leaves a blank page alone", () => {
-    expect(estimateSkew({ data: new Uint8Array(100 * 100).fill(255), width: 100, height: 100 }, { max: 12, step: 0.5 })).toBe(0);
+    expect(
+      estimateSkew({ data: new Uint8Array(100 * 100).fill(255), width: 100, height: 100 }, { max: 12, step: 0.5 }),
+    ).toBe(0);
   });
 });
 

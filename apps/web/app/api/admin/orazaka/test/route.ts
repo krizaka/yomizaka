@@ -12,11 +12,23 @@ export const POST = (req: Request) =>
     const started = performance.now();
     try {
       const studios = await orazaka().studios();
-      await audit({ action: "orazaka.connection_tested", actorId: session.account.id, actorLabel: session.account.email, detail: { ok: true, studios: studios.length }, headers: req.headers });
+      await audit({
+        action: "orazaka.connection_tested",
+        actorId: session.account.id,
+        actorLabel: session.account.email,
+        detail: { ok: true, studios: studios.length },
+        headers: req.headers,
+      });
       return Response.json({ ok: true, ms: Math.round(performance.now() - started), studios });
     } catch (error) {
       const code = error instanceof HttpError ? codeOf(error, "UNKNOWN") : "UNKNOWN";
-      await audit({ action: "orazaka.connection_tested", actorId: session.account.id, actorLabel: session.account.email, detail: { ok: false, code }, headers: req.headers });
+      await audit({
+        action: "orazaka.connection_tested",
+        actorId: session.account.id,
+        actorLabel: session.account.email,
+        detail: { ok: false, code },
+        headers: req.headers,
+      });
       return Response.json({ ok: false, ms: Math.round(performance.now() - started), code, studios: [] });
     }
   });

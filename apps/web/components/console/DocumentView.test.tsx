@@ -10,10 +10,19 @@ import fr from "@/messages/fr.json";
 import { DocumentView } from "./DocumentView";
 
 const nav = vi.hoisted(() => ({ search: "" }));
-vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh() {}, push() {}, replace() {} }), usePathname: () => "/fr/app/documents/d1/rapport", useSearchParams: () => new URLSearchParams(nav.search) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh() {}, push() {}, replace() {} }),
+  usePathname: () => "/fr/app/documents/d1/rapport",
+  useSearchParams: () => new URLSearchParams(nav.search),
+}));
 
 const MESSAGES = { en: { console: en.console }, fr: { console: fr.console } } as const;
-const readable = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ");
+const readable = (html: string) =>
+  html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&#x27;|&#39;/g, "'")
+    .replace(/&[a-z#0-9]+;/gi, " ")
+    .replace(/\s+/g, " ");
 
 /** A finished compliance check, as Orazaka returns it — or as the demo seed wrote it (`inputs.seeded`). */
 const check = (inputs: Record<string, string>, id = "a1", runId = "run_8f3a2c") => ({
@@ -30,15 +39,53 @@ const check = (inputs: Record<string, string>, id = "a1", runId = "run_8f3a2c") 
     asOf: "2026-10-23",
     summary: { byVerdict: { FAIL: 1, PASS: 1 }, blockingFailures: 1, rulesEvaluated: 2 },
     findings: [
-      { ruleId: "QC-LEASE-001", title: "Durée du bail", severity: "INFO", verdict: "PASS", explanation: "Douze mois.", method: "DETERMINISTIC" },
-      { ruleId: "QC-LEASE-004", title: "Dépôt de garantie interdit", severity: "BLOCKING", verdict: "FAIL", explanation: "Le bail exige un dépôt.", evidenceSpan: { quote: "dépôt de sécurité de 1 450 $" }, method: "DETERMINISTIC", citation: "C.c.Q., art. 1904" },
+      {
+        ruleId: "QC-LEASE-001",
+        title: "Durée du bail",
+        severity: "INFO",
+        verdict: "PASS",
+        explanation: "Douze mois.",
+        method: "DETERMINISTIC",
+      },
+      {
+        ruleId: "QC-LEASE-004",
+        title: "Dépôt de garantie interdit",
+        severity: "BLOCKING",
+        verdict: "FAIL",
+        explanation: "Le bail exige un dépôt.",
+        evidenceSpan: { quote: "dépôt de sécurité de 1 450 $" },
+        method: "DETERMINISTIC",
+        citation: "C.c.Q., art. 1904",
+      },
     ],
   },
   error: null,
   createdAt: "2026-10-23T12:00:00.000Z",
   finishedAt: "2026-10-23T12:00:04.000Z",
 });
-const insight = { understanding: { nature: { id: "lease", label: { fr: "Bail de logement", en: "Residential lease" }, confidence: "high", score: 0.9 }, alternative: null, language: "fr", pages: 1, issuer: null, dates: [], parties: [{ role: "landlord", name: "Mathis Imaginaire-Roy" }, { role: "tenant", name: "Camille Fictif-Beaulieu" }], references: [], amounts: [{ kind: "rent", cents: 145000, text: "1 450,00 $" }, { kind: "rent", cents: 145000, text: "1 450,00 $" }], check: { studio: "compliance-check", documentType: "lease", ruleset: null }, authenticity: true, needsModel: false }, pii: { total: 0, counts: {} } };
+const insight = {
+  understanding: {
+    nature: { id: "lease", label: { fr: "Bail de logement", en: "Residential lease" }, confidence: "high", score: 0.9 },
+    alternative: null,
+    language: "fr",
+    pages: 1,
+    issuer: null,
+    dates: [],
+    parties: [
+      { role: "landlord", name: "Mathis Imaginaire-Roy" },
+      { role: "tenant", name: "Camille Fictif-Beaulieu" },
+    ],
+    references: [],
+    amounts: [
+      { kind: "rent", cents: 145000, text: "1 450,00 $" },
+      { kind: "rent", cents: 145000, text: "1 450,00 $" },
+    ],
+    check: { studio: "compliance-check", documentType: "lease", ruleset: null },
+    authenticity: true,
+    needsModel: false,
+  },
+  pii: { total: 0, counts: {} },
+};
 const document = (analyses: unknown[], extra: Record<string, unknown> = {}) => ({
   id: "d1",
   title: "bail-rosemont-5",
@@ -53,17 +100,36 @@ const document = (analyses: unknown[], extra: Record<string, unknown> = {}) => (
   sha256: "a".repeat(64),
   text: "BAIL DE LOGEMENT … dépôt de sécurité de 1 450 $ …",
   analyses,
-  storage: { kind: "database", endpoint: null, region: "ca", residency: "canada", encrypted: true, owner: "krizaka", devOnly: false },
+  storage: {
+    kind: "database",
+    endpoint: null,
+    region: "ca",
+    residency: "canada",
+    encrypted: true,
+    owner: "krizaka",
+    devOnly: false,
+  },
   retainUntil: null,
   purged: false,
   insight,
   ...extra,
 });
-const render = (doc: ReturnType<typeof document>, tab: "rapport" | "document" | "historique" = "rapport", locale: "en" | "fr" = "fr", place: { libraryId: string; collectionId: string; name: string; isDefault: boolean } | null = null) =>
+const render = (
+  doc: ReturnType<typeof document>,
+  tab: "rapport" | "document" | "historique" = "rapport",
+  locale: "en" | "fr" = "fr",
+  place: { libraryId: string; collectionId: string; name: string; isDefault: boolean } | null = null,
+) =>
   renderToStaticMarkup(
     <I18nProvider locale={locale} messages={MESSAGES[locale] as never}>
       <KrizakaQueryProvider>
-        <DocumentView initial={doc as never} tab={tab} place={place} perspective="landlord" offer={{ studios: ["compliance-check", "document-authenticity"], jurisdictions: ["QC"], rulesets: [] }} />
+        <DocumentView
+          initial={doc as never}
+          tab={tab}
+          place={place}
+          perspective="landlord"
+          offer={{ studios: ["compliance-check", "document-authenticity"], jurisdictions: ["QC"], rulesets: [] }}
+        />
       </KrizakaQueryProvider>
     </I18nProvider>,
   );
@@ -97,20 +163,35 @@ describe("the document on DetailLayout (the UX review's Y5)", () => {
   });
 
   it("leads back to the document's collection (its name), or to the library when it has none", () => {
-    const placed = render(document([check({ jurisdiction: "QC" })]), "rapport", "fr", { libraryId: "l1", collectionId: "c1", name: "4½ Villeray", isDefault: false });
+    const placed = render(document([check({ jurisdiction: "QC" })]), "rapport", "fr", {
+      libraryId: "l1",
+      collectionId: "c1",
+      name: "4½ Villeray",
+      isDefault: false,
+    });
     expect(placed).toContain('href="/fr/app/library/l1/c1"');
     expect(readable(placed)).toContain("4½ Villeray");
-    const mine = render(document([check({ jurisdiction: "QC" })]), "rapport", "fr", { libraryId: "l1", collectionId: "c0", name: "My documents", isDefault: true });
+    const mine = render(document([check({ jurisdiction: "QC" })]), "rapport", "fr", {
+      libraryId: "l1",
+      collectionId: "c0",
+      name: "My documents",
+      isDefault: true,
+    });
     expect(readable(mine)).toContain(fr.console.organisation.defaultName);
     expect(render(document([check({ jurisdiction: "QC" })]))).toContain('href="/fr/app"');
   });
 
   it("puts the review note at the foot of the report, as a footnote the verdict points to", () => {
     const html = render(document([check({ jurisdiction: "QC" })], {}), "rapport");
-    const reviewed = { ...check({ jurisdiction: "QC" }), report: { ...check({ jurisdiction: "QC" }).report, reviewStatus: "TO_REVIEW_BY_LAWYER" } };
+    const reviewed = {
+      ...check({ jurisdiction: "QC" }),
+      report: { ...check({ jurisdiction: "QC" }).report, reviewStatus: "TO_REVIEW_BY_LAWYER" },
+    };
     const noted = render(document([reviewed]));
     expect(noted).toContain('href="#fn-1"');
-    expect(noted.indexOf(fr.console.analysis.toReview.slice(0, 20))).toBeGreaterThan(noted.indexOf('data-testid="technical-details"'));
+    expect(noted.indexOf(fr.console.analysis.toReview.slice(0, 20))).toBeGreaterThan(
+      noted.indexOf('data-testid="technical-details"'),
+    );
     expect(html).not.toContain('href="#fn-1"');
   });
 
@@ -126,11 +207,16 @@ describe("the document on DetailLayout (the UX review's Y5)", () => {
 
   it("says a demo check at the foot, as a note under the report, never inside the technical details or as a box above it (P11)", () => {
     const seeded = render(document([check({ ...SEEDED_INPUTS })]));
-    const details = seeded.slice(seeded.indexOf('data-testid="technical-details"'), seeded.indexOf("</details>", seeded.indexOf('data-testid="technical-details"')));
+    const details = seeded.slice(
+      seeded.indexOf('data-testid="technical-details"'),
+      seeded.indexOf("</details>", seeded.indexOf('data-testid="technical-details"')),
+    );
     expect(readable(details)).not.toContain(fr.console.analysis.seededNote);
     const text = readable(seeded);
     expect(text.indexOf(fr.console.analysis.seededNote)).toBeGreaterThan(text.indexOf(fr.console.library.informative));
-    expect(seeded.indexOf(fr.console.analysis.seededNote.slice(0, 20))).toBeGreaterThan(seeded.indexOf('data-testid="verdict-band"'));
+    expect(seeded.indexOf(fr.console.analysis.seededNote.slice(0, 20))).toBeGreaterThan(
+      seeded.indexOf('data-testid="verdict-band"'),
+    );
     expect(readable(render(document([check({ jurisdiction: "QC" })])))).not.toContain(fr.console.analysis.seededNote);
   });
 
@@ -156,7 +242,12 @@ describe("the document on DetailLayout (the UX review's Y5)", () => {
 
   it("once a report exists, the other checks are actions in the aside, each opening its form in a dialog — no form in the main column", () => {
     nav.search = "";
-    const html = render(document([check({ jurisdiction: "QC" })]), "rapport", "fr", { libraryId: "l1", collectionId: "c1", name: "4½ Villeray", isDefault: false });
+    const html = render(document([check({ jurisdiction: "QC" })]), "rapport", "fr", {
+      libraryId: "l1",
+      collectionId: "c1",
+      name: "4½ Villeray",
+      isDefault: false,
+    });
     const main = html.indexOf('data-testid="tab-rapport"');
     const column = html.indexOf('data-testid="report-aside-column"');
     expect(main).toBeGreaterThan(0);
@@ -185,7 +276,9 @@ describe("the document on DetailLayout (the UX review's Y5)", () => {
 
   it("a photo's text (an image-only PDF, read by OCR) is shown under the viewer, so a finding can be found in it", () => {
     const ocr = { kind: "ocr", engine: "tesseract", confidence: 0.9, photos: 2, lowConfidence: false, origin: null };
-    expect(render(document([check({ jurisdiction: "QC" })], { textSource: ocr }), "document")).toContain('data-testid="document-text"');
+    expect(render(document([check({ jurisdiction: "QC" })], { textSource: ocr }), "document")).toContain(
+      'data-testid="document-text"',
+    );
     expect(render(document([check({ jurisdiction: "QC" })]), "document")).not.toContain('data-testid="document-text"');
   });
 

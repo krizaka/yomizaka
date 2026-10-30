@@ -23,7 +23,6 @@ import { formatDate, INTL } from "./format";
  * Waiting on krizaka-ui#641: the credits meter, the period switch and the usage chart become `@krizaka/ui/usage` when it ships.
  */
 
-
 /** The sentence under the heading: « Vous avez 6 vérifications à regarder, … », each figure a link to the view it counts. */
 export function HomeLead({ todo }: Readonly<{ todo: ToDo }>) {
   const { say, locale } = useSay();
@@ -31,7 +30,12 @@ export function HomeLead({ todo }: Readonly<{ todo: ToDo }>) {
     <>
       {atOffsets(leadParts(todo, locale, say)).map((part) =>
         part.href ? (
-          <Link key={part.at} href={part.href} className="font-semibold text-fg-accent hover:underline" data-testid="lead-figure">
+          <Link
+            key={part.at}
+            href={part.href}
+            className="font-semibold text-fg-accent hover:underline"
+            data-testid="lead-figure"
+          >
             {part.text}
           </Link>
         ) : (
@@ -73,7 +77,11 @@ function PeriodSwitch({ period, collection }: Readonly<{ period: HomePeriod; col
 }
 
 /** The activity of the period as one discreet strip: compact figures, each with its sparkline. */
-export function ActivityStrip({ figures, period, collection }: Readonly<{ figures: readonly StripFigure[]; period: HomePeriod; collection: string | null }>) {
+export function ActivityStrip({
+  figures,
+  period,
+  collection,
+}: Readonly<{ figures: readonly StripFigure[]; period: HomePeriod; collection: string | null }>) {
   const { say, locale } = useSay();
   const words = chartWords(say);
   return (
@@ -87,14 +95,25 @@ export function ActivityStrip({ figures, period, collection }: Readonly<{ figure
           const figureName = say(`home.activity.${f.id}`);
           const periodName = say(`home.activity.periods.${period}`);
           return (
-          <Stat
-            key={f.id}
-            label={figureName}
-            value={new Intl.NumberFormat(INTL[locale]).format(f.total)}
-            hint={periodName}
-            data-testid={`strip-${f.id}`}
-            chart={<Sparkline data={f.values} variant="area" width={96} height={24} title={figureName} summaryText={`${figureName}, ${periodName}: ${f.total}`} locale={INTL[locale]} labels={words} />}
-          />
+            <Stat
+              key={f.id}
+              label={figureName}
+              value={new Intl.NumberFormat(INTL[locale]).format(f.total)}
+              hint={periodName}
+              data-testid={`strip-${f.id}`}
+              chart={
+                <Sparkline
+                  data={f.values}
+                  variant="area"
+                  width={96}
+                  height={24}
+                  title={figureName}
+                  summaryText={`${figureName}, ${periodName}: ${f.total}`}
+                  locale={INTL[locale]}
+                  labels={words}
+                />
+              }
+            />
           );
         })}
       </StatGrid>
@@ -109,17 +128,42 @@ export function Credits({ figure }: Readonly<{ figure: CreditsFigure }>) {
     <section className="flex flex-col gap-2" aria-label={say("home.credits.title")} data-testid="credits">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="m-0 font-display text-base font-bold text-fg">{say("home.credits.title")}</h2>
-        <Link href={`/${locale}/app/settings/facturation`} className="text-sm font-semibold text-fg-accent hover:underline">
+        <Link
+          href={`/${locale}/app/settings/facturation`}
+          className="text-sm font-semibold text-fg-accent hover:underline"
+        >
           {say("home.credits.manage")} →
         </Link>
       </div>
-      {figure.kind === "included" ? <p className="m-0 text-sm text-fg-secondary">{say("home.credits.included")}</p> : null}
-      {figure.kind === "credits" ? <p className="m-0 text-sm text-fg">{say(pluralKey("home.credits.left", figure.left), { count: figure.left })}</p> : null}
+      {figure.kind === "included" ? (
+        <p className="m-0 text-sm text-fg-secondary">{say("home.credits.included")}</p>
+      ) : null}
+      {figure.kind === "credits" ? (
+        <p className="m-0 text-sm text-fg">
+          {say(pluralKey("home.credits.left", figure.left), { count: figure.left })}
+        </p>
+      ) : null}
       {figure.kind === "pro" ? (
         <>
-          <Meter label={say("home.credits.title")} value={figure.used} min={0} max={figure.cap} valueText={say("home.credits.pro", { used: figure.used, cap: figure.cap })} thresholds={{ low: 0.8, high: 0.95 }} optimum="low" />
-          <p className="m-0 text-sm text-fg-secondary">{say("home.credits.pro", { used: figure.used, cap: figure.cap })}</p>
-          {figure.renewsAt ? <p className="m-0 text-xs text-fg-muted">{say(figure.cancelled ? "home.credits.ends" : "home.credits.renews", { date: formatDate(figure.renewsAt, locale) })}</p> : null}
+          <Meter
+            label={say("home.credits.title")}
+            value={figure.used}
+            min={0}
+            max={figure.cap}
+            valueText={say("home.credits.pro", { used: figure.used, cap: figure.cap })}
+            thresholds={{ low: 0.8, high: 0.95 }}
+            optimum="low"
+          />
+          <p className="m-0 text-sm text-fg-secondary">
+            {say("home.credits.pro", { used: figure.used, cap: figure.cap })}
+          </p>
+          {figure.renewsAt ? (
+            <p className="m-0 text-xs text-fg-muted">
+              {say(figure.cancelled ? "home.credits.ends" : "home.credits.renews", {
+                date: formatDate(figure.renewsAt, locale),
+              })}
+            </p>
+          ) : null}
         </>
       ) : null}
     </section>
@@ -130,16 +174,24 @@ export function Credits({ figure }: Readonly<{ figure: CreditsFigure }>) {
 export function BinderTabs({ tabs, selectedHref }: Readonly<{ tabs: readonly BinderTab[]; selectedHref: string }>) {
   const { say } = useSay();
   return (
-    <Tabs.Nav label={say("home.binder.label")} current={selectedHref} variant="binder" className="max-sm:flex-wrap max-sm:gap-y-1 max-sm:overflow-visible max-sm:[mask-image:none]">
+    <Tabs.Nav
+      label={say("home.binder.label")}
+      current={selectedHref}
+      variant="binder"
+      className="max-sm:flex-wrap max-sm:gap-y-1 max-sm:overflow-visible max-sm:[mask-image:none]"
+    >
       {tabs.map((t) => (
         <Tabs.NavLink key={t.id} href={t.href} hue={t.hue} exact asChild>
           <Link href={t.href} scroll={false} title={t.name}>
-            <span className="max-w-[11rem] truncate sm:max-w-[16rem]" data-testid="binder-name">{t.name}</span>
-            <span className="tabular-nums" data-testid="binder-count">{t.count}</span>
+            <span className="max-w-[11rem] truncate sm:max-w-[16rem]" data-testid="binder-name">
+              {t.name}
+            </span>
+            <span className="tabular-nums" data-testid="binder-count">
+              {t.count}
+            </span>
           </Link>
         </Tabs.NavLink>
       ))}
     </Tabs.Nav>
   );
 }
-

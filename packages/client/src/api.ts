@@ -1,4 +1,16 @@
-import { analysis, BATCH_CHECKS, BATCH_ITEM_STATES, closingNote, documentSummary, isExtracting, type StartAnalysis, storageDescriptor, waitForExtraction, type WaitOptions, writeBatchManifest } from "@yomizaka/core";
+import {
+  analysis,
+  BATCH_CHECKS,
+  BATCH_ITEM_STATES,
+  closingNote,
+  documentSummary,
+  isExtracting,
+  type StartAnalysis,
+  storageDescriptor,
+  waitForExtraction,
+  type WaitOptions,
+  writeBatchManifest,
+} from "@yomizaka/core";
 import { z } from "zod";
 
 import { limitsFromConfig, type PreflightLimits } from "./preflight";
@@ -18,19 +30,44 @@ export interface SessionPort {
 
 export type Locale = "fr" | "en";
 
-const accountAnswer = z.object({ account: z.object({ email: z.string(), locale: z.enum(["fr", "en"]) }), token: z.string() });
-const appConfig = z.object({ config: z.object({ maxFileBytes: z.number(), allowedTypes: z.array(z.string()), features: z.object({ keepDocuments: z.boolean() }).passthrough() }) });
+const accountAnswer = z.object({
+  account: z.object({ email: z.string(), locale: z.enum(["fr", "en"]) }),
+  token: z.string(),
+});
+const appConfig = z.object({
+  config: z.object({
+    maxFileBytes: z.number(),
+    allowedTypes: z.array(z.string()),
+    features: z.object({ keepDocuments: z.boolean() }).passthrough(),
+  }),
+});
 const uploaded = z.object({ document: documentSummary, duplicate: z.boolean() });
 const started = z.object({ analysis, reused: z.boolean().optional() });
 const analysisAnswer = z.object({ analysis, closingNote: closingNote.nullable() });
-const documentAnswer = z.object({ document: documentSummary.extend({ analyses: z.array(analysis), storage: storageDescriptor.optional(), extractionError: z.string().nullable().optional() }) });
+const documentAnswer = z.object({
+  document: documentSummary.extend({
+    analyses: z.array(analysis),
+    storage: storageDescriptor.optional(),
+    extractionError: z.string().nullable().optional(),
+  }),
+});
 const tag = z.object({ id: z.string(), name: z.string(), color: z.string() });
 const libraries = z.object({
-  libraries: z.array(z.object({ id: z.string(), name: z.string(), collections: z.array(z.object({ id: z.string(), name: z.string(), files: z.number(), folders: z.number(), tags: z.array(tag) })) })),
+  libraries: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      collections: z.array(
+        z.object({ id: z.string(), name: z.string(), files: z.number(), folders: z.number(), tags: z.array(tag) }),
+      ),
+    }),
+  ),
   tags: z.array(tag),
 });
 
-const me = z.object({ account: z.object({ email: z.string(), name: z.string().nullable(), avatarSeed: z.string().nullable() }) });
+const me = z.object({
+  account: z.object({ email: z.string(), name: z.string().nullable(), avatarSeed: z.string().nullable() }),
+});
 
 const batchItem = z.object({
   id: z.string(),
@@ -51,7 +88,18 @@ const batch = z.object({
   counts: z.record(z.enum(BATCH_ITEM_STATES), z.number()),
   pausedBy: z.string().nullable(),
 });
-const batchList = z.object({ batches: z.array(z.object({ id: z.string(), name: z.string(), createdAt: z.string(), finishedAt: z.string().nullable(), items: z.number(), done: z.number() })) });
+const batchList = z.object({
+  batches: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      createdAt: z.string(),
+      finishedAt: z.string().nullable(),
+      items: z.number(),
+      done: z.number(),
+    }),
+  ),
+});
 
 /** The check a batch runs on every file, as the manifest names it. */
 export type BatchCheck = keyof typeof BATCH_CHECKS;
@@ -61,11 +109,14 @@ export type BatchCheck = keyof typeof BATCH_CHECKS;
  * never inside a screen.
  */
 export function createYomizakaApi(port: ApiPort, session: SessionPort, wait: WaitOptions = {}) {
-  const get = <T extends z.ZodType>(schema: T, path: string): Promise<z.infer<T>> => port.call<unknown>(path).then((value) => schema.parse(value));
+  const get = <T extends z.ZodType>(schema: T, path: string): Promise<z.infer<T>> =>
+    port.call<unknown>(path).then((value) => schema.parse(value));
   return {
     /** The account signs in; its bearer token is kept by `session`. */
     async signIn(email: string, password: string) {
-      const answer = accountAnswer.parse(await port.call("/api/auth/sign-in", { method: "POST", body: { email, password, client: "native" } }));
+      const answer = accountAnswer.parse(
+        await port.call("/api/auth/sign-in", { method: "POST", body: { email, password, client: "native" } }),
+      );
       await session.saveToken(answer.token);
       return answer.account;
     },
@@ -87,14 +138,19 @@ export function createYomizakaApi(port: ApiPort, session: SessionPort, wait: Wai
     async uploadDocument(form: FormData) {
       const answer = uploaded.parse(await port.call("/api/documents", { method: "POST", body: form }));
       if (!isExtracting(answer.document.extraction)) return answer;
-      const read = await waitForExtraction(() => get(documentAnswer, `/api/documents/${answer.document.id}`).then((r) => r.document), wait);
+      const read = await waitForExtraction(
+        () => get(documentAnswer, `/api/documents/${answer.document.id}`).then((r) => r.document),
+        wait,
+      );
       return { ...answer, document: { ...answer.document, ...read, extraction: read.extraction } };
     },
-    listDocuments: () => get(z.object({ documents: z.array(documentSummary) }), "/api/documents").then((r) => r.documents),
+    listDocuments: () =>
+      get(z.object({ documents: z.array(documentSummary) }), "/api/documents").then((r) => r.documents),
     async startAnalysis(documentId: string, request: StartAnalysis) {
       return started.parse(await port.call(`/api/documents/${documentId}`, { method: "POST", body: request }));
     },
-    fetchAnalysis: (documentId: string, analysisId: string, locale: Locale) => get(analysisAnswer, `/api/documents/${documentId}/analyses/${analysisId}?lang=${locale}`),
+    fetchAnalysis: (documentId: string, analysisId: string, locale: Locale) =>
+      get(analysisAnswer, `/api/documents/${documentId}/analyses/${analysisId}?lang=${locale}`),
     fetchDocument: (documentId: string) => get(documentAnswer, `/api/documents/${documentId}`).then((r) => r.document),
     fetchLibraries: () => get(libraries, "/api/libraries"),
     fetchCollection: (collectionId: string, tags: readonly string[]) => {
@@ -123,7 +179,10 @@ export function createYomizakaApi(port: ApiPort, session: SessionPort, wait: Wai
     listBatches: () => get(batchList, "/api/batches").then((r) => r.batches),
     /** The signed report, as a PDF: its address and the person's headers, for the download. */
     async reportRequest(documentId: string, analysisId: string, locale: Locale) {
-      return { url: port.url(`/api/documents/${documentId}/analyses/${analysisId}/report?format=pdf&lang=${locale}`), headers: await port.authHeaders() };
+      return {
+        url: port.url(`/api/documents/${documentId}/analyses/${analysisId}/report?format=pdf&lang=${locale}`),
+        headers: await port.authHeaders(),
+      };
     },
   };
 }

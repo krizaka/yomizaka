@@ -14,7 +14,9 @@ describe("the Android release signing plugin", () => {
 
   it("signs the release build with it when the environment names a key, and keeps the debug key otherwise", () => {
     const out = addReleaseSigning(template);
-    expect(out).toContain('signingConfig System.getenv("KRIZAKA_ANDROID_KEYSTORE") ? signingConfigs.release : signingConfigs.debug');
+    expect(out).toContain(
+      'signingConfig System.getenv("KRIZAKA_ANDROID_KEYSTORE") ? signingConfigs.release : signingConfigs.debug',
+    );
     expect(out.match(/signingConfig signingConfigs\.debug/g)).toHaveLength(1); // the debug build type's own
   });
 

@@ -22,19 +22,37 @@ export interface SettingsAccount {
   memberSince: string;
 }
 
-const ICONS = { profil: UserIcon, apparence: SunIcon, securite: LockIcon, facturation: BillingIcon, stockage: ServerIcon, signets: BookmarkIcon, donnees: ShieldIcon } as const;
+const ICONS = {
+  profil: UserIcon,
+  apparence: SunIcon,
+  securite: LockIcon,
+  facturation: BillingIcon,
+  stockage: ServerIcon,
+  signets: BookmarkIcon,
+  donnees: ShieldIcon,
+} as const;
 
 /**
  * The settings on `SettingsLayout` (flat: one calm column, rows divided by hairlines), the identity card on top, the six
  * sections as routes in its navigation (chips that wrap on a phone — the review's E1), the current one from the route.
  */
-export function SettingsShell({ section, account, children }: Readonly<{ section: SettingsSection; account: SettingsAccount; children: ReactNode }>) {
+export function SettingsShell({
+  section,
+  account,
+  children,
+}: Readonly<{ section: SettingsSection; account: SettingsAccount; children: ReactNode }>) {
   const { say, locale } = useSay();
   const app = useAppConfig();
   const sections = SETTINGS_SECTIONS.filter((s) => s !== "stockage" || app?.features.ownStorage !== false);
   const nav = sections.map((s) => {
     const Icon = ICONS[s];
-    return { id: s, label: say(`settings.tabs.${s}`), href: `/${locale}/app/settings/${s}`, icon: <Icon size={16} />, current: s === section };
+    return {
+      id: s,
+      label: say(`settings.tabs.${s}`),
+      href: `/${locale}/app/settings/${s}`,
+      icon: <Icon size={16} />,
+      current: s === section,
+    };
   });
   const title = account.name ?? account.email;
   return (
@@ -51,7 +69,10 @@ export function SettingsShell({ section, account, children }: Readonly<{ section
           verifiedLabel={say("settings.verified")}
           unverifiedLabel={say("settings.unverified")}
           memberSince={say("settings.memberSince", { date: formatDate(account.memberSince, locale) })}
-          avatar={{ defaultAvatar: { brand: "yomizaka", seed: account.avatarSeed ?? account.email }, fallback: title.charAt(0).toUpperCase() }}
+          avatar={{
+            defaultAvatar: { brand: "yomizaka", seed: account.avatarSeed ?? account.email },
+            fallback: title.charAt(0).toUpperCase(),
+          }}
           data-testid="settings-identity"
         />
       }

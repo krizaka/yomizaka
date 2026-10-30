@@ -23,7 +23,13 @@ export function DecisionActions({ fileId, state, set }: Readonly<{ fileId: strin
   const router = useRouter();
   const [armed, setArmed] = useState<string | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
-  const move = useMutation({ mutationFn: (to: string) => krizakaFetch("/api/organize/applicant_file/status", { method: "POST", json: { ids: [fileId], to, expect: state } }) });
+  const move = useMutation({
+    mutationFn: (to: string) =>
+      krizakaFetch("/api/organize/applicant_file/status", {
+        method: "POST",
+        json: { ids: [fileId], to, expect: state },
+      }),
+  });
   const moves = movesFrom(set, state, OWNER_ROLE);
   const go = async (to: string, confirm: boolean) => {
     const next = press(armed, to, confirm);
@@ -51,7 +57,13 @@ export function DecisionActions({ fileId, state, set }: Readonly<{ fileId: strin
             {moves.map((m) => {
               const label = set.states.find((s) => s.key === m.to)?.label[locale] ?? m.to;
               return (
-                <Button key={m.to} variant={m.confirm ? "secondary" : "primary"} size="md" loading={move.isPending} onClick={() => void go(m.to, m.confirm === true)}>
+                <Button
+                  key={m.to}
+                  variant={m.confirm ? "secondary" : "primary"}
+                  size="md"
+                  loading={move.isPending}
+                  onClick={() => void go(m.to, m.confirm === true)}
+                >
                   {say(armed === m.to ? "dossiers.decide.confirm" : "dossiers.decide.mark", { state: label })}
                 </Button>
               );

@@ -12,9 +12,20 @@ if (!dir) throw new Error("usage: film-trim.mjs <dir with .webm/.mp4 films>");
 const ffmpeg = "ffmpeg";
 const ffprobe = "ffprobe";
 const run = (command, args) => spawnSync(command, args, { encoding: "utf8" }); // NOSONAR S4036: a CI step on a runner, PATH is the runner's own
-const durationOf = (file) => Number(run(ffprobe, ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", file]).stdout.trim());
+const durationOf = (file) =>
+  Number(run(ffprobe, ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", file]).stdout.trim());
 const analyse = (file) => {
-  const log = run(ffmpeg, ["-hide_banner", "-i", file, "-vf", "freezedetect=n=-50dB:d=0.4,blackdetect=d=0.2:pix_th=0.1", "-an", "-f", "null", "-"]).stderr;
+  const log = run(ffmpeg, [
+    "-hide_banner",
+    "-i",
+    file,
+    "-vf",
+    "freezedetect=n=-50dB:d=0.4,blackdetect=d=0.2:pix_th=0.1",
+    "-an",
+    "-f",
+    "null",
+    "-",
+  ]).stderr;
   return { freezes: parseFreezes(log, durationOf(file)), blacks: parseBlacks(log) };
 };
 

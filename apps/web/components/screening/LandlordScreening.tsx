@@ -47,26 +47,59 @@ export interface LandlordWords {
 }
 
 const form = createKrizakaForm({
-  schema: z.object({ tenantName: z.string().trim().min(1).max(120), tenantEmail: z.string().trim().min(3).email().max(254), payer: z.enum(["firm", "owner", "applicant"]) }),
+  schema: z.object({
+    tenantName: z.string().trim().min(1).max(120),
+    tenantEmail: z.string().trim().min(3).email().max(254),
+    payer: z.enum(["firm", "owner", "applicant"]),
+  }),
   defaultValues: { tenantName: "", tenantEmail: "", payer: "owner" as "firm" | "owner" | "applicant" },
 });
 
-const TONE: Record<string, "neutral" | "success" | "warning" | "danger"> = { requested: "neutral", consented: "warning", shared: "success", declined: "neutral", contested: "danger", expired: "neutral" };
+const TONE: Record<string, "neutral" | "success" | "warning" | "danger"> = {
+  requested: "neutral",
+  consented: "warning",
+  shared: "success",
+  declined: "neutral",
+  contested: "danger",
+  expired: "neutral",
+};
 
 /**
  * The landlord's side: accept the undertaking once (a consent the flow requires), ask an applicant's consent, hand them the
  * link, follow the answers. The result appears only once the applicant has passed it on; « contested » shows no result.
  */
-export function LandlordScreening({ initial, offered, undertakingGiven, words, locale }: Readonly<{ initial: LandlordView[]; offered: OfferedCheck[]; undertakingGiven: boolean; words: LandlordWords; locale: string }>) {
+export function LandlordScreening({
+  initial,
+  offered,
+  undertakingGiven,
+  words,
+  locale,
+}: Readonly<{
+  initial: LandlordView[];
+  offered: OfferedCheck[];
+  undertakingGiven: boolean;
+  words: LandlordWords;
+  locale: string;
+}>) {
   const client = useQueryClient();
   const [given, setGiven] = useState(undertakingGiven);
   const [link, setLink] = useState<string | null>(null);
   const [chosen, setChosen] = useState<string[]>(() => offered.slice(0, 1).map((o) => o.key));
   const [problem, setProblem] = useState<string | null>(null);
-  const list = useQuery({ queryKey: ["screenings"], queryFn: () => krizakaFetch("/api/screenings").then((r) => (r as { screenings: LandlordView[] }).screenings), initialData: initial, enabled: given });
-  const accept = useMutation({ mutationFn: () => krizakaFetch("/api/consents", { method: "POST", json: { key: "screening-landlord-undertaking" } }), onSuccess: () => setGiven(true) });
+  const list = useQuery({
+    queryKey: ["screenings"],
+    queryFn: () => krizakaFetch("/api/screenings").then((r) => (r as { screenings: LandlordView[] }).screenings),
+    initialData: initial,
+    enabled: given,
+  });
+  const accept = useMutation({
+    mutationFn: () =>
+      krizakaFetch("/api/consents", { method: "POST", json: { key: "screening-landlord-undertaking" } }),
+    onSuccess: () => setGiven(true),
+  });
   const ask = useMutation({
-    mutationFn: (body: { tenantName: string; tenantEmail: string; scope: string[]; payer: string }) => krizakaFetch("/api/screenings", { method: "POST", json: body }) as Promise<{ token: string }>,
+    mutationFn: (body: { tenantName: string; tenantEmail: string; scope: string[]; payer: string }) =>
+      krizakaFetch("/api/screenings", { method: "POST", json: body }) as Promise<{ token: string }>,
     onSuccess: (r) => {
       setLink(`${globalThis.location.origin}/${locale}/screening/${r.token}`);
       void client.invalidateQueries({ queryKey: ["screenings"] });
@@ -100,12 +133,23 @@ export function LandlordScreening({ initial, offered, undertakingGiven, words, l
               <f.TextField name="tenantName" label={words.name} />
               <f.TextField name="tenantEmail" label={words.email} type="email" autoComplete="off" />
             </div>
-            <f.Select name="payer" label={words.payer.label} options={(["firm", "owner", "applicant"] as const).map((p) => ({ value: p, label: words.payer[p] }))} />
+            <f.Select
+              name="payer"
+              label={words.payer.label}
+              options={(["firm", "owner", "applicant"] as const).map((p) => ({ value: p, label: words.payer[p] }))}
+            />
             <fieldset className="flex flex-col gap-2 border-0 p-0">
               <legend className="mb-1 text-sm font-semibold text-fg">{words.scope}</legend>
               {offered.length === 0 ? <p className="m-0 text-sm text-fg-muted">{words.noneOffered}</p> : null}
               {offered.map((o) => (
-                <Checkbox key={o.key} checked={chosen.includes(o.key)} onCheckedChange={(on) => setChosen((c) => (on === true ? [...new Set([...c, o.key])] : c.filter((k) => k !== o.key)))} data-testid={`check-${o.key}`}>
+                <Checkbox
+                  key={o.key}
+                  checked={chosen.includes(o.key)}
+                  onCheckedChange={(on) =>
+                    setChosen((c) => (on === true ? [...new Set([...c, o.key])] : c.filter((k) => k !== o.key)))
+                  }
+                  data-testid={`check-${o.key}`}
+                >
                   {o.label}
                 </Checkbox>
               ))}
@@ -130,15 +174,24 @@ export function LandlordScreening({ initial, offered, undertakingGiven, words, l
             {(list.data ?? []).length === 0 ? <p className="m-0 text-sm text-fg-muted">{words.none}</p> : null}
             <ul className="m-0 flex list-none flex-col gap-3 p-0">
               {(list.data ?? []).map((s) => (
-                <li key={s.id} className="flex flex-col gap-2 rounded-xl border border-border-default bg-surface-1 p-3" data-testid="screening-row">
+                <li
+                  key={s.id}
+                  className="flex flex-col gap-2 rounded-xl border border-border-default bg-surface-1 p-3"
+                  data-testid="screening-row"
+                >
                   <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
                     <span className="min-w-0 break-all">
-                      <b className="text-fg">{s.tenantName}</b> · <span className="text-fg-secondary">{s.tenantEmail}</span>
+                      <b className="text-fg">{s.tenantName}</b> ·{" "}
+                      <span className="text-fg-secondary">{s.tenantEmail}</span>
                     </span>
                     <Badge tone={TONE[s.status] ?? "neutral"}>{words.status[s.status]}</Badge>
                   </div>
-                  {s.result ? <ScreeningResultCard result={s.result} words={words.result} demo={s.demo ? words.demo : null} /> : null}
-                  {!s.result && s.status === "consented" ? <p className="m-0 text-xs text-fg-muted">{words.hidden}</p> : null}
+                  {s.result ? (
+                    <ScreeningResultCard result={s.result} words={words.result} demo={s.demo ? words.demo : null} />
+                  ) : null}
+                  {!s.result && s.status === "consented" ? (
+                    <p className="m-0 text-xs text-fg-muted">{words.hidden}</p>
+                  ) : null}
                 </li>
               ))}
             </ul>

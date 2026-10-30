@@ -63,7 +63,12 @@ export function registrySignals(answer: RegistryAnswer, issuer: PrintedIssuer, s
     return [];
   }
   const signals: Signal[] = [];
-  if (answer.status === FOUND_STATUS.struck && answer.statusDate && issuer.documentDate && answer.statusDate.slice(0, 10) <= issuer.documentDate) {
+  if (
+    answer.status === FOUND_STATUS.struck &&
+    answer.statusDate &&
+    issuer.documentDate &&
+    answer.statusDate.slice(0, 10) <= issuer.documentDate
+  ) {
     signals.push({
       ...base,
       signalId: "REG-003",
@@ -73,7 +78,12 @@ export function registrySignals(answer: RegistryAnswer, issuer: PrintedIssuer, s
     });
   }
   const registered = [answer.legalName, answer.tradeName].filter((n): n is string => !!n);
-  if (issuer.registrant === "business" && issuer.name && registered.length > 0 && !registered.some((n) => sameName(issuer.name ?? "", n))) {
+  if (
+    issuer.registrant === "business" &&
+    issuer.name &&
+    registered.length > 0 &&
+    !registered.some((n) => sameName(issuer.name ?? "", n))
+  ) {
     signals.push({
       ...base,
       signalId: "REG-002",
@@ -87,7 +97,10 @@ export function registrySignals(answer: RegistryAnswer, issuer: PrintedIssuer, s
 }
 
 /** Looks the number up and returns the signals; `looked` says whether the register answered, so the report can say « not looked up » honestly. */
-export async function checkIssuer(registry: BusinessRegistry, issuer: PrintedIssuer): Promise<{ looked: boolean; signals: Signal[] }> {
+export async function checkIssuer(
+  registry: BusinessRegistry,
+  issuer: PrintedIssuer,
+): Promise<{ looked: boolean; signals: Signal[] }> {
   const answer = await registry.lookupQst(issuer.number);
   return { looked: answer.kind !== ANSWER.notLookedUp, signals: registrySignals(answer, issuer, registry.source) };
 }

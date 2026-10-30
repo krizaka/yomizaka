@@ -23,5 +23,8 @@ export function availableChecks(doc: Pick<DocumentSummary, "kind" | "hasText" | 
   const authenticity: StartAnalysis = { studio: CHECK.authenticity };
   // Another kind has no ruleset in force: the lease's rules are never its fallback (ADR-089), so no compliance check is offered.
   const verifiable = doc.kind !== UNVERIFIED_KIND;
-  return [...(doc.hasText && verifiable ? [compliance] : []), ...(doc.mimeType === "application/pdf" ? [authenticity] : [])];
+  return [
+    ...(doc.hasText && verifiable ? [compliance] : []),
+    ...(doc.mimeType === "application/pdf" ? [authenticity] : []),
+  ];
 }

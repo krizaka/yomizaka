@@ -3,7 +3,17 @@ import { describe, expect, it } from "vitest";
 import type { BatchItemView, BatchView } from "../batch/run";
 import { checkView } from "./checks";
 
-const item = (patch: Partial<BatchItemView> = {}): BatchItemView => ({ id: "i", line: 2, file: "bail.pdf", reference: "R-1", state: "running", error: null, documentId: "d", analysisId: "a", ...patch });
+const item = (patch: Partial<BatchItemView> = {}): BatchItemView => ({
+  id: "i",
+  line: 2,
+  file: "bail.pdf",
+  reference: "R-1",
+  state: "running",
+  error: null,
+  documentId: "d",
+  analysisId: "a",
+  ...patch,
+});
 const batch = (items: BatchItemView[], patch: Partial<BatchView> = {}): BatchView => ({
   id: "b1",
   name: "R-1",
@@ -40,8 +50,12 @@ describe("checkView (yomizaka#202)", () => {
   });
 
   it("says why it did not run: the row's code, or the reason the batch waits", () => {
-    expect(checkView(batch([item({ state: "refused", error: "UNKNOWN_CHECK", documentId: null, analysisId: null })])).error).toBe("UNKNOWN_CHECK");
-    expect(checkView(batch([item({ state: "pending", analysisId: null })], { pausedBy: "PAYWALL" })).error).toBe("PAYWALL");
+    expect(
+      checkView(batch([item({ state: "refused", error: "UNKNOWN_CHECK", documentId: null, analysisId: null })])).error,
+    ).toBe("UNKNOWN_CHECK");
+    expect(checkView(batch([item({ state: "pending", analysisId: null })], { pausedBy: "PAYWALL" })).error).toBe(
+      "PAYWALL",
+    );
     expect(checkView(batch([item({ state: "running" })], { pausedBy: "PAYWALL" })).error).toBeNull();
   });
 

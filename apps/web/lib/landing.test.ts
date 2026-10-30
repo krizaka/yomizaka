@@ -11,7 +11,8 @@ import { recordedRun } from "./recorded-runs";
 
 const ROOT = join(__dirname, "..");
 const read = (path: string) => readFileSync(join(ROOT, path), "utf8");
-const words = (o: unknown): string[] => (typeof o === "string" ? [o] : o && typeof o === "object" ? Object.values(o).flatMap(words) : []);
+const words = (o: unknown): string[] =>
+  typeof o === "string" ? [o] : o && typeof o === "object" ? Object.values(o).flatMap(words) : [];
 
 describe("the home is one short page: who it is for, one real check, one way in", () => {
   const home = read("app/[locale]/page.tsx");
@@ -41,11 +42,12 @@ describe("the home is one short page: who it is for, one real check, one way in"
     // No decorative grid, counter or glow; the `CardGrid` block (card-grid) is the card layout itself, not a backdrop.
     expect(home).not.toMatch(/NumberTicker|GlowCard|Sparkle|shimmer|(?<!card-)grid\b/);
     expect(home).not.toContain("pt-20");
-    expect(home).toContain("<main id=\"content\" data-landing>");
+    expect(home).toContain('<main id="content" data-landing>');
     // LandingPage's hero frame pads itself with --kz-hero-top: nothing added on main (the offset would double).
     expect(read("app/globals.css")).not.toMatch(/main\[data-landing\] \{\s*padding-top/);
     expect(read("components/SiteChrome.tsx")).toContain("data-site-bar");
-    for (const page of ["privacy", "terms", "download"]) expect(read(`app/[locale]/${page}/page.tsx`), page).not.toContain("pt-20");
+    for (const page of ["privacy", "terms", "download"])
+      expect(read(`app/[locale]/${page}/page.tsx`), page).not.toContain("pt-20");
     expect(read("app/globals.css")).toContain("--kz-hero-top: 5.75rem");
   });
 
@@ -64,11 +66,18 @@ describe("the home is one short page: who it is for, one real check, one way in"
 });
 
 describe("plain words, in both languages", () => {
-  for (const [name, d] of [["en", en], ["fr", fr]] as const) {
+  for (const [name, d] of [
+    ["en", en],
+    ["fr", fr],
+  ] as const) {
     const copy = words([d.landing, d.meta, d.chrome, d.privacy, d.console.signIn]);
     it(`${name}: no em dash, no « AI-powered » hype in the public copy`, () => {
       expect(copy.filter((w) => /—/.test(w))).toEqual([]);
-      expect(copy.filter((w) => /ai-powered|powered by ai|alimenté par l'ia|propulsé par l'ia|magique|magic|révolution|revolution/i.test(w))).toEqual([]);
+      expect(
+        copy.filter((w) =>
+          /ai-powered|powered by ai|alimenté par l'ia|propulsé par l'ia|magique|magic|révolution|revolution/i.test(w),
+        ),
+      ).toEqual([]);
     });
     it(`${name}: Yomizaka is the subject; Orazaka, the engine, is named once on the home, in the quiet line under the proof`, () => {
       expect(words(d.landing).filter((w) => /orazaka/i.test(w))).toEqual([d.landing.proof.powered]);
@@ -96,6 +105,15 @@ describe("the proof is read from the recording, never typed", () => {
   });
 
   it("counts the distinct articles a finding cites, however the citation lists them", () => {
-    expect(HERO_FIGURES({ findings: [{ citation: "C.c.Q., art. 1855 et 1903 ; Règlement, section D" }, { citation: "C.c.Q., art. 1904, al. 1" }, { citation: "C.c.Q., art. 1904, al. 2" }, { citation: null }] })).toEqual({ rules: 4, articles: 3, found: 4 });
+    expect(
+      HERO_FIGURES({
+        findings: [
+          { citation: "C.c.Q., art. 1855 et 1903 ; Règlement, section D" },
+          { citation: "C.c.Q., art. 1904, al. 1" },
+          { citation: "C.c.Q., art. 1904, al. 2" },
+          { citation: null },
+        ],
+      }),
+    ).toEqual({ rules: 4, articles: 3, found: 4 });
   });
 });

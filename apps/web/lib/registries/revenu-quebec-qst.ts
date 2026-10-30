@@ -34,7 +34,10 @@ const envelope = z.object({
 const wrapped = z.union([z.object({ RetourWebApi: envelope }).transform((w) => w.RetourWebApi), envelope]);
 
 const NO_DATA = "GX.AucuneDonneeTrouvee";
-const lookedUpNot = (reason: (typeof NOT_LOOKED_UP)[keyof typeof NOT_LOOKED_UP]): RegistryAnswer => ({ kind: ANSWER.notLookedUp, reason });
+const lookedUpNot = (reason: (typeof NOT_LOOKED_UP)[keyof typeof NOT_LOOKED_UP]): RegistryAnswer => ({
+  kind: ANSWER.notLookedUp,
+  reason,
+});
 
 export interface QstAdapterOptions {
   fetch?: typeof globalThis.fetch;
@@ -54,7 +57,11 @@ export function revenuQuebecQstAdapter(options: QstAdapterOptions): BusinessRegi
 
   async function call(number: string): Promise<Response | null> {
     try {
-      return await doFetch(QST_ENDPOINT + number, { method: "GET", headers: { accept: "application/json" }, signal: AbortSignal.timeout(timeoutMs) });
+      return await doFetch(QST_ENDPOINT + number, {
+        method: "GET",
+        headers: { accept: "application/json" },
+        signal: AbortSignal.timeout(timeoutMs),
+      });
     } catch {
       return null;
     }
@@ -77,7 +84,13 @@ export function revenuQuebecQstAdapter(options: QstAdapterOptions): BusinessRegi
     if (r.StatutSousDossierUsager !== "R" && r.StatutSousDossierUsager !== "A") {
       return lookedUpNot(NOT_LOOKED_UP.unavailable);
     }
-    return { kind: ANSWER.found, status: r.StatutSousDossierUsager === "R" ? "registered" : "struck", statusDate: r.DateStatut ?? null, legalName: r.RaisonSociale ?? null, tradeName: r.NomEntreprise ?? null };
+    return {
+      kind: ANSWER.found,
+      status: r.StatutSousDossierUsager === "R" ? "registered" : "struck",
+      statusDate: r.DateStatut ?? null,
+      legalName: r.RaisonSociale ?? null,
+      tradeName: r.NomEntreprise ?? null,
+    };
   }
 
   return {

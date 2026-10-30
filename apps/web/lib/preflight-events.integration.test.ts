@@ -13,11 +13,42 @@ describe.runIf(enabled)("pre-flight: reuse and metrics", () => {
   beforeAll(async () => {
     await migrate();
   });
-  const tenant = async () => (await query<{ id: string }>("INSERT INTO accounts (email, password_hash) VALUES ($1, 'x') RETURNING id", [`p-${Math.random().toString(36).slice(2)}@yomizaka.test`]))[0]!.id;
-  const document = async (owner: string, sha: string) => (await query<{ id: string }>("INSERT INTO documents (owner_id, title, filename, mime_type, size_bytes, sha256, content, text) VALUES ($1, 't', 'a.txt', 'text/plain', 1, $2, 'x', 'x') RETURNING id", [owner, sha]))[0]!.id;
+  const tenant = async () =>
+    (
+      await query<{ id: string }>("INSERT INTO accounts (email, password_hash) VALUES ($1, 'x') RETURNING id", [
+        `p-${Math.random().toString(36).slice(2)}@yomizaka.test`,
+      ])
+    )[0]!.id;
+  const document = async (owner: string, sha: string) =>
+    (
+      await query<{ id: string }>(
+        "INSERT INTO documents (owner_id, title, filename, mime_type, size_bytes, sha256, content, text) VALUES ($1, 't', 'a.txt', 'text/plain', 1, $2, 'x', 'x') RETURNING id",
+        [owner, sha],
+      )
+    )[0]!.id;
   const run = async (doc: string, version: string, inputs: object, status = "succeeded") =>
-    (await query<{ id: string }>("INSERT INTO analyses (document_id, studio, status, run_id, blueprint_version, inputs) VALUES ($1, 'compliance-check', $2, $3, $4, $5) RETURNING id", [doc, status, `run-${Math.random()}`, version, JSON.stringify(inputs)]))[0]!.id;
-  const ask = (owner: string, documentId: string, over: Partial<{ jurisdiction: string; ruleset: string | null }> = {}) => findReusableAnalysis(query, { reuseDays: 365, now: new Date(), ownerId: owner, documentId, studio: "compliance-check", jurisdiction: "QC", ruleset: null, expectedIssuer: null, ...over });
+    (
+      await query<{ id: string }>(
+        "INSERT INTO analyses (document_id, studio, status, run_id, blueprint_version, inputs) VALUES ($1, 'compliance-check', $2, $3, $4, $5) RETURNING id",
+        [doc, status, `run-${Math.random()}`, version, JSON.stringify(inputs)],
+      )
+    )[0]!.id;
+  const ask = (
+    owner: string,
+    documentId: string,
+    over: Partial<{ jurisdiction: string; ruleset: string | null }> = {},
+  ) =>
+    findReusableAnalysis(query, {
+      reuseDays: 365,
+      now: new Date(),
+      ownerId: owner,
+      documentId,
+      studio: "compliance-check",
+      jurisdiction: "QC",
+      ruleset: null,
+      expectedIssuer: null,
+      ...over,
+    });
 
   it("reuses a succeeded run of the same document, rules and Studio version — no new run", async () => {
     const o = await tenant();
@@ -62,7 +93,15 @@ describe.runIf(enabled)("pre-flight: reuse and metrics", () => {
     const o = await tenant();
     const d = await document(o, `w-${o}`);
     const id = await run(d, "1.2.0", { jurisdiction: "QC" });
-    const base = { ownerId: o, documentId: d, studio: "compliance-check", jurisdiction: "QC", ruleset: null, expectedIssuer: null, now: new Date() };
+    const base = {
+      ownerId: o,
+      documentId: d,
+      studio: "compliance-check",
+      jurisdiction: "QC",
+      ruleset: null,
+      expectedIssuer: null,
+      now: new Date(),
+    };
     expect(await findReusableAnalysis(query, { ...base, reuseDays: 365 })).toBe(id);
     expect(await findReusableAnalysis(query, { ...base, reuseDays: 0 })).toBeNull();
     // The Studio version in force is the newest run's: keep it this one while the run under test ages.

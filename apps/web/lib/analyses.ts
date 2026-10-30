@@ -1,5 +1,21 @@
 import { localDay } from "@krizaka/intl";
-import { type Analysis, AUTHENTICITY_MAX_BYTES, COMPLIANCE_MAX_CHARS, DATED_LEASE_RULESET, DOCX_MIME, type ExtractionStatus, fromRunStatus, isExtracting, isTerminal, landlordSignals, ODT_MIME, type OrazakaRun, reportOf, type StartAnalysis,type StorageKind } from "@yomizaka/core";
+import {
+  type Analysis,
+  AUTHENTICITY_MAX_BYTES,
+  COMPLIANCE_MAX_CHARS,
+  DATED_LEASE_RULESET,
+  DOCX_MIME,
+  type ExtractionStatus,
+  fromRunStatus,
+  isExtracting,
+  isTerminal,
+  landlordSignals,
+  ODT_MIME,
+  type OrazakaRun,
+  reportOf,
+  type StartAnalysis,
+  type StorageKind,
+} from "@yomizaka/core";
 
 import { holderOf as documentHolder } from "@/app/active-store";
 
@@ -43,15 +59,30 @@ function studioRuleset(ruleset: string | undefined): Record<string, string> {
   return STUDIO_RULESET[ruleset] ?? {};
 }
 
-export function runInputs(request: StartAnalysis, doc: { mimeType: string; text: string; content: Buffer }, today = new Date()): Record<string, string> {
+export function runInputs(
+  request: StartAnalysis,
+  doc: { mimeType: string; text: string; content: Buffer },
+  today = new Date(),
+): Record<string, string> {
   if (request.studio === "compliance-check") {
     if (!doc.text.trim()) throw refuse(422, "NO_TEXT", "This document has no text layer to check");
-    if (doc.text.length > COMPLIANCE_MAX_CHARS) throw refuse(422, "TEXT_TOO_LONG", "This document is longer than the compliance check reads");
-    return { document: doc.text, jurisdiction: request.jurisdiction, asOf: request.asOf ?? localDay(today, LAW_TIME_ZONE), ...studioRuleset(request.ruleset) };
+    if (doc.text.length > COMPLIANCE_MAX_CHARS)
+      throw refuse(422, "TEXT_TOO_LONG", "This document is longer than the compliance check reads");
+    return {
+      document: doc.text,
+      jurisdiction: request.jurisdiction,
+      asOf: request.asOf ?? localDay(today, LAW_TIME_ZONE),
+      ...studioRuleset(request.ruleset),
+    };
   }
-  if (!AUTHENTICITY_TYPES.has(doc.mimeType)) throw refuse(422, "NOT_A_PDF", "The authenticity check reads PDF and Word files");
-  if (doc.content.length > AUTHENTICITY_MAX_BYTES) throw refuse(422, "PDF_TOO_LARGE", "The authenticity check reads files up to 5 MB");
-  return { documentBase64: doc.content.toString("base64"), ...(request.expectedIssuer ? { expectedIssuer: request.expectedIssuer } : {}) };
+  if (!AUTHENTICITY_TYPES.has(doc.mimeType))
+    throw refuse(422, "NOT_A_PDF", "The authenticity check reads PDF and Word files");
+  if (doc.content.length > AUTHENTICITY_MAX_BYTES)
+    throw refuse(422, "PDF_TOO_LARGE", "The authenticity check reads files up to 5 MB");
+  return {
+    documentBase64: doc.content.toString("base64"),
+    ...(request.expectedIssuer ? { expectedIssuer: request.expectedIssuer } : {}),
+  };
 }
 
 /**
@@ -67,33 +98,83 @@ export function keptInputs(request: StartAnalysis, inputs: Record<string, string
 /** The words a search should find in a report: rule titles, explanations, quoted passages, citations, signals. */
 export function searchText(report: ReturnType<typeof reportOf>): string {
   if (!report) return "";
-  if ("findings" in report) return report.findings.flatMap((f) => [f.ruleId, f.title ?? "", f.explanation, f.evidenceSpan?.quote ?? "", f.citation ?? ""]).join("\n");
-  return landlordSignals(report.signals).flatMap((s) => [s.signalId, s.observation, s.mayIndicate ?? "", s.where ?? ""]).join("\n");
+  if ("findings" in report)
+    return report.findings
+      .flatMap((f) => [f.ruleId, f.title ?? "", f.explanation, f.evidenceSpan?.quote ?? "", f.citation ?? ""])
+      .join("\n");
+  return landlordSignals(report.signals)
+    .flatMap((s) => [s.signalId, s.observation, s.mayIndicate ?? "", s.where ?? ""])
+    .join("\n");
 }
 
-export async function startAnalysis(ownerId: string, documentId: string, request: StartAnalysis, flowVersionId: string | null = null, billedVia: string | null = null, store?: DocumentStore): Promise<Analysis> {
+export async function startAnalysis(
+  ownerId: string,
+  documentId: string,
+  request: StartAnalysis,
+  flowVersionId: string | null = null,
+  billedVia: string | null = null,
+  store?: DocumentStore,
+): Promise<Analysis> {
   if (!isUuid(documentId)) throw refuse(404, "NOT_FOUND", "No such document");
-  const [doc] = await query<{ mime_type: string; text: string; content: Buffer; storage: StorageKind; object_key: string | null; screening_id: string | null; extraction: ExtractionStatus; extraction_error: string | null }>("SELECT mime_type, text, content, storage, object_key, screening_id, extraction, extraction_error FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, documentId]);
+  const [doc] = await query<{
+    mime_type: string;
+    text: string;
+    content: Buffer;
+    storage: StorageKind;
+    object_key: string | null;
+    screening_id: string | null;
+    extraction: ExtractionStatus;
+    extraction_error: string | null;
+  }>(
+    "SELECT mime_type, text, content, storage, object_key, screening_id, extraction, extraction_error FROM documents WHERE owner_id = $1 AND id = $2",
+    [ownerId, documentId],
+  );
   if (!doc) throw refuse(404, "NOT_FOUND", "No such document");
   // The text is read after the upload answered (yomizaka#21): a check waits for it, or says why it will never come.
   if (isExtracting(doc.extraction)) throw refuse(409, "EXTRACTING", "The document is still being read");
-  if (doc.extraction === "failed") throw refuse(422, doc.extraction_error ?? "UNREADABLE_FILE", "The document could not be read");
+  if (doc.extraction === "failed")
+    throw refuse(422, doc.extraction_error ?? "UNREADABLE_FILE", "The document could not be read");
   // A document of an application is checked only while the applicant's consent to the document check stands (yomizaka#131).
   await assertAnalysisAllowed(doc.screening_id);
   // The file comes from where the document lives (a purged one has none: 409 NOT_KEPT); the compliance check reads the text, which a purge also removes.
-  const content = request.studio === "compliance-check" ? doc.content : await readBytes(doc, { ownerId, id: documentId }, store);
-  if (request.studio === "compliance-check" && doc.storage === "none" && doc.text === "" && doc.content.length === 0 && !doc.object_key) throw refuse(409, "NOT_KEPT", "This document is not kept: only its report stays");
-  const [running] = await query("SELECT id FROM analyses WHERE document_id = $1 AND studio = $2 AND status = 'running'", [documentId, request.studio]);
+  const content =
+    request.studio === "compliance-check" ? doc.content : await readBytes(doc, { ownerId, id: documentId }, store);
+  if (
+    request.studio === "compliance-check" &&
+    doc.storage === "none" &&
+    doc.text === "" &&
+    doc.content.length === 0 &&
+    !doc.object_key
+  )
+    throw refuse(409, "NOT_KEPT", "This document is not kept: only its report stays");
+  const [running] = await query(
+    "SELECT id FROM analyses WHERE document_id = $1 AND studio = $2 AND status = 'running'",
+    [documentId, request.studio],
+  );
   if (running) throw refuse(409, "ALREADY_RUNNING", "This check is already running");
   // The text is validated first (NO_TEXT, TEXT_TOO_LONG); only then the kind: a kind with no ruleset in force is said so, and the
   // lease's rules are never the fallback for it (ADR-089).
   const inputs = runInputs(request, { mimeType: doc.mime_type, text: doc.text, content });
-  if (request.studio === "compliance-check" && !request.ruleset && (await declaredKindOf(ownerId, documentId)) === "other") throw refuse(422, "KIND_NOT_VERIFIED", "This kind of document is not checked against the law yet");
+  if (
+    request.studio === "compliance-check" &&
+    !request.ruleset &&
+    (await declaredKindOf(ownerId, documentId)) === "other"
+  )
+    throw refuse(422, "KIND_NOT_VERIFIED", "This kind of document is not checked against the law yet");
   const run = await orazaka().startRun(request.studio, inputs);
   const kept = keptInputs(request, inputs);
   const [row] = await query<AnalysisRow>(
     "INSERT INTO analyses (document_id, studio, status, run_id, blueprint_version, inputs, flow_version_id, billed_via) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *",
-    [documentId, request.studio, fromRunStatus(run.status), run.id, run.blueprintVersion ?? null, JSON.stringify(kept), flowVersionId, billedVia],
+    [
+      documentId,
+      request.studio,
+      fromRunStatus(run.status),
+      run.id,
+      run.blueprintVersion ?? null,
+      JSON.stringify(kept),
+      flowVersionId,
+      billedVia,
+    ],
   );
   return isTerminal(row!.status) ? refresh(row!, run) : toAnalysis(row!);
 }
@@ -107,7 +188,13 @@ export async function refresh(row: AnalysisRow, known?: OrazakaRun): Promise<Ana
   if (!isTerminal(status)) return toAnalysis(row);
   const read = status === "succeeded" ? reportOf(row.studio, run.outputs) : null;
   // The line of each finding is read now: the text is purged once the check has run (yomizaka#129).
-  const lined = read && "findings" in read ? withLines(read, (await query<{ text: string }>("SELECT text FROM documents WHERE id = $1", [row.document_id]))[0]?.text ?? "") : read;
+  const lined =
+    read && "findings" in read
+      ? withLines(
+          read,
+          (await query<{ text: string }>("SELECT text FROM documents WHERE id = $1", [row.document_id]))[0]?.text ?? "",
+        )
+      : read;
   // Tenant shield (yomizaka#104): when the lease ruleset exposed its figures, Section G (#554) compares the rents with the TAL's rate, and the payment clauses (#560) are read against art. 1904.
   const report = lined && "findings" in lined ? await withTenantShield(lined, appSettings()) : lined;
   const noReport = report ? null : "Orazaka finished without a report Yomizaka can read";
@@ -115,7 +202,15 @@ export async function refresh(row: AnalysisRow, known?: OrazakaRun): Promise<Ana
   const [updated] = await query<AnalysisRow>(
     `UPDATE analyses SET status = $2, report = $3, error = $4, search_text = $5, blueprint_version = coalesce($6, blueprint_version), finished_at = coalesce($7::timestamptz, now())
       WHERE id = $1 RETURNING *`,
-    [row.id, report ? status : "failed", report ? JSON.stringify({ ...report, attention: needsAttention(report) }) : null, error, searchText(report), run.blueprintVersion ?? null, run.finishedAt ?? null],
+    [
+      row.id,
+      report ? status : "failed",
+      report ? JSON.stringify({ ...report, attention: needsAttention(report) }) : null,
+      error,
+      searchText(report),
+      run.blueprintVersion ?? null,
+      run.finishedAt ?? null,
+    ],
   );
   // A run that failed gives its audit back (once): the person is not charged for a check that produced nothing.
   if (!report) await refundFailedAudit(query, row.id);

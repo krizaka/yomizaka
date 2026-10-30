@@ -1,4 +1,4 @@
-import { type ComplianceReport,complianceReport } from "@yomizaka/core";
+import { type ComplianceReport, complianceReport } from "@yomizaka/core";
 import { describe, expect, it } from "vitest";
 
 import en from "../../messages/en.json";
@@ -8,13 +8,22 @@ import { withPaymentClauses } from "./payment-clauses-report";
 import { LEASE_RULESET } from "./section-g-report";
 
 const report = (facts: ComplianceReport["facts"], rulesetId = LEASE_RULESET): ComplianceReport => ({
-  rulesetId, rulesetVersion: "2024-02-21", jurisdiction: "QC", asOf: "2026-10-15", summary: { byVerdict: { PASS: 1 }, blockingFailures: 0, rulesEvaluated: 1 },
-  findings: [{ ruleId: "QC-LEASE-003", severity: "BLOCKING", verdict: "PASS", explanation: "Le loyer est chiffré au bail." }], facts,
+  rulesetId,
+  rulesetVersion: "2024-02-21",
+  jurisdiction: "QC",
+  asOf: "2026-10-15",
+  summary: { byVerdict: { PASS: 1 }, blockingFailures: 0, rulesEvaluated: 1 },
+  findings: [
+    { ruleId: "QC-LEASE-003", severity: "BLOCKING", verdict: "PASS", explanation: "Le loyer est chiffré au bail." },
+  ],
+  facts,
 });
 
 describe("withPaymentClauses", () => {
   it("fails with the clause, the article and the disclaimer, and counts it", () => {
-    const out = withPaymentClauses(report({ depositCents: { status: "found", cents: 95_000 }, postdatedCheques: { status: "found", flag: true } }));
+    const out = withPaymentClauses(
+      report({ depositCents: { status: "found", cents: 95_000 }, postdatedCheques: { status: "found", flag: true } }),
+    );
     const f = out.findings.find((x) => x.ruleId === "TS-P-001");
     expect(f).toMatchObject({ verdict: "FAIL", citation: "C.c.Q., art. 1904", method: "DETERMINISTIC" });
     expect(f?.explanation).toContain("chèques postdatés");
@@ -23,7 +32,9 @@ describe("withPaymentClauses", () => {
   });
 
   it("passes when the figures read stay within the article", () => {
-    const f = withPaymentClauses(report({ advanceMonths: { status: "found", months: 1 }, postdatedCheques: { status: "found", flag: false } })).findings.at(-1);
+    const f = withPaymentClauses(
+      report({ advanceMonths: { status: "found", months: 1 }, postdatedCheques: { status: "found", flag: false } }),
+    ).findings.at(-1);
     expect(f).toMatchObject({ ruleId: "TS-P-001", verdict: "PASS", citation: "C.c.Q., art. 1904" });
   });
 
@@ -37,7 +48,9 @@ describe("withPaymentClauses", () => {
   });
 
   it("reads only found figures; the other kinds of fact are ignored", () => {
-    expect(paymentInputFromFacts({ advanceMonths: { status: "blank" }, depositCents: { status: "absent" } })).toBeNull();
+    expect(
+      paymentInputFromFacts({ advanceMonths: { status: "blank" }, depositCents: { status: "absent" } }),
+    ).toBeNull();
     expect(paymentInputFromFacts({ advanceMonths: { status: "found", months: 2 } })).toEqual({ advanceMonths: 2 });
   });
 
@@ -48,7 +61,14 @@ describe("withPaymentClauses", () => {
 
   it("the report schema accepts the new fact kinds and drops unknown shapes with the facts, never the report", () => {
     const base = report(undefined);
-    const ok = complianceReport.parse({ ...base, facts: { advanceMonths: { status: "found", months: 2 }, startsOn: { status: "found", date: "2026-07-01" }, postdatedCheques: { status: "found", flag: true } } });
+    const ok = complianceReport.parse({
+      ...base,
+      facts: {
+        advanceMonths: { status: "found", months: 2 },
+        startsOn: { status: "found", date: "2026-07-01" },
+        postdatedCheques: { status: "found", flag: true },
+      },
+    });
     expect(Object.keys(ok.facts ?? {})).toHaveLength(3);
     expect(complianceReport.parse({ ...base, facts: { x: { status: "found", weird: 1 } } }).facts).toBeUndefined();
   });

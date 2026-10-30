@@ -17,7 +17,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { asLocale, format, getDictionary } from "@/lib/i18n";
 import type { ConsoleMessages } from "@/lib/i18n-client";
 import { HERO_FIGURES, productStatus } from "@/lib/landing";
-import { DEMO_SCREENING,demoOwnerDocument } from "@/lib/landing-demo";
+import { DEMO_SCREENING, demoOwnerDocument } from "@/lib/landing-demo";
 import { recordedRun } from "@/lib/recorded-runs";
 import { pageMetadata, siteJsonLd } from "@/lib/seo";
 import { pagePath } from "@/lib/site";
@@ -60,22 +60,30 @@ export default async function Home({ params }: Readonly<{ params: Promise<{ loca
             }
             visual={
               /* The product's answer, real (the recorded run), in a panel that grows with its text — the recorded steps take this place once the final design is captured. */
-              <div className="rounded-lg border border-border-default bg-surface-1" data-testid="home-visual" role="group" aria-label={d.visual.caption}>
+              <div
+                className="rounded-lg border border-border-default bg-surface-1"
+                data-testid="home-visual"
+                role="group"
+                aria-label={d.visual.caption}
+              >
                 <div data-testid="proof-run">
                   <BeforeAfter locale={locale} />
                 </div>
               </div>
             }
             featuresHeading={{
-              title: (
-                <span id="what">{d.what.title}</span>
-              ),
+              title: <span id="what">{d.what.title}</span>,
               lead: d.what.lead,
             }}
             /* Three things of the same weight: one row of the bento, no orphan card (P10). */
             features={(["line", "file", "find"] as const).map((id) => {
               const Icon = ICONS[id];
-              return { id, title: d.what.items[id].title, text: d.what.items[id].text, icon: <Icon size={24} aria-hidden /> };
+              return {
+                id,
+                title: d.what.items[id].title,
+                text: d.what.items[id].text,
+                icon: <Icon size={24} aria-hidden />,
+              };
             })}
             closing={{
               title: d.closing.title,
@@ -100,7 +108,15 @@ export default async function Home({ params }: Readonly<{ params: Promise<{ loca
                     <Card.Description>{d.showcase.findings.text}</Card.Description>
                     <p className="sr-only">{d.showcase.findings.summary}</p>
                     <LiveScreen testId="screen-findings">
-                      <FindingsScreen locale={locale} messages={{ console: { reportFace: dict.console.reportFace, analysis: dict.console.analysis } } as unknown as ConsoleMessages} report={run.report} />
+                      <FindingsScreen
+                        locale={locale}
+                        messages={
+                          {
+                            console: { reportFace: dict.console.reportFace, analysis: dict.console.analysis },
+                          } as unknown as ConsoleMessages
+                        }
+                        report={run.report}
+                      />
                     </LiveScreen>
                   </Card.Body>
                 </Card.Root>
@@ -113,7 +129,12 @@ export default async function Home({ params }: Readonly<{ params: Promise<{ loca
                       <div className="p-4">
                         <ScreeningResultCard
                           result={DEMO_SCREENING}
-                          words={{ title: dict.screening.tenant.resultTitle, band: dict.screening.tenant.band, item: d.showcase.screening.items, outcome: dict.screening.tenant.outcome }}
+                          words={{
+                            title: dict.screening.tenant.resultTitle,
+                            band: dict.screening.tenant.band,
+                            item: d.showcase.screening.items,
+                            outcome: dict.screening.tenant.outcome,
+                          }}
                           demo={d.showcase.demo}
                         />
                       </div>
@@ -127,7 +148,12 @@ export default async function Home({ params }: Readonly<{ params: Promise<{ loca
                     <p className="sr-only">{d.showcase.owner.summary}</p>
                     <LiveScreen testId="screen-owner">
                       <ol className="m-0 list-none p-4">
-                        <OwnerReportDocument doc={demoOwnerDocument(run)} n={1} words={dict.ownerReport} lang={locale} />
+                        <OwnerReportDocument
+                          doc={demoOwnerDocument(run)}
+                          n={1}
+                          words={dict.ownerReport}
+                          lang={locale}
+                        />
                       </ol>
                     </LiveScreen>
                   </Card.Body>
@@ -135,16 +161,22 @@ export default async function Home({ params }: Readonly<{ params: Promise<{ loca
               </CardGrid>
             </Section>
             <Section id="proof" title={d.proof.title} lead={d.proof.lead} spacing="sm" divider>
-              <p className="text-sm text-fg-secondary">{format(d.proof.figures, { rules: figures.rules, found: figures.found })}</p>
+              <p className="text-sm text-fg-secondary">
+                {format(d.proof.figures, { rules: figures.rules, found: figures.found })}
+              </p>
               <p className="mt-1 text-xs text-fg-muted" data-testid="proof-meta">
-                {d.proof.runLabel} {run.runId} · {d.proof.dateLabel} {new Date(run.recordedAt).toLocaleDateString(DATE[locale], { dateStyle: "long", timeZone: "America/Toronto" })} · {d.proof.rulesetLabel} {run.report.rulesetId} {run.report.rulesetVersion}
+                {d.proof.runLabel} {run.runId} · {d.proof.dateLabel}{" "}
+                {new Date(run.recordedAt).toLocaleDateString(DATE[locale], {
+                  dateStyle: "long",
+                  timeZone: "America/Toronto",
+                })}{" "}
+                · {d.proof.rulesetLabel} {run.report.rulesetId} {run.report.rulesetVersion}
               </p>
               <p className="mt-6 text-xs text-fg-muted" data-testid="powered-by">
                 {d.proof.powered}
               </p>
             </Section>
-            <Section id="who" title={d.who.title} lead={d.what.who} spacing="sm" divider>
-            </Section>
+            <Section id="who" title={d.who.title} lead={d.what.who} spacing="sm" divider></Section>
           </LandingPage>
         </main>
       </BarQueryRoot>

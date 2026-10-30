@@ -24,7 +24,10 @@ export const ME_KEY = sessionKey(ME_ENDPOINT);
 export type Me = Pick<MeAccount, "email" | "name" | "avatarSeed">;
 
 /** Signing out: the server ends the session, and whatever the page remembered is dropped at once. */
-export async function signOutAndForget(client: { setQueryData: (key: readonly string[], value: { signedIn: false; signupOpen: boolean }) => void }, post: () => Promise<unknown>): Promise<void> {
+export async function signOutAndForget(
+  client: { setQueryData: (key: readonly string[], value: { signedIn: false; signupOpen: boolean }) => void },
+  post: () => Promise<unknown>,
+): Promise<void> {
   try {
     await post();
   } finally {
@@ -40,7 +43,10 @@ export function BarQueryRoot({ children }: Readonly<{ children: React.ReactNode 
  * What the page knows of the visitor: `pending` until `/api/me` answers (the bar then draws neither state), the person once it did,
  * and the LAST KNOWN state when a refetch fails or is throttled: only an answer signs anyone out (krizaka-ui#800).
  */
-export const meOf = (session: NavSession<Me>): { pending: boolean; me: Me | null } => ({ pending: session.status === "pending", me: session.status === "in" ? session.account : null });
+export const meOf = (session: NavSession<Me>): { pending: boolean; me: Me | null } => ({
+  pending: session.status === "pending",
+  me: session.status === "in" ? session.account : null,
+});
 const useMe = () => meOf(useNavSession<Me>(ME_ENDPOINT));
 
 /**
@@ -48,7 +54,19 @@ const useMe = () => meOf(useNavSession<Me>(ME_ENDPOINT));
  * account entry — the avatar and the name when there is one, never the raw e-mail address — and the hero carries the one
  * primary action, « Ouvrir mes documents »; the mobile panel, a drawer, says it in full.
  */
-export function BarActionsView({ locale, placement, me, signupOpen, onSignOut }: Readonly<{ locale: Locale; placement: "bar" | "panel"; me: Me | null; signupOpen: boolean; onSignOut: () => void }>) {
+export function BarActionsView({
+  locale,
+  placement,
+  me,
+  signupOpen,
+  onSignOut,
+}: Readonly<{
+  locale: Locale;
+  placement: "bar" | "panel";
+  me: Me | null;
+  signupOpen: boolean;
+  onSignOut: () => void;
+}>) {
   const t = translator(locale);
   if (me) {
     const app = `/${locale}/app`;
@@ -65,7 +83,10 @@ export function BarActionsView({ locale, placement, me, signupOpen, onSignOut }:
         name={me.name ?? undefined}
         email={me.email}
         showName={Boolean(me.name)}
-        avatar={{ defaultAvatar: { brand: "yomizaka", seed: me.avatarSeed ?? me.email }, fallback: (me.name ?? me.email).charAt(0).toUpperCase() }}
+        avatar={{
+          defaultAvatar: { brand: "yomizaka", seed: me.avatarSeed ?? me.email },
+          fallback: (me.name ?? me.email).charAt(0).toUpperCase(),
+        }}
         linkAs={Link}
         links={[
           { id: "documents", label: t("chrome.myDocuments"), href: app, icon: <HomeIcon size={16} /> },
@@ -94,16 +115,39 @@ export function BarActions({ locale, placement }: Readonly<{ locale: Locale; pla
   const hinted = useSessionHint();
   const signup = useQuery({
     queryKey: ["signup-status"],
-    queryFn: () => krizakaFetch("/api/auth/sign-up/status", { schema: signupStatus }).then((r) => r.open, () => false),
+    queryFn: () =>
+      krizakaFetch("/api/auth/sign-up/status", { schema: signupStatus }).then(
+        (r) => r.open,
+        () => false,
+      ),
     staleTime: 60_000,
     retry: false,
     throwOnError: false,
   });
-  const signOut = useMutation({ mutationFn: () => signOutAndForget(client, () => krizakaFetch("/api/auth/sign-out", { method: "POST" })) });
+  const signOut = useMutation({
+    mutationFn: () => signOutAndForget(client, () => krizakaFetch("/api/auth/sign-out", { method: "POST" })),
+  });
   // Neither « Sign in » nor the avatar until the session is known: a signed-in person never sees the bar flash signed out.
   // With the proxy's hint (a session cookie exists, krizaka-ui#827) the reserved place is the account's own size.
-  if (pending) return <span data-testid="bar-session" data-session="pending" data-hint={hinted ? "signed-in" : undefined} aria-hidden="true" className={hinted ? "inline-block size-9 rounded-full bg-fg-secondary/20" : "inline-block h-9 min-w-24"} />;
-  return <BarActionsView locale={locale} placement={placement} me={me} signupOpen={signup.data ?? false} onSignOut={() => signOut.mutate()} />;
+  if (pending)
+    return (
+      <span
+        data-testid="bar-session"
+        data-session="pending"
+        data-hint={hinted ? "signed-in" : undefined}
+        aria-hidden="true"
+        className={hinted ? "inline-block size-9 rounded-full bg-fg-secondary/20" : "inline-block h-9 min-w-24"}
+      />
+    );
+  return (
+    <BarActionsView
+      locale={locale}
+      placement={placement}
+      me={me}
+      signupOpen={signup.data ?? false}
+      onSignOut={() => signOut.mutate()}
+    />
+  );
 }
 
 /**
@@ -144,7 +188,14 @@ export function HeroActions({ locale, status }: Readonly<{ locale: Locale; statu
 export function ClosingActionsView({ locale, me }: Readonly<{ locale: Locale; me: Me | null }>) {
   const t = translator(locale);
   return (
-    <Button asChild variant="secondary" size="lg" shape="cut" data-testid="closing-action" data-session={me ? "in" : "out"}>
+    <Button
+      asChild
+      variant="secondary"
+      size="lg"
+      shape="cut"
+      data-testid="closing-action"
+      data-session={me ? "in" : "out"}
+    >
       <Link href={me ? `/${locale}/app` : signInPath(locale)}>{me ? t("landing.openApp") : t("landing.signIn")}</Link>
     </Button>
   );
@@ -155,7 +206,11 @@ export function ClosingActions({ locale }: Readonly<{ locale: Locale }>) {
 }
 
 /** The closing call's sentence, by session: never « sign in » to someone who is. */
-export function ClosingBodyView({ me, signedOut, signedIn }: Readonly<{ me: Me | null; signedOut: string; signedIn: string }>) {
+export function ClosingBodyView({
+  me,
+  signedOut,
+  signedIn,
+}: Readonly<{ me: Me | null; signedOut: string; signedIn: string }>) {
   return <span data-testid="closing-body">{me ? signedIn : signedOut}</span>;
 }
 

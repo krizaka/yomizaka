@@ -19,7 +19,12 @@ export interface LinkFact {
 }
 
 /** The link's state in words: open until its expiry, sent on its day, closed on its day; expired, revoked or erased. */
-export function linkFact(file: { status: LinkState; expiresAt: string; submittedAt: string | null; closedAt: string | null }): LinkFact {
+export function linkFact(file: {
+  status: LinkState;
+  expiresAt: string;
+  submittedAt: string | null;
+  closedAt: string | null;
+}): LinkFact {
   const key = `dossiers.link.${file.status}` as const;
   if (file.status === LINK.open) return { key, date: file.expiresAt, tone: "accent" };
   if (file.status === LINK.used && file.submittedAt) return { key, date: file.submittedAt, tone: "neutral" };
@@ -28,13 +33,21 @@ export function linkFact(file: { status: LinkState; expiresAt: string; submitted
 }
 
 /** The documents in, against those asked: « 2 sur 3 », « aucun sur 2 », « 3 sur 3 ». */
-export function documentsFact(count: number, asked: number): { key: "dossiers.documents.none" | "dossiers.documents.some" | "dossiers.documents.all"; count: number; asked: number } {
+export function documentsFact(
+  count: number,
+  asked: number,
+): {
+  key: "dossiers.documents.none" | "dossiers.documents.some" | "dossiers.documents.all";
+  count: number;
+  asked: number;
+} {
   const enough = count >= asked ? "dossiers.documents.all" : "dossiers.documents.some";
   return { key: count === 0 ? "dossiers.documents.none" : enough, count, asked };
 }
 
 /** The catalogue's types a manager may ask for: never one of the minimisation list, whatever the catalogue holds (Loi 25). */
-export const requestableTypes = <T extends { id: string }>(types: readonly T[]): T[] => types.filter((t) => !NOT_NECESSARY_TYPES.includes(t.id));
+export const requestableTypes = <T extends { id: string }>(types: readonly T[]): T[] =>
+  types.filter((t) => !NOT_NECESSARY_TYPES.includes(t.id));
 
 /** The request's shape, as `POST /api/applications` reads it: the minimisation rule stays the service's (`requestedTypes`), so the API answers its precise 422 TYPE_NOT_NECESSARY. */
 export const applicantRequestBody = z.object({
@@ -48,12 +61,20 @@ export const applicantRequestBody = z.object({
  * leaves. The browser and the server refuse the same requests; the service keeps its own rule, so no route can skip it.
  */
 export const applicantRequest = applicantRequestBody.extend({
-  types: applicantRequestBody.shape.types.refine((types) => !types.some((t) => NOT_NECESSARY_TYPES.includes(t)), { message: "TYPE_NOT_NECESSARY" }),
+  types: applicantRequestBody.shape.types.refine((types) => !types.some((t) => NOT_NECESSARY_TYPES.includes(t)), {
+    message: "TYPE_NOT_NECESSARY",
+  }),
 });
 export type ApplicantRequest = z.infer<typeof applicantRequest>;
 
 export interface CheckFact {
-  key: "dossiers.check.attention" | "dossiers.check.nothing" | "dossiers.check.signals" | "dossiers.check.noSignal" | "dossiers.check.running" | "dossiers.check.failed";
+  key:
+    | "dossiers.check.attention"
+    | "dossiers.check.nothing"
+    | "dossiers.check.signals"
+    | "dossiers.check.noSignal"
+    | "dossiers.check.running"
+    | "dossiers.check.failed";
   count: number;
   tone: "danger" | "warning" | "success" | "neutral";
 }
@@ -62,20 +83,30 @@ export interface CheckFact {
 export function checkFact(check: Pick<Analysis, "studio" | "status" | "report">): CheckFact {
   if (check.status === ANALYSIS_STATUS.running) return { key: "dossiers.check.running", count: 0, tone: "neutral" };
   const report = check.report;
-  if (check.status !== ANALYSIS_STATUS.succeeded || !report) return { key: "dossiers.check.failed", count: 0, tone: "neutral" };
+  if (check.status !== ANALYSIS_STATUS.succeeded || !report)
+    return { key: "dossiers.check.failed", count: 0, tone: "neutral" };
   if ("findings" in report) {
     const v = verdictOf(report);
-    return v.attention ? { key: "dossiers.check.attention", count: v.attention, tone: v.tone } : { key: "dossiers.check.nothing", count: 0, tone: "success" };
+    return v.attention
+      ? { key: "dossiers.check.attention", count: v.attention, tone: v.tone }
+      : { key: "dossiers.check.nothing", count: 0, tone: "success" };
   }
   if ("signals" in report) {
     const count = report.signals.filter((s) => s.level !== "observé").length;
-    return count ? { key: "dossiers.check.signals", count, tone: "warning" } : { key: "dossiers.check.noSignal", count: 0, tone: "success" };
+    return count
+      ? { key: "dossiers.check.signals", count, tone: "warning" }
+      : { key: "dossiers.check.noSignal", count: 0, tone: "success" };
   }
   return { key: "dossiers.check.failed", count: 0, tone: "neutral" };
 }
 
 /** The address the applicant opens (the token is returned once by the request; only its hash is kept). Its page: app/[locale]/dossier/[token] (yomizaka#341). */
-export const applicantLink = (origin: string, locale: "en" | "fr", token: string): string => `${origin}/${locale}/dossier/${token}`;
+export const applicantLink = (origin: string, locale: "en" | "fr", token: string): string =>
+  `${origin}/${locale}/dossier/${token}`;
 
 /** The requestable types with their words, from the applicant's catalogue (`applicantFile.types`); a type without words keeps its id. */
-export const askableTypes = (words: Readonly<Record<string, { label: string } | undefined>>, types: readonly { id: string }[]): { id: string; label: string }[] => requestableTypes(types).map((t) => ({ id: t.id, label: words[t.id]?.label ?? t.id }));
+export const askableTypes = (
+  words: Readonly<Record<string, { label: string } | undefined>>,
+  types: readonly { id: string }[],
+): { id: string; label: string }[] =>
+  requestableTypes(types).map((t) => ({ id: t.id, label: words[t.id]?.label ?? t.id }));

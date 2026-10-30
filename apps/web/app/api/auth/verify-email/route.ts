@@ -13,6 +13,9 @@ export function POST(req: Request) {
     const token = fieldText(form, "token");
     const locale = asLocale(fieldText(form, "locale"));
     const result = await verifyEmail({ query }, token, new Date());
-    return Response.redirect(`${env().APP_PUBLIC_URL}/${locale}/sign-in?${result === "VERIFIED" ? "verified=1" : "verify=invalid"}`, 303);
+    return Response.redirect(
+      `${env().APP_PUBLIC_URL}/${locale}/sign-in?${result === "VERIFIED" ? "verified=1" : "verify=invalid"}`,
+      303,
+    );
   });
 }

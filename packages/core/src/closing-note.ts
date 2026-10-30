@@ -22,7 +22,18 @@ export const closingNote = z.object({
   how: z.object({ heading: z.string(), sentences: z.array(z.string()) }),
   notChecked: z.object({ heading: z.string(), items: z.array(z.string()) }),
   result: z.object({ heading: z.string(), text: z.string() }),
-  next: z.object({ heading: z.string(), items: z.array(z.object({ problem: z.string(), advice: z.string(), important: z.boolean(), source: z.enum([NOTE_SOURCE.pack, NOTE_SOURCE.report]) })), none: z.string().nullable() }),
+  next: z.object({
+    heading: z.string(),
+    items: z.array(
+      z.object({
+        problem: z.string(),
+        advice: z.string(),
+        important: z.boolean(),
+        source: z.enum([NOTE_SOURCE.pack, NOTE_SOURCE.report]),
+      }),
+    ),
+    none: z.string().nullable(),
+  }),
   decides: z.object({ heading: z.string(), text: z.string() }),
   disclaimer: z.string(),
   reviewPending: z.string().nullable(),

@@ -23,7 +23,23 @@ export const THEMES = ["dark", "light"];
 // axe-core (WCAG 2.1 AA) runs at the phone and the desktop width only: a finding is counted once per route, theme and node.
 export const A11Y_WIDTHS = [390, 1440];
 export const A11Y_BASELINE = fileURLToPath(new URL("../a11y-baseline.app.json", import.meta.url));
-export const PAGES = ["/app", "/app/documents", "/app/dossiers", "/app/screening", "/app/check", "/app/verifications", "/app/verifications?tab=lots", "/app/verifications?q=bail&result=attention,checked&kind=lease&period=year", "/app/search", "/app/settings/profil", "/app/settings/apparence", "/app/settings/securite", "/app/settings/facturation", "/app/settings/stockage", "/app/settings/donnees"];
+export const PAGES = [
+  "/app",
+  "/app/documents",
+  "/app/dossiers",
+  "/app/screening",
+  "/app/check",
+  "/app/verifications",
+  "/app/verifications?tab=lots",
+  "/app/verifications?q=bail&result=attention,checked&kind=lease&period=year",
+  "/app/search",
+  "/app/settings/profil",
+  "/app/settings/apparence",
+  "/app/settings/securite",
+  "/app/settings/facturation",
+  "/app/settings/stockage",
+  "/app/settings/donnees",
+];
 
 const arg = (name, fallback) => {
   const i = process.argv.indexOf(`--${name}`);
@@ -46,7 +62,9 @@ export async function signIn(page, base, locale, email, password) {
 export function railRoutes(hrefs, locale) {
   const escaped = locale.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
   const own = new RegExp(`^/${escaped}(/app(?:/[^?#]*)?)(?:[?#].*)?$`);
-  return [...new Set(hrefs.map((h) => own.exec(h ?? "")?.[1]).filter(Boolean))].map((p) => p.replace(/\/$/, "") || "/app");
+  return [...new Set(hrefs.map((h) => own.exec(h ?? "")?.[1]).filter(Boolean))].map(
+    (p) => p.replace(/\/$/, "") || "/app",
+  );
 }
 
 /** The pages to visit: the fixed list, the rail's routes, then one collection and one document found on the library (their tabs). */
@@ -58,10 +76,13 @@ export async function discover(page, base, locale) {
   const collection = hrefs.find((h) => /\/app\/library\/[^/]+\/[^/]+$/.test(h ?? ""));
   if (collection) found.push(collection.replace(/^\/(en|fr)/, ""));
   // Every tab of the binder, the empty folders included: the open folder's card is audited in each state (yomizaka#435).
-  for (const h of new Set(hrefs.filter((x) => /[?&]collection=/.test(x ?? "")))) found.push(h.replace(/^\/(en|fr)/, ""));
+  for (const h of new Set(hrefs.filter((x) => /[?&]collection=/.test(x ?? ""))))
+    found.push(h.replace(/^\/(en|fr)/, ""));
   // The applicant file's page (it carries the owner-link block, yomizaka#128).
   await loadSettled(page, `${base}/${locale}/app/dossiers`);
-  const dossier = (await page.$$eval("a[href]", (as) => as.map((a) => a.getAttribute("href")))).find((h) => /\/app\/dossiers\/[0-9a-f-]{36}$/.test(h ?? ""));
+  const dossier = (await page.$$eval("a[href]", (as) => as.map((a) => a.getAttribute("href")))).find((h) =>
+    /\/app\/dossiers\/[0-9a-f-]{36}$/.test(h ?? ""),
+  );
   if (dossier) found.push(dossier.replace(/^\/(en|fr)/, ""));
   const document = hrefs.find((h) => /\/app\/documents\/[^/]+(\/|$)/.test(h ?? ""));
   if (document) {
@@ -84,10 +105,14 @@ async function auditAt({ page, path, width, theme, base, locale, shots, a11y, er
   const result = await page.evaluate(auditPage);
   const where = `${publicPage ? "/rapport/<demo token>" : path} @${width} ${theme}`;
   const found = problemsOf(where, result, { errors, h1: true, headerAction: !publicPage });
-  if (A11Y_WIDTHS.includes(width)) a11y.add({ route: publicPage ? "/rapport/<demo token>" : path, theme }, await auditA11y(page));
+  if (A11Y_WIDTHS.includes(width))
+    a11y.add({ route: publicPage ? "/rapport/<demo token>" : path, theme }, await auditA11y(page));
   if (shots) {
     mkdirSync(shots, { recursive: true });
-    await page.screenshot({ path: join(shots, `${path.replace(/[^a-z0-9]+/gi, "_")}-${width}-${theme}.png`), fullPage: false });
+    await page.screenshot({
+      path: join(shots, `${path.replace(/[^a-z0-9]+/gi, "_")}-${width}-${theme}.png`),
+      fullPage: false,
+    });
   }
   return found;
 }
@@ -129,16 +154,20 @@ export async function check({ base, locale = "fr", email, password, shots }) {
     await signIn(probe, base, locale, email, password);
     const pages = await discover(probe, base, locale);
     const revoked = await probe.request.get(`${base}/${locale}${revokedReportPath()}`);
-    if (revoked.status() !== 404) problems.push(`${revokedReportPath()}: a revoked link must answer 404, got ${revoked.status()}`);
+    if (revoked.status() !== 404)
+      problems.push(`${revokedReportPath()}: a revoked link must answer 404, got ${revoked.status()}`);
     // The signed PDF of the owner report (yomizaka#481): a PDF on the live link, nothing on the revoked one.
     const pdf = await probe.request.get(`${base}/api/rapport/${demoOwnerTokens("eric").live}/pdf?locale=${locale}`);
-    if (pdf.status() !== 200 || !String(pdf.headers()["content-type"]).startsWith("application/pdf")) problems.push(`/api/rapport/<demo token>/pdf: expected a PDF, got ${pdf.status()}`);
+    if (pdf.status() !== 200 || !String(pdf.headers()["content-type"]).startsWith("application/pdf"))
+      problems.push(`/api/rapport/<demo token>/pdf: expected a PDF, got ${pdf.status()}`);
     const noPdf = await probe.request.get(`${base}/api/rapport/${demoOwnerTokens("eric").revoked}/pdf`);
-    if (noPdf.status() !== 404) problems.push(`/api/rapport/<revoked token>/pdf: a revoked link must answer 404, got ${noPdf.status()}`);
+    if (noPdf.status() !== 404)
+      problems.push(`/api/rapport/<revoked token>/pdf: a revoked link must answer 404, got ${noPdf.status()}`);
     await probe.close();
     const cookies = await context.cookies();
     await context.close();
-    for (const theme of THEMES) problems.push(...(await auditTheme({ browser, theme, cookies, pages, base, locale, shots, a11y })));
+    for (const theme of THEMES)
+      problems.push(...(await auditTheme({ browser, theme, cookies, pages, base, locale, shots, a11y })));
     const guard = finish(a11y, { baseline: A11Y_BASELINE });
     for (const note of guard.notes) console.log(note);
     problems.push(...guard.problems);
@@ -149,10 +178,18 @@ export async function check({ base, locale = "fr", email, password, shots }) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const { problems, pages } = await check({ base: arg("base", "http://localhost:3000"), locale: arg("locale", "fr"), email: process.env.E2E_EMAIL, password: process.env.E2E_PASSWORD, shots: arg("shots") });
+  const { problems, pages } = await check({
+    base: arg("base", "http://localhost:3000"),
+    locale: arg("locale", "fr"),
+    email: process.env.E2E_EMAIL,
+    password: process.env.E2E_PASSWORD,
+    shots: arg("shots"),
+  });
   if (problems.length) {
     console.error(`${problems.length} problem(s) on the signed-in pages:\n  ${problems.join("\n  ")}`);
     process.exit(1);
   }
-  console.log(`signed-in pages: one h1 each, no overflow, the header's action on screen — ${pages.length} pages x ${WIDTHS.length} widths x ${THEMES.length} themes`);
+  console.log(
+    `signed-in pages: one h1 each, no overflow, the header's action on screen — ${pages.length} pages x ${WIDTHS.length} widths x ${THEMES.length} themes`,
+  );
 }

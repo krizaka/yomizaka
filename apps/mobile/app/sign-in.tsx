@@ -43,7 +43,16 @@ export default function SignIn() {
         <Txt variant="title">{t("signIn.title")}</Txt>
         <Txt tone="secondary">{t("signIn.lead")}</Txt>
       </View>
-      <TextField testID="email" label={t("signIn.email")} value={email} onValueChange={setEmail} autoCapitalize="none" autoComplete="email" keyboardType="email-address" textContentType="username" />
+      <TextField
+        testID="email"
+        label={t("signIn.email")}
+        value={email}
+        onValueChange={setEmail}
+        autoCapitalize="none"
+        autoComplete="email"
+        keyboardType="email-address"
+        textContentType="username"
+      />
       <TextField
         testID="password"
         label={t("signIn.password")}
@@ -55,7 +64,14 @@ export default function SignIn() {
         autoCorrect={false}
         error={error}
       />
-      <Button testID="submit" variant="primary" label={t("signIn.submit")} onPress={submit} loading={busy} disabled={!email || !password} />
+      <Button
+        testID="submit"
+        variant="primary"
+        label={t("signIn.submit")}
+        onPress={submit}
+        loading={busy}
+        disabled={!email || !password}
+      />
       <Button variant="ghost" label={t("signIn.createAccount")} onPress={() => void Linking.openURL(webUrl("/fr"))} />
       <Txt tone="muted" variant="caption">
         {t("disclaimer")}

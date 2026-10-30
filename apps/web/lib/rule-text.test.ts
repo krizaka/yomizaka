@@ -29,9 +29,29 @@ const analysis = {
     jurisdiction: "QC",
     asOf: "2026-10-22",
     findings: [
-      { ruleId: "QC-LEASE-004", title: lease.ruleTitles["QC-LEASE-004"]!.fr, severity: "BLOCKING", verdict: "FAIL", explanation: attentionFr, citation: "C.c.Q., art. 1904", evidenceSpan: { quote: "dépôt de sécurité de 1 450 $" } },
-      { ruleId: "QC-LEASE-003", title: lease.ruleTitles["QC-LEASE-003"]!.fr, severity: "BLOCKING", verdict: "PASS", explanation: okFr },
-      { ruleId: "QC-LEASE-005", title: lease.ruleTitles["QC-LEASE-005"]!.fr, severity: "BLOCKING", verdict: "FAIL", explanation: "Texte propre à ce bail : 3 chèques." },
+      {
+        ruleId: "QC-LEASE-004",
+        title: lease.ruleTitles["QC-LEASE-004"]!.fr,
+        severity: "BLOCKING",
+        verdict: "FAIL",
+        explanation: attentionFr,
+        citation: "C.c.Q., art. 1904",
+        evidenceSpan: { quote: "dépôt de sécurité de 1 450 $" },
+      },
+      {
+        ruleId: "QC-LEASE-003",
+        title: lease.ruleTitles["QC-LEASE-003"]!.fr,
+        severity: "BLOCKING",
+        verdict: "PASS",
+        explanation: okFr,
+      },
+      {
+        ruleId: "QC-LEASE-005",
+        title: lease.ruleTitles["QC-LEASE-005"]!.fr,
+        severity: "BLOCKING",
+        verdict: "FAIL",
+        explanation: "Texte propre à ce bail : 3 chèques.",
+      },
     ],
   },
   error: null,
@@ -48,7 +68,9 @@ describe("the rules' words in both languages", () => {
   });
 
   it("never invents a translation: a text the data does not match word for word stays as the engine wrote it", () => {
-    expect(ruleExplanation("QC-LEASE-005", "en", "Texte propre à ce bail : 3 chèques.")).toBe("Texte propre à ce bail : 3 chèques.");
+    expect(ruleExplanation("QC-LEASE-005", "en", "Texte propre à ce bail : 3 chèques.")).toBe(
+      "Texte propre à ce bail : 3 chèques.",
+    );
     expect(ruleTitle("QC-UNKNOWN-001", "en", "Règle inconnue")).toBe("Règle inconnue");
   });
 
@@ -58,7 +80,9 @@ describe("the rules' words in both languages", () => {
     const walk = (d: string) =>
       readdirSync(d, { withFileTypes: true }).forEach((e) => {
         if (e.isDirectory()) walk(join(d, e.name));
-        else if (e.name.endsWith(".json")) for (const m of readFileSync(join(d, e.name), "utf8").matchAll(/ruleId\\*"\s*:\s*\\*"(QC-[A-Z]+-\d+)/g)) ids.add(m[1]!);
+        else if (e.name.endsWith(".json"))
+          for (const m of readFileSync(join(d, e.name), "utf8").matchAll(/ruleId\\*"\s*:\s*\\*"(QC-[A-Z]+-\d+)/g))
+            ids.add(m[1]!);
       });
     walk(dir);
     expect(ids.size).toBeGreaterThan(10);
@@ -66,8 +90,16 @@ describe("the rules' words in both languages", () => {
   });
 
   it("the guard fails on a fixture with a rule lacking a translation", () => {
-    const fixture = [{ ...lease, ruleTitles: { "QC-LEASE-004": { fr: "Dépôt", en: "" }, "QC-LEASE-003": { fr: "Loyer", en: "Rent" } } }];
-    expect(missingRuleTexts(["QC-LEASE-004", "QC-LEASE-003", "QC-LEASE-999"], fixture)).toEqual(["QC-LEASE-004", "QC-LEASE-999"]);
+    const fixture = [
+      {
+        ...lease,
+        ruleTitles: { "QC-LEASE-004": { fr: "Dépôt", en: "" }, "QC-LEASE-003": { fr: "Loyer", en: "Rent" } },
+      },
+    ];
+    expect(missingRuleTexts(["QC-LEASE-004", "QC-LEASE-003", "QC-LEASE-999"], fixture)).toEqual([
+      "QC-LEASE-004",
+      "QC-LEASE-999",
+    ]);
   });
 });
 
@@ -83,7 +115,15 @@ describe.each(LANGS)("the report in %s", (lang) => {
   });
 
   it("snapshot of the findings", () => {
-    expect(payload.findings.map(({ ruleId, title, explanation, citation, quote }) => ({ ruleId, title, explanation, citation, quote }))).toMatchSnapshot();
+    expect(
+      payload.findings.map(({ ruleId, title, explanation, citation, quote }) => ({
+        ruleId,
+        title,
+        explanation,
+        citation,
+        quote,
+      })),
+    ).toMatchSnapshot();
   });
 });
 

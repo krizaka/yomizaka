@@ -1,9 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const state = vi.hoisted(() => ({ session: null as null | { id: string; account: Record<string, unknown> }, open: true, maintenance: false }));
+const state = vi.hoisted(() => ({
+  session: null as null | { id: string; account: Record<string, unknown> },
+  open: true,
+  maintenance: false,
+}));
 
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => undefined }) }));
-vi.mock("./session", async (orig) => ({ ...(await orig<typeof import("./session")>()), resolveSession: async () => state.session }));
+vi.mock("./session", async (orig) => ({
+  ...(await orig<typeof import("./session")>()),
+  resolveSession: async () => state.session,
+}));
 vi.mock("./settings/guards", async () => {
   const { refuse } = await import("./http");
   return {
@@ -19,8 +26,17 @@ vi.mock("./log", () => ({ logError: () => undefined, logInfo: () => undefined, l
 import { GET } from "../app/api/me/route";
 import { resetRateLimits } from "./limits";
 
-const call = () => GET(new Request("https://dev.yomizaka.com/api/me", { headers: { "x-forwarded-for": "203.0.113.7" } }));
-const ERIC = { id: "11111111-1111-4111-8111-111111111111", email: "eric@yomizaka.test", name: "Éric", avatarSeed: "plain-2", role: "USER", locale: "fr", perspective: null };
+const call = () =>
+  GET(new Request("https://dev.yomizaka.com/api/me", { headers: { "x-forwarded-for": "203.0.113.7" } }));
+const ERIC = {
+  id: "11111111-1111-4111-8111-111111111111",
+  email: "eric@yomizaka.test",
+  name: "Éric",
+  avatarSeed: "plain-2",
+  role: "USER",
+  locale: "fr",
+  perspective: null,
+};
 
 beforeEach(() => {
   resetRateLimits();
@@ -42,7 +58,11 @@ describe("GET /api/me — the family's contract (krizaka-ui#551)", () => {
     state.session = { id: "s1", account: ERIC };
     state.open = false;
     const res = await call();
-    expect(await res.json()).toEqual({ signedIn: true, signupOpen: false, account: { id: ERIC.id, email: ERIC.email, name: "Éric", avatarSeed: "plain-2" } });
+    expect(await res.json()).toEqual({
+      signedIn: true,
+      signupOpen: false,
+      account: { id: ERIC.id, email: ERIC.email, name: "Éric", avatarSeed: "plain-2" },
+    });
     expect(res.headers.get("Cache-Control")).toBe("private, no-store");
   });
 

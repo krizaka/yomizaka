@@ -16,7 +16,8 @@ const ID = "5c0e3f3e-0000-4000-8000-000000000001";
 const PUBLIC: Record<string, string> = {
   "auth/confirm-email": "the link mailed to the person (a single-use token)",
   "auth/forgot-password": "asks for a reset link by e-mail: the same answer for every address, limited (yomizaka#288)",
-  "auth/reset-password": "sets the new password from the mailed link (single use, time-limited), limited (yomizaka#288)",
+  "auth/reset-password":
+    "sets the new password from the mailed link (single use, time-limited), limited (yomizaka#288)",
   "auth/sign-in": "it opens the session",
   "auth/sign-out": "it ends the session; harmless without one",
   "auth/sign-up": "it creates the account (closed by its own switch)",
@@ -25,19 +26,24 @@ const PUBLIC: Record<string, string> = {
   healthz: "the platform's health probe",
   me: "who is signed in: signed out is a 200 `{ signedIn: false }`, the family's contract (krizaka-ui#551); lib/me-route.test.ts holds it",
   "screenings/respond": "the applicant's own link (a token), not a member",
-  "applicant": "the applicant's own link (a token), not a member: the notice, consent per purpose, erasure (yomizaka#131)",
-  "applicant/documents": "the applicant's own link (a token, open and consented): one document of the file, checked and purged (yomizaka#127)",
-  "showcase": "the home's recorded sample, nothing personal",
+  applicant:
+    "the applicant's own link (a token), not a member: the notice, consent per purpose, erasure (yomizaka#131)",
+  "applicant/documents":
+    "the applicant's own link (a token, open and consented): one document of the file, checked and purged (yomizaka#127)",
+  showcase: "the home's recorded sample, nothing personal",
   "showcase/file": "the home's recorded sample, nothing personal",
   "webhooks/payments": "signed by the payment vendor, refused without its signature",
   "webhooks/mail": "signed by the mail vendor (bounces, complaints), refused without its signature (yomizaka#48)",
   "batches/template": "the CSV template: a static file",
   "v1/openapi.json": "the public contract of the API",
-  "rapport/[token]/pdf": "the signed PDF of the owner report (yomizaka#481): the token of a live owner link is the credential, 404 otherwise, each download logged",
-  "verify/contract/[id]": "the public check of a sealed contract by its SHA-256 (yomizaka#71): who sealed it and when, no name, no account, no content",
+  "rapport/[token]/pdf":
+    "the signed PDF of the owner report (yomizaka#481): the token of a live owner link is the credential, 404 otherwise, each download logged",
+  "verify/contract/[id]":
+    "the public check of a sealed contract by its SHA-256 (yomizaka#71): who sealed it and when, no name, no account, no content",
 };
 
-const walk = (dir: string): string[] => readdirSync(dir).flatMap((n) => (statSync(join(dir, n)).isDirectory() ? walk(join(dir, n)) : [join(dir, n)]));
+const walk = (dir: string): string[] =>
+  readdirSync(dir).flatMap((n) => (statSync(join(dir, n)).isDirectory() ? walk(join(dir, n)) : [join(dir, n)]));
 
 describe("the API answers 401 without a session (yomizaka#243)", () => {
   const files = walk(API).filter((f) => f.endsWith(`${sep}route.ts`));
@@ -52,8 +58,14 @@ describe("the API answers 401 without a session (yomizaka#243)", () => {
       const handlers = METHODS.filter((m) => typeof routeModule[m] === "function");
       expect(handlers.length, "a route exports a method").toBeGreaterThan(0);
       for (const method of handlers) {
-        const req = new Request(`http://localhost/api/${route}`, { method, headers: { "content-type": "application/json" }, body: method === "GET" ? undefined : "{}" });
-        const res = await (routeModule[method] as (r: Request, c: { params: Promise<Record<string, string>> }) => Promise<Response>)(req, { params: Promise.resolve({ id: ID, tab: "infos", token: ID }) });
+        const req = new Request(`http://localhost/api/${route}`, {
+          method,
+          headers: { "content-type": "application/json" },
+          body: method === "GET" ? undefined : "{}",
+        });
+        const res = await (
+          routeModule[method] as (r: Request, c: { params: Promise<Record<string, string>> }) => Promise<Response>
+        )(req, { params: Promise.resolve({ id: ID, tab: "infos", token: ID }) });
         // 401 for a session, API-key or operator lock; an administration route may answer its own lock first, but never 2xx.
         expect([401, 403], `${method} /api/${route} → ${res.status}`).toContain(res.status);
       }

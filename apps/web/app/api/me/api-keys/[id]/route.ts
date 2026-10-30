@@ -10,6 +10,12 @@ export const DELETE = (req: Request, { params }: { params: Promise<{ id: string 
   accountAct(req, "api-keys", async (s) => {
     const { id } = await params;
     await keyAct(() => apiKeys(systemClock).revoke(s.account.id, id));
-    await audit({ action: "apikey.revoked", actorId: s.account.id, actorLabel: s.account.email, targetId: id, headers: req.headers });
+    await audit({
+      action: "apikey.revoked",
+      actorId: s.account.id,
+      actorLabel: s.account.email,
+      targetId: id,
+      headers: req.headers,
+    });
     return { ok: true };
   });

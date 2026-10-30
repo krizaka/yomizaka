@@ -34,7 +34,9 @@ describe.runIf(enabled)("the cast seed", () => {
     expect(first.member.name).toBe(personaByRole("yomizaka", "member").displayName);
     const [admin] = await q("SELECT name, role FROM accounts WHERE email = $1", ["mira@demo.yomizaka.test"]);
     expect(admin).toEqual({ name: personaByRole("yomizaka", "admin").displayName, role: "ADMIN" });
-    const recorded = JSON.parse(readFileSync(new URL("../../../scripts/demo-seed/fingerprint.json", import.meta.url), "utf8")) as { fingerprint: string };
+    const recorded = JSON.parse(
+      readFileSync(new URL("../../../scripts/demo-seed/fingerprint.json", import.meta.url), "utf8"),
+    ) as { fingerprint: string };
     expect(first.fingerprint).toBe(recorded.fingerprint);
   });
 });

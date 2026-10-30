@@ -13,19 +13,35 @@ const STOP = "\u0003";
 
 /** Escapes a passage for HTML, then turns the markers ts_headline put around a match into <b>…</b>. */
 export function passageHtml(raw: string): string {
-  const escaped = raw.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+  const escaped = raw
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
   return escaped.split(START).join("<b>").split(STOP).join("</b>").replace(/\s+/g, " ").trim();
 }
 
 export function normaliseQuery(q: string): string {
-  return Array.from(q, (c) => ((c.codePointAt(0) ?? 0) < 32 ? " " : c)).join("").trim().slice(0, 200);
+  return Array.from(q, (c) => ((c.codePointAt(0) ?? 0) < 32 ? " " : c))
+    .join("")
+    .trim()
+    .slice(0, 200);
 }
 
 export async function search(ownerId: string, q: string): Promise<SearchHit[]> {
   const words = normaliseQuery(q);
-  if (words.length < 2) {return [];}
+  if (words.length < 2) {
+    return [];
+  }
   const options = `StartSel=${START}, StopSel=${STOP}, MaxWords=28, MinWords=10, MaxFragments=1`;
-  const rows = await query<{ document_id: string; title: string; kind: SearchHit["kind"]; source: SearchHit["source"]; passage: string; rank: number }>(
+  const rows = await query<{
+    document_id: string;
+    title: string;
+    kind: SearchHit["kind"];
+    source: SearchHit["source"];
+    passage: string;
+    rank: number;
+  }>(
     `WITH q AS (SELECT websearch_to_tsquery('simple', $2) AS tsq)
      SELECT * FROM (
        SELECT d.id AS document_id, d.title, d.kind,
@@ -41,5 +57,12 @@ export async function search(ownerId: string, q: string): Promise<SearchHit[]> {
      ) hits ORDER BY rank DESC LIMIT 30`,
     [ownerId, words, options],
   );
-  return rows.map((r) => ({ documentId: r.document_id, title: r.title, kind: r.kind, source: r.source, passage: passageHtml(r.passage), rank: Number(r.rank) }));
+  return rows.map((r) => ({
+    documentId: r.document_id,
+    title: r.title,
+    kind: r.kind,
+    source: r.source,
+    passage: passageHtml(r.passage),
+    rank: Number(r.rank),
+  }));
 }

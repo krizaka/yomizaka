@@ -12,7 +12,8 @@ export interface ZipEntry {
 }
 
 const dosTime = (d: Date) => ((d.getUTCHours() << 11) | (d.getUTCMinutes() << 5) | (d.getUTCSeconds() >> 1)) & 0xffff;
-const dosDate = (d: Date) => ((Math.max(0, d.getUTCFullYear() - 1980) << 9) | ((d.getUTCMonth() + 1) << 5) | d.getUTCDate()) & 0xffff;
+const dosDate = (d: Date) =>
+  ((Math.max(0, d.getUTCFullYear() - 1980) << 9) | ((d.getUTCMonth() + 1) << 5) | d.getUTCDate()) & 0xffff;
 
 export function buildZip(entries: readonly ZipEntry[]): Buffer {
   const parts: Buffer[] = [];

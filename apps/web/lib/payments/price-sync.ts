@@ -27,9 +27,20 @@ export interface SyncEntry {
 export function processorCatalogue(entries: readonly SyncEntry[]): Catalogue {
   const plans = SOLD_KINDS.flatMap((kind) => {
     const entry = entries.find((e) => e.key === SOLD[kind].key);
-    if (entry?.amountCents == null) {return [];}
+    if (entry?.amountCents == null) {
+      return [];
+    }
     const { name, taxCode } = PROCESSOR_PLANS[kind];
-    return [{ lookupKey: SOLD[kind].lookupKey, name, amount: entry.amountCents, currency: entry.currency.toLowerCase(), taxCode, ...(SOLD[kind].mode === "subscription" ? { interval: "month" as const } : {}) }];
+    return [
+      {
+        lookupKey: SOLD[kind].lookupKey,
+        name,
+        amount: entry.amountCents,
+        currency: entry.currency.toLowerCase(),
+        taxCode,
+        ...(SOLD[kind].mode === "subscription" ? { interval: "month" as const } : {}),
+      },
+    ];
   });
   return { product: "yomizaka", plans, portal: PORTAL };
 }
@@ -37,8 +48,13 @@ export function processorCatalogue(entries: readonly SyncEntry[]): Catalogue {
 export type PriceSync = Pick<SetupResult, "prices"> & { mode: "test" | "live" };
 
 /** Brings the processor to the catalogue. Refuses a live key (the owner's decision), before any call that writes. */
-export async function syncProcessorPrices(stripe: { call: StripeCall; mode: "test" | "live" }, entries: readonly SyncEntry[]): Promise<PriceSync> {
-  if (stripe.mode === "live") {throw new LiveRefused();}
+export async function syncProcessorPrices(
+  stripe: { call: StripeCall; mode: "test" | "live" },
+  entries: readonly SyncEntry[],
+): Promise<PriceSync> {
+  if (stripe.mode === "live") {
+    throw new LiveRefused();
+  }
   const result = await ensureCatalogue(stripe.call, processorCatalogue(entries), { mode: stripe.mode });
   return { mode: stripe.mode, prices: result.prices };
 }

@@ -19,8 +19,16 @@ export function GET(req: Request) {
 export function POST(req: Request) {
   return handle(async () => {
     const session = await requireAdmin(req);
-    const input = await readJson(req, z.object({ key: z.string().regex(/^[a-z0-9-]{1,60}$/), definition: flowDefinition }));
-    const created = await createFlow({ id: session.account.id, email: session.account.email }, input.key, input.definition, req.headers);
+    const input = await readJson(
+      req,
+      z.object({ key: z.string().regex(/^[a-z0-9-]{1,60}$/), definition: flowDefinition }),
+    );
+    const created = await createFlow(
+      { id: session.account.id, email: session.account.email },
+      input.key,
+      input.definition,
+      req.headers,
+    );
     return Response.json(created, { status: 201 });
   });
 }

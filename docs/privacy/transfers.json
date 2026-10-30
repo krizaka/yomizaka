@@ -19,7 +19,16 @@
       "where": "New York (ny.storage.bunnycdn.com); the pull zone is a CDN, whose edges the code does not limit to Canada",
       "outsideQuebec": true,
       "outsideCanada": true,
-      "env": ["MEDIA_DOCUMENTS_PROVIDER", "MEDIA_STORAGE_ENDPOINT", "MEDIA_STORAGE_ZONE", "MEDIA_STORAGE_API_KEY", "MEDIA_DOCUMENTS_PULL_HOSTNAME", "MEDIA_DOCUMENTS_TOKEN_KEY", "MEDIA_DOCUMENTS_PREFIX", "MEDIA_DOCUMENTS_ENCRYPTION_KEY"],
+      "env": [
+        "MEDIA_DOCUMENTS_PROVIDER",
+        "MEDIA_STORAGE_ENDPOINT",
+        "MEDIA_STORAGE_ZONE",
+        "MEDIA_STORAGE_API_KEY",
+        "MEDIA_DOCUMENTS_PULL_HOSTNAME",
+        "MEDIA_DOCUMENTS_TOKEN_KEY",
+        "MEDIA_DOCUMENTS_PREFIX",
+        "MEDIA_DOCUMENTS_ENCRYPTION_KEY"
+      ],
       "hosts": ["ny.storage.bunnycdn.com", "yomizaka-docs-dev.b-cdn.net", "storage.bunnycdn.com"]
     },
     {
@@ -29,7 +38,14 @@
       "where": "Toronto (tor1) for Krizaka's; the customer's choice for a workspace's own (its region is shown to the customer)",
       "outsideQuebec": true,
       "outsideCanada": false,
-      "env": ["MEDIA_S3_ENDPOINT", "MEDIA_S3_REGION", "MEDIA_S3_BUCKET", "MEDIA_S3_ACCESS_KEY_ID", "MEDIA_S3_SECRET_ACCESS_KEY", "MEDIA_VAULT_KEY"],
+      "env": [
+        "MEDIA_S3_ENDPOINT",
+        "MEDIA_S3_REGION",
+        "MEDIA_S3_BUCKET",
+        "MEDIA_S3_ACCESS_KEY_ID",
+        "MEDIA_S3_SECRET_ACCESS_KEY",
+        "MEDIA_VAULT_KEY"
+      ],
       "hosts": ["tor1.digitaloceanspaces.com"]
     },
     {
@@ -39,8 +55,22 @@
       "where": "The provider's own infrastructure under the person's own account with it; the location is theirs to judge and is not stated by this service",
       "outsideQuebec": true,
       "outsideCanada": null,
-      "env": ["MEDIA_CLOUD_DROPBOX_CLIENT_ID", "MEDIA_CLOUD_DROPBOX_CLIENT_SECRET", "MEDIA_CLOUD_GOOGLE_CLIENT_ID", "MEDIA_CLOUD_GOOGLE_CLIENT_SECRET", "MEDIA_CLOUD_MICROSOFT_CLIENT_ID", "MEDIA_CLOUD_MICROSOFT_CLIENT_SECRET"],
-      "hosts": ["api.dropboxapi.com", "content.dropboxapi.com", "www.googleapis.com", "oauth2.googleapis.com", "graph.microsoft.com", "login.microsoftonline.com"]
+      "env": [
+        "MEDIA_CLOUD_DROPBOX_CLIENT_ID",
+        "MEDIA_CLOUD_DROPBOX_CLIENT_SECRET",
+        "MEDIA_CLOUD_GOOGLE_CLIENT_ID",
+        "MEDIA_CLOUD_GOOGLE_CLIENT_SECRET",
+        "MEDIA_CLOUD_MICROSOFT_CLIENT_ID",
+        "MEDIA_CLOUD_MICROSOFT_CLIENT_SECRET"
+      ],
+      "hosts": [
+        "api.dropboxapi.com",
+        "content.dropboxapi.com",
+        "www.googleapis.com",
+        "oauth2.googleapis.com",
+        "graph.microsoft.com",
+        "login.microsoftonline.com"
+      ]
     },
     {
       "id": "mail",
@@ -59,7 +89,13 @@
       "where": "The provider's; not stated in the code or the spec",
       "outsideQuebec": true,
       "outsideCanada": null,
-      "env": ["PAYMENTS_PROVIDER", "PAYMENTS_STRIPE_SECRET_KEY", "PAYMENTS_STRIPE_WEBHOOK_SECRET", "PAYMENTS_PRICE_KEY_AUDIT", "PAYMENTS_PRICE_KEY_PRO"],
+      "env": [
+        "PAYMENTS_PROVIDER",
+        "PAYMENTS_STRIPE_SECRET_KEY",
+        "PAYMENTS_STRIPE_WEBHOOK_SECRET",
+        "PAYMENTS_PRICE_KEY_AUDIT",
+        "PAYMENTS_PRICE_KEY_PRO"
+      ],
       "hosts": []
     },
     {

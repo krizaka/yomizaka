@@ -8,10 +8,19 @@ import fr from "@/messages/fr.json";
 
 import { profileDirty, profilePatch, ProfileSection, type ProfileValues, undoable } from "./ProfileSection";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push() {}, replace() {}, refresh() {} }), usePathname: () => "/fr/app/settings/profil", useSearchParams: () => new URLSearchParams() }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push() {}, replace() {}, refresh() {} }),
+  usePathname: () => "/fr/app/settings/profil",
+  useSearchParams: () => new URLSearchParams(),
+}));
 
 const MESSAGES = { en: { console: en.console }, fr: { console: fr.console } } as const;
-const readable = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ");
+const readable = (html: string) =>
+  html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&#x27;|&#39;/g, "'")
+    .replace(/&[a-z#0-9]+;/gi, " ")
+    .replace(/\s+/g, " ");
 const SAVED: ProfileValues = { name: "Éric Tremblay", avatarSeed: "plain-2", locale: "fr", perspective: "landlord" };
 const AUDIENCES = [
   { audience: "tenant", status: "available" },
@@ -40,10 +49,22 @@ describe("the profile is one section with one save (the review's E2)", () => {
   it("sends only the fields that changed — never the others, which another session may have edited — and the perspective when it moved", () => {
     expect(profilePatch(SAVED, { ...SAVED })).toEqual({ profile: null, perspective: null });
     expect(profilePatch(SAVED, { ...SAVED, name: "  " })).toEqual({ profile: { name: null }, perspective: null });
-    expect(profilePatch(SAVED, { ...SAVED, avatarSeed: "plain-4" })).toEqual({ profile: { avatarSeed: "plain-4" }, perspective: null });
-    expect(profilePatch(SAVED, { ...SAVED, avatarSeed: "" })).toEqual({ profile: { avatarSeed: null }, perspective: null });
-    expect(profilePatch(SAVED, { ...SAVED, locale: "en", perspective: "tenant" })).toEqual({ profile: { locale: "en" }, perspective: "tenant" });
-    expect(profilePatch(SAVED, { ...SAVED, name: " Éric Tremblay ", perspective: "tenant" })).toEqual({ profile: null, perspective: "tenant" });
+    expect(profilePatch(SAVED, { ...SAVED, avatarSeed: "plain-4" })).toEqual({
+      profile: { avatarSeed: "plain-4" },
+      perspective: null,
+    });
+    expect(profilePatch(SAVED, { ...SAVED, avatarSeed: "" })).toEqual({
+      profile: { avatarSeed: null },
+      perspective: null,
+    });
+    expect(profilePatch(SAVED, { ...SAVED, locale: "en", perspective: "tenant" })).toEqual({
+      profile: { locale: "en" },
+      perspective: "tenant",
+    });
+    expect(profilePatch(SAVED, { ...SAVED, name: " Éric Tremblay ", perspective: "tenant" })).toEqual({
+      profile: null,
+      perspective: "tenant",
+    });
   });
 
   it("undo puts the previous values back, except a first perspective the server cannot unset", () => {
@@ -56,7 +77,13 @@ describe("the profile is one section with one save (the review's E2)", () => {
   it("renders the four rows — name, picture, language, side of the lease — and exactly one save, in both languages", () => {
     const html = render();
     const text = readable(html);
-    for (const word of [fr.console.settings.profile.nameLabel, fr.console.settings.profile.avatarLabel, fr.console.settings.profile.languageLabel, fr.console.profile.legend]) expect(text).toContain(word);
+    for (const word of [
+      fr.console.settings.profile.nameLabel,
+      fr.console.settings.profile.avatarLabel,
+      fr.console.settings.profile.languageLabel,
+      fr.console.profile.legend,
+    ])
+      expect(text).toContain(word);
     expect(html).toMatch(/<input [^>]*id="profile-name"[^>]*value="Éric Tremblay"/);
     expect(text).toContain("Français");
     expect(text).toContain("English");
