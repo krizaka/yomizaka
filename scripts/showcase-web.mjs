@@ -102,17 +102,23 @@ await record(
 );
 
 const state = off ?? (await session());
+// Which document to open is looked for off camera, so the recorded film starts on its report.
+const reportPath = await (async () => {
+  const ctx = await browser.newContext({ viewport: VIEWPORT, colorScheme: "dark", locale, storageState: state });
+  const page = await ctx.newPage();
+  await page.goto(`${base}/${locale}/app`, { waitUntil: "networkidle" });
+  await firstDocument(page).click();
+  await page.waitForLoadState("networkidle");
+  const href = /\/app\/documents\/[^/?#]+/.exec(new URL(page.url()).pathname)?.[0];
+  await ctx.close();
+  if (!href) throw new Error("no document in the library: the demo data is missing");
+  return href;
+})();
 await record(
   "web-report",
   async (page) => {
-    await page.goto(`${base}/${locale}/app`, { waitUntil: "networkidle" });
-    await page.waitForTimeout(1000);
-    await firstDocument(page).click();
-    await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(1800);
-    const href = /\/app\/documents\/[^/?#]+/.exec(new URL(page.url()).pathname)?.[0];
-    if (!href) throw new Error("no document in the library: the demo data is missing");
-    await page.goto(`${base}/${locale}${href}/rapport`, { waitUntil: "networkidle" });
+    // The poster is the frame at 2 s (yomizaka#575): the film opens ON the report, not on the library it is reached from.
+    await page.goto(`${base}/${locale}${reportPath}/rapport`, { waitUntil: "networkidle" });
     await page.waitForTimeout(2200);
     await page.mouse.wheel(0, 320);
     await page.waitForTimeout(2000);
