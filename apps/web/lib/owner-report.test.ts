@@ -22,7 +22,7 @@ describe("the owner's report (yomizaka#128)", () => {
 
   it("keeps hashes, signals, rules, runs and versions", () => {
     expect(report.documents[0]).toMatchObject({ sha256: sha, pages: 2, typeId: "pay-stub" });
-    expect(report.documents[0]!.signals).toEqual([{ id: "s1", level: "inhabituel", observation: "Two saves with different producers" }]);
+    expect(report.documents[0]!.signals).toEqual([{ id: "s1", level: "inhabituel", observation: "Two saves with different producers", family: "history" }]);
     expect(report.documents[0]!.findings).toEqual([{ ruleId: "r1", verdict: "FAIL", severity: "high", citation: "C.c.Q. art. 1904" }]);
     expect(report.documents[0]!.runs.map((r) => r.runId)).toEqual(["run-1", "run-2"]);
     expect(report.rulesets[0]).toMatchObject({ rulesetVersion: "1.2", reviewStatus: "TO_REVIEW_BY_LAWYER" });
@@ -59,5 +59,13 @@ describe("the share link's state", () => {
   });
   it("keeps the days within 1..30, 7 by default", () => {
     expect([shareDays(undefined), shareDays(0), shareDays(31), shareDays(1.5), shareDays(30), shareDays(3)]).toEqual([7, 7, 7, 7, 30, 3]);
+  });
+});
+
+describe("the owner's signal (yomizaka#625)", () => {
+  it("keeps the family and the page, revision and field, never the box", async () => {
+    const { ownerSignalOf } = await import("./owner-report");
+    expect(ownerSignalOf({ signalId: "PDF-REV-002", level: "incohérent", observation: "o", evidence: { page: 2, box: [1, 2, 3, 4], revision: 2, field: "net" } })).toEqual({ id: "PDF-REV-002", level: "incohérent", observation: "o", family: "history", evidence: { page: 2, revision: 2, field: "net" } });
+    expect(ownerSignalOf({ signalId: "FILE-001", level: "observé", observation: "o" })).toEqual({ id: "FILE-001", level: "observé", observation: "o", family: "across" });
   });
 });

@@ -35,7 +35,7 @@ export function DocumentReportTab({ doc, facts, selection, perspective, bundle =
           <>
             <VerdictBand report={latestReport} />
             <FindingList report={latestReport} selection={selection} />
-            {latestAuthenticity?.report && "signals" in latestAuthenticity.report ? <AuthenticitySignals report={latestAuthenticity.report} /> : null}
+            {latestAuthenticity?.report && "signals" in latestAuthenticity.report ? <AuthenticitySignals report={latestAuthenticity.report} runId={latestAuthenticity.runId} /> : null}
             <TechnicalDetails documentId={doc.id} analysis={latestCompliance} />
             <details className="rounded-lg border border-border-default p-3">
               <summary className="cursor-pointer text-sm font-semibold text-fg">{say("document.details")}</summary>
@@ -49,7 +49,7 @@ export function DocumentReportTab({ doc, facts, selection, perspective, bundle =
     if (latestAuthenticity?.report && "signals" in latestAuthenticity.report) {
       return (
           <>
-            <AuthenticitySignals report={latestAuthenticity.report} />
+            <AuthenticitySignals report={latestAuthenticity.report} runId={latestAuthenticity.runId} />
             <TechnicalDetails documentId={doc.id} analysis={latestAuthenticity} />
           </>
       );

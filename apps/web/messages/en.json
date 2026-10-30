@@ -696,6 +696,45 @@
       "exportUnavailable": "This report cannot be issued yet.",
       "exportPdf": "Download the PDF",
       "reused": "Result reused: this exact document was already checked against the same rules, so no new check was run.",
+      "traces": {
+        "title": "Traces of editing",
+        "notTitle": "What this check is not",
+        "notItems": {
+          "alteration": "It is not a finding that a document was altered dishonestly, and it says nothing about the person.",
+          "ordinary": "Many ordinary steps leave the same traces: signing, filling in a form, merging pages, compressing, converting from an e-mail, printing again.",
+          "absence": "A document with no trace is not declared genuine: a file made again from scratch leaves none.",
+          "person": "A person decides. Yomizaka decides nothing."
+        },
+        "notExamined": "Not examined: {list}.",
+        "families": {
+          "history": "File history",
+          "layout": "Layout and fonts",
+          "images": "Images",
+          "figures": "Figures",
+          "across": "Across the file"
+        },
+        "observed": "What we observed",
+        "page": "Page {page}",
+        "revision": "Saved again: revision {revision}",
+        "field": "Field: {field}",
+        "ordinaryLabel": "Ordinary explanations",
+        "askForLabel": "What to ask for",
+        "run": "Orazaka run {runId}",
+        "ordinary": {
+          "history": "Signing, filling in a form, merging pages, compressing the file or converting it from an e-mail leave the same traces as an edit.",
+          "layout": "A different font on one line can come from a template, a form field, a stamp, or a page the issuer added later.",
+          "images": "A photo saved again, cropped, rotated or sent through a messaging app changes the same data.",
+          "figures": "Rounding, a bonus, retroactive pay, a second employer or a correction by the payroll office can make figures differ.",
+          "across": "Two jobs, a split deposit, another bank account or a raise can explain two documents that do not match."
+        },
+        "askFor": {
+          "history": "Ask for the document downloaded from the issuer's portal (the payroll portal for a pay stub), or the original file as the issuer sent it.",
+          "layout": "Ask for the original file as the issuer produced it, not a copy that was opened and saved again.",
+          "images": "Ask for the original file, or a new photo with the whole document flat and well lit.",
+          "figures": "Call the issuer on a number you found yourself, and ask for a copy from their records.",
+          "across": "Call the employer on a number you found yourself, and ask the applicant to explain the difference."
+        }
+      },
       "photoOrigin": {
         "header": "Read on your photos at upload, before their metadata was removed: facts about the files, not an expert examination. They do not say whether the document is authentic.",
         "where": "The photos' metadata, read at upload",
@@ -3945,7 +3984,7 @@
     "versionNone": "unspecified",
     "ruleset": "Ruleset {id} version {version} ({jurisdiction})",
     "reviewStatus": "Ruleset review status: {status}. It is to be read by a lawyer before it is relied upon.",
-    "limits": "What this report does not show: the documents themselves, the person's name or contact, any score or ranking. The signals are observations about a file, never a judgement of a person.",
+    "limits": "What this report does not show: the documents themselves, the person's name or contact, any grade or ranking. The signals are observations about a file, never a judgement of a person.",
     "download": "Download the signed PDF",
     "expires": "This link is valid until {date}.",
     "guarantees": "This PDF is signed with Yomizaka's key (Ed25519, held by Krizaka). The signature covers every item of this report (documents, signals, rules checked, runs, versions), the link's expiry and the full text of the pages. If a single character changes, verification fails.",
