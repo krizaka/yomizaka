@@ -99,8 +99,8 @@ jobs:
       - name: The film as mp4 (the app-videos workflow names files <platform>-<flow>)
         run: |
           brew install ffmpeg
-          ffmpeg -y -i showcase-mac/mac-library.mov -an -pix_fmt yuv420p showcase-mac/mac-library.mp4
-          rm showcase-mac/mac-library.mov
+          node scripts/desktop-film-join.mjs showcase-mac showcase-mac/mac-library.mp4
+          rm showcase-mac/mac-take-*.mov
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: showcase-mac

@@ -16,6 +16,7 @@ import { dirname, join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 
 import { generateDocument } from "./demo-documents/index.mjs";
+import { createFilm, windowRect } from "./desktop-film-lib.mjs";
 import { client, libraryHash, scopeFile, scopeJson, until } from "./desktop-journey-lib.mjs";
 
 const { values } = parseArgs({ options: { app: { type: "string" }, out: { type: "string", default: "desktop-journey" } } });
@@ -70,6 +71,13 @@ async function signInIfAsked(driver) {
   return true;
 }
 
+// The film (yomizaka#636): the app's window only, from the signed-in library, in takes that skip the engine's wait.
+const film = createFilm({ dir: values.film ? out : undefined });
+// @fixed: long enough to read a screen of the app, short enough for a clip under 30 s in all
+const READ_MS = 3000;
+const hold = (ms = READ_MS) => new Promise((resolveHold) => setTimeout(resolveHold, ms));
+const filmWindow = async () => film.start(await windowRect(driver));
+
 const waitFor = (driver, what, css, timeoutMs = SCREEN_MS) => until(what, () => driver.exists(css), { timeoutMs });
 
 let app;
@@ -87,12 +95,18 @@ try {
   await signInIfAsked(driver);
   await waitFor(driver, "the granted folder in the library", FOLDER_LINK);
   await shot(driver, "1-library");
+  await mkdir(out, { recursive: true });
+  await filmWindow();
+  await hold();
 
   // 2. Open the folder: its lease is listed; check it.
   await driver.run("window.location.hash = arguments[0]", libraryHash(folder));
   await waitFor(driver, "the lease in the folder", "[data-testid=check-document]");
   await shot(driver, "2-folder");
+  await hold();
   await driver.click(await driver.find("[data-testid=check-document]"));
+  await hold(2000);
+  await film.stop(); // the engine's wait is not in the film
 
   // 3. The lease is read and checked by the engine, the result is shown.
   await waitFor(driver, "the check screen", "[data-testid=check-view]");
@@ -100,6 +114,9 @@ try {
   const hash = await driver.hash();
   if (!hash.startsWith("#/check/")) throw new Error(`the result is shown on ${hash}, not on a check`);
   await shot(driver, "3-result");
+  await filmWindow();
+  await hold(4000);
+  await film.stop(); // the app is about to quit: nothing of the desktop is filmed
 
   // 4. Relaunch: the folder is still granted and the session is still there.
   await driver.quit().catch(() => undefined);
@@ -112,8 +129,12 @@ try {
   const kept = JSON.parse(await readFile(scope, "utf8")).roots;
   if (!kept.includes(folder)) throw new Error(`the scope lost the folder: ${JSON.stringify(kept)}`);
   await shot(driver, "4-relaunch");
+  await filmWindow();
+  await hold(4000);
+  await film.stop();
   console.log("desktop journey: ok");
 } catch (error) {
+  await film.stop().catch(() => undefined);
   if (driver) await shot(driver, "failure").catch(() => undefined);
   console.error(`desktop journey: ${error.message}`);
   process.exitCode = 1;

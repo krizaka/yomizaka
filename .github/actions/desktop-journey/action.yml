@@ -1,7 +1,8 @@
 # The Mac journey (yomizaka#636, ADR-017): the debug build with the embedded WebDriver (tauri-plugin-webdriver, cargo feature
 # `webdriver`, never a release), the persona of the dev environment, the folder pre-granted through the kit's scope.json, one
 # real lease checked, a relaunch. The caller's job passes SMOKE_EMAIL / SMOKE_PASSWORD as environment variables (the `dev`
-# environment). With `record: true` the screen is filmed (screencapture) to <out>/mac-library.mov for the download page.
+# environment). With `record: true` the app's window (only, from the signed-in library, in short takes) is filmed to <out>/mac-take-N.mov
+# (scripts/desktop-film-lib.mjs); desktop-film-join.mjs joins them for the download page.
 name: Mac journey
 description: Build Yomizaka for the Mac with its test driver and run the journey as the dev persona.
 inputs:
@@ -49,14 +50,6 @@ runs:
         JOURNEY_RECORD: ${{ inputs.record }}
       run: |
         mkdir -p "$JOURNEY_OUT"
-        if [ "$JOURNEY_RECORD" = "true" ]; then
-          screencapture -v -V 120 "$JOURNEY_OUT/mac-library.mov" &
-          recorder=$!
-        fi
-        status=0
-        node scripts/desktop-journey.mjs --app apps/desktop/src-tauri/target/debug/yomizaka-desktop --out "$JOURNEY_OUT" || status=$?
-        if [ -n "${recorder:-}" ]; then
-          kill -INT "$recorder" 2>/dev/null || true
-          wait "$recorder" 2>/dev/null || true
-        fi
-        exit "$status"
+        film=""
+        if [ "$JOURNEY_RECORD" = "true" ]; then film="--film"; fi
+        node scripts/desktop-journey.mjs --app apps/desktop/src-tauri/target/debug/yomizaka-desktop --out "$JOURNEY_OUT" $film

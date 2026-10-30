@@ -78,7 +78,8 @@ describe("the workflows", () => {
     assert.match(videos, /showcase-mac:[\s\S]*?continue-on-error: true/);
     assert.match(videos, /needs: \[showcase-web, mobile-showcase, showcase-mac\]/);
     assert.match(videos, /artifacts: \|\s+showcase-web\s+maestro-showcase\s+showcase-mac/);
-    assert.match(read("../.github/actions/desktop-journey/action.yml"), /mac-library\.mov/);
+    assert.match(read("../.github/workflows/download-videos.yml"), /desktop-film-join\.mjs showcase-mac showcase-mac\/mac-library\.mp4/);
+    assert.doesNotMatch(code(read("../.github/actions/desktop-journey/action.yml")), /screencapture/);
   });
   it("the journey asserts what the issue asks: a folder, a lease checked, the result, the relaunch", () => {
     const journey = read("./desktop-journey.mjs");
