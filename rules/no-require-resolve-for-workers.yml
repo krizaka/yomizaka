@@ -1,0 +1,11 @@
+id: no-require-resolve-for-workers
+language: Tsx
+severity: error
+message: "`require.resolve(...)` is rewritten by the production build into the module id of the bundle (a number): handed to a worker that runs from a string, `require(669405)` failed and every PDF was refused as unreadable on dev (2026-10-29). Find the package folder with `findPackageDir` (lib/extraction/package-dir.ts)."
+rule:
+  pattern: require.resolve($$$ARGS)
+files:
+  - "apps/web/lib/extraction/**/*.ts"
+ignores:
+  - "**/node_modules/**"
+  - "**/*.test.ts"

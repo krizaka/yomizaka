@@ -3,6 +3,7 @@
     "no-ambient-clock": 2,
     "no-db-in-service-or-rules": 0,
     "no-direct-organize-write": 0,
+    "no-require-resolve-for-workers": 0,
     "no-enum-string-compare": 9,
     "no-env-in-domain": 5,
     "no-get-time-arithmetic": 0,

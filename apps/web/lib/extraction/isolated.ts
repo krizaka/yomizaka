@@ -1,7 +1,6 @@
-import { createRequire } from "node:module";
 import { Worker } from "node:worker_threads";
 
-const require = createRequire(import.meta.url);
+import { findPackageDir } from "./package-dir";
 
 /**
  * The PDF's text layer, read OFF the web process (yomizaka#21). pdf.js is CPU-bound: read in the request it would hold the
@@ -82,7 +81,7 @@ function endWorker(w: Warm | null) {
 function workerFor(maxHeapMb: number): Warm {
   if (warm && warm.heapMb === maxHeapMb && warm.jobs < WARM.jobs) return warm;
   endWorker(warm);
-  const worker = new Worker(WORKER_SOURCE, { eval: true, workerData: { unpdf: require.resolve("unpdf") }, resourceLimits: { maxOldGenerationSizeMb: maxHeapMb } });
+  const worker = new Worker(WORKER_SOURCE, { eval: true, workerData: { unpdf: findPackageDir("unpdf") }, resourceLimits: { maxOldGenerationSizeMb: maxHeapMb } });
   // A worker never keeps the process alive: when the work is done the process may end.
   worker.unref();
   started++;
