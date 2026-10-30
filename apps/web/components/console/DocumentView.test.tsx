@@ -327,6 +327,7 @@ describe("the business registers in the report (yomizaka#627)", () => {
           mayIndicate: "A typing error, or a number that belongs to another business.",
           askFor: "Ask the issuer to confirm the QST number.",
           evidence: { field: "issuer QST number" },
+          vars: { source: "Revenu Québec" },
         },
       ],
     },
@@ -340,6 +341,7 @@ describe("the business registers in the report (yomizaka#627)", () => {
     expect(html).toContain('data-testid="registry-checks"');
     const text = readable(html);
     expect(text).toContain("REG-001");
+    expect(text).toContain("not found in the Revenu Québec register");
     expect(text).toContain("Ask the issuer to confirm the QST number.");
     expect(text).toContain("Source: Revenu Québec (SW-340), consulted Oct 30, 2026");
     const gst = html.slice(html.indexOf('data-testid="registry-gst"'), html.indexOf('data-testid="registry-neq"'));
@@ -353,6 +355,9 @@ describe("the business registers in the report (yomizaka#627)", () => {
     nav.search = "";
     const text = readable(render(document([check({ jurisdiction: "QC" })]), "rapport", "fr", null, registry));
     expect(text).toContain(fr.console.analysis.registry.title);
+    expect(text).toContain("n'a pas été trouvé dans le registre Revenu Québec");
+    expect(text).toContain("Demandez à l'émetteur de confirmer son numéro de TVQ.");
+    expect(text).not.toContain("Ask the issuer");
     expect(text).toContain("Source : Revenu Québec (SW-340), consulté le 30 oct. 2026");
     expect(text).toContain(fr.console.analysis.registry.notLookedUp["not-covered"]);
   });

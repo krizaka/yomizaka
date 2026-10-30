@@ -1,7 +1,5 @@
-import type { Signal } from "@yomizaka/core";
-
 import { ANSWER, type BusinessRegistry, NOT_LOOKED_UP, type NotLookedUpReason } from "./model";
-import { checkIssuer, type PrintedIssuer, registrantOfNeq } from "./signals";
+import { checkIssuer, type PrintedIssuer, type RegistrySignal, registrantOfNeq } from "./signals";
 
 /*
  * What the document report says of the registers (yomizaka#627): the number printed on the document, read against the public registers,
@@ -25,7 +23,7 @@ export interface RegistryReport {
   consultedAt: string;
   /** The QST number as printed. */
   number: string;
-  qst: { looked: boolean; reason: NotLookedUpReason | null; signals: Signal[] };
+  qst: { looked: boolean; reason: NotLookedUpReason | null; signals: RegistrySignal[] };
   /** The registers that are not used: said as « not looked up », never silently skipped. */
   gstHst: NotLookedUpReason;
   neq: NotLookedUpReason;

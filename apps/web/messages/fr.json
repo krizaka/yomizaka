@@ -778,6 +778,24 @@
           "unavailable": "Non consulté : le registre n’a pas répondu.",
           "not-authorised": "Non consulté : ce registre n’est pas encore consulté.",
           "not-covered": "Non consulté : ce registre n’est pas consulté."
+        },
+        "signals": {
+          "REG-001": {
+            "observation": "Le numéro de TVQ imprimé sur le document n'a pas été trouvé dans le registre {source}.",
+            "mayIndicate": "Une erreur de frappe, un numéro pas encore inscrit, ou un numéro qui appartient à une autre entreprise.",
+            "askFor": "Demandez à l'émetteur de confirmer son numéro de TVQ."
+          },
+          "REG-002": {
+            "observation": "Le nom imprimé sur le document diffère du nom inscrit au registre.",
+            "mayIndicate": "Un nom commercial, un changement de nom récent ou une abréviation.",
+            "where": "Document : {document} · Registre : {register}",
+            "askFor": "Demandez à l'émetteur comment les deux noms se rapportent."
+          },
+          "REG-003": {
+            "observation": "Le registre {source} indique cette inscription révoquée ou annulée au {date}, à la date du document ou avant.",
+            "mayIndicate": "Une inscription fermée puis rouverte sous le même numéro, ou une production tardive.",
+            "askFor": "Demandez à l'émetteur son inscription actuelle."
+          }
         }
       }
     },

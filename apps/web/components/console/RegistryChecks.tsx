@@ -4,6 +4,7 @@ import { Badge } from "@krizaka/ui/badge";
 
 import { useSay } from "@/lib/i18n-client";
 import type { RegistryReport } from "@/lib/registries/report";
+import type { RegistrySignal } from "@/lib/registries/signals";
 import { levelTone } from "@/lib/signal-cards";
 
 import { formatDate } from "./format";
@@ -16,6 +17,8 @@ import { formatDate } from "./format";
 export function RegistryChecks({ report }: Readonly<{ report: RegistryReport }>) {
   const { say, locale } = useSay();
   const t = (key: string, vars?: Record<string, string | number>) => say(`analysis.registry.${key}`, vars);
+  const word = (s: RegistrySignal, field: "observation" | "mayIndicate" | "askFor" | "where") =>
+    s[field] ? t(`signals.${s.signalId}.${field}`, s.vars) : null;
   const notLooked = (reason: string | null) => t(`notLookedUp.${reason ?? "unavailable"}`);
   return (
     <section className="flex flex-col gap-3" aria-label={t("title")} data-testid="registry-checks">
@@ -55,19 +58,19 @@ export function RegistryChecks({ report }: Readonly<{ report: RegistryReport }>)
             </div>
             <p className="mt-1 text-fg">
               <strong className="font-semibold">{say("analysis.traces.observed")} · </strong>
-              {s.observation}
+              {word(s, "observation")}
             </p>
-            {s.where ? <p className="mt-1 text-xs text-fg-muted">{s.where}</p> : null}
+            {s.where ? <p className="mt-1 text-xs text-fg-muted">{word(s, "where")}</p> : null}
             {s.mayIndicate ? (
               <p className="mt-1 text-fg-secondary">
                 <strong className="font-semibold">{say("analysis.mayIndicate")} · </strong>
-                {s.mayIndicate}
+                {word(s, "mayIndicate")}
               </p>
             ) : null}
             {s.askFor ? (
               <p className="mt-1 text-fg">
                 <strong className="font-semibold">{say("analysis.traces.askForLabel")} · </strong>
-                {s.askFor}
+                {word(s, "askFor")}
               </p>
             ) : null}
           </li>

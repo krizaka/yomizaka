@@ -44,10 +44,13 @@ const sameName = (a: string, b: string): boolean => {
   return x === y || (x.length > 3 && y.includes(x)) || (y.length > 3 && x.includes(y));
 };
 
+/** A registry signal: the English text of `Signal` (API, PDF) plus the values the interface puts into its own EN/FR messages (`console.analysis.registry.signals.<id>`). */
+export type RegistrySignal = Signal & { vars: Readonly<Record<string, string>> };
+
 const base = { family: "figures", evidence: { field: "issuer QST number" }, level: "inhabituel" } as const;
 
 /** The signals of one answer. Pure. A sole proprietor's registered name is never shown, and never compared. */
-export function registrySignals(answer: RegistryAnswer, issuer: PrintedIssuer, source: string): Signal[] {
+export function registrySignals(answer: RegistryAnswer, issuer: PrintedIssuer, source: string): RegistrySignal[] {
   if (answer.kind === ANSWER.unknown) {
     return [
       {
@@ -56,13 +59,14 @@ export function registrySignals(answer: RegistryAnswer, issuer: PrintedIssuer, s
         observation: `The QST number printed on the document was not found in the ${source} register.`,
         mayIndicate: "A typing error, a number not yet registered, or a number that belongs to another business.",
         askFor: "Ask the issuer to confirm the QST number.",
+        vars: { source },
       },
     ];
   }
   if (answer.kind !== ANSWER.found) {
     return [];
   }
-  const signals: Signal[] = [];
+  const signals: RegistrySignal[] = [];
   if (
     answer.status === FOUND_STATUS.struck &&
     answer.statusDate &&
@@ -75,6 +79,7 @@ export function registrySignals(answer: RegistryAnswer, issuer: PrintedIssuer, s
       observation: `The ${source} register shows this registration revoked or cancelled as of ${answer.statusDate.slice(0, 10)}, on or before the date of the document.`,
       mayIndicate: "A registration closed and reopened under the same number, or a late filing.",
       askFor: "Ask the issuer for the current registration.",
+      vars: { source, date: answer.statusDate.slice(0, 10) },
     });
   }
   const registered = [answer.legalName, answer.tradeName].filter((n): n is string => !!n);
@@ -91,6 +96,7 @@ export function registrySignals(answer: RegistryAnswer, issuer: PrintedIssuer, s
       mayIndicate: "A trade name, a recent change of name, or an abbreviation.",
       where: `Document: ${issuer.name} · Register: ${registered.join(" / ")}`,
       askFor: "Ask the issuer how the two names relate.",
+      vars: { document: issuer.name, register: registered.join(" / ") },
     });
   }
   return signals;
@@ -100,7 +106,7 @@ export function registrySignals(answer: RegistryAnswer, issuer: PrintedIssuer, s
 export async function checkIssuer(
   registry: BusinessRegistry,
   issuer: PrintedIssuer,
-): Promise<{ looked: boolean; reason: NotLookedUpReason | null; signals: Signal[] }> {
+): Promise<{ looked: boolean; reason: NotLookedUpReason | null; signals: RegistrySignal[] }> {
   const answer = await registry.lookupQst(issuer.number);
   return {
     looked: answer.kind !== ANSWER.notLookedUp,
