@@ -79,6 +79,7 @@ export async function smokeLeaseCheck({
   wait = sleep,
   timeoutMs = 240_000,
   log = () => {},
+  onReport = null,
 }) {
   if (!email || !password) throw new Error("SMOKE_EMAIL and SMOKE_PASSWORD are required (the persona)");
   const call = async (path, init = {}, token) => {
@@ -131,6 +132,7 @@ export async function smokeLeaseCheck({
     const report = analysis.report;
     if (!report || !Array.isArray(report.findings))
       throw new Error("the lease check succeeded without a report with findings");
+    if (onReport) await onReport({ base, token, documentId, analysisId: analysis.id });
     return {
       analysisId: analysis.id,
       runId: analysis.runId ?? null,

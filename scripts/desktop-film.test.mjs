@@ -30,14 +30,9 @@ describe("the crop of the Mac film", () => {
     assert.throws(() => cropRect(undefined), /unknown/);
     assert.throws(() => cropRect({ x: "a", y: 0, width: 900, height: 700 }), /unknown/);
   });
-  it("films that rectangle only (-R), with a ceiling", () => {
-    assert.deepEqual(screencaptureArgs({ x: 10, y: 20, width: 800, height: 600 }, "t.mov", 25), [
-      "-v",
-      "-V",
-      "25",
-      "-R10,20,800,600",
-      "t.mov",
-    ]);
+  it("films the screen with a ceiling and never passes -R (screencapture refuses -R with -v: run 41071237202 filmed nothing)", () => {
+    assert.deepEqual(screencaptureArgs("t.mov", 25), ["-v", "-V", "25", "t.mov"]);
+    assert.ok(!screencaptureArgs("t.mov").some((a) => a.startsWith("-R")));
   });
 });
 
@@ -79,9 +74,16 @@ describe("the takes", () => {
   it("starts on the window after the stream is open, and stops (SIGINT) only when the take is over", async () => {
     const log = [];
     const waits = [];
-    const film = createFilm({ dir: "out", spawnImpl: fakeSpawn(log), sleep: async (ms) => waits.push(ms) });
+    const saved = [];
+    const film = createFilm({
+      dir: "out",
+      spawnImpl: fakeSpawn(log),
+      save: (f, t) => saved.push([f, t]),
+      sleep: async (ms) => waits.push(ms),
+    });
     await film.start({ x: 10, y: 20, width: 800, height: 600 });
-    assert.deepEqual(log, ["screencapture -v -V 25 -R10,20,800,600 out/mac-take-1.mov"]);
+    assert.deepEqual(log, ["screencapture -v -V 25 out/mac-take-1.mov"]);
+    assert.deepEqual(saved, [["out/mac-take-1.crop", "10,20,800,600"]]);
     assert.equal(waits.length, 1);
     await film.stop();
     await film.stop();
@@ -115,6 +117,8 @@ describe("the joined film", () => {
     );
     assert.match(graph, /\[v0\]\[v1\]\[v2\]concat=n=3:v=1:a=0\[v\]/);
     assert.ok(args.includes("-an") && args.at(-1) === "film.mp4");
+    const cut = joinArgs(["a.mov"], "f.mp4", ["10,20,800,600"]);
+    assert.match(cut[cut.indexOf("-filter_complex") + 1], /\[0:v\]crop=800:600:10:20,scale=/);
   });
 });
 
@@ -139,11 +143,5 @@ describe("the journey films the window, after the sign-in, without the engine's 
       at = next;
     }
     assert.equal((journey.match(/film\.stop\(\)/g) ?? []).length >= 4, true);
-  });
-});
-
-describe("the action's --film flag is one the journey accepts", () => {
-  it("declares film among the parsed options (an unknown option stops the run, run 41064298492)", () => {
-    assert.match(read("./desktop-journey.mjs"), /parseArgs\(\{\s*options: \{[\s\S]*film: \{ type: "boolean"/);
   });
 });

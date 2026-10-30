@@ -20,11 +20,7 @@ import { createFilm, windowRect } from "./desktop-film-lib.mjs";
 import { client, libraryHash, scopeFile, scopeJson, until } from "./desktop-journey-lib.mjs";
 
 const { values } = parseArgs({
-  options: {
-    app: { type: "string" },
-    out: { type: "string", default: "desktop-journey" },
-    film: { type: "boolean", default: false },
-  },
+  options: { app: { type: "string" }, out: { type: "string", default: "desktop-journey" } },
 });
 if (!values.app) throw new Error("--app <path to the debug binary> is required");
 const persona = { email: process.env.SMOKE_EMAIL, secret: process.env.SMOKE_PASSWORD };
