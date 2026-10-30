@@ -10,16 +10,22 @@ import { Dropzone, formatBytes, UploadList, useUploadQueue } from "@krizaka/ui/f
 import { MAX_FILE_BYTES } from "@yomizaka/core";
 import { useState } from "react";
 
+import { formatDate } from "@/components/console/format";
 import { type ApplicantFileState, applicantPageOf } from "@/lib/applicant-page";
 import { errorKey } from "@/lib/client";
 import type { Messages } from "@/lib/i18n";
+import { sayFrom } from "@/lib/signal-cards";
 
+import { SignalAnswers } from "./SignalAnswers";
 import { sendApplicantDocument } from "./upload";
 
 /** The words the page reads: the slices of the dictionary it needs, passed whole by the server page. */
 export interface ApplicantFileWords {
   applicant: Messages["applicant"];
   file: Messages["applicantFile"];
+  /** The traces' words and the levels' (`console.analysis`), for the section where the applicant answers. */
+  traces: Messages["console"]["analysis"]["traces"];
+  levels: Messages["console"]["analysis"]["levels"];
   unknown: string;
 }
 
@@ -97,6 +103,7 @@ export function ApplicantFile({ token, initial, consents: initialConsents, notic
               [notice.whyTitle, notice.why],
               [notice.whoTitle, notice.who],
               [notice.howLongTitle, words.file.page.howLong],
+              [notice.examinedTitle, notice.examined],
               [notice.askTitle, notice.ask],
             ] as const
           ).map(([title, text]) => (
@@ -138,6 +145,14 @@ export function ApplicantFile({ token, initial, consents: initialConsents, notic
           <TypeRow key={row.typeId} token={token} row={row} words={words} locale={locale} canUpload={page.canUpload} onSent={refresh} />
         ))}
       </section>
+
+      <SignalAnswers
+        documents={file.documents}
+        busy={busy}
+        canAnswer={page.canAnswer}
+        onAnswer={(documentId, signalId, text) => act({ action: "answer", documentId, signalId, text }, () => refresh())}
+        words={{ answer: words.file.answer, say: sayFrom(words.traces), levels: words.levels, day: (iso) => formatDate(iso, locale) }}
+      />
 
       {page.open ? (
         <div className="flex flex-col gap-2">

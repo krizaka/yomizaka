@@ -720,6 +720,7 @@
         "ordinaryLabel": "Explications ordinaires",
         "askForLabel": "Quoi demander",
         "run": "Exécution Orazaka {runId}",
+        "answerLabel": "Explication de la personne, {date}",
         "ordinary": {
           "history": "Signer, remplir un formulaire, fusionner des pages, compresser le fichier ou le convertir depuis un courriel laissent les mêmes traces qu'une modification.",
           "layout": "Une autre police sur une ligne peut venir d'un gabarit, d'un champ de formulaire, d'un tampon ou d'une page ajoutée plus tard par l'émetteur.",
@@ -985,6 +986,9 @@
       "FILE_NOT_ACCEPTED": "Ce type de fichier n'est pas accepté.",
       "FLOW_EXISTS": "Cette vérification existe déjà.",
       "HAS_ANNEXES": "Ce document a encore des annexes.",
+      "ANSWER_CLOSED": "Ce dossier n'accepte plus d'explications.",
+      "ANSWER_TOO_LONG": "Cette explication est trop longue.",
+      "SIGNAL_NOT_FOUND": "Cette trace n'est plus dans le dossier.",
       "LINK_USED": "Ce lien a déjà été utilisé.",
       "LIVE_PRICES_ARE_THE_OWNERS": "Seul le propriétaire change les prix en vigueur.",
       "NOTICE_CHANGED": "L'avis a changé depuis votre lecture. Lisez-le de nouveau.",
@@ -3444,6 +3448,8 @@
       "howLong": "Par défaut, un document est supprimé dès que sa vérification est terminée. Si vous consentez à le garder (« Garder mes documents jusqu'à la décision du propriétaire »), il est gardé jusqu'à la décision du propriétaire, puis supprimé. Un résultat est supprimé {days} jours après avoir été donné. Vous pouvez toujours en demander la suppression. [À RÉVISER PAR L'AVOCAT]",
       "askTitle": "Comment demander la suppression",
       "ask": "Utilisez l'action « Supprimer mes documents » du lien que vous avez reçu. Elle supprime immédiatement vos documents et le résultat, et ne garde qu'une trace sans renseignement personnel. Vous pouvez aussi retirer un consentement ici, et demander l'accès à vos renseignements ou leur rectification.",
+      "examinedTitle": "Comment vos documents sont examinés",
+      "examined": "Chaque document est aussi examiné comme un fichier : la façon dont il a été enregistré, ses polices, ses images et, pour certains, si ses chiffres concordent. Quand quelque chose est remarqué, vous le voyez ici, dans les mêmes mots que le propriétaire, et vous pouvez ajouter une explication à côté. Le rapport dit ce qui a été observé; il ne conclut rien sur un document ni sur vous, et Yomizaka ne décide de rien : c'est une personne chez le propriétaire.",
       "notAsked": "Jamais demandés : votre numéro d'assurance sociale (NAS), les renseignements de votre carte ou de votre compte bancaire, vos renseignements de santé ou familiaux.",
       "law": "Le présent avis suit la Loi sur la protection des renseignements personnels dans le secteur privé (Québec, telle que modifiée par la Loi 25). Ce n'est pas un avis juridique."
     },
@@ -3538,10 +3544,24 @@
       "closed": "Clos",
       "erased": "Supprimé"
     },
+    "answer": {
+      "title": "Ce que nous avons remarqué dans vos documents",
+      "lead": "Beaucoup d'étapes ordinaires laissent ces traces : signer, remplir un formulaire, convertir depuis un courriel, enregistrer de nouveau. Elles ne disent rien sur vous. Vous pouvez expliquer chacune ci-dessous; le propriétaire lit vos mots à côté de la trace. Si vous avez l'original de l'émetteur, envoyez-le avec la zone de dépôt de son type plus haut.",
+      "label": "Votre explication (facultatif)",
+      "placeholder": "Par exemple : téléchargé depuis le portail de paie, puis signé.",
+      "save": "Enregistrer mon explication",
+      "remove": "Retirer mon explication",
+      "saved": "Enregistrée le {date}",
+      "count": "{n} / {max}",
+      "document": "Document : {name}"
+    },
     "error": {
       "LINK_REVOKED": "Ce lien a été révoqué.",
       "LINK_EXPIRED": "Ce lien a expiré.",
       "LINK_USED": "Ce dossier a déjà été envoyé.",
+      "ANSWER_CLOSED": "Ce dossier n'accepte plus d'explications.",
+      "ANSWER_TOO_LONG": "Cette explication est trop longue.",
+      "SIGNAL_NOT_FOUND": "Cette trace n'est plus dans votre dossier.",
       "FILE_CLOSED": "Ce dossier a été clos.",
       "APPLICATION_ERASED": "Cette demande a été supprimée.",
       "TYPE_NOT_REQUESTED": "Ce document n'a pas été demandé.",

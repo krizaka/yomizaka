@@ -6,6 +6,7 @@ import type { AuthenticityReport, TextSource } from "@yomizaka/core";
 
 import { useSay } from "@/lib/i18n-client";
 import { photoOriginSignals } from "@/lib/photo-origin";
+import type { Answer } from "@/lib/signal-answers";
 import { askForOf, groupByFamily, levelTone, ordinaryOf, type TraceSay, whereOf } from "@/lib/signal-cards";
 
 import { formatDate } from "./format";
@@ -33,8 +34,8 @@ const asList = (v: string | string[] | undefined): string[] => [v ?? []].flat();
  * (page, later save, field), what it may indicate with its ordinary explanations, what to ask for, and the run. Levels are words;
  * « inconsistent » is a warning, never red; no total, no score, no sort of anything.
  */
-export function AuthenticitySignals({ report, runId }: Readonly<{ report: Pick<AuthenticityReport, "header" | "signals"> & { notExamined?: string | string[] }; runId?: string | null }>) {
-  const { say: sayAll } = useSay();
+export function AuthenticitySignals({ report, runId, answers }: Readonly<{ report: Pick<AuthenticityReport, "header" | "signals"> & { notExamined?: string | string[] }; runId?: string | null; answers?: Record<string, Answer> }>) {
+  const { say: sayAll, locale } = useSay();
   const say: TraceSay = (key, vars) => sayAll(`analysis.traces.${key}`, vars);
   return (
     <section className="flex flex-col gap-3" aria-label={say("title")} data-testid="traces">
@@ -70,6 +71,12 @@ export function AuthenticitySignals({ report, runId }: Readonly<{ report: Pick<A
                   <strong className="font-semibold">{say("askForLabel")} · </strong>
                   {askForOf(say, s)}
                 </p>
+                {answers?.[s.signalId] ? (
+                  <p className="mt-1 rounded-md bg-surface-2 p-2 text-fg" data-testid="trace-answer">
+                    <strong className="font-semibold">{say("answerLabel", { date: formatDate(answers[s.signalId]!.at, locale, true) })} · </strong>
+                    {answers[s.signalId]!.text}
+                  </p>
+                ) : null}
                 {runId ? <p className="mt-1 text-xs text-fg-muted">{say("run", { runId })}</p> : null}
               </li>
             ))}

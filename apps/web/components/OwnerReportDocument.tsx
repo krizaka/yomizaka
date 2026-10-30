@@ -23,7 +23,7 @@ export function OwnerReportDocument({ doc: d, n, words: w, lang }: Readonly<{ do
           <div key={g.family} data-family={g.family}>
             <h5 className="font-medium">{g.title}</h5>
             <ul className="grid gap-1">
-              {g.cards.map(([head, ordinary, askFor]) => <li key={head}>{head}<br /><span className="text-fg-secondary">{ordinary}</span><br />{askFor}</li>)}
+              {g.cards.map(([head, ordinary, askFor, answer]) => <li key={head}>{head}<br /><span className="text-fg-secondary">{ordinary}</span><br />{askFor}{answer ? <><br /><span data-testid="trace-answer">{answer}</span></> : null}</li>)}
             </ul>
           </div>
         ))}

@@ -1,3 +1,4 @@
+import { format } from "@krizaka/i18n";
 import { type Signal, SIGNAL_FAMILIES, type SignalFamily,signalFamily } from "@yomizaka/core";
 
 /**
@@ -7,13 +8,21 @@ import { type Signal, SIGNAL_FAMILIES, type SignalFamily,signalFamily } from "@y
  */
 export type TraceSay = (key: string, vars?: Record<string, string | number>) => string;
 
-export interface TraceGroup {
+/** A `TraceSay` over a messages table (`console.analysis.traces`), for a page that is handed its words rather than reading a provider: a dotted key, `{name}` variables. */
+export const sayFrom =
+  (table: object): TraceSay =>
+  (key, vars) => {
+    const found = key.split(".").reduce<unknown>((node, part) => (node as Record<string, unknown> | undefined)?.[part], table);
+    return typeof found === "string" ? format(found, vars) : key;
+  };
+
+export interface TraceGroup<T = Signal> {
   family: SignalFamily;
-  signals: Signal[];
+  signals: T[];
 }
 
 /** The signals by family, in the order a report reads them (history, layout, images, figures, across); within a family, as the engine sent them. */
-export function groupByFamily(signals: readonly Signal[]): TraceGroup[] {
+export function groupByFamily<T extends Pick<Signal, "signalId" | "family">>(signals: readonly T[]): TraceGroup<T>[] {
   return SIGNAL_FAMILIES.map((family) => ({ family, signals: signals.filter((s) => signalFamily(s) === family) })).filter((g) => g.signals.length > 0);
 }
 

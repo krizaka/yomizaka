@@ -5,12 +5,13 @@ import en from "../messages/en.json";
 import fr from "../messages/fr.json";
 import type { ApplicantFileView } from "./applicant-file";
 import { ownerReportOf, referenceOf, shareDays, shareState } from "./owner-report";
+import { traceCardsOf } from "./owner-traces";
 
 const NOW = new Date("2026-10-27T12:00:00Z");
 const check = (over: Partial<Analysis>): Analysis => ({ id: "a", studio: "document-authenticity", status: "succeeded", runId: "run-1", blueprintVersion: "1.3.0", inputs: {}, report: null, error: null, createdAt: NOW.toISOString(), finishedAt: NOW.toISOString(), ...over });
 const file = (checks: Analysis[]): ApplicantFileView => ({
   id: "0a1b2c3d-0000-4000-8000-000000000000", candidateName: "Camille Fictif", candidateEmail: "camille@exemple.test", status: "used", createdAt: "", expiresAt: "", requestedTypes: [], submittedAt: null, revokedAt: null, closedAt: null, consents: [],
-  documents: [{ id: "d1", typeId: "pay-stub", filename: "talon-camille-fictif.pdf", sizeBytes: 10, pages: 2, retention: "after-check", purged: true, skipped: [], checks }],
+  documents: [{ id: "d1", typeId: "pay-stub", filename: "talon-camille-fictif.pdf", sizeBytes: 10, pages: 2, retention: "after-check", purged: true, skipped: [], checks, answers: {} }],
 });
 const sha = "a".repeat(64);
 const authenticity = check({ report: { signals: [{ signalId: "s1", level: "inhabituel", observation: "Two saves with different producers" }], notExamined: "the employer" } });
@@ -68,4 +69,24 @@ describe("the owner's signal (yomizaka#625)", () => {
     expect(ownerSignalOf({ signalId: "PDF-REV-002", level: "incohérent", observation: "o", evidence: { page: 2, box: [1, 2, 3, 4], revision: 2, field: "net" } })).toEqual({ id: "PDF-REV-002", level: "incohérent", observation: "o", family: "history", evidence: { page: 2, revision: 2, field: "net" } });
     expect(ownerSignalOf({ signalId: "FILE-001", level: "observé", observation: "o" })).toEqual({ id: "FILE-001", level: "observé", observation: "o", family: "across" });
   });
+});
+
+describe("the applicant's answer in the owner's report (yomizaka#626)", () => {
+  const answered = file([authenticity]);
+  answered.documents[0]!.answers = { s1: { text: "Téléchargé du portail de paie, puis signé.", at: "2026-10-29T15:00:00.000Z" } };
+  const report = ownerReportOf(answered, new Map([["d1", sha]]), NOW);
+
+  it("is carried next to its signal, dated, and only for that signal", () => {
+    expect(report.documents[0]!.signals[0]!.answer).toEqual({ text: "Téléchargé du portail de paie, puis signé.", at: "2026-10-29T15:00:00.000Z" });
+    expect(ownerReportOf(file([authenticity]), new Map([["d1", sha]]), NOW).documents[0]!.signals[0]).not.toHaveProperty("answer");
+  });
+
+  for (const lang of ["en", "fr"] as const) {
+    it(`is the fourth line of the card, with its date, in ${lang}`, () => {
+      const [card] = traceCardsOf(report.documents[0]!.signals, lang).flatMap((g) => g.cards);
+      expect(card).toHaveLength(4);
+      expect(card![3]).toContain("Téléchargé du portail de paie, puis signé.");
+      expect(card![3]).toMatch(/2026/);
+    });
+  }
 });
