@@ -108,6 +108,8 @@ const reportPath = await (async () => {
   const page = await ctx.newPage();
   await page.goto(`${base}/${locale}/app`, { waitUntil: "networkidle" });
   await firstDocument(page).click();
+  // The click starts a client navigation: the URL changes some time later, so wait for it (reading it at once saw the library, 29-30 Oct).
+  await page.waitForURL(/\/app\/documents\/[^/?#]+/, { timeout: 30_000 });
   await page.waitForLoadState("networkidle");
   const href = /\/app\/documents\/[^/?#]+/.exec(new URL(page.url()).pathname)?.[0];
   await ctx.close();
