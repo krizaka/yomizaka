@@ -60,6 +60,13 @@ async function settleHeaderLive(page) {
     [...document.images].some((img) => img.getBoundingClientRect().top < 120 && img.complete && img.naturalWidth > 0),
   );
 }
+/** The dates of a list are stamped by the database at seed time (real, not frozen): the masked box still takes the width of its text, and a table sizes its columns from it, so a day with other digits moved the columns by a pixel. They read the same text before the shot. */
+async function fixListDates(page) {
+  await page.locator('time:not([data-testid="today"])').first().waitFor();
+  await page.evaluate(() => {
+    for (const t of document.querySelectorAll('time:not([data-testid="today"])')) t.replaceChildren("00 mmm. 0000");
+  });
+}
 /** A finding stays inside its card: no long address pushes the page wider than the screen (the TAL address on a phone). */
 const staysInside = (ruleId) => async (page) => {
   const wide = await page.evaluate((id) => {
@@ -94,7 +101,7 @@ defineJourneyTests({
     { name: "sign-in", path: "/fr/sign-in" },
     { name: "app-home", path: "/fr/app", session: true, mask: LIVE },
     // The library, where the bookmarks live (#339): the guard they lacked.
-    { name: "documents", path: "/fr/app/documents", session: true, mask: LIVE },
+    { name: "documents", path: "/fr/app/documents", session: true, ready: fixListDates, mask: LIVE },
     { name: "document-report", path: firstReport, session: true, mask: LIVE },
     // The tenant-shield findings in the report (yomizaka#104): Section G with the deadline and the facts for the TAL; the payment clauses (art. 1904).
     { name: "report-section-g", path: reportTitled("avis du TAL absent"), session: true, ready: async (page) => { await staysInside("TS-G-001")(page); await showFinding("TS-G-001")(page); }, mask: LIVE },
