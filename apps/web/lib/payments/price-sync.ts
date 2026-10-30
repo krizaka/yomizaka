@@ -27,7 +27,7 @@ export interface SyncEntry {
 export function processorCatalogue(entries: readonly SyncEntry[]): Catalogue {
   const plans = SOLD_KINDS.flatMap((kind) => {
     const entry = entries.find((e) => e.key === SOLD[kind].key);
-    if (!entry || entry.amountCents === null) return [];
+    if (entry?.amountCents == null) return [];
     const { name, taxCode } = PROCESSOR_PLANS[kind];
     return [{ lookupKey: SOLD[kind].lookupKey, name, amount: entry.amountCents, currency: entry.currency.toLowerCase(), taxCode, ...(SOLD[kind].mode === "subscription" ? { interval: "month" as const } : {}) }];
   });
