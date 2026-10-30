@@ -193,7 +193,7 @@ export const BATCH_ITEM = { pending: "pending", reused: "reused", running: "runn
 export type BatchItemState = (typeof BATCH_ITEM)[keyof typeof BATCH_ITEM];
 export const BATCH_ITEM_STATES = Object.values(BATCH_ITEM) as [BatchItemState, ...BatchItemState[]];
 
-const csvCell = (value: string) => (/[",\r\n;]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value);
+const csvCell = (value: string) => (/[",\r\n;]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value);
 
 /**
  * A manifest written for the person (the Mac app checks a folder or the files dropped on it): one row per file, the check
