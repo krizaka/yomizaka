@@ -13,5 +13,5 @@ const takes = readdirSync(dir)
   .sort((a, b) => Number.parseInt(a.replace(/\D/g, ""), 10) - Number.parseInt(b.replace(/\D/g, ""), 10))
   .map((name) => join(dir, name));
 if (takes.length === 0) throw new Error(`no take in ${dir}: the journey filmed nothing`);
-const run = spawnSync("ffmpeg", joinArgs(takes, out), { stdio: "inherit" });
+const run = spawnSync("ffmpeg", joinArgs(takes, out), { stdio: "inherit" }); // NOSONAR S4036: a CI step on a runner, PATH is the runner's own (ffmpeg from brew)
 process.exit(run.status ?? 1);
