@@ -89,6 +89,38 @@ async function typeRentShare(page) {
   await page.evaluate(() => document.getElementById("rent-share-title")?.scrollIntoView({ block: "start" }));
 }
 
+/** Streaming settled: React sends a late part of the page in a hidden `S:` container and moves it into place in a script it may delay by up to 2.3 s; until then the same ids are in the page twice (the report journeys saw `#finding-TS-P-001`, `#rent-share-rent` twice, #635). */
+async function settleStream(page) {
+  await page.waitForFunction(() => !document.querySelector('[hidden][id^="S:"]'));
+}
+/** An id is in a page once (invalid HTML and broken labels otherwise): the duplicates are named with the chain of their parents. */
+async function expectUniqueIds(page) {
+  const duplicates = await page.evaluate(() => {
+    const where = (el) => {
+      const chain = [];
+      for (let n = el; n && n !== document.body && chain.length < 5; n = n.parentElement) chain.push(`${n.localName}${n.id ? `#${n.id}` : ""}${n.hidden ? "[hidden]" : ""}`);
+      return chain.join(" < ");
+    };
+    const seen = new Map();
+    for (const el of document.querySelectorAll("[id]")) seen.set(el.id, [...(seen.get(el.id) ?? []), where(el)]);
+    return [...seen].filter(([, places]) => places.length > 1).map(([id, places]) => `${id}: ${places.join(" | ")}`);
+  });
+  expect(duplicates, "ids that appear twice in the page").toEqual([]);
+}
+/** Every journey with JavaScript starts from a settled page whose ids are unique, then runs its own `ready`. */
+const withSettledDom = (journey) =>
+  journey.firstPaint === true
+    ? journey
+    : {
+        ...journey,
+        ready: async (page) => {
+          await settleStream(page);
+          await expectUniqueIds(page);
+          if (typeof journey.ready === "string") await page.locator(journey.ready).first().waitFor();
+          else if (journey.ready) await journey.ready(page);
+        },
+      };
+
 defineJourneyTests({
   test,
   expect,
@@ -110,5 +142,5 @@ defineJourneyTests({
     // The first paint of a signed-in page: the HTML the server sent, and the hydrated page while the account query is pending (krizaka-ui#827).
     { name: "app-home", path: "/fr/app", session: true, firstPaint: true, viewports: ["phone"], mask: LIVE },
     { name: "app-home-pending", path: "/fr/app", session: true, firstPaint: { hold: ["**/api/me"] }, ready: settleHeaderLive, viewports: ["phone"], mask: LIVE },
-  ],
+  ].map(withSettledDom),
 });
