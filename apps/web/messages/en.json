@@ -975,6 +975,10 @@
       "STORAGE_MOVE_OPEN": "A move is already open: finish or pause it first.",
       "STORAGE_MOVE_NONE": "There is no move to pause or resume.",
       "FLOW_NOT_OFFERED": "This check is not offered on your account.",
+      "CLOUD_NOT_OFFERED": "This cloud is not offered here.",
+      "CLOUD_STATE_EXPIRED": "The connection took too long. Start again.",
+      "CLOUD_STATE_INVALID": "The connection could not be confirmed. Start again.",
+      "STORAGE_DISCONNECTED": "This storage is disconnected. Connect it again.",
       "CONSENT_REQUIRED": "No document is checked without your consent for this purpose.",
       "APPLICATION_ERASED": "This application was erased.",
       "BAD_NOTIFICATION": "The notification was not accepted.",
@@ -1730,7 +1734,19 @@
         "keepDefault": "Tick “Keep my documents” by default",
         "save": "Save",
         "saved": "Saved.",
-        "noKey": "This installation cannot store credentials: your own S3 storage is unavailable."
+        "noKey": "This installation cannot store credentials: your own S3 storage is unavailable.",
+        "cloudTitleConnected": "Your cloud",
+        "cloudTitle": "Or connect a cloud you already have",
+        "cloudLead": "Dropbox, Google Drive or OneDrive: your kept documents go into a folder of your own cloud, not to us.",
+        "cloudConnect": "Connect {cloud}",
+        "cloudDisconnect": "Disconnect",
+        "cloudConnected": "Connected to {cloud}. Your kept documents go to a folder of the app in your cloud.",
+        "cloudWasDisconnected": "{cloud} was disconnected. The documents kept there cannot be opened until you connect it again; new ones go to Krizaka's storage.",
+        "cloudScope": "You sign in on your provider's own page. Yomizaka only sees the folder it creates; you can disconnect at any time, and your files stay where they are.",
+        "cloudResultConnected": "Your cloud is connected.",
+        "cloudResultDenied": "The connection was not allowed, or was cancelled. Nothing changed.",
+        "cloudResultFailed": "The connection could not be completed. Nothing changed: try again.",
+        "clouds": {"dropbox": "Dropbox", "google-drive": "Google Drive", "onedrive": "OneDrive"}
       },
       "appearance": {
         "lead": "How the app looks on this device. Kept in this browser.",
@@ -2527,6 +2543,12 @@
           "refundRestoresUse": {
             "label": "A full refund gives the use back",
             "hint": "Off by default, so a refund cannot reset a single-use code."
+          }
+        },
+        "storage": {
+          "userConnectors": {
+            "label": "Cloud connections (Dropbox, Google Drive, OneDrive)",
+            "hint": "Lets people connect a cloud they already have as the home of their kept documents. Off until the app registrations are in place."
           }
         }
       },
