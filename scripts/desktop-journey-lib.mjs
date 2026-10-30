@@ -40,6 +40,7 @@ export function client(base = WEBDRIVER, fetchImpl = fetch) {
         run: (script, ...args) => call("POST", at("/execute/sync"), { script, args }),
         hash: () => call("POST", at("/execute/sync"), { script: "return window.location.hash", args: [] }),
         screenshot: () => call("GET", at("/screenshot")),
+        rect: () => call("GET", at("/window/rect")),
         quit: () => call("DELETE", `/session/${sid}`),
       };
     },
