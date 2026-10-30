@@ -108,6 +108,14 @@ export const STATUS_TONE = { stored: "neutral", analysing: "accent", checked: "s
 /** Which columns a phone's list row keeps (P12): 1 always (the title, the result); 2 joined as the one line of facts (« Bail · 23 oct. »); 3 leaves for the row's detail. */
 export const DOCUMENT_COLUMN_PRIORITY = { title: 1, kind: 2, status: 1, size: 3, added: 2 } as const;
 
+/** The bulk bar's actions: bookmark (or lift) the selected documents, the result said by the table. */
+const bulkActionsOf = (tags: Bookmarks["all"], onResult: (message: string) => void) =>
+  function BulkSlot({ selected: ids, clear }: { selected: string[]; clear: () => void }) {
+    return (
+  <BulkActions kind={KIND.document} ids={ids} tags={tags} words="documentsPage" onResult={onResult} onDone={clear} />
+    );
+  };
+
 /** The documents of a view (rows come from the server; a run in progress refreshes them every 4 s). */
 export function DocumentTable({ rows, caption, organise, bookmarks }: Readonly<{ rows: DocumentSummary[]; caption?: string; organise?: Organise; bookmarks?: Bookmarks }>) {
   const { say, locale } = useSay();
@@ -150,7 +158,7 @@ export function DocumentTable({ rows, caption, organise, bookmarks }: Readonly<{
         onSelectedChange: setSelected,
         bulkMax: BULK_MAX,
         bulkResult,
-        bulkActions: ({ selected: ids, clear }: { selected: string[]; clear: () => void }) => <BulkActions kind={KIND.document} ids={ids} tags={bookmarks.all} words="documentsPage" onResult={setBulkResult} onDone={clear} />,
+        bulkActions: bulkActionsOf(bookmarks.all, setBulkResult),
       }
     : {};
   const sort = sortOf(sortRaw, SORTABLE);

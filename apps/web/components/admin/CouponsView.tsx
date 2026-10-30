@@ -233,6 +233,32 @@ function CouponTable({ coupons, partners: people, onOpen }: Readonly<{ coupons: 
   );
 }
 
+/** The redemptions of a coupon: when, state, who, what was paid and given back, and the revoke. */
+function redemptionColumns(say: Say, locale: Lang, revoke: { isPending: boolean; mutate: (redemptionId: string) => void }): DataTableColumn<Redemption>[] {
+  const money = (minor: number | null, currency: string | null) => (minor === null ? "—" : new Intl.NumberFormat(locale, { style: "currency", currency: (currency ?? COUPON_CURRENCY).toUpperCase() }).format(minor / 100));
+  return [
+    { id: "when", header: say("adminConfig.coupons.when"), sortable: true, value: (r) => String(r.createdAt), cell: (r) => formatDate(String(r.createdAt), locale, true) },
+    { id: "status", header: say("adminConfig.coupons.state"), value: (r) => r.status, filter: "facet", cell: (r) => <Badge tone={r.status === "confirmed" ? "success" : "neutral"}>{say(`adminConfig.coupons.redemptionStates.${r.status}`)}</Badge> },
+    { id: "account", header: say("adminConfig.coupons.account"), value: (r) => r.accountId ?? "", cell: (r) => <code className="font-mono text-xs">{r.accountId ? r.accountId.slice(0, 8) : say("adminConfig.coupons.deletedAccount")}</code> },
+    { id: "paid", header: say("adminConfig.coupons.paid"), align: "end", value: (r) => r.amountPaidMinor ?? 0, cell: (r) => money(r.amountPaidMinor, r.currency) },
+    { id: "discount", header: say("adminConfig.coupons.discount"), align: "end", value: (r) => r.amountDiscountMinor ?? 0, cell: (r) => money(r.amountDiscountMinor, r.currency) },
+    { id: "refunded", header: say("adminConfig.coupons.refunded"), align: "end", value: (r) => r.amountRefundedMinor, cell: (r) => money(r.amountRefundedMinor, r.currency) },
+    { id: "late", header: say("adminConfig.coupons.late"), value: (r) => (r.overLimit ? "yes" : "no"), cell: (r) => (r.overLimit ? <Badge tone="warning">{say("adminConfig.coupons.overLimit")}</Badge> : null) },
+    {
+      id: "revoke",
+      header: say("adminConfig.coupons.actions"),
+      headerHidden: true,
+      value: () => "",
+      cell: (r) =>
+        r.creditGrantId && r.status === "confirmed" ? (
+          <Button variant="danger" size="sm" loading={revoke.isPending} onClick={() => revoke.mutate(r.id)}>
+            {say("adminConfig.coupons.revoke")}
+          </Button>
+        ) : null,
+    },
+  ];
+}
+
 function Redemptions({ id, onClose }: Readonly<{ id: string; onClose: () => void }>) {
   const { say, locale } = useSay();
   const refresh = useRefresh();
@@ -243,32 +269,7 @@ function Redemptions({ id, onClose }: Readonly<{ id: string; onClose: () => void
     onSuccess: () => Promise.all([data.refetch(), refresh()]),
     onError: (error) => setProblem(say(`errors.${errorKey(error)}`)),
   });
-  const money = (minor: number | null, currency: string | null) => (minor === null ? "—" : new Intl.NumberFormat(locale, { style: "currency", currency: (currency ?? COUPON_CURRENCY).toUpperCase() }).format(minor / 100));
-  const columns = useMemo<DataTableColumn<Redemption>[]>(
-    () => [
-      { id: "when", header: say("adminConfig.coupons.when"), sortable: true, value: (r) => String(r.createdAt), cell: (r) => formatDate(String(r.createdAt), locale, true) },
-      { id: "status", header: say("adminConfig.coupons.state"), value: (r) => r.status, filter: "facet", cell: (r) => <Badge tone={r.status === "confirmed" ? "success" : "neutral"}>{say(`adminConfig.coupons.redemptionStates.${r.status}`)}</Badge> },
-      { id: "account", header: say("adminConfig.coupons.account"), value: (r) => r.accountId ?? "", cell: (r) => <code className="font-mono text-xs">{r.accountId ? r.accountId.slice(0, 8) : say("adminConfig.coupons.deletedAccount")}</code> },
-      { id: "paid", header: say("adminConfig.coupons.paid"), align: "end", value: (r) => r.amountPaidMinor ?? 0, cell: (r) => money(r.amountPaidMinor, r.currency) },
-      { id: "discount", header: say("adminConfig.coupons.discount"), align: "end", value: (r) => r.amountDiscountMinor ?? 0, cell: (r) => money(r.amountDiscountMinor, r.currency) },
-      { id: "refunded", header: say("adminConfig.coupons.refunded"), align: "end", value: (r) => r.amountRefundedMinor, cell: (r) => money(r.amountRefundedMinor, r.currency) },
-      { id: "late", header: say("adminConfig.coupons.late"), value: (r) => (r.overLimit ? "yes" : "no"), cell: (r) => (r.overLimit ? <Badge tone="warning">{say("adminConfig.coupons.overLimit")}</Badge> : null) },
-      {
-        id: "revoke",
-        header: say("adminConfig.coupons.actions"),
-        headerHidden: true,
-        value: () => "",
-        cell: (r) =>
-          r.creditGrantId && r.status === "confirmed" ? (
-            <Button variant="danger" size="sm" loading={revoke.isPending} onClick={() => revoke.mutate(r.id)}>
-              {say("adminConfig.coupons.revoke")}
-            </Button>
-          ) : null,
-      },
-    ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- `revoke` is a new object each render; its mutate is stable
-    [say, locale, revoke.isPending],
-  );
+  const columns = useMemo(() => redemptionColumns(say, locale, revoke), [say, locale, revoke.isPending]); // eslint-disable-line react-hooks/exhaustive-deps -- `revoke` is a new object each render; its mutate is stable
   return (
     <section aria-label={say("adminConfig.coupons.redemptions")} className="flex flex-col gap-2" data-testid="coupon-redemptions">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -283,6 +284,43 @@ function Redemptions({ id, onClose }: Readonly<{ id: string; onClose: () => void
       {data.data && data.data.redemptions.length > 0 ? <DataTable caption={say("adminConfig.coupons.redemptions")} rows={data.data.redemptions} columns={columns} getRowId={(r) => r.id} rowLabel={(r) => r.id} /> : null}
     </section>
   );
+}
+
+/** The partners: name, address, state, and the row's actions (report, export, archive or restore, erase). */
+function partnerColumns(say: Say, onOpen: (id: string) => void, act: { isPending: boolean; mutate: (call: { id: string; action: string }) => void }): DataTableColumn<Partner>[] {
+  return [
+    { id: "name", header: say("adminConfig.coupons.partnerName"), sortable: true, card: "title", value: (p) => p.displayName ?? "", cell: (p) => p.displayName ?? say("adminConfig.coupons.erased") },
+    { id: "email", header: say("adminConfig.coupons.partnerEmail"), value: (p) => p.contactEmail ?? "" },
+    { id: "status", header: say("adminConfig.coupons.state"), value: (p) => (p.erasedAt ? "erased" : p.status), cell: (p) => <Badge tone={p.status === "active" && !p.erasedAt ? "success" : "neutral"}>{say(`adminConfig.coupons.partnerStates.${p.erasedAt ? "erased" : p.status}`)}</Badge> },
+    {
+      id: "actions",
+      header: say("adminConfig.coupons.actions"),
+      headerHidden: true,
+      value: () => "",
+      cell: (p) => (
+        <span className="flex flex-wrap gap-2">
+          {p.erasedAt ? null : (
+            <>
+              <Button variant="secondary" size="sm" onClick={() => onOpen(p.id)}>
+                {say("adminConfig.coupons.report")}
+              </Button>
+              <Button variant="secondary" size="sm" asChild>
+                <a href={`/api/admin/coupons/partners/${p.id}?export=1`} download>
+                  {say("adminConfig.coupons.export")}
+                </a>
+              </Button>
+              <Button variant="ghost" size="sm" disabled={act.isPending} onClick={() => act.mutate({ id: p.id, action: p.status === "active" ? "archive" : "restore" })}>
+                {say(p.status === "active" ? "adminConfig.coupons.archive" : "adminConfig.coupons.restore")}
+              </Button>
+              <Button variant="danger" size="sm" disabled={act.isPending} onClick={() => act.mutate({ id: p.id, action: "erase" })}>
+                {say("adminConfig.coupons.erase")}
+              </Button>
+            </>
+          )}
+        </span>
+      ),
+    },
+  ];
 }
 
 function Partners({ partners: people, onOpen }: Readonly<{ partners: Partner[]; onOpen: (id: string) => void }>) {
@@ -309,43 +347,7 @@ function Partners({ partners: people, onOpen }: Readonly<{ partners: Partner[]; 
     onSuccess: () => refresh(),
     onError: (error) => setProblem(say(`errors.${errorKey(error)}`)),
   });
-  const columns = useMemo<DataTableColumn<Partner>[]>(
-    () => [
-      { id: "name", header: say("adminConfig.coupons.partnerName"), sortable: true, card: "title", value: (p) => p.displayName ?? "", cell: (p) => p.displayName ?? say("adminConfig.coupons.erased") },
-      { id: "email", header: say("adminConfig.coupons.partnerEmail"), value: (p) => p.contactEmail ?? "" },
-      { id: "status", header: say("adminConfig.coupons.state"), value: (p) => (p.erasedAt ? "erased" : p.status), cell: (p) => <Badge tone={p.status === "active" && !p.erasedAt ? "success" : "neutral"}>{say(`adminConfig.coupons.partnerStates.${p.erasedAt ? "erased" : p.status}`)}</Badge> },
-      {
-        id: "actions",
-        header: say("adminConfig.coupons.actions"),
-        headerHidden: true,
-        value: () => "",
-        cell: (p) => (
-          <span className="flex flex-wrap gap-2">
-            {p.erasedAt ? null : (
-              <>
-                <Button variant="secondary" size="sm" onClick={() => onOpen(p.id)}>
-                  {say("adminConfig.coupons.report")}
-                </Button>
-                <Button variant="secondary" size="sm" asChild>
-                  <a href={`/api/admin/coupons/partners/${p.id}?export=1`} download>
-                    {say("adminConfig.coupons.export")}
-                  </a>
-                </Button>
-                <Button variant="ghost" size="sm" disabled={act.isPending} onClick={() => act.mutate({ id: p.id, action: p.status === "active" ? "archive" : "restore" })}>
-                  {say(p.status === "active" ? "adminConfig.coupons.archive" : "adminConfig.coupons.restore")}
-                </Button>
-                <Button variant="danger" size="sm" disabled={act.isPending} onClick={() => act.mutate({ id: p.id, action: "erase" })}>
-                  {say("adminConfig.coupons.erase")}
-                </Button>
-              </>
-            )}
-          </span>
-        ),
-      },
-    ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- `act` is a new object each render; its mutate is stable
-    [say, onOpen, act.isPending],
-  );
+  const columns = useMemo(() => partnerColumns(say, onOpen, act), [say, onOpen, act.isPending]); // eslint-disable-line react-hooks/exhaustive-deps -- `act` is a new object each render; its mutate is stable
   return (
     <section aria-label={say("adminConfig.coupons.partners")} className="flex flex-col gap-3" data-testid="coupon-partners">
       <h2 className="m-0 font-display text-lg font-bold text-fg">{say("adminConfig.coupons.partners")}</h2>
@@ -361,21 +363,22 @@ function Partners({ partners: people, onOpen }: Readonly<{ partners: Partner[]; 
   );
 }
 
+/** What a partner's codes brought: uses, discount, revenue, credits. */
+function reportColumns(say: Say, locale: Lang): DataTableColumn<PartnerRow>[] {
+  const money = (minor: number, currency: string | null) => new Intl.NumberFormat(locale, { style: "currency", currency: (currency ?? COUPON_CURRENCY).toUpperCase() }).format(minor / 100);
+  return [
+    { id: "code", header: say("adminConfig.coupons.code"), card: "title", value: (r) => r.code, cell: (r) => <code className="font-mono text-xs">{r.code}</code> },
+    { id: "uses", header: say("adminConfig.coupons.uses"), align: "end", value: (r) => r.redemptions },
+    { id: "discount", header: say("adminConfig.coupons.discount"), align: "end", value: (r) => r.discountMinor, cell: (r) => money(r.discountMinor, r.currency) },
+    { id: "revenue", header: say("adminConfig.coupons.revenue"), align: "end", value: (r) => r.revenueMinor, cell: (r) => money(r.revenueMinor, r.currency) },
+    { id: "credits", header: say("adminConfig.coupons.creditsGranted"), align: "end", value: (r) => r.creditsGranted },
+  ];
+}
+
 function PartnerReport({ id, onClose }: Readonly<{ id: string; onClose: () => void }>) {
   const { say, locale } = useSay();
   const data = useQuery({ queryKey: ["admin-coupon-partner", id], queryFn: () => krizakaFetch(`/api/admin/coupons/partners/${id}`, { schema: report }) });
-  const money = (minor: number, currency: string | null) => new Intl.NumberFormat(locale, { style: "currency", currency: (currency ?? COUPON_CURRENCY).toUpperCase() }).format(minor / 100);
-  const columns = useMemo<DataTableColumn<PartnerRow>[]>(
-    () => [
-      { id: "code", header: say("adminConfig.coupons.code"), card: "title", value: (r) => r.code, cell: (r) => <code className="font-mono text-xs">{r.code}</code> },
-      { id: "uses", header: say("adminConfig.coupons.uses"), align: "end", value: (r) => r.redemptions },
-      { id: "discount", header: say("adminConfig.coupons.discount"), align: "end", value: (r) => r.discountMinor, cell: (r) => money(r.discountMinor, r.currency) },
-      { id: "revenue", header: say("adminConfig.coupons.revenue"), align: "end", value: (r) => r.revenueMinor, cell: (r) => money(r.revenueMinor, r.currency) },
-      { id: "credits", header: say("adminConfig.coupons.creditsGranted"), align: "end", value: (r) => r.creditsGranted },
-    ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- `money` only reads the locale
-    [say, locale],
-  );
+  const columns = useMemo(() => reportColumns(say, locale), [say, locale]);
   return (
     <section aria-label={say("adminConfig.coupons.report")} className="flex flex-col gap-2" data-testid="coupon-partner-report">
       <div className="flex flex-wrap items-center justify-between gap-2">
