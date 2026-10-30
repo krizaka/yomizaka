@@ -144,6 +144,6 @@ describe("the journey films the window, after the sign-in, without the engine's 
 
 describe("the action's --film flag is one the journey accepts", () => {
   it("declares film among the parsed options (an unknown option stops the run, run 41064298492)", () => {
-    assert.match(read("./desktop-journey.mjs"), /parseArgs\(\{ options: \{.*film: \{ type: "boolean"/);
+    assert.match(read("./desktop-journey.mjs"), /parseArgs\(\{\s*options: \{[\s\S]*film: \{ type: "boolean"/);
   });
 });
