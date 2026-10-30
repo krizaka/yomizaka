@@ -38,7 +38,7 @@ const ICONS = { line: CheckIcon, file: EyeIcon, find: SearchIcon } as const;
  * things as a bento, the run's facts and the owl once, who it is for, one way in (sign-in). Orazaka, the engine, is named
  * once, in a quiet line under the proof. Static: built from the recording.
  */
-export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
+export default async function Home({ params }: Readonly<{ params: Promise<{ locale: string }> }>) {
   const locale = asLocale((await params).locale);
   const dict = getDictionary(locale);
   const d = dict.landing;

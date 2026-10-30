@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 const SCOPES = Object.values(SCOPE) as string[];
 
 /** One page of the app configuration, one route: /config/general | features | limits | plans | prices | coupons | packs | orazaka, at a scope given in the URL. */
-export default async function ConfigPage({ params, searchParams }: { params: Promise<{ locale: string; group: string }>; searchParams: Promise<{ scope?: string; id?: string }> }) {
+export default async function ConfigPage({ params, searchParams }: Readonly<{ params: Promise<{ locale: string; group: string }>; searchParams: Promise<{ scope?: string; id?: string }> }>) {
   const { locale: raw, group } = await params;
   if (!isConfigPage(group)) notFound();
   const locale = asLocale(raw);
