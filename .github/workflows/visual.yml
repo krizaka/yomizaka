@@ -16,6 +16,8 @@ jobs:
       contents: read
     with:
       package-manager: pnpm
+      # A docs, workflow, mobile, desktop or backend-only change does not queue the browser job (krizaka/.github#437).
+      relevant: '^(apps/web/|packages/|scripts/ci-visual|package\.json$|pnpm-lock\.yaml$|pnpm-workspace\.yaml$|\.nvmrc$|\.github/workflows/visual\.yml$)'
       start-script: scripts/ci-visual-start.sh
       test-command: pnpm exec playwright test -c apps/web/e2e/visual/playwright.config.mjs
       snapshot-paths: apps/web/e2e/visual/__screenshots__
