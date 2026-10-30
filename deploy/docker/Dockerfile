@@ -13,8 +13,9 @@ ARG APP_SEARCH_INDEXING=""
 ENV APP_COMMIT_SHA=$APP_COMMIT_SHA APP_SEARCH_INDEXING=$APP_SEARCH_INDEXING NEXT_TELEMETRY_DISABLED=1
 RUN pnpm --filter @yomizaka/web build
 # The OCR (Tesseract) runs in a worker thread whose requires the build's tracing cannot see: carry its packages, with their
-# trained data (French, English) and the few they need, whole and with their symlinks (ADR-0010). The smoke check proves it.
-RUN mkdir /ocr && cd node_modules/.pnpm && cp -a $(ls | grep -E '^(tesseract\.js|tesseract\.js-core|bmp-js|idb-keyval|is-url|node-fetch|opencollective-postinstall|regenerator-runtime|wasm-feature-detect|zlibjs|tr46|whatwg-url|webidl-conversions)@|^@tesseract\.js-data\+') /ocr/
+# trained data (French, English) and the few they need, whole and with their symlinks (ADR-0010). The PDF reader (`unpdf`) is carried the same
+# way: its worker finds it by folder (lib/extraction/package-dir.ts), no longer by a `require.resolve` the tracer followed. The smoke check proves it.
+RUN mkdir /ocr && cd node_modules/.pnpm && cp -a $(ls | grep -E '^(tesseract\.js|tesseract\.js-core|bmp-js|idb-keyval|is-url|node-fetch|opencollective-postinstall|regenerator-runtime|wasm-feature-detect|zlibjs|tr46|whatwg-url|webidl-conversions)@|^@tesseract\.js-data\+|^unpdf@') /ocr/
 # Not shipped (about 35 MB): the browser builds of the core (`*.wasm.js`, the same WebAssembly embedded for a page; Node reads the `.wasm`)
 # and the fast-model data (only `4.0.0_best_int` is read, lib/ocr/tesseract.ts). The smoke check reads a page, so a mistake here fails the build.
 RUN cd /ocr && find . -path '*/tesseract.js-core@*' -name '*.wasm.js' -delete \
