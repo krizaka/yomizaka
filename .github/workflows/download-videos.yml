@@ -42,6 +42,8 @@ jobs:
           echo "::add-mask::$password"
           DEMO_ACCOUNT_EMAIL=eric@demo.yomizaka.test DEMO_ACCOUNT_PASSWORD="$password" bash scripts/ci-mobile-backend.sh
           E2E_EMAIL=eric@demo.yomizaka.test E2E_PASSWORD="$password" node scripts/showcase-web.mjs showcase-web --base http://localhost:3000 --locale fr --sign-in off
+      - name: Trim the films (they start on the first meaningful frame, idle stretches are cut)
+        run: node scripts/film-trim.mjs showcase-web
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: showcase-web
@@ -73,7 +75,7 @@ jobs:
         EXPO_PUBLIC_APP_URL=http://localhost:3000
         EXPO_PUBLIC_APP_ENV=dev
 
-  # The Mac's video (yomizaka#636): the Mac journey filmed on a macOS runner (screencapture), on main only, never required.
+  # The Mac's video (yomizaka#636): the Mac journey filmed on a macOS runner (WebDriver screenshots of the window, no screen-recording permission), on main only, never required.
   showcase-mac:
     name: Showcase video (Mac)
     if: github.ref == 'refs/heads/main'
@@ -100,7 +102,7 @@ jobs:
         run: |
           brew install ffmpeg
           node scripts/desktop-film-join.mjs showcase-mac showcase-mac/mac-library.mp4
-          rm showcase-mac/mac-take-*.mov
+          rm -r showcase-mac/frames showcase-mac/film-frames.txt
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: showcase-mac

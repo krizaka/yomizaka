@@ -1,140 +1,200 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { EventEmitter } from "node:events";
 import { describe, it } from "vitest";
 
 import {
-  cropRect,
+  assertFrames,
+  assertLivelyStart,
+  BLANK_BYTES,
+  collapse,
   createFilm,
+  HOLD_S,
   FILM_SIZE,
+  FPS,
+  frameList,
+  framesInList,
   joinArgs,
-  MIN_SIDE,
-  screencaptureArgs,
-  windowRect,
+  MIN_FRAMES,
 } from "./desktop-film-lib.mjs";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 
-describe("the crop of the Mac film", () => {
-  it("is the window alone, whole numbers, even sides, never off the screen", () => {
-    assert.deepEqual(cropRect({ x: 120.4, y: 60.6, width: 1201, height: 799 }), {
-      x: 120,
-      y: 61,
-      width: 1200,
-      height: 798,
-    });
-    assert.deepEqual(cropRect({ x: -8, y: -3, width: 1000, height: 700 }), { x: 0, y: 0, width: 1000, height: 700 });
-  });
-  it("refuses a window that is not shown yet or a rectangle that is not known (no film of the desktop)", () => {
-    assert.throws(() => cropRect({ x: 0, y: 0, width: MIN_SIDE - 1, height: 800 }), /not shown yet/);
-    assert.throws(() => cropRect(undefined), /unknown/);
-    assert.throws(() => cropRect({ x: "a", y: 0, width: 900, height: 700 }), /unknown/);
-  });
-  it("films the screen with a ceiling and never passes -R (screencapture refuses -R with -v: run 41071237202 filmed nothing)", () => {
-    assert.deepEqual(screencaptureArgs("t.mov", 25), ["-v", "-V", "25", "t.mov"]);
-    assert.ok(!screencaptureArgs("t.mov").some((a) => a.startsWith("-R")));
-  });
-});
+const big = (n) => Buffer.alloc(BLANK_BYTES * 2, n).toString("base64");
 
-describe("the window of the app", () => {
-  it("is the driver's rectangle when it answers", async () => {
-    const driver = {
-      rect: async () => ({ x: 100, y: 50, width: 1100, height: 760 }),
-      run: async () => assert.fail("not needed"),
-    };
-    assert.deepEqual(await windowRect(driver), { x: 100, y: 50, width: 1100, height: 760 });
-  });
-  it("is the page's own position when the driver has no rectangle, or a splash-sized one", async () => {
-    const run = async () => [30, 40, 900, 700];
-    assert.deepEqual(await windowRect({ rect: async () => Promise.reject(new Error("404")), run }), {
-      x: 30,
-      y: 40,
-      width: 900,
-      height: 700,
-    });
-    assert.deepEqual(await windowRect({ rect: async () => ({ x: 0, y: 0, width: 10, height: 10 }), run }), {
-      x: 30,
-      y: 40,
-      width: 900,
-      height: 700,
-    });
-  });
-});
-
-describe("the takes", () => {
-  const fakeSpawn = (log) => (command, args) => {
-    const child = new EventEmitter();
-    child.kill = (signal) => {
-      log.push(`kill ${signal}`);
-      queueMicrotask(() => child.emit("exit", 0));
-    };
-    log.push(`${command} ${args.join(" ")}`);
-    return child;
+describe("the frames of the film", () => {
+  const clock = () => {
+    let t = 0;
+    return { now: () => t, sleep: async (ms) => void (t += ms), advance: (ms) => void (t += ms) };
   };
-  it("starts on the window after the stream is open, and stops (SIGINT) only when the take is over", async () => {
-    const log = [];
-    const waits = [];
+  it("takes a screenshot of the window at a steady rate until stopped, and names the frames in order", async () => {
     const saved = [];
+    const c = clock();
+    let shots = 0;
     const film = createFilm({
       dir: "out",
-      spawnImpl: fakeSpawn(log),
-      save: (f, t) => saved.push([f, t]),
-      sleep: async (ms) => waits.push(ms),
+      shoot: async () => {
+        shots += 1;
+        if (shots === 6) film.cancel();
+        return Buffer.from(`png${shots}`).toString("base64");
+      },
+      now: c.now,
+      sleep: c.sleep,
+      save: (file, bytes) => saved.push([file, bytes?.toString?.()]),
+      makeDir: () => undefined,
     });
-    await film.start({ x: 10, y: 20, width: 800, height: 600 });
-    assert.deepEqual(log, ["screencapture -v -V 25 out/mac-take-1.mov"]);
-    assert.deepEqual(saved, [["out/mac-take-1.crop", "10,20,800,600"]]);
-    assert.equal(waits.length, 1);
-    await film.stop();
-    await film.stop();
-    await film.start({ x: 0, y: 0, width: 640, height: 480 });
-    await film.stop();
-    assert.deepEqual(film.files, ["out/mac-take-1.mov", "out/mac-take-2.mov"]);
-    assert.equal(log.filter((line) => line === "kill SIGINT").length, 2);
+    film.start();
+    await film.done;
+    assert.equal(film.count, 6);
+    assert.deepEqual(saved[0], ["out/frames/frame-00001.png", "png1"]);
+    assert.equal(film.frames[1].at - film.frames[0].at, 1000 / FPS);
   });
-  it("films nothing without a directory, and never the whole screen when the window is unknown", async () => {
-    const log = [];
-    const none = createFilm({ spawnImpl: fakeSpawn(log) });
-    await none.start({ x: 0, y: 0, width: 800, height: 600 });
-    await none.stop();
-    assert.deepEqual(log, []);
-    await assert.rejects(createFilm({ dir: "out", spawnImpl: fakeSpawn(log) }).start({}), /unknown/);
-    assert.deepEqual(log, []);
+  it("skips a screenshot the window could not give instead of ending the film", async () => {
+    const c = clock();
+    let n = 0;
+    const film = createFilm({
+      dir: "out",
+      shoot: async () => {
+        n += 1;
+        if (n === 2) throw new Error("mid-transition");
+        if (n === 4) film.cancel();
+        return "AA==";
+      },
+      now: c.now,
+      sleep: c.sleep,
+      save: () => undefined,
+      makeDir: () => undefined,
+    });
+    film.start();
+    await film.done;
+    assert.equal(film.count, 3);
+  });
+  it("films nothing without a directory", async () => {
+    const film = createFilm({ shoot: async () => assert.fail("no film, no screenshot") });
+    film.start();
+    await film.stop();
+    assert.equal(film.finish(), 0);
+  });
+  it("fails loudly when it holds fewer frames than the minimum (no empty clip, no green job without a film)", () => {
+    assert.throws(() => assertFrames(0), /filmed nothing/);
+    assert.throws(() => assertFrames(MIN_FRAMES - 1), /at least 30/);
+    assert.equal(assertFrames(MIN_FRAMES), MIN_FRAMES);
+    const film = createFilm({ dir: "out", shoot: async () => "AA==", save: () => undefined, makeDir: () => undefined });
+    assert.throws(() => film.finish(), /filmed nothing/);
+  });
+  it("writes the frame list only once the minimum is met", async () => {
+    const written = [];
+    const c = clock();
+    let n = 0;
+    const film = createFilm({
+      dir: "out",
+      shoot: async () => {
+        n += 1;
+        if (n === 3) film.cancel();
+        return big(n);
+      },
+      now: c.now,
+      sleep: c.sleep,
+      save: (file) => written.push(file),
+      makeDir: () => undefined,
+    });
+    film.start();
+    await film.done;
+    assert.equal(film.finish(3), 3);
+    assert.ok(written.includes("out/film-frames.txt"));
+  });
+});
+
+describe("the frame list", () => {
+  it("shows each frame until the next, never longer than three intervals (a stopped take's gap is not played), the last once more", () => {
+    const f = (file, at, hash, size = 9000) => ({ file, at, hash, size });
+    const text = frameList([f("frames/a.png", 0, "a"), f("frames/b.png", 100, "b"), f("frames/c.png", 60_000, "c")]);
+    assert.equal(
+      text,
+      "file 'frames/a.png'\nduration 0.100\nfile 'frames/b.png'\nduration 0.300\nfile 'frames/c.png'\nduration 0.100\nfile 'frames/c.png'\n",
+    );
+    assert.equal(framesInList(text), 3);
+    assert.equal(framesInList(""), 0);
+  });
+});
+
+describe("the start and the idle stretches of the film", () => {
+  const f = (n, at, hash, size = 9000) => ({ file: `frames/${n}.png`, at, hash, size });
+  it("cuts the blank window before the first screen that shows something", () => {
+    const entries = collapse([f(1, 0, "x", 300), f(2, 100, "x", 300), f(3, 200, "a"), f(4, 300, "b")]);
+    assert.deepEqual(
+      entries.map((e) => e.file),
+      ["frames/3.png", "frames/4.png"],
+    );
+  });
+  it("shows an idle screen for HOLD_S at most, however long it waited, and keeps the pace of a moving one", () => {
+    const idle = Array.from({ length: 50 }, (_, i) => f(i, i * 100, "same"));
+    const [entry] = collapse([...idle, f(99, 5000, "next")]);
+    assert.equal(entry.seconds, HOLD_S);
+    const moving = collapse([f(1, 0, "a"), f(2, 100, "b"), f(3, 200, "c")]);
+    assert.deepEqual(
+      moving.map((e) => e.seconds.toFixed(1)),
+      ["0.1", "0.1", "0.1"],
+    );
+  });
+  it("refuses a film that opens blank, or on one picture only (idle), and accepts one that moves", () => {
+    assert.throws(() => assertLivelyStart([f(1, 0, "a", 100), f(2, 100, "b")]), /blank/);
+    assert.throws(() => assertLivelyStart([f(1, 0, "a"), f(2, 100, "a"), f(3, 200, "a")], 3), /same picture/);
+    assert.throws(() => assertLivelyStart([f(1, 0, "a")]), /at least 2/);
+    assert.doesNotThrow(() => assertLivelyStart([f(1, 0, "a"), f(2, 100, "b")]));
+  });
+  it("refuses a recorded film that never changed", async () => {
+    const film = createFilm({
+      dir: "out",
+      shoot: async () => big(7),
+      now: () => 0,
+      sleep: async () => film.cancel(),
+      save: () => undefined,
+      makeDir: () => undefined,
+    });
+    film.start();
+    await film.done;
+    assert.throws(() => film.finish(1), /at least 2/);
   });
 });
 
 describe("the joined film", () => {
-  it("is one mp4 of the takes in order, letterboxed to one size, silent", () => {
-    const args = joinArgs(["a.mov", "b.mov", "c.mov"], "film.mp4");
-    assert.deepEqual(
-      args.filter((_, i) => args[i - 1] === "-i"),
-      ["a.mov", "b.mov", "c.mov"],
-    );
-    const graph = args[args.indexOf("-filter_complex") + 1];
+  it("is one silent mp4 of the frame list, letterboxed to one size", () => {
+    const args = joinArgs("film-frames.txt", "film.mp4");
+    assert.deepEqual(args.slice(0, 7), ["-y", "-f", "concat", "-safe", "0", "-i", "film-frames.txt"]);
     assert.match(
-      graph,
+      args[args.indexOf("-vf") + 1],
       new RegExp(`scale=${FILM_SIZE.width}:${FILM_SIZE.height}:force_original_aspect_ratio=decrease`),
     );
-    assert.match(graph, /\[v0\]\[v1\]\[v2\]concat=n=3:v=1:a=0\[v\]/);
     assert.ok(args.includes("-an") && args.at(-1) === "film.mp4");
-    const cut = joinArgs(["a.mov"], "f.mp4", ["10,20,800,600"]);
-    assert.match(cut[cut.indexOf("-filter_complex") + 1], /\[0:v\]crop=800:600:10:20,scale=/);
+  });
+  it("is joined by a script that refuses a film with too few frames and never screen-records", () => {
+    const join = read("./desktop-film-join.mjs");
+    assert.match(join, /assertFrames\(framesInList/);
+    for (const file of [
+      "./desktop-film-lib.mjs",
+      "./desktop-film-join.mjs",
+      "./desktop-journey.mjs",
+      "../.github/actions/desktop-journey/action.yml",
+    ]) {
+      assert.doesNotMatch(read(file).replace(/^\s*(\/\/|#).*$/gm, ""), /screencapture/, file);
+    }
   });
 });
 
 describe("the journey films the window, after the sign-in, without the engine's wait", () => {
-  it("starts a take on each screen worth reading and stops before the app quits", () => {
+  it("starts the frames on each screen worth reading and stops before the app quits", () => {
     const journey = read("./desktop-journey.mjs");
     const order = [
       "await signInIfAsked",
       "1-library",
-      "await filmWindow()",
+      "filmWindow()",
       "check-document",
       "await film.stop(); // the engine",
       "3-result",
-      "await filmWindow()",
+      "filmWindow()",
       "driver.quit()",
       "4-relaunch",
+      "film.finish()",
     ];
     let at = -1;
     for (const needle of order) {

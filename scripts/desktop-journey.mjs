@@ -16,7 +16,7 @@ import { dirname, join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 
 import { generateDocument } from "./demo-documents/index.mjs";
-import { createFilm, windowRect } from "./desktop-film-lib.mjs";
+import { createFilm } from "./desktop-film-lib.mjs";
 import { client, libraryHash, scopeFile, scopeJson, until } from "./desktop-journey-lib.mjs";
 
 const { values } = parseArgs({
@@ -83,12 +83,12 @@ async function signInIfAsked(driver) {
   return true;
 }
 
-// The film (yomizaka#636): the app's window only, from the signed-in library, in takes that skip the engine's wait.
-const film = createFilm({ dir: values.film ? out : undefined });
+// The film (yomizaka#636): the app's window only, from the signed-in library, as WebDriver screenshots, skipping the engine's wait.
+const film = createFilm({ dir: values.film ? out : undefined, shoot: () => driver.screenshot() });
 // @fixed: long enough to read a screen of the app, short enough for a clip under 30 s in all
 const READ_MS = 3000;
 const hold = (ms = READ_MS) => new Promise((resolveHold) => setTimeout(resolveHold, ms));
-const filmWindow = async () => film.start(await windowRect(driver));
+const filmWindow = () => film.start();
 
 const waitFor = (driver, what, css, timeoutMs = SCREEN_MS) => until(what, () => driver.exists(css), { timeoutMs });
 
@@ -108,7 +108,7 @@ try {
   await waitFor(driver, "the granted folder in the library", FOLDER_LINK);
   await shot(driver, "1-library");
   await mkdir(out, { recursive: true });
-  await filmWindow();
+  filmWindow();
   await hold();
 
   // 2. Open the folder: its lease is listed; check it.
@@ -126,7 +126,7 @@ try {
   const hash = await driver.hash();
   if (!hash.startsWith("#/check/")) throw new Error(`the result is shown on ${hash}, not on a check`);
   await shot(driver, "3-result");
-  await filmWindow();
+  filmWindow();
   await hold(4000);
   await film.stop(); // the app is about to quit: nothing of the desktop is filmed
 
@@ -141,9 +141,10 @@ try {
   const kept = JSON.parse(await readFile(scope, "utf8")).roots;
   if (!kept.includes(folder)) throw new Error(`the scope lost the folder: ${JSON.stringify(kept)}`);
   await shot(driver, "4-relaunch");
-  await filmWindow();
+  filmWindow();
   await hold(4000);
   await film.stop();
+  film.finish(); // too few frames: the journey fails loudly, no empty clip
   console.log("desktop journey: ok");
 } catch (error) {
   await film.stop().catch(() => undefined);

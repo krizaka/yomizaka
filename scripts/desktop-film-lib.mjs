@@ -1,100 +1,166 @@
 // The Mac film (yomizaka#636): the journey films only the app's window, from the first screen of the library (after the sign-in,
-// so no address is ever typed in front of the camera), in short takes that skip the engine's wait, joined into one clip.
-// This file holds the parts that can be checked without a Mac: the crop, the recorder's command, the takes, the join.
-import { spawn } from "node:child_process";
-import { writeFileSync } from "node:fs";
+// so no address is ever typed in front of the camera), skipping the engine's wait. The frames come from INSIDE the app: the same
+// WebDriver the journey drives takes a screenshot of the window at a steady rate. No screen recording, so no macOS permission
+// (TCC) is needed on the runner (`screencapture -v` filmed nothing there, runs 41071237202 and 41124359521).
+// This file holds the parts that can be checked without a Mac: the frame recorder, the frame list, the join.
+import { createHash } from "node:crypto";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-// @fixed: a window smaller than this is a window that is not shown yet (a splash), not a screen worth filming
-export const MIN_SIDE = 200;
-// @fixed: screencapture needs about a second to open its stream; the take waits so the first screen is in it
-export const START_MS = 1200;
-// @fixed: a take that is not asked to stop ends by itself (the film never runs on)
-export const TAKE_MAX_S = 25;
-// @fixed: the joined film is 1280 x 800, the app's window ratio, whatever the relaunch's window is
+// @fixed: ten frames a second reads as motion for a UI film and keeps the screenshots (about 100 ms each) in step
+export const FPS = 10;
+// @fixed: three seconds of film; fewer frames than this is a film that failed, never a clip to publish
+export const MIN_FRAMES = 30;
+// @fixed: the joined film is 1280 x 800, the app's window ratio, whatever the window is
 export const FILM_SIZE = { width: 1280, height: 800 };
+export const FRAMES_DIR = "frames";
+export const FRAME_LIST = "film-frames.txt";
 
-/** The window as a crop: whole, even numbers (H.264 wants even sides), never off the screen's top-left. */
-export function cropRect(rect) {
-  const [x, y, w, h] = [rect?.x, rect?.y, rect?.width, rect?.height];
-  if (![x, y, w, h].every(Number.isFinite))
-    throw new Error(`the window's rectangle is unknown: ${JSON.stringify(rect)}`);
-  if (w < MIN_SIDE || h < MIN_SIDE) throw new Error(`the window is ${w} x ${h}: not shown yet`);
-  const even = (n) => Math.floor(n / 2) * 2;
-  return { x: Math.max(0, Math.round(x)), y: Math.max(0, Math.round(y)), width: even(w), height: even(h) };
+const frameName = (n) => `frame-${String(n).padStart(5, "0")}.png`;
+
+/** Fails loudly when the film holds fewer frames than `min`: an empty film is an error, never a green job with no clip. */
+export function assertFrames(count, min = MIN_FRAMES) {
+  if (!Number.isInteger(count) || count < min)
+    throw new Error(`the film holds ${count} frame(s), at least ${min} are needed: the journey filmed nothing`);
+  return count;
 }
 
-/** The window of the app: the W3C rectangle when the driver answers, else the page's own screen position. */
-export async function windowRect(driver) {
-  const w3c = await driver.rect().catch(() => undefined);
-  if (w3c && w3c.width >= MIN_SIDE && w3c.height >= MIN_SIDE) return cropRect(w3c);
-  const [x, y, width, height] = await driver.run(
-    "return [window.screenX, window.screenY, window.innerWidth, window.innerHeight]",
-  );
-  return cropRect({ x, y, width, height });
+// @fixed: a screen that does not change is shown this long (enough to read it), whatever the wait was: a brisk time-lapse
+export const HOLD_S = 1.2;
+// @fixed: a frame of the window under this size (PNG bytes) is one flat colour: a blank window or a splash, not a screen to show
+export const BLANK_BYTES = 4000;
+
+/** Leading frames that are blank are dropped: the film starts on the first screen that shows something. */
+export function trimStart(frames) {
+  const first = frames.findIndex((f) => f.size >= BLANK_BYTES);
+  return first < 0 ? [] : frames.slice(first);
 }
 
 /**
- * `screencapture` as a video of the screen, at most `maxSeconds`, stopped earlier by SIGINT. `-R` is not accepted with `-v` (the first
- * run on the runner filmed nothing, run 41071237202): the window is cut out of the screen at the join, from the take's `.crop` file.
+ * Whether the first `n` frames show something and move: they are not blank and not all the same picture. A film that opens on an
+ * idle or empty window is refused (the clip starts on the first meaningful frame, see trimStart / still runs).
  */
-export const screencaptureArgs = (file, maxSeconds = TAKE_MAX_S) => ["-v", "-V", String(maxSeconds), file];
+export function assertLivelyStart(frames, n = 2) {
+  const head = frames.slice(0, n);
+  if (head.length < n)
+    throw new Error(`the film opens on ${head.length} frame(s), at least ${n} are needed to judge its start`);
+  if (head.some((f) => f.size < BLANK_BYTES)) throw new Error("the film opens on a blank window");
+  if (new Set(head.map((f) => f.hash)).size < 2)
+    throw new Error(`the first ${n} frames are the same picture: the film opens idle`);
+}
 
-/** The crop of a take, as the text of its `.crop` file: `x,y,width,height`. */
-export const cropText = (rect) => `${rect.x},${rect.y},${rect.width},${rect.height}`;
-const cropFilter = (text) => {
-  const [x, y, w, h] = text.trim().split(",").map(Number);
-  return `crop=${w}:${h}:${x}:${y},`;
-};
+/**
+ * The collapsed film: the blank start is cut, and a screen that stays the same is one frame shown for at most HOLD_S (idle
+ * stretches are dropped, a moving screen keeps its pace). `frames` = `[{ file, at, hash, size }]`, `at` in milliseconds.
+ */
+export function collapse(input, fps = FPS) {
+  const interval = 1000 / fps;
+  const frames = trimStart(input);
+  const entries = [];
+  for (let i = 0; i < frames.length;) {
+    let j = i;
+    while (j + 1 < frames.length && frames[j + 1].hash === frames[i].hash) j += 1;
+    const next = frames[j + 1];
+    const span = (next ? next.at - frames[i].at : frames[j].at - frames[i].at + interval) / 1000;
+    const moving = j === i;
+    // a single frame keeps its own pace (at most three intervals: a stopped take's gap is not played); a still run is held
+    const seconds = moving ? Math.min(span, (3 * interval) / 1000) : Math.min(span, HOLD_S);
+    entries.push({ file: frames[i].file, seconds, hash: frames[i].hash, size: frames[i].size });
+    i = j + 1;
+  }
+  return entries;
+}
 
-/** The takes of a film: `start(rect)` opens a take on the window, `stop()` ends it; no directory, no film. */
+/** The concat list of the collapsed frames (the last file is named again, the demuxer ignoring the duration of the last one). */
+export function frameList(input, fps = FPS) {
+  const entries = collapse(input, fps);
+  const lines = entries.flatMap((e) => [`file '${e.file}'`, `duration ${e.seconds.toFixed(3)}`]);
+  if (entries.length > 0) lines.push(`file '${entries.at(-1).file}'`);
+  return `${lines.join("\n")}\n`;
+}
+
+/**
+ * The recorder: `start()` takes a screenshot of the window every 1/FPS s (`shoot()` answers a base64 PNG) until `stop()`; no
+ * directory, no film. A screenshot that fails is skipped (the count tells); `finish()` writes the frame list and throws when
+ * there are fewer than MIN_FRAMES.
+ */
 export function createFilm({
   dir,
-  spawnImpl = spawn,
-  save = writeFileSync,
+  shoot,
+  fps = FPS,
+  now = Date.now,
   sleep = (ms) => new Promise((r) => setTimeout(r, ms)),
+  save = writeFileSync,
+  makeDir = (path) => mkdirSync(path, { recursive: true }),
 } = {}) {
-  const files = [];
-  let take;
+  const frames = [];
+  const origin = now();
+  let running = false;
+  const isRunning = () => running;
+  let loop = Promise.resolve();
+  const interval = 1000 / fps;
+  async function run() {
+    while (isRunning()) {
+      const began = now();
+      try {
+        const png = await shoot();
+        if (png) {
+          const file = join(FRAMES_DIR, frameName(frames.length + 1));
+          const bytes = Buffer.from(png, "base64");
+          save(join(dir, file), bytes);
+          frames.push({
+            file,
+            at: began - origin,
+            size: bytes.length,
+            hash: createHash("sha256").update(bytes).digest("hex"),
+          });
+        }
+      } catch {
+        // a screenshot the window could not give (a transition): the next one will do
+      }
+      await sleep(Math.max(0, interval - (now() - began)));
+    }
+  }
   return {
-    files,
-    async start(rect) {
-      if (!dir) return;
-      const file = join(dir, `mac-take-${files.length + 1}.mov`);
-      const crop = cropRect(rect);
-      save(file.replace(/\.mov$/, ".crop"), cropText(crop));
-      const child = spawnImpl("screencapture", screencaptureArgs(file), { stdio: "ignore" });
-      const exited = new Promise((resolve) => child.once("exit", resolve));
-      take = { child, exited };
-      files.push(file);
-      await sleep(START_MS);
+    frames,
+    get count() {
+      return frames.length;
+    },
+    start() {
+      if (!dir || running) return;
+      if (!shoot) throw new Error("the film needs a way to take a screenshot of the window");
+      makeDir(join(dir, FRAMES_DIR));
+      running = true;
+      loop = run();
+    },
+    /** Resolves when the recording has ended (stopped or cancelled). */
+    get done() {
+      return loop;
+    },
+    /** Ends the recording at once without waiting for the frame in flight. */
+    cancel() {
+      running = false;
     },
     async stop() {
-      if (!take) return;
-      const { child, exited } = take;
-      take = undefined;
-      child.kill("SIGINT");
-      await exited;
+      running = false;
+      await loop;
+    },
+    finish(min = MIN_FRAMES) {
+      if (!dir) return 0;
+      assertFrames(frames.length, min);
+      assertLivelyStart(collapse(frames, fps));
+      save(join(dir, FRAME_LIST), frameList(frames, fps));
+      return frames.length;
     },
   };
 }
 
-/** `ffmpeg` arguments that join the takes into one mp4 of FILM_SIZE (letterboxed, never stretched). */
-export function joinArgs(files, out, crops = []) {
+/** `ffmpeg` arguments that turn the frame list into one mp4 of FILM_SIZE (letterboxed, never stretched), silent. */
+export function joinArgs(list, out) {
   const { width, height } = FILM_SIZE;
   const fit = `scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30`;
-  const prepared = files.map((_, i) => `[${i}:v]${crops[i] ? cropFilter(crops[i]) : ""}${fit}[v${i}]`).join(";");
-  const chain = files.map((_, i) => `[v${i}]`).join("");
-  return [
-    "-y",
-    ...files.flatMap((file) => ["-i", file]),
-    "-filter_complex",
-    `${prepared};${chain}concat=n=${files.length}:v=1:a=0[v]`,
-    "-map",
-    "[v]",
-    "-an",
-    "-pix_fmt",
-    "yuv420p",
-    out,
-  ];
+  return ["-y", "-f", "concat", "-safe", "0", "-i", list, "-vf", fit, "-an", "-pix_fmt", "yuv420p", out];
 }
+
+/** The number of frames a frame list names (one `file` line per frame, the last one repeated for its duration). */
+export const framesInList = (text) => Math.max(0, (text.match(/^file '/gm) ?? []).length - 1);
