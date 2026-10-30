@@ -11,7 +11,10 @@ describe("the signed-in landing check (krizaka-ui#827)", () => {
 
   it("is run by CI after the build, as the seeded persona", () => {
     const ci = readFileSync(new URL("./ci-after-build.sh", import.meta.url), "utf8");
-    assert.match(ci, /E2E_EMAIL=\S+ E2E_PASSWORD=\S+ node scripts\/check-signed-in-landing\.mjs --base http:\/\/localhost:3000/);
+    assert.match(
+      ci,
+      /E2E_EMAIL=\S+ E2E_PASSWORD=\S+ node scripts\/check-signed-in-landing\.mjs --base http:\/\/localhost:3000/,
+    );
   });
 
   it("watches the header from the first moment of the document", () => {

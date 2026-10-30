@@ -12,7 +12,15 @@ export interface LegacyValues {
   purgeAfterHours: number;
 }
 
-const LEGACY_KEYS = { signupOpen: "signup.open", purgeAfterHours: "limits.purgeAfterHours" } as const satisfies Record<keyof LegacyValues, SettingKey>;
+const LEGACY_KEYS = { signupOpen: "signup.open", purgeAfterHours: "limits.purgeAfterHours" } as const satisfies Record<
+  keyof LegacyValues,
+  SettingKey
+>;
 
 export const seedLegacySettings = (service: SettingsService, legacy: LegacyValues, now: Date): Promise<SettingKey[]> =>
-  seed(settings, service, Object.fromEntries((Object.keys(LEGACY_KEYS) as (keyof LegacyValues)[]).map((f) => [LEGACY_KEYS[f], legacy[f]])), now);
+  seed(
+    settings,
+    service,
+    Object.fromEntries((Object.keys(LEGACY_KEYS) as (keyof LegacyValues)[]).map((f) => [LEGACY_KEYS[f], legacy[f]])),
+    now,
+  );

@@ -34,14 +34,28 @@ export default async function FilePage({ params }: Readonly<{ params: Promise<{ 
   if (!file) notFound();
   const workspace = workspaceFor({ clock: systemClock });
   const owner = session.account.id;
-  const [configuration, state, worn, tags] = await Promise.all([workspace.config.get(KIND.applicantFile), workspace.status.of(owner, KIND.applicantFile, [id]), workspace.tags.of(owner, KIND.applicantFile, [id]), workspace.tags.list(owner, KIND.applicantFile)]);
+  const [configuration, state, worn, tags] = await Promise.all([
+    workspace.config.get(KIND.applicantFile),
+    workspace.status.of(owner, KIND.applicantFile, [id]),
+    workspace.tags.of(owner, KIND.applicantFile, [id]),
+    workspace.tags.list(owner, KIND.applicantFile),
+  ]);
   const set = configuration?.config.status ?? null;
   return (
     <FileView
       file={file}
       affordability={getDictionary(locale).affordability}
       types={askableTypes(getDictionary(locale).applicantFile.types, await documentTypes())}
-      workspace={set ? { set, decision: state.get(id)?.state ?? set.initial ?? "", tags: tags.map(asTag), tagIds: (worn.get(id) ?? []).map((t) => t.id) } : undefined}
+      workspace={
+        set
+          ? {
+              set,
+              decision: state.get(id)?.state ?? set.initial ?? "",
+              tags: tags.map(asTag),
+              tagIds: (worn.get(id) ?? []).map((t) => t.id),
+            }
+          : undefined
+      }
     />
   );
 }

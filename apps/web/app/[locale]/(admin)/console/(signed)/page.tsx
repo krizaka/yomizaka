@@ -26,7 +26,10 @@ export default async function AdminOverview({ params }: Readonly<{ params: Promi
     overview(),
     reachable(() => query("SELECT 1")),
     reachable(async () => {
-      const res = await fetch(`${readEnv().AI_API_URL}/actuator/health`, { signal: AbortSignal.timeout(4000), cache: "no-store" });
+      const res = await fetch(`${readEnv().AI_API_URL}/actuator/health`, {
+        signal: AbortSignal.timeout(4000),
+        cache: "no-store",
+      });
       if (!res.ok) throw new Error(String(res.status));
     }),
   ]);
@@ -38,7 +41,14 @@ export default async function AdminOverview({ params }: Readonly<{ params: Promi
         <h2 className="mb-3 font-display text-base font-bold text-fg">{t.health}</h2>
         <DescriptionList
           items={[
-            { term: t.version, details: <code className="font-mono text-xs" data-testid="app-version">{APP_VERSION}</code> },
+            {
+              term: t.version,
+              details: (
+                <code className="font-mono text-xs" data-testid="app-version">
+                  {APP_VERSION}
+                </code>
+              ),
+            },
             { term: t.database, details: up(db) },
             { term: t.orazaka, details: up(edge) },
           ]}

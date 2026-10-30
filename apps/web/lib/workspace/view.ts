@@ -13,9 +13,15 @@ export interface ResolvedView {
   modified: boolean;
 }
 
-const hasFilters = (f: ViewFilters) => Object.values(f).some((v) => (Array.isArray(v) ? v.length > 0 : v !== undefined && v !== ""));
+const hasFilters = (f: ViewFilters) =>
+  Object.values(f).some((v) => (Array.isArray(v) ? v.length > 0 : v !== undefined && v !== ""));
 
-export function resolveView(address: { view: string | null; filters: ViewFilters }, system: readonly SystemView[], saved: readonly SavedView[], locale: "en" | "fr"): ResolvedView {
+export function resolveView(
+  address: { view: string | null; filters: ViewFilters },
+  system: readonly SystemView[],
+  saved: readonly SavedView[],
+  locale: "en" | "fr",
+): ResolvedView {
   const sys = address.view ? system.find((v) => v.key === address.view) : undefined;
   const mine = address.view && !sys ? saved.find((v) => v.id === address.view) : undefined;
   const foundOf = () => {
@@ -25,5 +31,9 @@ export function resolveView(address: { view: string | null; filters: ViewFilters
   const found = foundOf();
   if (!found) return { active: null, filters: address.filters, modified: false };
   const own = hasFilters(address.filters);
-  return { active: { kind: found.kind, id: found.id, label: found.label }, filters: own ? address.filters : found.filters, modified: own && !sameFilters(address.filters, found.filters) };
+  return {
+    active: { kind: found.kind, id: found.id, label: found.label },
+    filters: own ? address.filters : found.filters,
+    modified: own && !sameFilters(address.filters, found.filters),
+  };
 }

@@ -9,7 +9,10 @@ export const dynamic = "force-dynamic";
 export const GET = (req: Request) =>
   handle(async () => {
     await requireAdmin(req);
-    return Response.json({ incidents: await incidentRegister() }, { headers: { "Cache-Control": "private, no-store" } });
+    return Response.json(
+      { incidents: await incidentRegister() },
+      { headers: { "Cache-Control": "private, no-store" } },
+    );
   });
 
 /** Opens an incident (audited). */

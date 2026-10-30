@@ -21,13 +21,19 @@ describe("the processor follows the catalogue (yomizaka#548)", () => {
       ["yomizaka_agency_monthly_pilot_cad", 4900, "cad", "month"],
       ["yomizaka_firm_monthly_pilot_cad", 14900, "cad", "month"],
     ]);
-    expect(processorCatalogue(ENTRIES.map((e) => (e.key === PRICE.firm ? { ...e, amountCents: null } : e))).plans).toHaveLength(2);
+    expect(
+      processorCatalogue(ENTRIES.map((e) => (e.key === PRICE.firm ? { ...e, amountCents: null } : e))).plans,
+    ).toHaveLength(2);
   });
 
   it("names, tax codes and portal are those of deploy/payments-catalogue.json (one source for the setup command and the sync)", () => {
-    const file = JSON.parse(readFileSync(new URL("../../../../deploy/payments-catalogue.json", import.meta.url), "utf8")) as { plans: { lookupKey: string; name: string; taxCode: string }[]; portal: unknown };
+    const file = JSON.parse(
+      readFileSync(new URL("../../../../deploy/payments-catalogue.json", import.meta.url), "utf8"),
+    ) as { plans: { lookupKey: string; name: string; taxCode: string }[]; portal: unknown };
     const built = processorCatalogue(ENTRIES).plans;
-    expect(file.plans.map((p) => [p.lookupKey, p.name, p.taxCode])).toEqual(built.map((p) => [p.lookupKey, p.name, p.taxCode]));
+    expect(file.plans.map((p) => [p.lookupKey, p.name, p.taxCode])).toEqual(
+      built.map((p) => [p.lookupKey, p.name, p.taxCode]),
+    );
     expect(file.portal).toEqual(PORTAL);
     expect(Object.keys(PROCESSOR_PLANS)).toHaveLength(file.plans.length);
   });
@@ -44,20 +50,33 @@ describe("the processor follows the catalogue (yomizaka#548)", () => {
 
   it("in test mode a changed amount gives a new processor price and an equal one is left alone", async () => {
     const posts: string[] = [];
-    const existing: Record<string, number> = { yomizaka_document_pilot_cad: 499, yomizaka_agency_monthly_pilot_cad: 4900, yomizaka_firm_monthly_pilot_cad: 14900 };
+    const existing: Record<string, number> = {
+      yomizaka_document_pilot_cad: 499,
+      yomizaka_agency_monthly_pilot_cad: 4900,
+      yomizaka_firm_monthly_pilot_cad: 14900,
+    };
     const call: StripeCall = async (method, path, params) => {
       if (method === "POST") posts.push(path);
       if (path === "/v1/prices" && method === "GET") {
         const key = (params?.lookup_keys as string[])[0] ?? "";
-        return { data: existing[key] === undefined ? [] : [{ id: `price_${key}`, unit_amount: existing[key], currency: "cad", product: `prod_${key}` }] };
+        return {
+          data:
+            existing[key] === undefined
+              ? []
+              : [{ id: `price_${key}`, unit_amount: existing[key], currency: "cad", product: `prod_${key}` }],
+        };
       }
-      if (path === "/v1/billing_portal/configurations" && method === "GET") return { data: [{ active: true, metadata: { product: "yomizaka" } }] };
+      if (path === "/v1/billing_portal/configurations" && method === "GET")
+        return { data: [{ active: true, metadata: { product: "yomizaka" } }] };
       return { id: "x", data: [] };
     };
     const same = await syncProcessorPrices({ call, mode: "test" }, ENTRIES);
     expect(same.prices.map((p) => p.status)).toEqual(["exists", "exists", "exists"]);
     expect(posts).toEqual([]);
-    const changed = await syncProcessorPrices({ call, mode: "test" }, ENTRIES.map((e) => (e.key === PRICE.agency ? { ...e, amountCents: 5900 } : e)));
+    const changed = await syncProcessorPrices(
+      { call, mode: "test" },
+      ENTRIES.map((e) => (e.key === PRICE.agency ? { ...e, amountCents: 5900 } : e)),
+    );
     expect(changed.prices.find((p) => p.lookupKey === "yomizaka_agency_monthly_pilot_cad")?.status).toBe("repriced");
     expect(posts).toEqual(["/v1/prices"]);
   });

@@ -6,7 +6,11 @@ import { describe, it } from "vitest";
 const read = (name) => readFileSync(new URL(`../${name}`, import.meta.url), "utf8");
 // The public audit asks @krizaka/page-audit for the axe step (`a11y` option); the signed-in one runs axe itself.
 const SUITES = [
-  ["check-overflow.mjs", "a11y-baseline.json", [/from "@krizaka\/page-audit"/, /a11y: \{ app: "yomizaka", baseline: A11Y_BASELINE/]],
+  [
+    "check-overflow.mjs",
+    "a11y-baseline.json",
+    [/from "@krizaka\/page-audit"/, /a11y: \{ app: "yomizaka", baseline: A11Y_BASELINE/],
+  ],
   ["check-app-pages.mjs", "a11y-baseline.app.json", [/from "@krizaka\/a11y-audit"/, /auditA11y\(page\)/]],
 ];
 

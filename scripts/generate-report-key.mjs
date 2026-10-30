@@ -13,12 +13,16 @@ export const isDotenvFile = (path) => /^(\.env(\.[\w-]+)?|[\w-]+\.env)$/.test(ba
 const arg = process.argv[2];
 const file = arg && isDotenvFile(arg) ? resolve(arg) : undefined;
 if (!file) {
-  console.error("usage: node scripts/generate-report-key.mjs <env-file>   (a file named .env, .env.<name> or <name>.env)");
+  console.error(
+    "usage: node scripts/generate-report-key.mjs <env-file>   (a file named .env, .env.<name> or <name>.env)",
+  );
   process.exit(2);
 }
 const lines = existsSync(file) ? readFileSync(file, "utf8").split("\n") : [];
 if (lines.some((l) => /^\s*APP_REPORT_SIGNING_KEY\s*=\s*\S/.test(l))) {
-  console.error("APP_REPORT_SIGNING_KEY is already set in that file: not replaced (a new key invalidates nothing already signed, but the old public key must stay published)");
+  console.error(
+    "APP_REPORT_SIGNING_KEY is already set in that file: not replaced (a new key invalidates nothing already signed, but the old public key must stay published)",
+  );
   process.exit(1);
 }
 const { privateKey, publicKey } = crypto.generateKeyPairSync("ed25519");
@@ -26,5 +30,9 @@ const value = privateKey.export({ type: "pkcs8", format: "der" }).toString("base
 const kept = lines.filter((l) => !/^\s*APP_REPORT_SIGNING_KEY\s*=/.test(l) && l !== "");
 writeFileSync(file, [...kept, `APP_REPORT_SIGNING_KEY=${value}`, ""].join("\n"));
 chmodSync(file, 0o600);
-const id = crypto.createHash("sha256").update(publicKey.export({ type: "spki", format: "der" })).digest("hex").slice(0, 16);
+const id = crypto
+  .createHash("sha256")
+  .update(publicKey.export({ type: "spki", format: "der" }))
+  .digest("hex")
+  .slice(0, 16);
 console.log(`APP_REPORT_SIGNING_KEY written to ${file} (key id ed25519:${id}); value not shown`);

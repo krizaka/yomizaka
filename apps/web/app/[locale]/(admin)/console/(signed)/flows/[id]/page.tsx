@@ -11,6 +11,9 @@ export default async function AdminFlow({ params }: Readonly<{ params: Promise<{
   const { id } = await params;
   const flow = (await listAdminFlows()).find((f) => f.id === id);
   if (!flow) notFound();
-  const shown = flow.versions.find((v) => v.status === "draft") ?? flow.versions.find((v) => v.version === flow.currentVersion) ?? flow.versions[0];
+  const shown =
+    flow.versions.find((v) => v.status === "draft") ??
+    flow.versions.find((v) => v.version === flow.currentVersion) ??
+    flow.versions[0];
   return <FlowEditor flow={flow} initial={shown?.definition ? formFromDefinition(shown.definition) : null} />;
 }

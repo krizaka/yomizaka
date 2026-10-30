@@ -6,7 +6,11 @@ import { limit } from "../limits";
 import type { Session } from "../session";
 
 /** One account action: signed in, rate-limited (reads far less tightly than writes), run, answered as JSON (never cached). An `AccountError` becomes the stable `{ code }` answer the page translates. */
-export function accountAct(req: Request, scope: string, run: (session: Session) => Promise<Response | Record<string, unknown> | undefined>) {
+export function accountAct(
+  req: Request,
+  scope: string,
+  run: (session: Session) => Promise<Response | Record<string, unknown> | undefined>,
+) {
   return handle(async () => {
     const session = await requireSession(req);
     // A read (the page's own configuration, loaded on every page) is far looser than a change of something.

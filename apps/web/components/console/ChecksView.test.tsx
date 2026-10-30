@@ -12,11 +12,30 @@ import fr from "@/messages/fr.json";
 import { ChecksView } from "./ChecksView";
 
 const nav = vi.hoisted(() => ({ search: "" }));
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push() {}, replace() {}, refresh() {} }), usePathname: () => "/fr/app/verifications", useSearchParams: () => new URLSearchParams(nav.search) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push() {}, replace() {}, refresh() {} }),
+  usePathname: () => "/fr/app/verifications",
+  useSearchParams: () => new URLSearchParams(nav.search),
+}));
 
 const MESSAGES = { en: { console: en.console }, fr: { console: fr.console } } as const;
-const readable = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ");
-const check = (n: number, result: CheckSummary["result"], patch: Partial<CheckSummary> = {}): CheckSummary => ({ id: `a${n}`, documentId: `d${n}`, title: `Bail — Rosemont, logement ${n}`, kind: "lease", studio: "compliance-check", result, runId: `run_${n}`, at: `2026-10-2${n}T12:00:00.000Z`, ...patch });
+const readable = (html: string) =>
+  html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&#x27;|&#39;/g, "'")
+    .replace(/&[a-z#0-9]+;/gi, " ")
+    .replace(/\s+/g, " ");
+const check = (n: number, result: CheckSummary["result"], patch: Partial<CheckSummary> = {}): CheckSummary => ({
+  id: `a${n}`,
+  documentId: `d${n}`,
+  title: `Bail — Rosemont, logement ${n}`,
+  kind: "lease",
+  studio: "compliance-check",
+  result,
+  runId: `run_${n}`,
+  at: `2026-10-2${n}T12:00:00.000Z`,
+  ...patch,
+});
 const NOW = "2026-10-30T12:00:00.000Z";
 const render = (props: { checks: CheckSummary[]; batches: boolean; now?: string }, locale: "en" | "fr" = "fr") =>
   renderToStaticMarkup(
@@ -30,7 +49,10 @@ const render = (props: { checks: CheckSummary[]; batches: boolean; now?: string 
 describe("the Vérifications destination (the UX review's § 4.1)", () => {
   it("has one h1, and lists every check with its document (a link to its report), its result and its run", () => {
     nav.search = "";
-    const html = render({ checks: [check(1, "attention"), check(2, "checked", { runId: "seeded-bail-2" })], batches: false });
+    const html = render({
+      checks: [check(1, "attention"), check(2, "checked", { runId: "seeded-bail-2" })],
+      batches: false,
+    });
     expect(html.match(/<h1\b/g)).toHaveLength(1);
     const text = readable(html);
     expect(text).toContain("Vérifications");
@@ -79,7 +101,12 @@ describe("a running check keeps the list live", () => {
 });
 
 describe("the filters of the list live in the address (the UX review's Y6)", () => {
-  const rows = [check(1, "checked"), check(2, "attention"), check(3, "attention", { title: "Facture Plomberie Roy", kind: "invoice" }), check(4, "failed", { title: "Contrat d'entretien", kind: "contract" })];
+  const rows = [
+    check(1, "checked"),
+    check(2, "attention"),
+    check(3, "attention", { title: "Facture Plomberie Roy", kind: "invoice" }),
+    check(4, "failed", { title: "Contrat d'entretien", kind: "contract" }),
+  ];
   it("draws the bar above the list — the search, the result, the kind, the period — and the count of checks; never with nothing checked", () => {
     nav.search = "";
     const html = render({ checks: rows, batches: false });

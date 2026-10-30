@@ -37,9 +37,13 @@ export function readFileStates(search: string | URLSearchParams): LinkState[] {
 }
 
 /** The files a filter keeps: all of them without one. */
-export const filesInStates = <F extends { status: LinkState }>(files: readonly F[], states: readonly LinkState[]): F[] => (states.length ? files.filter((f) => states.includes(f.status)) : [...files]);
+export const filesInStates = <F extends { status: LinkState }>(
+  files: readonly F[],
+  states: readonly LinkState[],
+): F[] => (states.length ? files.filter((f) => states.includes(f.status)) : [...files]);
 
-const filesHref = (locale: string, state: LinkState) => `/${locale}${CONSOLE_ROUTES.files}?${writeFilterParams(new URLSearchParams(), { [FILE_STATE_KEY]: [state] }).toString()}`;
+const filesHref = (locale: string, state: LinkState) =>
+  `/${locale}${CONSOLE_ROUTES.files}?${writeFilterParams(new URLSearchParams(), { [FILE_STATE_KEY]: [state] }).toString()}`;
 
 /** Where each figure of « À traiter » leads: its view, with that view's filter in the address. */
 export function toDoLinks(locale: string): Record<"toReview" | "toDecide" | "openLinks", string> {
@@ -51,7 +55,8 @@ export function toDoLinks(locale: string): Record<"toReview" | "toDecide" | "ope
 }
 
 /** Nothing to do: every figure the person has is zero (the section is then one line, « Rien à traiter »). */
-export const nothingToDo = (todo: Pick<ToDo, "toReview" | "toDecide" | "openLinks">): boolean => todo.toReview === 0 && !todo.toDecide && !todo.openLinks;
+export const nothingToDo = (todo: Pick<ToDo, "toReview" | "toDecide" | "openLinks">): boolean =>
+  todo.toReview === 0 && !todo.toDecide && !todo.openLinks;
 
 export const HOME_PERIODS = ["7d", "30d", "90d"] as const;
 export type HomePeriod = (typeof HOME_PERIODS)[number];
@@ -60,7 +65,8 @@ const DEFAULT_PERIOD: HomePeriod = "30d";
 export const PERIOD_DAYS: Record<HomePeriod, number> = { "7d": 7, "30d": 30, "90d": 90 };
 
 /** The period named by the address; an unknown or missing one is 30 days. */
-export const homePeriodOf = (raw: string | null | undefined): HomePeriod => HOME_PERIODS.find((p) => p === raw) ?? DEFAULT_PERIOD;
+export const homePeriodOf = (raw: string | null | undefined): HomePeriod =>
+  HOME_PERIODS.find((p) => p === raw) ?? DEFAULT_PERIOD;
 
 /** The calendar day `back` days before `day` (YYYY-MM-DD): calendar arithmetic on the date alone, no zone, no DST. */
 function dayBefore(day: string, back: number): string {
@@ -69,7 +75,8 @@ function dayBefore(day: string, back: number): string {
 }
 
 /** The first day of a period ending today (in Québec), for the query's lower bound. */
-export const periodFirstDay = (period: HomePeriod, now: Date, zone = DISPLAY_TIME_ZONE): string => dayBefore(localDay(now, zone), PERIOD_DAYS[period] - 1);
+export const periodFirstDay = (period: HomePeriod, now: Date, zone = DISPLAY_TIME_ZONE): string =>
+  dayBefore(localDay(now, zone), PERIOD_DAYS[period] - 1);
 
 export interface ActivityDay {
   day: string;
@@ -77,7 +84,12 @@ export interface ActivityDay {
 }
 
 /** The checks of each day of the period, in Québec, oldest first: every day present (zero included), nothing outside it. */
-export function activityOf(at: readonly (string | Date)[], period: HomePeriod, now: Date, zone = DISPLAY_TIME_ZONE): ActivityDay[] {
+export function activityOf(
+  at: readonly (string | Date)[],
+  period: HomePeriod,
+  now: Date,
+  zone = DISPLAY_TIME_ZONE,
+): ActivityDay[] {
   const today = localDay(now, zone);
   const days = Array.from({ length: PERIOD_DAYS[period] }, (_, i) => dayBefore(today, PERIOD_DAYS[period] - 1 - i));
   const counts = new Map(days.map((d) => [d, 0]));

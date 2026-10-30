@@ -30,12 +30,19 @@ const usable = (n: number | undefined): boolean => n === undefined || (Number.is
 export function checkPaymentClauses(input: PaymentClausesInput): PaymentClausesResult {
   const base = { ruleId: PAYMENT_CLAUSES_RULE.id } as const;
   const { advanceMonths, depositCents } = input;
-  if (!usable(advanceMonths) || !usable(depositCents) || (depositCents !== undefined && !Number.isInteger(depositCents))) return { ...base, status: "no-claim", findings: [], citations: [] };
+  if (
+    !usable(advanceMonths) ||
+    !usable(depositCents) ||
+    (depositCents !== undefined && !Number.isInteger(depositCents))
+  )
+    return { ...base, status: "no-claim", findings: [], citations: [] };
   const findings: { code: PaymentClauseCode }[] = [];
   if (advanceMonths !== undefined && advanceMonths > 1) findings.push({ code: "advance-over-one-month" });
   if (depositCents !== undefined && depositCents > 0) findings.push({ code: "deposit" });
   if (input.postdatedCheques === true) findings.push({ code: "postdated-cheques" });
-  return findings.length === 0 ? { ...base, status: "ok", findings, citations: [] } : { ...base, status: "finding", findings, citations: [PAYMENT_CLAUSES_RULE.citation] };
+  return findings.length === 0
+    ? { ...base, status: "ok", findings, citations: [] }
+    : { ...base, status: "finding", findings, citations: [PAYMENT_CLAUSES_RULE.citation] };
 }
 
 /** The message key of a finding, under `paymentClauses.<code>` in the catalogues. */

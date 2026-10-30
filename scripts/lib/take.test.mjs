@@ -20,7 +20,11 @@ test("retime plays the marked waits faster and leaves the rest alone", () => {
 
 test("vtt gives each beat its sentence in the language asked, never a cue without words", () => {
   const words = { a: { en: "First.", fr: "D'abord." }, b: { en: "Then.", fr: "Ensuite." }, c: { en: "" } };
-  const beats = [{ id: "a", at: 0 }, { id: "b", at: 4 }, { id: "c", at: 8 }];
+  const beats = [
+    { id: "a", at: 0 },
+    { id: "b", at: 4 },
+    { id: "c", at: 8 },
+  ];
   const en = vtt(beats, words, "en", 10);
   assert.match(en, /^WEBVTT/);
   assert.match(en, /00:00:00\.000 --> 00:00:03\.900\nFirst\./);

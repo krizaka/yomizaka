@@ -5,10 +5,33 @@ import { z } from "zod";
 
 import { LINE, type LineKind, noteLines } from "./closing-note/render";
 import { numberFindings } from "./document-face";
-import { drawPages, embedFonts, type Face, foldToWinAnsi, type Fonts, LINE_HEIGHT, PAGE, paginate, printable, signedBodyOf, wrap } from "./pdf-layout";
+import {
+  drawPages,
+  embedFonts,
+  type Face,
+  foldToWinAnsi,
+  type Fonts,
+  LINE_HEIGHT,
+  PAGE,
+  paginate,
+  printable,
+  signedBodyOf,
+  wrap,
+} from "./pdf-layout";
 
 export { foldToWinAnsi };
-import { type Attestation, fill, REPORT_SCHEMA, type ReportLabels, type ReportPayload, reportPayload, sha256, signedMessage, type Verification, type VerifyFailure } from "./report";
+import {
+  type Attestation,
+  fill,
+  REPORT_SCHEMA,
+  type ReportLabels,
+  type ReportPayload,
+  reportPayload,
+  sha256,
+  signedMessage,
+  type Verification,
+  type VerifyFailure,
+} from "./report";
 import { type SigningKey } from "./report-key";
 import { SITE_URL } from "./site";
 
@@ -49,7 +72,9 @@ function headerBlocks(payload: ReportPayload, labels: ReportLabels): Block[] {
   // The review note and the contract's non-check are footnotes (the signed PDF is paper: folios, numbered findings, footnotes — design § 3.2).
   const notes = [
     ...(payload.check.reviewStatus ? [block(labels.toReview!, 8, { footnote: 1 })] : []),
-    ...(payload.check.rulesetId === "qc-service-contract" ? [block(labels.notCheckedServiceContract!, 8, { bold: true, footnote: 1 })] : []),
+    ...(payload.check.rulesetId === "qc-service-contract"
+      ? [block(labels.notCheckedServiceContract!, 8, { bold: true, footnote: 1 })]
+      : []),
   ].map((note, i) => ({ ...note, footnote: i + 1 }));
   const marks = notes.map((n) => MARKS[n.footnote! - 1]).join("");
   return [
@@ -57,7 +82,11 @@ function headerBlocks(payload: ReportPayload, labels: ReportLabels): Block[] {
     block(payload.document.title, 18, { bold: true, gap: 6 }),
     block(labels.disclaimer!, 10, { bold: true, gap: 4 }),
     block(labels.languageNote!, 8, { gap: 8 }),
-    block(`${fill(labels.summary!, { failures: payload.summary.blockingFailures, rules: payload.summary.rulesEvaluated })}${marks}`, 10, { gap: 8 }),
+    block(
+      `${fill(labels.summary!, { failures: payload.summary.blockingFailures, rules: payload.summary.rulesEvaluated })}${marks}`,
+      10,
+      { gap: 8 },
+    ),
     ...notes,
   ];
 }
@@ -102,14 +131,18 @@ function findingBlocks(n: number, f: ReportPayload["findings"][number], labels: 
     block(f.explanation, 9),
     block(`${labels.rule}: ${f.ruleId} · ${f.severity}${method}`, 8),
   ];
-  if (f.citation) {blocks.push(block(`${labels.article}: ${f.citation}`, 8));}
+  if (f.citation) {
+    blocks.push(block(`${labels.article}: ${f.citation}`, 8));
+  }
   blocks.push(block(`${labels.passage}: ${passage}`, 8, { gap: 6 }));
   return blocks;
 }
 
 /** The closing note, line by line, in the style of each kind of line. */
 function noteBlocks(note: NonNullable<ReportPayload["note"]>): Block[] {
-  return noteLines(note).map(({ kind, text }) => block(kind === LINE.item ? `- ${text}` : text, NOTE_STYLE[kind].size, NOTE_STYLE[kind]));
+  return noteLines(note).map(({ kind, text }) =>
+    block(kind === LINE.item ? `- ${text}` : text, NOTE_STYLE[kind].size, NOTE_STYLE[kind]),
+  );
 }
 
 /** What the signature guarantees and does not, how to verify, the footer. */
@@ -145,7 +178,11 @@ const inPrintOrder = (blocks: Block[]) => [...blocks.filter((b) => b.footnote), 
 const printedText = (b: Block) => (b.footnote ? `${MARKS[b.footnote - 1]} ${b.text}` : b.text);
 
 /** The text the signature covers: the blocks in print order, printable, with every whitespace removed (wrapping must not matter). The folios are not part of it. */
-export const signedText = (blocks: Block[], font: PDFFont) => inPrintOrder(blocks).map((b) => printable(printedText(b), font)).join("").replace(/\s+/g, "");
+export const signedText = (blocks: Block[], font: PDFFont) =>
+  inPrintOrder(blocks)
+    .map((b) => printable(printedText(b), font))
+    .join("")
+    .replace(/\s+/g, "");
 
 export interface IssuedPdf {
   bytes: Uint8Array;
@@ -155,7 +192,9 @@ export interface IssuedPdf {
 }
 
 const faceOf = (b: Block): Face => {
-  if (b.mono) {return "mono";}
+  if (b.mono) {
+    return "mono";
+  }
   return b.bold ? "bold" : "regular";
 };
 
@@ -164,7 +203,12 @@ export async function issuePdf(payload: ReportPayload, labels: ReportLabels, key
   const doc = await PDFDocument.create();
   const fonts: Fonts = await embedFonts(doc);
   const blocks = reportBlocks(payload, labels);
-  const printable_ = (b: Block) => ({ text: printable(printedText(b), fonts.regular), size: b.size, face: faceOf(b), gap: b.gap ?? 4 });
+  const printable_ = (b: Block) => ({
+    text: printable(printedText(b), fonts.regular),
+    size: b.size,
+    face: faceOf(b),
+    gap: b.gap ?? 4,
+  });
   const width = PAGE.w - PAGE.margin * 2;
 
   // The footnotes sit at the foot of the first page: their height is reserved there, the body flows above it.
@@ -176,8 +220,20 @@ export async function issuePdf(payload: ReportPayload, labels: ReportLabels, key
   // The signature page: after the pages the signature covers, and not part of the signed text.
   const bodySha256 = sha256(signedText(blocks, fonts.regular));
   const signature = crypto.sign(null, signedMessage(payload, bodySha256), key.privateKey).toString("base64");
-  const attestation: Attestation = { schema: REPORT_SCHEMA, algorithm: "Ed25519", keyId: key.keyId, payload, bodySha256, signature };
-  const line = (text: string, size: number, face: Face, gap: number) => ({ text: printable(text, fonts.regular), size, face, gap });
+  const attestation: Attestation = {
+    schema: REPORT_SCHEMA,
+    algorithm: "Ed25519",
+    keyId: key.keyId,
+    payload,
+    bodySha256,
+    signature,
+  };
+  const line = (text: string, size: number, face: Face, gap: number) => ({
+    text: printable(text, fonts.regular),
+    size,
+    face,
+    gap,
+  });
   const [signaturePage] = paginate(
     [
       line(labels.signatureHeading!, 16, "bold", 8),
@@ -212,12 +268,22 @@ export async function issuePdf(payload: ReportPayload, labels: ReportLabels, key
   doc.setCreationDate(finished);
   doc.setModificationDate(finished);
   const info = doc.context.lookup(doc.context.trailerInfo.Info, PDFDict);
-  info.set(PDFName.of(ATTESTATION_KEY), PDFString.of(Buffer.from(JSON.stringify(attestation), "utf8").toString("base64")));
+  info.set(
+    PDFName.of(ATTESTATION_KEY),
+    PDFString.of(Buffer.from(JSON.stringify(attestation), "utf8").toString("base64")),
+  );
   const bytes = await doc.save({ useObjectStreams: false });
   return { bytes, fileSha256: sha256(bytes), attestation };
 }
 
-const attestationSchema = z.object({ schema: z.literal(REPORT_SCHEMA), algorithm: z.literal("Ed25519"), keyId: z.string(), payload: reportPayload, bodySha256: z.string().regex(/^[0-9a-f]{64}$/), signature: z.string() });
+const attestationSchema = z.object({
+  schema: z.literal(REPORT_SCHEMA),
+  algorithm: z.literal("Ed25519"),
+  keyId: z.string(),
+  payload: reportPayload,
+  bodySha256: z.string().regex(/^[0-9a-f]{64}$/),
+  signature: z.string(),
+});
 
 /** The attestation a PDF carries (not checked), or null — never throws on hostile input. */
 export async function attestationOfPdf(bytes: Uint8Array): Promise<Attestation | null> {
@@ -225,7 +291,9 @@ export async function attestationOfPdf(bytes: Uint8Array): Promise<Attestation |
     const doc = await PDFDocument.load(bytes, { updateMetadata: false });
     const info = doc.context.lookup(doc.context.trailerInfo.Info, PDFDict);
     const raw = info.get(PDFName.of(ATTESTATION_KEY));
-    if (!(raw instanceof PDFString)) {return null;}
+    if (!(raw instanceof PDFString)) {
+      return null;
+    }
     return attestationSchema.parse(JSON.parse(Buffer.from(raw.asString(), "base64").toString("utf8"))) as Attestation;
   } catch {
     return null;
@@ -233,14 +301,33 @@ export async function attestationOfPdf(bytes: Uint8Array): Promise<Attestation |
 }
 
 /** Checks a PDF report like `verifyReport` checks an HTML one — signature first, then the text of the pages, then a specimen is refused. */
-export async function verifyPdf(bytes: Uint8Array, key: Pick<SigningKey, "keyId" | "publicKey">, document?: Uint8Array | null): Promise<Verification> {
+export async function verifyPdf(
+  bytes: Uint8Array,
+  key: Pick<SigningKey, "keyId" | "publicKey">,
+  document?: Uint8Array | null,
+): Promise<Verification> {
   const fileSha256 = sha256(bytes);
   const fail = (reason: VerifyFailure): Verification => ({ ok: false, reason, fileSha256 });
-  if (!(bytes.length > 5 && Buffer.from(bytes.subarray(0, 5)).toString("latin1") === "%PDF-")) {return fail("NOT_A_REPORT");}
+  if (!(bytes.length > 5 && Buffer.from(bytes.subarray(0, 5)).toString("latin1") === "%PDF-")) {
+    return fail("NOT_A_REPORT");
+  }
   const attestation = await attestationOfPdf(bytes);
-  if (!attestation) {return fail("UNREADABLE");}
-  if (attestation.keyId !== key.keyId) {return fail("UNKNOWN_KEY");}
-  if (!crypto.verify(null, signedMessage(attestation.payload, attestation.bodySha256), key.publicKey, Buffer.from(attestation.signature, "base64"))) {return fail("BAD_SIGNATURE");}
+  if (!attestation) {
+    return fail("UNREADABLE");
+  }
+  if (attestation.keyId !== key.keyId) {
+    return fail("UNKNOWN_KEY");
+  }
+  if (
+    !crypto.verify(
+      null,
+      signedMessage(attestation.payload, attestation.bodySha256),
+      key.publicKey,
+      Buffer.from(attestation.signature, "base64"),
+    )
+  ) {
+    return fail("BAD_SIGNATURE");
+  }
   // The pages the signature covers: every page but the last (the visible signature page).
   const { extractText, getDocumentProxy } = await import("unpdf");
   let text: string;
@@ -249,13 +336,24 @@ export async function verifyPdf(bytes: Uint8Array, key: Pick<SigningKey, "keyId"
     const pages = (await extractText(pdf, { mergePages: false })).text as string[];
     // Each page starts with its folio (« 2 / 4 »): it must be the right one for its place, and it is not part of what was signed.
     const body = signedBodyOf(pages);
-    if (body === null) {return fail("ALTERED");}
+    if (body === null) {
+      return fail("ALTERED");
+    }
     text = body;
   } catch {
     return fail("UNREADABLE");
   }
-  if (sha256(text) !== attestation.bodySha256) {return fail("ALTERED");}
-  if (attestation.payload.specimen) {return fail("SPECIMEN");}
-  return { ok: true, fileSha256, keyId: attestation.keyId, payload: attestation.payload, documentMatch: document ? sha256(document) === attestation.payload.document.sha256 : null };
+  if (sha256(text) !== attestation.bodySha256) {
+    return fail("ALTERED");
+  }
+  if (attestation.payload.specimen) {
+    return fail("SPECIMEN");
+  }
+  return {
+    ok: true,
+    fileSha256,
+    keyId: attestation.keyId,
+    payload: attestation.payload,
+    documentMatch: document ? sha256(document) === attestation.payload.document.sha256 : null,
+  };
 }
-

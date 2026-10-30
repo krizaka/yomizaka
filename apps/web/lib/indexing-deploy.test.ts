@@ -25,6 +25,8 @@ describe("www.yomizaka.com is indexed (krizaka-com AGENTS §2.4); dev. and admin
   it("the dev app spec sets the stage to dev, at build too (the pages are static); no production spec says otherwise (yomizaka#364)", () => {
     expect(spec).toMatch(/key: APP_ENVIRONMENT, scope: RUN_AND_BUILD_TIME, value: "dev"/);
     // No production spec exists yet: the day one does, it must say `prod`, which hides the notice.
-    expect(readdirSync(join(__dirname, "../../../deploy/digitalocean")).filter((f) => f.startsWith("prod"))).toEqual([]);
+    expect(readdirSync(join(__dirname, "../../../deploy/digitalocean")).filter((f) => f.startsWith("prod"))).toEqual(
+      [],
+    );
   });
 });

@@ -18,7 +18,9 @@ describe("the zip writer (yomizaka#242)", () => {
     const entries = zipEntries(zip)!;
     expect(entries.map((e) => e.name)).toEqual(["lot.csv", "rapports/2-Étienne-fr.pdf"]);
     expect(zipEntryBytes(zip, "lot.csv", 1 << 20)!.toString()).toBe(csv);
-    expect(zipEntryBytes(zip, "rapports/2-Étienne-fr.pdf", 1 << 20)!.toString()).toBe("%PDF-1.7 not compressible: 9f8e7d6c5b4a");
+    expect(zipEntryBytes(zip, "rapports/2-Étienne-fr.pdf", 1 << 20)!.toString()).toBe(
+      "%PDF-1.7 not compressible: 9f8e7d6c5b4a",
+    );
     // the repeated CSV is deflated, the short file is copied as is
     expect(entries[0]!.compressed).toBeLessThan(entries[0]!.uncompressed);
     expect(entries[1]!.compressed).toBe(entries[1]!.uncompressed);

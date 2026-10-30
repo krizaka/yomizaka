@@ -42,7 +42,9 @@ describe("the native menu bar", () => {
 
 group("the Mac's sidebar (yomizaka#319)", () => {
   it("is the section map: Bibliothèque then Vérifications, numbered in the order shown", () => {
-    expect(macSections().map((s) => [s.id, s.shortcut])).toEqual(sectionsFor("mac").map((s, i) => [s.id, `mod+${i + 1}`]));
+    expect(macSections().map((s) => [s.id, s.shortcut])).toEqual(
+      sectionsFor("mac").map((s, i) => [s.id, `mod+${i + 1}`]),
+    );
   });
   it("holds the batches (« Lots ») inside Vérifications, never as a destination of their own", () => {
     expect(macSections().map((s) => s.id)).not.toContain("batches");

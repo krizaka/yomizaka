@@ -16,21 +16,36 @@ import { formatBytes, formatDate } from "./format";
 import { StorageNotice } from "./StorageNotice";
 
 /** pdf.js is loaded on this page only, and its worker is served from this origin (CSP: 'self'). */
-const loadPdfjs = () => import("pdfjs-dist") as unknown as ReturnType<ComponentProps<typeof DocumentViewer>["loadPdfjs"]>;
+const loadPdfjs = () =>
+  import("pdfjs-dist") as unknown as ReturnType<ComponentProps<typeof DocumentViewer>["loadPdfjs"]>;
 const WORKER_SRC = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
 
 /** The document's text, the passages a compliance report quotes marked where they sit. */
 function DocumentText({ text, report }: Readonly<{ text: string; report: ComplianceReport | null }>) {
   const { say } = useSay();
   const parts = useMemo(
-    () => passages(text, (report?.findings ?? []).filter((f) => f.evidenceSpan?.quote).map((f) => ({ id: f.ruleId, quote: f.evidenceSpan!.quote, start: f.evidenceSpan!.start ?? undefined }))),
+    () =>
+      passages(
+        text,
+        (report?.findings ?? [])
+          .filter((f) => f.evidenceSpan?.quote)
+          .map((f) => ({ id: f.ruleId, quote: f.evidenceSpan!.quote, start: f.evidenceSpan!.start ?? undefined })),
+      ),
     [text, report],
   );
   return (
-    <div className="max-h-[70vh] overflow-auto whitespace-pre-wrap rounded-lg border border-border-default bg-surface-1 p-4 text-sm leading-relaxed text-fg-secondary" data-testid="document-text">
+    <div
+      className="max-h-[70vh] overflow-auto whitespace-pre-wrap rounded-lg border border-border-default bg-surface-1 p-4 text-sm leading-relaxed text-fg-secondary"
+      data-testid="document-text"
+    >
       {atOffsets(parts).map((p) =>
         p.mark ? (
-          <mark key={p.at} id={`passage-${p.mark}`} className="ym-passage text-fg" title={say("document.passageOf", { rule: p.mark })}>
+          <mark
+            key={p.at}
+            id={`passage-${p.mark}`}
+            className="ym-passage text-fg"
+            title={say("document.passageOf", { rule: p.mark })}
+          >
             {p.text}
           </mark>
         ) : (
@@ -41,7 +56,13 @@ function DocumentText({ text, report }: Readonly<{ text: string; report: Complia
   );
 }
 
-type ViewerProps = { fileUrl: string; highlights: ComponentProps<typeof DocumentViewer>["highlights"]; activeId: string | null; onActiveChange: (id: string | null) => void; onLocate: (found: Record<string, Located | null>) => void };
+type ViewerProps = {
+  fileUrl: string;
+  highlights: ComponentProps<typeof DocumentViewer>["highlights"];
+  activeId: string | null;
+  onActiveChange: (id: string | null) => void;
+  onLocate: (found: Record<string, Located | null>) => void;
+};
 
 /** The PDF with the findings' passages lit; memoised, so the page's other state (a deletion, a run asked again) never redraws it (yomizaka#110). */
 const PdfViewer = memo(function PdfViewer({ fileUrl, highlights, activeId, onActiveChange, onLocate }: ViewerProps) {
@@ -56,7 +77,14 @@ const PdfViewer = memo(function PdfViewer({ fileUrl, highlights, activeId, onAct
       onActiveChange={onActiveChange}
       onLocate={onLocate}
       className="[--kz-document-viewer-height:72vh]"
-      labels={{ region: say("document.viewerRegion"), loading: say("document.loadingPdf"), failed: say("document.pdfFailed"), page: say("document.pageLabel"), onPage: say("document.onPage"), notFound: say("document.notFound") }}
+      labels={{
+        region: say("document.viewerRegion"),
+        loading: say("document.loadingPdf"),
+        failed: say("document.pdfFailed"),
+        page: say("document.pageLabel"),
+        onPage: say("document.onPage"),
+        notFound: say("document.notFound"),
+      }}
     />
   );
 });
@@ -72,7 +100,14 @@ function FileTechnicalDetails({ sha256 }: Readonly<{ sha256: string }>) {
     <details className="rounded-lg border border-border-default p-3" data-testid="file-technical-details">
       <summary className="cursor-pointer text-sm font-semibold text-fg">{say("document.technical")}</summary>
       <div className="mt-3">
-        <DescriptionList items={[{ term: say("document.fingerprint"), details: <code className="break-all font-mono text-xs">{sha256}</code> }]} />
+        <DescriptionList
+          items={[
+            {
+              term: say("document.fingerprint"),
+              details: <code className="break-all font-mono text-xs">{sha256}</code>,
+            },
+          ]}
+        />
       </div>
     </details>
   );
@@ -93,7 +128,19 @@ function FindingPlace({ title, place, path }: Readonly<{ title: string; place: s
 }
 
 /** The file itself: the PDF viewer, or why it is not there, or its text. */
-function FileContent({ doc, isPdf, report, viewer, viewerRef }: Readonly<{ doc: DocumentView; isPdf: boolean; report: ComplianceReport | null; viewer: ViewerProps; viewerRef: RefObject<HTMLDivElement | null> }>) {
+function FileContent({
+  doc,
+  isPdf,
+  report,
+  viewer,
+  viewerRef,
+}: Readonly<{
+  doc: DocumentView;
+  isPdf: boolean;
+  report: ComplianceReport | null;
+  viewer: ViewerProps;
+  viewerRef: RefObject<HTMLDivElement | null>;
+}>) {
   const { say } = useSay();
   if (doc.purged) return <Alert tone="info">{say("document.where.notKeptText")}</Alert>;
   if (isPdf) {
@@ -107,18 +154,50 @@ function FileContent({ doc, isPdf, report, viewer, viewerRef }: Readonly<{ doc: 
   return <Alert tone="info">{say("document.noText")}</Alert>;
 }
 
-export function DocumentFileTab({ doc, path, isPdf, report, viewer, viewerRef, found, onDelete, deleting }: Readonly<{ doc: DocumentView; path: string; isPdf: boolean; report: ComplianceReport | null; viewer: ViewerProps; viewerRef: RefObject<HTMLDivElement | null>; found: Record<string, Located | null>; onDelete: () => void; deleting: boolean }>) {
+export function DocumentFileTab({
+  doc,
+  path,
+  isPdf,
+  report,
+  viewer,
+  viewerRef,
+  found,
+  onDelete,
+  deleting,
+}: Readonly<{
+  doc: DocumentView;
+  path: string;
+  isPdf: boolean;
+  report: ComplianceReport | null;
+  viewer: ViewerProps;
+  viewerRef: RefObject<HTMLDivElement | null>;
+  found: Record<string, Located | null>;
+  onDelete: () => void;
+  deleting: boolean;
+}>) {
   const { say, locale } = useSay();
   const activeFinding = viewer.activeId ? (report?.findings.find((f) => f.ruleId === viewer.activeId) ?? null) : null;
   const place = viewer.activeId ? placeOf(found[viewer.activeId], say) : null;
   return (
-    <section aria-label={say("document.tabs.document")} className="flex min-w-0 flex-col gap-6" data-testid="tab-document">
-      {activeFinding ? <FindingPlace title={activeFinding.title ?? activeFinding.ruleId} place={place} path={path} /> : null}
+    <section
+      aria-label={say("document.tabs.document")}
+      className="flex min-w-0 flex-col gap-6"
+      data-testid="tab-document"
+    >
+      {activeFinding ? (
+        <FindingPlace title={activeFinding.title ?? activeFinding.ruleId} place={place} path={path} />
+      ) : null}
       <FileContent doc={doc} isPdf={isPdf} report={report} viewer={viewer} viewerRef={viewerRef} />
       {/* A photo becomes an image-only PDF: its text (OCR or vision) is shown under the viewer, where a finding can be found. */}
       {isPdf && !doc.purged && doc.textSource && doc.hasText ? <DocumentText text={doc.text} report={report} /> : null}
       {doc.insight ? <DocumentInsight insight={doc.insight} documentId={doc.id} source={doc.textSource} /> : null}
-      <StorageNotice storage={doc.storage} retainUntil={doc.retainUntil} purged={doc.purged} onDelete={onDelete} deleting={deleting} />
+      <StorageNotice
+        storage={doc.storage}
+        retainUntil={doc.retainUntil}
+        purged={doc.purged}
+        onDelete={onDelete}
+        deleting={deleting}
+      />
       <DescriptionList
         items={[
           { term: say("document.file"), details: doc.filename },

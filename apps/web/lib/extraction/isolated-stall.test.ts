@@ -3,7 +3,12 @@ import { describe, expect, it } from "vitest";
 import { textPdf } from "../test-pdf";
 import { extractPdfText } from "./isolated";
 
-const HEAVY = textPdf(Array.from({ length: 4000 }, (_, i) => `Ligne ${i} du bail, avec assez de texte pour que la lecture prenne du temps.`));
+const HEAVY = textPdf(
+  Array.from(
+    { length: 4000 },
+    (_, i) => `Ligne ${i} du bail, avec assez de texte pour que la lecture prenne du temps.`,
+  ),
+);
 
 /** A runner that deschedules the web process for a moment right after the read started. */
 const stall = (ms: number) => {
@@ -25,13 +30,17 @@ describe("the PDF read under a starved main thread", () => {
     let reading = true;
     const spin = () => {
       turns++;
-      if (reading) {setImmediate(spin);}
+      if (reading) {
+        setImmediate(spin);
+      }
     };
     setImmediate(spin);
     // the test body resumes in the timers phase, as after vitest's own timeout bookkeeping or a runner's sleep
     await new Promise<void>((resolve) => setTimeout(resolve, 0));
     const read = extractPdfText(HEAVY, { timeoutMs: 60_000 });
-    for (let i = 0; i < 5; i++) {await Promise.resolve();} // the job reaches the worker
+    for (let i = 0; i < 5; i++) {
+      await Promise.resolve();
+    } // the job reaches the worker
     stall(30);
     await read;
     reading = false;

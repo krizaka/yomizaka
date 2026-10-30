@@ -7,7 +7,17 @@ import en from "@/messages/en.json";
 import fr from "@/messages/fr.json";
 
 import { decideFlow, seedFlows } from "./flows";
-import { bandOf, DEMO_PROVIDER, effectiveState, itemOf, landlordView, namesOf, SCREENING_STATUS, screeningResult, tenantView } from "./screening";
+import {
+  bandOf,
+  DEMO_PROVIDER,
+  effectiveState,
+  itemOf,
+  landlordView,
+  namesOf,
+  SCREENING_STATUS,
+  screeningResult,
+  tenantView,
+} from "./screening";
 import { demoProvider } from "./screening-checks/providers";
 
 const RETENTION_DAYS = 30; // the seeded rule, passed in: the view never types it
@@ -33,12 +43,19 @@ const row = (over: Record<string, unknown> = {}) => ({
   purged_at: null,
   ...over,
 });
-const result = { band: "no-concern", items: [{ key: "payment-history", outcome: "clear" }], provider: "demo", generatedAt: NOW.toISOString() };
+const result = {
+  band: "no-concern",
+  items: [{ key: "payment-history", outcome: "clear" }],
+  provider: "demo",
+  generatedAt: NOW.toISOString(),
+};
 
 describe("tenant screening — what the law lets a landlord ask (docs/product/tenant-screening-research.md)", () => {
   it("keeps the code free of any criminal-record, SIN or identity-document data", () => {
     expect(JSON.stringify([en.screening, fr.screening])).not.toMatch(/casier judiciaire\s*:?\s*(oui|vérif)/i);
-    const code = readFileSync(join(__dirname, "screening.ts"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+    const code = readFileSync(join(__dirname, "screening.ts"), "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/.*$/gm, "");
     // The code asks for, stores and returns no criminal-record or SIN data: those words do not appear outside comments.
     expect(code).not.toMatch(/criminal|judiciaire|casier|\bsin\b|assurance sociale/i);
   });
@@ -55,24 +72,49 @@ describe("tenant screening — what the law lets a landlord ask (docs/product/te
 
 describe("the consent flow: the tenant decides, sees first, can contest", () => {
   it("shows the landlord NO result until the tenant has passed it on", () => {
-    expect(landlordView(row({ status: SCREENING_STATUS.consented, result, result_expires_at: day(30) }) as never, NOW).result).toBeNull();
-    expect(landlordView(row({ status: SCREENING_STATUS.shared, result, result_expires_at: day(30) }) as never, NOW).result).toMatchObject({ band: "no-concern" });
+    expect(
+      landlordView(row({ status: SCREENING_STATUS.consented, result, result_expires_at: day(30) }) as never, NOW)
+        .result,
+    ).toBeNull();
+    expect(
+      landlordView(row({ status: SCREENING_STATUS.shared, result, result_expires_at: day(30) }) as never, NOW).result,
+    ).toMatchObject({ band: "no-concern" });
   });
   it("never shows a contested result to the landlord, who sees only « contested »", () => {
-    const view = landlordView(row({ status: SCREENING_STATUS.contested, result, result_expires_at: day(30), contest_comment: "faux" }) as never, NOW);
+    const view = landlordView(
+      row({ status: SCREENING_STATUS.contested, result, result_expires_at: day(30), contest_comment: "faux" }) as never,
+      NOW,
+    );
     expect(view.result).toBeNull();
     expect(view.status).toBe("contested");
     expect(JSON.stringify(view)).not.toContain("faux");
   });
   it("shows the tenant their own result as soon as they consented, with who asked and how long it is kept", () => {
-    const view = tenantView(row({ status: SCREENING_STATUS.consented, result, result_expires_at: day(30) }) as never, NOW, undefined, RETENTION_DAYS);
-    expect(view).toMatchObject({ landlord: "proprio@exemple.test", retentionDays: RETENTION_DAYS, demo: true, result: { band: "no-concern" } });
+    const view = tenantView(
+      row({ status: SCREENING_STATUS.consented, result, result_expires_at: day(30) }) as never,
+      NOW,
+      undefined,
+      RETENTION_DAYS,
+    );
+    expect(view).toMatchObject({
+      landlord: "proprio@exemple.test",
+      retentionDays: RETENTION_DAYS,
+      demo: true,
+      result: { band: "no-concern" },
+    });
   });
   it("expires a request nobody answered, and stops showing a result past its retention", () => {
     expect(effectiveState(row({ expires_at: day(-1) }) as never, NOW).status).toBe("expired");
-    expect(effectiveState(row({ status: SCREENING_STATUS.shared, result, result_expires_at: day(-1) }) as never, NOW).resultAlive).toBe(false);
-    expect(landlordView(row({ status: SCREENING_STATUS.shared, result, result_expires_at: day(-1) }) as never, NOW).result).toBeNull();
-    expect(tenantView(row({ status: SCREENING_STATUS.shared, result, result_expires_at: day(-1) }) as never, NOW).result).toBeNull();
+    expect(
+      effectiveState(row({ status: SCREENING_STATUS.shared, result, result_expires_at: day(-1) }) as never, NOW)
+        .resultAlive,
+    ).toBe(false);
+    expect(
+      landlordView(row({ status: SCREENING_STATUS.shared, result, result_expires_at: day(-1) }) as never, NOW).result,
+    ).toBeNull();
+    expect(
+      tenantView(row({ status: SCREENING_STATUS.shared, result, result_expires_at: day(-1) }) as never, NOW).result,
+    ).toBeNull();
   });
 });
 
@@ -85,14 +127,23 @@ describe("minimal data", () => {
   it("the demo provider is fictitious, deterministic, and says so", async () => {
     expect(demoProvider.demo).toBe(true);
     expect(DEMO_PROVIDER).toBe("demo");
-    const call = (lastName: string) => ({ userId: "u", runId: "r", subject: { subjectId: "s", firstName: "A", lastName }, region: "QC" });
+    const call = (lastName: string) => ({
+      userId: "u",
+      runId: "r",
+      subject: { subjectId: "s", firstName: "A", lastName },
+      region: "QC",
+    });
     expect(await demoProvider.submit("COURT_RECORDS", call("Fictif"))).toMatchObject({ outcome: "NO_MATCH" });
-    expect(await demoProvider.submit("COURT_RECORDS", call("Flag"))).toMatchObject({ outcome: "MATCH", category: "TAL_OTHER" });
+    expect(await demoProvider.submit("COURT_RECORDS", call("Flag"))).toMatchObject({
+      outcome: "MATCH",
+      category: "TAL_OTHER",
+    });
   });
 });
 
 describe("every outcome is shown as it stands (yomizaka#132)", () => {
-  const out = (outcome: string, refusal: string | null = null) => itemOf("credit", { outcome, refusal } as never).outcome;
+  const out = (outcome: string, refusal: string | null = null) =>
+    itemOf("credit", { outcome, refusal } as never).outcome;
   it("reads MATCH as « to review » (a file found is not a verdict) and NO_MATCH as clear", () => {
     expect(out("MATCH")).toBe("review");
     expect(out("NO_MATCH")).toBe("clear");
@@ -122,11 +173,22 @@ describe("every outcome is shown as it stands (yomizaka#132)", () => {
 describe("the flow gate: the landlord's undertaking is a consent the flow requires", () => {
   const flows = seedFlows("dev");
   it("refuses until the undertaking is granted, then lets the landlord ask; a tenant is never offered it", () => {
-    expect(decideFlow(flows, "landlord", "tenant-screening", [])).toEqual({ ok: false, code: "CONSENT_REQUIRED", missing: ["screening-landlord-undertaking"] });
-    expect(decideFlow(flows, "landlord", "tenant-screening", ["screening-landlord-undertaking"])).toMatchObject({ ok: true });
-    expect(decideFlow(flows, "tenant", "tenant-screening", ["screening-landlord-undertaking"])).toMatchObject({ ok: false, code: "FLOW_NOT_OFFERED" });
+    expect(decideFlow(flows, "landlord", "tenant-screening", [])).toEqual({
+      ok: false,
+      code: "CONSENT_REQUIRED",
+      missing: ["screening-landlord-undertaking"],
+    });
+    expect(decideFlow(flows, "landlord", "tenant-screening", ["screening-landlord-undertaking"])).toMatchObject({
+      ok: true,
+    });
+    expect(decideFlow(flows, "tenant", "tenant-screening", ["screening-landlord-undertaking"])).toMatchObject({
+      ok: false,
+      code: "FLOW_NOT_OFFERED",
+    });
   });
   it("is dev only (the real providers need contracts): not offered in prod", () => {
-    expect(decideFlow(seedFlows("prod"), "landlord", "tenant-screening", ["screening-landlord-undertaking"])).toMatchObject({ ok: false, code: "FLOW_NOT_OFFERED" });
+    expect(
+      decideFlow(seedFlows("prod"), "landlord", "tenant-screening", ["screening-landlord-undertaking"]),
+    ).toMatchObject({ ok: false, code: "FLOW_NOT_OFFERED" });
   });
 });

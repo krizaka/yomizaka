@@ -20,9 +20,11 @@ export const fieldText = (form: FormData | null, name: string): string => {
 };
 
 /** The stable code an HttpError answers with, or the fallback when its body names none. */
-export const codeOf = (error: HttpError, fallback: string): string => (typeof error.body.code === "string" ? error.body.code : fallback);
+export const codeOf = (error: HttpError, fallback: string): string =>
+  typeof error.body.code === "string" ? error.body.code : fallback;
 
-export const refuse = (status: number, code: string, message: string, extra: Record<string, unknown> = {}) => new HttpError(status, message, { code, ...extra });
+export const refuse = (status: number, code: string, message: string, extra: Record<string, unknown> = {}) =>
+  new HttpError(status, message, { code, ...extra });
 
 /** Runs a route handler: an HttpError becomes its JSON answer; anything else is a 500 that leaks nothing. */
 export async function handle(run: () => Promise<Response>): Promise<Response> {
@@ -38,7 +40,14 @@ export async function handle(run: () => Promise<Response>): Promise<Response> {
 }
 
 /** Reads a JSON body against a schema: a malformed body is a 400 with the field names, never the values. */
-export async function readJson<T>(req: Request, schema: { safeParse: (v: unknown) => { success: true; data: T } | { success: false; error: { issues: { path: PropertyKey[] }[] } } }): Promise<T> {
+export async function readJson<T>(
+  req: Request,
+  schema: {
+    safeParse: (
+      v: unknown,
+    ) => { success: true; data: T } | { success: false; error: { issues: { path: PropertyKey[] }[] } };
+  },
+): Promise<T> {
   let raw: unknown;
   try {
     raw = await req.json();
@@ -46,6 +55,7 @@ export async function readJson<T>(req: Request, schema: { safeParse: (v: unknown
     throw refuse(400, "BAD_REQUEST", "The body is not JSON");
   }
   const parsed = schema.safeParse(raw);
-  if (!parsed.success) throw refuse(400, "BAD_REQUEST", "Invalid body", { fields: parsed.error.issues.map((i) => i.path.join(".")) });
+  if (!parsed.success)
+    throw refuse(400, "BAD_REQUEST", "Invalid body", { fields: parsed.error.issues.map((i) => i.path.join(".")) });
   return parsed.data;
 }

@@ -42,20 +42,34 @@ export function orazakaRefusal(status: number): { status: number; code: string }
 }
 
 /** Whether an installation pinned on this version reads a declared kind (2.x and later; not told: assumed so). */
-export const kindIsRead = (pinnedVersion: string | undefined): boolean => pinnedVersion === undefined || Number.parseInt(pinnedVersion, 10) >= 2;
+export const kindIsRead = (pinnedVersion: string | undefined): boolean =>
+  pinnedVersion === undefined || Number.parseInt(pinnedVersion, 10) >= 2;
 
-export function createOrazakaClient(options: { baseUrl: string; apiKey: string | undefined; fetch?: Fetch; timeoutMs?: number }): OrazakaClient {
+export function createOrazakaClient(options: {
+  baseUrl: string;
+  apiKey: string | undefined;
+  fetch?: Fetch;
+  timeoutMs?: number;
+}): OrazakaClient {
   const doFetch = options.fetch ?? fetch;
   const base = options.baseUrl.replace(/\/$/, "");
   const installed = new Map<string, string | undefined>();
 
-  async function call<T>(path: string, schema: z.ZodType<T>, init: { method?: string; body?: unknown } = {}): Promise<T> {
+  async function call<T>(
+    path: string,
+    schema: z.ZodType<T>,
+    init: { method?: string; body?: unknown } = {},
+  ): Promise<T> {
     if (!options.apiKey) throw refuse(503, "ORAZAKA_NOT_CONFIGURED", "AI_API_KEY is not set");
     let res: Response;
     try {
       res = await doFetch(`${base}${path}`, {
         method: init.method ?? "GET",
-        headers: { authorization: `Bearer ${options.apiKey}`, accept: "application/json", ...(init.body ? { "content-type": "application/json" } : {}) },
+        headers: {
+          authorization: `Bearer ${options.apiKey}`,
+          accept: "application/json",
+          ...(init.body ? { "content-type": "application/json" } : {}),
+        },
         body: init.body ? JSON.stringify(init.body) : undefined,
         signal: AbortSignal.timeout(options.timeoutMs ?? 20_000),
         cache: "no-store",
@@ -66,8 +80,21 @@ export function createOrazakaClient(options: { baseUrl: string; apiKey: string |
     if (!res.ok) {
       const { status, code } = orazakaRefusal(res.status);
       if (res.status === 429) {
-        const wait = Math.min(300, Math.max(1, Number(((await res.json().catch(() => null)) as { retryAfterSeconds?: unknown } | null)?.retryAfterSeconds) || 15));
-        throw new HttpError(status, `Orazaka is busy on ${init.method ?? "GET"} ${path.split("?")[0]}`, { code, retryAfter: wait }, { "Retry-After": String(wait) });
+        const wait = Math.min(
+          300,
+          Math.max(
+            1,
+            Number(
+              ((await res.json().catch(() => null)) as { retryAfterSeconds?: unknown } | null)?.retryAfterSeconds,
+            ) || 15,
+          ),
+        );
+        throw new HttpError(
+          status,
+          `Orazaka is busy on ${init.method ?? "GET"} ${path.split("?")[0]}`,
+          { code, retryAfter: wait },
+          { "Retry-After": String(wait) },
+        );
       }
       throw refuse(status, code, `Orazaka answered ${res.status} on ${init.method ?? "GET"} ${path.split("?")[0]}`);
     }
@@ -80,7 +107,12 @@ export function createOrazakaClient(options: { baseUrl: string; apiKey: string |
   async function ensureInstalled(studio: Studio): Promise<string | undefined> {
     if (installed.has(studio)) return installed.get(studio);
     const mine = await call("/api/v1/studios/installations", z.array(installation));
-    const found = mine.find((i) => i.studioKey === studio) ?? (await call(`/api/v1/studios/${studio}/installations?locale=en`, installation, { method: "POST", body: { config: {} } }));
+    const found =
+      mine.find((i) => i.studioKey === studio) ??
+      (await call(`/api/v1/studios/${studio}/installations?locale=en`, installation, {
+        method: "POST",
+        body: { config: {} },
+      }));
     installed.set(studio, found.pinnedVersion);
     return found.pinnedVersion;
   }
@@ -89,7 +121,12 @@ export function createOrazakaClient(options: { baseUrl: string; apiKey: string |
     async startRun(studio, inputs) {
       const pinned = await ensureInstalled(studio);
       // A kind declared to the Studio (visit notice, état des lieux) is read by compliance-check 2.x only; a 1.x installation would ignore it and judge the document as a lease.
-      if (inputs.declaredKind && !kindIsRead(pinned)) throw refuse(422, "ORAZAKA_STUDIO_OLD", "This Studio's installation is on 1.x: it cannot read this kind of document yet");
+      if (inputs.declaredKind && !kindIsRead(pinned))
+        throw refuse(
+          422,
+          "ORAZAKA_STUDIO_OLD",
+          "This Studio's installation is on 1.x: it cannot read this kind of document yet",
+        );
       return call(`/api/v1/studios/${studio}/runs`, orazakaRun, { method: "POST", body: { inputs } });
     },
     async studios() {
@@ -119,5 +156,8 @@ export function useOrazakaClient(client: OrazakaClient | null) {
 /** The door for external checks (orazaka-ai-engine#105): the shared client with this product's service key, `AI_API_URL` / `AI_API_KEY`. */
 export function checksDoor(): ChecksDoor {
   const env = readEnv();
-  return engineDoor(createSharedClient({ baseUrl: env.AI_API_URL, apiKey: env.AI_API_KEY, clock: systemClock }), standingConsent);
+  return engineDoor(
+    createSharedClient({ baseUrl: env.AI_API_URL, apiKey: env.AI_API_KEY, clock: systemClock }),
+    standingConsent,
+  );
 }

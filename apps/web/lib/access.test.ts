@@ -63,9 +63,14 @@ describe("the session token of a request", () => {
   });
   it("prefers the bearer: an app never replays a stale cookie", () => {
     const other = newToken();
-    expect(sessionTokenOf(new Headers({ authorization: `Bearer ${token}`, cookie: `yomizaka_session=${other}` }))).toBe(token);
+    expect(sessionTokenOf(new Headers({ authorization: `Bearer ${token}`, cookie: `yomizaka_session=${other}` }))).toBe(
+      token,
+    );
   });
-  it.each([[new Headers()], [new Headers({ authorization: "Basic abc" })], [new Headers({ cookie: "other=1" })]])("answers nothing without a session", (headers) => {
-    expect(sessionTokenOf(headers)).toBeUndefined();
-  });
+  it.each([[new Headers()], [new Headers({ authorization: "Basic abc" })], [new Headers({ cookie: "other=1" })]])(
+    "answers nothing without a session",
+    (headers) => {
+      expect(sessionTokenOf(headers)).toBeUndefined();
+    },
+  );
 });

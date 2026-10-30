@@ -20,7 +20,15 @@ export function noteLines(note: ClosingNote): NoteLine[] {
     ...section(note.notChecked.heading, texts(LINE.item, note.notChecked.items)),
     ...(note.reviewPending ? texts(LINE.note, [note.reviewPending]) : []),
     ...section(note.result.heading, texts(LINE.text, [note.result.text])),
-    ...section(note.next.heading, note.next.none ? texts(LINE.text, [note.next.none]) : note.next.items.map((i) => ({ kind: LINE.item, text: `${i.important ? important : ""}${i.problem} ${i.advice}` }))),
+    ...section(
+      note.next.heading,
+      note.next.none
+        ? texts(LINE.text, [note.next.none])
+        : note.next.items.map((i) => ({
+            kind: LINE.item,
+            text: `${i.important ? important : ""}${i.problem} ${i.advice}`,
+          })),
+    ),
     ...section(note.decides.heading, texts(LINE.text, [note.decides.text])),
     ...texts(LINE.note, [note.disclaimer]),
   ];

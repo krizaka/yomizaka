@@ -19,7 +19,8 @@ export type MenuId = (typeof MENU)[number]["id"];
 export const menuItems = () => MENU.filter((m) => isListed(m.page));
 
 /** Where a menu item leads in a language. */
-export const menuHref = (locale: "en" | "fr", item: (typeof MENU)[number]): string => `${pagePath(locale, item.page)}${item.hash}`;
+export const menuHref = (locale: "en" | "fr", item: (typeof MENU)[number]): string =>
+  `${pagePath(locale, item.page)}${item.hash}`;
 
 /** The sign-in page, the bar's action. */
 export const signInPath = (locale: "en" | "fr"): string => `/${locale}/sign-in`;

@@ -14,7 +14,10 @@ import { KIND } from "@/lib/workspace/decl";
 import { workspaceFor } from "@/lib/workspace/service";
 import { asTag, asTags } from "@/lib/workspace/tags";
 
-type Props = { params: Promise<{ locale: string; library?: string; collection?: string; folder?: string }>; searchParams: Promise<{ tags?: string | string[]; kind?: string; status?: string }> };
+type Props = {
+  params: Promise<{ locale: string; library?: string; collection?: string; folder?: string }>;
+  searchParams: Promise<{ tags?: string | string[]; kind?: string; status?: string }>;
+};
 
 /** A collection or a folder, read on the server from the URL: `/app/library/[library]/[collection]/[folder]?tags=`. */
 export async function PlacePage({ params, searchParams }: Readonly<Props>) {
@@ -32,7 +35,9 @@ export async function PlacePage({ params, searchParams }: Readonly<Props>) {
   const workspace = workspaceFor({ clock: systemClock });
   const documentTags = (await workspace.tags.list(owner, KIND.document)).map(asTag);
   const overview = await org.overview(query, owner);
-  const collections = overview.flatMap((l) => l.collections.map((c) => ({ id: c.id, name: c.name, avatar: c.avatar, libraryId: l.id })));
+  const collections = overview.flatMap((l) =>
+    l.collections.map((c) => ({ id: c.id, name: c.name, avatar: c.avatar, libraryId: l.id })),
+  );
   // The account's offer: a dropped file is checked at once only when one jurisdiction is possible (Y4), as on the library's home.
   const jurisdictions = offerFor(await availableFlows(appEnvironment()), session.account.perspective).jurisdictions;
 
@@ -42,7 +47,8 @@ export async function PlacePage({ params, searchParams }: Readonly<Props>) {
   const folder = p.folder ? await org.ownedFolder(query, owner, p.folder).catch(() => null) : undefined;
   if (p.folder && folder?.collection_id !== collection.id) notFound();
   const folders = await org.foldersOf(query, owner, collection.id);
-  const ids = (await org.browse(query, owner, { collectionId: collection.id, folderId: folder?.id, tagIds: selected })).documentIds;
+  const ids = (await org.browse(query, owner, { collectionId: collection.id, folderId: folder?.id, tagIds: selected }))
+    .documentIds;
   const documents = await documentsByIds(owner, ids);
   const byDoc = asTags(await workspace.tags.of(owner, KIND.document, ids));
   const collTags = await org.tagsOf(query, owner, "collection", [collection.id]);
@@ -53,7 +59,12 @@ export async function PlacePage({ params, searchParams }: Readonly<Props>) {
       locale={locale}
       t={t}
       library={{ id: lib.id, name: lib.name }}
-      collection={{ id: collection.id, name: collection.name, isDefault: collection.is_default, avatar: collection.avatar }}
+      collection={{
+        id: collection.id,
+        name: collection.name,
+        isDefault: collection.is_default,
+        avatar: collection.avatar,
+      }}
       folder={folder ? { id: folder.id, name: folder.name } : undefined}
       folders={folders}
       documents={documents}

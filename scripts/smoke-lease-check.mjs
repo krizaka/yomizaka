@@ -18,12 +18,23 @@ export const LEASE_REFS = [
 /** The lease ruleset in force on a day (yyyy-mm-dd), as the UI picks it. Pure. */
 export function leaseRefOn(asOf) {
   let current = null;
-  for (const v of LEASE_REFS) if ((v.effectiveFrom === null || v.effectiveFrom <= asOf) && (current === null || (v.effectiveFrom ?? "") >= (current.effectiveFrom ?? ""))) current = v;
+  for (const v of LEASE_REFS)
+    if (
+      (v.effectiveFrom === null || v.effectiveFrom <= asOf) &&
+      (current === null || (v.effectiveFrom ?? "") >= (current.effectiveFrom ?? ""))
+    )
+      current = v;
   return current.ref;
 }
 
 /** The day in Montréal (the calendar of the law). Pure. */
-export const montrealDay = (now) => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
+export const montrealDay = (now) =>
+  new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Toronto",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -59,14 +70,32 @@ async function waitForAnalysis({ call, token, documentId, first, deadline, now, 
   return analysis;
 }
 
-export async function smokeLeaseCheck({ base, email, password, fetchImpl = fetch, now = () => new Date(), wait = sleep, timeoutMs = 240_000, log = () => {}, onReport = null }) {
+export async function smokeLeaseCheck({
+  base,
+  email,
+  password,
+  fetchImpl = fetch,
+  now = () => new Date(),
+  wait = sleep,
+  timeoutMs = 240_000,
+  log = () => {},
+  onReport = null,
+}) {
   if (!email || !password) throw new Error("SMOKE_EMAIL and SMOKE_PASSWORD are required (the persona)");
   const call = async (path, init = {}, token) => {
-    const res = await fetchImpl(`${base}${path}`, { ...init, headers: { accept: "application/json", ...(token ? { authorization: `Bearer ${token}` } : {}), ...init.headers } });
+    const res = await fetchImpl(`${base}${path}`, {
+      ...init,
+      headers: { accept: "application/json", ...(token ? { authorization: `Bearer ${token}` } : {}), ...init.headers },
+    });
     return { res, body: await res.json().catch(() => null) };
   };
-  const signIn = await call("/api/auth/sign-in", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, password, client: "native" }) });
-  if (!signIn.res.ok || typeof signIn.body?.token !== "string") throw new Error(describeFailure("sign-in", signIn.res.status, signIn.body));
+  const signIn = await call("/api/auth/sign-in", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ email, password, client: "native" }),
+  });
+  if (!signIn.res.ok || typeof signIn.body?.token !== "string")
+    throw new Error(describeFailure("sign-in", signIn.res.status, signIn.body));
   const token = signIn.body.token;
   let documentId = null;
   try {
@@ -81,13 +110,35 @@ export async function smokeLeaseCheck({ base, email, password, fetchImpl = fetch
     const deadline = now().getTime() + timeoutMs;
     await waitForText({ call, token, documentId, deadline, now, wait });
     const asOf = montrealDay(now());
-    const start = await call(`/api/documents/${documentId}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ studio: "compliance-check", jurisdiction: "QC", ruleset: leaseRefOn(asOf), asOf }) }, token);
+    const start = await call(
+      `/api/documents/${documentId}`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ studio: "compliance-check", jurisdiction: "QC", ruleset: leaseRefOn(asOf), asOf }),
+      },
+      token,
+    );
     if (!start.res.ok) throw new Error(describeFailure("start the lease check", start.res.status, start.body));
-    const analysis = await waitForAnalysis({ call, token, documentId, first: start.body.analysis, deadline, now, wait });
+    const analysis = await waitForAnalysis({
+      call,
+      token,
+      documentId,
+      first: start.body.analysis,
+      deadline,
+      now,
+      wait,
+    });
     const report = analysis.report;
-    if (!report || !Array.isArray(report.findings)) throw new Error("the lease check succeeded without a report with findings");
+    if (!report || !Array.isArray(report.findings))
+      throw new Error("the lease check succeeded without a report with findings");
     if (onReport) await onReport({ base, token, documentId, analysisId: analysis.id });
-    return { analysisId: analysis.id, runId: analysis.runId ?? null, findings: report.findings.length, facts: report.facts ? Object.keys(report.facts) : [] };
+    return {
+      analysisId: analysis.id,
+      runId: analysis.runId ?? null,
+      findings: report.findings.length,
+      facts: report.facts ? Object.keys(report.facts) : [],
+    };
   } finally {
     if (documentId) await call(`/api/documents/${documentId}`, { method: "DELETE" }, token).catch(() => {});
   }
@@ -100,8 +151,15 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const i = process.argv.indexOf("--base");
   const base = (i >= 0 ? process.argv[i + 1] : "https://dev.yomizaka.com").replace(/\/$/, "");
   try {
-    const result = await smokeLeaseCheck({ base, email: process.env.SMOKE_EMAIL, password: process.env.SMOKE_PASSWORD, log: console.log });
-    console.log(`lease check on ${plain(base)}: succeeded, ${result.findings} findings, facts [${result.facts.join(", ")}], run ${result.runId}`);
+    const result = await smokeLeaseCheck({
+      base,
+      email: process.env.SMOKE_EMAIL,
+      password: process.env.SMOKE_PASSWORD,
+      log: console.log,
+    });
+    console.log(
+      `lease check on ${plain(base)}: succeeded, ${result.findings} findings, facts [${result.facts.join(", ")}], run ${result.runId}`,
+    );
   } catch (error) {
     console.error(`lease check on ${plain(base)} FAILED: ${plain(error.message)}`);
     process.exitCode = 1;

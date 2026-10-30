@@ -20,7 +20,10 @@ export const party = z
     signedAt: day,
   })
   .strict()
-  .refine((p) => p.name !== undefined || p.userId !== undefined, { message: "A party has a name or an account", path: ["name"] });
+  .refine((p) => p.name !== undefined || p.userId !== undefined, {
+    message: "A party has a name or an account",
+    path: ["name"],
+  });
 
 export const sealRequest = z
   .object({
@@ -34,7 +37,10 @@ export const sealRequest = z
     locale: z.enum(["en", "fr"]).default("fr"),
   })
   .strict()
-  .refine((r) => Buffer.byteLength(canonicalJson(r.contractPayload), "utf8") <= 100_000, { message: "The contract's content is over 100 000 bytes", path: ["contractPayload"] });
+  .refine((r) => Buffer.byteLength(canonicalJson(r.contractPayload), "utf8") <= 100_000, {
+    message: "The contract's content is over 100 000 bytes",
+    path: ["contractPayload"],
+  });
 
 export type SealRequest = z.infer<typeof sealRequest>;
 export type SealParty = z.infer<typeof party>;

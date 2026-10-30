@@ -7,7 +7,16 @@ import { deleteTag, updateTag } from "@/lib/organisation/store";
 
 export const dynamic = "force-dynamic";
 
-export const PATCH = (req: Request, { params }: Params) => act(req, async ({ owner, q }) => ({ tag: await updateTag(q, owner, (await params).id, await readJson(req, z.object({ name: z.string().optional(), color: z.enum(TAG_COLORS).optional() }))) }));
-export const DELETE = (req: Request, { params }: Params) => act(req, async ({ owner, q }) => {
+export const PATCH = (req: Request, { params }: Params) =>
+  act(req, async ({ owner, q }) => ({
+    tag: await updateTag(
+      q,
+      owner,
+      (await params).id,
+      await readJson(req, z.object({ name: z.string().optional(), color: z.enum(TAG_COLORS).optional() })),
+    ),
+  }));
+export const DELETE = (req: Request, { params }: Params) =>
+  act(req, async ({ owner, q }) => {
     await deleteTag(q, owner, (await params).id);
   });

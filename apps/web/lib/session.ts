@@ -53,10 +53,18 @@ export const newToken = sessions.newToken;
 export const isToken = sessions.isToken;
 
 /** The keyed hash of a token (`HMAC-SHA256("session:" + secret)`): also what the mailed links keep instead of their token. */
-export const tokenHash = (token: string, secret = sessionSecret()) => createSessions({ store: memorySessionStore(() => null), clock: systemClock, tokenPrefix: "ys", secret, sessionDays: 1 }).tokenHash(token);
+export const tokenHash = (token: string, secret = sessionSecret()) =>
+  createSessions({
+    store: memorySessionStore(() => null),
+    clock: systemClock,
+    tokenPrefix: "ys",
+    secret,
+    sessionDays: 1,
+  }).tokenHash(token);
 
 export const createSession = sessions.create;
 export const resolveSession = sessions.resolve;
 export const revokeSession = sessions.revoke;
 
-export const sessionCookie = (token: string, expires: Date) => cookieOf(token, expires, { name: SESSION_COOKIE, secure: process.env.NODE_ENV === "production" });
+export const sessionCookie = (token: string, expires: Date) =>
+  cookieOf(token, expires, { name: SESSION_COOKIE, secure: process.env.NODE_ENV === "production" });

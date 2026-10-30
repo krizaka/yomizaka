@@ -18,12 +18,24 @@ describe("the admin screen's draft of a price", () => {
 
   it("starts from the entry as saved, and sends only what changed", () => {
     const draft = draftOf(AGENCY);
-    expect(draft).toEqual({ amount: "59.00", availability: "public", limits: { included: "100", founderCap: "20" }, from: null });
+    expect(draft).toEqual({
+      amount: "59.00",
+      availability: "public",
+      limits: { included: "100", founderCap: "20" },
+      from: null,
+    });
     expect(patchOf(AGENCY, draft)).toEqual({});
     expect(patchOf(AGENCY, { ...draft, amount: "69" })).toEqual({ amountCents: 6900 });
-    expect(patchOf(AGENCY, { ...draft, limits: { ...draft.limits, included: "120" } })).toEqual({ limits: { included: 120, founderCap: 20 } });
+    expect(patchOf(AGENCY, { ...draft, limits: { ...draft.limits, included: "120" } })).toEqual({
+      limits: { included: 120, founderCap: 20 },
+    });
     expect(patchOf(AGENCY, { ...draft, limits: { ...draft.limits, included: "beaucoup" } })).toBeNull();
-    expect(patchOf({ amountCents: null, availability: "internal", limits: {} }, { amount: "", availability: "internal", limits: {}, from: null })).toEqual({});
+    expect(
+      patchOf(
+        { amountCents: null, availability: "internal", limits: {} },
+        { amount: "", availability: "internal", limits: {}, from: null },
+      ),
+    ).toEqual({});
   });
 
   it("a change from today applies now; from a later day, at its start", () => {

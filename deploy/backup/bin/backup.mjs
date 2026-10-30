@@ -11,16 +11,26 @@ let real;
 try {
   real = await realPorts(process.env);
   const { ports } = real;
-  if (!ports.destination.store) throw new BackupError("NO_DESTINATION", "no backup destination: an admin sets a default provider for « backups » (Administration → Storage)");
+  if (!ports.destination.store)
+    throw new BackupError(
+      "NO_DESTINATION",
+      "no backup destination: an admin sets a default provider for « backups » (Administration → Storage)",
+    );
   if (mode === "check") {
     console.log(`fresh: ${await checkFresh(ports.destination.store, environment, ports.clock.now())}`);
   } else {
     const days = Number(process.env.BACKUP_RETENTION_DAYS ?? RETENTION_DAYS);
-    const manifest = await runBackup(ports, { environment, recipient: process.env.BACKUP_AGE_RECIPIENT, retentionDays: days });
+    const manifest = await runBackup(ports, {
+      environment,
+      recipient: process.env.BACKUP_AGE_RECIPIENT,
+      retentionDays: days,
+    });
     console.log(`BACKUP_OK ${manifest.key} ${manifest.bytes} bytes`);
   }
 } catch (error) {
-  console.error(`BACKUP_FAILED ${error instanceof BackupError ? error.code : "UNEXPECTED"} ${error instanceof Error ? error.message : String(error)}`);
+  console.error(
+    `BACKUP_FAILED ${error instanceof BackupError ? error.code : "UNEXPECTED"} ${error instanceof Error ? error.message : String(error)}`,
+  );
   process.exitCode = 1;
 } finally {
   await real?.close().catch(() => {});

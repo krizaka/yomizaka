@@ -45,21 +45,33 @@ export interface SettingRow {
 }
 
 /** Pure: the types an owner may request. An owner's own row wins; without one the type's default applies; a disabled type is never offered. */
-export function allowedTypes(types: readonly CheckTypeRow[], settings: readonly SettingRow[], providers: readonly ProviderRow[]): CheckTypeRow[] {
+export function allowedTypes(
+  types: readonly CheckTypeRow[],
+  settings: readonly SettingRow[],
+  providers: readonly ProviderRow[],
+): CheckTypeRow[] {
   const own = new Map(settings.map((s) => [s.check_type, s.allowed]));
   const live = new Set(providers.filter((p) => p.enabled).map((p) => p.id));
   return types.filter((t) => t.enabled && live.has(t.provider_id) && (own.get(t.key) ?? t.default_on));
 }
 
 /** Pure: the charge of a check — the provider's cost plus the margin, both from the row. */
-export const priceCents = (t: Pick<CheckTypeRow, "provider_cost_cents" | "margin_cents">): number => t.provider_cost_cents + t.margin_cents;
+export const priceCents = (t: Pick<CheckTypeRow, "provider_cost_cents" | "margin_cents">): number =>
+  t.provider_cost_cents + t.margin_cents;
 
-export const loadProviders = () => query<ProviderRow>("SELECT id, adapter, label, region, enabled, note, poll_minutes, poll_max FROM screening_provider ORDER BY id");
+export const loadProviders = () =>
+  query<ProviderRow>(
+    "SELECT id, adapter, label, region, enabled, note, poll_minutes, poll_max FROM screening_provider ORDER BY id",
+  );
 export const loadCheckTypes = () => query<CheckTypeRow>("SELECT * FROM check_type ORDER BY key");
 
 /** The types this owner may request now. */
 export async function allowedFor(ownerId: string): Promise<CheckTypeRow[]> {
-  const [types, providers, settings] = await Promise.all([loadCheckTypes(), loadProviders(), query<SettingRow>("SELECT owner_id, check_type, allowed FROM tenant_check_setting WHERE owner_id = $1", [ownerId])]);
+  const [types, providers, settings] = await Promise.all([
+    loadCheckTypes(),
+    loadProviders(),
+    query<SettingRow>("SELECT owner_id, check_type, allowed FROM tenant_check_setting WHERE owner_id = $1", [ownerId]),
+  ]);
   return allowedTypes(types, settings, providers);
 }
 
@@ -69,7 +81,12 @@ export async function typesByKey(keys: readonly string[]): Promise<CheckTypeRow[
   return query<CheckTypeRow>("SELECT * FROM check_type WHERE key = ANY($1)", [keys]);
 }
 export async function providerById(id: string): Promise<ProviderRow | undefined> {
-  return (await query<ProviderRow>("SELECT id, adapter, label, region, enabled, note, poll_minutes, poll_max FROM screening_provider WHERE id = $1", [id]))[0];
+  return (
+    await query<ProviderRow>(
+      "SELECT id, adapter, label, region, enabled, note, poll_minutes, poll_max FROM screening_provider WHERE id = $1",
+      [id],
+    )
+  )[0];
 }
 
 /** The labels of every check type in one language (data): the pages name a check by its row, never by a message key typed in code. */

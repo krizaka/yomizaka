@@ -27,9 +27,15 @@ export function centsFrom(text: string): number | null | undefined {
   return Number(whole) * 100 + Number(part.padEnd(2, "0"));
 }
 
-const dollars = (cents: number | null) => (cents === null ? "" : `${Math.trunc(cents / 100)}.${String(cents % 100).padStart(2, "0")}`);
+const dollars = (cents: number | null) =>
+  cents === null ? "" : `${Math.trunc(cents / 100)}.${String(cents % 100).padStart(2, "0")}`;
 
-export const draftOf = (e: PriceFields): PriceDraft => ({ amount: dollars(e.amountCents), availability: e.availability, limits: Object.fromEntries(Object.entries(e.limits).map(([k, v]) => [k, String(v)])), from: null });
+export const draftOf = (e: PriceFields): PriceDraft => ({
+  amount: dollars(e.amountCents),
+  availability: e.availability,
+  limits: Object.fromEntries(Object.entries(e.limits).map(([k, v]) => [k, String(v)])),
+  from: null,
+});
 
 /** What changed, as the API's patch — or null when the draft is not valid (an amount or a limit that is not a number). */
 export function patchOf(saved: PriceFields, draft: PriceDraft): Partial<PriceFields> | null {

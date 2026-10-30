@@ -18,17 +18,68 @@ export function GET(req: Request, { params }: { params: Promise<{ id: string; an
     const { id, analysisId } = await params;
     const url = new URL(req.url);
     if (url.searchParams.get("format") === "pdf" && !url.searchParams.get("meta")) {
-      const pdf = await reportPdfFor(session.account.id, id, analysisId, asLocale(url.searchParams.get("lang") ?? undefined));
-      await audit({ action: "report.issued", actorId: session.account.id, actorLabel: session.account.email, targetId: id, detail: { analysisId, format: "pdf", runId: pdf.issued.attestation.payload.check.runId, fileSha256: pdf.issued.fileSha256, keyId: pdf.issued.attestation.keyId }, headers: req.headers });
+      const pdf = await reportPdfFor(
+        session.account.id,
+        id,
+        analysisId,
+        asLocale(url.searchParams.get("lang") ?? undefined),
+      );
+      await audit({
+        action: "report.issued",
+        actorId: session.account.id,
+        actorLabel: session.account.email,
+        targetId: id,
+        detail: {
+          analysisId,
+          format: "pdf",
+          runId: pdf.issued.attestation.payload.check.runId,
+          fileSha256: pdf.issued.fileSha256,
+          keyId: pdf.issued.attestation.keyId,
+        },
+        headers: req.headers,
+      });
       return new Response(new Uint8Array(pdf.issued.bytes), {
-        headers: { "Content-Type": "application/pdf", "Content-Disposition": `attachment; filename="${pdf.filename}"`, "X-Report-SHA256": pdf.issued.fileSha256, "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" },
+        headers: {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `attachment; filename="${pdf.filename}"`,
+          "X-Report-SHA256": pdf.issued.fileSha256,
+          "Cache-Control": "private, no-store",
+          "X-Content-Type-Options": "nosniff",
+        },
       });
     }
-    const { issued, filename } = await reportFor(session.account.id, id, analysisId, asLocale(url.searchParams.get("lang") ?? undefined));
+    const { issued, filename } = await reportFor(
+      session.account.id,
+      id,
+      analysisId,
+      asLocale(url.searchParams.get("lang") ?? undefined),
+    );
     if (url.searchParams.get("meta")) {
-      return Response.json({ report: { fileSha256: issued.fileSha256, keyId: issued.attestation.keyId, filename, lang: issued.attestation.payload.lang }, }, { headers: { "Cache-Control": "private, no-store" } });
+      return Response.json(
+        {
+          report: {
+            fileSha256: issued.fileSha256,
+            keyId: issued.attestation.keyId,
+            filename,
+            lang: issued.attestation.payload.lang,
+          },
+        },
+        { headers: { "Cache-Control": "private, no-store" } },
+      );
     }
-    await audit({ action: "report.issued", actorId: session.account.id, actorLabel: session.account.email, targetId: id, detail: { analysisId, runId: issued.attestation.payload.check.runId, fileSha256: issued.fileSha256, keyId: issued.attestation.keyId }, headers: req.headers });
+    await audit({
+      action: "report.issued",
+      actorId: session.account.id,
+      actorLabel: session.account.email,
+      targetId: id,
+      detail: {
+        analysisId,
+        runId: issued.attestation.payload.check.runId,
+        fileSha256: issued.fileSha256,
+        keyId: issued.attestation.keyId,
+      },
+      headers: req.headers,
+    });
     return new Response(issued.html, {
       headers: {
         "Content-Type": "text/html; charset=utf-8",

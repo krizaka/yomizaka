@@ -23,17 +23,26 @@ const squash = (s: string) => s.replaceAll(/\p{Zs}/gu, "");
 
 describe("no public page advertises a charge the code does not make (#373)", () => {
   it("bills only what the processor sells: a document, a month — never a metered usage", async () => {
-    expect(Object.values(SOLD).map((s) => s.mode).sort()).toEqual(["payment", "subscription", "subscription"]);
+    expect(
+      Object.values(SOLD)
+        .map((s) => s.mode)
+        .sort(),
+    ).toEqual(["payment", "subscription", "subscription"]);
     expect(Object.keys(LIMIT)).toEqual(["included"]);
-    for (const entry of await priceCatalogue(PRICES, memoryPriceStore()).catalogue(NOW)) expect(Object.keys(entry.limits), entry.key).not.toContain("overageCents");
+    for (const entry of await priceCatalogue(PRICES, memoryPriceStore()).catalogue(NOW))
+      expect(Object.keys(entry.limits), entry.key).not.toContain("overageCents");
   });
 
   for (const locale of ["en", "fr"] as const) {
     it(`${locale}: every amount on the pricing page is the price of something sold`, async () => {
       const catalogue = priceCatalogue(PRICES, memoryPriceStore());
       const { sold, soon } = pricingLines(publicCatalogue(await catalogue.catalogue(NOW)), locale);
-      const html = renderToStaticMarkup(PricingContent({ locale, sold, soon, freeFirst: true, status: "x" })).replaceAll(/<[^>]+>/g, " ");
-      const billed = (await catalogue.catalogue(NOW)).filter((e) => Object.values(SOLD).some((s) => s.key === e.key)).map((e) => squash(money(e.amountCents!, locale)));
+      const html = renderToStaticMarkup(
+        PricingContent({ locale, sold, soon, freeFirst: true, status: "x" }),
+      ).replaceAll(/<[^>]+>/g, " ");
+      const billed = (await catalogue.catalogue(NOW))
+        .filter((e) => Object.values(SOLD).some((s) => s.key === e.key))
+        .map((e) => squash(money(e.amountCents!, locale)));
       const shown = (html.match(MONEY) ?? []).map(squash);
       expect(shown.length).toBeGreaterThan(0);
       for (const amount of shown) expect(billed, amount).toContain(amount);
@@ -44,7 +53,9 @@ describe("no public page advertises a charge the code does not make (#373)", () 
     for (const locale of ["en", "fr"] as const) {
       const messages = (await import(`@/messages/${locale}.json`)).default as Record<string, unknown>;
       for (const ns of ["pricing", "landing", "chrome", "terms", "privacy", "download", "docs"]) {
-        expect(JSON.stringify(messages[ns]), `${locale} ${ns}`).not.toMatch(/overage|per verification beyond|surplus|chaque vérification au-delà|par vérification au-delà|vérification supplémentaire/i);
+        expect(JSON.stringify(messages[ns]), `${locale} ${ns}`).not.toMatch(
+          /overage|per verification beyond|surplus|chaque vérification au-delà|par vérification au-delà|vérification supplémentaire/i,
+        );
       }
     }
   });
@@ -63,7 +74,9 @@ describe("no public page advertises a charge the code does not make (#373)", () 
         if (statSync(path).isDirectory()) return name === "node_modules" || name.startsWith(".") ? [] : sources(path);
         return /\.(tsx?|json)$/.test(name) && !/\.test\.tsx?$/.test(name) ? [path] : [];
       });
-    const offenders = ["app", "components", "lib", "messages"].flatMap((d) => sources(join(ROOT, d))).filter((f) => readFileSync(f, "utf8").includes("overageCents"));
+    const offenders = ["app", "components", "lib", "messages"]
+      .flatMap((d) => sources(join(ROOT, d)))
+      .filter((f) => readFileSync(f, "utf8").includes("overageCents"));
     expect(offenders).toEqual([]);
   });
 });

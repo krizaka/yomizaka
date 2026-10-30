@@ -5,8 +5,20 @@ import fr from "@/messages/fr.json";
 
 /** The public copy speaks first to property managers and landlords; tenants stay welcome; the registries are « in preparation » (yomizaka#359). */
 const COPIES = [
-  { name: "fr", m: fr, managers: /gestionnaires d['’]immeubles et (les )?propriétaires/i, tenants: /locataires/i, preparing: /en préparation/i },
-  { name: "en", m: en, managers: /property managers and landlords/i, tenants: /tenants/i, preparing: /in preparation/i },
+  {
+    name: "fr",
+    m: fr,
+    managers: /gestionnaires d['’]immeubles et (les )?propriétaires/i,
+    tenants: /locataires/i,
+    preparing: /en préparation/i,
+  },
+  {
+    name: "en",
+    m: en,
+    managers: /property managers and landlords/i,
+    tenants: /tenants/i,
+    preparing: /in preparation/i,
+  },
 ];
 
 describe.each(COPIES)("the $name home copy", ({ m, managers, tenants, preparing }) => {
@@ -29,6 +41,7 @@ describe.each(COPIES)("the $name home copy", ({ m, managers, tenants, preparing 
     for (const line of [m.landing.what.who, m.landing.lead, m.landing.what.trust]) {
       if (registries.test(line)) expect(line).toMatch(preparing);
     }
-    for (const item of Object.values(m.pricing.soon.items)) expect(`${item.name} ${item.text}`).not.toMatch(/\d\s?\$|\$\s?\d/);
+    for (const item of Object.values(m.pricing.soon.items))
+      expect(`${item.name} ${item.text}`).not.toMatch(/\d\s?\$|\$\s?\d/);
   });
 });

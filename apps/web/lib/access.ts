@@ -1,4 +1,9 @@
-import { ADMIN_REFUSAL, ipAllowed as listed, requireAdmin as adminGate, sessionTokenOf as tokenOf } from "@krizaka/auth";
+import {
+  ADMIN_REFUSAL,
+  ipAllowed as listed,
+  requireAdmin as adminGate,
+  sessionTokenOf as tokenOf,
+} from "@krizaka/auth";
 import { cookies, headers } from "next/headers";
 
 import { clientAddress } from "./client-address";
@@ -18,12 +23,16 @@ export function ipAllowed(requestHeaders: Headers, source: Record<string, string
 }
 
 /** admin.yomizaka.com answers only addresses of AUTH_ALLOWED_IPS, its sign-in page and sign-in call included; the product host is open. */
-export function hostAllowed(requestHeaders: Headers, source: Record<string, string | undefined> = process.env): boolean {
+export function hostAllowed(
+  requestHeaders: Headers,
+  source: Record<string, string | undefined> = process.env,
+): boolean {
   return !isAdminHost(requestHeaders.get("host")) || ipAllowed(requestHeaders, source);
 }
 
 /** The session token of a request: the native apps' `Authorization: Bearer` (which wins), else the web's cookie. */
-export const sessionTokenOf = (requestHeaders: Headers): string | undefined => tokenOf(requestHeaders, { cookie: SESSION_COOKIE });
+export const sessionTokenOf = (requestHeaders: Headers): string | undefined =>
+  tokenOf(requestHeaders, { cookie: SESSION_COOKIE });
 
 /** The API's caller, from the bearer or the session cookie — or 401. */
 export async function requireSession(req: Request): Promise<Session> {
@@ -42,7 +51,12 @@ const REFUSALS: Record<string, string> = {
 
 export async function requireAdmin(req: Request): Promise<Session> {
   const session = await requireSession(req);
-  const decision = adminGate({ session, ip: clientAddress(req.headers), allowedIps: consoleAllowedIps(), surface: "api" });
+  const decision = adminGate({
+    session,
+    ip: clientAddress(req.headers),
+    allowedIps: consoleAllowedIps(),
+    surface: "api",
+  });
   if (!decision.ok) throw refuse(decision.status, decision.code, REFUSALS[decision.code] ?? "Refused");
   return session;
 }
@@ -55,5 +69,7 @@ export async function pageSession(): Promise<Session | null> {
 /** The page's administrator — session, role and address — or null (the page answers 404). */
 export async function pageAdmin(): Promise<Session | null> {
   const session = await pageSession();
-  return adminGate({ session, ip: clientAddress(await headers()), allowedIps: consoleAllowedIps(), surface: "page" }).ok ? session : null;
+  return adminGate({ session, ip: clientAddress(await headers()), allowedIps: consoleAllowedIps(), surface: "page" }).ok
+    ? session
+    : null;
 }

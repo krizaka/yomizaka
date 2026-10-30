@@ -24,7 +24,14 @@ export const POST = (req: Request) =>
       const flow = cloudFlow();
       const revoked = flow && token ? await revokeGrant(flow, name, token) : false;
       await forgetGrant(own, providerId, new Date());
-      await audit({ action: "storage.cloud_disconnected", actorId: owner, actorLabel: s.account.email, targetId: owner, detail: { cloud: connector, revoked }, headers: req.headers });
+      await audit({
+        action: "storage.cloud_disconnected",
+        actorId: owner,
+        actorLabel: s.account.email,
+        targetId: owner,
+        detail: { cloud: connector, revoked },
+        headers: req.headers,
+      });
     }
     return { settings: await saveDisconnected(query, owner, new Date()) };
   });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { readRouteValue, ROUTE_STATES, routeHref,type RouteState } from "./route-state";
+import { readRouteValue, ROUTE_STATES, routeHref, type RouteState } from "./route-state";
 
 type Row = { path: string; state: RouteState<string> };
 const table = Object.entries(ROUTE_STATES) as unknown as [string, Row][];

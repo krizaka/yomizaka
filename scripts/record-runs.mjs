@@ -26,7 +26,11 @@ const STUDIO = "compliance-check";
 async function call(path, init = {}) {
   const res = await fetch(`${base}${path}`, {
     method: init.method ?? "GET",
-    headers: { authorization: `Bearer ${key}`, accept: "application/json", ...(init.body ? { "content-type": "application/json" } : {}) },
+    headers: {
+      authorization: `Bearer ${key}`,
+      accept: "application/json",
+      ...(init.body ? { "content-type": "application/json" } : {}),
+    },
     body: init.body ? JSON.stringify(init.body) : undefined,
   });
   if (!res.ok) throw new Error(`Orazaka answered ${res.status} on ${init.method ?? "GET"} ${path.split("?")[0]}`);
@@ -34,14 +38,20 @@ async function call(path, init = {}) {
 }
 
 const installed = await call("/api/v1/studios/installations");
-if (!installed.some((i) => i.studioKey === STUDIO)) await call(`/api/v1/studios/${STUDIO}/installations?locale=en`, { method: "POST", body: { config: {} } });
+if (!installed.some((i) => i.studioKey === STUDIO))
+  await call(`/api/v1/studios/${STUDIO}/installations?locale=en`, { method: "POST", body: { config: {} } });
 
 const wanted = process.argv.slice(2);
 mkdirSync(OUT, { recursive: true });
 for (const [side, sample] of Object.entries(SAMPLES)) {
   if (wanted.length && !wanted.includes(side)) continue;
   // A sample may name a ruleset of the Studio besides the jurisdiction's lease (the Québec invoice: pack 1.3.0).
-  const inputs = { document: sample.text, jurisdiction: "QC", asOf: localDay(new Date(), LAW_TIME_ZONE), ...(sample.ruleset ? { ruleset: sample.ruleset } : {}) };
+  const inputs = {
+    document: sample.text,
+    jurisdiction: "QC",
+    asOf: localDay(new Date(), LAW_TIME_ZONE),
+    ...(sample.ruleset ? { ruleset: sample.ruleset } : {}),
+  };
   let run = await call(`/api/v1/studios/${STUDIO}/runs`, { method: "POST", body: { inputs } });
   for (let i = 0; i < 90 && !["SUCCEEDED", "FAILED", "CANCELLED"].includes(run.status); i++) {
     await new Promise((r) => setTimeout(r, 2000));
@@ -54,7 +64,11 @@ for (const [side, sample] of Object.entries(SAMPLES)) {
     source: base,
     studio: STUDIO,
     document: { title: sample.title, filename: sample.filename, text: sample.text },
-    inputs: { jurisdiction: inputs.jurisdiction, asOf: inputs.asOf, ...(inputs.ruleset ? { ruleset: inputs.ruleset } : {}) },
+    inputs: {
+      jurisdiction: inputs.jurisdiction,
+      asOf: inputs.asOf,
+      ...(inputs.ruleset ? { ruleset: inputs.ruleset } : {}),
+    },
     run, // exactly as Orazaka returned it (id, status, blueprintVersion, outputs, dates)
   };
   writeFileSync(join(OUT, `${side}.json`), `${JSON.stringify(recording, null, 2)}\n`);

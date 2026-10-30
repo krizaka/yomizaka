@@ -19,7 +19,9 @@ export function ForgotPasswordForm({ minutes }: Readonly<{ minutes: number }>) {
   const { say, locale } = useSay();
   const [problem, setProblem] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
-  const request = useMutation({ mutationFn: (body: { email: string }) => krizakaFetch("/api/auth/forgot-password", { method: "POST", json: body }) });
+  const request = useMutation({
+    mutationFn: (body: { email: string }) => krizakaFetch("/api/auth/forgot-password", { method: "POST", json: body }),
+  });
   const form = forgot.useForm({
     i18n: { t: (key, vars) => say(key, vars as Record<string, string | number> | undefined), locale },
     onSubmit: async (values) => {

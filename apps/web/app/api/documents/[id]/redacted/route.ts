@@ -22,8 +22,22 @@ export function GET(req: Request, { params }: { params: Promise<{ id: string }> 
     const doc = await getDocument(session.account.id, id);
     const lang = asLocale(new URL(req.url).searchParams.get("lang") ?? undefined);
     const body = personalInfo.redact(doc.text, lang);
-    await audit({ action: "document.redacted_exported", actorId: session.account.id, actorLabel: session.account.email, targetId: id, detail: { counts: doc.insight?.pii.counts ?? {} }, headers: req.headers });
+    await audit({
+      action: "document.redacted_exported",
+      actorId: session.account.id,
+      actorLabel: session.account.email,
+      targetId: id,
+      detail: { counts: doc.insight?.pii.counts ?? {} },
+      headers: req.headers,
+    });
     const name = `${doc.filename.replace(/\.[^.]+$/, "")}-caviarde.txt`;
-    return new Response(body, { headers: { "Content-Type": "text/plain; charset=utf-8", "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(name)}`, "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" } });
+    return new Response(body, {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(name)}`,
+        "Cache-Control": "private, no-store",
+        "X-Content-Type-Options": "nosniff",
+      },
+    });
   });
 }

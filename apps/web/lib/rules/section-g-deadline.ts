@@ -59,7 +59,8 @@ const show = (days: number): string => {
   return `${String(y).padStart(4, "0")}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 };
 
-const lastDayOfMonth = (y: number, m: number): number => daysFromCivil(m === 12 ? y + 1 : y, m === 12 ? 1 : m + 1, 1) - daysFromCivil(y, m, 1);
+const lastDayOfMonth = (y: number, m: number): number =>
+  daysFromCivil(m === 12 ? y + 1 : y, m === 12 ? 1 : m + 1, 1) - daysFromCivil(y, m, 1);
 
 /** A real calendar day written `YYYY-MM-DD`, as its day number, or null. */
 function parse(iso: string): number | null {
@@ -81,7 +82,14 @@ export function addMonthsIso(iso: string, months: number): string {
   return show(daysFromCivil(ny, nm, Math.min(d, lastDayOfMonth(ny, nm))));
 }
 
-const noClaim: SectionGDeadline = { state: "no-claim", basis: null, lastDay: null, daysLeft: null, citation: SECTION_G_DEADLINE_SOURCE.citation, sourceUrl: SECTION_G_DEADLINE_SOURCE.url };
+const noClaim: SectionGDeadline = {
+  state: "no-claim",
+  basis: null,
+  lastDay: null,
+  daysLeft: null,
+  citation: SECTION_G_DEADLINE_SOURCE.citation,
+  sourceUrl: SECTION_G_DEADLINE_SOURCE.url,
+};
 
 function lastDayOf(input: SectionGDeadlineInput): { basis: DeadlineBasis; lastDay: string } | null {
   const { notice } = input;
@@ -91,9 +99,13 @@ function lastDayOf(input: SectionGDeadlineInput): { basis: DeadlineBasis; lastDa
       return concluded !== null ? { basis: "ten-days", lastDay: show(concluded + 10) } : null;
     }
     case "not-given":
-      return parse(input.startsOn) ? { basis: "two-months-from-start", lastDay: addMonthsIso(input.startsOn, 2) } : null;
+      return parse(input.startsOn)
+        ? { basis: "two-months-from-start", lastDay: addMonthsIso(input.startsOn, 2) }
+        : null;
     default:
-      return parse(notice.knownOn) ? { basis: "two-months-from-knowledge", lastDay: addMonthsIso(notice.knownOn, 2) } : null;
+      return parse(notice.knownOn)
+        ? { basis: "two-months-from-knowledge", lastDay: addMonthsIso(notice.knownOn, 2) }
+        : null;
   }
 }
 
@@ -108,5 +120,11 @@ export function sectionGDeadline(input: SectionGDeadlineInput): SectionGDeadline
   const last = found ? parse(found.lastDay) : null;
   if (today === null || !found || last === null) return noClaim;
   const daysLeft = last - today;
-  return { ...noClaim, state: stateOf(daysLeft), basis: found.basis, lastDay: found.lastDay, daysLeft: Math.max(daysLeft, 0) };
+  return {
+    ...noClaim,
+    state: stateOf(daysLeft),
+    basis: found.basis,
+    lastDay: found.lastDay,
+    daysLeft: Math.max(daysLeft, 0),
+  };
 }

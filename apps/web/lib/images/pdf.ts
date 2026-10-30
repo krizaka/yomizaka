@@ -1,4 +1,17 @@
-import { beginText, endText, PDFDocument, type PDFFont, type PDFPage, setCharacterSqueeze, setFontAndSize, setTextMatrix, setTextRenderingMode, showText, StandardFonts, TextRenderingMode } from "pdf-lib";
+import {
+  beginText,
+  endText,
+  PDFDocument,
+  type PDFFont,
+  type PDFPage,
+  setCharacterSqueeze,
+  setFontAndSize,
+  setTextMatrix,
+  setTextRenderingMode,
+  showText,
+  StandardFonts,
+  TextRenderingMode,
+} from "pdf-lib";
 
 import type { CleanedPage } from "./port";
 
@@ -13,7 +26,16 @@ export interface PageWord {
 
 /** The text a standard font can draw: anything its encoding lacks becomes a question mark (the layer is for finding, not for reading). */
 function drawable(font: PDFFont, text: string): string {
-  return [...text].map((c) => { try { font.encodeText(c); return c; } catch { return "?"; } }).join("");
+  return [...text]
+    .map((c) => {
+      try {
+        font.encodeText(c);
+        return c;
+      } catch {
+        return "?";
+      }
+    })
+    .join("");
 }
 
 /**
@@ -48,7 +70,10 @@ function addTextLayer(page: PDFPage, font: PDFFont, words: readonly PageWord[], 
  * identifier — so the same photos give the same bytes (and the pre-flight's duplicate check recognises them). Its producer says
  * what it is, so nobody mistakes it for a document someone else issued.
  */
-export async function pagesToPdf(pages: readonly CleanedPage[], words: ReadonlyArray<readonly PageWord[] | undefined> = []): Promise<Uint8Array> {
+export async function pagesToPdf(
+  pages: readonly CleanedPage[],
+  words: ReadonlyArray<readonly PageWord[] | undefined> = [],
+): Promise<Uint8Array> {
   const doc = await PDFDocument.create({ updateMetadata: false });
   doc.setProducer("Yomizaka (photos assembled into one document)");
   doc.setCreator("Yomizaka");

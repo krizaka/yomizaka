@@ -36,7 +36,13 @@ const dir = path.join(outRoot, device);
 mkdirSync(dir, { recursive: true });
 
 const browser = await chromium.launch();
-const base = { viewport: VIEWPORT, deviceScaleFactor: 1, colorScheme: "dark", locale, ...(device === "phone" ? { isMobile: true, hasTouch: true } : {}) };
+const base = {
+  viewport: VIEWPORT,
+  deviceScaleFactor: 1,
+  colorScheme: "dark",
+  locale,
+  ...(device === "phone" ? { isMobile: true, hasTouch: true } : {}),
+};
 
 // Sign in once, off camera: the clips start signed in.
 const auth = await browser.newContext(base);
@@ -75,8 +81,31 @@ async function record(id, act) {
   const ff = (...a) => execFileSync("ffmpeg", ["-y", "-v", "error", ...a], { stdio: "inherit" }); // NOSONAR S4036: a developer-machine script, PATH is the developer's own
   const input = ["-ss", start.toFixed(2), "-t", real.toFixed(2), "-i", raw, "-an", "-vf", vf];
   ff(...input, "-c:v", "libvpx-vp9", "-crf", "34", "-b:v", "0", "-row-mt", "1", path.join(dir, `${id}.webm`));
-  ff(...input, "-c:v", "libx264", "-crf", "24", "-preset", "slow", "-pix_fmt", "yuv420p", "-movflags", "+faststart", path.join(dir, `${id}.mp4`));
-  ff("-ss", (start + real * (marks.poster !== undefined ? (marks.poster - start) / real : 0.9)).toFixed(2), "-i", raw, "-frames:v", "1", "-q:v", "3", path.join(dir, `${id}.jpg`));
+  ff(
+    ...input,
+    "-c:v",
+    "libx264",
+    "-crf",
+    "24",
+    "-preset",
+    "slow",
+    "-pix_fmt",
+    "yuv420p",
+    "-movflags",
+    "+faststart",
+    path.join(dir, `${id}.mp4`),
+  );
+  ff(
+    "-ss",
+    (start + real * (marks.poster !== undefined ? (marks.poster - start) / real : 0.9)).toFixed(2),
+    "-i",
+    raw,
+    "-frames:v",
+    "1",
+    "-q:v",
+    "3",
+    path.join(dir, `${id}.jpg`),
+  );
   evidence.steps[id] = { marks, seconds: +(real / speed).toFixed(1), speed: +speed.toFixed(2) };
   process.stdout.write(`✓ ${device}/${id}: ${(real / speed).toFixed(1)} s (x${speed.toFixed(2)})\n`);
 }
@@ -90,7 +119,11 @@ await record("keep", async (page, mark) => {
   await page.waitForTimeout(1600);
   mark("poster");
   await page.waitForTimeout(800);
-  await page.locator('a[href*="/app/documents/"]').filter({ hasText: /^\s*lease\b/i }).first().click();
+  await page
+    .locator('a[href*="/app/documents/"]')
+    .filter({ hasText: /^\s*lease\b/i })
+    .first()
+    .click();
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(1500);
 });
@@ -99,16 +132,24 @@ await record("keep", async (page, mark) => {
 let documentUrl = "";
 await record("check", async (page, mark) => {
   await page.goto(`${BASE}/${locale}/app`, { waitUntil: "networkidle" });
-  await page.locator('a[href*="/app/documents/"]').filter({ hasText: /^\s*lease\b/i }).first().click();
+  await page
+    .locator('a[href*="/app/documents/"]')
+    .filter({ hasText: /^\s*lease\b/i })
+    .first()
+    .click();
   await page.waitForLoadState("networkidle");
   documentUrl = page.url();
   await page.waitForSelector('[data-testid="orazaka-run-id"]');
   await page.waitForLoadState("networkidle");
   const runIds = () => page.locator('[data-testid="orazaka-run-id"]').allTextContents();
-  const failures = () => page.evaluate(() => (document.body.innerText.match(/NON-COMPLIANT|NON CONFORME/gi) ?? []).length);
+  const failures = () =>
+    page.evaluate(() => (document.body.innerText.match(/NON-COMPLIANT|NON CONFORME/gi) ?? []).length);
   const before = new Set((await runIds()).map((s) => s.trim()));
   const failedBefore = await failures();
-  const form = page.locator("form[aria-label]").filter({ has: page.locator('[name="jurisdiction"], select') }).first();
+  const form = page
+    .locator("form[aria-label]")
+    .filter({ has: page.locator('[name="jurisdiction"], select') })
+    .first();
   await form.scrollIntoViewIfNeeded();
   mark("ready");
   await page.waitForTimeout(1500);
@@ -116,12 +157,19 @@ await record("check", async (page, mark) => {
   mark("run");
   // The new run appears in the list (its id is the trace), polled until Orazaka answers with its findings.
   await page.waitForFunction(
-    (known) => [...document.querySelectorAll('[data-testid="orazaka-run-id"]')].some((el) => !known.includes(el.textContent.trim())),
+    (known) =>
+      [...document.querySelectorAll('[data-testid="orazaka-run-id"]')].some(
+        (el) => !known.includes(el.textContent.trim()),
+      ),
     [...before],
     { timeout: 120_000 },
   );
   const runId = (await runIds()).map((s) => s.trim()).find((id) => !before.has(id));
-  await page.waitForFunction((n) => (document.body.innerText.match(/NON-COMPLIANT|NON CONFORME/gi) ?? []).length > n, failedBefore, { timeout: 240_000 });
+  await page.waitForFunction(
+    (n) => (document.body.innerText.match(/NON-COMPLIANT|NON CONFORME/gi) ?? []).length > n,
+    failedBefore,
+    { timeout: 240_000 },
+  );
   mark("answered");
   evidence.runId = runId;
   evidence.document = documentUrl.replace(/^https?:\/\/[^/]+/, "");

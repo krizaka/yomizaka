@@ -5,7 +5,11 @@ import { CHECK_STAGES, checkDefaults, checkRows, opensAtOnce, reportHref } from 
 /** The check flow's logic (yomizaka#326, P9 of the design direction § 5.4). */
 describe("the defaults, named before the drop (Errata 6)", () => {
   it("say where the file goes, whether it is kept, and which rules apply, in that order", () => {
-    expect(checkDefaults({ keep: false, keepOff: false })).toEqual(["check.defaults.erased", "check.defaults.rules", "check.defaults.place"]);
+    expect(checkDefaults({ keep: false, keepOff: false })).toEqual([
+      "check.defaults.erased",
+      "check.defaults.rules",
+      "check.defaults.place",
+    ]);
     expect(checkDefaults({ keep: true, keepOff: false })[0]).toBe("check.defaults.kept");
     // The owner turned keeping off: the file is erased, whatever the tick says.
     expect(checkDefaults({ keep: true, keepOff: true })[0]).toBe("check.defaults.erased");
@@ -24,7 +28,12 @@ describe("the queue's rows", () => {
     expect(rows.map((r) => r.stage)).toEqual(["reading", "reading", "reading"]);
     rows = checkRows(rows, { type: "outcome", id: "a", outcome: { started: true, refused: null }, requested: "auto" });
     rows = checkRows(rows, { type: "outcome", id: "b", outcome: { started: false, refused: null }, requested: "auto" });
-    rows = checkRows(rows, { type: "outcome", id: "c", outcome: { started: false, refused: "PAYWALL" }, requested: "auto" });
+    rows = checkRows(rows, {
+      type: "outcome",
+      id: "c",
+      outcome: { started: false, refused: "PAYWALL" },
+      requested: "auto",
+    });
     expect(rows.map((r) => [r.id, r.stage, r.refused])).toEqual([
       ["a", "started", null],
       ["b", "asking", null],
@@ -34,11 +43,18 @@ describe("the queue's rows", () => {
     expect(rows.find((r) => r.id === "b")?.stage).toBe("starting");
   });
   it("a kind named in the address that did not start goes to the report tab, which confirms it (never asked twice)", () => {
-    const rows = checkRows(checkRows([], { type: "landed", document: doc("a") }), { type: "outcome", id: "a", outcome: { started: false, refused: null }, requested: "lease" });
+    const rows = checkRows(checkRows([], { type: "landed", document: doc("a") }), {
+      type: "outcome",
+      id: "a",
+      outcome: { started: false, refused: null },
+      requested: "lease",
+    });
     expect(rows[0]?.stage).toBe("started");
   });
   it("a file landing twice (a duplicate) keeps one row", () => {
-    expect(checkRows(checkRows([], { type: "landed", document: doc("a") }), { type: "landed", document: doc("a") })).toHaveLength(1);
+    expect(
+      checkRows(checkRows([], { type: "landed", document: doc("a") }), { type: "landed", document: doc("a") }),
+    ).toHaveLength(1);
   });
 });
 

@@ -13,6 +13,12 @@ export function GET(req: Request, { params }: { params: Promise<{ id: string }> 
     const session = await requireSession(req);
     const id = (await params).id;
     if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such batch");
-    return Response.json({ batch: await advanceBatch(session.account, id, { settings: await settingsFor(session.account.id), now: new Date(), environment: appEnvironment() }) });
+    return Response.json({
+      batch: await advanceBatch(session.account, id, {
+        settings: await settingsFor(session.account.id),
+        now: new Date(),
+        environment: appEnvironment(),
+      }),
+    });
   });
 }

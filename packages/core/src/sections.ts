@@ -28,12 +28,19 @@ export interface Section {
   pending: Partial<Record<Platform, string>>;
 }
 
-const NO_APPLICANT_SCREEN = "the applicant files' list and detail are on the web first (P6); @yomizaka/client has no applications call yet";
-const NO_DOCUMENTS_LIST = "the list of all the documents is on the web first (P14, the B2 shell); the phone and the Mac reach them through the library";
+const NO_APPLICANT_SCREEN =
+  "the applicant files' list and detail are on the web first (P6); @yomizaka/client has no applications call yet";
+const NO_DOCUMENTS_LIST =
+  "the list of all the documents is on the web first (P14, the B2 shell); the phone and the Mac reach them through the library";
 
 export const SECTIONS: readonly Section[] = [
   { id: "library", path: "/app", pending: {} },
-  { id: "files", path: "/app/dossiers", gated: "applicantFiles", pending: { phone: NO_APPLICANT_SCREEN, mac: NO_APPLICANT_SCREEN } },
+  {
+    id: "files",
+    path: "/app/dossiers",
+    gated: "applicantFiles",
+    pending: { phone: NO_APPLICANT_SCREEN, mac: NO_APPLICANT_SCREEN },
+  },
   { id: "documents", path: "/app/documents", pending: { phone: NO_DOCUMENTS_LIST, mac: NO_DOCUMENTS_LIST } },
   { id: "checks", path: "/app/verifications", tabs: CHECKS_TABS, pending: {} },
 ];
@@ -45,6 +52,7 @@ export function sectionsFor(platform: Platform, offer: { applicantFiles?: boolea
 
 /** The keyboard shortcut of the n-th destination shown (0-based): ⌘1 to ⌘4. */
 export function sectionShortcut(index: number): `mod+${number}` {
-  if (!Number.isInteger(index) || index < 0 || index >= SECTION_IDS.length) throw new RangeError(`no shortcut for section ${index}`);
+  if (!Number.isInteger(index) || index < 0 || index >= SECTION_IDS.length)
+    throw new RangeError(`no shortcut for section ${index}`);
   return `mod+${index + 1}`;
 }

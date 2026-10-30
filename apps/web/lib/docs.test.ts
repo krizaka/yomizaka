@@ -31,9 +31,15 @@ describe("/docs", () => {
 
   it("has a section for every operation of the OpenAPI document, and for every webhook", () => {
     const spec = openApiDocument(SITE_URL);
-    const documented = Object.values(spec.paths).flatMap((methods) => Object.values(methods).map((op) => (op as { operationId: string }).operationId));
+    const documented = Object.values(spec.paths).flatMap((methods) =>
+      Object.values(methods).map((op) => (op as { operationId: string }).operationId),
+    );
     expect(documented.length).toBeGreaterThanOrEqual(6);
-    expect(apiOperations().map((o) => o.id).sort()).toEqual([...documented].sort());
+    expect(
+      apiOperations()
+        .map((o) => o.id)
+        .sort(),
+    ).toEqual([...documented].sort());
     for (const locale of LOCALES) {
       const page = html(locale);
       for (const op of apiOperations()) {
@@ -55,14 +61,17 @@ describe("/docs", () => {
     for (const locale of LOCALES) {
       const messages = (await import(`@/messages/${locale}.json`)).default;
       const page = html(locale).replaceAll("&#x27;", "'");
-      for (const line of Object.values(messages.verify.guarantees) as string[]) expect(page).toContain(line.replaceAll("&", "&amp;"));
+      for (const line of Object.values(messages.verify.guarantees) as string[])
+        expect(page).toContain(line.replaceAll("&", "&amp;"));
     }
   });
 
   it("never talks of identity verification, and links to the privacy notice instead of copying it", () => {
     for (const locale of LOCALES) {
       const page = html(locale);
-      expect(page).not.toMatch(/ID verification|identity verification|vérification d'identité|vérification d’identité/i);
+      expect(page).not.toMatch(
+        /ID verification|identity verification|vérification d'identité|vérification d’identité/i,
+      );
       expect(page).toContain(`href="/${locale}/privacy"`);
     }
   });
@@ -70,7 +79,8 @@ describe("/docs", () => {
   it("is in the menu, the footer, the sitemap and llms.txt", () => {
     const nav = readFileSync(join(import.meta.dirname, "nav.ts"), "utf8");
     expect(nav).toContain('page: "docs"');
-    for (const locale of LOCALES) expect(renderToStaticMarkup(SiteFooter({ locale }))).toContain(`href="/${locale}/docs"`);
+    for (const locale of LOCALES)
+      expect(renderToStaticMarkup(SiteFooter({ locale }))).toContain(`href="/${locale}/docs"`);
     const urls = sitemap().map((e) => e.url);
     for (const locale of LOCALES) expect(urls).toContain(`${SITE_URL}/${locale}/docs`);
     expect(llmsText()).toContain(`${SITE_URL}/en/docs`);

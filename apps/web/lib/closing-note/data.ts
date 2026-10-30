@@ -37,11 +37,19 @@ const authenticityPack = z.object({
 export type AuthenticityPack = z.infer<typeof authenticityPack>;
 
 export const templates = z
-  .object({ title: bilingual, headings: z.record(z.string(), bilingual), how: z.array(bilingual), howAuthenticity: z.array(bilingual), source: z.record(z.string(), bilingual) })
+  .object({
+    title: bilingual,
+    headings: z.record(z.string(), bilingual),
+    how: z.array(bilingual),
+    howAuthenticity: z.array(bilingual),
+    source: z.record(z.string(), bilingual),
+  })
   .catchall(z.unknown())
   .parse(templatesJson) as Record<string, Bilingual | Bilingual[] | Record<string, Bilingual>>;
 
-const COMPLIANCE_PACKS = new Map(([lease, invoice, service] as unknown[]).map((raw) => compliancePack.parse(raw)).map((p) => [p.pack, p]));
+const COMPLIANCE_PACKS = new Map(
+  ([lease, invoice, service] as unknown[]).map((raw) => compliancePack.parse(raw)).map((p) => [p.pack, p]),
+);
 export const compliancePackOf = (rulesetId: string): CompliancePack | undefined => COMPLIANCE_PACKS.get(rulesetId);
 export const authenticityData: AuthenticityPack = authenticityPack.parse(authenticity);
 export const allCompliancePacks = (): readonly CompliancePack[] => [...COMPLIANCE_PACKS.values()];

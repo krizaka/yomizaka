@@ -16,13 +16,14 @@ describe("the check's steps on the document page", () => {
     expect(steps).toContain("@yomizaka/core");
     expect(steps).not.toMatch(/<ol\b/);
     const view = read("components/console/DocumentReportTab.tsx");
-    expect(view).toContain("<CheckSteps steps={checkSteps(");
+    expect(view).toMatch(/<CheckSteps\s+steps=\{checkSteps\(/);
   });
 
   it("are named in both languages: the four steps, the rules step per Studio, and the four states", () => {
     for (const messages of [en, fr]) {
       const s = messages.console.steps;
-      for (const key of ["read", "preflight", "report", "label", "working"] as const) expect(s[key].length).toBeGreaterThan(2);
+      for (const key of ["read", "preflight", "report", "label", "working"] as const)
+        expect(s[key].length).toBeGreaterThan(2);
       expect(Object.keys(s.rules).sort()).toEqual(["compliance-check", "document-authenticity"]);
       expect(Object.keys(s.state).sort()).toEqual(["current", "done", "error", "upcoming"]);
     }

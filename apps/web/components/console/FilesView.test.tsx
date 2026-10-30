@@ -10,10 +10,19 @@ import fr from "@/messages/fr.json";
 import { FilesView } from "./FilesView";
 import { askedRows, FileView } from "./FileView";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh() {}, push() {}, replace() {} }), usePathname: () => "/fr/app/dossiers", useSearchParams: () => new URLSearchParams() }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh() {}, push() {}, replace() {} }),
+  usePathname: () => "/fr/app/dossiers",
+  useSearchParams: () => new URLSearchParams(),
+}));
 
 const MESSAGES = { en: { console: en.console }, fr: { console: fr.console } } as const;
-const readable = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ");
+const readable = (html: string) =>
+  html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&#x27;|&#39;/g, "'")
+    .replace(/&[a-z#0-9]+;/gi, " ")
+    .replace(/\s+/g, " ");
 const wrap = (node: React.ReactNode, locale: "en" | "fr" = "fr") =>
   renderToStaticMarkup(
     <I18nProvider locale={locale} messages={MESSAGES[locale] as never}>
@@ -26,11 +35,33 @@ const TYPES = [
   { id: "employment-letter", label: "Lettre d'emploi" },
 ];
 /** Rows as `listApplicantFiles` returns them. */
-const summary = (id: string, name: string, extra: Partial<FileSummary> = {}): FileSummary => ({ id, candidateName: name, status: "open", createdAt: "2026-10-20T14:00:00.000Z", expiresAt: "2026-11-07T15:00:00.000Z", submittedAt: null, closedAt: null, documents: 0, requested: 3, decision: "a_decider", tagIds: [], ...extra });
+const summary = (id: string, name: string, extra: Partial<FileSummary> = {}): FileSummary => ({
+  id,
+  candidateName: name,
+  status: "open",
+  createdAt: "2026-10-20T14:00:00.000Z",
+  expiresAt: "2026-11-07T15:00:00.000Z",
+  submittedAt: null,
+  closedAt: null,
+  documents: 0,
+  requested: 3,
+  decision: "a_decider",
+  tagIds: [],
+  ...extra,
+});
 
 describe("« Dossiers »: the list (P6, yomizaka#323)", () => {
   it("draws a row per file of listApplicantFiles — the applicant, the link in words, the documents in against those asked — each leading to its file", () => {
-    const html = wrap(<FilesView files={[summary("f1", "Camille Fictif", { documents: 2 }), summary("f2", "Noé Imaginaire", { status: "used", submittedAt: "2026-10-22T14:00:00.000Z", documents: 3 })]} types={TYPES} origin="https://www.yomizaka.com" />);
+    const html = wrap(
+      <FilesView
+        files={[
+          summary("f1", "Camille Fictif", { documents: 2 }),
+          summary("f2", "Noé Imaginaire", { status: "used", submittedAt: "2026-10-22T14:00:00.000Z", documents: 3 }),
+        ]}
+        types={TYPES}
+        origin="https://www.yomizaka.com"
+      />,
+    );
     const text = readable(html);
     expect(text).toContain("Camille Fictif");
     expect(text).toContain("Lien ouvert jusqu'au 7 nov. 2026");
@@ -43,9 +74,30 @@ describe("« Dossiers »: the list (P6, yomizaka#323)", () => {
   });
 
   it("says the link's state for every state linkState knows, in both languages", () => {
-    const text = readable(wrap(<FilesView files={[summary("a", "A", { status: "expired" }), summary("b", "B", { status: "revoked" }), summary("c", "C", { status: "closed", closedAt: "2026-10-23T14:00:00.000Z" }), summary("d", "D", { status: "erased" })]} types={TYPES} origin="" />));
-    for (const words of [fr.console.dossiers.link.expired, fr.console.dossiers.link.revoked, "Dossier fermé le 23 oct. 2026", fr.console.dossiers.link.erased]) expect(text).toContain(words);
-    expect(readable(wrap(<FilesView files={[summary("f1", "Camille")]} types={TYPES} origin="" />, "en"))).toContain("Link open until Nov 7, 2026");
+    const text = readable(
+      wrap(
+        <FilesView
+          files={[
+            summary("a", "A", { status: "expired" }),
+            summary("b", "B", { status: "revoked" }),
+            summary("c", "C", { status: "closed", closedAt: "2026-10-23T14:00:00.000Z" }),
+            summary("d", "D", { status: "erased" }),
+          ]}
+          types={TYPES}
+          origin=""
+        />,
+      ),
+    );
+    for (const words of [
+      fr.console.dossiers.link.expired,
+      fr.console.dossiers.link.revoked,
+      "Dossier fermé le 23 oct. 2026",
+      fr.console.dossiers.link.erased,
+    ])
+      expect(text).toContain(words);
+    expect(readable(wrap(<FilesView files={[summary("f1", "Camille")]} types={TYPES} origin="" />, "en"))).toContain(
+      "Link open until Nov 7, 2026",
+    );
   });
 
   it("with no file: the owl, what the list is for, and « Demander des documents »", () => {
@@ -60,12 +112,51 @@ describe("« Dossiers »: the list (P6, yomizaka#323)", () => {
   });
 });
 
-const file = (documents: ApplicantFileView["documents"]): ApplicantFileView => ({ id: "f1", candidateName: "Camille Fictif", candidateEmail: "camille@exemple.test", status: "used", createdAt: "2026-10-20T14:00:00.000Z", expiresAt: "2026-11-07T15:00:00.000Z", requestedTypes: ["pay-stub", "employment-letter"], submittedAt: "2026-10-22T14:00:00.000Z", revokedAt: null, closedAt: null, consents: [], documents });
-const received = { id: "d1", typeId: "pay-stub", filename: "talon-octobre.pdf", sizeBytes: 1000, pages: 1, retention: "after-check", purged: true, skipped: [], checks: [{ id: "a1", studio: "document-authenticity", status: "succeeded", runId: "run_1", blueprintVersion: "1.0.0", inputs: {}, report: { header: null, signals: [{ signalId: "metadata-producer", level: "inhabituel", observation: "x" }] }, error: null, createdAt: "2026-10-22T14:00:00.000Z", finishedAt: "2026-10-22T14:00:05.000Z" }] } as unknown as ApplicantFileView["documents"][number];
+const file = (documents: ApplicantFileView["documents"]): ApplicantFileView => ({
+  id: "f1",
+  candidateName: "Camille Fictif",
+  candidateEmail: "camille@exemple.test",
+  status: "used",
+  createdAt: "2026-10-20T14:00:00.000Z",
+  expiresAt: "2026-11-07T15:00:00.000Z",
+  requestedTypes: ["pay-stub", "employment-letter"],
+  submittedAt: "2026-10-22T14:00:00.000Z",
+  revokedAt: null,
+  closedAt: null,
+  consents: [],
+  documents,
+});
+const received = {
+  id: "d1",
+  typeId: "pay-stub",
+  filename: "talon-octobre.pdf",
+  sizeBytes: 1000,
+  pages: 1,
+  retention: "after-check",
+  purged: true,
+  skipped: [],
+  checks: [
+    {
+      id: "a1",
+      studio: "document-authenticity",
+      status: "succeeded",
+      runId: "run_1",
+      blueprintVersion: "1.0.0",
+      inputs: {},
+      report: { header: null, signals: [{ signalId: "metadata-producer", level: "inhabituel", observation: "x" }] },
+      error: null,
+      createdAt: "2026-10-22T14:00:00.000Z",
+      finishedAt: "2026-10-22T14:00:05.000Z",
+    },
+  ],
+} as unknown as ApplicantFileView["documents"][number];
 
 describe("« Dossiers »: one file (P6)", () => {
   it("lists the documents asked, each with the one received — what becomes of it and its checks — or « Pas encore reçu »", () => {
-    expect(askedRows(file([received])).map((r) => `${r.type}:${r.document?.id ?? "-"}`)).toEqual(["pay-stub:d1", "employment-letter:-"]);
+    expect(askedRows(file([received])).map((r) => `${r.type}:${r.document?.id ?? "-"}`)).toEqual([
+      "pay-stub:d1",
+      "employment-letter:-",
+    ]);
     const html = wrap(<FileView file={file([received])} types={TYPES} />);
     const text = readable(html);
     expect(html.match(/<h1\b/g)).toHaveLength(1);
@@ -90,7 +181,10 @@ describe("« Dossiers »: one file (P6)", () => {
 });
 
 describe("« Dossiers » filtered by the link's state, from the home's figures (yomizaka#325)", () => {
-  const files = [summary("f1", "Camille Fictif"), summary("f2", "Noé Imaginaire", { status: "used", submittedAt: "2026-10-22T14:00:00.000Z" })];
+  const files = [
+    summary("f1", "Camille Fictif"),
+    summary("f2", "Noé Imaginaire", { status: "used", submittedAt: "2026-10-22T14:00:00.000Z" }),
+  ];
   it("lists the files in that state only, says the filter and offers « Tout voir »", () => {
     const html = wrap(<FilesView files={files} states={["used"]} types={TYPES} origin="" />);
     const text = readable(html);

@@ -15,8 +15,14 @@ export function GET(req: Request) {
     const session = await requireSession(req);
     await limit("portal", req, session.account.id);
     const { PAYMENTS_PROVIDER: provider, PAYMENTS_STRIPE_SECRET_KEY: secretKey } = env();
-    const [row] = await query<{ payment_customer_id: string | null }>("SELECT payment_customer_id FROM accounts WHERE id = $1", [session.account.id]);
-    const payments = provider === "stripe" && secretKey && row?.payment_customer_id ? await fetchPaymentHistory(stripeCall({ secretKey }).call, row.payment_customer_id) : [];
+    const [row] = await query<{ payment_customer_id: string | null }>(
+      "SELECT payment_customer_id FROM accounts WHERE id = $1",
+      [session.account.id],
+    );
+    const payments =
+      provider === "stripe" && secretKey && row?.payment_customer_id
+        ? await fetchPaymentHistory(stripeCall({ secretKey }).call, row.payment_customer_id)
+        : [];
     return Response.json({ payments }, { headers: { "Cache-Control": "private, no-store" } });
   });
 }

@@ -5,7 +5,10 @@ import { ThemeProvider } from "@krizaka/ui/theme";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push() {}, replace() {}, refresh() {} }), usePathname: () => "/fr" }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push() {}, replace() {}, refresh() {} }),
+  usePathname: () => "/fr",
+}));
 
 import Home from "@/app/[locale]/page";
 import en from "@/messages/en.json";
@@ -18,7 +21,25 @@ import fr from "@/messages/fr.json";
  */
 const WEB = join(__dirname, "../..");
 /** The public pages and the components they draw: everything outside the app, the console and the administration. */
-const PUBLIC = ["app/[locale]/page.tsx", "app/[locale]/not-found.tsx", "app/[locale]/confirm-email", "app/[locale]/download", "app/[locale]/privacy", "app/[locale]/screening", "app/[locale]/terms", "app/[locale]/(app)/app/verifications/report", "app/[locale]/verify-email", "components/home", "components/screening", "components/BarSession.tsx", "components/ClosingNoteView.tsx", "components/EmailTokenPage.tsx", "components/SiteChrome.tsx", "components/SiteFooter.tsx", "components/VerifyForm.tsx"];
+const PUBLIC = [
+  "app/[locale]/page.tsx",
+  "app/[locale]/not-found.tsx",
+  "app/[locale]/confirm-email",
+  "app/[locale]/download",
+  "app/[locale]/privacy",
+  "app/[locale]/screening",
+  "app/[locale]/terms",
+  "app/[locale]/(app)/app/verifications/report",
+  "app/[locale]/verify-email",
+  "components/home",
+  "components/screening",
+  "components/BarSession.tsx",
+  "components/ClosingNoteView.tsx",
+  "components/EmailTokenPage.tsx",
+  "components/SiteChrome.tsx",
+  "components/SiteFooter.tsx",
+  "components/VerifyForm.tsx",
+];
 
 function sources(path: string): { name: string; source: string }[] {
   const full = join(WEB, path);
@@ -28,7 +49,9 @@ function sources(path: string): { name: string; source: string }[] {
 
 /** The tag each `font-mono` sits on (the nearest `<tag` before it): only `code` and `pre` may carry it. */
 function monoTags(markup: string): string[] {
-  return [...markup.matchAll(/font-mono/g)].map((m) => [...markup.slice(0, m.index).matchAll(/<([a-zA-Z][\w.]*)/g)].pop()?.[1] ?? "(none)");
+  return [...markup.matchAll(/font-mono/g)].map(
+    (m) => [...markup.slice(0, m.index).matchAll(/<([a-zA-Z][\w.]*)/g)].pop()?.[1] ?? "(none)",
+  );
 }
 
 /** The bento's spans, row by row, on its six columns: `sm` 2, `md` 3, `lg` 4. A row left unfilled holds an orphan. */
@@ -47,16 +70,28 @@ describe("the public site, plain (P10)", () => {
   const files = PUBLIC.flatMap(sources);
 
   it("reads the home, the verification page and the public components", () => {
-    for (const name of ["app/[locale]/page.tsx", "app/[locale]/(app)/app/verifications/report/page.tsx", "components/home/BeforeAfter.tsx", "components/SiteChrome.tsx"]) expect(files.map((f) => f.name)).toContain(name);
+    for (const name of [
+      "app/[locale]/page.tsx",
+      "app/[locale]/(app)/app/verifications/report/page.tsx",
+      "components/home/BeforeAfter.tsx",
+      "components/SiteChrome.tsx",
+    ])
+      expect(files.map((f) => f.name)).toContain(name);
   });
 
   it("uses a mono only on code: every font-mono sits on a <code> or a <pre>", () => {
-    const outside = files.flatMap((f) => monoTags(f.source).filter((tag) => tag !== "code" && tag !== "pre").map((tag) => `${f.name} › <${tag}>`));
+    const outside = files.flatMap((f) =>
+      monoTags(f.source)
+        .filter((tag) => tag !== "code" && tag !== "pre")
+        .map((tag) => `${f.name} › <${tag}>`),
+    );
     expect(outside).toEqual([]);
   });
 
   it("never paints text in the margin's red, and sets no eyebrow", () => {
-    expect(files.filter((f) => /paper-rule-margin|kz-eyebrow|text-danger|\beyebrow=/.test(f.source)).map((f) => f.name)).toEqual([]);
+    expect(
+      files.filter((f) => /paper-rule-margin|kz-eyebrow|text-danger|\beyebrow=/.test(f.source)).map((f) => f.name),
+    ).toEqual([]);
   });
 
   it("never draws a Cahier face", () => {
@@ -77,7 +112,9 @@ describe("the public site, plain (P10)", () => {
   });
 
   describe("the home, rendered", async () => {
-    const html = renderToStaticMarkup(<ThemeProvider>{await Home({ params: Promise.resolve({ locale: "fr" }) })}</ThemeProvider>);
+    const html = renderToStaticMarkup(
+      <ThemeProvider>{await Home({ params: Promise.resolve({ locale: "fr" }) })}</ThemeProvider>,
+    );
 
     it("has no eyebrow above the promise and no figures row under the hero", () => {
       expect(html).toContain("kz-hero-title");

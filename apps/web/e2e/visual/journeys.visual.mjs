@@ -37,13 +37,15 @@ async function firstReport(page, { origin }) {
 }
 
 /** The report of the seeded lease whose title holds `words` (Section G on the lease without notice, art. 1904 on the one with illegal clauses; yomizaka#104). */
-const reportTitled = (words) => async (page, { origin }) => {
-  await page.goto(new URL("/fr/app/documents", origin).toString());
-  const href = await page.locator('a[href*="/app/documents/"]', { hasText: words }).first().getAttribute("href");
-  const id = href?.match(/\/app\/documents\/([^/?#]+)/)?.[1];
-  if (!id) throw new Error(`no seeded document titled « ${words} »: is the cast seeded?`);
-  return `/fr/app/documents/${id}/rapport`;
-};
+const reportTitled =
+  (words) =>
+  async (page, { origin }) => {
+    await page.goto(new URL("/fr/app/documents", origin).toString());
+    const href = await page.locator('a[href*="/app/documents/"]', { hasText: words }).first().getAttribute("href");
+    const id = href?.match(/\/app\/documents\/([^/?#]+)/)?.[1];
+    if (!id) throw new Error(`no seeded document titled « ${words} »: is the cast seeded?`);
+    return `/fr/app/documents/${id}/rapport`;
+  };
 
 /** The seeded applicant file, with two figures typed in the rent-share section (information only, in memory). */
 async function firstFile(page, { origin }) {
@@ -64,7 +66,9 @@ async function settleHeaderLive(page) {
 const staysInside = (ruleId) => async (page) => {
   const wide = await page.evaluate((id) => {
     const card = document.getElementById(`finding-${id}`);
-    return card ? card.scrollWidth > card.clientWidth + 1 || document.documentElement.scrollWidth > window.innerWidth : true;
+    return card
+      ? card.scrollWidth > card.clientWidth + 1 || document.documentElement.scrollWidth > window.innerWidth
+      : true;
   }, ruleId);
   expect(wide, `finding ${ruleId} overflows its card`).toBe(false);
 };
@@ -91,7 +95,8 @@ async function expectUniqueIds(page) {
   const duplicates = await page.evaluate(() => {
     const where = (el) => {
       const chain = [];
-      for (let n = el; n && n !== document.body && chain.length < 5; n = n.parentElement) chain.push(`${n.localName}${n.id ? `#${n.id}` : ""}${n.hidden ? "[hidden]" : ""}`);
+      for (let n = el; n && n !== document.body && chain.length < 5; n = n.parentElement)
+        chain.push(`${n.localName}${n.id ? `#${n.id}` : ""}${n.hidden ? "[hidden]" : ""}`);
       return chain.join(" < ");
     };
     const seen = new Map();
@@ -129,11 +134,34 @@ defineJourneyTests({
     { name: "documents", path: "/fr/app/documents", session: true, mask: LIVE },
     { name: "document-report", path: firstReport, session: true, mask: LIVE },
     // The tenant-shield findings in the report (yomizaka#104): Section G with the deadline and the facts for the TAL; the payment clauses (art. 1904).
-    { name: "report-section-g", path: reportTitled("avis du TAL absent"), session: true, ready: async (page) => { await staysInside("TS-G-001")(page); await showFinding("TS-G-001")(page); }, mask: LIVE },
-    { name: "report-payment-clauses", path: reportTitled("clause illégale"), session: true, ready: showFinding("TS-P-001"), mask: LIVE },
+    {
+      name: "report-section-g",
+      path: reportTitled("avis du TAL absent"),
+      session: true,
+      ready: async (page) => {
+        await staysInside("TS-G-001")(page);
+        await showFinding("TS-G-001")(page);
+      },
+      mask: LIVE,
+    },
+    {
+      name: "report-payment-clauses",
+      path: reportTitled("clause illégale"),
+      session: true,
+      ready: showFinding("TS-P-001"),
+      mask: LIVE,
+    },
     { name: "file-rent-share", path: firstFile, session: true, ready: typeRentShare, mask: LIVE },
     // The first paint of a signed-in page: the HTML the server sent, and the hydrated page while the account query is pending (krizaka-ui#827).
     { name: "app-home", path: "/fr/app", session: true, firstPaint: true, viewports: ["phone"], mask: LIVE },
-    { name: "app-home-pending", path: "/fr/app", session: true, firstPaint: { hold: ["**/api/me"] }, ready: settleHeaderLive, viewports: ["phone"], mask: LIVE },
+    {
+      name: "app-home-pending",
+      path: "/fr/app",
+      session: true,
+      firstPaint: { hold: ["**/api/me"] },
+      ready: settleHeaderLive,
+      viewports: ["phone"],
+      mask: LIVE,
+    },
   ].map(withSettledDom),
 });

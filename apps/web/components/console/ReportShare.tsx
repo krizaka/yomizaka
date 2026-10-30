@@ -15,7 +15,15 @@ import { useSay } from "@/lib/i18n-client";
 import { formatDate } from "./format";
 
 const sharing = z.object({
-  grants: z.array(z.object({ id: z.string(), email: z.string(), status: z.enum(["member", "invited", "expired", "revoked"]), createdAt: z.string(), expiresAt: z.string().nullable() })),
+  grants: z.array(
+    z.object({
+      id: z.string(),
+      email: z.string(),
+      status: z.enum(["member", "invited", "expired", "revoked"]),
+      createdAt: z.string(),
+      expiresAt: z.string().nullable(),
+    }),
+  ),
   requests: z.array(z.object({ id: z.string(), email: z.string(), createdAt: z.string() })),
 });
 
@@ -39,14 +47,24 @@ export function ReportShare({ documentId, analysisId }: Readonly<{ documentId: s
   const [problem, setProblem] = useState<string | null>(null);
   const list = useQuery({ queryKey: key, queryFn: () => krizakaFetch(base, { schema: sharing }) });
   const refresh = () => client.invalidateQueries({ queryKey: key });
-  const add = useMutation({ mutationFn: (body: { email: string; expiresAt: string | null }) => krizakaFetch(base, { method: "POST", json: body }), onSuccess: refresh });
-  const revoke = useMutation({ mutationFn: (grantId: string) => krizakaFetch(`${base}/${grantId}`, { method: "DELETE" }), onSuccess: refresh });
+  const add = useMutation({
+    mutationFn: (body: { email: string; expiresAt: string | null }) =>
+      krizakaFetch(base, { method: "POST", json: body }),
+    onSuccess: refresh,
+  });
+  const revoke = useMutation({
+    mutationFn: (grantId: string) => krizakaFetch(`${base}/${grantId}`, { method: "DELETE" }),
+    onSuccess: refresh,
+  });
   const form = share.useForm({
     i18n: { t: (k, vars) => say(k, vars as Record<string, string | number> | undefined), locale },
     onSubmit: async (values) => {
       setProblem(null);
       try {
-        await add.mutateAsync({ email: values.email, expiresAt: values.until ? new Date(`${values.until}T23:59:59`).toISOString() : null });
+        await add.mutateAsync({
+          email: values.email,
+          expiresAt: values.until ? new Date(`${values.until}T23:59:59`).toISOString() : null,
+        });
       } catch (error) {
         setProblem(say(`errors.${errorKey(error)}`));
       }
@@ -82,19 +100,24 @@ export function ReportShare({ documentId, analysisId }: Readonly<{ documentId: s
       <form.Form aria-label={say("share.title")} className="flex flex-col gap-3 sm:flex-row sm:items-end">
         <form.TextField name="email" label={say("share.email")} type="email" autoComplete="off" />
         <form.DateField name="until" label={say("share.until")} />
-        <form.Submit size="md">
-          {say("share.submit")}
-        </form.Submit>
+        <form.Submit size="md">{say("share.submit")}</form.Submit>
       </form.Form>
       {problem ? <Alert tone="danger">{problem}</Alert> : null}
       {live.length === 0 && list.data ? <p className="text-xs text-fg-muted">{say("share.none")}</p> : null}
       <ul className="flex flex-col gap-2">
         {(list.data?.grants ?? []).map((g) => (
-          <li key={g.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border-default bg-surface-1 p-2 text-sm">
+          <li
+            key={g.id}
+            className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border-default bg-surface-1 p-2 text-sm"
+          >
             <span className="flex flex-wrap items-center gap-2">
               <span className="break-all">{g.email}</span>
               <Badge tone={TONE[g.status]}>{say(`share.status.${g.status}`)}</Badge>
-              {g.expiresAt ? <span className="text-xs text-fg-muted">{say("share.until")} {formatDate(g.expiresAt, locale)}</span> : null}
+              {g.expiresAt ? (
+                <span className="text-xs text-fg-muted">
+                  {say("share.until")} {formatDate(g.expiresAt, locale)}
+                </span>
+              ) : null}
             </span>
             {g.status === "member" || g.status === "invited" ? (
               <Button size="sm" variant="ghost" onClick={() => revoke.mutate(g.id)}>

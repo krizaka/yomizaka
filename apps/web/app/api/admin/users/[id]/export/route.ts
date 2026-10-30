@@ -10,6 +10,12 @@ export function GET(req: Request, { params }: { params: Promise<{ id: string }> 
     const session = await requireAdmin(req);
     const { id } = await params;
     const data = await exportAccount(session.account, id, req.headers);
-    return new Response(JSON.stringify(data, null, 2), { headers: { "Content-Type": "application/json; charset=utf-8", "Content-Disposition": `attachment; filename="yomizaka-account-${id}.json"`, "Cache-Control": "no-store" } });
+    return new Response(JSON.stringify(data, null, 2), {
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Content-Disposition": `attachment; filename="yomizaka-account-${id}.json"`,
+        "Cache-Control": "no-store",
+      },
+    });
   });
 }

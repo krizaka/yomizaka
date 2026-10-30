@@ -11,7 +11,13 @@
 // The offer: code LANCEMENT, -50 % for 3 months on Agence and Gestionnaire, once per account, ending 3 months after today.
 import { pathToFileURL } from "node:url";
 
-export const OFFER = { code: "LANCEMENT", percentOffBp: 5000, durationMonths: 3, plans: ["agency", "firm"], endsInMonths: 3 };
+export const OFFER = {
+  code: "LANCEMENT",
+  percentOffBp: 5000,
+  durationMonths: 3,
+  plans: ["agency", "firm"],
+  endsInMonths: 3,
+};
 
 /** `date` plus `months` calendar months, in UTC (the 31st of a short month lands on its last day). */
 export function addMonths(date, months) {
@@ -44,12 +50,17 @@ export function offerBody(now) {
 export function assertNotProductionBase(base) {
   const host = new URL(base).hostname;
   const local = ["localhost", "127.0.0.1", "admin.localhost"].includes(host) || host.endsWith(".localhost");
-  if (!local && !/(^|\.)dev\./.test(host) && !host.startsWith("admin.yomizaka.")) throw new Error(`refused: ${host} is not dev or local`);
-  if (host === "yomizaka.com" || host === "www.yomizaka.com") throw new Error("refused: production belongs to the founder");
+  if (!local && !/(^|\.)dev\./.test(host) && !host.startsWith("admin.yomizaka."))
+    throw new Error(`refused: ${host} is not dev or local`);
+  if (host === "yomizaka.com" || host === "www.yomizaka.com")
+    throw new Error("refused: production belongs to the founder");
 }
 
 async function call(base, token, path, init = {}) {
-  const res = await fetch(`${base}${path}`, { ...init, headers: { "content-type": "application/json", authorization: `Bearer ${token}`, ...init.headers } });
+  const res = await fetch(`${base}${path}`, {
+    ...init,
+    headers: { "content-type": "application/json", authorization: `Bearer ${token}`, ...init.headers },
+  });
   const text = await res.text();
   if (!res.ok) throw new Error(`${init.method ?? "GET"} ${path} -> ${res.status} ${text.slice(0, 200)}`);
   return text ? JSON.parse(text) : {};
@@ -57,18 +68,33 @@ async function call(base, token, path, init = {}) {
 
 export async function run({ base, email, password, now = new Date() }) {
   assertNotProductionBase(base);
-  const signIn = await fetch(`${base}/api/auth/sign-in`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, password, client: "native" }) });
+  const signIn = await fetch(`${base}/api/auth/sign-in`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ email, password, client: "native" }),
+  });
   if (!signIn.ok) throw new Error(`sign-in -> ${signIn.status} (an address of AUTH_ALLOWED_IPS is needed)`);
   const { token } = await signIn.json();
   const list = await call(base, token, "/api/admin/coupons?limit=200");
   const existing = (list.coupons?.items ?? list.coupons ?? []).find?.((c) => c.code?.toUpperCase() === OFFER.code);
-  const created = existing ? null : await call(base, token, "/api/admin/coupons", { method: "POST", body: JSON.stringify(offerBody(now)) });
-  console.log(existing ? `coupon ${OFFER.code}: already there` : `coupon ${OFFER.code}: created, ends ${created.coupon.endsAt ?? "?"}`);
+  const created = existing
+    ? null
+    : await call(base, token, "/api/admin/coupons", { method: "POST", body: JSON.stringify(offerBody(now)) });
+  console.log(
+    existing
+      ? `coupon ${OFFER.code}: already there`
+      : `coupon ${OFFER.code}: created, ends ${created.coupon.endsAt ?? "?"}`,
+  );
   try {
-    await call(base, token, "/api/admin/settings", { method: "PUT", body: JSON.stringify({ scope: "global", key: "pricing.announcedCode", value: OFFER.code }) });
+    await call(base, token, "/api/admin/settings", {
+      method: "PUT",
+      body: JSON.stringify({ scope: "global", key: "pricing.announcedCode", value: OFFER.code }),
+    });
     console.log(`setting pricing.announcedCode = ${OFFER.code}`);
   } catch {
-    console.log(`setting pricing.announcedCode NOT set — the app must run the build that declares it (#550); run this again`);
+    console.log(
+      `setting pricing.announcedCode NOT set — the app must run the build that declares it (#550); run this again`,
+    );
   }
 }
 
@@ -77,6 +103,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
   const base = i >= 0 ? process.argv[i + 1] : "";
   const email = process.env.QA_ADMIN_EMAIL ?? process.env.APP_DEMO_ADMIN_EMAIL;
   const password = process.env.QA_ADMIN_PASSWORD ?? process.env.APP_DEMO_ADMIN_PASSWORD;
-  if (!base || !email || !password) throw new Error("usage: QA_ADMIN_EMAIL=… QA_ADMIN_PASSWORD=… node scripts/launch-offer.mjs --base <admin url>");
+  if (!base || !email || !password)
+    throw new Error("usage: QA_ADMIN_EMAIL=… QA_ADMIN_PASSWORD=… node scripts/launch-offer.mjs --base <admin url>");
   await run({ base, email, password });
 }

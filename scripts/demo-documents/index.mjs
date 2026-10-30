@@ -28,7 +28,16 @@ export async function writeAll(dir, seed = DEFAULT_SEED) {
   await mkdir(dir, { recursive: true });
   const all = await generateAll(seed);
   for (const doc of all) await writeFile(join(dir, doc.filename), doc.bytes);
-  const manifest = all.map(({ id, filename, family, kind, flaw, title, sha256, findings }) => ({ id, filename, family, kind, flaw, title, sha256, findings }));
+  const manifest = all.map(({ id, filename, family, kind, flaw, title, sha256, findings }) => ({
+    id,
+    filename,
+    family,
+    kind,
+    flaw,
+    title,
+    sha256,
+    findings,
+  }));
   await writeFile(join(dir, "findings.json"), `${JSON.stringify(manifest, null, 2)}\n`);
   return all;
 }

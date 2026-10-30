@@ -9,9 +9,17 @@ import NotFound from "./not-found";
 
 const nav = vi.hoisted(() => ({ locale: "fr", host: "www.yomizaka.com" }));
 vi.mock("next/headers", () => ({ headers: async () => new Headers({ "x-locale": nav.locale, host: nav.host }) }));
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push() {}, replace() {}, refresh() {} }), usePathname: () => "/fr/nope" }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push() {}, replace() {}, refresh() {} }),
+  usePathname: () => "/fr/nope",
+}));
 
-const readable = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ");
+const readable = (html: string) =>
+  html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&#x27;|&#39;/g, "'")
+    .replace(/&[a-z#0-9]+;/gi, " ")
+    .replace(/\s+/g, " ");
 
 describe("the 404 (the UX review's Y10)", () => {
   it("is the owl's page in the language of the address, with one h1 and the ways back: the library first, then the home", async () => {

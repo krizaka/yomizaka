@@ -3,21 +3,47 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { resetRateLimits } from "../limits";
 
-const state = vi.hoisted(() => ({ session: null as null | { id: string; account: { id: string; email: string; perspective: null; role: "USER"; locale: "fr"; name: null; avatarSeed: null } }, service: {} as Record<string, unknown>, mail: true }));
+const state = vi.hoisted(() => ({
+  session: null as null | {
+    id: string;
+    account: { id: string; email: string; perspective: null; role: "USER"; locale: "fr"; name: null; avatarSeed: null };
+  },
+  service: {} as Record<string, unknown>,
+  mail: true,
+}));
 
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => undefined, delete: () => undefined }) }));
-vi.mock("../session", async (orig) => ({ ...(await orig<typeof import("../session")>()), resolveSession: async () => state.session }));
+vi.mock("../session", async (orig) => ({
+  ...(await orig<typeof import("../session")>()),
+  resolveSession: async () => state.session,
+}));
 vi.mock("../audit", () => ({ audit: async () => undefined, trail: { record: async () => undefined } }));
 vi.mock("../db", () => ({ query: async () => [] }));
 vi.mock("@/app/accounts-edge", () => ({ accountService: () => state.service, mailConfigured: () => state.mail }));
 
-const json = (method: string, body?: unknown) => new Request("https://dev.yomizaka.com/x", { method, body: body === undefined ? undefined : JSON.stringify(body), headers: { "x-forwarded-for": "203.0.113.11", "content-type": "application/json" } });
+const json = (method: string, body?: unknown) =>
+  new Request("https://dev.yomizaka.com/x", {
+    method,
+    body: body === undefined ? undefined : JSON.stringify(body),
+    headers: { "x-forwarded-for": "203.0.113.11", "content-type": "application/json" },
+  });
 
 beforeEach(() => {
   resetRateLimits();
   state.mail = true;
   state.service = {};
-  state.session = { id: "s1", account: { id: "22222222-2222-4222-8222-222222222222", email: "eric@yomizaka.test", perspective: null, role: "USER", locale: "fr", name: null, avatarSeed: null } };
+  state.session = {
+    id: "s1",
+    account: {
+      id: "22222222-2222-4222-8222-222222222222",
+      email: "eric@yomizaka.test",
+      perspective: null,
+      role: "USER",
+      locale: "fr",
+      name: null,
+      avatarSeed: null,
+    },
+  };
 });
 
 describe("the account routes", () => {

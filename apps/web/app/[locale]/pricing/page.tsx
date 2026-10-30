@@ -32,18 +32,35 @@ export default async function Pricing({ params }: Readonly<{ params: Promise<{ l
   if (!PRICING_PUBLISHED) notFound();
   const locale = asLocale((await params).locale);
   const now = new Date();
-  const [prices, freeFirst, announced] = await Promise.all([appPrices().catalogue(now), appSettings().get("audit.freeFirst"), appSettings().get("pricing.announcedCode")]);
+  const [prices, freeFirst, announced] = await Promise.all([
+    appPrices().catalogue(now),
+    appSettings().get("audit.freeFirst"),
+    appSettings().get("pricing.announcedCode"),
+  ]);
   const publicPrices = publicCatalogue(prices);
   const { sold, soon } = pricingLines(publicPrices, locale);
   const offer = announced ? await activeLaunchOffer(query, announced, now) : null;
-  const subscriptions = publicPrices.flatMap((p) => ((p.unit === "month" || p.unit === "year") && p.amountCents !== null ? [{ plan: p.plan, amountCents: p.amountCents }] : []));
-  const launch = offer ? offerLines(offer, offerPrices(offer, subscriptions), locale, getDictionary(locale).pricing.offer, format) : undefined;
+  const subscriptions = publicPrices.flatMap((p) =>
+    (p.unit === "month" || p.unit === "year") && p.amountCents !== null
+      ? [{ plan: p.plan, amountCents: p.amountCents }]
+      : [],
+  );
+  const launch = offer
+    ? offerLines(offer, offerPrices(offer, subscriptions), locale, getDictionary(locale).pricing.offer, format)
+    : undefined;
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
       <SiteHeader locale={locale} current="pricing" />
       <main id="content">
-        <PricingContent locale={locale} sold={sold} soon={soon} freeFirst={freeFirst === true} launch={launch} status={getDictionary(locale).landing.status[productStatus(preview)]} />
+        <PricingContent
+          locale={locale}
+          sold={sold}
+          soon={soon}
+          freeFirst={freeFirst === true}
+          launch={launch}
+          status={getDictionary(locale).landing.status[productStatus(preview)]}
+        />
       </main>
       <SiteFooter locale={locale} />
     </>

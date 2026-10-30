@@ -9,7 +9,12 @@ import type { CheckCall, CheckPurpose } from "./model";
  * (a `fetch` that answers the door's JSON), and the adapter reads the answers 1:1 into the screening's vocabulary.
  */
 const NOW = { now: () => new Date("2026-10-27T12:00:00Z") };
-const CALL: CheckCall = { userId: "landlord-1", runId: "run-1", subject: { subjectId: "scr-1", firstName: "Ariane", lastName: "Tremblay" }, region: "QC" };
+const CALL: CheckCall = {
+  userId: "landlord-1",
+  runId: "run-1",
+  subject: { subjectId: "scr-1", firstName: "Ariane", lastName: "Tremblay" },
+  region: "QC",
+};
 
 interface Seen {
   method: string;
@@ -22,21 +27,52 @@ function fakeOrazaka(answers: Array<{ status?: number; body: unknown } | "down">
   const seen: Seen[] = [];
   const fetch = (async (url: string, init: RequestInit) => {
     const u = new URL(url);
-    seen.push({ method: init.method ?? "GET", path: u.pathname + u.search, body: init.body ? JSON.parse(String(init.body)) : null });
+    seen.push({
+      method: init.method ?? "GET",
+      path: u.pathname + u.search,
+      body: init.body ? JSON.parse(String(init.body)) : null,
+    });
     const next = answers.shift();
     if (!next || next === "down") throw new TypeError("connection refused");
-    return new Response(JSON.stringify(next.body), { status: next.status ?? 200, headers: { "content-type": "application/json" } });
+    return new Response(JSON.stringify(next.body), {
+      status: next.status ?? 200,
+      headers: { "content-type": "application/json" },
+    });
   }) as typeof globalThis.fetch;
   return { seen, fetch };
 }
 
-const reply = (outcome: string, extra: Record<string, unknown> = {}) => ({ body: { purpose: "COURT_RECORDS", outcome, refusal: null, category: "NONE", providerRef: null, runId: "run-1", ...extra } });
+const reply = (outcome: string, extra: Record<string, unknown> = {}) => ({
+  body: {
+    purpose: "COURT_RECORDS",
+    outcome,
+    refusal: null,
+    category: "NONE",
+    providerRef: null,
+    runId: "run-1",
+    ...extra,
+  },
+});
 
-function door(answers: Parameters<typeof fakeOrazaka>[0], consented: (purpose: CheckPurpose) => boolean = () => true, apiKey: string | null = "oz_test") {
+function door(
+  answers: Parameters<typeof fakeOrazaka>[0],
+  consented: (purpose: CheckPurpose) => boolean = () => true,
+  apiKey: string | null = "oz_test",
+) {
   const orazaka = fakeOrazaka(answers);
   const asked: CheckPurpose[] = [];
-  const client = createOrazakaClient({ baseUrl: "https://orazaka.test", apiKey: apiKey ?? undefined, clock: NOW, fetch: orazaka.fetch, circuit: false });
-  return { orazaka, asked, door: engineDoor(client, async (_id, purpose) => (asked.push(purpose), consented(purpose))) };
+  const client = createOrazakaClient({
+    baseUrl: "https://orazaka.test",
+    apiKey: apiKey ?? undefined,
+    clock: NOW,
+    fetch: orazaka.fetch,
+    circuit: false,
+  });
+  return {
+    orazaka,
+    asked,
+    door: engineDoor(client, async (_id, purpose) => (asked.push(purpose), consented(purpose))),
+  };
 }
 
 describe("the engine's door, from Yomizaka (orazaka-ai-engine#105)", () => {
@@ -45,7 +81,20 @@ describe("the engine's door, from Yomizaka (orazaka-ai-engine#105)", () => {
     const out = await t.door.submit("COURT_RECORDS", CALL);
     expect(out).toEqual({ outcome: "MATCH", refusal: null, category: "TAL_NON_PAYMENT", providerRef: null });
     expect(t.asked).toEqual(["COURT_RECORDS"]);
-    expect(t.orazaka.seen).toEqual([{ method: "POST", path: "/api/v1/checks/court-records", body: expect.objectContaining({ subjectId: "scr-1", lastName: "Tremblay", firstName: "Ariane", region: "QC", runId: "run-1", consented: true }) }]);
+    expect(t.orazaka.seen).toEqual([
+      {
+        method: "POST",
+        path: "/api/v1/checks/court-records",
+        body: expect.objectContaining({
+          subjectId: "scr-1",
+          lastName: "Tremblay",
+          firstName: "Ariane",
+          region: "QC",
+          runId: "run-1",
+          consented: true,
+        }),
+      },
+    ]);
   });
 
   it("NO_MATCH on the credit purpose goes to the credit path", async () => {
@@ -55,12 +104,19 @@ describe("the engine's door, from Yomizaka (orazaka-ai-engine#105)", () => {
   });
 
   it("PENDING keeps the provider's reference, and the collect carries the subject and the consent that still stands", async () => {
-    const t = door([reply("PENDING", { providerRef: "case-777" }), reply("MATCH", { category: "CRIMINAL", providerRef: "case-777" })]);
+    const t = door([
+      reply("PENDING", { providerRef: "case-777" }),
+      reply("MATCH", { category: "CRIMINAL", providerRef: "case-777" }),
+    ]);
     const started = await t.door.submit("COURT_RECORDS", CALL);
     expect(started).toMatchObject({ outcome: "PENDING", providerRef: "case-777" });
     const collected = await t.door.collect("COURT_RECORDS", CALL, started.providerRef!);
     expect(collected).toMatchObject({ outcome: "MATCH", category: "CRIMINAL" });
-    expect(t.orazaka.seen[1]).toEqual({ method: "GET", path: "/api/v1/checks/case-777?subjectId=scr-1&consented=true", body: null });
+    expect(t.orazaka.seen[1]).toEqual({
+      method: "GET",
+      path: "/api/v1/checks/case-777?subjectId=scr-1&consented=true",
+      body: null,
+    });
   });
 
   it("a consent withdrawn since is told to Orazaka at the poll, which refuses: REFUSED / NO_CONSENT", async () => {
@@ -78,19 +134,39 @@ describe("the engine's door, from Yomizaka (orazaka-ai-engine#105)", () => {
 
   it("an engine with no provider says REFUSED / NOT_CONFIGURED; so does a product with no key", async () => {
     const engine = door([reply("REFUSED", { refusal: "NOT_CONFIGURED" })]);
-    expect(await engine.door.submit("COURT_RECORDS", CALL)).toMatchObject({ outcome: "REFUSED", refusal: "NOT_CONFIGURED" });
+    expect(await engine.door.submit("COURT_RECORDS", CALL)).toMatchObject({
+      outcome: "REFUSED",
+      refusal: "NOT_CONFIGURED",
+    });
     const keyless = door([], () => true, null);
-    expect(await keyless.door.submit("COURT_RECORDS", CALL)).toMatchObject({ outcome: "REFUSED", refusal: "NOT_CONFIGURED" });
+    expect(await keyless.door.submit("COURT_RECORDS", CALL)).toMatchObject({
+      outcome: "REFUSED",
+      refusal: "NOT_CONFIGURED",
+    });
     expect(keyless.orazaka.seen).toEqual([]);
   });
 
   it("a failure of the door is PROVIDER_ERROR at submit and stays PENDING at collect, never an invented result", async () => {
-    expect(await door(["down"]).door.submit("COURT_RECORDS", CALL)).toEqual({ outcome: "PROVIDER_ERROR", refusal: null, category: "NONE", providerRef: null });
-    expect(await door([{ status: 429, body: {} }]).door.submit("CREDIT", CALL)).toMatchObject({ outcome: "PROVIDER_ERROR" });
-    expect(await door([{ status: 503, body: {} }]).door.collect("COURT_RECORDS", CALL, "case-777")).toEqual({ outcome: "PENDING", refusal: null, category: "NONE", providerRef: "case-777" });
+    expect(await door(["down"]).door.submit("COURT_RECORDS", CALL)).toEqual({
+      outcome: "PROVIDER_ERROR",
+      refusal: null,
+      category: "NONE",
+      providerRef: null,
+    });
+    expect(await door([{ status: 429, body: {} }]).door.submit("CREDIT", CALL)).toMatchObject({
+      outcome: "PROVIDER_ERROR",
+    });
+    expect(await door([{ status: 503, body: {} }]).door.collect("COURT_RECORDS", CALL, "case-777")).toEqual({
+      outcome: "PENDING",
+      refusal: null,
+      category: "NONE",
+      providerRef: "case-777",
+    });
   });
 
   it("an answer that is not a check is a provider error, not a result", async () => {
-    expect(await door([{ body: { outcome: "MAYBE" } }]).door.submit("COURT_RECORDS", CALL)).toMatchObject({ outcome: "PROVIDER_ERROR" });
+    expect(await door([{ body: { outcome: "MAYBE" } }]).door.submit("COURT_RECORDS", CALL)).toMatchObject({
+      outcome: "PROVIDER_ERROR",
+    });
   });
 });

@@ -27,7 +27,14 @@ export function POST(req: Request, { params }: Params) {
     const id = (await params).id;
     const body = await readJson(req, attach);
     await attachToLease(session.account.id, id, body.documentId, body.role);
-    await audit({ action: "document.attached", actorId: session.account.id, actorLabel: session.account.email, targetId: id, detail: { documentId: body.documentId, role: body.role }, headers: req.headers });
+    await audit({
+      action: "document.attached",
+      actorId: session.account.id,
+      actorLabel: session.account.email,
+      targetId: id,
+      detail: { documentId: body.documentId, role: body.role },
+      headers: req.headers,
+    });
     return Response.json({ bundle: await leaseBundle(session.account.id, id) });
   });
 }
@@ -39,7 +46,14 @@ export function DELETE(req: Request, { params }: Params) {
     const id = (await params).id;
     const body = await readJson(req, detach);
     await detachFromLease(session.account.id, id, body.documentId);
-    await audit({ action: "document.detached", actorId: session.account.id, actorLabel: session.account.email, targetId: id, detail: { documentId: body.documentId }, headers: req.headers });
+    await audit({
+      action: "document.detached",
+      actorId: session.account.id,
+      actorLabel: session.account.email,
+      targetId: id,
+      detail: { documentId: body.documentId },
+      headers: req.headers,
+    });
     return Response.json({ bundle: await leaseBundle(session.account.id, id) });
   });
 }

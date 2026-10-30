@@ -23,7 +23,12 @@ export interface WorkspaceContext {
   workspace: Workspace;
 }
 
-export function workspaceAct(req: Request, params: Promise<{ kind: string }>, run: (ctx: WorkspaceContext) => Promise<unknown>, options: { status?: number; purges?: boolean } = {}): Promise<Response> {
+export function workspaceAct(
+  req: Request,
+  params: Promise<{ kind: string }>,
+  run: (ctx: WorkspaceContext) => Promise<unknown>,
+  options: { status?: number; purges?: boolean } = {},
+): Promise<Response> {
   return handle(async () => {
     const session = await requireSession(req);
     await limit("organise", req, session.account.id);
@@ -33,6 +38,9 @@ export function workspaceAct(req: Request, params: Promise<{ kind: string }>, ru
     const store = options.purges ? (await storesOf(session.account.id)).write : undefined;
     const workspace = workspaceFor({ clock: systemClock, store, headers: req.headers });
     const body = await guard(() => run({ kind, account: session.account, actor: actorOf(session.account), workspace }));
-    return Response.json(body ?? { ok: true }, { status: options.status ?? 200, headers: { "Cache-Control": "private, no-store" } });
+    return Response.json(body ?? { ok: true }, {
+      status: options.status ?? 200,
+      headers: { "Cache-Control": "private, no-store" },
+    });
   });
 }

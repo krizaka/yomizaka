@@ -8,7 +8,15 @@ const report = {
   rulesetVersion: "2024-02-21",
   jurisdiction: "QC",
   asOf: "2026-10-22",
-  findings: [{ ruleId: "QC-LEASE-004", title: "Dépôt de garantie interdit", severity: "BLOCKING", verdict: "FAIL", explanation: "Le bail exige un dépôt." }],
+  findings: [
+    {
+      ruleId: "QC-LEASE-004",
+      title: "Dépôt de garantie interdit",
+      severity: "BLOCKING",
+      verdict: "FAIL",
+      explanation: "Le bail exige un dépôt.",
+    },
+  ],
 };
 
 describe("the closing note an app shows", () => {

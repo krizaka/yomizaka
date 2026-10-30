@@ -26,4 +26,5 @@ export const phoneTabs = (locale: Locale): PhoneTab[] =>
   });
 
 /** The tab of Vérifications named by the address (`?tab=lots`); an unknown or missing one is the list of checks. */
-export const checksTabOf = (raw: string | string[] | undefined): ChecksTab => CHECKS_TABS.find((tab) => tab === (Array.isArray(raw) ? raw[0] : raw)) ?? "checks";
+export const checksTabOf = (raw: string | string[] | undefined): ChecksTab =>
+  CHECKS_TABS.find((tab) => tab === (Array.isArray(raw) ? raw[0] : raw)) ?? "checks";

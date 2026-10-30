@@ -63,7 +63,10 @@ describe("the document store of the device", () => {
 
 // The phone's adapter is a DocumentStore like the web's and the Mac's: it passes the same contract (yomizaka#155, ADR-0007).
 describe("the phone's DocumentStore", () => {
-  documentStoreContractWith("phone sandbox", () => createPhoneStore(memoryFiles().port, "file:///sandbox"), { it, expect });
+  documentStoreContractWith("phone sandbox", () => createPhoneStore(memoryFiles().port, "file:///sandbox"), {
+    it,
+    expect,
+  });
 
   it("says it is the device, keeps nothing outside the sandbox and offers no link", async () => {
     const store = createPhoneStore(memoryFiles().port, "file:///sandbox");

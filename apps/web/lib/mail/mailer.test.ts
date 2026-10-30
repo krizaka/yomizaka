@@ -4,10 +4,33 @@ import { describe, expect, it } from "vitest";
 import { type AccountMail, fromAuthMail, intentionOf, type MailConfig, mailEnvOf, mailerFor } from "../mailer";
 
 /** Yomizaka's mail (yomizaka#48): templates of @krizaka/email in Yomizaka's brand, through the MAIL_* provider, once per link, never to a reported address. */
-const CONFIG: MailConfig = { MAIL_PROVIDER: "mailgun", MAIL_API_KEY: "test-key", MAIL_DOMAIN: "mg.example.test", MAIL_API_URL: "https://api.mail.example.test" };
-const confirm: AccountMail = { kind: "confirmEmail", to: "Eric@Example.test", locale: "fr", url: "https://www.yomizaka.com/fr/verify-email?token=yv1.abc", hours: 24 };
-const reset: AccountMail = { kind: "passwordReset", to: "eric@example.test", locale: "en", url: "https://www.yomizaka.com/en/reset-password?token=ye1.abc", minutes: 45 };
-const change: AccountMail = { kind: "emailChange", to: "new@example.test", locale: "fr", url: "https://www.yomizaka.com/fr/confirm-email?token=ye1.def", hours: 24 };
+const CONFIG: MailConfig = {
+  MAIL_PROVIDER: "mailgun",
+  MAIL_API_KEY: "test-key",
+  MAIL_DOMAIN: "mg.example.test",
+  MAIL_API_URL: "https://api.mail.example.test",
+};
+const confirm: AccountMail = {
+  kind: "confirmEmail",
+  to: "Eric@Example.test",
+  locale: "fr",
+  url: "https://www.yomizaka.com/fr/verify-email?token=yv1.abc",
+  hours: 24,
+};
+const reset: AccountMail = {
+  kind: "passwordReset",
+  to: "eric@example.test",
+  locale: "en",
+  url: "https://www.yomizaka.com/en/reset-password?token=ye1.abc",
+  minutes: 45,
+};
+const change: AccountMail = {
+  kind: "emailChange",
+  to: "new@example.test",
+  locale: "fr",
+  url: "https://www.yomizaka.com/fr/confirm-email?token=ye1.def",
+  hours: 24,
+};
 
 function provider(status = 200) {
   const sent: { url: string; form: URLSearchParams }[] = [];
@@ -22,13 +45,21 @@ const world = (status = 200) => {
   const log = memoryLog();
   const suppression = memorySuppression();
   const idempotency = memoryIdempotency();
-  return { sent, log, suppression, idempotency, mail: mailerFor(CONFIG, { fetch: fetcher, log, suppression, idempotency }) };
+  return {
+    sent,
+    log,
+    suppression,
+    idempotency,
+    mail: mailerFor(CONFIG, { fetch: fetcher, log, suppression, idempotency }),
+  };
 };
 
 describe("the sender", () => {
   it("defaults to Yomizaka at the sending domain, and keeps the one the deployment sets", () => {
     expect(mailEnvOf(CONFIG).MAIL_FROM).toBe("Yomizaka <no-reply@mg.example.test>");
-    expect(mailEnvOf({ ...CONFIG, MAIL_FROM: "Yomizaka <bonjour@yomizaka.com>" }).MAIL_FROM).toBe("Yomizaka <bonjour@yomizaka.com>");
+    expect(mailEnvOf({ ...CONFIG, MAIL_FROM: "Yomizaka <bonjour@yomizaka.com>" }).MAIL_FROM).toBe(
+      "Yomizaka <bonjour@yomizaka.com>",
+    );
     expect(mailEnvOf({ MAIL_API_URL: "https://x.test" }).MAIL_FROM).toBeUndefined();
   });
 });
@@ -87,7 +118,15 @@ describe("sending the three links", () => {
   });
 
   it("fails closed when the provider is not configured", async () => {
-    const mail = mailerFor({ MAIL_API_URL: "https://x.test" }, { fetch: provider().fetcher, log: memoryLog(), suppression: memorySuppression(), idempotency: memoryIdempotency() });
+    const mail = mailerFor(
+      { MAIL_API_URL: "https://x.test" },
+      {
+        fetch: provider().fetcher,
+        log: memoryLog(),
+        suppression: memorySuppression(),
+        idempotency: memoryIdempotency(),
+      },
+    );
     await expect(mail(confirm)).rejects.toThrow();
   });
 });
@@ -96,8 +135,20 @@ describe("the links of @krizaka/auth", () => {
   const base = { to: "eric@example.test", locale: "fr" as const, subject: "s", text: "t" };
 
   it("become the same mails: a reset with its lifetime in minutes, a changed address with its hours", () => {
-    expect(fromAuthMail({ ...base, link: { kind: "passwordReset", url: "https://u/r", minutes: 45 } })).toEqual({ kind: "passwordReset", to: base.to, locale: "fr", url: "https://u/r", minutes: 45 });
-    expect(fromAuthMail({ ...base, link: { kind: "emailChange", url: "https://u/c", hours: 24 } })).toEqual({ kind: "emailChange", to: base.to, locale: "fr", url: "https://u/c", hours: 24 });
+    expect(fromAuthMail({ ...base, link: { kind: "passwordReset", url: "https://u/r", minutes: 45 } })).toEqual({
+      kind: "passwordReset",
+      to: base.to,
+      locale: "fr",
+      url: "https://u/r",
+      minutes: 45,
+    });
+    expect(fromAuthMail({ ...base, link: { kind: "emailChange", url: "https://u/c", hours: 24 } })).toEqual({
+      kind: "emailChange",
+      to: base.to,
+      locale: "fr",
+      url: "https://u/c",
+      hours: 24,
+    });
   });
 
   it("refuse a mail that is only text: there is no hand-written mail left", () => {
@@ -106,7 +157,15 @@ describe("the links of @krizaka/auth", () => {
 });
 
 describe("the owner-report link (yomizaka#130)", () => {
-  const link: AccountMail = { kind: "reportLink", to: "owner@example.test", locale: "fr", url: "https://www.yomizaka.com/fr/rapport/sc1.abc", senderName: "Eric", expiresOn: "2026-11-03", message: "Bonjour" };
+  const link: AccountMail = {
+    kind: "reportLink",
+    to: "owner@example.test",
+    locale: "fr",
+    url: "https://www.yomizaka.com/fr/rapport/sc1.abc",
+    senderName: "Eric",
+    expiresOn: "2026-11-03",
+    message: "Bonjour",
+  };
 
   it("is the shareLink template in the owner's language: the link, the expiry and the note, nothing of the report", async () => {
     const w = world();

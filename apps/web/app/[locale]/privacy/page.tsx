@@ -22,7 +22,13 @@ export default async function Privacy({ params }: Readonly<{ params: Promise<{ l
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
       <SiteHeader locale={locale} current="privacy" />
       <main id="content">
-        <PageHero back={{ href: pagePath(locale, "home"), label: t.meta.siteName }} linkAs={Link} title={t.privacy.title} backdrop="plain" lead={format(t.privacy.updated, { date: PRIVACY_UPDATED })} />
+        <PageHero
+          back={{ href: pagePath(locale, "home"), label: t.meta.siteName }}
+          linkAs={Link}
+          title={t.privacy.title}
+          backdrop="plain"
+          lead={format(t.privacy.updated, { date: PRIVACY_UPDATED })}
+        />
         <Page>
           <p className="max-w-3xl text-lg leading-relaxed text-fg">{t.privacy.body}</p>
           {t.privacy.sections.map((s) => (

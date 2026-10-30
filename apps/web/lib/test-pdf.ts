@@ -5,15 +5,24 @@ export function textPdf(lines: readonly string[], linesPerPage = 40): Uint8Array
   const pages: string[][] = [];
   for (let i = 0; i < lines.length; i += linesPerPage) pages.push(lines.slice(i, i + linesPerPage));
   const latin1 = (s: string) => Buffer.from(s, "latin1");
-  const esc = (s: string) => s.replaceAll("\\", String.raw`\\`).replaceAll("(", String.raw`\(`).replaceAll(")", String.raw`\)`);
+  const esc = (s: string) =>
+    s
+      .replaceAll("\\", String.raw`\\`)
+      .replaceAll("(", String.raw`\(`)
+      .replaceAll(")", String.raw`\)`);
   const objects: Buffer[] = [];
   const font = 3 + pages.length * 2;
   const kids = pages.map((_, i) => `${3 + i * 2} 0 R`).join(" ");
-  objects.push(latin1("<< /Type /Catalog /Pages 2 0 R >>"), latin1(`<< /Type /Pages /Kids [${kids}] /Count ${pages.length} >>`));
+  objects.push(
+    latin1("<< /Type /Catalog /Pages 2 0 R >>"),
+    latin1(`<< /Type /Pages /Kids [${kids}] /Count ${pages.length} >>`),
+  );
   pages.forEach((page, i) => {
     const stream = page.map((line, n) => `BT /F1 11 Tf 72 ${720 - n * 16} Td (${esc(line)}) Tj ET`).join("\n");
     objects.push(
-      latin1(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents ${4 + i * 2} 0 R /Resources << /Font << /F1 ${font} 0 R >> >> >>`),
+      latin1(
+        `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents ${4 + i * 2} 0 R /Resources << /Font << /F1 ${font} 0 R >> >> >>`,
+      ),
       latin1(`<< /Length ${Buffer.byteLength(stream, "latin1")} >>\nstream\n${stream}\nendstream`),
     );
   });
@@ -27,7 +36,12 @@ export function textPdf(lines: readonly string[], linesPerPage = 40): Uint8Array
   const xref = out.length;
   const entries = offsets.map((o) => `${String(o).padStart(10, "0")} 00000 n \n`).join("");
   const table = `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n${entries}`;
-  return new Uint8Array(Buffer.concat([out, latin1(`${table}trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`)]));
+  return new Uint8Array(
+    Buffer.concat([
+      out,
+      latin1(`${table}trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`),
+    ]),
+  );
 }
 
 /** The text positions of a PDF as the viewer reads them in the browser: the same pdf.js Yomizaka reads text with on the server (unpdf). */
@@ -39,7 +53,12 @@ export async function textLayer(pdf: Uint8Array): Promise<PageText[]> {
     const page = await doc.getPage(n);
     const vp = page.getViewport({ scale: 1 });
     const content = await page.getTextContent();
-    pages.push({ page: n, width: vp.width, height: vp.height, items: content.items.filter((i): i is typeof i & TextItem => "str" in i) as TextItem[] });
+    pages.push({
+      page: n,
+      width: vp.width,
+      height: vp.height,
+      items: content.items.filter((i): i is typeof i & TextItem => "str" in i) as TextItem[],
+    });
   }
   return pages;
 }

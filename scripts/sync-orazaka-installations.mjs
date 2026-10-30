@@ -28,7 +28,8 @@ export function plan(wanted, installed) {
   return Object.entries(wanted).map(([studioKey, version]) => {
     const found = installed.find((i) => i.studioKey === studioKey);
     if (!found) return { studioKey, version, action: "install" };
-    if (compareVersions(found.pinnedVersion, version) >= 0) return { studioKey, version, action: "keep", pinnedVersion: found.pinnedVersion };
+    if (compareVersions(found.pinnedVersion, version) >= 0)
+      return { studioKey, version, action: "keep", pinnedVersion: found.pinnedVersion };
     return { studioKey, version, action: "upgrade", id: found.id, pinnedVersion: found.pinnedVersion };
   });
 }
@@ -37,7 +38,11 @@ export async function syncInstallations({ base, token, wanted, check = false, fe
   const call = async (path, method = "GET", body) => {
     const res = await fetchImpl(`${base.replace(/\/$/, "")}${path}`, {
       method,
-      headers: { authorization: `Bearer ${token}`, accept: "application/json", ...(body ? { "content-type": "application/json" } : {}) },
+      headers: {
+        authorization: `Bearer ${token}`,
+        accept: "application/json",
+        ...(body ? { "content-type": "application/json" } : {}),
+      },
       body: body ? JSON.stringify(body) : undefined,
     });
     if (!res.ok) throw new Error(`Orazaka answered ${res.status} on ${method} ${path.split("?")[0]}`);
@@ -56,8 +61,12 @@ export async function syncInstallations({ base, token, wanted, check = false, fe
       log(`${step.studioKey}: ${state}, wanted ${step.version}`);
       continue;
     }
-    const done = step.action === "install" ? await call(`/api/v1/studios/${step.studioKey}/installations?locale=en`, "POST", { config: {} }) : await call(`/api/v1/studios/installations/${step.id}/upgrade`, "POST");
-    if (compareVersions(done.pinnedVersion, step.version) < 0) throw new Error(`${step.studioKey} is on ${done.pinnedVersion} after the ${step.action}, wanted ${step.version}`);
+    const done =
+      step.action === "install"
+        ? await call(`/api/v1/studios/${step.studioKey}/installations?locale=en`, "POST", { config: {} })
+        : await call(`/api/v1/studios/installations/${step.id}/upgrade`, "POST");
+    if (compareVersions(done.pinnedVersion, step.version) < 0)
+      throw new Error(`${step.studioKey} is on ${done.pinnedVersion} after the ${step.action}, wanted ${step.version}`);
     const result = step.action === "install" ? "installed" : `upgraded ${step.pinnedVersion} -> ${done.pinnedVersion}`;
     log(`${step.studioKey}: ${result}`);
   }
@@ -69,6 +78,11 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   if (!token) throw new Error("AI_API_TOKEN is not set");
   const { studios } = JSON.parse(readFileSync(join(here, "orazaka-installations.json"), "utf8"));
   const check = process.argv.includes("--check");
-  const { behind } = await syncInstallations({ base: process.env.AI_API_URL ?? "https://dev.orazaka.com/edge", token, wanted: studios, check });
+  const { behind } = await syncInstallations({
+    base: process.env.AI_API_URL ?? "https://dev.orazaka.com/edge",
+    token,
+    wanted: studios,
+    check,
+  });
   if (check && behind) process.exit(1);
 }

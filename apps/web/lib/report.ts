@@ -42,7 +42,14 @@ const payloadFinding = z.object({
 export const reportPayload = z.object({
   schema: z.literal(REPORT_SCHEMA),
   lang: z.enum(["en", "fr"]),
-  document: z.object({ sha256: z.string().regex(/^[0-9a-f]{64}$/), filename: z.string(), title: z.string(), sizeBytes: z.number(), pages: z.number().nullable(), textSource: textSource.optional() }),
+  document: z.object({
+    sha256: z.string().regex(/^[0-9a-f]{64}$/),
+    filename: z.string(),
+    title: z.string(),
+    sizeBytes: z.number(),
+    pages: z.number().nullable(),
+    textSource: textSource.optional(),
+  }),
   check: z.object({
     engine: z.literal("Orazaka"),
     studio: z.literal("compliance-check"),
@@ -57,7 +64,11 @@ export const reportPayload = z.object({
     startedAt: z.string(),
     finishedAt: z.string(),
   }),
-  summary: z.object({ rulesEvaluated: z.number(), blockingFailures: z.number(), byVerdict: z.record(z.string(), z.number()) }),
+  summary: z.object({
+    rulesEvaluated: z.number(),
+    blockingFailures: z.number(),
+    byVerdict: z.record(z.string(), z.number()),
+  }),
   findings: z.array(payloadFinding),
   /** « Ce que nous avons vérifié »: the closing note in plain words, signed with the rest (absent from reports issued before it existed). */
   note: closingNote.optional(),
@@ -72,9 +83,20 @@ export type ReportLabels = Record<string, string>;
 export class ReportError extends Error {}
 
 /** A report's payload from a stored check. Only a finished compliance check with a run id and a report can be certified. */
-export function buildPayload(doc: Pick<DocumentDetail, "sha256" | "filename" | "title" | "sizeBytes" | "pages" | "textSource">, analysis: Analysis, lang: "en" | "fr"): ReportPayload {
+export function buildPayload(
+  doc: Pick<DocumentDetail, "sha256" | "filename" | "title" | "sizeBytes" | "pages" | "textSource">,
+  analysis: Analysis,
+  lang: "en" | "fr",
+): ReportPayload {
   if (isSeededCheck(analysis)) throw new ReportError("A seeded demo check cannot be certified");
-  if (analysis.studio !== "compliance-check" || analysis.status !== "succeeded" || !analysis.report || !("findings" in analysis.report) || !analysis.runId || !analysis.finishedAt) {
+  if (
+    analysis.studio !== "compliance-check" ||
+    analysis.status !== "succeeded" ||
+    !analysis.report ||
+    !("findings" in analysis.report) ||
+    !analysis.runId ||
+    !analysis.finishedAt
+  ) {
     throw new ReportError("Only a finished compliance check can be certified");
   }
   const report: ComplianceReport = analysis.report;
@@ -83,7 +105,14 @@ export function buildPayload(doc: Pick<DocumentDetail, "sha256" | "filename" | "
   return {
     schema: REPORT_SCHEMA,
     lang,
-    document: { sha256: doc.sha256, filename: doc.filename, title: doc.title, sizeBytes: doc.sizeBytes, pages: doc.pages, ...(doc.textSource ? { textSource: doc.textSource } : {}) },
+    document: {
+      sha256: doc.sha256,
+      filename: doc.filename,
+      title: doc.title,
+      sizeBytes: doc.sizeBytes,
+      pages: doc.pages,
+      ...(doc.textSource ? { textSource: doc.textSource } : {}),
+    },
     check: {
       engine: "Orazaka",
       studio: "compliance-check",
@@ -98,7 +127,13 @@ export function buildPayload(doc: Pick<DocumentDetail, "sha256" | "filename" | "
       startedAt: analysis.createdAt,
       finishedAt: analysis.finishedAt,
     },
-    summary: { rulesEvaluated: report.summary?.rulesEvaluated ?? report.findings.length, blockingFailures: report.summary?.blockingFailures ?? report.findings.filter((f) => f.verdict === "FAIL" && f.severity === "BLOCKING").length, byVerdict },
+    summary: {
+      rulesEvaluated: report.summary?.rulesEvaluated ?? report.findings.length,
+      blockingFailures:
+        report.summary?.blockingFailures ??
+        report.findings.filter((f) => f.verdict === "FAIL" && f.severity === "BLOCKING").length,
+      byVerdict,
+    },
     note: buildNote(noteInputOf(report, noteSourceOf(doc.textSource)), lang),
     findings: report.findings.map((f) => ({
       ruleId: f.ruleId,
@@ -131,8 +166,10 @@ export function canonicalJson(value: unknown): string {
 
 export const sha256 = (data: string | Uint8Array) => crypto.createHash("sha256").update(data).digest("hex");
 
-const esc = (s: string) => s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
-export const fill = (template: string, vars: Record<string, string | number>) => template.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
+const esc = (s: string) =>
+  s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+export const fill = (template: string, vars: Record<string, string | number>) =>
+  template.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
 
 /** Where the attestation goes. The body is hashed with this marker removed, the file has the block in its place. */
 export const ATTESTATION_MARKER = "<!--yomizaka-attestation-->";
@@ -141,7 +178,13 @@ const BLOCK = /<script type="application\/json" id="yomizaka-attestation">([^<]*
 const CSS = `:root{color-scheme:light}*{box-sizing:border-box}body{margin:0 auto;max-width:52rem;padding:2rem 1.25rem;font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;color:#14161f;background:#fff}h1{font-size:1.6rem;margin:.2rem 0 .4rem}h2{font-size:1.1rem;margin:2rem 0 .6rem;border-bottom:1px solid #d6d9e2;padding-bottom:.3rem}.eyebrow{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:#4b5163}dl{display:grid;grid-template-columns:max-content 1fr;gap:.25rem 1rem;margin:0}dt{color:#4b5163}dd{margin:0;overflow-wrap:anywhere}code{font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace}.note{border:1px solid #d6d9e2;border-left:4px solid #6b5bd2;background:#f6f5fd;padding:.7rem .9rem;border-radius:6px;margin:1rem 0}.finding{border:1px solid #d6d9e2;border-radius:8px;padding:.8rem 1rem;margin:.7rem 0;break-inside:avoid}.finding h3{font-size:1rem;margin:0 0 .3rem;display:flex;justify-content:space-between;gap:1rem}.verdict{font-size:.8rem;font-weight:700;padding:.1rem .5rem;border-radius:99px;border:1px solid currentColor;white-space:nowrap}.v-PASS{color:#0b6b3a}.v-FAIL{color:#a1182b}.v-INSUFFICIENT_EVIDENCE{color:#8a5a00}blockquote{margin:.5rem 0;padding:.2rem .8rem;border-left:3px solid #b8bccb;color:#2b2f3d;font-style:italic}footer{margin-top:2.5rem;font-size:.85rem;color:#4b5163}@media print{body{padding:0}a{color:inherit}}`;
 
 /** The closing note as HTML: the same lines the PDF prints. */
-const NOTE_TAG = { [LINE.title]: "h2", [LINE.heading]: "h3", [LINE.text]: "p", [LINE.item]: "li", [LINE.note]: "p" } as const;
+const NOTE_TAG = {
+  [LINE.title]: "h2",
+  [LINE.heading]: "h3",
+  [LINE.text]: "p",
+  [LINE.item]: "li",
+  [LINE.note]: "p",
+} as const;
 function renderNote(note: NonNullable<ReportPayload["note"]>): string {
   const out: string[] = [];
   let list = false;
@@ -170,7 +213,8 @@ export function renderBody(payload: ReportPayload, labels: ReportLabels): string
   const revision = c.rulesetRevision !== null ? ` (rev. ${c.rulesetRevision})` : "";
   const row = (term: string, details: string) => `<dt>${esc(term)}</dt><dd>${details}</dd>`;
   const reviewNote = c.reviewStatus ? `<p class="note">${esc(labels.toReview)}</p>` : "";
-  const contractNote = c.rulesetId === "qc-service-contract" ? `<p class="note">${esc(labels.notCheckedServiceContract)}</p>` : "";
+  const contractNote =
+    c.rulesetId === "qc-service-contract" ? `<p class="note">${esc(labels.notCheckedServiceContract)}</p>` : "";
   const sizeCell = `${d.sizeBytes} B${pages}`;
   const documentShaCell = `<code>${esc(d.sha256)}</code>`;
   const engineCell = `${esc(c.engine)} · ${esc(c.studio)}${studioVersion}`;
@@ -178,17 +222,15 @@ export function renderBody(payload: ReportPayload, labels: ReportLabels): string
   const rulesetCell = `${esc(c.rulesetId)} · ${esc(c.rulesetVersion)}${revision}`;
   const verifyUrl = `${SITE_URL}/app/verifications/report`;
   const findings = payload.findings
-    .map(
-      (f) => {
-        const verdict = esc(labels[`verdict.${f.verdict}`] ?? f.verdict);
-        const method = f.method ? ` · ${esc(f.method)}` : "";
-        const ruleCell = `<code>${esc(f.ruleId)}</code> · ${esc(f.severity)}${method}`;
-        const passage = f.quote ? `<blockquote>« ${esc(f.quote)} »</blockquote>` : esc(labels.noPassage);
-        return `<section class="finding"><h3><span>${esc(f.title ?? f.ruleId)}</span><span class="verdict v-${esc(f.verdict)}">${verdict}</span></h3>
+    .map((f) => {
+      const verdict = esc(labels[`verdict.${f.verdict}`] ?? f.verdict);
+      const method = f.method ? ` · ${esc(f.method)}` : "";
+      const ruleCell = `<code>${esc(f.ruleId)}</code> · ${esc(f.severity)}${method}`;
+      const passage = f.quote ? `<blockquote>« ${esc(f.quote)} »</blockquote>` : esc(labels.noPassage);
+      return `<section class="finding"><h3><span>${esc(f.title ?? f.ruleId)}</span><span class="verdict v-${esc(f.verdict)}">${verdict}</span></h3>
 <p>${esc(f.explanation)}</p>
 <dl>${row(labels.rule, ruleCell)}${f.citation ? row(labels.article, esc(f.citation)) : ""}${row(labels.passage, passage)}</dl></section>`;
-      },
-    )
+    })
     .join("\n");
   return `<!doctype html>
 <html lang="${payload.lang}">
@@ -236,7 +278,8 @@ export interface Attestation {
   signature: string;
 }
 
-export const signedMessage = (payload: ReportPayload, bodySha256: string) => Buffer.from(canonicalJson({ bodySha256, payload }), "utf8");
+export const signedMessage = (payload: ReportPayload, bodySha256: string) =>
+  Buffer.from(canonicalJson({ bodySha256, payload }), "utf8");
 
 export interface IssuedReport {
   html: string;
@@ -250,7 +293,14 @@ export function issueReport(payload: ReportPayload, labels: ReportLabels, key: S
   const body = renderBody(payload, labels);
   const bodySha256 = sha256(body);
   const signature = crypto.sign(null, signedMessage(payload, bodySha256), key.privateKey).toString("base64");
-  const attestation: Attestation = { schema: REPORT_SCHEMA, algorithm: "Ed25519", keyId: key.keyId, payload, bodySha256, signature };
+  const attestation: Attestation = {
+    schema: REPORT_SCHEMA,
+    algorithm: "Ed25519",
+    keyId: key.keyId,
+    payload,
+    bodySha256,
+    signature,
+  };
   // `<` is escaped so the JSON can never close its own script element; it parses back to the same value.
   const json = JSON.stringify(attestation).replaceAll("<", String.raw`\u003c`);
   const block = `<script type="application/json" id="yomizaka-attestation">${json}</script>`;
@@ -269,7 +319,11 @@ export type Verification =
  * input: a file that is not a report, is cut, or has been edited anywhere — a word of a finding, the run id, the
  * document hash, a space — fails with a reason.
  */
-export function verifyReport(file: string, key: Pick<SigningKey, "keyId" | "publicKey">, document?: Uint8Array | null): Verification {
+export function verifyReport(
+  file: string,
+  key: Pick<SigningKey, "keyId" | "publicKey">,
+  document?: Uint8Array | null,
+): Verification {
   const fileSha256 = sha256(file);
   const fail = (reason: VerifyFailure): Verification => ({ ok: false, reason, fileSha256 });
   // A pasted text may arrive with CRLF line ends; our files never contain a CR.
@@ -279,19 +333,37 @@ export function verifyReport(file: string, key: Pick<SigningKey, "keyId" | "publ
   let attestation: Attestation;
   try {
     const raw = z
-      .object({ schema: z.literal(REPORT_SCHEMA), algorithm: z.literal("Ed25519"), keyId: z.string(), payload: reportPayload, bodySha256: z.string().regex(/^[0-9a-f]{64}$/), signature: z.string() })
+      .object({
+        schema: z.literal(REPORT_SCHEMA),
+        algorithm: z.literal("Ed25519"),
+        keyId: z.string(),
+        payload: reportPayload,
+        bodySha256: z.string().regex(/^[0-9a-f]{64}$/),
+        signature: z.string(),
+      })
       .parse(JSON.parse(match[1]!));
     attestation = raw as Attestation;
   } catch {
     return fail("UNREADABLE");
   }
   if (attestation.keyId !== key.keyId) return fail("UNKNOWN_KEY");
-  const signed = crypto.verify(null, signedMessage(attestation.payload, attestation.bodySha256), key.publicKey, Buffer.from(attestation.signature, "base64"));
+  const signed = crypto.verify(
+    null,
+    signedMessage(attestation.payload, attestation.bodySha256),
+    key.publicKey,
+    Buffer.from(attestation.signature, "base64"),
+  );
   if (!signed) return fail("BAD_SIGNATURE");
   // The signature is good for this payload and this body hash: the file must still BE that body.
   const body = text.replace(match[0], ATTESTATION_MARKER);
   if (sha256(body) !== attestation.bodySha256) return fail("ALTERED");
   // A specimen is a demonstration, never an attestation: however valid its signature, it proves nothing.
   if (attestation.payload.specimen) return fail("SPECIMEN");
-  return { ok: true, fileSha256, keyId: attestation.keyId, payload: attestation.payload, documentMatch: document ? sha256(document) === attestation.payload.document.sha256 : null };
+  return {
+    ok: true,
+    fileSha256,
+    keyId: attestation.keyId,
+    payload: attestation.payload,
+    documentMatch: document ? sha256(document) === attestation.payload.document.sha256 : null,
+  };
 }

@@ -2,42 +2,20 @@
   "$schema": "https://turborepo.com/schema.json",
   "tasks": {
     "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**",
-        "dist/**"
-      ],
-      "env": [
-        "APP_VERSION",
-        "NEXT_PUBLIC_APP_VERSION",
-        "NEXT_PUBLIC_APP_URL"
-      ],
-      "passThroughEnv": [
-        "APP_COMMIT_SHA"
-      ]
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "env": ["APP_VERSION", "NEXT_PUBLIC_APP_VERSION", "NEXT_PUBLIC_APP_URL"],
+      "passThroughEnv": ["APP_COMMIT_SHA"]
     },
     "lint": {
-      "dependsOn": [
-        "^build"
-      ]
+      "dependsOn": ["^build"]
     },
     "typecheck": {
-      "dependsOn": [
-        "^build"
-      ]
+      "dependsOn": ["^build"]
     },
     "test": {
-      "dependsOn": [
-        "^build"
-      ],
-      "passThroughEnv": [
-        "DATABASE_URL",
-        "DATABASE_CA_CERT",
-        "YOMIZAKA_DB_IT"
-      ]
+      "dependsOn": ["^build"],
+      "passThroughEnv": ["DATABASE_URL", "DATABASE_CA_CERT", "YOMIZAKA_DB_IT"]
     },
     "dev": {
       "cache": false,

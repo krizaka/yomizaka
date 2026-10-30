@@ -24,7 +24,9 @@ async function start() {
   }
   const { migrate } = await import("./lib/db");
   const applied = await migrate();
-  if (applied.length) {logInfo(`[yomizaka] migrations applied: ${applied.join(", ")}`);}
+  if (applied.length) {
+    logInfo(`[yomizaka] migrations applied: ${applied.join(", ")}`);
+  }
   // A database that lacks a version of a Krizaka module the code needs does not start (krizaka-ts ADR-001).
   const { assertModules } = await import("@krizaka/db");
   const { MODULES } = await import("./lib/modules");
@@ -33,23 +35,35 @@ async function start() {
   // The environment only bootstraps the storage: its old coordinates become the admin's first provider, once (ADR-005, yomizaka#523).
   const { bootstrapFromEnvironment } = await import("./app/storage-providers");
   const imported = await bootstrapFromEnvironment();
-  if (imported) {logInfo(`[yomizaka] storage provider imported from the environment: ${imported}`);}
+  if (imported) {
+    logInfo(`[yomizaka] storage provider imported from the environment: ${imported}`);
+  }
   const { seedDatabase } = await import("./lib/flows");
   // Live screening is refused at start unless the compliance gate is open (yomizaka#135).
   const { assertLiveGate } = await import("./lib/screening-checks/gate");
   await assertLiveGate();
   const seeded = await seedDatabase();
-  if (seeded.length) {logInfo(`[yomizaka] flows seeded: ${seeded.join(", ")}`);}
+  if (seeded.length) {
+    logInfo(`[yomizaka] flows seeded: ${seeded.join(", ")}`);
+  }
   // The organised workspace's defaults (the decision set, the system views, the tag rules): written once, then the database is the source of truth (yomizaka#324).
   const { seedWorkspace } = await import("./lib/workspace/service");
   const { systemClock } = await import("./app/system-clock");
   const workspace = await seedWorkspace(systemClock);
-  if (workspace.length) {logInfo(`[yomizaka] workspace seeded: ${workspace.join(", ")}`);}
+  if (workspace.length) {
+    logInfo(`[yomizaka] workspace seeded: ${workspace.join(", ")}`);
+  }
   const e = readEnv();
   const { appSettings } = await import("./lib/settings/instance");
   const { seedLegacySettings } = await import("./lib/settings/seed");
-  const legacy = await seedLegacySettings(appSettings(), { signupOpen: e.AUTH_SIGNUP_ENABLED, purgeAfterHours: e.APP_PURGE_AFTER_HOURS }, new Date());
-  if (legacy.length) {logInfo(`[yomizaka] settings seeded from the environment: ${legacy.join(", ")}`);}
+  const legacy = await seedLegacySettings(
+    appSettings(),
+    { signupOpen: e.AUTH_SIGNUP_ENABLED, purgeAfterHours: e.APP_PURGE_AFTER_HOURS },
+    new Date(),
+  );
+  if (legacy.length) {
+    logInfo(`[yomizaka] settings seeded from the environment: ${legacy.join(", ")}`);
+  }
   // A batch advances without anyone looking at it (yomizaka#240): the interval is a setting, re-read at every look.
   const { sessionSecret } = await import("./lib/env");
   const { registerBatchWebhooks, deliverWebhooks } = await import("./lib/webhooks/emit");
@@ -60,12 +74,18 @@ async function start() {
   startScheduler({
     seconds: async () => (await appSettings().get("limits.batchTickSeconds")) as number,
     run: async () => {
-      const report = await tickBatches(new Date(), appEnvironment(), (message, error) => logError(`[yomizaka] ${message}`, error));
-      if (report.advanced || report.failed) {logInfo(`[yomizaka] batch tick: ${report.advanced} advanced, ${report.failed} failed`);}
+      const report = await tickBatches(new Date(), appEnvironment(), (message, error) =>
+        logError(`[yomizaka] ${message}`, error),
+      );
+      if (report.advanced || report.failed) {
+        logInfo(`[yomizaka] batch tick: ${report.advanced} advanced, ${report.failed} failed`);
+      }
       // The uses a checkout reserved and nobody paid for are given back once their deadline passed (coupons, yomizaka#262).
       const { sweepCoupons } = await import("./lib/coupons/sweep");
       const freed = await sweepCoupons();
-      if (freed) {logInfo(`[yomizaka] coupons: ${freed} unpaid reservation(s) released`);}
+      if (freed) {
+        logInfo(`[yomizaka] coupons: ${freed} unpaid reservation(s) released`);
+      }
       // The retention sweep (yomizaka#125): documents past their window, screening results past their policy's days.
       const { purgeExpired: purgeDocuments } = await import("./lib/retention");
       const { purgeExpired: purgeResults } = await import("./lib/screening");
@@ -78,23 +98,37 @@ async function start() {
       const mode = backfillEnv().APP_DOCUMENTS_BACKFILL;
       if (mode !== "off") {
         const moved = await backfillDocuments(sweepQuery, documentHolder, { dryRun: mode === "dry-run", limit: 25 });
-        if (moved.candidates) {logInfo(`[yomizaka] documents backfill${moved.dryRun ? " (dry run)" : ""}: ${moved.candidates} to move, ${moved.copied} moved, ${moved.failed.length} left`);}
+        if (moved.candidates) {
+          logInfo(
+            `[yomizaka] documents backfill${moved.dryRun ? " (dry run)" : ""}: ${moved.candidates} to move, ${moved.copied} moved, ${moved.failed.length} left`,
+          );
+        }
       }
       const purgedResults = await purgeResults(new Date());
-      if (purgedDocuments || purgedResults) {logInfo(`[yomizaka] retention: ${purgedDocuments} documents, ${purgedResults} results purged`);}
+      if (purgedDocuments || purgedResults) {
+        logInfo(`[yomizaka] retention: ${purgedDocuments} documents, ${purgedResults} results purged`);
+      }
       // The verified move of the documents to a new storage provider advances one batch per look, while an administrator has one open (ADR-005 §3).
       const { moveDeps } = await import("./app/storage-providers");
       const { stepMove } = await import("./lib/storage/provider-move");
       const moving = moveDeps();
       const step = moving ? await stepMove(moving) : null;
-      if (step) {logInfo(`[yomizaka] storage move: ${step.moved}/${step.total} moved, ${step.failed.length} failed (${step.status})`);}
+      if (step) {
+        logInfo(
+          `[yomizaka] storage move: ${step.moved}/${step.total} moved, ${step.failed.length} failed (${step.status})`,
+        );
+      }
       // The screening checks a provider accepted without answering are collected on the same look (yomizaka#134).
       const { collectPending } = await import("./lib/screening-checks/collect");
       const collected = await collectPending(new Date());
-      if (collected.polled) {logInfo(`[yomizaka] screening checks: ${collected.polled} polled, ${collected.settled} settled`);}
+      if (collected.polled) {
+        logInfo(`[yomizaka] screening checks: ${collected.polled} polled, ${collected.settled} settled`);
+      }
       // The webhooks queued by closed batches ride the same tick (yomizaka#241).
       const sent = await deliverWebhooks(sessionSecret(), new Date(), { timeoutMs: 8000 });
-      if (sent && (sent.delivered || sent.retried || sent.failed)) {logInfo(`[yomizaka] webhooks: ${sent.delivered} delivered, ${sent.retried} to retry, ${sent.failed} given up`);}
+      if (sent && (sent.delivered || sent.retried || sent.failed)) {
+        logInfo(`[yomizaka] webhooks: ${sent.delivered} delivered, ${sent.retried} to retry, ${sent.failed} given up`);
+      }
     },
     onError: (error) => logError("[yomizaka] batch tick", error),
   });

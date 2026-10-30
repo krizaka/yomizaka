@@ -25,7 +25,9 @@ function sources(dir: string): string[] {
 
 const files = ["app", "components", "lib"].flatMap((d) => sources(join(WEB, d)));
 const code = files.map((f) => readFileSync(f, "utf8"));
-const imported = new Set(code.flatMap((src) => [...src.matchAll(/from "@krizaka\/ui\/([a-z0-9-]+)"/g)].map((m) => m[1]!)));
+const imported = new Set(
+  code.flatMap((src) => [...src.matchAll(/from "@krizaka\/ui\/([a-z0-9-]+)"/g)].map((m) => m[1]!)),
+);
 const storyImported = code.some((src) => /import "@krizaka\/ui\/story\.css"/.test(src));
 
 describe("@krizaka/ui stylesheets the app needs", () => {

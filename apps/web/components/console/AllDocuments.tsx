@@ -16,7 +16,21 @@ import { DocumentTable } from "./DocumentTable";
 import { PlaceFilters } from "./PlaceFilters";
 
 /** « Documents » (B2, P14): every document, in the table the collections use — sortable, filterable, a row leading to its report. */
-export function AllDocuments({ documents, bookmarks = [], selected = [], bookmarksByDocument = {}, path = "", tabs = [] }: Readonly<{ documents: DocumentSummary[]; bookmarks?: Tag[]; selected?: string[]; bookmarksByDocument?: Record<string, Tag[]>; path?: string; tabs?: Divider[] }>) {
+export function AllDocuments({
+  documents,
+  bookmarks = [],
+  selected = [],
+  bookmarksByDocument = {},
+  path = "",
+  tabs = [],
+}: Readonly<{
+  documents: DocumentSummary[];
+  bookmarks?: Tag[];
+  selected?: string[];
+  bookmarksByDocument?: Record<string, Tag[]>;
+  path?: string;
+  tabs?: Divider[];
+}>) {
   const { say, locale } = useSay();
   const nothing =
     selected.length > 0 ? (
@@ -40,8 +54,24 @@ export function AllDocuments({ documents, bookmarks = [], selected = [], bookmar
       <PageHeader title={say("documentsPage.title")} description={say("documentsPage.lead")} />
       {tabs.length > 1 ? <BookmarkDividers tabs={tabs} path={path} /> : null}
       {/* The bookmarks as a filter (yomizaka#339): the address is the state, `?tags=`, every bookmark asked for must be worn. */}
-      {bookmarks.length > 0 ? <PlaceFilters tags={bookmarks} selected={selected} path={path} view={{ tags: selected, kind: null, status: null }} count={documents.length} /> : null}
-      {documents.length ? <DocumentTable rows={documents} caption={say("documentsPage.caption")} bookmarks={{ all: bookmarks, byDocument: bookmarksByDocument }} /> : nothing}
+      {bookmarks.length > 0 ? (
+        <PlaceFilters
+          tags={bookmarks}
+          selected={selected}
+          path={path}
+          view={{ tags: selected, kind: null, status: null }}
+          count={documents.length}
+        />
+      ) : null}
+      {documents.length ? (
+        <DocumentTable
+          rows={documents}
+          caption={say("documentsPage.caption")}
+          bookmarks={{ all: bookmarks, byDocument: bookmarksByDocument }}
+        />
+      ) : (
+        nothing
+      )}
     </div>
   );
 }

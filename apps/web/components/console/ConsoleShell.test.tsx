@@ -10,19 +10,33 @@ import { I18nProvider } from "@/lib/i18n-client";
 import en from "@/messages/en.json";
 import fr from "@/messages/fr.json";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push() {}, replace() {}, refresh() {} }), usePathname: () => "/fr/app/verifications", useSearchParams: () => new URLSearchParams() }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push() {}, replace() {}, refresh() {} }),
+  usePathname: () => "/fr/app/verifications",
+  useSearchParams: () => new URLSearchParams(),
+}));
 
 process.env.NEXT_PUBLIC_APP_VERSION = "0.1.0+abc1234";
 const { ConsoleShell } = await import("./ConsoleShell");
 
 const MESSAGES = { en: { console: en.console }, fr: { console: fr.console } } as const;
 const EMAIL = "eric.persona@example.test";
-const render = (props: { name?: string; role?: "USER" | "ADMIN"; applicantFiles?: boolean; toDecide?: number } = {}, locale: "en" | "fr" = "fr") =>
+const render = (
+  props: { name?: string; role?: "USER" | "ADMIN"; applicantFiles?: boolean; toDecide?: number } = {},
+  locale: "en" | "fr" = "fr",
+) =>
   renderToStaticMarkup(
     <ThemeProvider>
       <I18nProvider locale={locale} messages={MESSAGES[locale] as never}>
         <KrizakaQueryProvider>
-          <ConsoleShell locale={locale} email={EMAIL} role={props.role ?? "USER"} name={props.name} applicantFiles={props.applicantFiles} toDecide={props.toDecide}>
+          <ConsoleShell
+            locale={locale}
+            email={EMAIL}
+            role={props.role ?? "USER"}
+            name={props.name}
+            applicantFiles={props.applicantFiles}
+            toDecide={props.toDecide}
+          >
             <p>content</p>
           </ConsoleShell>
         </KrizakaQueryProvider>
@@ -36,7 +50,11 @@ describe("the signed-in shell, B2 (P14)", () => {
   it("the rail holds Accueil · Documents · Vérifications from the one section map, the active one from the route", () => {
     const html = render();
     const links = railLinks(html);
-    expect(links.map((l) => l.match(/href="([^"]+)"/)![1])).toEqual(["/fr/app", "/fr/app/documents", "/fr/app/verifications"]);
+    expect(links.map((l) => l.match(/href="([^"]+)"/)![1])).toEqual([
+      "/fr/app",
+      "/fr/app/documents",
+      "/fr/app/verifications",
+    ]);
     expect(links[2]).toContain('aria-current="page"');
     expect(links[0]).not.toContain("aria-current");
     expect(html).not.toMatch(/<a [^>]*data-rail-item[^>]*href="\/fr\/app\/(settings|check|search)"/);
@@ -44,7 +62,9 @@ describe("the signed-in shell, B2 (P14)", () => {
 
   it("is the section map of core, in its order, for the people offered the applicant files: Accueil · Dossiers · Documents · Vérifications", () => {
     const links = railLinks(render({ applicantFiles: true }));
-    expect(links.map((l) => l.match(/href="([^"]+)"/)![1])).toEqual(sectionsFor("web", { applicantFiles: true }).map((s) => `/fr${s.path}`));
+    expect(links.map((l) => l.match(/href="([^"]+)"/)![1])).toEqual(
+      sectionsFor("web", { applicantFiles: true }).map((s) => `/fr${s.path}`),
+    );
     expect(links).toHaveLength(4);
   });
 

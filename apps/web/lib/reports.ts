@@ -9,10 +9,16 @@ import { signingKey } from "./report-signer";
 import { trimEdges } from "./trim-edges";
 
 /** The part of a file name a document title gives: accents folded, no separator at the ends, 60 characters at most. */
-const slugOf = (title: string): string => trimEdges(title.normalize("NFKD").replace(/[^\w-]+/g, "-"), "-").slice(0, 60) || "document";
+const slugOf = (title: string): string =>
+  trimEdges(title.normalize("NFKD").replace(/[^\w-]+/g, "-"), "-").slice(0, 60) || "document";
 
 /** The signed audit report of one finished compliance check, for the document's owner — or the reason it cannot be made. */
-export async function reportFor(ownerId: string, documentId: string, analysisId: string, lang: Locale): Promise<{ issued: IssuedReport; filename: string }> {
+export async function reportFor(
+  ownerId: string,
+  documentId: string,
+  analysisId: string,
+  lang: Locale,
+): Promise<{ issued: IssuedReport; filename: string }> {
   const document = await getDocument(ownerId, documentId);
   const analysis = await getAnalysis(ownerId, documentId, analysisId);
   let payload;
@@ -28,7 +34,12 @@ export async function reportFor(ownerId: string, documentId: string, analysisId:
 }
 
 /** The signed PDF of the same check: the report's pages, a visible signature page, the attestation embedded. */
-export async function reportPdfFor(ownerId: string, documentId: string, analysisId: string, lang: Locale): Promise<{ issued: IssuedPdf; filename: string }> {
+export async function reportPdfFor(
+  ownerId: string,
+  documentId: string,
+  analysisId: string,
+  lang: Locale,
+): Promise<{ issued: IssuedPdf; filename: string }> {
   const document = await getDocument(ownerId, documentId);
   const analysis = await getAnalysis(ownerId, documentId, analysisId);
   let payload;

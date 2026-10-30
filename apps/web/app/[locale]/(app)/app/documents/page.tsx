@@ -24,7 +24,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 const MOST_DOCUMENTS = 500;
 
 /** « Documents » (B2, P14): every document of the account, newest first, whatever its collection — the library's « Tous les documents » view. */
-export default async function DocumentsPage({ params, searchParams }: Readonly<{ params: Promise<{ locale: string }>; searchParams: Promise<{ tags?: string | string[] }> }>) {
+export default async function DocumentsPage({
+  params,
+  searchParams,
+}: Readonly<{ params: Promise<{ locale: string }>; searchParams: Promise<{ tags?: string | string[] }> }>) {
   const session = await pageSession();
   if (!session) notFound();
   const owner = session.account.id;
@@ -37,5 +40,14 @@ export default async function DocumentsPage({ params, searchParams }: Readonly<{
   const byDocument = asTags(await workspace.tags.of(owner, KIND.document, recent));
   const path = `/${locale}/app/documents`;
   const documents = await documentsByIds(owner, wearingAll(recent, byDocument, selected));
-  return <AllDocuments documents={documents} bookmarks={bookmarks} selected={selected} bookmarksByDocument={byDocument} path={path} tabs={dividers({ bookmarks, ids: recent, tagsByDocument: byDocument, selected, path })} />;
+  return (
+    <AllDocuments
+      documents={documents}
+      bookmarks={bookmarks}
+      selected={selected}
+      bookmarksByDocument={byDocument}
+      path={path}
+      tabs={dividers({ bookmarks, ids: recent, tagsByDocument: byDocument, selected, path })}
+    />
+  );
 }

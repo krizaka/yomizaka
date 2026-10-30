@@ -16,9 +16,39 @@ export interface WebhookEvent {
 
 /** The events a finished batch gives: always `batch.finished`; a batch of one row (a check, from the API) also `check.finished`. The ids are stable, so emitting twice queues once. */
 export function eventsOfFinishedBatch(batch: BatchView): WebhookEvent[] {
-  const rows = batch.items.map((i) => ({ line: i.line, file: i.file, reference: i.reference, state: i.state, error: i.error }));
-  const events: WebhookEvent[] = [{ id: `batch:${batch.id}`, type: WEBHOOK_EVENT.batchFinished, payload: { id: batch.id, name: batch.name, createdAt: batch.createdAt, finishedAt: batch.finishedAt, counts: batch.counts, rows } }];
+  const rows = batch.items.map((i) => ({
+    line: i.line,
+    file: i.file,
+    reference: i.reference,
+    state: i.state,
+    error: i.error,
+  }));
+  const events: WebhookEvent[] = [
+    {
+      id: `batch:${batch.id}`,
+      type: WEBHOOK_EVENT.batchFinished,
+      payload: {
+        id: batch.id,
+        name: batch.name,
+        createdAt: batch.createdAt,
+        finishedAt: batch.finishedAt,
+        counts: batch.counts,
+        rows,
+      },
+    },
+  ];
   const [only] = batch.items;
-  if (batch.items.length === 1 && only) events.push({ id: `check:${batch.id}`, type: WEBHOOK_EVENT.checkFinished, payload: { id: batch.id, state: only.state, reference: only.reference, error: only.error, finishedAt: batch.finishedAt } });
+  if (batch.items.length === 1 && only)
+    events.push({
+      id: `check:${batch.id}`,
+      type: WEBHOOK_EVENT.checkFinished,
+      payload: {
+        id: batch.id,
+        state: only.state,
+        reference: only.reference,
+        error: only.error,
+        finishedAt: batch.finishedAt,
+      },
+    });
   return events;
 }

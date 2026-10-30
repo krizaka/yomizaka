@@ -14,6 +14,8 @@ export function POST(req: Request, { params }: { params: Promise<{ id: string }>
     const { id } = await params;
     if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such flow");
     const input = await readJson(req, z.object({ versionId: z.string().uuid() }));
-    return Response.json(await publish({ id: session.account.id, email: session.account.email }, id, input.versionId, req.headers));
+    return Response.json(
+      await publish({ id: session.account.id, email: session.account.email }, id, input.versionId, req.headers),
+    );
   });
 }

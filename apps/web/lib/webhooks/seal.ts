@@ -11,7 +11,12 @@ export function sealer(serverSecret: string): { seal: (plain: string) => string;
       const iv = crypto.randomBytes(12);
       const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
       const data = Buffer.concat([cipher.update(plain, "utf8"), cipher.final()]);
-      return ["v1", iv.toString("base64url"), cipher.getAuthTag().toString("base64url"), data.toString("base64url")].join(".");
+      return [
+        "v1",
+        iv.toString("base64url"),
+        cipher.getAuthTag().toString("base64url"),
+        data.toString("base64url"),
+      ].join(".");
     },
     open(sealed) {
       const [version, iv, tag, data] = sealed.split(".");

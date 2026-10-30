@@ -16,23 +16,39 @@ describe.runIf(enabled)("document bytes in the store (ADR-0012)", () => {
   });
   const store = () => memoryStore({ kind: "none", devOnly: true, owner: "krizaka", residency: "elsewhere" });
   const holder = (s: ReturnType<typeof store>) => async () => s;
-  const account = async () => (await query<{ id: string }>("INSERT INTO accounts (email, password_hash, email_verified_at) VALUES ($1, 'x', now()) RETURNING id", [`o-${Math.random().toString(36).slice(2)}@yomizaka.test`]))[0]!.id;
+  const account = async () =>
+    (
+      await query<{ id: string }>(
+        "INSERT INTO accounts (email, password_hash, email_verified_at) VALUES ($1, 'x', now()) RETURNING id",
+        [`o-${Math.random().toString(36).slice(2)}@yomizaka.test`],
+      )
+    )[0]!.id;
   /** A not-kept document whose bytes are in the store under its key (what the write path of ADR-0012 produces). */
   const stored = async (s: ReturnType<typeof store>, opts: { retainUntil?: Date | null } = {}) => {
     const owner = await account();
-    const id = (await query<{ id: string }>(
-      "INSERT INTO documents (owner_id, title, filename, mime_type, kind, size_bytes, sha256, content, text, storage, retain_until) VALUES ($1, 'bail', 'bail.txt', 'text/plain', 'lease', $2, $3, ''::bytea, 'Loyer', 'none', $4) RETURNING id",
-      [owner, BYTES.length, Math.random().toString(16).slice(2).padEnd(64, "0"), opts.retainUntil ?? null],
-    ))[0]!.id;
+    const id = (
+      await query<{ id: string }>(
+        "INSERT INTO documents (owner_id, title, filename, mime_type, kind, size_bytes, sha256, content, text, storage, retain_until) VALUES ($1, 'bail', 'bail.txt', 'text/plain', 'lease', $2, $3, ''::bytea, 'Loyer', 'none', $4) RETURNING id",
+        [owner, BYTES.length, Math.random().toString(16).slice(2).padEnd(64, "0"), opts.retainUntil ?? null],
+      )
+    )[0]!.id;
     const key = `${owner}/${id}/original.txt`;
     await s.put(key, BYTES, { contentType: "text/plain" });
     await query("UPDATE documents SET object_key = $2 WHERE id = $1", [id, key]);
     return { owner, id, key };
   };
-  const row = async (id: string) => (await query<{ object_key: string | null; text: string; len: number }>("SELECT object_key, text, octet_length(content) AS len FROM documents WHERE id = $1", [id]))[0]!;
+  const row = async (id: string) =>
+    (
+      await query<{ object_key: string | null; text: string; len: number }>(
+        "SELECT object_key, text, octet_length(content) AS len FROM documents WHERE id = $1",
+        [id],
+      )
+    )[0]!;
 
   it("has an object_key column, null by default", async () => {
-    const [col] = await query<{ is_nullable: string }>("SELECT is_nullable FROM information_schema.columns WHERE table_name = 'documents' AND column_name = 'object_key'");
+    const [col] = await query<{ is_nullable: string }>(
+      "SELECT is_nullable FROM information_schema.columns WHERE table_name = 'documents' AND column_name = 'object_key'",
+    );
     expect(col?.is_nullable).toBe("YES");
   });
 
@@ -41,9 +57,27 @@ describe.runIf(enabled)("document bytes in the store (ADR-0012)", () => {
     const { owner, id, key } = await stored(s);
     const fromStore = await getFile(owner, id, s);
     expect(new Uint8Array(fromStore.content)).toEqual(BYTES);
-    expect(await readBytes({ mime_type: "text/plain", content: Buffer.from("legacy"), storage: "database", object_key: null }, { ownerId: owner, id }, s)).toEqual(Buffer.from("legacy"));
-    await expect(readBytes({ mime_type: "text/plain", content: Buffer.alloc(0), storage: "none", object_key: null }, { ownerId: owner, id }, s)).rejects.toMatchObject({ status: 409, body: { code: "NOT_KEPT" } });
-    await expect(readBytes({ mime_type: "text/plain", content: Buffer.alloc(0), storage: "none", object_key: key }, { ownerId: owner, id }, undefined)).rejects.toMatchObject({ status: 409, body: { code: "STORAGE_UNAVAILABLE" } });
+    expect(
+      await readBytes(
+        { mime_type: "text/plain", content: Buffer.from("legacy"), storage: "database", object_key: null },
+        { ownerId: owner, id },
+        s,
+      ),
+    ).toEqual(Buffer.from("legacy"));
+    await expect(
+      readBytes(
+        { mime_type: "text/plain", content: Buffer.alloc(0), storage: "none", object_key: null },
+        { ownerId: owner, id },
+        s,
+      ),
+    ).rejects.toMatchObject({ status: 409, body: { code: "NOT_KEPT" } });
+    await expect(
+      readBytes(
+        { mime_type: "text/plain", content: Buffer.alloc(0), storage: "none", object_key: key },
+        { ownerId: owner, id },
+        undefined,
+      ),
+    ).rejects.toMatchObject({ status: 409, body: { code: "STORAGE_UNAVAILABLE" } });
   });
 
   it("a document held in the store is not « purged » yet", async () => {

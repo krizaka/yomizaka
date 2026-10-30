@@ -52,7 +52,8 @@ export function payerAllowed(payer: Payer, types: readonly CheckTypeRow[]): bool
 }
 
 /** Pure: a check is charged when the provider accepted it (answered or pending) and it costs something; an error, a refusal or « not available yet » is never charged. */
-export const isChargeable = (state: CheckState, cents: number): boolean => cents > 0 && (state === CHECK_STATE.answered || state === CHECK_STATE.pending);
+export const isChargeable = (state: CheckState, cents: number): boolean =>
+  cents > 0 && (state === CHECK_STATE.answered || state === CHECK_STATE.pending);
 
 /** Pure: a charged check that ends without an answer (the provider never answered) is refunded. */
 export const isRefundable = (settledState: CheckState): boolean => settledState === CHECK_STATE.unavailable;
@@ -71,11 +72,27 @@ export async function chargeCheck(port: BillingPort, input: ChargeInput): Promis
   const amount = priceCents(input.type);
   const [row] = await query<{ id: string }>(
     "INSERT INTO screening_charge (screening_id, check_type, payer, provider_cost_cents, margin_cents, amount_cents, currency, description, state) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'failed') ON CONFLICT (screening_id, check_type) DO NOTHING RETURNING id",
-    [input.screeningId, input.type.key, input.payer, input.type.provider_cost_cents, input.type.margin_cents, amount, input.type.currency, input.description],
+    [
+      input.screeningId,
+      input.type.key,
+      input.payer,
+      input.type.provider_cost_cents,
+      input.type.margin_cents,
+      amount,
+      input.type.currency,
+      input.description,
+    ],
   );
   if (!row) return "duplicate";
   try {
-    const { ref } = await port.charge({ key: `${input.screeningId}:${input.type.key}`, payer: input.payer, amountCents: amount, currency: input.type.currency.toLowerCase(), description: input.description, taxCode: "software-as-a-service" });
+    const { ref } = await port.charge({
+      key: `${input.screeningId}:${input.type.key}`,
+      payer: input.payer,
+      amountCents: amount,
+      currency: input.type.currency.toLowerCase(),
+      description: input.description,
+      taxCode: "software-as-a-service",
+    });
     await query("UPDATE screening_charge SET state = 'charged', charge_ref = $2 WHERE id = $1", [row.id, ref]);
     return "charged";
   } catch {
@@ -83,10 +100,21 @@ export async function chargeCheck(port: BillingPort, input: ChargeInput): Promis
   }
 }
 /** Refunds a charged check once (the state moves from « charged » to « refunded » or nothing happens). */
-export async function refundCheck(port: BillingPort, screeningId: string, checkType: string, now: Date): Promise<boolean> {
-  const [row] = await query<{ id: string; charge_ref: string }>("SELECT id, charge_ref FROM screening_charge WHERE screening_id = $1 AND check_type = $2 AND state = 'charged'", [screeningId, checkType]);
+export async function refundCheck(
+  port: BillingPort,
+  screeningId: string,
+  checkType: string,
+  now: Date,
+): Promise<boolean> {
+  const [row] = await query<{ id: string; charge_ref: string }>(
+    "SELECT id, charge_ref FROM screening_charge WHERE screening_id = $1 AND check_type = $2 AND state = 'charged'",
+    [screeningId, checkType],
+  );
   if (!row) return false;
   await port.refund(row.charge_ref);
-  const done = await query("UPDATE screening_charge SET state = 'refunded', refunded_at = $2 WHERE id = $1 AND state = 'charged' RETURNING id", [row.id, now]);
+  const done = await query(
+    "UPDATE screening_charge SET state = 'refunded', refunded_at = $2 WHERE id = $1 AND state = 'charged' RETURNING id",
+    [row.id, now],
+  );
   return done.length > 0;
 }

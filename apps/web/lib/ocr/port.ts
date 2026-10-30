@@ -58,8 +58,23 @@ export interface PhotoOrigin {
 }
 
 export type TextSource =
-  | { kind: "ocr"; engine: string; confidence: number; photos: number; lowConfidence: boolean; origin: PhotoOrigin | null }
-  | { kind: "vision"; by: "orazaka"; runId: string; model: string | null; localConfidence: number; photos: number; origin: PhotoOrigin | null };
+  | {
+      kind: "ocr";
+      engine: string;
+      confidence: number;
+      photos: number;
+      lowConfidence: boolean;
+      origin: PhotoOrigin | null;
+    }
+  | {
+      kind: "vision";
+      by: "orazaka";
+      runId: string;
+      model: string | null;
+      localConfidence: number;
+      photos: number;
+      origin: PhotoOrigin | null;
+    };
 
 export class OcrError extends Error {
   constructor(

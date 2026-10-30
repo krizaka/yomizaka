@@ -13,7 +13,8 @@ const png = (w: number, h: number) => {
 /** A JPEG header: SOI, then segments (marker, payload), then a start-of-frame of the given marker. */
 const jpeg = (segments: [number, number[]][], sof: number, w: number, h: number, pad = 0) => {
   const out: number[] = [0xff, 0xd8];
-  for (const [marker, payload] of segments) out.push(0xff, marker, (payload.length + 2) >> 8, (payload.length + 2) & 255, ...payload);
+  for (const [marker, payload] of segments)
+    out.push(0xff, marker, (payload.length + 2) >> 8, (payload.length + 2) & 255, ...payload);
   for (let i = 0; i < pad; i++) out.push(0xff);
   out.push(0xff, sof, 0, 17, 8, h >> 8, h & 255, w >> 8, w & 255, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
   return Buffer.from(out);
@@ -25,7 +26,19 @@ describe("imageSize (read from the header, never decoded)", () => {
   });
 
   it("walks a JPEG's segments to its first start-of-frame", () => {
-    expect(imageSize(jpeg([[0xe0, [1, 2, 3, 4]], [0xdb, [0, 0, 0]]], 0xc0, 1200, 800))).toEqual({ width: 1200, height: 800 });
+    expect(
+      imageSize(
+        jpeg(
+          [
+            [0xe0, [1, 2, 3, 4]],
+            [0xdb, [0, 0, 0]],
+          ],
+          0xc0,
+          1200,
+          800,
+        ),
+      ),
+    ).toEqual({ width: 1200, height: 800 });
     expect(imageSize(jpeg([], 0xc2, 3000, 2000))).toEqual({ width: 3000, height: 2000 });
   });
 
@@ -42,7 +55,8 @@ describe("imageSize (read from the header, never decoded)", () => {
 });
 
 describe("isHeif", () => {
-  const box = (brand: string) => Buffer.concat([Buffer.from([0, 0, 0, 24]), Buffer.from("ftyp"), Buffer.from(brand), Buffer.alloc(8)]);
+  const box = (brand: string) =>
+    Buffer.concat([Buffer.from([0, 0, 0, 24]), Buffer.from("ftyp"), Buffer.from(brand), Buffer.alloc(8)]);
   it("is an ftyp box with a HEIF major brand", () => {
     expect(isHeif(box("heic"))).toBe(true);
     expect(isHeif(box("mif1"))).toBe(true);

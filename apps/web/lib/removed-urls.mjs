@@ -9,7 +9,16 @@ import { readFileSync } from "node:fs";
  */
 
 /** The audience landings of the old site, by language: the product is one, so they lead to the home. */
-export const OLD_AUDIENCE_SLUGS = ["tenant", "landlord", "freelancer", "business", "locataire", "proprietaire", "travailleur-autonome", "entreprise"];
+export const OLD_AUDIENCE_SLUGS = [
+  "tenant",
+  "landlord",
+  "freelancer",
+  "business",
+  "locataire",
+  "proprietaire",
+  "travailleur-autonome",
+  "entreprise",
+];
 
 /** Old path (after the language) -> the section or page of the new site it went to. */
 const MOVED = {
@@ -47,7 +56,9 @@ const RENAMED_APP = [
  */
 const hasVideos = (() => {
   try {
-    return (JSON.parse(readFileSync(new URL("../content/app-videos.json", import.meta.url), "utf8")).videos ?? []).length > 0;
+    return (
+      (JSON.parse(readFileSync(new URL("../content/app-videos.json", import.meta.url), "utf8")).videos ?? []).length > 0
+    );
   } catch {
     return false;
   }
@@ -59,21 +70,26 @@ export const PARKED_PAGES = hasVideos ? [] : ["/download"];
  * (`/verify/contract/<sha256>`, yomizaka#71) answers 308 to its route.
  * @type {RemovedRule[]}
  */
-export const ALIAS_RULES = [{ source: "/verify/contract/:sha256([0-9a-f]{64})", destination: "/api/verify/contract/:sha256", permanent: true }];
+export const ALIAS_RULES = [
+  { source: "/verify/contract/:sha256([0-9a-f]{64})", destination: "/api/verify/contract/:sha256", permanent: true },
+];
 
 /** @returns {RemovedRule[]} */
 export function redirectRules() {
   const rules = [];
   for (const path of PARKED_PAGES) {
-    for (const locale of ["en", "fr"]) rules.push({ source: `/${locale}${path}`, destination: `/${locale}`, permanent: true });
+    for (const locale of ["en", "fr"])
+      rules.push({ source: `/${locale}${path}`, destination: `/${locale}`, permanent: true });
     rules.push({ source: path, destination: "/", permanent: true });
   }
   for (const [from, to] of [...Object.entries(MOVED_PAGES), ...RENAMED_APP]) {
-    for (const locale of ["en", "fr"]) rules.push({ source: `/${locale}${from}`, destination: `/${locale}${to}`, permanent: true });
+    for (const locale of ["en", "fr"])
+      rules.push({ source: `/${locale}${from}`, destination: `/${locale}${to}`, permanent: true });
     rules.push({ source: from, destination: to, permanent: true });
   }
   for (const [path, to] of Object.entries(MOVED)) {
-    for (const locale of ["en", "fr"]) rules.push({ source: `/${locale}${path}`, destination: `/${locale}${to}`, permanent: true });
+    for (const locale of ["en", "fr"])
+      rules.push({ source: `/${locale}${path}`, destination: `/${locale}${to}`, permanent: true });
     // No language in the address: the home chooses the visitor's language itself.
     rules.push({ source: path, destination: `/${to}`, permanent: true });
   }

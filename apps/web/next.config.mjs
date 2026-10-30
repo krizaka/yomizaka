@@ -5,7 +5,9 @@ import { ALIAS_RULES, redirectRules } from "./lib/removed-urls.mjs";
 
 const packageVersion = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8")).version;
 // package.json's version + the short commit DigitalOcean passes at build (APP_COMMIT_SHA): the version every page shows.
-const appVersion = process.env.APP_VERSION?.trim() || (process.env.APP_COMMIT_SHA ? `${packageVersion}+${process.env.APP_COMMIT_SHA.slice(0, 7)}` : packageVersion);
+const appVersion =
+  process.env.APP_VERSION?.trim() ||
+  (process.env.APP_COMMIT_SHA ? `${packageVersion}+${process.env.APP_COMMIT_SHA.slice(0, 7)}` : packageVersion);
 const production = process.env.NODE_ENV === "production";
 
 /**
@@ -54,7 +56,16 @@ const nextConfig = {
   turbopack: { resolveAlias: { "fs/promises": { browser: "./lib/browser-empty.ts" } } },
   // The pool, the PDF reader and the photo stack (image library, HEIC decoder, OCR with its worker thread) stay Node modules, required at run time
   // (the OCR's own files are carried into the image by the Dockerfile: the tracer cannot see a worker thread's requires — ADR-0010).
-  serverExternalPackages: ["@krizaka/email", "pg", "unpdf", "sharp", "heic-decode", "tesseract.js", "tesseract.js-core", "opendal"],
+  serverExternalPackages: [
+    "@krizaka/email",
+    "pg",
+    "unpdf",
+    "sharp",
+    "heic-decode",
+    "tesseract.js",
+    "tesseract.js-core",
+    "opendal",
+  ],
   // The pages removed by « Simplify Yomizaka » (lib/removed-urls.mjs): 308 to their new home, in both languages.
   async redirects() {
     return [...redirectRules(), ...ALIAS_RULES];

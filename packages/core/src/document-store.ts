@@ -37,7 +37,10 @@ export interface DocumentStore {
 }
 
 export class StorageError extends Error {
-  constructor(readonly status: number, message: string) {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
     super(message);
     this.name = "StorageError";
   }
@@ -50,6 +53,7 @@ const KEY = /^[a-z0-9][a-z0-9/_.-]{0,254}$/;
  * and another entry in a map: refused everywhere).
  */
 export function assertKey(key: string): string {
-  if (!KEY.test(key) || key.includes("..") || key.includes("//") || key.endsWith("/") || key.split("/").includes(".")) throw new StorageError(400, "Not a valid object key");
+  if (!KEY.test(key) || key.includes("..") || key.includes("//") || key.endsWith("/") || key.split("/").includes("."))
+    throw new StorageError(400, "Not a valid object key");
   return key;
 }

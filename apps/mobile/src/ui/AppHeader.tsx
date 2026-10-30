@@ -27,9 +27,24 @@ export function AppHeader({ title }: Readonly<{ title: string }>) {
       size="inline"
       actions={
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-          <IconButton label={t("header.verify")} icon={<PlusIcon />} variant="secondary" size="sm" onPress={() => router.navigate(routes.verify(locale) as never)} />
-          <Pressable role="button" aria-label={name ? t("account.openNamed", { name }) : t("account.open")} hitSlop={8} onPress={() => router.navigate(routes.settings(locale) as never)}>
-            <Avatar size="sm" defaultAvatar={{ brand: "yomizaka", seed: me.data?.avatarSeed ?? me.data?.email ?? "yomizaka" }} fallback={name.charAt(0).toUpperCase() || "Y"} />
+          <IconButton
+            label={t("header.verify")}
+            icon={<PlusIcon />}
+            variant="secondary"
+            size="sm"
+            onPress={() => router.navigate(routes.verify(locale) as never)}
+          />
+          <Pressable
+            role="button"
+            aria-label={name ? t("account.openNamed", { name }) : t("account.open")}
+            hitSlop={8}
+            onPress={() => router.navigate(routes.settings(locale) as never)}
+          >
+            <Avatar
+              size="sm"
+              defaultAvatar={{ brand: "yomizaka", seed: me.data?.avatarSeed ?? me.data?.email ?? "yomizaka" }}
+              fallback={name.charAt(0).toUpperCase() || "Y"}
+            />
           </Pressable>
         </View>
       }

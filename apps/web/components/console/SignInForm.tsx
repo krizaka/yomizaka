@@ -21,7 +21,8 @@ export function SignInForm({ next }: Readonly<{ next: string }>) {
   const router = useRouter();
   const [problem, setProblem] = useState<string | null>(null);
   const request = useMutation({
-    mutationFn: (body: { email: string; password: string }) => krizakaFetch("/api/auth/sign-in", { method: "POST", json: body }),
+    mutationFn: (body: { email: string; password: string }) =>
+      krizakaFetch("/api/auth/sign-in", { method: "POST", json: body }),
     onSuccess: () => {
       router.replace(next);
       router.refresh();

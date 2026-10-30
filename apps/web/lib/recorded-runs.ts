@@ -1,4 +1,11 @@
-import { type Analysis, type ComplianceReport, orazakaRun, type Perspective, PERSPECTIVES, reportOf } from "@yomizaka/core";
+import {
+  type Analysis,
+  type ComplianceReport,
+  orazakaRun,
+  type Perspective,
+  PERSPECTIVES,
+  reportOf,
+} from "@yomizaka/core";
 
 import landlord from "@/content/recorded-runs/landlord.json";
 import tenant from "@/content/recorded-runs/tenant.json";
@@ -26,18 +33,39 @@ export interface RecordedRun extends Showcase {
   source: string;
 }
 
-export function readRecording(side: Perspective, raw: unknown): { run: RecordedRun; analysis: Analysis; document: Parameters<typeof buildPayload>[0] } {
-  const fail = (why: string) => new RecordedRunError(`recorded run "${side}": ${why} — record it with scripts/record-runs.mjs`);
-  const file = raw as { side?: string; recordedAt?: string; source?: string; studio?: string; document?: { title: string; filename: string; text: string }; inputs?: unknown; run?: unknown } | null;
-  if (!file || file.side !== side || file.studio !== "compliance-check" || !file.document?.text || !file.recordedAt) throw fail("the file is not a recording");
+export function readRecording(
+  side: Perspective,
+  raw: unknown,
+): { run: RecordedRun; analysis: Analysis; document: Parameters<typeof buildPayload>[0] } {
+  const fail = (why: string) =>
+    new RecordedRunError(`recorded run "${side}": ${why} — record it with scripts/record-runs.mjs`);
+  const file = raw as {
+    side?: string;
+    recordedAt?: string;
+    source?: string;
+    studio?: string;
+    document?: { title: string; filename: string; text: string };
+    inputs?: unknown;
+    run?: unknown;
+  } | null;
+  if (!file || file.side !== side || file.studio !== "compliance-check" || !file.document?.text || !file.recordedAt)
+    throw fail("the file is not a recording");
   const parsed = orazakaRun.safeParse(file.run);
-  if (!parsed.success || parsed.data.status !== RUN_SUCCEEDED || !parsed.data.finishedAt) throw fail("Orazaka did not return a finished run");
+  if (!parsed.success || parsed.data.status !== RUN_SUCCEEDED || !parsed.data.finishedAt)
+    throw fail("Orazaka did not return a finished run");
   const run = parsed.data;
   const finishedAt = run.finishedAt!; // checked just above
   const report = reportOf("compliance-check", run.outputs) as ComplianceReport | null;
-  if (!report || !("findings" in report) || report.findings.length === 0) throw fail("Orazaka's answer holds no compliance report");
+  if (!report || !("findings" in report) || report.findings.length === 0)
+    throw fail("Orazaka's answer holds no compliance report");
   const bytes = new TextEncoder().encode(file.document.text);
-  const document = { sha256: sha256(bytes), filename: file.document.filename, title: file.document.title, sizeBytes: bytes.length, pages: null };
+  const document = {
+    sha256: sha256(bytes),
+    filename: file.document.filename,
+    title: file.document.title,
+    sizeBytes: bytes.length,
+    pages: null,
+  };
   const analysis: Analysis = {
     id: `recorded-${side}`,
     studio: "compliance-check",
@@ -59,7 +87,14 @@ export function readRecording(side: Perspective, raw: unknown): { run: RecordedR
       runId: run.id,
       studioVersion: run.blueprintVersion ?? null,
       finishedAt,
-      document: { title: document.title, filename: document.filename, sha256: document.sha256, pages: null, text: file.document.text, mimeType: "text/plain" },
+      document: {
+        title: document.title,
+        filename: document.filename,
+        sha256: document.sha256,
+        pages: null,
+        text: file.document.text,
+        mimeType: "text/plain",
+      },
       report,
     },
     analysis,
@@ -68,7 +103,10 @@ export function readRecording(side: Perspective, raw: unknown): { run: RecordedR
 }
 
 /** Both recorded runs, validated now (at module load: a missing or broken recording fails the build, not the visitor). */
-const ALL = Object.fromEntries(PERSPECTIVES.map((side) => [side, readRecording(side, FILES[side])])) as Record<Perspective, ReturnType<typeof readRecording>>;
+const ALL = Object.fromEntries(PERSPECTIVES.map((side) => [side, readRecording(side, FILES[side])])) as Record<
+  Perspective,
+  ReturnType<typeof readRecording>
+>;
 
 export const recordedRun = (side: Perspective): RecordedRun => ALL[side].run;
 export const recordedRuns = (): RecordedRun[] => PERSPECTIVES.map(recordedRun);

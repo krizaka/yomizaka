@@ -20,7 +20,9 @@ export function DocumentRow({ document }: Readonly<{ document: DocumentSummary }
           {document.title}
         </Txt>
         <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
-          <Badge tone={document.status === "attention" ? "warning" : "neutral"}>{t(`document.status.${document.status}`)}</Badge>
+          <Badge tone={document.status === "attention" ? "warning" : "neutral"}>
+            {t(`document.status.${document.status}`)}
+          </Badge>
           <Txt tone="muted" variant="caption">
             {t(`document.kind.${document.kind}`)}
           </Txt>

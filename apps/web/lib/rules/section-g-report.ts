@@ -30,8 +30,29 @@ export async function withSectionG(report: ComplianceReport, settings: Reader): 
   const result = checkSectionG(input, await talTableFrom(settings, TAL));
   const dated = deadlineInputFromFacts(report.facts, report.asOf);
   const deadline = dated ? sectionGDeadline(dated) : null;
-  const shaped = sectionGFinding(result, "fr", fr.sectionG, ruleTitle("TS-G-001", "fr", null), requestSentences(result, deadline, "fr", { deadline: fr.sectionGDeadline, request: fr.sectionGRequest }));
-  const english = sectionGFinding(result, "en", en.sectionG, ruleTitle("TS-G-001", "en", null), requestSentences(result, deadline, "en", { deadline: en.sectionGDeadline, request: en.sectionGRequest }));
+  const shaped = sectionGFinding(
+    result,
+    "fr",
+    fr.sectionG,
+    ruleTitle("TS-G-001", "fr", null),
+    requestSentences(result, deadline, "fr", { deadline: fr.sectionGDeadline, request: fr.sectionGRequest }),
+  );
+  const english = sectionGFinding(
+    result,
+    "en",
+    en.sectionG,
+    ruleTitle("TS-G-001", "en", null),
+    requestSentences(result, deadline, "en", { deadline: en.sectionGDeadline, request: en.sectionGRequest }),
+  );
   if (!shaped || !english) return report;
-  return appendFinding(report, { ruleId: shaped.ruleId, title: shaped.title ?? undefined, severity: shaped.severity, verdict: shaped.verdict, explanation: shaped.explanation, explanationEn: english.explanation, method: shaped.method ?? undefined, citation: shaped.citation ?? undefined });
+  return appendFinding(report, {
+    ruleId: shaped.ruleId,
+    title: shaped.title ?? undefined,
+    severity: shaped.severity,
+    verdict: shaped.verdict,
+    explanation: shaped.explanation,
+    explanationEn: english.explanation,
+    method: shaped.method ?? undefined,
+    citation: shaped.citation ?? undefined,
+  });
 }

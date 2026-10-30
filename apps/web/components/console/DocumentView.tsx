@@ -7,7 +7,16 @@ import { DescriptionList } from "@krizaka/ui/description-list";
 import { DetailLayout } from "@krizaka/ui/detail-layout";
 import type { Located } from "@krizaka/ui/document-viewer";
 import { Tabs } from "@krizaka/ui/tabs";
-import { ANALYSIS_STATUS, type Audience, type DocumentView as DocumentViewData, documentView, isExtracting, type Jurisdiction, queryKeys, type Studio } from "@yomizaka/core";
+import {
+  ANALYSIS_STATUS,
+  type Audience,
+  type DocumentView as DocumentViewData,
+  documentView,
+  isExtracting,
+  type Jurisdiction,
+  queryKeys,
+  type Studio,
+} from "@yomizaka/core";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
@@ -42,26 +51,54 @@ import { StartCards, StartCheckActions } from "./StartChecks";
  * (the document, the lit finding, the deletion); each tab and the actions are their own component (yomizaka#320, #110).
  */
 /** Where the document sits: its collection (the way back), or null when the page could not say. */
-export interface DocumentPlace { libraryId: string; collectionId: string; name: string; isDefault: boolean }
+export interface DocumentPlace {
+  libraryId: string;
+  collectionId: string;
+  name: string;
+  isDefault: boolean;
+}
 
 type Say = ReturnType<typeof useSay>["say"];
 type Facts = ReturnType<typeof documentFacts>;
 type StartProps = Parameters<typeof StartCheckActions>[0];
 
 function retentionText(doc: DocumentViewData, say: Say, locale: Parameters<typeof formatDate>[1]): string {
-  if (doc.purged) {return say("document.where.retentionNotKept");}
-  if (doc.retainUntil) {return say("document.where.retentionUntil", { date: formatDate(doc.retainUntil, locale) });}
+  if (doc.purged) {
+    return say("document.where.retentionNotKept");
+  }
+  if (doc.retainUntil) {
+    return say("document.where.retentionUntil", { date: formatDate(doc.retainUntil, locale) });
+  }
   return say("document.where.retentionNone");
 }
 
 /** « Voir dans le fichier »: on a narrow screen the file sits above the findings, bring it into view; the viewer scrolls to the passage itself. */
 function bringIntoView(id: string, viewer: HTMLElement | null, textShown: boolean) {
-  if (globalThis.matchMedia?.("(max-width: 1279px)").matches) {viewer?.scrollIntoView({ block: "start", behavior: globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });}
-  if (textShown) {document.getElementById(`passage-${id}`)?.scrollIntoView({ block: "center" });}
+  if (globalThis.matchMedia?.("(max-width: 1279px)").matches) {
+    viewer?.scrollIntoView({
+      block: "start",
+      behavior: globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+    });
+  }
+  if (textShown) {
+    document.getElementById(`passage-${id}`)?.scrollIntoView({ block: "center" });
+  }
 }
 
 /** The aside of a reported document: its facts, the other checks as actions and the sharing (design § 5.3). */
-function ReportAside({ doc, facts, placeName, retention, startProps }: Readonly<{ doc: DocumentViewData; facts: Facts; placeName: string | null; retention: string; startProps: Omit<StartProps, "done"> }>) {
+function ReportAside({
+  doc,
+  facts,
+  placeName,
+  retention,
+  startProps,
+}: Readonly<{
+  doc: DocumentViewData;
+  facts: Facts;
+  placeName: string | null;
+  retention: string;
+  startProps: Omit<StartProps, "done">;
+}>) {
   const { say } = useSay();
   const { latestCompliance, certifiable } = facts;
   return (
@@ -70,7 +107,13 @@ function ReportAside({ doc, facts, placeName, retention, startProps }: Readonly<
         <h2 id="document-facts-title" className="m-0 text-base font-bold text-fg">
           {say("document.facts.title")}
         </h2>
-        <DescriptionList items={[...(placeName ? [{ term: say("document.facts.collection"), details: placeName }] : []), { term: say("document.file"), details: <span className="break-all">{doc.filename}</span> }, { term: say("document.where.title"), details: retention }]} />
+        <DescriptionList
+          items={[
+            ...(placeName ? [{ term: say("document.facts.collection"), details: placeName }] : []),
+            { term: say("document.file"), details: <span className="break-all">{doc.filename}</span> },
+            { term: say("document.where.title"), details: retention },
+          ]}
+        />
       </section>
       <StartCheckActions {...startProps} done={facts.done} />
       {certifiable && latestCompliance ? (
@@ -85,14 +128,33 @@ function ReportAside({ doc, facts, placeName, retention, startProps }: Readonly<
   );
 }
 
-export function DocumentView({ initial, tab, place = null, perspective = null, bundle = null, answers, offer }: Readonly<{ initial: DocumentViewData; tab: DocumentTab; place?: DocumentPlace | null; perspective?: Audience | null; bundle?: LeaseBundle | null; answers?: Record<string, Answer>; offer: { studios: readonly Studio[]; jurisdictions: readonly Jurisdiction[]; rulesets: readonly string[] } }>) {
+export function DocumentView({
+  initial,
+  tab,
+  place = null,
+  perspective = null,
+  bundle = null,
+  answers,
+  offer,
+}: Readonly<{
+  initial: DocumentViewData;
+  tab: DocumentTab;
+  place?: DocumentPlace | null;
+  perspective?: Audience | null;
+  bundle?: LeaseBundle | null;
+  answers?: Record<string, Answer>;
+  offer: { studios: readonly Studio[]; jurisdictions: readonly Jurisdiction[]; rulesets: readonly string[] };
+}>) {
   const { say, locale } = useSay();
   const router = useRouter();
   const client = useQueryClient();
   const params = useSearchParams();
   const doc = useQuery({
     queryKey: queryKeys.document(initial.id),
-    queryFn: () => krizakaFetch(`/api/documents/${initial.id}`, { schema: z.object({ document: documentView }) }).then((r) => r.document),
+    queryFn: () =>
+      krizakaFetch(`/api/documents/${initial.id}`, { schema: z.object({ document: documentView }) }).then(
+        (r) => r.document,
+      ),
     initialData: initial,
     // The text is read after the upload answered (202 Accepted): look again until it is.
     refetchInterval: (query) => (isExtracting(query.state.data?.extraction) ? 1500 : false),
@@ -122,7 +184,9 @@ export function DocumentView({ initial, tab, place = null, perspective = null, b
     activeId,
     onSelect: (id) => {
       setActiveId(id);
-      if (!id) {return;}
+      if (!id) {
+        return;
+      }
       go("document", `?finding=${encodeURIComponent(id)}`);
       bringIntoView(id, viewerRef.current, !isPdf || Boolean(doc.textSource));
     },
@@ -135,12 +199,31 @@ export function DocumentView({ initial, tab, place = null, perspective = null, b
 
   return (
     <DetailLayout
-      back={place ? <Link href={libraryPath(locale, place.libraryId, place.collectionId)}>{placeName}</Link> : <Link href={`/${locale}/app`}>{say("document.back")}</Link>}
+      back={
+        place ? (
+          <Link href={libraryPath(locale, place.libraryId, place.collectionId)}>{placeName}</Link>
+        ) : (
+          <Link href={`/${locale}/app`}>{say("document.back")}</Link>
+        )
+      }
       eyebrow={`${kindName} · ${doc.filename}`}
       title={title}
       status={<Badge tone={STATUS_TONE[doc.status]}>{say(`statuses.${doc.status}`)}</Badge>}
-      meta={[doc.pages ? say("library.pages", { count: doc.pages }) : null, formatBytes(doc.sizeBytes, locale), doc.retainUntil ? say("document.where.retentionUntil", { date: formatDate(doc.retainUntil, locale) }) : null].filter(Boolean).join(" · ")}
-      actions={<DocumentActions fileUrl={fileUrl} reportHref={certifiable ? reportHref : null} onDelete={() => remove.mutate()} deleting={remove.isPending} />}
+      meta={[
+        doc.pages ? say("library.pages", { count: doc.pages }) : null,
+        formatBytes(doc.sizeBytes, locale),
+        doc.retainUntil ? say("document.where.retentionUntil", { date: formatDate(doc.retainUntil, locale) }) : null,
+      ]
+        .filter(Boolean)
+        .join(" · ")}
+      actions={
+        <DocumentActions
+          fileUrl={fileUrl}
+          reportHref={certifiable ? reportHref : null}
+          onDelete={() => remove.mutate()}
+          deleting={remove.isPending}
+        />
+      }
       tabs={
         <Tabs.Nav label={say("document.viewer")} current={`${path}/${tab}`}>
           {facts.tabs.map((t) => (
@@ -153,17 +236,43 @@ export function DocumentView({ initial, tab, place = null, perspective = null, b
         </Tabs.Nav>
       }
       aside={
-        facts.reported ? <ReportAside doc={doc} facts={facts} placeName={placeName} retention={retention} startProps={startProps} /> : undefined
+        facts.reported ? (
+          <ReportAside doc={doc} facts={facts} placeName={placeName} retention={retention} startProps={startProps} />
+        ) : undefined
       }
     >
       {isExtracting(doc.extraction) ? <Alert tone="info">{say("document.reading")}</Alert> : null}
-      {doc.extraction === "failed" ? <Alert tone="danger">{say(`errors.${doc.extractionError ?? "UNREADABLE_FILE"}`)}</Alert> : null}
-      {doc.analyses.filter((a) => a.status === ANALYSIS_STATUS.running).map((a) => (
-        <LiveAnalysis key={a.id} documentId={doc.id} analysis={a} />
-      ))}
-      {tab === "rapport" ? <DocumentReportTab doc={doc} facts={facts} selection={selection} perspective={perspective} bundle={bundle} answers={answers} startCards={startCards} /> : null}
+      {doc.extraction === "failed" ? (
+        <Alert tone="danger">{say(`errors.${doc.extractionError ?? "UNREADABLE_FILE"}`)}</Alert>
+      ) : null}
+      {doc.analyses
+        .filter((a) => a.status === ANALYSIS_STATUS.running)
+        .map((a) => (
+          <LiveAnalysis key={a.id} documentId={doc.id} analysis={a} />
+        ))}
+      {tab === "rapport" ? (
+        <DocumentReportTab
+          doc={doc}
+          facts={facts}
+          selection={selection}
+          perspective={perspective}
+          bundle={bundle}
+          answers={answers}
+          startCards={startCards}
+        />
+      ) : null}
       {tab === "document" ? (
-        <DocumentFileTab doc={doc} path={path} isPdf={isPdf} report={latestReport} viewer={{ fileUrl, highlights, activeId, onActiveChange: setActiveId, onLocate: setFound }} viewerRef={viewerRef} found={found} onDelete={() => remove.mutate()} deleting={remove.isPending} />
+        <DocumentFileTab
+          doc={doc}
+          path={path}
+          isPdf={isPdf}
+          report={latestReport}
+          viewer={{ fileUrl, highlights, activeId, onActiveChange: setActiveId, onLocate: setFound }}
+          viewerRef={viewerRef}
+          found={found}
+          onDelete={() => remove.mutate()}
+          deleting={remove.isPending}
+        />
       ) : null}
       {tab === "historique" ? <DocumentHistoryTab doc={doc} path={path} latestCompliance={latestCompliance} /> : null}
     </DetailLayout>

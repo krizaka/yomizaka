@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { defOf, GROUPS, isSettingKey, keysOfGroup, SCOPE, SETTING_KEYS, type SettingKey,SETTINGS } from "./registry";
+import { defOf, GROUPS, isSettingKey, keysOfGroup, SCOPE, SETTING_KEYS, type SettingKey, SETTINGS } from "./registry";
 import { resolveValue } from "./resolve";
 
 describe("the registry", () => {
@@ -36,7 +36,10 @@ describe("the effective value is user, then workspace, then global, then the def
   ] as const)("%s", (_name, layers, value, source) => expect(resolveValue(key, layers)).toEqual({ value, source }));
 
   it("a scope the setting cannot be set at is never read (maintenance is global only)", () => {
-    expect(resolveValue("app.maintenance", { user: true, workspace: true })).toEqual({ value: false, source: "default" });
+    expect(resolveValue("app.maintenance", { user: true, workspace: true })).toEqual({
+      value: false,
+      source: "default",
+    });
   });
 
   it("a deployment default replaces the registry's default but never an override", () => {
@@ -46,5 +49,13 @@ describe("the effective value is user, then workspace, then global, then the def
 });
 
 describe("what the registry says is configurable", () => {
-  it.each(["app.maintenance", "signup.open", "payments.enabled", "audit.freeFirst", "features.keepDocuments", "limits.maxFileMb", "plans.free.auditsPerDay"] as const)("%s exists", (key) => expect(SETTINGS[key]).toBeDefined());
+  it.each([
+    "app.maintenance",
+    "signup.open",
+    "payments.enabled",
+    "audit.freeFirst",
+    "features.keepDocuments",
+    "limits.maxFileMb",
+    "plans.free.auditsPerDay",
+  ] as const)("%s exists", (key) => expect(SETTINGS[key]).toBeDefined());
 });

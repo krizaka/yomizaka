@@ -35,9 +35,17 @@ function useWatched(folder: string | null) {
 }
 
 /** Files dropped on the window from Finder: the native side allowed those files, for this session only. One is a check, several a batch. */
-function useWindowDrop(checkOne: (path: string) => void, checkMany: (input: { name: string; paths: string[] }) => void, t: Translate, locale: string) {
+function useWindowDrop(
+  checkOne: (path: string) => void,
+  checkMany: (input: { name: string; paths: string[] }) => void,
+  t: Translate,
+  locale: string,
+) {
   const [dragging, setDragging] = useState(false);
-  const dropDate = useCallback(() => new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date()), [locale]);
+  const dropDate = useCallback(
+    () => new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date()),
+    [locale],
+  );
   useEffect(() => {
     const stops = [
       folders.onDragging(setDragging),
@@ -53,7 +61,11 @@ function useWindowDrop(checkOne: (path: string) => void, checkMany: (input: { na
 }
 
 /** The folder on screen is watched by the native side: a change lists it again; in a watched folder, arrivals are checked. */
-function useFolderWatch(folder: string | null, checkMany: (input: { name: string; paths: string[] }) => void, t: Translate) {
+function useFolderWatch(
+  folder: string | null,
+  checkMany: (input: { name: string; paths: string[] }) => void,
+  t: Translate,
+) {
   const queryClient = useQueryClient();
   useEffect(() => {
     if (!folder) return;
@@ -62,7 +74,8 @@ function useFolderWatch(folder: string | null, checkMany: (input: { name: string
       if (changed !== folder) return;
       await queryClient.invalidateQueries({ queryKey: folderKey(folder) });
       const fresh = inbox.arrivals(folder, (await yomizakaNative.listDocuments(folder)).entries);
-      if (fresh.length) checkMany({ name: t("batch.nameOfFolder", { name: lastPart(folder) }), paths: fresh.map((e) => e.path) });
+      if (fresh.length)
+        checkMany({ name: t("batch.nameOfFolder", { name: lastPart(folder) }), paths: fresh.map((e) => e.path) });
     });
     return () => {
       void off.then((stop) => stop());
@@ -71,7 +84,12 @@ function useFolderWatch(folder: string | null, checkMany: (input: { name: string
   }, [folder, queryClient, checkMany, t]);
 }
 
-function WatchToggle({ folder, entries, watched, onChange }: Readonly<{ folder: string; entries: Listing["entries"]; watched: boolean; onChange: (on: boolean) => void }>) {
+function WatchToggle({
+  folder,
+  entries,
+  watched,
+  onChange,
+}: Readonly<{ folder: string; entries: Listing["entries"]; watched: boolean; onChange: (on: boolean) => void }>) {
   const { t } = useI18n();
   return (
     <div className="flex flex-col gap-1">
@@ -93,7 +111,17 @@ function WatchToggle({ folder, entries, watched, onChange }: Readonly<{ folder: 
   );
 }
 
-function FolderEntries({ folder, listing, busy, onCheck }: Readonly<{ folder: string; listing: { data?: Listing; isPending: boolean }; busy: boolean; onCheck: (path: string) => void }>) {
+function FolderEntries({
+  folder,
+  listing,
+  busy,
+  onCheck,
+}: Readonly<{
+  folder: string;
+  listing: { data?: Listing; isPending: boolean };
+  busy: boolean;
+  onCheck: (path: string) => void;
+}>) {
   const { t, locale } = useI18n();
   return (
     <List
@@ -109,7 +137,13 @@ function FolderEntries({ folder, listing, busy, onCheck }: Readonly<{ folder: st
               title: entry.name,
               meta: <span>{sizeOf(entry.size, locale)}</span>,
               actions: (
-                <Button size="sm" variant="secondary" disabled={busy} onClick={() => onCheck(entry.path)} data-testid="check-document">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={busy}
+                  onClick={() => onCheck(entry.path)}
+                  data-testid="check-document"
+                >
                   {t("library.check")}
                 </Button>
               ),
@@ -133,11 +167,19 @@ function subtitleOf(folder: string | null, dragging: boolean, t: Translate): str
  * The library: the folders the person granted, a folder's documents, and the window as a drop zone — one document dropped
  * is a check, several are a batch. A watched folder checks what arrives in it.
  */
-export function Library({ folder, go, onAddFolder }: Readonly<{ folder: string | null; go: (route: Route) => void; onAddFolder: () => void }>) {
+export function Library({
+  folder,
+  go,
+  onAddFolder,
+}: Readonly<{ folder: string | null; go: (route: Route) => void; onAddFolder: () => void }>) {
   const { t, locale } = useI18n();
   const queryClient = useQueryClient();
   const granted = useQuery({ queryKey: FOLDERS_KEY, queryFn: folders.list });
-  const listing = useQuery({ queryKey: folderKey(folder ?? ""), queryFn: () => yomizakaNative.listDocuments(folder as string), enabled: folder !== null });
+  const listing = useQuery({
+    queryKey: folderKey(folder ?? ""),
+    queryFn: () => yomizakaNative.listDocuments(folder as string),
+    enabled: folder !== null,
+  });
   const check = useCheck(go);
   const batch = useBatch(go);
   const [watched, setWatched] = useWatched(folder);
@@ -173,7 +215,12 @@ export function Library({ folder, go, onAddFolder }: Readonly<{ folder: string |
           items={granted.data ?? []}
           getId={(path) => path}
           loading={granted.isPending}
-          row={(path) => ({ title: lastPart(path), href: `#/library/${encodeURIComponent(path)}`, leading: <LocalIcon size={16} />, meta: inbox.isWatched(path) ? <Badge tone="accent">{t("library.watched")}</Badge> : undefined })}
+          row={(path) => ({
+            title: lastPart(path),
+            href: `#/library/${encodeURIComponent(path)}`,
+            leading: <LocalIcon size={16} />,
+            meta: inbox.isWatched(path) ? <Badge tone="accent">{t("library.watched")}</Badge> : undefined,
+          })}
           empty={<p className="text-sm text-fg-secondary">{t("library.emptyFolders")}</p>}
         />
         <Badge tone="accent" className="self-start">
@@ -187,16 +234,32 @@ export function Library({ folder, go, onAddFolder }: Readonly<{ folder: string |
             <p className="text-fg-secondary">{subtitleOf(folder, dragging, t)}</p>
           </div>
           {folder && documents.length > 1 ? (
-            <Button variant="primary" loading={batch.isPending} disabled={busy} onClick={() => checkMany({ name: t("batch.nameOfFolder", { name: lastPart(folder) }), paths: documents.map((d) => d.path) })}>
+            <Button
+              variant="primary"
+              loading={batch.isPending}
+              disabled={busy}
+              onClick={() =>
+                checkMany({
+                  name: t("batch.nameOfFolder", { name: lastPart(folder) }),
+                  paths: documents.map((d) => d.path),
+                })
+              }
+            >
               {t("library.checkAll")}
             </Button>
           ) : null}
         </header>
         {refusal ? <Alert tone="danger">{refusalText(refusal, t)}</Alert> : null}
         {check.isPending ? <p className="text-fg-secondary">{t("check.preparing")}</p> : null}
-        {isRoot ? <WatchToggle folder={folder} entries={listing.data?.entries ?? []} watched={watched} onChange={setWatched} /> : null}
+        {isRoot ? (
+          <WatchToggle folder={folder} entries={listing.data?.entries ?? []} watched={watched} onChange={setWatched} />
+        ) : null}
         {folder === null ? (
-          <EmptyState icon={<LocalIcon size={28} />} title={t("library.drop")} description={(granted.data ?? []).length ? t("library.dropHint") : t("library.emptyFolders")} />
+          <EmptyState
+            icon={<LocalIcon size={28} />}
+            title={t("library.drop")}
+            description={(granted.data ?? []).length ? t("library.dropHint") : t("library.emptyFolders")}
+          />
         ) : (
           <FolderEntries folder={folder} listing={listing} busy={busy} onCheck={checkOne} />
         )}

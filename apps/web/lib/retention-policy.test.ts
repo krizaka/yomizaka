@@ -6,8 +6,19 @@ const p = (id: string, purgeOn: Policy["purgeOn"], days: number | null = null): 
 
 describe("the retention policy in force (yomizaka#125)", () => {
   it("the owner's own rule wins over the global one, which wins over the document type's", () => {
-    expect(inForce([{ policy: p("type", "after-decision"), rank: 2 }, { policy: p("global", "after-check"), rank: 1 }, { policy: p("own", "days", 7), rank: 0 }])?.id).toBe("own");
-    expect(inForce([{ policy: p("type", "after-decision"), rank: 2 }, { policy: p("global", "after-check"), rank: 1 }])?.id).toBe("global");
+    expect(
+      inForce([
+        { policy: p("type", "after-decision"), rank: 2 },
+        { policy: p("global", "after-check"), rank: 1 },
+        { policy: p("own", "days", 7), rank: 0 },
+      ])?.id,
+    ).toBe("own");
+    expect(
+      inForce([
+        { policy: p("type", "after-decision"), rank: 2 },
+        { policy: p("global", "after-check"), rank: 1 },
+      ])?.id,
+    ).toBe("global");
     expect(inForce([{ policy: p("type", "after-decision"), rank: 2 }])?.id).toBe("type");
   });
   it("says nothing when no row does", () => {

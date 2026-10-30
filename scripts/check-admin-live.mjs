@@ -15,7 +15,17 @@ import { chromium } from "playwright-core";
 
 import { auditContext, loadSettled } from "@krizaka/page-audit";
 
-export const PAGES = ["", "/users", "/documents", "/runs", "/flows", "/flows/new", "/operations", "/incidents", "/audit"];
+export const PAGES = [
+  "",
+  "/users",
+  "/documents",
+  "/runs",
+  "/flows",
+  "/flows/new",
+  "/operations",
+  "/incidents",
+  "/audit",
+];
 export const VIEWS = [
   { tag: "desktop-dark", theme: "dark", viewport: { width: 1440, height: 900 } },
   { tag: "desktop-light", theme: "light", viewport: { width: 1440, height: 900 } },
@@ -31,7 +41,8 @@ const arg = (name, fallback) => {
 /** Signs the administrator in; a problem line when the gate or the landing is not what it should be, null when signed in. */
 async function signIn(page, { base, email, password, tag }) {
   const gate = await loadSettled(page, `${base}/en/sign-in`, { waitUntil: "networkidle" });
-  if (!gate || gate.status() !== 200) return `${tag}: the sign-in answers ${gate?.status()} — run this from an address of AUTH_ALLOWED_IPS`;
+  if (!gate || gate.status() !== 200)
+    return `${tag}: the sign-in answers ${gate?.status()} — run this from an address of AUTH_ALLOWED_IPS`;
   await page.getByLabel("E-mail").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
@@ -106,10 +117,17 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.error("ADMIN_EMAIL and ADMIN_PASSWORD are required (see the header of this file).");
     process.exit(2);
   }
-  const problems = await walk({ base: arg("base", "https://admin.yomizaka.com"), email, password, shots: arg("shots") });
+  const problems = await walk({
+    base: arg("base", "https://admin.yomizaka.com"),
+    email,
+    password,
+    shots: arg("shots"),
+  });
   if (problems.length) {
     console.error(`${problems.length} problem(s):\n  ${problems.join("\n  ")}`);
     process.exit(1);
   }
-  console.log(`administration: ${PAGES.length} pages x ${VIEWS.length} views, signed in, no overflow, no console error`);
+  console.log(
+    `administration: ${PAGES.length} pages x ${VIEWS.length} views, signed in, no overflow, no console error`,
+  );
 }

@@ -1,5 +1,16 @@
 import { EN_WORDS, FR_WORDS } from "./language-words";
-import type { AmountFact, Confidence, DateFact, DocumentTypeDef, DocumentUnderstanding, IdentifierDef, Lang, PartyFact, ReferenceFact, Understanding } from "./port";
+import type {
+  AmountFact,
+  Confidence,
+  DateFact,
+  DocumentTypeDef,
+  DocumentUnderstanding,
+  IdentifierDef,
+  Lang,
+  PartyFact,
+  ReferenceFact,
+  Understanding,
+} from "./port";
 
 /**
  * The cheap pass: regular expressions and weighted signals read from DATA (types.ts). Deterministic — the same text gives the
@@ -15,7 +26,6 @@ export interface UnderstandingConfig {
   alternativeShare: number;
 }
 
-
 function language(text: string): Lang {
   const fr = (text.match(FR_WORDS) ?? []).length;
   const en = (text.match(EN_WORDS) ?? []).length;
@@ -24,8 +34,33 @@ function language(text: string): Lang {
 }
 
 const MONTHS: Record<string, number> = {
-  janvier: 1, january: 1, février: 2, fevrier: 2, february: 2, mars: 3, march: 3, avril: 4, april: 4, mai: 5, may: 5, juin: 6, june: 6,
-  juillet: 7, july: 7, août: 8, aout: 8, august: 8, septembre: 9, september: 9, octobre: 10, october: 10, novembre: 11, november: 11, décembre: 12, decembre: 12, december: 12,
+  janvier: 1,
+  january: 1,
+  février: 2,
+  fevrier: 2,
+  february: 2,
+  mars: 3,
+  march: 3,
+  avril: 4,
+  april: 4,
+  mai: 5,
+  may: 5,
+  juin: 6,
+  june: 6,
+  juillet: 7,
+  july: 7,
+  août: 8,
+  aout: 8,
+  august: 8,
+  septembre: 9,
+  september: 9,
+  octobre: 10,
+  october: 10,
+  novembre: 11,
+  november: 11,
+  décembre: 12,
+  decembre: 12,
+  december: 12,
 };
 const pad = (n: number) => String(n).padStart(2, "0");
 const validDate = (y: number, m: number, d: number) => y >= 1950 && y <= 2100 && m >= 1 && m <= 12 && d >= 1 && d <= 31;
@@ -33,23 +68,34 @@ const validDate = (y: number, m: number, d: number) => y >= 1950 && y <= 2100 &&
 type Raw = { y: number; m: number; d: number; text: string; index: number };
 function rawDates(text: string): Raw[] {
   const out: Raw[] = [];
-  for (const m of text.matchAll(/\b(\d{4})-(\d{2})-(\d{2})\b/g)) if (validDate(+m[1]!, +m[2]!, +m[3]!)) out.push({ y: +m[1]!, m: +m[2]!, d: +m[3]!, text: m[0], index: m.index! });
+  for (const m of text.matchAll(/\b(\d{4})-(\d{2})-(\d{2})\b/g))
+    if (validDate(+m[1]!, +m[2]!, +m[3]!)) out.push({ y: +m[1]!, m: +m[2]!, d: +m[3]!, text: m[0], index: m.index! });
   for (const m of text.matchAll(/\b(\d{1,2})(?:er)?\s+([A-Za-zéûôè]{3,9})\s+(\d{4})\b/giu)) {
     const month = MONTHS[m[2]!.toLowerCase()];
-    if (month && validDate(+m[3]!, month, +m[1]!)) out.push({ y: +m[3]!, m: month, d: +m[1]!, text: m[0], index: m.index! });
+    if (month && validDate(+m[3]!, month, +m[1]!))
+      out.push({ y: +m[3]!, m: month, d: +m[1]!, text: m[0], index: m.index! });
   }
   for (const m of text.matchAll(/\b([A-Za-z]{3,9})\s+(\d{1,2}),?\s+(\d{4})\b/g)) {
     const month = MONTHS[m[1]!.toLowerCase()];
-    if (month && validDate(+m[3]!, month, +m[2]!)) out.push({ y: +m[3]!, m: month, d: +m[2]!, text: m[0], index: m.index! });
+    if (month && validDate(+m[3]!, month, +m[2]!))
+      out.push({ y: +m[3]!, m: month, d: +m[2]!, text: m[0], index: m.index! });
   }
-  for (const m of text.matchAll(/\b(\d{1,2})[/.](\d{1,2})[/.](\d{4})\b/g)) if (validDate(+m[3]!, +m[2]!, +m[1]!)) out.push({ y: +m[3]!, m: +m[2]!, d: +m[1]!, text: m[0], index: m.index! });
+  for (const m of text.matchAll(/\b(\d{1,2})[/.](\d{1,2})[/.](\d{4})\b/g))
+    if (validDate(+m[3]!, +m[2]!, +m[1]!)) out.push({ y: +m[3]!, m: +m[2]!, d: +m[1]!, text: m[0], index: m.index! });
   return out;
 }
 
 const KIND_BEFORE: readonly { kind: DateFact["kind"]; pattern: RegExp }[] = [
   { kind: "due", pattern: /[ée]ch[ée]ance|due\s+date|payable\s+avant|payer\s+avant|due\b/iu },
-  { kind: "effective", pattern: /en\s+vigueur|d[ée]but|effectif|date\s+d['’]effet|[àa]\s+compter\s+du|effective|starting|du\s*$/iu },
-  { kind: "issued", pattern: /[ée]mis|d['’][ée]mission|date\s+(?:de\s+la\s+facture|du\s+re[çc]u|de\s+l['’]inscription)|issued|invoice\s+date|inscri\w+\s+le|signé|sign[ée]\s+[àa]|date\s*:/iu },
+  {
+    kind: "effective",
+    pattern: /(?:en\s+vigueur|d[ée]but|effectif|date\s+d['’]effet|[àa]\s+compter\s+du|effective|starting|du\s*$)/iu,
+  },
+  {
+    kind: "issued",
+    pattern:
+      /[ée]mis|d['’][ée]mission|date\s+(?:de\s+la\s+facture|du\s+re[çc]u|de\s+l['’]inscription)|issued|invoice\s+date|inscri\w+\s+le|signé|sign[ée]\s+[àa]|date\s*:/iu,
+  },
 ];
 
 function dates(text: string): DateFact[] {
@@ -87,7 +133,9 @@ const AMOUNT_KINDS: readonly { kind: AmountFact["kind"]; pattern: RegExp }[] = [
 function amounts(text: string): AmountFact[] {
   const out: AmountFact[] = [];
   for (const line of text.split("\n")) {
-    for (const m of line.matchAll(/(\d{1,3}(?:[\s.,]\d{3})*(?:[.,]\d{2})?|\d+(?:[.,]\d{2})?)\s*(?:\$|CAD|\$\s*CAD)/giu)) {
+    for (const m of line.matchAll(
+      /(\d{1,3}(?:[\s.,]\d{3})*(?:[.,]\d{2})?|\d+(?:[.,]\d{2})?)\s*(?:\$|CAD|\$\s*CAD)/giu,
+    )) {
       const cents = toCents(m[1]!);
       if (cents === null || cents === 0) continue;
       const before = line.slice(0, m.index);
@@ -102,7 +150,10 @@ function amounts(text: string): AmountFact[] {
 type CompiledType = { t: DocumentTypeDef; signals: { re: RegExp; weight: number }[] };
 
 /** The nature's confidence from the best score: under `low` it is unknown. */
-function confidenceOf(best: { score: number } | undefined, { high, medium, low }: UnderstandingConfig["thresholds"]): Confidence {
+function confidenceOf(
+  best: { score: number } | undefined,
+  { high, medium, low }: UnderstandingConfig["thresholds"],
+): Confidence {
   if (!best || best.score < low) return "unknown";
   if (best.score >= high) return "high";
   return best.score >= medium ? "medium" : "low";
@@ -137,17 +188,26 @@ function issuerOf(text: string, type: DocumentTypeDef): string | null {
 }
 
 export function createUnderstanding(config: UnderstandingConfig): DocumentUnderstanding {
-  const compiled: CompiledType[] = config.types.map((t) => ({ t, signals: t.signals.map((s) => ({ re: new RegExp(s.pattern, "iu"), weight: s.weight })) }));
+  const compiled: CompiledType[] = config.types.map((t) => ({
+    t,
+    signals: t.signals.map((s) => ({ re: new RegExp(s.pattern, "iu"), weight: s.weight })),
+  }));
   const ids = config.identifiers.map((i) => ({ i, re: new RegExp(i.pattern, "iu") }));
-  const roles = config.partyRoles.map((r) => ({ role: r.role, re: new RegExp(String.raw`^[\s•*-]*(?:${r.pattern})\s*(?:\([^)]*\))?\s*:\s*([^\n]{2,120})$`, "imu") }));
+  const roles = config.partyRoles.map((r) => ({
+    role: r.role,
+    re: new RegExp(String.raw`^[\s•*-]*(?:${r.pattern})\s*(?:\([^)]*\))?\s*:\s*([^\n]{2,120})$`, "imu"),
+  }));
 
   return {
     understand(text, context): Understanding {
-      const scored = compiled.map(({ t, signals }) => ({ t, score: signals.reduce((sum, s) => sum + (s.re.test(text) ? s.weight : 0), 0) })).sort((a, b) => b.score - a.score);
+      const scored = compiled
+        .map(({ t, signals }) => ({ t, score: signals.reduce((sum, s) => sum + (s.re.test(text) ? s.weight : 0), 0) }))
+        .sort((a, b) => b.score - a.score);
       const best = scored[0];
       const second = scored[1];
       const confidence = confidenceOf(best, config.thresholds);
-      const nature = best && confidence !== "unknown" ? { id: best.t.id, label: best.t.label, confidence, score: best.score } : null;
+      const nature =
+        best && confidence !== "unknown" ? { id: best.t.id, label: best.t.label, confidence, score: best.score } : null;
       const close = !!best && !!second && second.score > 0 && second.score >= best.score * config.alternativeShare;
       const alternative = nature && close && second ? { id: second.t.id, label: second.t.label } : null;
       const known = nature && best ? best.t : null;

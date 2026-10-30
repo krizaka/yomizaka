@@ -13,5 +13,7 @@ export const PUT = (req: Request, ctx: { params: Promise<{ id: string }> }) =>
     const { id } = await ctx.params;
     const input = await readJson(req, changeKeyInput);
     const { service } = managedProviders(providers);
-    return Response.json({ provider: await guarded(() => service.changeKey(actorOf(session.account), id, input.credentials)) });
+    return Response.json({
+      provider: await guarded(() => service.changeKey(actorOf(session.account), id, input.credentials)),
+    });
   });

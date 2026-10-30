@@ -25,8 +25,13 @@ describe.runIf(enabled)("database", () => {
 
   beforeAll(async () => {
     await migrate();
-    [owner] = await query<{ id: string }>("INSERT INTO accounts (email, password_hash) VALUES ($1, $2) RETURNING id", [email, await hashPassword("integration password")]);
-    [stranger] = await query<{ id: string }>("INSERT INTO accounts (email) VALUES ($1) RETURNING id", [`other-${email}`]);
+    [owner] = await query<{ id: string }>("INSERT INTO accounts (email, password_hash) VALUES ($1, $2) RETURNING id", [
+      email,
+      await hashPassword("integration password"),
+    ]);
+    [stranger] = await query<{ id: string }>("INSERT INTO accounts (email) VALUES ($1) RETURNING id", [
+      `other-${email}`,
+    ]);
   });
   const LEASE = "CONTRAT DE LOCATION\nLoyer mensuel : 850 € hors charges.\nDépôt de garantie : 2 550 €.";
 
@@ -38,7 +43,13 @@ describe.runIf(enabled)("database", () => {
     const file = { name: "bail-dupont.txt", type: "text/plain", size: LEASE.length };
     const first = await storeDocument(owner!.id, file, new TextEncoder().encode(LEASE), "lease");
     expect(first.duplicate).toBe(false);
-    expect(first.summary).toMatchObject({ title: "bail dupont", kind: "lease", status: "stored", hasText: true, mimeType: "text/plain" });
+    expect(first.summary).toMatchObject({
+      title: "bail dupont",
+      kind: "lease",
+      status: "stored",
+      hasText: true,
+      mimeType: "text/plain",
+    });
     const again = await storeDocument(owner!.id, file, new TextEncoder().encode(LEASE), "other");
     expect(again).toMatchObject({ duplicate: true, summary: { id: first.summary.id } });
     expect((await listDocuments(owner!.id)).map((d) => d.id)).toContain(first.summary.id);
@@ -50,7 +61,12 @@ describe.runIf(enabled)("database", () => {
       { name: "mimetype", data: Buffer.from(ODT_MIME), stored: true },
       { name: "content.xml", data: Buffer.from("<text:p>OpenDocument locataire</text:p>") },
     ]);
-    const stored = await storeDocument(owner!.id, { name: "bail.odt", type: ODT_MIME, size: bytes.length }, bytes, "lease");
+    const stored = await storeDocument(
+      owner!.id,
+      { name: "bail.odt", type: ODT_MIME, size: bytes.length },
+      bytes,
+      "lease",
+    );
     try {
       expect(stored.summary).toMatchObject({ mimeType: ODT_MIME, hasText: true, pages: null });
       expect((await getDocument(owner!.id, stored.summary.id)).text).toBe("OpenDocument locataire");
@@ -70,8 +86,26 @@ describe.runIf(enabled)("database", () => {
 
   it("derives the document's state from its latest analysis, and searches its findings", async () => {
     const [doc] = await listDocuments(owner!.id);
-    const report = { rulesetId: "fr-residential-lease", rulesetVersion: "2026-07-01", jurisdiction: "FR", asOf: "2026-10-14", findings: [{ ruleId: "FR-LEASE-005", severity: "BLOCKING", verdict: "FAIL", explanation: "Le dépôt de garantie excède un mois de loyer.", evidenceSpan: { quote: "Dépôt de garantie : 2 550 €" } }], attention: true };
-    await query("INSERT INTO analyses (document_id, studio, status, run_id, report, search_text) VALUES ($1, 'compliance-check', 'succeeded', '8f6b1c2e-1d2c-4b8a-9a55-0d1e2f3a4b5c', $2, $3)", [doc!.id, JSON.stringify(report), "FR-LEASE-005 Le dépôt de garantie excède un mois de loyer."]);
+    const report = {
+      rulesetId: "fr-residential-lease",
+      rulesetVersion: "2026-07-01",
+      jurisdiction: "FR",
+      asOf: "2026-10-14",
+      findings: [
+        {
+          ruleId: "FR-LEASE-005",
+          severity: "BLOCKING",
+          verdict: "FAIL",
+          explanation: "Le dépôt de garantie excède un mois de loyer.",
+          evidenceSpan: { quote: "Dépôt de garantie : 2 550 €" },
+        },
+      ],
+      attention: true,
+    };
+    await query(
+      "INSERT INTO analyses (document_id, studio, status, run_id, report, search_text) VALUES ($1, 'compliance-check', 'succeeded', '8f6b1c2e-1d2c-4b8a-9a55-0d1e2f3a4b5c', $2, $3)",
+      [doc!.id, JSON.stringify(report), "FR-LEASE-005 Le dépôt de garantie excède un mois de loyer."],
+    );
     const detail = await getDocument(owner!.id, doc!.id);
     expect(detail.status).toBe("attention");
     expect(detail.analyses[0]).toMatchObject({ runId: "8f6b1c2e-1d2c-4b8a-9a55-0d1e2f3a4b5c", status: "succeeded" });
@@ -85,14 +119,21 @@ describe.runIf(enabled)("database", () => {
 
   it("shows a finding once per document, from the latest run of the same check — a re-run does not pile up duplicates (#54)", async () => {
     const [doc] = await listDocuments(owner!.id);
-    const before = (await search(owner!.id, "excède")).filter((h) => h.documentId === doc!.id && h.source === "finding").length;
+    const before = (await search(owner!.id, "excède")).filter(
+      (h) => h.documentId === doc!.id && h.source === "finding",
+    ).length;
     for (const run of ["a1111111-1d2c-4b8a-9a55-0d1e2f3a4b5c", "b2222222-1d2c-4b8a-9a55-0d1e2f3a4b5c"]) {
-      await query("INSERT INTO analyses (document_id, studio, status, run_id, report, search_text) VALUES ($1, 'compliance-check', 'succeeded', $2, '{}', 'FR-LEASE-005 Le dépôt de garantie excède un mois de loyer')", [doc!.id, run]);
+      await query(
+        "INSERT INTO analyses (document_id, studio, status, run_id, report, search_text) VALUES ($1, 'compliance-check', 'succeeded', $2, '{}', 'FR-LEASE-005 Le dépôt de garantie excède un mois de loyer')",
+        [doc!.id, run],
+      );
     }
     expect(before).toBe(1);
     const after = (await search(owner!.id, "excède")).filter((h) => h.documentId === doc!.id && h.source === "finding");
     expect(after).toHaveLength(1);
-    await query("DELETE FROM analyses WHERE run_id = ANY($1)", [["a1111111-1d2c-4b8a-9a55-0d1e2f3a4b5c", "b2222222-1d2c-4b8a-9a55-0d1e2f3a4b5c"]]);
+    await query("DELETE FROM analyses WHERE run_id = ANY($1)", [
+      ["a1111111-1d2c-4b8a-9a55-0d1e2f3a4b5c", "b2222222-1d2c-4b8a-9a55-0d1e2f3a4b5c"],
+    ]);
   });
 
   it("lists the accounts with their documents for the administration", async () => {
@@ -105,13 +146,18 @@ describe.runIf(enabled)("database", () => {
     expect(o.accounts).toBeGreaterThanOrEqual(2);
     expect(o.runs.succeeded).toBeGreaterThanOrEqual(1);
     expect((await allDocuments()).find((d) => d.owner === email)).toMatchObject({ kind: "lease", analyses: 1 });
-    expect((await allRuns()).find((r) => r.owner === email)).toMatchObject({ status: "succeeded", runId: "8f6b1c2e-1d2c-4b8a-9a55-0d1e2f3a4b5c" });
+    expect((await allRuns()).find((r) => r.owner === email)).toMatchObject({
+      status: "succeeded",
+      runId: "8f6b1c2e-1d2c-4b8a-9a55-0d1e2f3a4b5c",
+    });
     const admin = { id: stranger!.id, email: `other-${email}` };
     await expect(setUserStatus(admin, admin.id, "SUSPENDED")).rejects.toMatchObject({ status: 409 });
     expect((await setUserStatus(admin, owner!.id, "SUSPENDED")).status).toBe("SUSPENDED");
     expect((await userDetail(owner!.id)).sessions).toBe(0);
     expect((await setUserStatus(admin, owner!.id, "ACTIVE")).status).toBe("ACTIVE");
-    expect((await auditLog(10, owner!.id)).map((e) => e.action)).toEqual(expect.arrayContaining(["admin.user_suspended", "admin.user_restored"]));
+    expect((await auditLog(10, owner!.id)).map((e) => e.action)).toEqual(
+      expect.arrayContaining(["admin.user_suspended", "admin.user_restored"]),
+    );
   });
 
   it("shows publicly only a promoted check on a sample document, one at a time", async () => {
@@ -121,7 +167,22 @@ describe.runIf(enabled)("database", () => {
       [owner!.id, `showcase-${Date.now()}`],
     );
     const run = async (n: number) =>
-      (await query<{ id: string }>("INSERT INTO analyses (document_id, studio, status, run_id, report, finished_at) VALUES ($1, 'compliance-check', 'succeeded', $2, $3, now()) RETURNING id", [doc!.id, `run-${n}`, JSON.stringify({ rulesetId: "r", rulesetVersion: "1", jurisdiction: "QC", asOf: "2026-10-15", findings: [] })]))[0]!.id;
+      (
+        await query<{ id: string }>(
+          "INSERT INTO analyses (document_id, studio, status, run_id, report, finished_at) VALUES ($1, 'compliance-check', 'succeeded', $2, $3, now()) RETURNING id",
+          [
+            doc!.id,
+            `run-${n}`,
+            JSON.stringify({
+              rulesetId: "r",
+              rulesetVersion: "1",
+              jurisdiction: "QC",
+              asOf: "2026-10-15",
+              findings: [],
+            }),
+          ],
+        )
+      )[0]!.id;
     const [a, b] = [await run(1), await run(2)];
     await expect(setShowcase(admin, a, true)).rejects.toMatchObject({ body: { code: "NOT_A_SAMPLE" } });
     expect(await getShowcase()).toBeNull();
@@ -135,7 +196,9 @@ describe.runIf(enabled)("database", () => {
     await setSample(admin, doc!.id, false);
     expect(await getShowcase()).toBeNull();
     expect(await showcaseFile()).toBeNull();
-    expect((await auditLog(20, doc!.id)).map((e) => e.action)).toEqual(expect.arrayContaining(["admin.document_sample_set", "admin.document_sample_unset"]));
+    expect((await auditLog(20, doc!.id)).map((e) => e.action)).toEqual(
+      expect.arrayContaining(["admin.document_sample_set", "admin.document_sample_unset"]),
+    );
   });
 
   it("opens, resolves and ends a session — a suspended account has none", async () => {

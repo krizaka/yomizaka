@@ -1,4 +1,10 @@
-import { appEnvironmentFrom, browserStorage, createApiClient, createAppDiscovery, createSessionStore } from "@krizaka/app-client";
+import {
+  appEnvironmentFrom,
+  browserStorage,
+  createApiClient,
+  createAppDiscovery,
+  createSessionStore,
+} from "@krizaka/app-client";
 import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 import { createQueries, createYomizakaApi } from "@yomizaka/client";
 

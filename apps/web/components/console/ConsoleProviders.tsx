@@ -8,11 +8,17 @@ import type { ConsoleMessages } from "@/lib/i18n-client";
 import { I18nProvider } from "@/lib/i18n-client";
 
 /** The console's client roots: its language (only its own slice), and server state through @krizaka/query. */
-export function ConsoleProviders({ locale, messages, children }: Readonly<{ locale: Locale; messages: ConsoleMessages; children: React.ReactNode }>) {
+export function ConsoleProviders({
+  locale,
+  messages,
+  children,
+}: Readonly<{ locale: Locale; messages: ConsoleMessages; children: React.ReactNode }>) {
   const router = useRouter();
   return (
     <I18nProvider locale={locale} messages={messages}>
-      <KrizakaQueryProvider onUnauthorized={() => router.replace(`/${locale}/sign-in`)}>{children}</KrizakaQueryProvider>
+      <KrizakaQueryProvider onUnauthorized={() => router.replace(`/${locale}/sign-in`)}>
+        {children}
+      </KrizakaQueryProvider>
     </I18nProvider>
   );
 }

@@ -28,21 +28,24 @@ export function createQueries(api: YomizakaApi) {
     documents: () => queryOptions({ queryKey: keys.documents(), queryFn: api.listDocuments }),
     document: (id: string) => queryOptions({ queryKey: keys.document(id), queryFn: () => api.fetchDocument(id) }),
     libraries: () => queryOptions({ queryKey: keys.libraries(), queryFn: api.fetchLibraries }),
-    collection: (id: string, tags: readonly string[]) => queryOptions({ queryKey: keys.collection(id, tags), queryFn: () => api.fetchCollection(id, tags) }),
+    collection: (id: string, tags: readonly string[]) =>
+      queryOptions({ queryKey: keys.collection(id, tags), queryFn: () => api.fetchCollection(id, tags) }),
     batches: () => queryOptions({ queryKey: keys.batches(), queryFn: api.listBatches }),
     /** A batch polls (each read advances it) until it is finished or waits for the account. */
     batch: (id: string) =>
       queryOptions({
         queryKey: keys.batch(id),
         queryFn: () => api.fetchBatch(id),
-        refetchInterval: (query) => (!query.state.data || (!query.state.data.finishedAt && !query.state.data.pausedBy) ? ANALYSIS_POLL_MS : false),
+        refetchInterval: (query) =>
+          !query.state.data || (!query.state.data.finishedAt && !query.state.data.pausedBy) ? ANALYSIS_POLL_MS : false,
       }),
     /** An analysis polls while it runs and stops when it is over. */
     analysis: (documentId: string, analysisId: string, locale: Locale) =>
       queryOptions({
         queryKey: keys.analysis(documentId, analysisId, locale),
         queryFn: () => api.fetchAnalysis(documentId, analysisId, locale),
-        refetchInterval: (query) => (!query.state.data || query.state.data.analysis.status === ANALYSIS_STATUS.running ? ANALYSIS_POLL_MS : false),
+        refetchInterval: (query) =>
+          !query.state.data || query.state.data.analysis.status === ANALYSIS_STATUS.running ? ANALYSIS_POLL_MS : false,
       }),
   };
 }

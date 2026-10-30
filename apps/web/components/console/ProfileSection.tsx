@@ -24,21 +24,29 @@ export type ProfileFields = Partial<{ name: string | null; avatarSeed: string | 
 
 /** Whether anything differs from what is saved: the one save is enabled only then. */
 export const profileDirty = (saved: ProfileValues, current: ProfileValues): boolean =>
-  saved.name.trim() !== current.name.trim() || saved.avatarSeed !== current.avatarSeed || saved.locale !== current.locale || saved.perspective !== current.perspective;
+  saved.name.trim() !== current.name.trim() ||
+  saved.avatarSeed !== current.avatarSeed ||
+  saved.locale !== current.locale ||
+  saved.perspective !== current.perspective;
 
 /** What the account API receives for the change: a field-level profile patch, and the perspective when it moved — each only when it changed. */
-export function profilePatch(saved: ProfileValues, current: ProfileValues): { profile: ProfileFields | null; perspective: Audience | null } {
+export function profilePatch(
+  saved: ProfileValues,
+  current: ProfileValues,
+): { profile: ProfileFields | null; perspective: Audience | null } {
   const name = current.name.trim();
   const profile: ProfileFields = {};
   if (saved.name.trim() !== name) profile.name = name === "" ? null : name;
-  if (saved.avatarSeed !== current.avatarSeed) profile.avatarSeed = current.avatarSeed === "" ? null : current.avatarSeed;
+  if (saved.avatarSeed !== current.avatarSeed)
+    profile.avatarSeed = current.avatarSeed === "" ? null : current.avatarSeed;
   if (saved.locale !== current.locale) profile.locale = current.locale;
   const perspective = current.perspective && saved.perspective !== current.perspective ? current.perspective : null;
   return { profile: Object.keys(profile).length ? profile : null, perspective };
 }
 
 /** Undo puts the previous values back — except a first perspective, which the server cannot unset (the onboarding needs one). */
-export const undoable = (previous: ProfileValues, saved: ProfileValues): boolean => !(previous.perspective === null && saved.perspective !== null);
+export const undoable = (previous: ProfileValues, saved: ProfileValues): boolean =>
+  !(previous.perspective === null && saved.perspective !== null);
 
 const SOON = { available: false, soon: true } as const;
 const LANGUAGES = ["fr", "en"] as const;
@@ -49,7 +57,10 @@ const LANGUAGES = ["fr", "en"] as const;
  * The save sends only what changed and commits each call as it succeeds (the profile, then the perspective), so a refusal of
  * the second never hides that the first is stored; edits typed while it saves stay in the draft.
  */
-export function ProfileSection({ initial, audiences }: Readonly<{ initial: ProfileValues; audiences: readonly { audience: Audience; status: "available" | "soon" }[] }>) {
+export function ProfileSection({
+  initial,
+  audiences,
+}: Readonly<{ initial: ProfileValues; audiences: readonly { audience: Audience; status: "available" | "soon" }[] }>) {
   const { say } = useSay();
   const audienceTitle = (audience: Audience, status: keyof typeof SOON) => {
     const name = say(`profile.${audience}`);
@@ -106,22 +117,59 @@ export function ProfileSection({ initial, audiences }: Readonly<{ initial: Profi
               save.reset();
             }
           : undefined,
-        labels: { save: say("settings.save.save"), saving: say("settings.save.saving"), saved: say("settings.save.saved"), error: problem ?? say("settings.save.error"), undo: say("settings.save.undo"), discard: say("settings.save.discard") },
+        labels: {
+          save: say("settings.save.save"),
+          saving: say("settings.save.saving"),
+          saved: say("settings.save.saved"),
+          error: problem ?? say("settings.save.error"),
+          undo: say("settings.save.undo"),
+          discard: say("settings.save.discard"),
+        },
       }}
     >
-      <SettingsRow label={say("settings.profile.nameLabel")} description={say("settings.profile.nameHint")} htmlFor="profile-name">
-        <Input id="profile-name" value={values.name} maxLength={80} autoComplete="name" onChange={(e) => setValues({ ...values, name: e.target.value })} />
+      <SettingsRow
+        label={say("settings.profile.nameLabel")}
+        description={say("settings.profile.nameHint")}
+        htmlFor="profile-name"
+      >
+        <Input
+          id="profile-name"
+          value={values.name}
+          maxLength={80}
+          autoComplete="name"
+          onChange={(e) => setValues({ ...values, name: e.target.value })}
+        />
       </SettingsRow>
       <SettingsRow label={say("settings.profile.avatarLabel")} description={say("settings.profile.avatarHint")}>
-        <AvatarPicker dense label={say("settings.profile.avatarLabel")} options={AVATAR_SEEDS.map((seed, i) => ({ id: seed, label: say("settings.profile.avatarOption", { n: i + 1 }), defaultAvatar: { brand: "yomizaka" as const, seed } }))} value={values.avatarSeed} onValueChange={(id) => setValues({ ...values, avatarSeed: id })} />
+        <AvatarPicker
+          dense
+          label={say("settings.profile.avatarLabel")}
+          options={AVATAR_SEEDS.map((seed, i) => ({
+            id: seed,
+            label: say("settings.profile.avatarOption", { n: i + 1 }),
+            defaultAvatar: { brand: "yomizaka" as const, seed },
+          }))}
+          value={values.avatarSeed}
+          onValueChange={(id) => setValues({ ...values, avatarSeed: id })}
+        />
       </SettingsRow>
       <SettingsRow label={say("settings.profile.languageLabel")} description={say("settings.profile.languageHint")}>
-        <LanguagePicker label={say("settings.profile.languageLabel")} showLabel={false} languages={LANGUAGES.map((code) => ({ code, name: say(`settings.profile.languages.${code}`) }))} value={values.locale} onValueChange={(code) => setValues({ ...values, locale: code as "en" | "fr" })} />
+        <LanguagePicker
+          label={say("settings.profile.languageLabel")}
+          showLabel={false}
+          languages={LANGUAGES.map((code) => ({ code, name: say(`settings.profile.languages.${code}`) }))}
+          value={values.locale}
+          onValueChange={(code) => setValues({ ...values, locale: code as "en" | "fr" })}
+        />
       </SettingsRow>
       <SettingsRow label={say("profile.legend")} description={say("profile.lead")}>
         <ChoiceCards
           label={say("profile.legend")}
-          options={audiences.map(({ audience, status }) => ({ id: audience, title: audienceTitle(audience, status), description: say(`profile.${audience}Hint`) }))}
+          options={audiences.map(({ audience, status }) => ({
+            id: audience,
+            title: audienceTitle(audience, status),
+            description: say(`profile.${audience}Hint`),
+          }))}
           value={values.perspective ?? undefined}
           onValueChange={(id) => setValues({ ...values, perspective: id as Audience })}
         />

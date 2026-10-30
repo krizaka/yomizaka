@@ -8,9 +8,22 @@ export const dynamic = "force-static";
 /** The public pages are open to every crawler; the signed-in space and the API are not for them. */
 export default function robots(): MetadataRoute.Robots {
   // The public file. A host that is not indexed (dev, admin, a closed deployment) is answered closed by the proxy at request time.
-  const disallow = ["/api/", "/en/app", "/fr/app", "/en/sign-in", "/fr/sign-in", "/en/forgot-password", "/fr/forgot-password", "/en/reset-password", "/fr/reset-password"];
+  const disallow = [
+    "/api/",
+    "/en/app",
+    "/fr/app",
+    "/en/sign-in",
+    "/fr/sign-in",
+    "/en/forgot-password",
+    "/fr/forgot-password",
+    "/en/reset-password",
+    "/fr/reset-password",
+  ];
   return {
-    rules: [{ userAgent: "*", allow: "/", disallow }, ...CRAWLERS.map((userAgent) => ({ userAgent, allow: "/", disallow }))],
+    rules: [
+      { userAgent: "*", allow: "/", disallow },
+      ...CRAWLERS.map((userAgent) => ({ userAgent, allow: "/", disallow })),
+    ],
     sitemap: `${SITE_URL}/sitemap.xml`,
     host: SITE_URL,
   };

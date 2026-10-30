@@ -21,7 +21,12 @@ export function AppearanceSection() {
   const light = previewOf("light");
   const dark = previewOf("dark");
   return (
-    <SettingsSection variant="flat" title={say("settings.tabs.apparence")} description={say("settings.appearance.lead")} data-testid="settings-apparence">
+    <SettingsSection
+      variant="flat"
+      title={say("settings.tabs.apparence")}
+      description={say("settings.appearance.lead")}
+      data-testid="settings-apparence"
+    >
       <AppearanceSettings
         themes={OFFERED.map((t) => ({
           id: t.id,
@@ -32,7 +37,10 @@ export function AppearanceSection() {
         }))}
         theme={state.themeId}
         onThemeChange={state.setThemeId}
-        densities={appearance.densities.map((value) => ({ value, label: say(`settings.appearance.densities.${value}`) }))}
+        densities={appearance.densities.map((value) => ({
+          value,
+          label: say(`settings.appearance.densities.${value}`),
+        }))}
         density={state.density}
         onDensityChange={state.setDensity}
         labels={{

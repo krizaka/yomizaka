@@ -5,7 +5,13 @@ const B = "22222222-2222-4222-8222-222222222222";
 
 describe("the app's links are the web's paths", () => {
   it("follows the device's language, French first", () => {
-    expect([asLocale("fr-CA"), asLocale("en-US"), asLocale("de"), asLocale(null), asLocale(undefined)]).toEqual(["fr", "en", "fr", "fr", "fr"]);
+    expect([asLocale("fr-CA"), asLocale("en-US"), asLocale("de"), asLocale(null), asLocale(undefined)]).toEqual([
+      "fr",
+      "en",
+      "fr",
+      "fr",
+      "fr",
+    ]);
   });
 
   it("writes each screen's path", () => {

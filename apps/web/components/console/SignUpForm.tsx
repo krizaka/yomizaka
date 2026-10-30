@@ -27,14 +27,21 @@ export function SignUpForm() {
   const [problem, setProblem] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
   const request = useMutation({
-    mutationFn: (body: { email: string; password: string; locale: string; acceptTerms: true; acceptPrivacy: true }) => krizakaFetch("/api/auth/sign-up", { method: "POST", json: body }),
+    mutationFn: (body: { email: string; password: string; locale: string; acceptTerms: true; acceptPrivacy: true }) =>
+      krizakaFetch("/api/auth/sign-up", { method: "POST", json: body }),
   });
   const form = signUp.useForm({
     i18n: { t: (key, vars) => say(key, vars as Record<string, string | number> | undefined), locale },
     onSubmit: async (values) => {
       setProblem(null);
       try {
-        await request.mutateAsync({ email: values.email, password: values.password, locale, acceptTerms: true, acceptPrivacy: true });
+        await request.mutateAsync({
+          email: values.email,
+          password: values.password,
+          locale,
+          acceptTerms: true,
+          acceptPrivacy: true,
+        });
         setSent(true);
       } catch (error) {
         setProblem(say(`errors.${errorKey(error)}`));
@@ -47,8 +54,16 @@ export function SignUpForm() {
         {say("signUp.sent")}
       </Alert>
     );
-  const terms = <Link className="underline" href={`/${locale}/terms`} target="_blank">{say("signUp.termsLink")}</Link>;
-  const privacy = <Link className="underline" href={`/${locale}/privacy`} target="_blank">{say("signUp.privacyLink")}</Link>;
+  const terms = (
+    <Link className="underline" href={`/${locale}/terms`} target="_blank">
+      {say("signUp.termsLink")}
+    </Link>
+  );
+  const privacy = (
+    <Link className="underline" href={`/${locale}/privacy`} target="_blank">
+      {say("signUp.privacyLink")}
+    </Link>
+  );
   const words = (key: string, a: string, link: React.ReactNode) => {
     const [before, after] = say(key, { [a]: "\u0000" }).split("\u0000");
     return (

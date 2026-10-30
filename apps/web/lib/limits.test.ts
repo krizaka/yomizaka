@@ -26,7 +26,11 @@ const refused = async (run: () => Promise<unknown>) => {
   try {
     await run();
   } catch (error) {
-    return error as { status: number; body: { code: string; retryAfterSeconds: number }; headers: Record<string, string> };
+    return error as {
+      status: number;
+      body: { code: string; retryAfterSeconds: number };
+      headers: Record<string, string>;
+    };
   }
   return null;
 };
@@ -98,7 +102,10 @@ describe("the API's action limits (@krizaka/rate-limit)", () => {
   });
 
   it("has a setting for every number: today's values as defaults, windows included", () => {
-    for (const [action, defaults] of Object.entries(LIMIT_DEFAULTS) as [string, { perIp: number; perSubject?: number; windowSeconds: number }][]) {
+    for (const [action, defaults] of Object.entries(LIMIT_DEFAULTS) as [
+      string,
+      { perIp: number; perSubject?: number; windowSeconds: number },
+    ][]) {
       expect(SETTINGS[`limits.${action}.perIp` as keyof typeof SETTINGS].default).toBe(defaults.perIp);
       expect(SETTINGS[`limits.${action}.windowSeconds` as keyof typeof SETTINGS].default).toBe(defaults.windowSeconds);
       expect(`limits.${action}.perSubject` in SETTINGS).toBe(defaults.perSubject !== undefined);

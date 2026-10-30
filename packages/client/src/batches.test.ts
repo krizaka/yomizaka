@@ -8,7 +8,18 @@ const BATCH = {
   name: "Baux",
   createdAt: "2026-10-23T09:00:00.000Z",
   finishedAt: null,
-  items: [{ id: "i1", line: 2, file: "bail.pdf", reference: null, state: "running", error: null, documentId: "d1", analysisId: "a1" }],
+  items: [
+    {
+      id: "i1",
+      line: 2,
+      file: "bail.pdf",
+      reference: null,
+      state: "running",
+      error: null,
+      documentId: "d1",
+      analysisId: "a1",
+    },
+  ],
   counts: { pending: 0, reused: 0, running: 1, done: 0, failed: 0, refused: 0 },
   pausedBy: null,
 };
@@ -32,10 +43,14 @@ describe("batches from the apps (yomizaka#154, #232)", () => {
   it("sends one manifest row per file with the same check, and the files under the names the rows give", async () => {
     const { port, calls } = fakePort({ batch: BATCH });
     const api = createYomizakaApi(port, session);
-    const created = await api.createBatch("Baux", [
-      { name: "bail.pdf", blob: new Blob(["%PDF"], { type: "application/pdf" }) },
-      { name: "bail, annexe.pdf", blob: new Blob(["%PDF"], { type: "application/pdf" }) },
-    ], "compliance");
+    const created = await api.createBatch(
+      "Baux",
+      [
+        { name: "bail.pdf", blob: new Blob(["%PDF"], { type: "application/pdf" }) },
+        { name: "bail, annexe.pdf", blob: new Blob(["%PDF"], { type: "application/pdf" }) },
+      ],
+      "compliance",
+    );
     expect(created.items[0]?.state).toBe("running");
     const [call] = calls;
     expect(call?.path).toBe("/api/batches");
@@ -52,7 +67,12 @@ describe("batches from the apps (yomizaka#154, #232)", () => {
 
   it("reads a batch and the list, and refuses a state the server never promised", async () => {
     expect((await createYomizakaApi(fakePort({ batch: BATCH }).port, session).fetchBatch("b1")).counts.running).toBe(1);
-    const list = await createYomizakaApi(fakePort({ batches: [{ id: "b1", name: "Baux", createdAt: BATCH.createdAt, finishedAt: null, items: 1, done: 0 }] }).port, session).listBatches();
+    const list = await createYomizakaApi(
+      fakePort({
+        batches: [{ id: "b1", name: "Baux", createdAt: BATCH.createdAt, finishedAt: null, items: 1, done: 0 }],
+      }).port,
+      session,
+    ).listBatches();
     expect(list).toHaveLength(1);
     const odd = { batch: { ...BATCH, items: [{ ...BATCH.items[0], state: "exploded" }] } };
     await expect(createYomizakaApi(fakePort(odd).port, session).fetchBatch("b1")).rejects.toThrow();
@@ -60,7 +80,11 @@ describe("batches from the apps (yomizaka#154, #232)", () => {
 
   it("reads who is signed in for the account menu", async () => {
     const { port, calls } = fakePort({ account: { email: "eric@example.com", name: "Éric", avatarSeed: null } });
-    expect(await createYomizakaApi(port, session).fetchMe()).toEqual({ email: "eric@example.com", name: "Éric", avatarSeed: null });
+    expect(await createYomizakaApi(port, session).fetchMe()).toEqual({
+      email: "eric@example.com",
+      name: "Éric",
+      avatarSeed: null,
+    });
     expect(calls).toEqual([{ path: "/api/me" }]);
   });
 });

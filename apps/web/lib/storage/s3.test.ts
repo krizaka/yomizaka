@@ -13,10 +13,28 @@ import { asDescriptor } from "./where";
  * service. Set STORAGE_IT_S3_ENDPOINT (`http://localhost:9000`), STORAGE_IT_S3_USER, STORAGE_IT_S3_PASS and STORAGE_IT_S3_BUCKET to run it.
  */
 const e = process.env;
-const enabled = !!e.STORAGE_IT_S3_ENDPOINT && !!e.STORAGE_IT_S3_USER && !!e.STORAGE_IT_S3_PASS && !!e.STORAGE_IT_S3_BUCKET;
-const DESCRIPTOR = asDescriptor({ kind: "s3", endpoint: null, region: "us-east-1", residency: "elsewhere", encrypted: false, owner: "krizaka", devOnly: false });
+const enabled =
+  !!e.STORAGE_IT_S3_ENDPOINT && !!e.STORAGE_IT_S3_USER && !!e.STORAGE_IT_S3_PASS && !!e.STORAGE_IT_S3_BUCKET;
+const DESCRIPTOR = asDescriptor({
+  kind: "s3",
+  endpoint: null,
+  region: "us-east-1",
+  residency: "elsewhere",
+  encrypted: false,
+  owner: "krizaka",
+  devOnly: false,
+});
 const objects = (pass = e.STORAGE_IT_S3_PASS!) =>
-  bucketStore({ endpoint: e.STORAGE_IT_S3_ENDPOINT!, region: "us-east-1", bucket: e.STORAGE_IT_S3_BUCKET!, accessKeyId: e.STORAGE_IT_S3_USER!, secretAccessKey: pass, prefix: "yomizaka-it", fetch: fetch as unknown as FetchLike, clock: { now: () => new Date() } });
+  bucketStore({
+    endpoint: e.STORAGE_IT_S3_ENDPOINT!,
+    region: "us-east-1",
+    bucket: e.STORAGE_IT_S3_BUCKET!,
+    accessKeyId: e.STORAGE_IT_S3_USER!,
+    secretAccessKey: pass,
+    prefix: "yomizaka-it",
+    fetch: fetch as unknown as FetchLike,
+    clock: { now: () => new Date() },
+  });
 const make = (pass?: string) => documentStoreOver(objects(pass), DESCRIPTOR, MAX_SIGNED_URL_SECONDS);
 
 /** In CI the job sets STORAGE_IT_S3_REQUIRED: a missing variable is a failure, not a silent skip (krizaka/yomizaka#198). */
@@ -26,7 +44,9 @@ describe.runIf(!!e.STORAGE_IT_S3_REQUIRED)("s3 adapter (S3 server) is required h
 
 describe.runIf(enabled)("s3 adapter (S3 server)", () => {
   documentStoreContract("s3", () => make());
-  documentStoreContract("s3 + encryption", () => documentStoreOver(encryptedStore(objects(), crypto.randomBytes(32)), DESCRIPTOR, MAX_SIGNED_URL_SECONDS));
+  documentStoreContract("s3 + encryption", () =>
+    documentStoreOver(encryptedStore(objects(), crypto.randomBytes(32)), DESCRIPTOR, MAX_SIGNED_URL_SECONDS),
+  );
 
   it("hands out a presigned link the browser can follow", async () => {
     const store = make();
@@ -39,6 +59,8 @@ describe.runIf(enabled)("s3 adapter (S3 server)", () => {
   });
 
   it("refuses a wrong credential", async () => {
-    await expect(make("wrong").put("it/x/doc.txt", new Uint8Array([1]), { contentType: "text/plain" })).rejects.toMatchObject({ status: 502 });
+    await expect(
+      make("wrong").put("it/x/doc.txt", new Uint8Array([1]), { contentType: "text/plain" }),
+    ).rejects.toMatchObject({ status: 502 });
   });
 });

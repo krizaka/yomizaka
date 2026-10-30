@@ -12,7 +12,10 @@ export function GET(req: Request) {
   return handle(async () => {
     await requireAdmin(req);
     const rows = await loadGate();
-    return Response.json({ blockers: rows, live: gateState(await liveFlag(), rows) }, { headers: { "Cache-Control": "private, no-store" } });
+    return Response.json(
+      { blockers: rows, live: gateState(await liveFlag(), rows) },
+      { headers: { "Cache-Control": "private, no-store" } },
+    );
   });
 }
 
@@ -20,7 +23,18 @@ export function GET(req: Request) {
 export function PUT(req: Request) {
   return handle(async () => {
     const session = await requireAdmin(req);
-    const input = await readJson(req, z.discriminatedUnion("status", [z.object({ blocker: z.string().max(60), status: z.literal("done"), evidenceOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), evidenceRef: z.string().trim().min(1).max(300) }), z.object({ blocker: z.string().max(60), status: z.literal("open") })]));
+    const input = await readJson(
+      req,
+      z.discriminatedUnion("status", [
+        z.object({
+          blocker: z.string().max(60),
+          status: z.literal("done"),
+          evidenceOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+          evidenceRef: z.string().trim().min(1).max(300),
+        }),
+        z.object({ blocker: z.string().max(60), status: z.literal("open") }),
+      ]),
+    );
     await setBlocker({ id: session.account.id, email: session.account.email }, input, req.headers);
     return Response.json({ ok: true });
   });

@@ -17,7 +17,14 @@ const LEASE = [
 ];
 
 describe("a finding's quote, from Yomizaka's text to a box on the PDF", () => {
-  const pdf = textPdf([...LEASE, ...Array.from({ length: 40 }, (_, i) => `Clause ${i + 1} generique du bail.`), "Fin du bail : le locataire quitte les lieux le 30 juin 2027."], 20);
+  const pdf = textPdf(
+    [
+      ...LEASE,
+      ...Array.from({ length: 40 }, (_, i) => `Clause ${i + 1} generique du bail.`),
+      "Fin du bail : le locataire quitte les lieux le 30 juin 2027.",
+    ],
+    20,
+  );
 
   it("places the quote Orazaka returns (taken from the text Yomizaka extracted) on the right page, where the line is", async () => {
     const { text, pages } = await readText("application/pdf", pdf);
@@ -36,7 +43,10 @@ describe("a finding's quote, from Yomizaka's text to a box on the PDF", () => {
 
   it("finds a quote that spans two lines as two boxes, and one on a later page on that page", async () => {
     const layer = await textLayer(pdf);
-    const spans = locateQuote(layer, "La locataire remet douze cheques postdates. Il est interdit d'avoir des enfants")!;
+    const spans = locateQuote(
+      layer,
+      "La locataire remet douze cheques postdates. Il est interdit d'avoir des enfants",
+    )!;
     expect(spans.page).toBe(1);
     expect(spans.boxes).toHaveLength(2);
     expect(spans.boxes[1]!.y).toBeGreaterThan(spans.boxes[0]!.y);

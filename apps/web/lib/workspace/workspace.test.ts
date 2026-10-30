@@ -1,9 +1,21 @@
-import { BULK_MAX, checkKindConfig, createWorkspace, filterSql, memoryWorkspaceStore, movesFrom, parseView, statusOrder, undoOf, viewHref, workspaceMigration } from "@krizaka/organize";
+import {
+  BULK_MAX,
+  checkKindConfig,
+  createWorkspace,
+  filterSql,
+  memoryWorkspaceStore,
+  movesFrom,
+  parseView,
+  statusOrder,
+  undoOf,
+  viewHref,
+  workspaceMigration,
+} from "@krizaka/organize";
 import { describe, expect, it } from "vitest";
 
 import { MIGRATIONS } from "../migrations";
 import { DECISION, isKind, KIND, OWNER_ROLE, WORKSPACE } from "./decl";
-import { DECISION_SET,DEFAULT_CONFIGS } from "./defaults";
+import { DECISION_SET, DEFAULT_CONFIGS } from "./defaults";
 import { decisionOrder, sortByDecision } from "./order";
 
 const ACTOR = { id: "00000000-0000-4000-8000-000000000001", label: "eric@example.test", role: OWNER_ROLE };
@@ -13,9 +25,17 @@ const NOW = new Date("2026-10-25T12:00:00Z");
 
 /** The layer over its in-memory store, as Yomizaka wires it (the transaction is the identity; the consequence is a spy). */
 function workspaceWith(files: string[], onMoved: (moves: readonly unknown[]) => Promise<void> = async () => undefined) {
-  const entities = new Map([[KIND.applicantFile, new Map(files.map((f) => [f, SCOPE]))], [KIND.document, new Map<string, string>()]]);
+  const entities = new Map([
+    [KIND.applicantFile, new Map(files.map((f) => [f, SCOPE]))],
+    [KIND.document, new Map<string, string>()],
+  ]);
   const store = memoryWorkspaceStore(entities);
-  const workspace = createWorkspace({ transaction: (work) => work((async () => []) as never), storeFor: () => store, clock: { now: () => NOW }, onMoved: (_tx, moves) => onMoved(moves) });
+  const workspace = createWorkspace({
+    transaction: (work) => work((async () => []) as never),
+    storeFor: () => store,
+    clock: { now: () => NOW },
+    onMoved: (_tx, moves) => onMoved(moves),
+  });
   return { workspace, store };
 }
 
@@ -27,12 +47,18 @@ describe("the decision set (yomizaka#324)", () => {
   it("goes from « à décider » to « retenu » or « non retenu », both final", () => {
     expect(DECISION_SET.initial).toBe(DECISION.toDecide);
     expect(DECISION_SET.states.map((s) => s.key)).toEqual([DECISION.toDecide, DECISION.selected, DECISION.notSelected]);
-    expect(DECISION_SET.states.filter((s) => s.final).map((s) => s.key)).toEqual([DECISION.selected, DECISION.notSelected]);
+    expect(DECISION_SET.states.filter((s) => s.final).map((s) => s.key)).toEqual([
+      DECISION.selected,
+      DECISION.notSelected,
+    ]);
   });
 
   it("asks two presses to refuse, one to select", () => {
     const moves = movesFrom(DECISION_SET, DECISION.toDecide, OWNER_ROLE);
-    expect(moves.map((m) => [m.to, m.confirm === true])).toEqual([[DECISION.selected, false], [DECISION.notSelected, true]]);
+    expect(moves.map((m) => [m.to, m.confirm === true])).toEqual([
+      [DECISION.selected, false],
+      [DECISION.notSelected, true],
+    ]);
   });
 
   it("accepts no reason: none is declared, so none is accepted (there is never a free-text reason about a person)", () => {
@@ -56,14 +82,21 @@ describe("the decision set (yomizaka#324)", () => {
 
   it("gives documents tags only, and two system views over the decision", () => {
     expect(DEFAULT_CONFIGS[KIND.document].status).toBeNull();
-    expect(DEFAULT_CONFIGS[KIND.applicantFile].views.map((v) => [v.key, v.filters.status])).toEqual([["to_decide", [DECISION.toDecide]], ["decided", [DECISION.selected, DECISION.notSelected]]]);
+    expect(DEFAULT_CONFIGS[KIND.applicantFile].views.map((v) => [v.key, v.filters.status])).toEqual([
+      ["to_decide", [DECISION.toDecide]],
+      ["decided", [DECISION.selected, DECISION.notSelected]],
+    ]);
   });
 });
 
 describe("the order of the decision column (no sort by a check's result)", () => {
   const set = DECISION_SET;
   it("is the set's order", () => {
-    expect([...statusOrder(set)]).toEqual([[DECISION.toDecide, 0], [DECISION.selected, 1], [DECISION.notSelected, 2]]);
+    expect([...statusOrder(set)]).toEqual([
+      [DECISION.toDecide, 0],
+      [DECISION.selected, 1],
+      [DECISION.notSelected, 2],
+    ]);
     expect(decisionOrder(set, DECISION.notSelected)).toBeGreaterThan(decisionOrder(set, DECISION.toDecide));
   });
 
@@ -105,8 +138,15 @@ describe("the filter replaces the ALL-tags clause", () => {
   });
 
   it("reads the decision with its initial state for a file nobody moved", () => {
-    const { sql, params } = filterSql(WORKSPACE, KIND.applicantFile, { status: [DECISION.toDecide] }, { from: 2, status: DECISION_SET });
-    expect(sql).toContain("COALESCE((SELECT s.state FROM organize.applicant_file_status s WHERE s.entity_id = e.id), $2) = ANY($3::text[])");
+    const { sql, params } = filterSql(
+      WORKSPACE,
+      KIND.applicantFile,
+      { status: [DECISION.toDecide] },
+      { from: 2, status: DECISION_SET },
+    );
+    expect(sql).toContain(
+      "COALESCE((SELECT s.state FROM organize.applicant_file_status s WHERE s.entity_id = e.id), $2) = ANY($3::text[])",
+    );
     expect(params).toEqual([DECISION.toDecide, [DECISION.toDecide]]);
   });
 });
@@ -116,8 +156,14 @@ describe("the layer as Yomizaka wires it", () => {
     const seen: unknown[][] = [];
     const { workspace } = workspaceWith([id(1), id(2)], async (moves) => void seen.push([...moves]));
     await workspace.config.seed(DEFAULT_CONFIGS[KIND.applicantFile]);
-    const result = await workspace.status.move(SCOPE, ACTOR, KIND.applicantFile, { ids: [id(1)], to: DECISION.selected, expect: DECISION.toDecide });
-    expect(result.moved.map((m) => [m.entityId, m.from, m.to, m.final])).toEqual([[id(1), DECISION.toDecide, DECISION.selected, true]]);
+    const result = await workspace.status.move(SCOPE, ACTOR, KIND.applicantFile, {
+      ids: [id(1)],
+      to: DECISION.selected,
+      expect: DECISION.toDecide,
+    });
+    expect(result.moved.map((m) => [m.entityId, m.from, m.to, m.final])).toEqual([
+      [id(1), DECISION.toDecide, DECISION.selected, true],
+    ]);
     expect(seen).toHaveLength(1);
     const states = await workspace.status.of(SCOPE, KIND.applicantFile, [id(1), id(2)]);
     expect(states.get(id(1))?.state).toBe(DECISION.selected);
@@ -127,9 +173,14 @@ describe("the layer as Yomizaka wires it", () => {
   it("deciding twice leaves one decision and one refusal: a decision is final", async () => {
     const { workspace } = workspaceWith([id(1)]);
     await workspace.config.seed(DEFAULT_CONFIGS[KIND.applicantFile]);
-    const first = await workspace.status.move(SCOPE, ACTOR, KIND.applicantFile, { ids: [id(1)], to: DECISION.selected });
+    const first = await workspace.status.move(SCOPE, ACTOR, KIND.applicantFile, {
+      ids: [id(1)],
+      to: DECISION.selected,
+    });
     expect(first.moved).toHaveLength(1);
-    await expect(workspace.status.move(SCOPE, ACTOR, KIND.applicantFile, { ids: [id(1)], to: DECISION.notSelected })).rejects.toMatchObject({ code: "MOVE_NOT_ALLOWED" });
+    await expect(
+      workspace.status.move(SCOPE, ACTOR, KIND.applicantFile, { ids: [id(1)], to: DECISION.notSelected }),
+    ).rejects.toMatchObject({ code: "MOVE_NOT_ALLOWED" });
     expect((await workspace.status.of(SCOPE, KIND.applicantFile, [id(1)])).get(id(1))?.state).toBe(DECISION.selected);
   });
 
@@ -137,7 +188,10 @@ describe("the layer as Yomizaka wires it", () => {
     const { workspace } = workspaceWith([id(1), id(2)]);
     await workspace.config.seed(DEFAULT_CONFIGS[KIND.applicantFile]);
     await workspace.status.move(SCOPE, ACTOR, KIND.applicantFile, { ids: [id(1)], to: DECISION.selected });
-    const result = await workspace.status.move(SCOPE, ACTOR, KIND.applicantFile, { ids: [id(1), id(2)], to: DECISION.notSelected });
+    const result = await workspace.status.move(SCOPE, ACTOR, KIND.applicantFile, {
+      ids: [id(1), id(2)],
+      to: DECISION.notSelected,
+    });
     expect(result.moved.map((m) => m.entityId)).toEqual([id(2)]);
     expect(result.skipped).toEqual([{ id: id(1), code: "MOVE_NOT_ALLOWED" }]);
   });
@@ -146,14 +200,22 @@ describe("the layer as Yomizaka wires it", () => {
     const { workspace } = workspaceWith([id(1)]);
     await workspace.config.seed(DEFAULT_CONFIGS[KIND.applicantFile]);
     await workspace.status.move(SCOPE, ACTOR, KIND.applicantFile, { ids: [id(1)], to: DECISION.selected });
-    await expect(workspace.status.move(SCOPE, ACTOR, KIND.applicantFile, { ids: [id(1)], to: DECISION.notSelected, expect: DECISION.toDecide })).rejects.toMatchObject({ code: "STALE", status: 409 });
+    await expect(
+      workspace.status.move(SCOPE, ACTOR, KIND.applicantFile, {
+        ids: [id(1)],
+        to: DECISION.notSelected,
+        expect: DECISION.toDecide,
+      }),
+    ).rejects.toMatchObject({ code: "STALE", status: 409 });
   });
 
   it("answers 404 for a file of another account, and moves nothing", async () => {
     const { workspace } = workspaceWith([id(1)]);
     await workspace.config.seed(DEFAULT_CONFIGS[KIND.applicantFile]);
     const stranger = { ...ACTOR, id: id(99) };
-    await expect(workspace.status.move(id(99), stranger, KIND.applicantFile, { ids: [id(1)], to: DECISION.selected })).rejects.toMatchObject({ code: "NOT_FOUND", status: 404 });
+    await expect(
+      workspace.status.move(id(99), stranger, KIND.applicantFile, { ids: [id(1)], to: DECISION.selected }),
+    ).rejects.toMatchObject({ code: "NOT_FOUND", status: 404 });
     expect((await workspace.status.of(SCOPE, KIND.applicantFile, [id(1)])).get(id(1))?.state).toBe(DECISION.toDecide);
   });
 
@@ -161,7 +223,9 @@ describe("the layer as Yomizaka wires it", () => {
     const files = Array.from({ length: BULK_MAX + 1 }, (_, i) => id(i + 1));
     const { workspace } = workspaceWith(files);
     await workspace.config.seed(DEFAULT_CONFIGS[KIND.applicantFile]);
-    await expect(workspace.status.move(SCOPE, ACTOR, KIND.applicantFile, { ids: files, to: DECISION.selected })).rejects.toMatchObject({ code: "TOO_MANY" });
+    await expect(
+      workspace.status.move(SCOPE, ACTOR, KIND.applicantFile, { ids: files, to: DECISION.selected }),
+    ).rejects.toMatchObject({ code: "TOO_MANY" });
   });
 
   it("seeds once: the database stays the source of truth after", async () => {

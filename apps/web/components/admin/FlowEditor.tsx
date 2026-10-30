@@ -21,33 +21,56 @@ import { formatDate } from "../console/format";
 const VERSION_TONE: Record<string, "success" | "warning" | "neutral"> = { published: "success", draft: "warning" };
 
 const schema = z.object({
-    key: z.string().trim().max(60),
-    titleEn: z.string().trim().min(1).max(300),
-    titleFr: z.string().trim().min(1).max(300),
-    leadEn: z.string().trim().min(1).max(300),
-    leadFr: z.string().trim().min(1).max(300),
-    status: z.enum(["available", "soon"]),
-    tenant: z.boolean(),
-    landlord: z.boolean(),
-    freelancer: z.boolean(),
-    business: z.boolean(),
-    compliance: z.boolean(),
-    authenticity: z.boolean(),
-    jQC: z.boolean(),
-    jFR: z.boolean(),
-    jBE: z.boolean(),
-    rQC: z.string().trim().max(80),
-    rFR: z.string().trim().max(80),
-    rBE: z.string().trim().max(80),
-    consents: z.string().trim().max(300),
-    providers: z.string().trim().max(300),
-    pricingModel: z.enum(["free", "per-run", "subscription"]),
-    amount: z.string().trim().max(12),
+  key: z.string().trim().max(60),
+  titleEn: z.string().trim().min(1).max(300),
+  titleFr: z.string().trim().min(1).max(300),
+  leadEn: z.string().trim().min(1).max(300),
+  leadFr: z.string().trim().min(1).max(300),
+  status: z.enum(["available", "soon"]),
+  tenant: z.boolean(),
+  landlord: z.boolean(),
+  freelancer: z.boolean(),
+  business: z.boolean(),
+  compliance: z.boolean(),
+  authenticity: z.boolean(),
+  jQC: z.boolean(),
+  jFR: z.boolean(),
+  jBE: z.boolean(),
+  rQC: z.string().trim().max(80),
+  rFR: z.string().trim().max(80),
+  rBE: z.string().trim().max(80),
+  consents: z.string().trim().max(300),
+  providers: z.string().trim().max(300),
+  pricingModel: z.enum(["free", "per-run", "subscription"]),
+  amount: z.string().trim().max(12),
 });
 
 const form = createKrizakaForm({
   schema,
-  defaultValues: { key: "", titleEn: "", titleFr: "", leadEn: "", leadFr: "", status: "available" as "available" | "soon", tenant: false, landlord: false, freelancer: false, business: false, compliance: true, authenticity: false, jQC: true, jFR: false, jBE: false, rQC: "qc-residential-lease", rFR: "fr-residential-lease", rBE: "be-residential-lease", consents: "", providers: "", pricingModel: "free" as "free" | "per-run" | "subscription", amount: "" },
+  defaultValues: {
+    key: "",
+    titleEn: "",
+    titleFr: "",
+    leadEn: "",
+    leadFr: "",
+    status: "available" as "available" | "soon",
+    tenant: false,
+    landlord: false,
+    freelancer: false,
+    business: false,
+    compliance: true,
+    authenticity: false,
+    jQC: true,
+    jFR: false,
+    jBE: false,
+    rQC: "qc-residential-lease",
+    rFR: "fr-residential-lease",
+    rBE: "be-residential-lease",
+    consents: "",
+    providers: "",
+    pricingModel: "free" as "free" | "per-run" | "subscription",
+    amount: "",
+  },
 });
 type Values = z.infer<typeof schema>;
 
@@ -78,10 +101,24 @@ export function FlowEditor({ flow, initial }: Readonly<{ flow: AdminFlow | null;
   const start = initial ?? emptyForm();
   const save = useMutation({
     mutationFn: (input: { key: string; flat: FlowFormValues }) =>
-      flow ? krizakaFetch(`/api/admin/flows/${flow.id}/draft`, { method: "PUT", json: { definition: definitionFromForm(input.flat) } }) : krizakaFetch("/api/admin/flows", { method: "POST", json: { key: input.key, definition: definitionFromForm(input.flat) } }),
+      flow
+        ? krizakaFetch(`/api/admin/flows/${flow.id}/draft`, {
+            method: "PUT",
+            json: { definition: definitionFromForm(input.flat) },
+          })
+        : krizakaFetch("/api/admin/flows", {
+            method: "POST",
+            json: { key: input.key, definition: definitionFromForm(input.flat) },
+          }),
   });
-  const publish = useMutation({ mutationFn: (versionId: string) => krizakaFetch(`/api/admin/flows/${flow!.id}/publish`, { method: "POST", json: { versionId } }) });
-  const env = useMutation({ mutationFn: (b: { environment: "dev" | "prod"; enabled: boolean }) => krizakaFetch(`/api/admin/flows/${flow!.id}/environments`, { method: "PUT", json: b }) });
+  const publish = useMutation({
+    mutationFn: (versionId: string) =>
+      krizakaFetch(`/api/admin/flows/${flow!.id}/publish`, { method: "POST", json: { versionId } }),
+  });
+  const env = useMutation({
+    mutationFn: (b: { environment: "dev" | "prod"; enabled: boolean }) =>
+      krizakaFetch(`/api/admin/flows/${flow!.id}/environments`, { method: "PUT", json: b }),
+  });
   const f = form.useForm({
     i18n: { t: (k, vars) => say(k, vars as Record<string, string | number> | undefined), locale },
     defaultValues: {
@@ -132,7 +169,14 @@ export function FlowEditor({ flow, initial }: Readonly<{ flow: AdminFlow | null;
           <f.TextField name="leadEn" label={t("leadEn")} />
           <f.TextField name="leadFr" label={t("leadFr")} />
         </div>
-        <f.Select name="status" label={t("status")} options={[{ value: "available", label: say("adminConsole.flows.status.available") }, { value: "soon", label: say("adminConsole.flows.status.soon") }]} />
+        <f.Select
+          name="status"
+          label={t("status")}
+          options={[
+            { value: "available", label: say("adminConsole.flows.status.available") },
+            { value: "soon", label: say("adminConsole.flows.status.soon") },
+          ]}
+        />
         <fieldset className="flex flex-col gap-2 border-0 p-0">
           <legend className="mb-1 text-sm font-semibold text-fg">{t("audiences")}</legend>
           {AUDIENCES.map((a) => (
@@ -159,7 +203,15 @@ export function FlowEditor({ flow, initial }: Readonly<{ flow: AdminFlow | null;
         <div className="grid gap-4 sm:grid-cols-2">
           <f.TextField name="consents" label={t("consents")} />
           <f.TextField name="providers" label={t("providers")} />
-          <f.Select name="pricingModel" label={t("pricingModel")} options={[{ value: "free", label: say("adminConsole.flows.models.free") }, { value: "per-run", label: say("adminConsole.flows.models.perRun") }, { value: "subscription", label: say("adminConsole.flows.models.subscription") }]} />
+          <f.Select
+            name="pricingModel"
+            label={t("pricingModel")}
+            options={[
+              { value: "free", label: say("adminConsole.flows.models.free") },
+              { value: "per-run", label: say("adminConsole.flows.models.perRun") },
+              { value: "subscription", label: say("adminConsole.flows.models.subscription") },
+            ]}
+          />
           <f.TextField name="amount" label={t("amount")} />
         </div>
         <p className="m-0 text-xs text-fg-muted">{t("draftHint")}</p>
@@ -174,7 +226,15 @@ export function FlowEditor({ flow, initial }: Readonly<{ flow: AdminFlow | null;
             <h2 className="font-display text-base font-bold text-fg">{t("environments")}</h2>
             {(["dev", "prod"] as const).map((e) => (
               <label key={e} className="flex min-h-11 items-center gap-3 text-sm text-fg">
-                <input type="checkbox" className="size-5" checked={flow.environments[e]} onChange={(ev) => env.mutate({ environment: e, enabled: ev.target.checked }, { onSuccess: () => router.refresh() })} data-testid={`env-${e}`} />
+                <input
+                  type="checkbox"
+                  className="size-5"
+                  checked={flow.environments[e]}
+                  onChange={(ev) =>
+                    env.mutate({ environment: e, enabled: ev.target.checked }, { onSuccess: () => router.refresh() })
+                  }
+                  data-testid={`env-${e}`}
+                />
                 {say("adminConsole.flows.editor.enabledIn").replace("{env}", e)}
               </label>
             ))}
@@ -186,11 +246,24 @@ export function FlowEditor({ flow, initial }: Readonly<{ flow: AdminFlow | null;
                 <li key={v.id} className="flex flex-wrap items-center justify-between gap-2 text-sm text-fg-secondary">
                   <span className="flex items-center gap-2">
                     <b className="text-fg">v{v.version}</b>
-                    <Badge tone={VERSION_TONE[v.status] ?? "neutral"}>{say(`adminConsole.flows.versionStatus.${v.status}`)}</Badge>
+                    <Badge tone={VERSION_TONE[v.status] ?? "neutral"}>
+                      {say(`adminConsole.flows.versionStatus.${v.status}`)}
+                    </Badge>
                     {v.publishedAt ? formatDate(v.publishedAt, locale, true) : null}
                   </span>
                   {v.status === "draft" ? (
-                    <Button size="sm" loading={publish.isPending} onClick={() => publish.mutate(v.id, { onSuccess: () => { setNotice(t("published")); router.refresh(); } })}>
+                    <Button
+                      size="sm"
+                      loading={publish.isPending}
+                      onClick={() =>
+                        publish.mutate(v.id, {
+                          onSuccess: () => {
+                            setNotice(t("published"));
+                            router.refresh();
+                          },
+                        })
+                      }
+                    >
                       {t("publish")}
                     </Button>
                   ) : null}

@@ -12,6 +12,12 @@ export function GET(req: Request, { params }: { params: Promise<{ id: string }> 
     const { id } = await params;
     const row = /^ctr_[0-9a-f]{24}$/.test(id) ? await sealedOf(caller.account.id, id) : null;
     if (!row) throw refuse(404, "NOT_FOUND", "No such contract");
-    return new Response(new Uint8Array(row.content), { headers: { "content-type": "application/pdf", "content-disposition": `attachment; filename="${row.id}.pdf"`, "cache-control": "private, no-store" } });
+    return new Response(new Uint8Array(row.content), {
+      headers: {
+        "content-type": "application/pdf",
+        "content-disposition": `attachment; filename="${row.id}.pdf"`,
+        "cache-control": "private, no-store",
+      },
+    });
   });
 }

@@ -10,12 +10,20 @@ vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
 vi.mock("@/lib/access", () => ({ pageSession: async () => null }));
 vi.mock("@/app/accounts-edge", () => ({ mailConfigured: () => state.mail }));
 vi.mock("@/lib/password-reset", () => ({ resetLinkMinutes: async () => state.minutes }));
-vi.mock("@/components/console/ForgotPasswordForm", () => ({ ForgotPasswordForm: ({ minutes }: { minutes: number }) => `stub-form:${minutes}` }));
+vi.mock("@/components/console/ForgotPasswordForm", () => ({
+  ForgotPasswordForm: ({ minutes }: { minutes: number }) => `stub-form:${minutes}`,
+}));
 
 import ForgotPasswordPage from "./page";
 
-const readable = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ");
-const render = async (locale: "en" | "fr") => renderToStaticMarkup(await ForgotPasswordPage({ params: Promise.resolve({ locale }) }));
+const readable = (html: string) =>
+  html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&#x27;|&#39;/g, "'")
+    .replace(/&[a-z#0-9]+;/gi, " ")
+    .replace(/\s+/g, " ");
+const render = async (locale: "en" | "fr") =>
+  renderToStaticMarkup(await ForgotPasswordPage({ params: Promise.resolve({ locale }) }));
 
 describe("forgot password (the UX review's Y8)", () => {
   beforeEach(() => {
@@ -24,7 +32,10 @@ describe("forgot password (the UX review's Y8)", () => {
   });
 
   it("is on the sign-in frame — the owl large, the three proofs — in each language, with the way back", async () => {
-    for (const [locale, m] of [["en", en], ["fr", fr]] as const) {
+    for (const [locale, m] of [
+      ["en", en],
+      ["fr", fr],
+    ] as const) {
       const html = await render(locale);
       expect(html).toMatch(/width="160"/);
       expect(readable(html)).toContain(m.console.forgotPassword.title);

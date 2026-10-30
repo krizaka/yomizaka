@@ -1,7 +1,15 @@
 import { refuse } from "../http";
 import { checksDoor } from "../orazaka";
 import { liveGate } from "./gate";
-import { CHECK_OUTCOME, type CheckCall, type CheckPurpose, type CheckResult, type ChecksDoor, closedDoor, NOT_CONFIGURED } from "./model";
+import {
+  CHECK_OUTCOME,
+  type CheckCall,
+  type CheckPurpose,
+  type CheckResult,
+  type ChecksDoor,
+  closedDoor,
+  NOT_CONFIGURED,
+} from "./model";
 
 /**
  * A screening provider behind one port. Yomizaka never speaks to a credit bureau or a court-records vendor: it asks
@@ -16,7 +24,13 @@ export interface CheckProvider {
   collect(purpose: CheckPurpose, call: CheckCall, providerRef: string): Promise<CheckResult>;
 }
 
-const result = (outcome: CheckResult["outcome"], extra: Partial<CheckResult> = {}): CheckResult => ({ outcome, refusal: null, category: "NONE", providerRef: null, ...extra });
+const result = (outcome: CheckResult["outcome"], extra: Partial<CheckResult> = {}): CheckResult => ({
+  outcome,
+  refusal: null,
+  category: "NONE",
+  providerRef: null,
+  ...extra,
+});
 
 export { type ChecksDoor, closedDoor, NOT_CONFIGURED };
 
@@ -24,7 +38,10 @@ export { type ChecksDoor, closedDoor, NOT_CONFIGURED };
  * A live adapter is wrapped by the compliance gate (yomizaka#135): while the gate is closed the door is never reached and the
  * answer is NOT_CONFIGURED — whatever the door is. The gate is read on every call, so closing a blocker stops live calls at once.
  */
-export const engineProvider = (door: ChecksDoor = closedDoor, open: () => Promise<boolean> = async () => (await liveGate()).open): CheckProvider => ({
+export const engineProvider = (
+  door: ChecksDoor = closedDoor,
+  open: () => Promise<boolean> = async () => (await liveGate()).open,
+): CheckProvider => ({
   demo: false,
   submit: async (p, c) => ((await open()) ? door.submit(p, c) : NOT_CONFIGURED),
   collect: async (p, c, ref) => ((await open()) ? door.collect(p, c, ref) : NOT_CONFIGURED),
@@ -38,16 +55,26 @@ export const demoProvider: CheckProvider = {
   demo: true,
   async submit(_purpose, call) {
     const name = call.subject.lastName.toLowerCase();
-    if (name.startsWith("wait")) return result(CHECK_OUTCOME.PENDING, { providerRef: name.startsWith("waitforever") ? "demo-pending-forever" : "demo-pending-01" });
-    return name.startsWith("flag") ? result(CHECK_OUTCOME.MATCH, { category: "TAL_OTHER", providerRef: "demo-fixture-01" }) : result(CHECK_OUTCOME.NO_MATCH);
+    if (name.startsWith("wait"))
+      return result(CHECK_OUTCOME.PENDING, {
+        providerRef: name.startsWith("waitforever") ? "demo-pending-forever" : "demo-pending-01",
+      });
+    return name.startsWith("flag")
+      ? result(CHECK_OUTCOME.MATCH, { category: "TAL_OTHER", providerRef: "demo-fixture-01" })
+      : result(CHECK_OUTCOME.NO_MATCH);
   },
   async collect(_purpose, _call, providerRef) {
-    return providerRef === "demo-pending-forever" ? result(CHECK_OUTCOME.PENDING, { providerRef }) : result(CHECK_OUTCOME.NO_MATCH);
+    return providerRef === "demo-pending-forever"
+      ? result(CHECK_OUTCOME.PENDING, { providerRef })
+      : result(CHECK_OUTCOME.NO_MATCH);
   },
 };
 
 /** The adapters by key: a provider row names one. Adding a vendor is a row for the engine; a new adapter is code only for a new kind of door. */
-export const ADAPTERS: Record<string, () => CheckProvider> = { demo: () => demoProvider, engine: () => engineProvider(checksDoor()) };
+export const ADAPTERS: Record<string, () => CheckProvider> = {
+  demo: () => demoProvider,
+  engine: () => engineProvider(checksDoor()),
+};
 
 export function adapterFor(key: string): CheckProvider {
   const make = ADAPTERS[key];
