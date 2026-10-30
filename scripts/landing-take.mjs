@@ -13,6 +13,7 @@ import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { applyTheme, themesOf } from "./lib/recording-kit.mjs";
+import { byTestId } from "./lib/check-selectors.mjs";
 
 const require = createRequire(import.meta.url);
 const { chromium } = require("playwright-core");
@@ -120,15 +121,15 @@ await page.waitForTimeout(1200);
 mark("drop");
 // The document is deleted after its check unless « Keep my documents » is ticked, and that choice is read when the file leaves:
 // « Vérifier un document » asks it BEFORE the drop, in its folded defaults (so the lit line can show in the document).
-await page.locator('[data-testid="check-defaults"] summary').click();
-const keepBox = page.locator('[data-testid="keep-choice"] #keep-documents, [data-testid="keep-choice"] [role="checkbox"]').first();
+await page.locator(`${byTestId("defaults")} summary`).click();
+const keepBox = page.locator(`${byTestId("keep")} #keep-documents, ${byTestId("keep")} [role="checkbox"]`).first();
 await keepBox.waitFor({ timeout: 10_000 });
 if ((await keepBox.getAttribute("aria-checked")) !== "true" && !(await keepBox.isChecked().catch(() => false))) await keepBox.click();
 await page.setInputFiles('input[type="file"]', file);
 // 2 · the file lands; if Yomizaka is unsure it asks « Which document? » (CheckView's `kind-choice` radiogroup, as CheckView.test
 // reads it): the lease is named and the check starts on its report. A file recognised for sure opens its report by itself.
 const reportUrl = /\/app\/documents\/[^/]+\/rapport/;
-const asked = page.locator('[data-testid="kind-choice"]');
+const asked = page.locator(byTestId("kind"));
 await Promise.race([asked.waitFor({ timeout: 40_000 }), page.waitForURL(reportUrl, { timeout: 40_000 })]).catch(() => undefined);
 if (await asked.isVisible().catch(() => false)) {
   await page.waitForTimeout(900);
@@ -143,12 +144,12 @@ mark("check");
 // The report waits for « Run the check » (the jurisdiction and the date are the page's defaults).
 await page.getByRole("button", { name: RUN_LABEL[locale] }).first().click();
 waiting("the Orazaka run id (150 s max)");
-await page.waitForSelector('[data-testid="orazaka-run-id"]', { state: "attached", timeout: 150_000 }).catch(async (e) => {
+await page.waitForSelector(byTestId("runId"), { state: "attached", timeout: 150_000 }).catch(async (e) => {
   await page.screenshot({ path: `${outRoot}/debug-${locale}.png` }).catch(() => undefined);
   writeFileSync(`${outRoot}/debug-${locale}.txt`, await page.locator("main").innerText());
   throw e;
 });
-const runId = (await page.locator('[data-testid="orazaka-run-id"]').first().textContent()).trim();
+const runId = (await page.locator(byTestId("runId")).first().textContent()).trim();
 // The finding lights its line in the file only once it is selected (« See in the file »).
 await page.getByRole("button", { name: /See in the file|Voir dans le fichier/ }).first().click({ timeout: 30_000 }).catch(() => undefined);
 waiting("a lit line, a <mark> in the document (60 s max)");
