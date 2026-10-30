@@ -53,14 +53,9 @@ async function firstFile(page, { origin }) {
   if (!id) throw new Error("no seeded applicant file: is the cast seeded?");
   return `/fr/app/dossiers/${id}`;
 }
-// The date in words is written by the server's clock (the browser's is frozen): its masked box would take the width of the day's text.
-const PINNED_TODAY = "vendredi 30 octobre 2026";
-/** The hydrated first paint, settled: the date box pinned to one text, and the account picture decoded (the initial gives way to it). */
+/** The hydrated first paint, settled: the account picture decoded (the initial gives way to it). The date in words is the server's, frozen by APP_VISUAL_NOW (scripts/ci-visual-start.sh). */
 async function settleHeaderLive(page) {
   await page.locator('time[data-testid="today"]').first().waitFor();
-  await page.evaluate((text) => {
-    for (const el of document.querySelectorAll('time[data-testid="today"]')) el.textContent = text;
-  }, PINNED_TODAY);
   await page.waitForFunction(() =>
     [...document.images].some((img) => img.getBoundingClientRect().top < 120 && img.complete && img.naturalWidth > 0),
   );

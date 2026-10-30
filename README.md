@@ -105,6 +105,7 @@ Every variable is declared once in `apps/web/lib/env.ts` (see `.env.example`); a
 | `APP_DEV_HOST` | the development address (dev.yomizaka.com): pages go to www with a 308, the API and /.well-known keep serving, noindex |
 | `APP_IOS_TEAM_ID` | the Apple team that signs the iOS app: `/.well-known/apple-app-site-association` (universal links; 404 while unset) |
 | `APP_ANDROID_CERT_SHA256` | the SHA-256 fingerprint(s) of the Android app's signing certificate: `/.well-known/assetlinks.json` (404 while unset) |
+| `APP_VISUAL_NOW` | an ISO instant: the date the console writes as « today » in the visual runs (dev only; refused in production) |
 | `APP_SEARCH_INDEXING` | `on` or `off`: `off` answers noindex everywhere |
 | `APP_REPORT_SIGNING_KEY` | the Ed25519 key that signs reports |
 | `DATABASE_URL`, `DATABASE_CA_CERT` | PostgreSQL (in production the PgBouncer pool `pool-yomizaka`) and its CA |

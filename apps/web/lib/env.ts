@@ -26,6 +26,8 @@ export const envSchema = z.object({
   APP_ENVIRONMENT: z.enum(["dev", "prod"]).default("dev"),
   /** The backfill of ADR-0012: the bytes still in `documents.content` move to the store (`on`), are only counted (`dry-run`), or stay (`off`). */
   APP_DOCUMENTS_BACKFILL: z.enum(["on", "dry-run", "off"]).default("on"),
+  /** Dev and visual runs only: the instant the console writes as « today », so a capture never depends on the day it is taken (lib/display-now.ts). Refused in production. */
+  APP_VISUAL_NOW: z.string().datetime().optional(),
   /** The public origin of the site (canonical URLs, sitemap, llms.txt). */
   APP_PUBLIC_URL: z.string().url().default("https://www.yomizaka.com"),
   /** Optional credentials for the dev/local demo persona seed. */
@@ -108,6 +110,9 @@ export type Env = z.infer<typeof envSchema>;
 /** Which environment this deployment is: read at the edges (pages, routes) and passed to lib/flows.ts. */
 export const appEnvironment = () => readEnv().APP_ENVIRONMENT;
 
+/** The instant a dev visual run froze as « today » (undefined: the real clock). */
+export const appVisualNow = () => readEnv().APP_VISUAL_NOW;
+
 export function readEnv(source: Record<string, string | undefined> = process.env): Env {
   return envSchema.parse(source);
 }
@@ -127,6 +132,7 @@ export function productionProblems(env: Env): string[] {
       problems.push((error as Error).message);
     }
   if (env.APP_ENVIRONMENT === "prod" && env.MEDIA_DOCUMENTS_PROVIDER === STORAGE_KIND.bunny) problems.push("MEDIA_DOCUMENTS_PROVIDER=bunny has no Canadian region: development and fictional data only");
+  if (env.APP_ENVIRONMENT === "prod" && env.APP_VISUAL_NOW) problems.push("APP_VISUAL_NOW freezes the date the console shows: dev and visual runs only");
   if (env.DATABASE_URL && /sslmode=(require|verify)/.test(env.DATABASE_URL) && !env.DATABASE_CA_CERT) problems.push("DATABASE_CA_CERT is required for a TLS database");
   return problems;
 }
