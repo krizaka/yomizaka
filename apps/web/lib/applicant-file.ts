@@ -222,7 +222,7 @@ async function runChecks(
     const request: StartAnalysis =
       studio === "compliance-check" ? { studio, jurisdiction: FILE_JURISDICTION } : { studio };
     try {
-      const via = await reserveAudit(query, ownerId, now, ctx.auditCaps);
+      const via = await reserveAudit(query, ownerId, now, ctx.auditCaps, documentId);
       try {
         await startAnalysis(ownerId, documentId, request, null, via, await storeForDocument(ownerId, documentId));
       } catch (error) {
