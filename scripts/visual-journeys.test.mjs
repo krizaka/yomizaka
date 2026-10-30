@@ -8,7 +8,13 @@ import { readFileSync } from "node:fs";
 import { it as test } from "vitest";
 
 const source = readFileSync(new URL("../apps/web/e2e/visual/journeys.visual.mjs", import.meta.url), "utf8");
-const pending = source.split("\n").find((line) => line.includes('name: "app-home-pending"')) ?? "";
+/** The journey of `name`, whatever the line breaks Prettier chose: from its name to the next journey's. */
+const journeyOf = (name) => {
+  const from = source.indexOf(`name: "${name}"`);
+  const next = source.indexOf('name: "', from + 1);
+  return source.slice(from, next === -1 ? undefined : next);
+};
+const pending = journeyOf("app-home-pending");
 
 test("the pending first paint settles the date and the account picture before the shot", () => {
   assert.match(pending, /ready: settleHeaderLive/, "the pending journey must run settleHeaderLive");
