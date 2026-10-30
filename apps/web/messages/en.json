@@ -267,7 +267,7 @@
           },
           "authenticity": {
             "title": "Authenticity of the file",
-            "line": "The PDF file itself: producer, dates, successive saves, fonts."
+            "line": "The PDF file itself: producer, dates, successive saves."
           }
         }
       },
@@ -618,7 +618,7 @@
         "premises-condition": "a condition report (état des lieux)"
       },
       "authenticityTitle": "Signs of editing",
-      "authenticityText": "The PDF file itself: producer, dates, successive saves, fonts.",
+      "authenticityText": "The PDF file itself: producer, dates, successive saves.",
       "jurisdiction": "Jurisdiction",
       "documentType": "What the document is",
       "documentTypes": {
@@ -3472,7 +3472,7 @@
       "askTitle": "How to ask for deletion",
       "ask": "Use the « Delete my documents » action on the link you received. It deletes your documents and the result at once, and keeps only a record with no personal information. You can also withdraw any consent here, and ask for access to or correction of your information.",
       "examinedTitle": "How your documents are examined",
-      "examined": "Each document is also examined as a file: how it was saved, its fonts, its images and, for some, whether its figures add up. When something is noticed, you see it here, in the same words as the owner, and you can add an explanation next to it. The report states what was observed; it concludes nothing about a document or about you, and Yomizaka decides nothing: a person at the owner does.",
+      "examined": "Each document is also examined as a file: how it was saved and, for some, whether its figures add up. When something is noticed, you see it here, in the same words as the owner, and you can add an explanation next to it. The report states what was observed; it concludes nothing about a document or about you, and Yomizaka decides nothing: a person at the owner does.",
       "notAsked": "Never asked: your social insurance number (SIN), your bank card or account details, your health or family information.",
       "law": "This notice follows the Act respecting the protection of personal information in the private sector (Quebec, as amended by the Act 25). It is not legal advice."
     },

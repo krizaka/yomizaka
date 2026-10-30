@@ -1,5 +1,5 @@
 import type { Signal, SignalFamily } from "@yomizaka/core";
-import { signalFamily } from "@yomizaka/core";
+import { landlordSignals, signalFamily } from "@yomizaka/core";
 
 import { activeConsents, CONSENT_PURPOSE, hasConsent } from "./applicant-consent";
 import { LINK, linkState } from "./applicant-file-rules";
@@ -57,7 +57,7 @@ export async function answersOf(documentIds: readonly string[]): Promise<Map<str
 /** The latest finished authenticity report of a document, or null. */
 export async function authenticityReportOf(documentId: string): Promise<{ signals?: Signal[] } | null> {
   const [row] = await query<{ report: { signals?: Signal[] } | null }>("SELECT report FROM analyses WHERE document_id = $1 AND studio = 'document-authenticity' AND status = 'succeeded' ORDER BY created_at DESC LIMIT 1", [documentId]);
-  return row?.report ?? null;
+  return row?.report ? { ...row.report, ...(row.report.signals ? { signals: landlordSignals(row.report.signals) } : {}) } : null;
 }
 
 export interface AnswerInput {

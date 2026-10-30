@@ -267,7 +267,7 @@
           },
           "authenticity": {
             "title": "Authenticité du fichier",
-            "line": "Le fichier PDF lui-même : producteur, dates, enregistrements successifs, polices."
+            "line": "Le fichier PDF lui-même : producteur, dates, enregistrements successifs."
           }
         }
       },
@@ -618,7 +618,7 @@
         "premises-condition": "un état des lieux"
       },
       "authenticityTitle": "Traces de modification",
-      "authenticityText": "Le fichier PDF lui-même : producteur, dates, enregistrements successifs, polices.",
+      "authenticityText": "Le fichier PDF lui-même : producteur, dates, enregistrements successifs.",
       "jurisdiction": "Juridiction",
       "documentType": "Nature du document",
       "documentTypes": {
@@ -3472,7 +3472,7 @@
       "askTitle": "Comment demander la suppression",
       "ask": "Utilisez l'action « Supprimer mes documents » du lien que vous avez reçu. Elle supprime immédiatement vos documents et le résultat, et ne garde qu'une trace sans renseignement personnel. Vous pouvez aussi retirer un consentement ici, et demander l'accès à vos renseignements ou leur rectification.",
       "examinedTitle": "Comment vos documents sont examinés",
-      "examined": "Chaque document est aussi examiné comme un fichier : la façon dont il a été enregistré, ses polices, ses images et, pour certains, si ses chiffres concordent. Quand quelque chose est remarqué, vous le voyez ici, dans les mêmes mots que le propriétaire, et vous pouvez ajouter une explication à côté. Le rapport dit ce qui a été observé; il ne conclut rien sur un document ni sur vous, et Yomizaka ne décide de rien : c'est une personne chez le propriétaire.",
+      "examined": "Chaque document est aussi examiné comme un fichier : la façon dont il a été enregistré et, pour certains, si ses chiffres concordent. Quand quelque chose est remarqué, vous le voyez ici, dans les mêmes mots que le propriétaire, et vous pouvez ajouter une explication à côté. Le rapport dit ce qui a été observé; il ne conclut rien sur un document ni sur vous, et Yomizaka ne décide de rien : c'est une personne chez le propriétaire.",
       "notAsked": "Jamais demandés : votre numéro d'assurance sociale (NAS), les renseignements de votre carte ou de votre compte bancaire, vos renseignements de santé ou familiaux.",
       "law": "Le présent avis suit la Loi sur la protection des renseignements personnels dans le secteur privé (Québec, telle que modifiée par la Loi 25). Ce n'est pas un avis juridique."
     },
