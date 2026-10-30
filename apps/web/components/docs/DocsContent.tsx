@@ -45,7 +45,19 @@ export function DocsContent({ locale }: Readonly<{ locale: Locale }>) {
     <DocsArticlePage
       linkAs={Link}
       sidebarLabel={d.sidebarLabel}
-      sidebar={<DocsNav label={d.navLabel} linkAs={Link} groups={[{ id: "yomizaka", title: t.meta.siteName, items: sections.map((s) => ({ href: `#${s.id}`, label: s.label })) }]} />}
+      sidebar={
+        <DocsNav
+          label={d.navLabel}
+          linkAs={Link}
+          groups={[
+            {
+              id: "yomizaka",
+              title: t.meta.siteName,
+              items: sections.map((s) => ({ href: `#${s.id}`, label: s.label })),
+            },
+          ]}
+        />
+      }
       breadcrumbLabel={d.breadcrumbLabel}
       breadcrumb={[
         { href: home, label: t.meta.siteName },
@@ -66,7 +78,13 @@ export function DocsContent({ locale }: Readonly<{ locale: Locale }>) {
         <DocH3>{d.check.findingTitle}</DocH3>
         <p>{d.check.finding}</p>
         <DocH3>{d.check.levelsTitle}</DocH3>
-        <p>{format(d.check.levels, { observed: levels["observé"], unusual: levels["inhabituel"], inconsistent: levels["incohérent"] })}</p>
+        <p>
+          {format(d.check.levels, {
+            observed: levels["observé"],
+            unusual: levels["inhabituel"],
+            inconsistent: levels["incohérent"],
+          })}
+        </p>
         <DocH3>{t.verify.guaranteesTitle}</DocH3>
         <p>{d.check.guaranteesLead}</p>
         <ul className="list-disc space-y-1 pl-6">
@@ -90,12 +108,35 @@ export function DocsContent({ locale }: Readonly<{ locale: Locale }>) {
           <a href={OPENAPI_PATH}>{d.api.openapiLink}</a>
         </p>
         <DocH3>{d.api.accessTitle}</DocH3>
-        <p>{format(d.api.access, { prefix: rules.prefix, scopes: rules.scopes.join(", "), days: String(rules.maxExpiryDays), grace: String(rules.rotationGraceHours) })}</p>
+        <p>
+          {format(d.api.access, {
+            prefix: rules.prefix,
+            scopes: rules.scopes.join(", "),
+            days: String(rules.maxExpiryDays),
+            grace: String(rules.rotationGraceHours),
+          })}
+        </p>
         <DocH3>{d.api.quickstartTitle}</DocH3>
-        <CodeBlock className="[&_pre]:break-words [&_pre]:whitespace-pre-wrap" code={quickstartCode(SITE_URL)} language="bash" file="curl" />
+        <CodeBlock
+          className="[&_pre]:break-words [&_pre]:whitespace-pre-wrap"
+          code={quickstartCode(SITE_URL)}
+          language="bash"
+          file="curl"
+        />
         <p>{d.api.quickstartNote}</p>
         <DocH3>{d.api.routesTitle}</DocH3>
-        <ApiRoutesTable operations={operations} shared={[...commonAnswers.keys()]} labels={{ caption: d.api.routesTitle, route: d.api.route, scope: d.api.scope, noScope: d.api.noScope, answers: d.api.answers, parameters: d.api.parameters }} />
+        <ApiRoutesTable
+          operations={operations}
+          shared={[...commonAnswers.keys()]}
+          labels={{
+            caption: d.api.routesTitle,
+            route: d.api.route,
+            scope: d.api.scope,
+            noScope: d.api.noScope,
+            answers: d.api.answers,
+            parameters: d.api.parameters,
+          }}
+        />
         <DocH3>{d.api.statusTitle}</DocH3>
         <p>{d.api.statusLead}</p>
         <CodesTable
@@ -104,13 +145,26 @@ export function DocsContent({ locale }: Readonly<{ locale: Locale }>) {
         />
         <DocH3>{d.api.errorsTitle}</DocH3>
         <p>{d.api.errors}</p>
-        <CodeBlock className="[&_pre]:break-words [&_pre]:whitespace-pre-wrap" code={ERROR_BODY_CODE} language="json" file={d.api.errorShapeLabel} />
+        <CodeBlock
+          className="[&_pre]:break-words [&_pre]:whitespace-pre-wrap"
+          code={ERROR_BODY_CODE}
+          language="json"
+          file={d.api.errorShapeLabel}
+        />
         <DocH3>{d.api.webhooksTitle}</DocH3>
         <p>{d.api.webhooks}</p>
-        <CodesTable rows={webhooks.map((hook) => ({ code: hook.event, meaning: hook.summary }))} labels={{ caption: d.api.webhooksTitle, code: d.api.event, meaning: d.api.meaningColumn }} />
+        <CodesTable
+          rows={webhooks.map((hook) => ({ code: hook.event, meaning: hook.summary }))}
+          labels={{ caption: d.api.webhooksTitle, code: d.api.event, meaning: d.api.meaningColumn }}
+        />
         <DocH3>{d.api.signatureTitle}</DocH3>
         <p>{d.api.signature}</p>
-        <CodeBlock className="[&_pre]:break-words [&_pre]:whitespace-pre-wrap" code={WEBHOOK_SIGNATURE_CODE} language="bash" file={d.api.signatureLabel} />
+        <CodeBlock
+          className="[&_pre]:break-words [&_pre]:whitespace-pre-wrap"
+          code={WEBHOOK_SIGNATURE_CODE}
+          language="bash"
+          file={d.api.signatureLabel}
+        />
       </DocSection>
 
       <DocSection id="data">

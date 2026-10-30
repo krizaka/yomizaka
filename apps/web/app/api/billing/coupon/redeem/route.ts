@@ -6,7 +6,7 @@ import { requireSession } from "@/lib/access";
 import { audit } from "@/lib/audit";
 import { clientAddress } from "@/lib/client-address";
 import { hasPaidBefore } from "@/lib/coupons/checkout";
-import { coupons,guarded } from "@/lib/coupons/instance";
+import { coupons, guarded } from "@/lib/coupons/instance";
 import { query, transaction } from "@/lib/db";
 import { handle, readJson } from "@/lib/http";
 
@@ -24,10 +24,26 @@ export function POST(req: Request) {
     const { code } = await readJson(req, body);
     const redeemed = await guarded(async () =>
       transaction(async (tx) =>
-        coupons.redeemCredit(tx, { code, accountId: session.account.id, idempotencyKey: `redeem-${randomUUID()}`, ip: clientAddress(req.headers), hasPaidBefore: await hasPaidBefore(query, session.account.id) }),
+        coupons.redeemCredit(tx, {
+          code,
+          accountId: session.account.id,
+          idempotencyKey: `redeem-${randomUUID()}`,
+          ip: clientAddress(req.headers),
+          hasPaidBefore: await hasPaidBefore(query, session.account.id),
+        }),
       ),
     );
-    await audit({ action: "billing.credit_code_redeemed", actorId: session.account.id, actorLabel: session.account.email, detail: { redemptionId: redeemed.redemptionId, credits: redeemed.credits }, headers: req.headers });
-    return Response.json({ credits: redeemed.credits, expiresAt: redeemed.expiresAt.toISOString(), replayed: redeemed.replayed });
+    await audit({
+      action: "billing.credit_code_redeemed",
+      actorId: session.account.id,
+      actorLabel: session.account.email,
+      detail: { redemptionId: redeemed.redemptionId, credits: redeemed.credits },
+      headers: req.headers,
+    });
+    return Response.json({
+      credits: redeemed.credits,
+      expiresAt: redeemed.expiresAt.toISOString(),
+      replayed: redeemed.replayed,
+    });
   });
 }

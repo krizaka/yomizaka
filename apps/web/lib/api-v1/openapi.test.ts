@@ -11,13 +11,20 @@ import { openApiDocument } from "./openapi";
 
 const ROOT = fileURLToPath(new URL("../../app/api/v1", import.meta.url));
 const METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"];
-const walk = (dir: string): string[] => readdirSync(dir).flatMap((n) => (statSync(join(dir, n)).isDirectory() ? walk(join(dir, n)) : [join(dir, n)]));
+const walk = (dir: string): string[] =>
+  readdirSync(dir).flatMap((n) => (statSync(join(dir, n)).isDirectory() ? walk(join(dir, n)) : [join(dir, n)]));
 
 /** Every `route.ts` under app/api/v1 as « METHOD /api/v1/path/{param} », the methods read from its exports. */
 async function routes(): Promise<string[]> {
   const found: string[] = [];
   for (const file of walk(ROOT).filter((f) => f.endsWith(`${sep}route.ts`))) {
-    const path = "/api/v1/" + relative(ROOT, file).split(sep).slice(0, -1).join("/").replace(/\[(\w+)\]/g, "{$1}");
+    const path =
+      "/api/v1/" +
+      relative(ROOT, file)
+        .split(sep)
+        .slice(0, -1)
+        .join("/")
+        .replace(/\[(\w+)\]/g, "{$1}");
     const exports = (await import(/* @vite-ignore */ file)) as Record<string, unknown>;
     for (const m of METHODS) if (typeof exports[m] === "function") found.push(`${m} ${path.replace(/\/$/, "")}`);
   }
@@ -39,13 +46,18 @@ describe("the OpenAPI document of /api/v1 (yomizaka#202)", () => {
   it("every operation has an id, a summary and answers; the secured ones name a scope the keys have", () => {
     const ids = new Set<string>();
     for (const [path, ops] of Object.entries(spec.paths)) {
-      for (const [method, op] of Object.entries(ops) as [string, { operationId: string; summary: string; responses: object; security: Record<string, string[]>[] }][]) {
+      for (const [method, op] of Object.entries(ops) as [
+        string,
+        { operationId: string; summary: string; responses: object; security: Record<string, string[]>[] },
+      ][]) {
         expect(op.operationId, `${method} ${path}`).toBeTruthy();
         expect(ids.has(op.operationId), `duplicate ${op.operationId}`).toBe(false);
         ids.add(op.operationId);
         expect(op.summary).toBeTruthy();
         expect(Object.keys(op.responses).length).toBeGreaterThan(0);
-        for (const requirement of op.security) for (const scopes of Object.values(requirement)) for (const scope of scopes) expect(YOMIZAKA_API_KEY_RULES.scopes).toContain(scope);
+        for (const requirement of op.security)
+          for (const scopes of Object.values(requirement))
+            for (const scope of scopes) expect(YOMIZAKA_API_KEY_RULES.scopes).toContain(scope);
       }
     }
   });

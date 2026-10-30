@@ -18,11 +18,14 @@ describe("env", () => {
   });
 
   it("holds no price and no included volume: they are the price catalogue's (ADR-009, yomizaka#367)", () => {
-    for (const gone of ["PAYMENTS_PRICE_KEY_AUDIT", "PAYMENTS_PRICE_KEY_PRO", "APP_FAIR_USE_AUDITS_PER_MONTH"]) expect(Object.keys(envSchema.shape)).not.toContain(gone);
+    for (const gone of ["PAYMENTS_PRICE_KEY_AUDIT", "PAYMENTS_PRICE_KEY_PRO", "APP_FAIR_USE_AUDITS_PER_MONTH"])
+      expect(Object.keys(envSchema.shape)).not.toContain(gone);
   });
 
   it("declares the demo seed credentials under the app context", () => {
-    expect(readEnv({ APP_DEMO_ACCOUNT_EMAIL: "demo@example.test", APP_DEMO_ACCOUNT_PASSWORD: "long-enough-password" })).toMatchObject({
+    expect(
+      readEnv({ APP_DEMO_ACCOUNT_EMAIL: "demo@example.test", APP_DEMO_ACCOUNT_PASSWORD: "long-enough-password" }),
+    ).toMatchObject({
       APP_DEMO_ACCOUNT_EMAIL: "demo@example.test",
       APP_DEMO_ACCOUNT_PASSWORD: "long-enough-password",
     });
@@ -42,7 +45,9 @@ describe("env", () => {
 
   it("refuses a production start without its secrets, naming them, never showing them", () => {
     expect(() => assertProductionEnv(PROD)).not.toThrow();
-    const problems = productionProblems(readEnv({ NODE_ENV: "production", AI_API_KEY: "sk-not-orazaka", DATABASE_URL: PROD.DATABASE_URL }));
+    const problems = productionProblems(
+      readEnv({ NODE_ENV: "production", AI_API_KEY: "sk-not-orazaka", DATABASE_URL: PROD.DATABASE_URL }),
+    );
     expect(problems).toEqual([
       "AUTH_SESSION_SECRET must be at least 32 characters",
       "AI_API_KEY must be an Orazaka key (oz_…)",
@@ -54,7 +59,9 @@ describe("env", () => {
   });
 
   it("refuses a production start without a usable report signing key, never showing it", () => {
-    expect(productionProblems(readEnv({ ...PROD, APP_REPORT_SIGNING_KEY: undefined }))).toEqual(["APP_REPORT_SIGNING_KEY is not set"]);
+    expect(productionProblems(readEnv({ ...PROD, APP_REPORT_SIGNING_KEY: undefined }))).toEqual([
+      "APP_REPORT_SIGNING_KEY is not set",
+    ]);
     const problems = productionProblems(readEnv({ ...PROD, APP_REPORT_SIGNING_KEY: "garbage-SECRETVALUE" }));
     expect(problems).toEqual(["APP_REPORT_SIGNING_KEY is not a base64 PKCS#8 private key"]);
     expect(problems.join(" ")).not.toContain("SECRETVALUE");
@@ -62,7 +69,10 @@ describe("env", () => {
 
   it("lets nobody into the administration in production without an allow-list", () => {
     expect(consoleAllowedIps({ NODE_ENV: "production" })).toEqual([]);
-    expect(consoleAllowedIps({ NODE_ENV: "production", AUTH_ALLOWED_IPS: "203.0.113.7, 198.51.100.2" })).toEqual(["203.0.113.7", "198.51.100.2"]);
+    expect(consoleAllowedIps({ NODE_ENV: "production", AUTH_ALLOWED_IPS: "203.0.113.7, 198.51.100.2" })).toEqual([
+      "203.0.113.7",
+      "198.51.100.2",
+    ]);
     expect(consoleAllowedIps({ NODE_ENV: "development" })).toBeNull();
   });
 });

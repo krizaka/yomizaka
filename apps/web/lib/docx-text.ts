@@ -10,21 +10,31 @@ const DOCUMENT_PART = "word/document.xml";
 const ENTITIES: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'" };
 const decode = (text: string) =>
   text.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (whole, code: string) =>
-    code[0] === "#" ? String.fromCodePoint(code[1]?.toLowerCase() === "x" ? Number.parseInt(code.slice(2), 16) : Number.parseInt(code.slice(1), 10)) : (ENTITIES[code] ?? whole),
+    code[0] === "#"
+      ? String.fromCodePoint(
+          code[1]?.toLowerCase() === "x" ? Number.parseInt(code.slice(2), 16) : Number.parseInt(code.slice(1), 10),
+        )
+      : (ENTITIES[code] ?? whole),
   );
 
 /** The ODF elements whose tags matter: paragraphs and headings, the tracked changes (history), spaces, tabs, breaks, notes. */
 const ODT_TAGS = ["p", "h", "tracked-changes", "s", "tab", "line-break", "note", "note-citation"];
 
 /** An ODF tag of those (captured with its closing slash and its name), any other tag, or a run of text: the three things `odtText` walks through. */
-export const ODT_TOKENS = new RegExp(String.raw`<(\/?)(text:(?:${ODT_TAGS.join("|")}))(?=[\s/>])[^<>]*>|<[^<>]*>|([^<]+)`, "g");
+export const ODT_TOKENS = new RegExp(
+  String.raw`<(\/?)(text:(?:${ODT_TAGS.join("|")}))(?=[\s/>])[^<>]*>|<[^<>]*>|([^<]+)`,
+  "g",
+);
 
 /** What makes the text: a run's text, a tab, a break, the end of a paragraph — everything else (markup, layout whitespace) is not read. */
 const TEXT_TOKENS = /<w:t\b[^>]*>([\s\S]*?)<\/w:t>|<w:tab\/>|<w:(?:br|cr)\b[^>]*\/>|<\/w:p>/g;
 
 export function docxText(bytes: Uint8Array): string {
   // A field's code (« PAGE », « HYPERLINK … ») is not text a reader sees.
-  const xml = (zipEntryBytes(bytes, DOCUMENT_PART, MAX_OFFICE_PART_BYTES)?.toString("utf8") ?? "").replace(/<w:instrText\b[^>]*>[\s\S]*?<\/w:instrText>/g, "");
+  const xml = (zipEntryBytes(bytes, DOCUMENT_PART, MAX_OFFICE_PART_BYTES)?.toString("utf8") ?? "").replace(
+    /<w:instrText\b[^>]*>[\s\S]*?<\/w:instrText>/g,
+    "",
+  );
   let text = "";
   for (const [token, run] of xml.matchAll(TEXT_TOKENS)) {
     if (run !== undefined) text += decode(run);

@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { BATCH_ITEM_STATES, BATCH_TEMPLATE, detectDelimiter, matchBatchFiles, parseCsv, readBatchManifest, writeBatchManifest } from "./batch";
+import {
+  BATCH_ITEM_STATES,
+  BATCH_TEMPLATE,
+  detectDelimiter,
+  matchBatchFiles,
+  parseCsv,
+  readBatchManifest,
+  writeBatchManifest,
+} from "./batch";
 
 describe("a batch manifest (yomizaka#232)", () => {
   it("reads RFC 4180: quotes, doubled quotes, separators and line breaks inside quotes, CRLF, a BOM", () => {
@@ -15,9 +23,16 @@ describe("a batch manifest (yomizaka#232)", () => {
     expect(detectDelimiter("file;check;reference")).toBe(";");
     expect(detectDelimiter("file\tcheck")).toBe("\t");
     expect(detectDelimiter("file,check")).toBe(",");
-    const fr = readBatchManifest("Fichier;Vérification;Émetteur attendu;Dossier\nbail.pdf;Authenticité;Agence Dupont;Laurier");
+    const fr = readBatchManifest(
+      "Fichier;Vérification;Émetteur attendu;Dossier\nbail.pdf;Authenticité;Agence Dupont;Laurier",
+    );
     expect(fr.missingColumns).toEqual([]);
-    expect(fr.rows[0]).toMatchObject({ file: "bail.pdf", request: { studio: "document-authenticity", expectedIssuer: "Agence Dupont" }, collection: "Laurier", errors: [] });
+    expect(fr.rows[0]).toMatchObject({
+      file: "bail.pdf",
+      request: { studio: "document-authenticity", expectedIssuer: "Agence Dupont" },
+      collection: "Laurier",
+      errors: [],
+    });
   });
 
   it("reads the template: one compliance and one authenticity row, both valid", () => {
@@ -38,7 +53,17 @@ describe("a batch manifest (yomizaka#232)", () => {
   });
 
   it("each row is held to the single check's rules, with the line a person looks for", () => {
-    const m = readBatchManifest(["file,check,jurisdiction,documentType,ruleset", "a.pdf,compliance,XX,lease,", ",authenticity,,,", "c.pdf,audit,,,", "d.pdf,compliance,FR,lease,qc-invoice", "e.pdf,compliance,qc,poster,", "a.pdf,compliance,QC,lease,"].join("\n"));
+    const m = readBatchManifest(
+      [
+        "file,check,jurisdiction,documentType,ruleset",
+        "a.pdf,compliance,XX,lease,",
+        ",authenticity,,,",
+        "c.pdf,audit,,,",
+        "d.pdf,compliance,FR,lease,qc-invoice",
+        "e.pdf,compliance,qc,poster,",
+        "a.pdf,compliance,QC,lease,",
+      ].join("\n"),
+    );
     expect(m.rows.map((r) => [r.line, r.errors])).toEqual([
       [2, ["INVALID_OPTIONS"]],
       [3, ["MISSING_FILE"]],

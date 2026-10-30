@@ -5,7 +5,10 @@ import { MIGRATIONS } from "./migrations";
 
 describe("db", () => {
   it("verifies the cluster's certificate against its CA, never blindly", () => {
-    const config = poolConfig({ DATABASE_URL: "postgresql://u:p@db.example:25060/yomizaka_db?sslmode=require", DATABASE_CA_CERT: "-----BEGIN CERTIFICATE-----\\nX" });
+    const config = poolConfig({
+      DATABASE_URL: "postgresql://u:p@db.example:25060/yomizaka_db?sslmode=require",
+      DATABASE_CA_CERT: "-----BEGIN CERTIFICATE-----\\nX",
+    });
     expect(config.connectionString).not.toContain("sslmode");
     expect(config.ssl).toEqual({ ca: "-----BEGIN CERTIFICATE-----\nX", rejectUnauthorized: true });
   });
@@ -26,7 +29,11 @@ describe("db", () => {
     const pooled = "postgresql://u:p@pool.example:25061/pool-yomizaka";
     const direct = "postgresql://u:p@db.example:25060/yomizaka_db";
     expect(poolConfig({ DATABASE_URL: pooled, DATABASE_DIRECT_URL: direct }).connectionString).toBe(pooled);
-    const session = sessionPoolConfig({ DATABASE_URL: pooled, DATABASE_DIRECT_URL: direct, DATABASE_MAX_CONNECTIONS: "30" });
+    const session = sessionPoolConfig({
+      DATABASE_URL: pooled,
+      DATABASE_DIRECT_URL: direct,
+      DATABASE_MAX_CONNECTIONS: "30",
+    });
     expect(session.connectionString).toBe(direct);
     expect(session.max).toBe(4);
   });

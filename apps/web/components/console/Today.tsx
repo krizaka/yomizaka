@@ -11,7 +11,11 @@ export function Today({ now }: Readonly<{ now: string }>) {
   const { locale } = useSay();
   const today = new Date(now);
   return (
-    <time dateTime={localDay(today, DISPLAY_TIME_ZONE)} className="text-sm font-medium tabular-nums text-fg-secondary" data-testid="today">
+    <time
+      dateTime={localDay(today, DISPLAY_TIME_ZONE)}
+      className="text-sm font-medium tabular-nums text-fg-secondary"
+      data-testid="today"
+    >
       {new Intl.DateTimeFormat(INTL[locale], { dateStyle: "full", timeZone: DISPLAY_TIME_ZONE }).format(today)}
     </time>
   );

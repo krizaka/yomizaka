@@ -10,10 +10,14 @@ export const extractionStatus = z.enum(EXTRACTION_STATUSES);
 export type ExtractionStatus = z.infer<typeof extractionStatus>;
 
 /** Whether the text is still being read (the document cannot be checked yet). */
-export const isExtracting = (status: ExtractionStatus | undefined): boolean => status === "queued" || status === "running";
+export const isExtracting = (status: ExtractionStatus | undefined): boolean =>
+  status === "queued" || status === "running";
 
 export class ExtractionNotReady extends Error {
-  constructor(readonly status: ExtractionStatus | "timeout", readonly reason: string | null = null) {
+  constructor(
+    readonly status: ExtractionStatus | "timeout",
+    readonly reason: string | null = null,
+  ) {
     super(`The document's text is not ready: ${status}`);
     this.name = "ExtractionNotReady";
   }
@@ -34,8 +38,16 @@ export interface WaitOptions {
  * Waits until a document's text is read: polls `read` until it is no longer queued or running. Resolves with the document
  * when `done`; rejects with `ExtractionNotReady` when it `failed` (with the reason) or the deadline passed.
  */
-export async function waitForExtraction<T extends { extraction?: ExtractionStatus; extractionError?: string | null }>(read: () => Promise<T>, options: WaitOptions = {}): Promise<T> {
-  const { intervalMs = 700, deadlineMs = 90_000, sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)), now = Date.now } = options;
+export async function waitForExtraction<T extends { extraction?: ExtractionStatus; extractionError?: string | null }>(
+  read: () => Promise<T>,
+  options: WaitOptions = {},
+): Promise<T> {
+  const {
+    intervalMs = 700,
+    deadlineMs = 90_000,
+    sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+    now = Date.now,
+  } = options;
   const until = now() + deadlineMs;
   for (;;) {
     const document = await read();

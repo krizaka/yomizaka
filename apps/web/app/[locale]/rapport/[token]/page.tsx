@@ -20,7 +20,10 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { robots: { index: false, follow: false }, referrer: "no-referrer" };
 
 /** The building owner's page (yomizaka#128): a read-only report by link, public by token, never indexed, never cached; no account, no document. */
-export default async function OwnerReportPage({ params, searchParams }: Readonly<{ params: Promise<{ locale: string; token: string }>; searchParams: Promise<{ lang?: string }> }>) {
+export default async function OwnerReportPage({
+  params,
+  searchParams,
+}: Readonly<{ params: Promise<{ locale: string; token: string }>; searchParams: Promise<{ lang?: string }> }>) {
   const { locale: raw, token } = await params;
   const locale = asLocale(raw);
   const h = await headers();
@@ -34,20 +37,40 @@ export default async function OwnerReportPage({ params, searchParams }: Readonly
   // One answer for an unknown, expired or revoked link: 404, nothing leaks (yomizaka#128).
   if (!report) notFound();
   const back = { href: pagePath(locale, "home"), label: t.meta.siteName };
-  const date = new Date(report.issuedAt).toLocaleDateString(INTL[lang], { dateStyle: "long", timeZone: DISPLAY_TIME_ZONE });
+  const date = new Date(report.issuedAt).toLocaleDateString(INTL[lang], {
+    dateStyle: "long",
+    timeZone: DISPLAY_TIME_ZONE,
+  });
   return (
     <>
       <SiteHeader locale={locale} current="home" />
       <main id="content">
         <PageHero back={back} linkAs={Link} title={w.title} backdrop="plain" lead={w.lead}>
-          <p>{format(w.reference, { ref: report.reference })} · {format(w.issued, { date })}</p>
+          <p>
+            {format(w.reference, { ref: report.reference })} · {format(w.issued, { date })}
+          </p>
           <p>{w.notice}</p>
-          <p>{format(w.expires, { date: new Date(report.expiresAt).toLocaleDateString(INTL[lang], { dateStyle: "long", timeZone: DISPLAY_TIME_ZONE }) })}</p>
-          <ButtonLink href={`/api/rapport/${encodeURIComponent(token)}/pdf?locale=${lang}`} variant="secondary">{w.download}</ButtonLink>
+          <p>
+            {format(w.expires, {
+              date: new Date(report.expiresAt).toLocaleDateString(INTL[lang], {
+                dateStyle: "long",
+                timeZone: DISPLAY_TIME_ZONE,
+              }),
+            })}
+          </p>
+          <ButtonLink href={`/api/rapport/${encodeURIComponent(token)}/pdf?locale=${lang}`} variant="secondary">
+            {w.download}
+          </ButtonLink>
           <nav aria-label={w.language} className="flex items-center gap-2 text-sm">
             <span>{w.language}</span>
             {(["en", "fr"] as const).map((l) => (
-              <Link key={l} href={`?lang=${l}`} lang={l} aria-current={l === lang ? "true" : undefined} className={l === lang ? "font-semibold underline" : "underline"}>
+              <Link
+                key={l}
+                href={`?lang=${l}`}
+                lang={l}
+                aria-current={l === lang ? "true" : undefined}
+                className={l === lang ? "font-semibold underline" : "underline"}
+              >
                 {w.languageName[l]}
               </Link>
             ))}

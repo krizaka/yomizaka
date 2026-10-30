@@ -16,15 +16,27 @@ describe.runIf(enabled)("keep or purge (ADR-0007)", () => {
   beforeAll(async () => {
     await migrate();
   });
-  const account = async () => (await query<{ id: string }>("INSERT INTO accounts (email, password_hash, email_verified_at) VALUES ($1, 'x', now()) RETURNING id", [`r-${Math.random().toString(36).slice(2)}@yomizaka.test`]))[0]!.id;
+  const account = async () =>
+    (
+      await query<{ id: string }>(
+        "INSERT INTO accounts (email, password_hash, email_verified_at) VALUES ($1, 'x', now()) RETURNING id",
+        [`r-${Math.random().toString(36).slice(2)}@yomizaka.test`],
+      )
+    )[0]!.id;
   /** Where the bytes of a document that is not kept wait for their purge (ADR-0012). */
   const work = async () => localStore();
   const bytes = (n: string) => new TextEncoder().encode(`${LEASE}${n}`);
   const file = { name: "bail.txt", type: "text/plain", size: 100 };
   const dev = () => memoryStore({ kind: "bunny", devOnly: true, owner: "krizaka", residency: "elsewhere" });
-  const policy = (keep: boolean, store: ReturnType<typeof dev> | ReturnType<typeof noneStore> = noneStore()): StoragePolicy => ({ keep, store, now: NOW, purgeAfterHours: 24 });
+  const policy = (
+    keep: boolean,
+    store: ReturnType<typeof dev> | ReturnType<typeof noneStore> = noneStore(),
+  ): StoragePolicy => ({ keep, store, now: NOW, purgeAfterHours: 24 });
   const finish = async (documentId: string) => {
-    const [a] = await query<{ id: string }>("INSERT INTO analyses (document_id, studio, status, run_id, report, finished_at) VALUES ($1, 'compliance-check', 'succeeded', gen_random_uuid(), '{\"findings\":[]}', now()) RETURNING id", [documentId]);
+    const [a] = await query<{ id: string }>(
+      "INSERT INTO analyses (document_id, studio, status, run_id, report, finished_at) VALUES ($1, 'compliance-check', 'succeeded', gen_random_uuid(), '{\"findings\":[]}', now()) RETURNING id",
+      [documentId],
+    );
     return a!.id;
   };
 
@@ -33,15 +45,22 @@ describe.runIf(enabled)("keep or purge (ADR-0007)", () => {
     const { summary } = await storeDocument(owner, file, bytes("audit"), "lease", policy(false));
     await finish(summary.id);
     expect(await purgeIfDone(query, summary.id, work)).toBe(true);
-    const [row] = await query<{ n: number; t: string }>("SELECT octet_length(content) AS n, text AS t FROM documents WHERE id = $1", [summary.id]);
+    const [row] = await query<{ n: number; t: string }>(
+      "SELECT octet_length(content) AS n, text AS t FROM documents WHERE id = $1",
+      [summary.id],
+    );
     expect(row).toEqual({ n: 0, t: "" });
-    expect(await query("SELECT 1 FROM audit_log WHERE action = 'document.purged' AND target_id = $1", [summary.id])).toHaveLength(1);
+    expect(
+      await query("SELECT 1 FROM audit_log WHERE action = 'document.purged' AND target_id = $1", [summary.id]),
+    ).toHaveLength(1);
   });
 
   it("a keep is recorded with its date", async () => {
     const owner = await account();
     const { summary } = await storeDocument(owner, file, bytes("kept"), "lease", policy(true));
-    const [row] = await query<{ keep_consent_at: Date | null }>("SELECT keep_consent_at FROM documents WHERE id = $1", [summary.id]);
+    const [row] = await query<{ keep_consent_at: Date | null }>("SELECT keep_consent_at FROM documents WHERE id = $1", [
+      summary.id,
+    ]);
     expect(row!.keep_consent_at?.toISOString()).toBe(NOW.toISOString());
   });
 
@@ -49,8 +68,13 @@ describe.runIf(enabled)("keep or purge (ADR-0007)", () => {
     const owner = await account();
     const { policyFor, resultDays, SUBJECT } = await import("./retention-policy");
     expect(resultDays(await policyFor(owner, SUBJECT.screeningResult))).toBe(30);
-    await query("INSERT INTO retention_policies (id, purge_on, days) VALUES ('seven-days', 'days', 7) ON CONFLICT DO NOTHING");
-    await query("INSERT INTO retention_rule (owner_id, subject, policy_id) VALUES ($1, 'screening-result', 'seven-days')", [owner]);
+    await query(
+      "INSERT INTO retention_policies (id, purge_on, days) VALUES ('seven-days', 'days', 7) ON CONFLICT DO NOTHING",
+    );
+    await query(
+      "INSERT INTO retention_rule (owner_id, subject, policy_id) VALUES ($1, 'screening-result', 'seven-days')",
+      [owner],
+    );
     expect(resultDays(await policyFor(owner, SUBJECT.screeningResult))).toBe(7);
   });
 
@@ -69,13 +93,19 @@ describe.runIf(enabled)("keep or purge (ADR-0007)", () => {
     expect(detail.insight).toBeUndefined();
     expect(detail.analyses).toHaveLength(1);
     expect(detail.sha256).toHaveLength(64);
-    await expect(getFile(owner, summary.id, localStore())).rejects.toMatchObject({ status: 409, body: { code: "NOT_KEPT" } });
+    await expect(getFile(owner, summary.id, localStore())).rejects.toMatchObject({
+      status: 409,
+      body: { code: "NOT_KEPT" },
+    });
   });
 
   it("does not purge while another check of the document is still running", async () => {
     const owner = await account();
     const { summary } = await storeDocument(owner, file, bytes("b"), "lease", policy(false));
-    await query("INSERT INTO analyses (document_id, studio, status, run_id) VALUES ($1, 'document-authenticity', 'running', gen_random_uuid())", [summary.id]);
+    await query(
+      "INSERT INTO analyses (document_id, studio, status, run_id) VALUES ($1, 'document-authenticity', 'running', gen_random_uuid())",
+      [summary.id],
+    );
     expect(await purgeIfDone(query, summary.id, work)).toBe(false);
     expect((await documentStorage(owner, summary.id, () => noneStore().describe())).purged).toBe(false);
   });
@@ -87,7 +117,9 @@ describe.runIf(enabled)("keep or purge (ADR-0007)", () => {
     const info = await documentStorage(owner, summary.id, () => store.describe());
     expect(info.storage).toMatchObject({ kind: "bunny", devOnly: true });
     expect(info.purged).toBe(false);
-    const [row] = await query<{ n: number }>("SELECT octet_length(content) AS n FROM documents WHERE id = $1", [summary.id]);
+    const [row] = await query<{ n: number }>("SELECT octet_length(content) AS n FROM documents WHERE id = $1", [
+      summary.id,
+    ]);
     expect(row!.n).toBe(0);
     expect(store.size()).toBe(1);
     expect((await getFile(owner, summary.id, store)).content.toString()).toContain("1 450");
@@ -101,7 +133,10 @@ describe.runIf(enabled)("keep or purge (ADR-0007)", () => {
   it("a kept document with no external store stays in Krizaka's database", async () => {
     const owner = await account();
     const { summary } = await storeDocument(owner, file, bytes("d"), "lease", policy(true));
-    expect((await documentStorage(owner, summary.id, () => noneStore().describe())).storage).toMatchObject({ kind: "database", residency: "canada" });
+    expect((await documentStorage(owner, summary.id, () => noneStore().describe())).storage).toMatchObject({
+      kind: "database",
+      residency: "canada",
+    });
     expect((await getFile(owner, summary.id, localStore())).content.toString()).toContain("Loyer");
   });
 
@@ -113,7 +148,10 @@ describe.runIf(enabled)("keep or purge (ADR-0007)", () => {
         throw new Error("down");
       },
     };
-    await expect(storeDocument(owner, file, bytes("e"), "lease", policy(true, broken))).rejects.toMatchObject({ status: 502, body: { code: "STORAGE_UNAVAILABLE" } });
+    await expect(storeDocument(owner, file, bytes("e"), "lease", policy(true, broken))).rejects.toMatchObject({
+      status: 502,
+      body: { code: "STORAGE_UNAVAILABLE" },
+    });
     expect(await query("SELECT 1 FROM documents WHERE owner_id = $1", [owner])).toHaveLength(0);
   });
 

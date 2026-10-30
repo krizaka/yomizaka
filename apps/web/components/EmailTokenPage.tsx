@@ -32,7 +32,13 @@ export async function EmailTokenPage({
     <>
       <SiteHeader locale={locale} current="home" />
       <main id="content" className="pt-20">
-        <PageHero back={{ href: pagePath(locale, "home"), label: t.meta.siteName }} linkAs={Link} title={v.title} backdrop="plain" lead={valid ? v.lead : v.invalid} />
+        <PageHero
+          back={{ href: pagePath(locale, "home"), label: t.meta.siteName }}
+          linkAs={Link}
+          title={v.title}
+          backdrop="plain"
+          lead={valid ? v.lead : v.invalid}
+        />
         <Page>
           {valid ? (
             <form method="post" action={action}>

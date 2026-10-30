@@ -26,10 +26,15 @@ export type { Placement } from "./upload";
  * `defaultsFirst` (« Vérifier un document », Errata 6) the defaults are said before the drop, with « Modifier »; elsewhere
  * the options are asked once the files are known (the review's B4).
  */
-const REFUSAL_KEY: Record<string, "library.refusedSize" | "library.refusedType"> = { size: "library.refusedSize", type: "library.refusedType" };
+const REFUSAL_KEY: Record<string, "library.refusedSize" | "library.refusedType"> = {
+  size: "library.refusedSize",
+  type: "library.refusedType",
+};
 
 function KeepNextNote({ shown, text }: Readonly<{ shown: boolean; text: string }>) {
-  if (!shown) {return null;}
+  if (!shown) {
+    return null;
+  }
   return (
     <span className="text-fg-secondary" data-testid="keep-next">
       {text}
@@ -37,16 +42,41 @@ function KeepNextNote({ shown, text }: Readonly<{ shown: boolean; text: string }
   );
 }
 
-export function DocumentUploader({ kindRef, placement, onUploaded, onDrop, defaultsFirst = false, extra }: Readonly<{ kindRef?: MutableRefObject<DocumentKind | "auto">; placement?: Placement; onUploaded?: (document: DocumentSummary, requested: DocumentKind | "auto") => void; onDrop?: (files: readonly File[]) => void; defaultsFirst?: boolean; extra?: (add: (files: File[]) => void) => ReactNode }>) {
+export function DocumentUploader({
+  kindRef,
+  placement,
+  onUploaded,
+  onDrop,
+  defaultsFirst = false,
+  extra,
+}: Readonly<{
+  kindRef?: MutableRefObject<DocumentKind | "auto">;
+  placement?: Placement;
+  onUploaded?: (document: DocumentSummary, requested: DocumentKind | "auto") => void;
+  onDrop?: (files: readonly File[]) => void;
+  defaultsFirst?: boolean;
+  extra?: (add: (files: File[]) => void) => ReactNode;
+}>) {
   const { say, locale } = useSay();
   const router = useRouter();
   const [notices, setNotices] = useState<string[]>([]);
   // The owner's setting (ADR-0007): keeping may be switched off, or ticked by default; the person's own tick wins.
-  const prefs = useQuery({ queryKey: ["storage-prefs"], queryFn: () => krizakaFetch("/api/me/storage", { schema: z.object({ settings: z.object({ mode: z.enum(STORAGE_MODES), keepDefault: z.boolean() }) }) }), throwOnError: false, retry: false });
+  const prefs = useQuery({
+    queryKey: ["storage-prefs"],
+    queryFn: () =>
+      krizakaFetch("/api/me/storage", {
+        schema: z.object({ settings: z.object({ mode: z.enum(STORAGE_MODES), keepDefault: z.boolean() }) }),
+      }),
+    throwOnError: false,
+    retry: false,
+  });
   const app = useAppConfig();
   const keepOff = prefs.data?.settings.mode === STORAGE_MODE.none || app?.features.keepDocuments === false;
   // Not kept unless the owner's setting says so (the document is purged after its check, only the report stays); the choice is `?conserver=`.
-  const [choice, setChoice] = useRouteState({ ...ROUTE_STATES.keepDocuments.state, fallback: prefs.data?.settings.keepDefault ? "1" : "0" });
+  const [choice, setChoice] = useRouteState({
+    ...ROUTE_STATES.keepDocuments.state,
+    fallback: prefs.data?.settings.keepDefault ? "1" : "0",
+  });
   const keep = !keepOff && choice === "1";
   const keepRef = useRef(keep);
   useEffect(() => {
@@ -61,9 +91,14 @@ export function DocumentUploader({ kindRef, placement, onUploaded, onDrop, defau
       const requested = kindRef?.current ?? "auto";
       try {
         const result = await send([file], requested, placement, keepRef.current, signal, onProgress);
-        setNotices((n) => [say(result.duplicate ? "library.duplicate" : "library.uploaded", { name: file.name }), ...n].slice(0, 3));
-        if (onUploaded) {onUploaded(result.document, requested);}
-        else {router.refresh();}
+        setNotices((n) =>
+          [say(result.duplicate ? "library.duplicate" : "library.uploaded", { name: file.name }), ...n].slice(0, 3),
+        );
+        if (onUploaded) {
+          onUploaded(result.document, requested);
+        } else {
+          router.refresh();
+        }
       } catch (error) {
         throw translated(error, say);
       }
@@ -79,7 +114,9 @@ export function DocumentUploader({ kindRef, placement, onUploaded, onDrop, defau
     onDrop?.(files);
     setDropped((d) => [...d, ...files.map((f) => ({ name: f.name, type: f.type }))]);
     const photos = files.filter(isPhotoFile);
-    if (grouping !== "1" || photos.length < 2) {return queue.add(files);}
+    if (grouping !== "1" || photos.length < 2) {
+      return queue.add(files);
+    }
     queue.add(files.filter((f) => !isPhotoFile(f)));
     setGrouped(true);
     setGroupNotice(null);
@@ -87,10 +124,15 @@ export function DocumentUploader({ kindRef, placement, onUploaded, onDrop, defau
     send(photos, requested, placement, keepRef.current, new AbortController().signal, () => undefined)
       .then((result) => {
         setGroupNotice({ tone: "success", text: say("library.groupedUploaded", { count: photos.length }) });
-        if (onUploaded) {onUploaded(result.document, requested);}
-        else {router.refresh();}
+        if (onUploaded) {
+          onUploaded(result.document, requested);
+        } else {
+          router.refresh();
+        }
       })
-      .catch((error: { body?: { code?: string } }) => setGroupNotice({ tone: "danger", text: say(`errors.${error.body?.code ?? "UNKNOWN"}`) }))
+      .catch((error: { body?: { code?: string } }) =>
+        setGroupNotice({ tone: "danger", text: say(`errors.${error.body?.code ?? "UNKNOWN"}`) }),
+      )
       .finally(() => setGrouped(false));
   };
   const refusal = (r: FileRejection) => say(REFUSAL_KEY[r.reason] ?? "library.refusedCount", { name: r.file.name });
@@ -98,39 +140,55 @@ export function DocumentUploader({ kindRef, placement, onUploaded, onDrop, defau
   const known = dropped;
   const keepControl = (
     <>
-            {keepOff ? (
-              <p className="m-0 text-sm text-fg-secondary" data-testid="keep-disabled">{say("library.keepDisabled")}</p>
-            ) : (
-            <div className="flex items-start gap-3" data-testid="keep-choice">
-              <Checkbox
-                id="keep-documents"
-                checked={keep}
-                onCheckedChange={(v) => setChoice(v === true ? "1" : "0")}
-              />
-              <label htmlFor="keep-documents" className="flex cursor-pointer flex-col text-sm">
-                <span className="font-semibold text-fg">{say("library.keep")}</span>
-                <span className="text-fg-secondary">{say(keep ? "library.keepOn" : "library.keepOff")}</span>
-                <KeepNextNote shown={keepAppliesToNext(known, defaultsFirst)} text={say("library.keepNext")} />
-              </label>
-            </div>
-            )}
+      {keepOff ? (
+        <p className="m-0 text-sm text-fg-secondary" data-testid="keep-disabled">
+          {say("library.keepDisabled")}
+        </p>
+      ) : (
+        <div className="flex items-start gap-3" data-testid="keep-choice">
+          <Checkbox id="keep-documents" checked={keep} onCheckedChange={(v) => setChoice(v === true ? "1" : "0")} />
+          <label htmlFor="keep-documents" className="flex cursor-pointer flex-col text-sm">
+            <span className="font-semibold text-fg">{say("library.keep")}</span>
+            <span className="text-fg-secondary">{say(keep ? "library.keepOn" : "library.keepOff")}</span>
+            <KeepNextNote shown={keepAppliesToNext(known, defaultsFirst)} text={say("library.keepNext")} />
+          </label>
+        </div>
+      )}
     </>
   );
   const groupControl = (
     <>
-            {groupingOffered(known) ? (
-              <div className="flex items-start gap-3" data-testid="group-photos">
-                <Checkbox id="group-photos" checked={grouping === "1"} onCheckedChange={(v) => setGrouping(v === true ? "1" : "0")} />
-                <label htmlFor="group-photos" className="flex cursor-pointer flex-col text-sm">
-                  <span className="font-semibold text-fg">{say("library.groupPhotos")}</span>
-                  <span className="text-fg-secondary">{say(grouping === "1" ? "library.groupPhotosOn" : "library.groupPhotosOff")}</span>
-                </label>
-              </div>
-            ) : null}
+      {groupingOffered(known) ? (
+        <div className="flex items-start gap-3" data-testid="group-photos">
+          <Checkbox
+            id="group-photos"
+            checked={grouping === "1"}
+            onCheckedChange={(v) => setGrouping(v === true ? "1" : "0")}
+          />
+          <label htmlFor="group-photos" className="flex cursor-pointer flex-col text-sm">
+            <span className="font-semibold text-fg">{say("library.groupPhotos")}</span>
+            <span className="text-fg-secondary">
+              {say(grouping === "1" ? "library.groupPhotosOn" : "library.groupPhotosOff")}
+            </span>
+          </label>
+        </div>
+      ) : null}
     </>
   );
   const dropzone = (
-    <Dropzone title={say("library.dropTitle")} browseLabel={say("library.browse")} inputLabel={say("library.inputLabel")} hint={say("library.hint")} accept={ACCEPT} maxSize={app?.maxFileBytes ?? MAX_FILE_BYTES} maxFiles={20} multiple onFiles={onFiles} refusalLabel={refusal} disabled={grouped} />
+    <Dropzone
+      title={say("library.dropTitle")}
+      browseLabel={say("library.browse")}
+      inputLabel={say("library.inputLabel")}
+      hint={say("library.hint")}
+      accept={ACCEPT}
+      maxSize={app?.maxFileBytes ?? MAX_FILE_BYTES}
+      maxFiles={20}
+      multiple
+      onFiles={onFiles}
+      refusalLabel={refusal}
+      disabled={grouped}
+    />
   );
   return (
     <>
@@ -138,7 +196,14 @@ export function DocumentUploader({ kindRef, placement, onUploaded, onDrop, defau
         <>
           <details className="rounded-lg border border-border-default p-3" data-testid="check-defaults">
             <summary className="cursor-pointer text-sm text-fg">
-              <span className="font-semibold">{say("check.defaults.label")}</span> · {checkDefaults({ keep, keepOff }).map((key) => say(key)).join(" · ")} · <span className="font-semibold text-fg-accent underline underline-offset-2">{say("check.defaults.modify")}</span>
+              <span className="font-semibold">{say("check.defaults.label")}</span> ·{" "}
+              {checkDefaults({ keep, keepOff })
+                .map((key) => say(key))
+                .join(" · ")}{" "}
+              ·{" "}
+              <span className="font-semibold text-fg-accent underline underline-offset-2">
+                {say("check.defaults.modify")}
+              </span>
             </summary>
             <div className="mt-3 flex flex-col gap-3">
               {keepControl}
@@ -146,7 +211,11 @@ export function DocumentUploader({ kindRef, placement, onUploaded, onDrop, defau
             </div>
           </details>
           {dropzone}
-          {groupingOffered(known) ? <div className="rounded-lg border border-border-default p-3" data-testid="check-options">{groupControl}</div> : null}
+          {groupingOffered(known) ? (
+            <div className="rounded-lg border border-border-default p-3" data-testid="check-options">
+              {groupControl}
+            </div>
+          ) : null}
         </>
       ) : (
         dropzone

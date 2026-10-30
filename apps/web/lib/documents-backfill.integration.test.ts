@@ -19,11 +19,23 @@ describe.runIf(enabled)("documents backfill (ADR-0012)", () => {
   const store = () => memoryStore({ kind: "none", devOnly: true, owner: "krizaka", residency: "elsewhere" });
   const holder = (s: ReturnType<typeof store>) => async () => s;
   const legacy = async (sha = SHA) => {
-    const [owner] = await query<{ id: string }>("INSERT INTO accounts (email, password_hash, email_verified_at) VALUES ($1, 'x', now()) RETURNING id", [`b-${Math.random().toString(36).slice(2)}@yomizaka.test`]);
-    const [doc] = await query<{ id: string }>("INSERT INTO documents (owner_id, title, filename, mime_type, kind, size_bytes, sha256, content, text, storage) VALUES ($1, 'bail', 'bail.txt', 'text/plain', 'lease', $2, $3, $4, 'Loyer', 'database') RETURNING id", [owner!.id, BYTES.length, sha, Buffer.from(BYTES)]);
+    const [owner] = await query<{ id: string }>(
+      "INSERT INTO accounts (email, password_hash, email_verified_at) VALUES ($1, 'x', now()) RETURNING id",
+      [`b-${Math.random().toString(36).slice(2)}@yomizaka.test`],
+    );
+    const [doc] = await query<{ id: string }>(
+      "INSERT INTO documents (owner_id, title, filename, mime_type, kind, size_bytes, sha256, content, text, storage) VALUES ($1, 'bail', 'bail.txt', 'text/plain', 'lease', $2, $3, $4, 'Loyer', 'database') RETURNING id",
+      [owner!.id, BYTES.length, sha, Buffer.from(BYTES)],
+    );
     return { owner: owner!.id, id: doc!.id, key: objectKey(owner!.id, doc!.id, "text/plain") };
   };
-  const row = async (id: string) => (await query<{ object_key: string | null; n: number }>("SELECT object_key, octet_length(content) AS n FROM documents WHERE id = $1", [id]))[0]!;
+  const row = async (id: string) =>
+    (
+      await query<{ object_key: string | null; n: number }>(
+        "SELECT object_key, octet_length(content) AS n FROM documents WHERE id = $1",
+        [id],
+      )
+    )[0]!;
 
   it("a dry run reports what it would move and writes nothing", async () => {
     const s = store();

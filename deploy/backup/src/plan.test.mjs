@@ -1,6 +1,18 @@
 import { describe, expect, it } from "vitest";
 
-import { assertDestination, assertDumpClient, assertRecipient, assertWorthKeeping, backupsIn, countDifferences, dumpKey, expired, majorOf, manifestKeyOf, staleness } from "./plan.mjs";
+import {
+  assertDestination,
+  assertDumpClient,
+  assertRecipient,
+  assertWorthKeeping,
+  backupsIn,
+  countDifferences,
+  dumpKey,
+  expired,
+  majorOf,
+  manifestKeyOf,
+  staleness,
+} from "./plan.mjs";
 
 const at = (iso) => new Date(iso);
 const RECIPIENT = `age1${"q".repeat(58)}`;
@@ -16,7 +28,10 @@ describe("names", () => {
     expect(() => dumpKey("../x", at("2026-10-29T00:00:00Z"))).toThrow(/environment/);
   });
   it("ignores foreign objects: they are never listed for deletion", () => {
-    const listed = [{ key: "backups/yomizaka/prod/notes.txt", size: 1 }, { key: "backups/yomizaka/dev/yomizaka-dev-20260101T000000Z.dump.age", size: 1 }];
+    const listed = [
+      { key: "backups/yomizaka/prod/notes.txt", size: 1 },
+      { key: "backups/yomizaka/dev/yomizaka-dev-20260101T000000Z.dump.age", size: 1 },
+    ];
     expect(backupsIn(listed, "prod")).toEqual([]);
   });
 });
@@ -37,13 +52,16 @@ describe("retention", () => {
 
 describe("freshness", () => {
   const b = (iso) => [{ key: "k", size: 1, at: at(iso) }];
-  it("passes for last night", () => expect(staleness(b("2026-10-29T03:00:00Z"), at("2026-10-29T12:00:00Z"))).toBeNull());
-  it("fails when the newest is too old", () => expect(staleness(b("2026-10-27T03:00:00Z"), at("2026-10-29T12:00:00Z"))?.code).toBe("STALE"));
+  it("passes for last night", () =>
+    expect(staleness(b("2026-10-29T03:00:00Z"), at("2026-10-29T12:00:00Z"))).toBeNull());
+  it("fails when the newest is too old", () =>
+    expect(staleness(b("2026-10-27T03:00:00Z"), at("2026-10-29T12:00:00Z"))?.code).toBe("STALE"));
   it("fails when there is none", () => expect(staleness([], at("2026-10-29T12:00:00Z"))?.code).toBe("NO_BACKUP"));
 });
 
 describe("the drill's comparison", () => {
-  it("is empty when every table has the same count", () => expect(countDifferences({ "public.a": 2, "public.b": 0 }, { "public.a": 2, "public.b": 0 })).toEqual([]));
+  it("is empty when every table has the same count", () =>
+    expect(countDifferences({ "public.a": 2, "public.b": 0 }, { "public.a": 2, "public.b": 0 })).toEqual([]));
   it("names a differing, a missing and an extra table", () => {
     expect(countDifferences({ "public.a": 2, "public.b": 1 }, { "public.a": 1, "public.c": 4 })).toEqual([
       { table: "public.a", source: 2, restored: 1 },

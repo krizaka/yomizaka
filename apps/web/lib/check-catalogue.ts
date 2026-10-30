@@ -15,15 +15,16 @@ export const GROUPS = CATALOGUE_GROUPS;
 export type Group = (typeof GROUPS)[number];
 
 /** What each ruleset the pack carries is: its group, its jurisdiction and the kind its action names (a kind Yomizaka recognises from the file otherwise). */
-const RULESETS: Record<string, { group: Exclude<Group, "authenticity">; jurisdiction: Jurisdiction; kind: CheckKind }> = {
-  "qc-residential-lease": { group: "lease", jurisdiction: "QC", kind: "lease" },
-  "fr-residential-lease": { group: "lease", jurisdiction: "FR", kind: "lease" },
-  "be-residential-lease": { group: "lease", jurisdiction: "BE-WAL", kind: "lease" },
-  "qc-invoice": { group: "invoice", jurisdiction: "QC", kind: "invoice" },
-  "qc-service-contract": { group: "contract", jurisdiction: "QC", kind: "contract" },
-  "qc-visit-notice": { group: "notice", jurisdiction: "QC", kind: "auto" },
-  "qc-premises-condition": { group: "notice", jurisdiction: "QC", kind: "auto" },
-};
+const RULESETS: Record<string, { group: Exclude<Group, "authenticity">; jurisdiction: Jurisdiction; kind: CheckKind }> =
+  {
+    "qc-residential-lease": { group: "lease", jurisdiction: "QC", kind: "lease" },
+    "fr-residential-lease": { group: "lease", jurisdiction: "FR", kind: "lease" },
+    "be-residential-lease": { group: "lease", jurisdiction: "BE-WAL", kind: "lease" },
+    "qc-invoice": { group: "invoice", jurisdiction: "QC", kind: "invoice" },
+    "qc-service-contract": { group: "contract", jurisdiction: "QC", kind: "contract" },
+    "qc-visit-notice": { group: "notice", jurisdiction: "QC", kind: "auto" },
+    "qc-premises-condition": { group: "notice", jurisdiction: "QC", kind: "auto" },
+  };
 
 export interface CatalogueItem {
   /** The ruleset's id, or `authenticity`. */
@@ -45,13 +46,20 @@ export function catalogueOf(offer: { studios: readonly Studio[]; rulesets: reado
   });
   // The groups' order, then the order the registry lists them in (Québec first, our market).
   const ordered = GROUPS.flatMap((g) => rulesets.filter((r) => r.group === g)) as CatalogueItem[];
-  return offer.studios.includes("document-authenticity") ? [...ordered, { id: "authenticity", group: "authenticity", jurisdiction: null, kind: "auto" }] : ordered;
+  return offer.studios.includes("document-authenticity")
+    ? [...ordered, { id: "authenticity", group: "authenticity", jurisdiction: null, kind: "auto" }]
+    : ordered;
 }
 
 /** A dated ruleset (`qc-residential-lease/2026-10-24`) is its lease (the same rule as `rulesetId` of lib/flows, which reads the database: not imported into the browser). */
 const rulesetId = (ruleset: string): string => ruleset.split("/")[0] ?? ruleset;
 
-const plain = (text: string) => text.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().trim();
+const plain = (text: string) =>
+  text
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .trim();
 const matches = (label: string, q: string) => !q || plain(label).includes(plain(q));
 
 export interface Chip {
@@ -63,11 +71,21 @@ export interface Chip {
 /** « Toutes · 6 », then a chip per group the registry has with the checks that match the search (a group with none left keeps its chip at 0). */
 export function chipsOf(items: readonly CatalogueItem[], q: string, labelOf: (item: CatalogueItem) => string): Chip[] {
   const found = items.filter((i) => matches(labelOf(i), q));
-  return [{ group: null, count: found.length }, ...GROUPS.filter((g) => items.some((i) => i.group === g)).map((g) => ({ group: g, count: found.filter((i) => i.group === g).length }))];
+  return [
+    { group: null, count: found.length },
+    ...GROUPS.filter((g) => items.some((i) => i.group === g)).map((g) => ({
+      group: g,
+      count: found.filter((i) => i.group === g).length,
+    })),
+  ];
 }
 
 /** The rows shown: the chosen group's checks that match the search. */
-export const visibleItems = (items: readonly CatalogueItem[], { group, q }: { group: Group | null; q: string }, labelOf: (item: CatalogueItem) => string): CatalogueItem[] => items.filter((i) => (!group || i.group === group) && matches(labelOf(i), q));
+export const visibleItems = (
+  items: readonly CatalogueItem[],
+  { group, q }: { group: Group | null; q: string },
+  labelOf: (item: CatalogueItem) => string,
+): CatalogueItem[] => items.filter((i) => (!group || i.group === group) && matches(labelOf(i), q));
 
 /** The action of a row: it names the kind in the address (`?type=`, the app's own state) and leads to the drop. « auto » leaves the address clean. */
 export const checkHref = (locale: "en" | "fr", kind: CheckKind): string => {

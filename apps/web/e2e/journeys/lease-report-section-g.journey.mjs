@@ -7,11 +7,16 @@ import { expect, test } from "@playwright/test";
 
 import { BASE, sessionsFor } from "./session.mjs";
 
-const JOURNEY = JSON.parse(readFileSync(new URL("./journeys.json", import.meta.url), "utf8")).find((j) => j.id === "lease-report-section-g");
+const JOURNEY = JSON.parse(readFileSync(new URL("./journeys.json", import.meta.url), "utf8")).find(
+  (j) => j.id === "lease-report-section-g",
+);
 
 test("a tenant opens the report of a lease with no TAL notice and sees Section G", async ({ browser }, info) => {
   const state = await sessionsFor(browser, info.workerIndex).stateFor("eric");
-  const context = await browser.newContext({ storageState: state, ...videoContextOptions(JOURNEY, { dir: info.outputDir }) });
+  const context = await browser.newContext({
+    storageState: state,
+    ...videoContextOptions(JOURNEY, { dir: info.outputDir }),
+  });
   const page = await context.newPage();
 
   await page.goto(new URL("/fr/app/documents", BASE).toString());

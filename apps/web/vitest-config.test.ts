@@ -8,7 +8,9 @@ import config from "./vitest.config.mjs";
  * the database files one at a time; this keeps it so — a file added to that project can never run in parallel with another.
  */
 describe("vitest projects", () => {
-  const projects = (config.test?.projects ?? []) as { test: { name: string; include: string[]; exclude?: string[]; fileParallelism?: boolean } }[];
+  const projects = (config.test?.projects ?? []) as {
+    test: { name: string; include: string[]; exclude?: string[]; fileParallelism?: boolean };
+  }[];
   const named = (name: string) => projects.find((p) => p.test.name === name)!.test;
 
   it("the database project runs its files one at a time", () => {

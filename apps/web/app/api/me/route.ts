@@ -22,7 +22,12 @@ export const GET = (req: Request) =>
     if (session) {
       try {
         await assertOpen(session.account);
-        account = { id: session.account.id, email: session.account.email, name: session.account.name ?? null, avatarSeed: session.account.avatarSeed ?? null };
+        account = {
+          id: session.account.id,
+          email: session.account.email,
+          name: session.account.name ?? null,
+          avatarSeed: session.account.avatarSeed ?? null,
+        };
       } catch (error) {
         if (!(error instanceof HttpError)) throw error;
       }

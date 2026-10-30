@@ -7,7 +7,13 @@ import { PricingContent } from "@/components/pricing/PricingContent";
 import { format, getDictionary } from "../i18n";
 import { activeLaunchOffer, billedOnMonth, type LaunchOffer, offerLines, offerPrices } from "./launch-offer";
 
-const OFFER: LaunchOffer = { code: "LANCEMENT", percent: 50, months: 3, plans: ["agency", "firm"], endsAt: new Date("2027-01-31T04:59:59Z") };
+const OFFER: LaunchOffer = {
+  code: "LANCEMENT",
+  percent: 50,
+  months: 3,
+  plans: ["agency", "firm"],
+  endsAt: new Date("2027-01-31T04:59:59Z"),
+};
 const PLANS = [
   { plan: "document", amountCents: 499 },
   { plan: "agency", amountCents: 4900 },
@@ -29,7 +35,9 @@ describe("the launch offer is a promo code the admin created (#548, ADR-0013)", 
   });
 
   it("an offer without plans applies to every plan it is given (the page gives it the subscriptions), a free entry to none", () => {
-    expect(offerPrices({ ...OFFER, plans: [] }, [...PLANS.slice(1), { plan: "free", amountCents: 0 }]).map((p) => p.plan)).toEqual(["agency", "firm"]);
+    expect(
+      offerPrices({ ...OFFER, plans: [] }, [...PLANS.slice(1), { plan: "free", amountCents: 0 }]).map((p) => p.plan),
+    ).toEqual(["agency", "firm"]);
   });
 
   it("announces nothing without a code, and reads the coupon's window and status from the database", async () => {
@@ -41,28 +49,37 @@ describe("the launch offer is a promo code the admin created (#548, ADR-0013)", 
     }) as unknown as Query;
     const now = new Date("2026-11-01T00:00:00Z");
     expect(await activeLaunchOffer(query, "  ", now)).toBeNull();
-    expect(await activeLaunchOffer(query, "lancement", now)).toEqual({ code: "LANCEMENT", percent: 50, months: 3, plans: ["agency"], endsAt: null });
+    expect(await activeLaunchOffer(query, "lancement", now)).toEqual({
+      code: "LANCEMENT",
+      percent: 50,
+      months: 3,
+      plans: ["agency"],
+      endsAt: null,
+    });
     expect(seen).toEqual([["lancement", now]]);
     const none = (async () => []) as unknown as Query;
     expect(await activeLaunchOffer(none, "EXPIRED", now)).toBeNull();
   });
 
-  it.each(["en", "fr"] as const)("shows the code, the offer price, the regular price and the end of the offer (%s)", (locale) => {
-    const launch = offerLines(OFFER, offerPrices(OFFER, PLANS), locale, getDictionary(locale).pricing.offer, format);
-    const html = renderToStaticMarkup(
-      PricingContent({
-        locale,
-        sold: [{ plan: "agency", price: "49", per: "month", included: 100 }],
-        soon: [],
-        freeFirst: false,
-        launch,
-        status: "x",
-      }),
-    );
-    const text = html.replaceAll(/<[^>]+>/g, " ").replaceAll(/\s/gu, " ");
-    expect(text).toContain("LANCEMENT");
-    expect(text).toContain(locale === "en" ? "$24.50" : "24,50");
-    expect(text).toContain(locale === "en" ? "$49.00" : "49,00");
-    expect(text).toMatch(/2027|janvier|January/);
-  });
+  it.each(["en", "fr"] as const)(
+    "shows the code, the offer price, the regular price and the end of the offer (%s)",
+    (locale) => {
+      const launch = offerLines(OFFER, offerPrices(OFFER, PLANS), locale, getDictionary(locale).pricing.offer, format);
+      const html = renderToStaticMarkup(
+        PricingContent({
+          locale,
+          sold: [{ plan: "agency", price: "49", per: "month", included: 100 }],
+          soon: [],
+          freeFirst: false,
+          launch,
+          status: "x",
+        }),
+      );
+      const text = html.replaceAll(/<[^>]+>/g, " ").replaceAll(/\s/gu, " ");
+      expect(text).toContain("LANCEMENT");
+      expect(text).toContain(locale === "en" ? "$24.50" : "24,50");
+      expect(text).toContain(locale === "en" ? "$49.00" : "49,00");
+      expect(text).toMatch(/2027|janvier|January/);
+    },
+  );
 });

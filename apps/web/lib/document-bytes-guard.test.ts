@@ -18,10 +18,13 @@ export function splitTopLevel(list: string): string[] {
   let from = 0;
   for (let i = 0; i < list.length; i++) {
     const c = list[i];
-    if (c === "'") {quote = !quote;}
-    else if (!quote && c === "(") {depth++;}
-    else if (!quote && c === ")") {depth--;}
-    else if (!quote && depth === 0 && c === ",") {
+    if (c === "'") {
+      quote = !quote;
+    } else if (!quote && c === "(") {
+      depth++;
+    } else if (!quote && c === ")") {
+      depth--;
+    } else if (!quote && depth === 0 && c === ",") {
       parts.push(list.slice(from, i).trim());
       from = i + 1;
     }
@@ -36,9 +39,13 @@ function balanced(source: string, open: number): string {
   let quote = false;
   for (let i = open; i < source.length; i++) {
     const c = source[i];
-    if (c === "'") {quote = !quote;}
-    else if (!quote && c === "(") {depth++;}
-    else if (!quote && c === ")" && --depth === 0) {return source.slice(open + 1, i);}
+    if (c === "'") {
+      quote = !quote;
+    } else if (!quote && c === "(") {
+      depth++;
+    } else if (!quote && c === ")" && --depth === 0) {
+      return source.slice(open + 1, i);
+    }
   }
   return "";
 }
@@ -50,16 +57,22 @@ export function byteWrites(source: string): string[] {
     const open = m.index + m[0].length - 1;
     const columns = splitTopLevel(balanced(source, open));
     const at = columns.findIndex((c) => c === "content");
-    if (at < 0) {continue;}
+    if (at < 0) {
+      continue;
+    }
     const after = open + balanced(source, open).length + 2;
     const values = /^\s*VALUES\s*\(/.exec(source.slice(after));
     const value = values ? splitTopLevel(balanced(source, after + values[0].length - 1))[at] : undefined;
-    if (value !== EMPTY) {found.push(`INSERT INTO documents … content = ${value ?? "?"}`);}
+    if (value !== EMPTY) {
+      found.push(`INSERT INTO documents … content = ${value ?? "?"}`);
+    }
   }
   for (const m of source.matchAll(/UPDATE documents SET([\s\S]*?)\sWHERE/g)) {
     for (const assignment of splitTopLevel(m[1]!)) {
       const [name, ...rest] = assignment.split("=");
-      if (name?.trim() === "content" && rest.join("=").trim() !== EMPTY) {found.push(`UPDATE documents SET ${assignment}`);}
+      if (name?.trim() === "content" && rest.join("=").trim() !== EMPTY) {
+        found.push(`UPDATE documents SET ${assignment}`);
+      }
     }
   }
   return found;
@@ -83,8 +96,12 @@ describe("byteWrites (the rule)", () => {
 function sources(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
     const path = join(dir, name);
-    if (name === "node_modules" || name === ".next") {return [];}
-    if (statSync(path).isDirectory()) {return sources(path);}
+    if (name === "node_modules" || name === ".next") {
+      return [];
+    }
+    if (statSync(path).isDirectory()) {
+      return sources(path);
+    }
     return /\.(ts|tsx|mjs)$/.test(name) && !/\.test\.|\.integration\./.test(name) ? [path] : [];
   });
 }
@@ -94,12 +111,19 @@ describe("no new write of document bytes to PostgreSQL (ADR-0012)", () => {
   const files = ["apps/web/lib", "apps/web/app", "scripts"].flatMap((d) => sources(join(root, d)));
 
   it("every write to documents.content is empty, except the known fixtures", () => {
-    const offenders = files.map((f) => [relative(root, f), byteWrites(readFileSync(f, "utf8"))] as const).filter(([, w]) => w.length > 0);
+    const offenders = files
+      .map((f) => [relative(root, f), byteWrites(readFileSync(f, "utf8"))] as const)
+      .filter(([, w]) => w.length > 0);
     expect(offenders.filter(([f]) => !KNOWN.has(f))).toEqual([]);
   });
 
   it("the known list holds only files that still write bytes (it only goes down)", () => {
-    const offending = new Set(files.map((f) => [relative(root, f), byteWrites(readFileSync(f, "utf8"))] as const).filter(([, w]) => w.length > 0).map(([f]) => f));
+    const offending = new Set(
+      files
+        .map((f) => [relative(root, f), byteWrites(readFileSync(f, "utf8"))] as const)
+        .filter(([, w]) => w.length > 0)
+        .map(([f]) => f),
+    );
     expect([...KNOWN].filter((f) => !offending.has(f))).toEqual([]);
   });
 });

@@ -68,7 +68,8 @@ export function estimateSkew(gray: Gray, { max, step }: { max: number; step: num
   removeBorderRegion(mask, gray.width, gray.height);
   const dark: number[] = [];
   const [cx, cy] = [gray.width / 2, gray.height / 2];
-  for (let y = 0; y < gray.height; y++) for (let x = 0; x < gray.width; x++) if (mask[y * gray.width + x]) dark.push(x - cx, y - cy);
+  for (let y = 0; y < gray.height; y++)
+    for (let x = 0; x < gray.width; x++) if (mask[y * gray.width + x]) dark.push(x - cx, y - cy);
   if (dark.length / 2 < gray.data.length * 0.002) return 0;
   const bins = gray.height * 2;
   const scoreOf = (degrees: number) => {
@@ -116,14 +117,25 @@ export function pageBox(gray: Gray, minShare: number): Box | null {
     }
   }
   const first = (counts: Uint32Array, need: number) => counts.findIndex((c) => c >= need);
-  const last = (counts: Uint32Array, need: number) => counts.length - 1 - [...counts].reverse().findIndex((c) => c >= need);
+  const last = (counts: Uint32Array, need: number) =>
+    counts.length - 1 - [...counts].reverse().findIndex((c) => c >= need);
   const [needRow, needCol] = [Math.max(2, gray.width * 0.05), Math.max(2, gray.height * 0.05)];
-  const [top, bottom, left, right] = [first(rows, needRow), last(rows, needRow), first(cols, needCol), last(cols, needCol)];
+  const [top, bottom, left, right] = [
+    first(rows, needRow),
+    last(rows, needRow),
+    first(cols, needCol),
+    last(cols, needCol),
+  ];
   if (top < 0 || left < 0 || bottom < top || right < left) return null;
   const share = ((right - left + 1) * (bottom - top + 1)) / (gray.width * gray.height);
   if (share < minShare) return null;
   const [marginX, marginY] = [Math.round(gray.width * 0.015), Math.round(gray.height * 0.015)];
-  const box = { left: Math.max(0, left - marginX), top: Math.max(0, top - marginY), right: Math.min(gray.width - 1, right + marginX), bottom: Math.min(gray.height - 1, bottom + marginY) };
+  const box = {
+    left: Math.max(0, left - marginX),
+    top: Math.max(0, top - marginY),
+    right: Math.min(gray.width - 1, right + marginX),
+    bottom: Math.min(gray.height - 1, bottom + marginY),
+  };
   if (box.right - box.left + 1 >= gray.width * 0.96 && box.bottom - box.top + 1 >= gray.height * 0.96) return null;
   return box;
 }

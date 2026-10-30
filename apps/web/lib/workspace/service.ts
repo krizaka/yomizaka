@@ -1,4 +1,13 @@
-import { type Actor, type Clock, createWorkspace, dbWorkspaceStore, type Query as LayerQuery, type StatusMove, type Workspace, type WorkspaceEvents } from "@krizaka/organize";
+import {
+  type Actor,
+  type Clock,
+  createWorkspace,
+  dbWorkspaceStore,
+  type Query as LayerQuery,
+  type StatusMove,
+  type Workspace,
+  type WorkspaceEvents,
+} from "@krizaka/organize";
 
 import { holderOf as documentHolder } from "@/app/active-store";
 
@@ -18,7 +27,11 @@ import { DEFAULT_CONFIGS } from "./defaults";
  */
 
 /** The manager acting: their account is the scope and their role in it. */
-export const actorOf = (account: { id: string; email: string }): Actor => ({ id: account.id, label: account.email, role: OWNER_ROLE });
+export const actorOf = (account: { id: string; email: string }): Actor => ({
+  id: account.id,
+  label: account.email,
+  role: OWNER_ROLE,
+});
 
 export interface WorkspaceOptions {
   clock: Clock;
@@ -30,37 +43,70 @@ export interface WorkspaceOptions {
   events?: WorkspaceEvents;
 }
 
-const asLayerQuery = (run: (text: string, values?: unknown[]) => Promise<unknown>): LayerQuery => ((sql: string, params?: unknown[]) => run(sql, params)) as LayerQuery;
+const asLayerQuery = (run: (text: string, values?: unknown[]) => Promise<unknown>): LayerQuery =>
+  ((sql: string, params?: unknown[]) => run(sql, params)) as LayerQuery;
 
 /**
  * A decision closes the file (the link with it) and purges every document it holds — their bytes and text, from the database and
  * from the store; the reports stay (Loi 25 minimisation, #125). It runs in the decision's own transaction: if the kept files'
  * store is not there, nothing is decided. The store's objects go last, so a failure before leaves the files whole.
  */
-export async function closeDecidedFiles(tx: LayerQuery, moves: readonly StatusMove[], options: Pick<WorkspaceOptions, "store" | "headers">): Promise<void> {
+export async function closeDecidedFiles(
+  tx: LayerQuery,
+  moves: readonly StatusMove[],
+  options: Pick<WorkspaceOptions, "store" | "headers">,
+): Promise<void> {
   const decided = moves.filter((m) => m.final && m.kind === KIND.applicantFile);
   const [first] = decided;
   if (!first) return;
   const owner = first.scope;
   const ids = decided.map((m) => m.entityId);
-  const held = await tx<{ id: string; screening_id: string; mime_type: string; storage: string; storage_owner: string; object_key: string | null }>(
+  const held = await tx<{
+    id: string;
+    screening_id: string;
+    mime_type: string;
+    storage: string;
+    storage_owner: string;
+    object_key: string | null;
+  }>(
     `SELECT id, screening_id, mime_type, storage, storage_owner, object_key FROM documents WHERE owner_id = $1 AND screening_id = ANY($2::uuid[]) AND (storage <> 'none' OR ${HOLDS_BYTES} OR text <> '') ORDER BY id FOR UPDATE`,
     [owner, ids],
   );
   for (const d of held) {
     const external = !d.object_key && EXTERNAL.has(d.storage as never);
-    if (external && (!options.store || options.store.describe().kind !== d.storage)) throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds these documents is not available");
+    if (external && (!options.store || options.store.describe().kind !== d.storage))
+      throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds these documents is not available");
   }
-  await tx("UPDATE screenings SET closed_at = $3, revoked_at = coalesce(revoked_at, $3) WHERE landlord_id = $1 AND id = ANY($2::uuid[]) AND closed_at IS NULL", [owner, ids, first.at]);
-  if (held.length) await tx("UPDATE documents SET content = ''::bytea, text = '', object_key = NULL, storage = 'none', retain_until = NULL WHERE id = ANY($1::uuid[])", [held.map((d) => d.id)]);
+  await tx(
+    "UPDATE screenings SET closed_at = $3, revoked_at = coalesce(revoked_at, $3) WHERE landlord_id = $1 AND id = ANY($2::uuid[]) AND closed_at IS NULL",
+    [owner, ids, first.at],
+  );
+  if (held.length)
+    await tx(
+      "UPDATE documents SET content = ''::bytea, text = '', object_key = NULL, storage = 'none', retain_until = NULL WHERE id = ANY($1::uuid[])",
+      [held.map((d) => d.id)],
+    );
   for (const m of decided) {
     const purged = held.filter((d) => d.screening_id === m.entityId).length;
-    await auditIn(tx, { action: "applicant_file.closed", actorId: owner, actorLabel: "manager", targetId: m.entityId, detail: { purged, decision: m.to }, headers: options.headers });
+    await auditIn(tx, {
+      action: "applicant_file.closed",
+      actorId: owner,
+      actorLabel: "manager",
+      targetId: m.entityId,
+      detail: { purged, decision: m.to },
+      headers: options.headers,
+    });
   }
   for (const d of held) {
     // The stored file goes last: a store that does not answer rolls the whole decision back, the files stay whole (ADR-0012).
     if (d.object_key) {
-      if (!(await removeObject({ owner_id: owner, storage: d.storage, storage_owner: d.storage_owner, object_key: d.object_key }, documentHolder))) throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds these documents is not available");
+      if (
+        !(await removeObject(
+          { owner_id: owner, storage: d.storage, storage_owner: d.storage_owner, object_key: d.object_key },
+          documentHolder,
+        ))
+      )
+        throw refuse(409, "STORAGE_UNAVAILABLE", "The storage that holds these documents is not available");
     } else if (EXTERNAL.has(d.storage as never)) await options.store!.delete(objectKey(owner, d.id, d.mime_type));
   }
 }
@@ -73,7 +119,14 @@ export function workspaceFor(options: WorkspaceOptions): Workspace {
     clock: options.clock,
     audit: {
       record: (q, entry) =>
-        auditIn(q, { action: entry.action, actorId: entry.actorId, actorLabel: entry.actorLabel, targetId: entry.target?.id ?? null, detail: { ...entry.detail, ...(entry.target ? { kind: entry.target.type } : {}) }, headers: options.headers }),
+        auditIn(q, {
+          action: entry.action,
+          actorId: entry.actorId,
+          actorLabel: entry.actorLabel,
+          targetId: entry.target?.id ?? null,
+          detail: { ...entry.detail, ...(entry.target ? { kind: entry.target.type } : {}) },
+          headers: options.headers,
+        }),
     },
     events: options.events,
     onMoved: (tx, moves) => closeDecidedFiles(tx, moves, options),

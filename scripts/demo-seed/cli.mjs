@@ -27,21 +27,36 @@ const LOCAL_HOSTS = ["localhost", "127.0.0.1", "::1", "[::1]", "postgres", "db"]
 /** The whole cast on the database; with --check, compared to the recorded fingerprint (exact on a local database, « all there » on dev). */
 async function runCast(client, url, { messagesByLocale, locale }) {
   const { hashPassword } = await import("../../apps/web/scripts/qa-accounts.mjs");
-  const run = await seedCast((sql, values) => client.query(sql, values).then((r) => r.rows), { env: process.env, hashPassword, locale, messagesByLocale, reset: process.argv.includes("--reset"), now: seedClock() });
+  const run = await seedCast((sql, values) => client.query(sql, values).then((r) => r.rows), {
+    env: process.env,
+    hashPassword,
+    locale,
+    messagesByLocale,
+    reset: process.argv.includes("--reset"),
+    now: seedClock(),
+  });
   console.log(`demo:seed --cast: ${run.member.name} (member), ${run.admin.name} (administrator), ${run.camille.name}`);
   console.log(`fingerprint: ${run.fingerprint}`);
   if (!process.argv.includes("--check")) return;
   const expected = JSON.parse(readFileSync(new URL("./fingerprint.json", import.meta.url), "utf8")).fingerprint;
   const exact = LOCAL_HOSTS.includes(url.hostname);
-  if (!matchesRecorded(run.fingerprint, expected, exact)) throw new Error(`the seeded data differs from the recorded fingerprint\n  expected ${expected}\n  got      ${run.fingerprint}`);
-  console.log(exact ? "fingerprint: matches the recorded one" : "fingerprint: everything recorded is there (this database is lived in: counts may exceed it)");
+  if (!matchesRecorded(run.fingerprint, expected, exact))
+    throw new Error(
+      `the seeded data differs from the recorded fingerprint\n  expected ${expected}\n  got      ${run.fingerprint}`,
+    );
+  console.log(
+    exact
+      ? "fingerprint: matches the recorded one"
+      : "fingerprint: everything recorded is there (this database is lived in: counts may exceed it)",
+  );
 }
 
 async function main() {
   assertNotProduction(process.env);
   const cast = process.argv.includes("--cast");
   const persona = arg("persona") ?? "";
-  if (!cast && !PERSONAS[persona]) throw new Error(`--persona is required (known: ${Object.keys(PERSONAS).join(", ")})`);
+  if (!cast && !PERSONAS[persona])
+    throw new Error(`--persona is required (known: ${Object.keys(PERSONAS).join(", ")})`);
   const locale = arg("locale") ?? "fr";
   if (!["fr", "en"].includes(locale)) throw new Error("--locale must be fr or en");
   const web = createRequire(new URL("../../apps/web/package.json", import.meta.url));
@@ -49,12 +64,23 @@ async function main() {
   const url = new URL(process.env.DATABASE_URL ?? "");
   const tls = ["require", "verify-ca", "verify-full"].includes(url.searchParams.get("sslmode") ?? "");
   url.searchParams.delete("sslmode");
-  const client = new pg.Client({ connectionString: url.toString(), ...(tls ? { ssl: { ca: process.env.DATABASE_CA_CERT?.replace(/\\n/g, "\n"), rejectUnauthorized: true } } : {}) });
-  const messagesByLocale = Object.fromEntries(["fr", "en"].map((l) => [l, JSON.parse(readFileSync(new URL(`../../apps/web/messages/${l}.json`, import.meta.url), "utf8"))]));
+  const client = new pg.Client({
+    connectionString: url.toString(),
+    ...(tls ? { ssl: { ca: process.env.DATABASE_CA_CERT?.replace(/\\n/g, "\n"), rejectUnauthorized: true } } : {}),
+  });
+  const messagesByLocale = Object.fromEntries(
+    ["fr", "en"].map((l) => [
+      l,
+      JSON.parse(readFileSync(new URL(`../../apps/web/messages/${l}.json`, import.meta.url), "utf8")),
+    ]),
+  );
   let passwordHash = null;
   if (!cast && process.env.APP_DEMO_ACCOUNT_PASSWORD) {
-    if (process.env.APP_DEMO_ACCOUNT_PASSWORD.length < 12) throw new Error("APP_DEMO_ACCOUNT_PASSWORD must have at least 12 characters");
-    passwordHash = await (await import("../../apps/web/scripts/qa-accounts.mjs")).hashPassword(process.env.APP_DEMO_ACCOUNT_PASSWORD);
+    if (process.env.APP_DEMO_ACCOUNT_PASSWORD.length < 12)
+      throw new Error("APP_DEMO_ACCOUNT_PASSWORD must have at least 12 characters");
+    passwordHash = await (
+      await import("../../apps/web/scripts/qa-accounts.mjs")
+    ).hashPassword(process.env.APP_DEMO_ACCOUNT_PASSWORD);
   }
   await client.connect();
   try {

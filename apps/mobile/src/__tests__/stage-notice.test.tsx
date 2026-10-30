@@ -10,7 +10,12 @@ jest.mock("@/config", () => ({ stage: "dev" }));
 
 const wrap = async (node: React.ReactElement) =>
   render(
-    <SafeAreaProvider initialMetrics={{ frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 47, left: 0, right: 0, bottom: 34 } }}>
+    <SafeAreaProvider
+      initialMetrics={{
+        frame: { x: 0, y: 0, width: 390, height: 844 },
+        insets: { top: 47, left: 0, right: 0, bottom: 34 },
+      }}
+    >
       <ThemeProvider>
         <I18nProvider locale="fr">{node}</I18nProvider>
       </ThemeProvider>

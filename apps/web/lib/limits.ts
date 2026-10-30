@@ -30,11 +30,23 @@ async function limitsOf(action: LimitAction) {
 }
 
 const limiterFor = (limits: (counter: string) => ReturnType<typeof limitsOf>): Limiter =>
-  createLimiter({ store, clock: systemClock, limits, onStoreError: (error, action) => logError(`limits: store failed for ${action}`, error) });
+  createLimiter({
+    store,
+    clock: systemClock,
+    limits,
+    onStoreError: (error, action) => logError(`limits: store failed for ${action}`, error),
+  });
 
 /** A refusal is 429 `RATE_LIMITED` with `Retry-After`. */
 function refusal(error: unknown): unknown {
-  return error instanceof RateLimited ? new HttpError(429, "Too many requests", { code: error.code, retryAfterSeconds: error.retryAfterSeconds }, error.headers) : error;
+  return error instanceof RateLimited
+    ? new HttpError(
+        429,
+        "Too many requests",
+        { code: error.code, retryAfterSeconds: error.retryAfterSeconds },
+        error.headers,
+      )
+    : error;
 }
 
 async function enforce(limiter: Limiter, counter: string, req: { headers: Headers }, subject: string | null) {
@@ -49,7 +61,12 @@ async function enforce(limiter: Limiter, counter: string, req: { headers: Header
  * Limits an action per address and per subject (an address, an account): throws a 429. `counter` names the windows when one setting
  * is shared by several counters (the account actions: each scope counts apart, under the same read and write limits).
  */
-export function limit(action: LimitAction, req: { headers: Headers }, subject: string | null, counter: string = action) {
+export function limit(
+  action: LimitAction,
+  req: { headers: Headers },
+  subject: string | null,
+  counter: string = action,
+) {
   return enforce(
     limiterFor(() => limitsOf(action)),
     counter,
@@ -59,7 +76,14 @@ export function limit(action: LimitAction, req: { headers: Headers }, subject: s
 }
 
 /** The same, for a limit that is not a setting of the action: an API key's per-minute allowance is its owner's plan (`limits.apiRequestsPerMinute`). */
-export function limitWith(counter: string, req: { headers: Headers }, subject: string | null, perIp: number, perSubject: number, windowSeconds: number) {
+export function limitWith(
+  counter: string,
+  req: { headers: Headers },
+  subject: string | null,
+  perIp: number,
+  perSubject: number,
+  windowSeconds: number,
+) {
   return enforce(
     limiterFor(async () => ({ perIp, perSubject, windowSeconds })),
     counter,

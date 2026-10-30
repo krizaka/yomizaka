@@ -9,7 +9,8 @@ import { YOMIZAKA_IMAGE_RULES } from "./rules";
 const cleaner = createImageCleaner(YOMIZAKA_IMAGE_RULES);
 const rules = YOMIZAKA_IMAGE_RULES.quality;
 const jpeg = async (pipeline: Sharp) => new Uint8Array(await pipeline.jpeg().toBuffer());
-const problemOf = async (bytes: Uint8Array) => qualityProblem((await cleaner.clean({ bytes, kind: "jpeg" })).page.quality, rules);
+const problemOf = async (bytes: Uint8Array) =>
+  qualityProblem((await cleaner.clean({ bytes, kind: "jpeg" })).page.quality, rules);
 
 /** The fictional lease page, lit evenly or with a flash washing part of it out, photographed or scanned flat. */
 async function fixtures() {
@@ -66,7 +67,9 @@ describe("the measures", () => {
   it("a flat bitmap has no sharpness; edges have", () => {
     const flat = { data: new Uint8Array(100).fill(200), width: 10, height: 10 };
     expect(laplacianVariance(flat)).toBe(0);
-    expect(laplacianVariance({ ...flat, data: Uint8Array.from({ length: 100 }, (_, i) => (i % 2 === 0 ? 0 : 255)) })).toBeGreaterThan(1000);
+    expect(
+      laplacianVariance({ ...flat, data: Uint8Array.from({ length: 100 }, (_, i) => (i % 2 === 0 ? 0 : 255)) }),
+    ).toBeGreaterThan(1000);
     expect(laplacianVariance({ data: new Uint8Array(4), width: 2, height: 2 })).toBe(0);
   });
 
@@ -81,7 +84,10 @@ describe("the measures", () => {
     const grey = { data: new Uint8Array(100).fill(200), width: 10, height: 10 };
     grey.data.fill(255, 0, 30);
     expect(assessQuality(grey, { ...rules, rim: 0 }, false).glareShare).toBeCloseTo(0.3);
-    expect(assessQuality({ data: new Uint8Array(100).fill(255), width: 10, height: 10 }, { ...rules, rim: 0 }, false).glareShare).toBe(0);
+    expect(
+      assessQuality({ data: new Uint8Array(100).fill(255), width: 10, height: 10 }, { ...rules, rim: 0 }, false)
+        .glareShare,
+    ).toBe(0);
   });
 });
 

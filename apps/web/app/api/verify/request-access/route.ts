@@ -23,7 +23,15 @@ export function POST(req: Request) {
     const input = await readJson(req, body);
     const target = await loadTarget(input.runId, input.documentSha256);
     const { recorded } = await requestAccess(who, target, new Date());
-    if (recorded) await audit({ action: "report.access_requested", actorId: who.id, actorLabel: who.email, targetId: target?.analysisId ?? null, detail: { runId: input.runId }, headers: req.headers });
+    if (recorded)
+      await audit({
+        action: "report.access_requested",
+        actorId: who.id,
+        actorLabel: who.email,
+        targetId: target?.analysisId ?? null,
+        detail: { runId: input.runId },
+        headers: req.headers,
+      });
     return Response.json({ requested: true }, { status: 202, headers: { "Cache-Control": "no-store" } });
   });
 }

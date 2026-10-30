@@ -10,13 +10,24 @@ export const dynamic = "force-dynamic";
 export const GET = (req: Request) =>
   handle(async () => {
     await requireAdmin(req);
-    return Response.json({ partners: await guarded(() => coupons.admin.partners.list(query, { includeArchived: true })) }, { headers: { "Cache-Control": "private, no-store" } });
+    return Response.json(
+      { partners: await guarded(() => coupons.admin.partners.list(query, { includeArchived: true })) },
+      { headers: { "Cache-Control": "private, no-store" } },
+    );
   });
 
 export const POST = (req: Request) =>
   handle(async () => {
     const session = await requireAdmin(req);
     const input = await readJson(req, newPartner);
-    const partner = await guarded(() => transaction((tx) => coupons.admin.partners.create(tx, { id: session.account.id, label: session.account.email }, { displayName: input.displayName, contactEmail: input.contactEmail ?? null })));
+    const partner = await guarded(() =>
+      transaction((tx) =>
+        coupons.admin.partners.create(
+          tx,
+          { id: session.account.id, label: session.account.email },
+          { displayName: input.displayName, contactEmail: input.contactEmail ?? null },
+        ),
+      ),
+    );
     return Response.json({ partner }, { status: 201 });
   });

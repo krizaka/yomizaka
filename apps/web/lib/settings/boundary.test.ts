@@ -6,11 +6,19 @@ import { defOf, SETTING_KEYS, type SettingKey } from "./registry";
 
 /** A snapshot of the defaults, with some values changed. */
 const snapshot = (changes: Partial<Record<SettingKey, unknown>> = {}): Snapshot =>
-  Object.fromEntries(SETTING_KEYS.map((k) => [k, k in changes ? { value: changes[k], source: "global" } : { value: defOf(k).default, source: "default" }])) as Snapshot;
+  Object.fromEntries(
+    SETTING_KEYS.map((k) => [
+      k,
+      k in changes ? { value: changes[k], source: "global" } : { value: defOf(k).default, source: "default" },
+    ]),
+  ) as Snapshot;
 
 describe("the pre-flight rules follow the configuration", () => {
   it("keeps the product's rules and applies the limits an administrator set", () => {
-    const rules = preflightRulesFrom(YOMIZAKA_RULES, snapshot({ "limits.maxFileMb": 2, "limits.maxPages": 30, "limits.allowedTypes": ["pdf"] }));
+    const rules = preflightRulesFrom(
+      YOMIZAKA_RULES,
+      snapshot({ "limits.maxFileMb": 2, "limits.maxPages": 30, "limits.allowedTypes": ["pdf"] }),
+    );
     expect(rules).toMatchObject({ maxBytes: 2 * 1024 * 1024, maxPages: 30, allowedKinds: ["pdf"] });
     expect(rules.pdfActiveNames).toEqual(YOMIZAKA_RULES.pdfActiveNames);
   });
@@ -18,8 +26,13 @@ describe("the pre-flight rules follow the configuration", () => {
     expect(preflightRulesFrom(YOMIZAKA_RULES, snapshot())).toEqual(YOMIZAKA_RULES);
   });
   it("allows both Word formats through the existing database-backed word setting", () => {
-    expect(preflightRulesFrom(YOMIZAKA_RULES, snapshot({ "limits.allowedTypes": ["word"] })).allowedKinds).toEqual(["docx", "odt"]);
-    expect(preflightRulesFrom(YOMIZAKA_RULES, snapshot({ "limits.allowedTypes": ["pdf", "text", "image"] })).allowedKinds).not.toContain("odt");
+    expect(preflightRulesFrom(YOMIZAKA_RULES, snapshot({ "limits.allowedTypes": ["word"] })).allowedKinds).toEqual([
+      "docx",
+      "odt",
+    ]);
+    expect(
+      preflightRulesFrom(YOMIZAKA_RULES, snapshot({ "limits.allowedTypes": ["pdf", "text", "image"] })).allowedKinds,
+    ).not.toContain("odt");
   });
 });
 
@@ -37,21 +50,42 @@ describe("maintenance", () => {
 describe("the audit caps of a plan: the included volume is the catalogue entry's, the rest the settings'", () => {
   it.each([
     ["pro", 100, {}, { perMonth: 100, perDay: 0, freeFirst: true }],
-    ["pro", 750, { "limits.bonusAuditsPerMonth": 20, "plans.pro.auditsPerDay": 10 }, { perMonth: 770, perDay: 10, freeFirst: true }],
-    ["free", 0, { "plans.free.auditsPerDay": 3, "audit.freeFirst": false }, { perMonth: Number.POSITIVE_INFINITY, perDay: 3, freeFirst: false }],
-  ] as const)("%s including %i with %j", (plan, included, changes, caps) => expect(auditCapsOf(snapshot(changes), plan, included)).toEqual(caps));
+    [
+      "pro",
+      750,
+      { "limits.bonusAuditsPerMonth": 20, "plans.pro.auditsPerDay": 10 },
+      { perMonth: 770, perDay: 10, freeFirst: true },
+    ],
+    [
+      "free",
+      0,
+      { "plans.free.auditsPerDay": 3, "audit.freeFirst": false },
+      { perMonth: Number.POSITIVE_INFINITY, perDay: 3, freeFirst: false },
+    ],
+  ] as const)("%s including %i with %j", (plan, included, changes, caps) =>
+    expect(auditCapsOf(snapshot(changes), plan, included)).toEqual(caps),
+  );
 
-  it("no setting holds a plan's included volume any more (the catalogue does)", () => expect(Object.keys(snapshot({}))).not.toContain("plans.pro.auditsPerMonth"));
+  it("no setting holds a plan's included volume any more (the catalogue does)", () =>
+    expect(Object.keys(snapshot({}))).not.toContain("plans.pro.auditsPerMonth"));
 });
 
 describe("what the browser may know", () => {
   it("is the limits, the features it shows and the payment display — nothing else", () => {
     const c = clientConfigOf(snapshot({ "features.keepDocuments": false, "payments.display": "live" }));
-    expect(c).toEqual({ maxFileBytes: 10 * 1024 * 1024, allowedTypes: ["pdf", "text", "image", "word"], features: { keepDocuments: false, ownStorage: true, documentInsight: true, assistant: false, batches: true }, payments: { enabled: true, display: "live" }, avatars: { enabled: true, maxBytes: 512 * 1024, seeds: ["v1", "v2", "v3", "v4", "v5", "v6"] } });
+    expect(c).toEqual({
+      maxFileBytes: 10 * 1024 * 1024,
+      allowedTypes: ["pdf", "text", "image", "word"],
+      features: { keepDocuments: false, ownStorage: true, documentInsight: true, assistant: false, batches: true },
+      payments: { enabled: true, display: "live" },
+      avatars: { enabled: true, maxBytes: 512 * 1024, seeds: ["v1", "v2", "v3", "v4", "v5", "v6"] },
+    });
   });
 
   it("says which avatars the administrator allows, how heavy an uploaded one may be, and whether avatars are on", () => {
-    const c = clientConfigOf(snapshot({ "features.collectionAvatars": false, "limits.avatarMaxKb": 128, "features.avatarSet": ["v2", "v3"] }));
+    const c = clientConfigOf(
+      snapshot({ "features.collectionAvatars": false, "limits.avatarMaxKb": 128, "features.avatarSet": ["v2", "v3"] }),
+    );
     expect(c.avatars).toEqual({ enabled: false, maxBytes: 128 * 1024, seeds: ["v2", "v3"] });
   });
 });

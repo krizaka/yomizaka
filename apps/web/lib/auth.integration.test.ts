@@ -1,6 +1,9 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-const jar = vi.hoisted(() => ({ set: [] as { name: string; value: string; httpOnly: boolean; sameSite: string; path: string; expires: Date }[], deleted: [] as string[] }));
+const jar = vi.hoisted(() => ({
+  set: [] as { name: string; value: string; httpOnly: boolean; sameSite: string; path: string; expires: Date }[],
+  deleted: [] as string[],
+}));
 vi.mock("next/headers", () => ({
   cookies: async () => ({
     get: () => undefined,
@@ -31,8 +34,13 @@ const enabled = process.env.YOMIZAKA_DB_IT === "1" && !!process.env.DATABASE_URL
 
 const PASSWORD = "correct horse battery staple";
 const post = (path: string, body: unknown, headers: Record<string, string> = {}) =>
-  new Request(`http://localhost${path}`, { method: "POST", headers: { "content-type": "application/json", "x-forwarded-for": "203.0.113.40", ...headers }, body: JSON.stringify(body) });
-const as = (token: string, headers: Record<string, string> = {}) => new Request("http://localhost/api/anything", { headers: { cookie: `${SESSION_COOKIE}=${token}`, ...headers } });
+  new Request(`http://localhost${path}`, {
+    method: "POST",
+    headers: { "content-type": "application/json", "x-forwarded-for": "203.0.113.40", ...headers },
+    body: JSON.stringify(body),
+  });
+const as = (token: string, headers: Record<string, string> = {}) =>
+  new Request("http://localhost/api/anything", { headers: { cookie: `${SESSION_COOKIE}=${token}`, ...headers } });
 const refusalOf = async (run: Promise<unknown>) => {
   try {
     await run;
@@ -73,7 +81,8 @@ describe.runIf(enabled)("sign-in, sessions and the administration's locks", () =
     vi.unstubAllEnvs();
   });
 
-  const login = async (who: string, password = PASSWORD, headers: Record<string, string> = {}) => signIn(post("/api/auth/sign-in", { email: emailOf(who), password }, headers));
+  const login = async (who: string, password = PASSWORD, headers: Record<string, string> = {}) =>
+    signIn(post("/api/auth/sign-in", { email: emailOf(who), password }, headers));
 
   it("login: the right password opens a session — an HttpOnly, SameSite=Lax cookie holding a ys1 token, kept only as a keyed hash", async () => {
     const res = await login("user");
@@ -81,27 +90,40 @@ describe.runIf(enabled)("sign-in, sessions and the administration's locks", () =
     const cookie = jar.set[0]!;
     expect(cookie).toMatchObject({ name: SESSION_COOKIE, httpOnly: true, sameSite: "lax", path: "/" });
     expect(cookie.value).toMatch(/^ys1\.[A-Za-z0-9_-]{43}$/);
-    const stored = await query<{ token_hash: string; ip: string | null }>("SELECT token_hash, ip FROM sessions WHERE account_id = $1", [ids.user]);
+    const stored = await query<{ token_hash: string; ip: string | null }>(
+      "SELECT token_hash, ip FROM sessions WHERE account_id = $1",
+      [ids.user],
+    );
     expect(stored.length).toBeGreaterThan(0);
     expect(stored.every((s) => !s.token_hash.includes(cookie.value) && /^[0-9a-f]{64}$/.test(s.token_hash))).toBe(true);
     expect(stored.at(-1)?.ip).toBe("203.0.113.40");
     expect((await resolveSession(cookie.value))?.account.email).toBe(emailOf("user"));
     // the session lasts the setting's days (14 by default)
-    const [{ days }] = await query<{ days: number }>("SELECT round(extract(epoch FROM (max(expires_at) - now())) / 86400)::int AS days FROM sessions WHERE account_id = $1", [ids.user]);
+    const [{ days }] = await query<{ days: number }>(
+      "SELECT round(extract(epoch FROM (max(expires_at) - now())) / 86400)::int AS days FROM sessions WHERE account_id = $1",
+      [ids.user],
+    );
     expect(days).toBe(14);
   });
 
   it("login: a native client gets the token for a bearer, no cookie", async () => {
-    const res = await signIn(post("/api/auth/sign-in", { email: emailOf("user"), password: PASSWORD, client: "native" }));
+    const res = await signIn(
+      post("/api/auth/sign-in", { email: emailOf("user"), password: PASSWORD, client: "native" }),
+    );
     const body = await res.json();
     expect(jar.set).toEqual([]);
     expect((await resolveSession(body.token))?.account.id).toBe(ids.user);
-    expect((await requireSession(new Request("http://localhost/x", { headers: { authorization: `Bearer ${body.token}` } }))).account.id).toBe(ids.user);
+    expect(
+      (await requireSession(new Request("http://localhost/x", { headers: { authorization: `Bearer ${body.token}` } })))
+        .account.id,
+    ).toBe(ids.user);
   });
 
   it("login: a wrong password and an unknown address get the same 401; a suspended account is refused only with the right password", async () => {
     const wrong = await login("user", "not the password at all");
-    const unknown = await signIn(post("/api/auth/sign-in", { email: `nobody-${stamp}@yomizaka.test`, password: PASSWORD }));
+    const unknown = await signIn(
+      post("/api/auth/sign-in", { email: `nobody-${stamp}@yomizaka.test`, password: PASSWORD }),
+    );
     expect([wrong.status, unknown.status]).toEqual([401, 401]);
     expect(await wrong.json()).toEqual(await unknown.json());
     expect((await login("suspended", "not the password at all")).status).toBe(401);
@@ -127,7 +149,10 @@ describe.runIf(enabled)("sign-in, sessions and the administration's locks", () =
     expect((await signOut(as(token))).status).toBe(204);
     expect(jar.deleted).toContain(SESSION_COOKIE);
     expect(await resolveSession(token)).toBeNull();
-    expect(await refusalOf(requireSession(as(token)))).toMatchObject({ status: 401, body: { code: "UNAUTHENTICATED" } });
+    expect(await refusalOf(requireSession(as(token)))).toMatchObject({
+      status: 401,
+      body: { code: "UNAUTHENTICATED" },
+    });
     expect((await signOut(as(token))).status).toBe(204);
   });
 
@@ -144,7 +169,10 @@ describe.runIf(enabled)("sign-in, sessions and the administration's locks", () =
     resetAppSettings();
     await appSettings().set({ id: null, label: "test" }, GLOBAL, "auth.sessionDays", 3, new Date());
     await login("admin");
-    const [{ days }] = await query<{ days: number }>("SELECT round(extract(epoch FROM (expires_at - now())) / 86400)::int AS days FROM sessions WHERE account_id = $1 ORDER BY created_at DESC LIMIT 1", [ids.admin]);
+    const [{ days }] = await query<{ days: number }>(
+      "SELECT round(extract(epoch FROM (expires_at - now())) / 86400)::int AS days FROM sessions WHERE account_id = $1 ORDER BY created_at DESC LIMIT 1",
+      [ids.admin],
+    );
     expect(days).toBe(3);
   });
 
@@ -171,16 +199,39 @@ describe.runIf(enabled)("sign-in, sessions and the administration's locks", () =
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("AUTH_SESSION_SECRET", "t".repeat(40));
     vi.stubEnv("ABUSE_CLIENT_IP_HEADER", "do-connecting-ip");
-    const userToken = (await (await signIn(post("/api/auth/sign-in", { email: emailOf("user"), password: PASSWORD, client: "native" }))).json()).token as string;
-    const adminToken = (await (await signIn(post("/api/auth/sign-in", { email: emailOf("admin"), password: PASSWORD, client: "native" }))).json()).token as string;
-    const from = (token: string | null, ip: string) => new Request("http://localhost/api/admin/x", { headers: { ...(token ? { authorization: `Bearer ${token}` } : {}), "do-connecting-ip": ip } });
-    expect(await refusalOf(requireAdmin(from(null, "203.0.113.50")))).toMatchObject({ status: 401, body: { code: "UNAUTHENTICATED" } });
-    expect(await refusalOf(requireAdmin(from(userToken, "203.0.113.50")))).toMatchObject({ status: 403, body: { code: "FORBIDDEN" } });
-    expect(await refusalOf(requireAdmin(from(adminToken, "198.51.100.9")))).toMatchObject({ status: 403, body: { code: "IP_NOT_ALLOWED" } });
+    const userToken = (
+      await (
+        await signIn(post("/api/auth/sign-in", { email: emailOf("user"), password: PASSWORD, client: "native" }))
+      ).json()
+    ).token as string;
+    const adminToken = (
+      await (
+        await signIn(post("/api/auth/sign-in", { email: emailOf("admin"), password: PASSWORD, client: "native" }))
+      ).json()
+    ).token as string;
+    const from = (token: string | null, ip: string) =>
+      new Request("http://localhost/api/admin/x", {
+        headers: { ...(token ? { authorization: `Bearer ${token}` } : {}), "do-connecting-ip": ip },
+      });
+    expect(await refusalOf(requireAdmin(from(null, "203.0.113.50")))).toMatchObject({
+      status: 401,
+      body: { code: "UNAUTHENTICATED" },
+    });
+    expect(await refusalOf(requireAdmin(from(userToken, "203.0.113.50")))).toMatchObject({
+      status: 403,
+      body: { code: "FORBIDDEN" },
+    });
+    expect(await refusalOf(requireAdmin(from(adminToken, "198.51.100.9")))).toMatchObject({
+      status: 403,
+      body: { code: "IP_NOT_ALLOWED" },
+    });
     expect((await requireAdmin(from(adminToken, "203.0.113.50"))).account.role).toBe("ADMIN");
     // an empty list in production is nobody
     vi.stubEnv("AUTH_ALLOWED_IPS", "");
-    expect(await refusalOf(requireAdmin(from(adminToken, "203.0.113.50")))).toMatchObject({ status: 403, body: { code: "IP_NOT_ALLOWED" } });
+    expect(await refusalOf(requireAdmin(from(adminToken, "203.0.113.50")))).toMatchObject({
+      status: 403,
+      body: { code: "IP_NOT_ALLOWED" },
+    });
     expect(sessionTokenOf(new Headers({ authorization: `Bearer ${adminToken}` }))).toBe(adminToken);
   });
 });

@@ -11,6 +11,9 @@ export function useLocale(): { locale: Locale; setLocale: (next: Locale) => void
   const inPath = /^\/(fr|en)(\/|$)/.exec(pathname)?.[1];
   const locale = inPath ? asLocale(inPath) : currentLocale();
   React.useEffect(() => setCurrentLocale(locale), [locale]);
-  const setLocale = React.useCallback((next: Locale) => router.replace(pathname.replace(/^\/(fr|en)(?=\/|$)/, `/${next}`) as never), [pathname, router]);
+  const setLocale = React.useCallback(
+    (next: Locale) => router.replace(pathname.replace(/^\/(fr|en)(?=\/|$)/, `/${next}`) as never),
+    [pathname, router],
+  );
   return { locale, setLocale };
 }

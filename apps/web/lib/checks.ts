@@ -1,4 +1,13 @@
-import type { Analysis, AnalysisStatus, Audience, DocumentKind, DocumentStatus, FlowEnvironment, StartAnalysis, Studio } from "@yomizaka/core";
+import type {
+  Analysis,
+  AnalysisStatus,
+  Audience,
+  DocumentKind,
+  DocumentStatus,
+  FlowEnvironment,
+  StartAnalysis,
+  Studio,
+} from "@yomizaka/core";
 
 import { storeForDocument } from "@/app/active-store";
 
@@ -20,9 +29,21 @@ import { settingsFor } from "./settings/guards";
  */
 export type StartedCheck = { analysis: Analysis; reused: true } | { analysis: Analysis; reused: false; via: AuditVia };
 
-export async function startCheck(account: { id: string; perspective: Audience | null }, documentId: string, request: StartAnalysis, now: Date, environment: FlowEnvironment): Promise<StartedCheck> {
-  if (request.studio === "document-authenticity" && (await isPhotoDocument(account.id, documentId))) throw refuse(422, "PHOTO_AUTHENTICITY", "A document made from photos has no file of its own to examine");
-  const { flowVersionId } = await resolveStart(account, request.studio, environment, request.studio === "compliance-check" ? request.ruleset : undefined);
+export async function startCheck(
+  account: { id: string; perspective: Audience | null },
+  documentId: string,
+  request: StartAnalysis,
+  now: Date,
+  environment: FlowEnvironment,
+): Promise<StartedCheck> {
+  if (request.studio === "document-authenticity" && (await isPhotoDocument(account.id, documentId)))
+    throw refuse(422, "PHOTO_AUTHENTICITY", "A document made from photos has no file of its own to examine");
+  const { flowVersionId } = await resolveStart(
+    account,
+    request.studio,
+    environment,
+    request.studio === "compliance-check" ? request.ruleset : undefined,
+  );
   const settings = await settingsFor(account.id);
   const reusable = await findReusableAnalysis(query, {
     reuseDays: settings["limits.reuseDays"].value as number,
@@ -40,7 +61,18 @@ export async function startCheck(account: { id: string; perspective: Audience | 
   }
   const via = await reserveAudit(query, account.id, now, capsFor(settings, now));
   try {
-    return { analysis: await startAnalysis(account.id, documentId, request, flowVersionId, via, await storeForDocument(account.id, documentId)), reused: false, via };
+    return {
+      analysis: await startAnalysis(
+        account.id,
+        documentId,
+        request,
+        flowVersionId,
+        via,
+        await storeForDocument(account.id, documentId),
+      ),
+      reused: false,
+      via,
+    };
   } catch (error) {
     await releaseAudit(query, account.id, via);
     throw error;
@@ -84,5 +116,14 @@ export async function listChecks(q: Query, owner: string, limit = 500): Promise<
       LIMIT $2`,
     [owner, limit],
   );
-  return rows.map((r) => ({ id: r.id, documentId: r.document_id, title: r.title, kind: r.kind, studio: r.studio, result: documentStatus([{ status: r.status, attention: r.attention }]), runId: r.run_id, at: r.at.toISOString() }));
+  return rows.map((r) => ({
+    id: r.id,
+    documentId: r.document_id,
+    title: r.title,
+    kind: r.kind,
+    studio: r.studio,
+    result: documentStatus([{ status: r.status, attention: r.attention }]),
+    runId: r.run_id,
+    at: r.at.toISOString(),
+  }));
 }

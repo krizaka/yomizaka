@@ -9,5 +9,8 @@ export const dynamic = "force-dynamic";
 export const GET = (req: Request) =>
   handle(async () => {
     await requireAdmin(req);
-    return Response.json({ code: await guarded(() => coupons.admin.generateCode(query)) }, { headers: { "Cache-Control": "private, no-store" } });
+    return Response.json(
+      { code: await guarded(() => coupons.admin.generateCode(query)) },
+      { headers: { "Cache-Control": "private, no-store" } },
+    );
   });

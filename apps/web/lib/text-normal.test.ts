@@ -42,7 +42,9 @@ describe("extracted text is normalised", () => {
 
 describe("the title comes from the normalised text when the filename says nothing", () => {
   it("uses the first line of the text for a scan name", () => {
-    expect(titleFor("IMG_2041.pdf", "\nReçu d’inscription d’une entreprise en démarrage\nRéférence 123")).toBe("Reçu d’inscription d’une entreprise en démarrage");
+    expect(titleFor("IMG_2041.pdf", "\nReçu d’inscription d’une entreprise en démarrage\nRéférence 123")).toBe(
+      "Reçu d’inscription d’une entreprise en démarrage",
+    );
     expect(titleFor("scan 3.pdf", "Bail de logement\n…")).toBe("Bail de logement");
   });
   it("keeps a meaningful filename", () => {

@@ -18,5 +18,12 @@ export default async function CheckPage() {
   const session = await pageSession();
   const offer = offerFor(await availableFlows(appEnvironment()), session?.account.perspective ?? null);
   const now = new Date();
-  return <CheckView jurisdictions={offer.jurisdictions} catalogue={catalogueOf(offer)} credits={session ? await creditsOf(session.account.id, now) : null} now={displayNow(now, appEnvironment(), appVisualNow()).toISOString()} />;
+  return (
+    <CheckView
+      jurisdictions={offer.jurisdictions}
+      catalogue={catalogueOf(offer)}
+      credits={session ? await creditsOf(session.account.id, now) : null}
+      now={displayNow(now, appEnvironment(), appVisualNow()).toISOString()}
+    />
+  );
 }

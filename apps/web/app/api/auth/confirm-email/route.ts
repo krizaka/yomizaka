@@ -14,7 +14,16 @@ export function POST(req: Request) {
     const form = await req.formData().catch(() => null);
     const locale = asLocale(fieldText(form, "locale"));
     const result = await accountService().confirmEmailChange(fieldText(form, "token"), new Date());
-    if (result === "CHANGED") await audit({ action: "profile.email_changed", actorId: null, actorLabel: "e-mail change link", headers: req.headers });
-    return Response.redirect(`${env().APP_PUBLIC_URL}/${locale}/app/settings/securite?email=${result === "CHANGED" ? "changed" : "invalid"}`, 303);
+    if (result === "CHANGED")
+      await audit({
+        action: "profile.email_changed",
+        actorId: null,
+        actorLabel: "e-mail change link",
+        headers: req.headers,
+      });
+    return Response.redirect(
+      `${env().APP_PUBLIC_URL}/${locale}/app/settings/securite?email=${result === "CHANGED" ? "changed" : "invalid"}`,
+      303,
+    );
   });
 }

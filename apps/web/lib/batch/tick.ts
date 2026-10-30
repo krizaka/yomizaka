@@ -35,7 +35,12 @@ interface Due {
 }
 
 /** The batches to advance now, oldest first. */
-export async function dueBatches(now: Date, maxAgeHours: number, limit: number, owners?: readonly string[]): Promise<Due[]> {
+export async function dueBatches(
+  now: Date,
+  maxAgeHours: number,
+  limit: number,
+  owners?: readonly string[],
+): Promise<Due[]> {
   const since = subHours(now, maxAgeHours);
   return query<Due>(
     `SELECT b.id, b.owner_id, a.perspective FROM batches b JOIN accounts a ON a.id = b.owner_id
@@ -46,17 +51,35 @@ export async function dueBatches(now: Date, maxAgeHours: number, limit: number, 
 }
 
 /** `owners` narrows the look to some accounts (tests share a database; the server passes none). */
-export async function tickBatches(now: Date, environment: FlowEnvironment, log: (message: string, error?: unknown) => void = () => undefined, owners?: readonly string[]): Promise<TickReport> {
+export async function tickBatches(
+  now: Date,
+  environment: FlowEnvironment,
+  log: (message: string, error?: unknown) => void = () => undefined,
+  owners?: readonly string[],
+): Promise<TickReport> {
   const report = await withAdvisoryLock(TICK_LOCK, async (): Promise<TickReport> => {
     const global = await appSettings().snapshot();
-    const due = await dueBatches(now, global["limits.batchTickMaxAgeHours"].value as number, global["limits.batchTickBatches"].value as number, owners);
+    const due = await dueBatches(
+      now,
+      global["limits.batchTickMaxAgeHours"].value as number,
+      global["limits.batchTickBatches"].value as number,
+      owners,
+    );
     let advanced = 0;
     let failed = 0;
     for (const batch of due) {
       try {
-        const view = await advanceBatch({ id: batch.owner_id, perspective: batch.perspective as never }, batch.id, { settings: await settingsFor(batch.owner_id), now, environment });
+        const view = await advanceBatch({ id: batch.owner_id, perspective: batch.perspective as never }, batch.id, {
+          settings: await settingsFor(batch.owner_id),
+          now,
+          environment,
+        });
         advanced++;
-        if (waitsForAccount(view.pausedBy)) await query("UPDATE batches SET tick_after = $2 WHERE id = $1", [batch.id, addMinutes(now, ACCOUNT_WAIT_MINUTES)]);
+        if (waitsForAccount(view.pausedBy))
+          await query("UPDATE batches SET tick_after = $2 WHERE id = $1", [
+            batch.id,
+            addMinutes(now, ACCOUNT_WAIT_MINUTES),
+          ]);
         else await query("UPDATE batches SET tick_after = NULL WHERE id = $1 AND tick_after IS NOT NULL", [batch.id]);
       } catch (error) {
         failed++;

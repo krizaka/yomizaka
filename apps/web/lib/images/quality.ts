@@ -89,7 +89,12 @@ function edgeInk(gray: Gray, rules: QualityRules): number {
     }
     return total ? ink / total : 0;
   };
-  return Math.max(share(0, bandX, 0, height), share(width - bandX, width, 0, height), share(0, width, 0, bandY), share(0, width, height - bandY, height));
+  return Math.max(
+    share(0, bandX, 0, height),
+    share(width - bandX, width, 0, height),
+    share(0, width, 0, bandY),
+    share(0, width, height - bandY, height),
+  );
 }
 
 /** The page without its rim. */
@@ -98,7 +103,8 @@ function trimmed(gray: Gray, rim: number): Gray {
   const [width, height] = [gray.width - 2 * dx, gray.height - 2 * dy];
   if (dx === 0 && dy === 0) return gray;
   const data = new Uint8Array(width * height);
-  for (let y = 0; y < height; y++) data.set(gray.data.subarray((y + dy) * gray.width + dx, (y + dy) * gray.width + dx + width), y * width);
+  for (let y = 0; y < height; y++)
+    data.set(gray.data.subarray((y + dy) * gray.width + dx, (y + dy) * gray.width + dx + width), y * width);
   return { data, width, height };
 }
 
@@ -108,7 +114,11 @@ function trimmed(gray: Gray, rim: number): Gray {
  */
 export function assessQuality(page: Gray, rules: QualityRules, framed: boolean): PhotoQuality {
   const gray = trimmed(page, rules.rim);
-  return { sharpness: laplacianVariance(gray), glareShare: glareShare(gray, rules), edgeInk: framed ? edgeInk(gray, rules) : 0 };
+  return {
+    sharpness: laplacianVariance(gray),
+    glareShare: glareShare(gray, rules),
+    edgeInk: framed ? edgeInk(gray, rules) : 0,
+  };
 }
 
 /** The first thing wrong with a photo, or null when it can be read. A blur comes first: nothing else matters when the text has no edges. */

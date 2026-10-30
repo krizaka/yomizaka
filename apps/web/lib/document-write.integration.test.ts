@@ -16,11 +16,28 @@ describe.runIf(enabled)("the write path puts bytes in the store (ADR-0012)", () 
   beforeAll(async () => {
     await migrate();
   });
-  const account = async () => (await query<{ id: string }>("INSERT INTO accounts (email, password_hash, email_verified_at) VALUES ($1, 'x', now()) RETURNING id", [`w-${Math.random().toString(36).slice(2)}@yomizaka.test`]))[0]!.id;
+  const account = async () =>
+    (
+      await query<{ id: string }>(
+        "INSERT INTO accounts (email, password_hash, email_verified_at) VALUES ($1, 'x', now()) RETURNING id",
+        [`w-${Math.random().toString(36).slice(2)}@yomizaka.test`],
+      )
+    )[0]!.id;
   const bytes = (n: string) => new TextEncoder().encode(`${TEXT}${n}`);
-  const mem = (kind: "none" | "bunny" = "none") => memoryStore({ kind, devOnly: true, owner: "krizaka", residency: "elsewhere" });
-  const policy = (keep: boolean, working: ReturnType<typeof mem> | null, store: ReturnType<typeof mem> | ReturnType<typeof noneStore> = noneStore()): StoragePolicy => ({ keep, store, working, now: NOW, purgeAfterHours: 24 });
-  const rowOf = async (id: string) => (await query<{ object_key: string | null; len: number; storage: string }>("SELECT object_key, octet_length(content) AS len, storage FROM documents WHERE id = $1", [id]))[0]!;
+  const mem = (kind: "none" | "bunny" = "none") =>
+    memoryStore({ kind, devOnly: true, owner: "krizaka", residency: "elsewhere" });
+  const policy = (
+    keep: boolean,
+    working: ReturnType<typeof mem> | null,
+    store: ReturnType<typeof mem> | ReturnType<typeof noneStore> = noneStore(),
+  ): StoragePolicy => ({ keep, store, working, now: NOW, purgeAfterHours: 24 });
+  const rowOf = async (id: string) =>
+    (
+      await query<{ object_key: string | null; len: number; storage: string }>(
+        "SELECT object_key, octet_length(content) AS len, storage FROM documents WHERE id = $1",
+        [id],
+      )
+    )[0]!;
 
   it("a not-kept document: bytes in the working store under its key, the column empty, readable until the purge", async () => {
     const owner = await account();
@@ -71,13 +88,19 @@ describe.runIf(enabled)("the write path puts bytes in the store (ADR-0012)", () 
         throw new Error("down");
       },
     };
-    await expect(storeDocument(owner, file, bytes("e"), "lease", policy(false, broken))).rejects.toMatchObject({ status: 502, body: { code: "STORAGE_UNAVAILABLE" } });
+    await expect(storeDocument(owner, file, bytes("e"), "lease", policy(false, broken))).rejects.toMatchObject({
+      status: 502,
+      body: { code: "STORAGE_UNAVAILABLE" },
+    });
     expect(await query("SELECT 1 FROM documents WHERE owner_id = $1", [owner])).toHaveLength(0);
   });
 
   it("production without a store refuses uploads (503) before anything is written", async () => {
     const owner = await account();
-    await expect(storeDocument(owner, file, bytes("f"), "lease", policy(false, null))).rejects.toMatchObject({ status: 503, body: { code: "STORAGE_UNAVAILABLE" } });
+    await expect(storeDocument(owner, file, bytes("f"), "lease", policy(false, null))).rejects.toMatchObject({
+      status: 503,
+      body: { code: "STORAGE_UNAVAILABLE" },
+    });
     expect(await query("SELECT 1 FROM documents WHERE owner_id = $1", [owner])).toHaveLength(0);
   });
 
@@ -85,6 +108,8 @@ describe.runIf(enabled)("the write path puts bytes in the store (ADR-0012)", () 
     const owner = await account();
     await storeDocument(owner, file, bytes("g"), "lease", policy(false, mem()));
     await storeDocument(owner, file, bytes("h"), "lease", policy(true, mem()));
-    expect(await query("SELECT 1 FROM documents WHERE owner_id = $1 AND octet_length(content) > 0", [owner])).toHaveLength(0);
+    expect(
+      await query("SELECT 1 FROM documents WHERE owner_id = $1 AND octet_length(content) > 0", [owner]),
+    ).toHaveLength(0);
   });
 });

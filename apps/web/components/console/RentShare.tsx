@@ -20,10 +20,20 @@ export function centsOf(text: string): number | undefined {
 }
 
 /** What the two figures give, as the sentences to show: the share (or the « no figure » line), then the note and the disclaimer. Pure. */
-export function rentShareSentences(rent: string, income: string, locale: "en" | "fr", words: RentShareWords): string[] | null {
+export function rentShareSentences(
+  rent: string,
+  income: string,
+  locale: "en" | "fr",
+  words: RentShareWords,
+): string[] | null {
   if (!rent.trim() && !income.trim()) return null;
   const result = checkAffordability({ rentCents: centsOf(rent) ?? 0, monthlyIncomeCents: centsOf(income) });
-  const share = result.code === "share" ? new Intl.NumberFormat(TAG[locale], { style: "percent", maximumFractionDigits: 1 }).format(result.figures.shareBasisPoints / 10_000) : "";
+  const share =
+    result.code === "share"
+      ? new Intl.NumberFormat(TAG[locale], { style: "percent", maximumFractionDigits: 1 }).format(
+          result.figures.shareBasisPoints / 10_000,
+        )
+      : "";
   const head = result.code === "share" ? words.share.replace("{share}", share) : words["no-claim"];
   return [head, words.note, words.disclaimer];
 }
@@ -39,7 +49,12 @@ export function RentShare({ words }: Readonly<{ words: RentShareWords }>) {
   const [income, setIncome] = useState("");
   const sentences = rentShareSentences(rent, income, locale, words);
   return (
-    <section aria-labelledby="rent-share-title" className="flex flex-col gap-3" data-testid="rent-share" data-rule={AFFORDABILITY_RULE.id}>
+    <section
+      aria-labelledby="rent-share-title"
+      className="flex flex-col gap-3"
+      data-testid="rent-share"
+      data-rule={AFFORDABILITY_RULE.id}
+    >
       <h2 id="rent-share-title" className="m-0 text-lg font-bold text-fg">
         {say("dossiers.rentShare.title")}
       </h2>
@@ -47,15 +62,31 @@ export function RentShare({ words }: Readonly<{ words: RentShareWords }>) {
       <div className="grid gap-3 sm:grid-cols-2">
         <Field.Root>
           <Field.Label htmlFor="rent-share-rent">{say("dossiers.rentShare.rent")}</Field.Label>
-          <Input id="rent-share-rent" inputMode="decimal" autoComplete="off" value={rent} onChange={(e) => setRent(e.target.value)} />
+          <Input
+            id="rent-share-rent"
+            inputMode="decimal"
+            autoComplete="off"
+            value={rent}
+            onChange={(e) => setRent(e.target.value)}
+          />
         </Field.Root>
         <Field.Root>
           <Field.Label htmlFor="rent-share-income">{say("dossiers.rentShare.income")}</Field.Label>
-          <Input id="rent-share-income" inputMode="decimal" autoComplete="off" value={income} onChange={(e) => setIncome(e.target.value)} />
+          <Input
+            id="rent-share-income"
+            inputMode="decimal"
+            autoComplete="off"
+            value={income}
+            onChange={(e) => setIncome(e.target.value)}
+          />
         </Field.Root>
       </div>
       <div aria-live="polite" data-testid="rent-share-result" className="flex flex-col gap-2 text-sm text-fg-secondary">
-        {sentences?.map((s) => <p key={s} className="m-0">{s}</p>)}
+        {sentences?.map((s) => (
+          <p key={s} className="m-0">
+            {s}
+          </p>
+        ))}
       </div>
     </section>
   );

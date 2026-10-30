@@ -13,7 +13,11 @@ export const GET = (req: Request, { params }: Params) =>
     const url = new URL(req.url);
     const folder = url.searchParams.get("folder");
     await ownedCollection(q, owner, id);
-    const { documentIds } = await browse(q, owner, { collectionId: id, folderId: folder && isId(folder) ? folder : undefined, tagIds: parseTagsParam(url.searchParams.get("tags") ?? undefined) });
+    const { documentIds } = await browse(q, owner, {
+      collectionId: id,
+      folderId: folder && isId(folder) ? folder : undefined,
+      tagIds: parseTagsParam(url.searchParams.get("tags") ?? undefined),
+    });
     return { folders: await foldersOf(q, owner, id), documents: await documentsByIds(owner, documentIds) };
   });
 

@@ -27,7 +27,8 @@ export function POST(req: Request) {
     const parsedToken = token.safeParse(form?.get("token"));
     const parsedType = typeId.safeParse(form?.get("typeId"));
     const file = form?.get("file");
-    if (!parsedToken.success || !parsedType.success || !(file instanceof File)) throw refuse(400, "BAD_REQUEST", "A token, a document type and a file are expected");
+    if (!parsedToken.success || !parsedType.success || !(file instanceof File))
+      throw refuse(400, "BAD_REQUEST", "A token, a document type and a file are expected");
     const link = await fileByToken(parsedToken.data);
     const stores = await storesOf(link.landlord_id);
     const settings = await settingsFor(link.landlord_id);

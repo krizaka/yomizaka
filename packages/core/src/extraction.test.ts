@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import { ExtractionNotReady, isExtracting, waitForExtraction } from "./extraction";
 
-const sequence = (...states: Array<{ extraction?: "queued" | "running" | "done" | "failed"; extractionError?: string | null }>) => {
+const sequence = (
+  ...states: Array<{ extraction?: "queued" | "running" | "done" | "failed"; extractionError?: string | null }>
+) => {
   let i = 0;
   return async () => states[Math.min(i++, states.length - 1)]!;
 };
@@ -22,18 +24,32 @@ describe("waiting for a document's text", () => {
   });
 
   it("rejects with the reason when the reading failed", async () => {
-    const error = await waitForExtraction(sequence({ extraction: "running" }, { extraction: "failed", extractionError: "FILE_TOO_COMPLEX" }), { sleep: noSleep }).catch((e: unknown) => e);
+    const error = await waitForExtraction(
+      sequence({ extraction: "running" }, { extraction: "failed", extractionError: "FILE_TOO_COMPLEX" }),
+      { sleep: noSleep },
+    ).catch((e: unknown) => e);
     expect(error).toBeInstanceOf(ExtractionNotReady);
     expect(error).toMatchObject({ status: "failed", reason: "FILE_TOO_COMPLEX" });
   });
 
   it("gives up at the deadline", async () => {
     let clock = 0;
-    const error = await waitForExtraction(sequence({ extraction: "queued" }), { deadlineMs: 1000, intervalMs: 400, sleep: async (ms) => void (clock += ms), now: () => clock }).catch((e: unknown) => e);
+    const error = await waitForExtraction(sequence({ extraction: "queued" }), {
+      deadlineMs: 1000,
+      intervalMs: 400,
+      sleep: async (ms) => void (clock += ms),
+      now: () => clock,
+    }).catch((e: unknown) => e);
     expect(error).toMatchObject({ status: "timeout" });
   });
 
   it("knows what is still being read", () => {
-    expect([undefined, "queued", "running", "done", "failed"].map((s) => isExtracting(s as never))).toEqual([false, true, true, false, false]);
+    expect([undefined, "queued", "running", "done", "failed"].map((s) => isExtracting(s as never))).toEqual([
+      false,
+      true,
+      true,
+      false,
+      false,
+    ]);
   });
 });

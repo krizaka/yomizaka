@@ -75,7 +75,9 @@ export async function main(check = process.argv.includes("--check")) {
     console.log(`${dest}  <-  ${key}`);
   }
   if (!check) {
-    const lock = Object.fromEntries(Object.keys(ICONS).map((file) => [`brand/${BRAND}/${file}`, hashes[`brand/${BRAND}/${file}`]]));
+    const lock = Object.fromEntries(
+      Object.keys(ICONS).map((file) => [`brand/${BRAND}/${file}`, hashes[`brand/${BRAND}/${file}`]]),
+    );
     await writeFile(LOCK, `${JSON.stringify(lock, null, 2)}\n`);
   }
   if (drift) process.exit(1);

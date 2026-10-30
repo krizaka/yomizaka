@@ -24,13 +24,28 @@ const attempts = createLimiter({
   onStoreError: (error, action) => logError(`coupons: limiter store failed for ${action}`, error),
 });
 
-export const coupons = createCoupons({ clock: systemClock, settings, audit: trail, rateLimit: attempts, credits: ledger });
+export const coupons = createCoupons({
+  clock: systemClock,
+  settings,
+  audit: trail,
+  rateLimit: attempts,
+  credits: ledger,
+});
 
 /** A refusal of the package, as the API answers it (the code is the client's message key; `Retry-After` on a rate limit). */
 export function couponRefusal(error: unknown): unknown {
   if (!(error instanceof CouponError)) return error;
-  const headers: Record<string, string> = error.retryAfterSeconds === undefined ? {} : { "Retry-After": String(error.retryAfterSeconds) };
-  return new HttpError(error.status, error.message, { code: error.code, ...(error.retryAfterSeconds === undefined ? {} : { retryAfterSeconds: error.retryAfterSeconds }) }, headers);
+  const headers: Record<string, string> =
+    error.retryAfterSeconds === undefined ? {} : { "Retry-After": String(error.retryAfterSeconds) };
+  return new HttpError(
+    error.status,
+    error.message,
+    {
+      code: error.code,
+      ...(error.retryAfterSeconds === undefined ? {} : { retryAfterSeconds: error.retryAfterSeconds }),
+    },
+    headers,
+  );
 }
 
 /** Runs the work and turns a package refusal into the API's. */

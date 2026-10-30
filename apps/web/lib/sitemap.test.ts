@@ -17,17 +17,31 @@ describe("sitemap.xml", () => {
   });
 
   it("lists the home, docs, privacy and terms, in en and fr, /pricing while published and /download only while it has an app or a video, nothing else", () => {
-    const paths = ["", "/docs", "/privacy", "/terms", ...(PRICING_PUBLISHED ? ["/pricing"] : []), ...(downloadPageOpen() ? ["/download"] : [])];
+    const paths = [
+      "",
+      "/docs",
+      "/privacy",
+      "/terms",
+      ...(PRICING_PUBLISHED ? ["/pricing"] : []),
+      ...(downloadPageOpen() ? ["/download"] : []),
+    ];
     for (const locale of ["en", "fr"]) for (const path of paths) expect(urls).toContain(`${SITE_URL}/${locale}${path}`);
     expect(urls).toHaveLength(2 * paths.length);
   });
 
   it("lists none of the removed addresses", () => {
-    expect(urls.filter((u) => /\/(run|changelog|tenant|landlord|freelancer|business|locataire|proprietaire|travailleur-autonome|entreprise)$/.test(u))).toEqual([]);
+    expect(
+      urls.filter((u) =>
+        /\/(run|changelog|tenant|landlord|freelancer|business|locataire|proprietaire|travailleur-autonome|entreprise)$/.test(
+          u,
+        ),
+      ),
+    ).toEqual([]);
   });
 
   it("gives every entry en, fr and x-default alternates", () => {
-    for (const e of entries) expect(Object.keys(e.alternates?.languages ?? {}).sort()).toEqual(["en", "fr", "x-default"]);
+    for (const e of entries)
+      expect(Object.keys(e.alternates?.languages ?? {}).sort()).toEqual(["en", "fr", "x-default"]);
   });
 
   it("points x-default to the French page: French is the default language (yomizaka#366)", () => {
@@ -40,9 +54,11 @@ describe("sitemap.xml", () => {
 });
 
 describe("the proxy serves /sitemap.xml and /robots.txt only when the deployment is indexed", () => {
-  const ask = (path: string, host = "www.yomizaka.com") => proxy(new NextRequest(`https://${host}${path}`, { headers: { host } }));
+  const ask = (path: string, host = "www.yomizaka.com") =>
+    proxy(new NextRequest(`https://${host}${path}`, { headers: { host } }));
   const before = process.env.APP_SEARCH_INDEXING;
-  const restore = () => (before === undefined ? delete process.env.APP_SEARCH_INDEXING : (process.env.APP_SEARCH_INDEXING = before));
+  const restore = () =>
+    before === undefined ? delete process.env.APP_SEARCH_INDEXING : (process.env.APP_SEARCH_INDEXING = before);
 
   it("on: passes the request through to the generated sitemap (no 404, no noindex)", async () => {
     process.env.APP_SEARCH_INDEXING = "on";

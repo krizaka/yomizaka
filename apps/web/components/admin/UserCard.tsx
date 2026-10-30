@@ -23,7 +23,8 @@ export function UserCard({ initial }: Readonly<{ initial: UserDetail }>) {
   const [confirming, setConfirming] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const change = useMutation({
-    mutationFn: (to: "suspend" | "restore") => krizakaFetch(`/api/admin/users/${user.id}/${to}`, { method: "POST" }) as Promise<{ user: UserDetail }>,
+    mutationFn: (to: "suspend" | "restore") =>
+      krizakaFetch(`/api/admin/users/${user.id}/${to}`, { method: "POST" }) as Promise<{ user: UserDetail }>,
     onSuccess: (r) => {
       setUser(r.user);
       setConfirming(false);
@@ -65,12 +66,25 @@ export function UserCard({ initial }: Readonly<{ initial: UserDetail }>) {
       {problem ? <Alert tone="danger">{problem}</Alert> : null}
       <DescriptionList
         items={[
-          { term: say("adminConsole.user.role"), details: <Badge tone={user.role === "ADMIN" ? "accent" : "neutral"}>{say(`admin.roles.${user.role}`)}</Badge> },
-          { term: say("adminConsole.user.status"), details: <Badge tone={user.status === "ACTIVE" ? "success" : "danger"}>{say(`admin.states.${user.status}`)}</Badge> },
+          {
+            term: say("adminConsole.user.role"),
+            details: (
+              <Badge tone={user.role === "ADMIN" ? "accent" : "neutral"}>{say(`admin.roles.${user.role}`)}</Badge>
+            ),
+          },
+          {
+            term: say("adminConsole.user.status"),
+            details: (
+              <Badge tone={user.status === "ACTIVE" ? "success" : "danger"}>{say(`admin.states.${user.status}`)}</Badge>
+            ),
+          },
           { term: say("adminConsole.user.documents"), details: String(user.documents) },
           { term: say("adminConsole.user.sessions"), details: String(user.sessions) },
           { term: say("adminConsole.user.created"), details: formatDate(user.createdAt, locale, true) },
-          { term: say("adminConsole.user.lastSeen"), details: user.lastSeenAt ? formatDate(user.lastSeenAt, locale, true) : say("admin.never") },
+          {
+            term: say("adminConsole.user.lastSeen"),
+            details: user.lastSeenAt ? formatDate(user.lastSeenAt, locale, true) : say("admin.never"),
+          },
         ]}
       />
       <UserActions user={user} onChange={setUser} />

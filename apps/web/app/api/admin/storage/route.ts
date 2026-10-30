@@ -3,7 +3,14 @@ import { requireAdmin } from "@/lib/access";
 import { query } from "@/lib/db";
 import { env } from "@/lib/env";
 import { handle, readJson } from "@/lib/http";
-import { addProvider, adminKinds, createProviderInput, guarded, managedProviders, overview } from "@/lib/storage/admin-api";
+import {
+  addProvider,
+  adminKinds,
+  createProviderInput,
+  guarded,
+  managedProviders,
+  overview,
+} from "@/lib/storage/admin-api";
 import { currentMove } from "@/lib/storage/provider-move";
 import { actorOf, ORG_SCOPE } from "@/lib/storage/providers";
 
@@ -14,7 +21,17 @@ export const GET = (req: Request) =>
   handle(async () => {
     await requireAdmin(req);
     const { service, store } = managedProviders(providers);
-    return Response.json(await guarded(() => overview(service, () => store.defaults(ORG_SCOPE), adminKinds(storageRuntime(), env().APP_ENVIRONMENT), () => currentMove(query))), { headers: { "Cache-Control": "private, no-store" } });
+    return Response.json(
+      await guarded(() =>
+        overview(
+          service,
+          () => store.defaults(ORG_SCOPE),
+          adminKinds(storageRuntime(), env().APP_ENVIRONMENT),
+          () => currentMove(query),
+        ),
+      ),
+      { headers: { "Cache-Control": "private, no-store" } },
+    );
   });
 
 /** Adds a provider (a draft), tests it at once and audits it; the answer carries no secret. */

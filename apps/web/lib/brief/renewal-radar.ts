@@ -1,4 +1,11 @@
-import { type BriefAction, type BriefWeek, type Detector, type Recommendation, recommendation, type Urgency } from "@krizaka/brief";
+import {
+  type BriefAction,
+  type BriefWeek,
+  type Detector,
+  type Recommendation,
+  recommendation,
+  type Urgency,
+} from "@krizaka/brief";
 
 import { addDays, addMonths, type Day, daysBetween, formatDay, parseDay } from "./calendar";
 import type { NoticeWindowRule, TalTable, TalYear } from "./tal";
@@ -39,13 +46,20 @@ export interface NoticeWindow {
 }
 
 /** The window of a lease: from `opensMonthsBefore` to `closesMonthsBefore` months before its end — or null when its end or its length is not known. */
-export function noticeWindow(lease: Pick<RadarLease, "endDay" | "durationMonths">, table: TalTable): NoticeWindow | null {
+export function noticeWindow(
+  lease: Pick<RadarLease, "endDay" | "durationMonths">,
+  table: TalTable,
+): NoticeWindow | null {
   const end = parseDay(lease.endDay);
   const months = lease.durationMonths;
   if (!end || months === null) return null;
   const rule = table.windows.find((w) => months >= w.minMonths && (w.maxMonths === undefined || months <= w.maxMonths));
   if (!rule) return null;
-  return { rule, opens: formatDay(addMonths(end, -rule.opensMonthsBefore)), closes: formatDay(addMonths(end, -rule.closesMonthsBefore)) };
+  return {
+    rule,
+    opens: formatDay(addMonths(end, -rule.opensMonthsBefore)),
+    closes: formatDay(addMonths(end, -rule.closesMonthsBefore)),
+  };
 }
 
 export interface IncreaseFigure {
@@ -59,7 +73,8 @@ export interface IncreaseFigure {
   enteredOn: string;
 }
 
-export type IncreaseResult = { figure: IncreaseFigure } | { missing: "NO_YEAR" | "NO_BUILDING_COST"; year: number; need?: string };
+export type IncreaseResult =
+  { figure: IncreaseFigure } | { missing: "NO_YEAR" | "NO_BUILDING_COST"; year: number; need?: string };
 
 const sumComponents = (entry: TalYear, lease: RadarLease): number | { need: string } => {
   let total = 0;
@@ -90,20 +105,40 @@ export function renewalIncrease(lease: RadarLease, table: TalTable): IncreaseRes
   const total = sumComponents(entry, lease);
   if (typeof total !== "number") return { missing: "NO_BUILDING_COST", year, need: total.need };
   const increaseCents = Math.max(0, total);
-  return { figure: { year, increaseCents, increaseBasisPoints: lease.rentCents > 0 ? Math.round((increaseCents * 10_000) / lease.rentCents) : 0, newRentCents: lease.rentCents + increaseCents, sourceUrl: entry.sourceUrl, enteredOn: entry.enteredOn } };
+  return {
+    figure: {
+      year,
+      increaseCents,
+      increaseBasisPoints: lease.rentCents > 0 ? Math.round((increaseCents * 10_000) / lease.rentCents) : 0,
+      newRentCents: lease.rentCents + increaseCents,
+      sourceUrl: entry.sourceUrl,
+      enteredOn: entry.enteredOn,
+    },
+  };
 }
 
 /** What the button does: write the notice, a document the manager sends — payload: the lease, its window, the figure or why there is none, and the source to show. */
 export type GenerateNotice = BriefAction<
   "generate-notice",
-  { leaseId: string; window: { opens: string; closes: string; citation: string }; figure: IncreaseFigure | null; missing: string | null; source: { url: string } }
+  {
+    leaseId: string;
+    window: { opens: string; closes: string; citation: string };
+    figure: IncreaseFigure | null;
+    missing: string | null;
+    source: { url: string };
+  }
 >;
 export type RenewalRecommendation = Recommendation<RenewalKind, GenerateNotice>;
 
 const MONTHS_IN_YEAR = 12;
 
 /** What a window says today: opening this week, or closing within the reminder — the days left either way — or nothing. */
-function dueOf(window: NoticeWindow, today: Day, monday: Day, reminderDays: number): { kind: RenewalKind; urgency: Urgency; daysToClose: number } | null {
+function dueOf(
+  window: NoticeWindow,
+  today: Day,
+  monday: Day,
+  reminderDays: number,
+): { kind: RenewalKind; urgency: Urgency; daysToClose: number } | null {
   const [opens, closes] = [parseDay(window.opens), parseDay(window.closes)];
   if (!opens || !closes) return null;
   const daysToClose = daysBetween(today, closes);
@@ -114,7 +149,13 @@ function dueOf(window: NoticeWindow, today: Day, monday: Day, reminderDays: numb
 }
 
 /** The recommendation of one lease whose window is due: the figure if the table has it, the reason if not, the notice as the one action. */
-function recommendLease(week: string, lease: RadarLease, window: NoticeWindow, due: { kind: RenewalKind; urgency: Urgency; daysToClose: number }, table: TalTable): RenewalRecommendation {
+function recommendLease(
+  week: string,
+  lease: RadarLease,
+  window: NoticeWindow,
+  due: { kind: RenewalKind; urgency: Urgency; daysToClose: number },
+  table: TalTable,
+): RenewalRecommendation {
   const increase = renewalIncrease(lease, table);
   const figure = "figure" in increase ? increase.figure : null;
   return recommendation({
@@ -123,10 +164,29 @@ function recommendLease(week: string, lease: RadarLease, window: NoticeWindow, d
     subject: lease.id,
     urgency: due.urgency,
     impactCents: figure ? figure.increaseCents * MONTHS_IN_YEAR : 0,
-    figures: { rentCents: lease.rentCents, daysToClose: due.daysToClose, ...(figure ? { increaseCents: figure.increaseCents, increaseBasisPoints: figure.increaseBasisPoints, newRentCents: figure.newRentCents } : {}) },
+    figures: {
+      rentCents: lease.rentCents,
+      daysToClose: due.daysToClose,
+      ...(figure
+        ? {
+            increaseCents: figure.increaseCents,
+            increaseBasisPoints: figure.increaseBasisPoints,
+            newRentCents: figure.newRentCents,
+          }
+        : {}),
+    },
     assumptions: figure ? ["talMethod", "informative"] : ["noTalFigure", "informative"],
     evidence: [lease.id],
-    action: { kind: "generate-notice", payload: { leaseId: lease.id, window: { opens: window.opens, closes: window.closes, citation: window.rule.citation }, figure, missing: "missing" in increase ? increase.missing : null, source: { url: figure?.sourceUrl ?? table.source.url } } },
+    action: {
+      kind: "generate-notice",
+      payload: {
+        leaseId: lease.id,
+        window: { opens: window.opens, closes: window.closes, citation: window.rule.citation },
+        figure,
+        missing: "missing" in increase ? increase.missing : null,
+        source: { url: figure?.sourceUrl ?? table.source.url },
+      },
+    },
   });
 }
 

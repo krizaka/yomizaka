@@ -20,12 +20,17 @@ export default function Library() {
   const router = useRouter();
   const libraries = useQuery(queries.libraries());
   const documents = useQuery(queries.documents());
-  const collections = (libraries.data?.libraries ?? []).flatMap((library) => library.collections.map((collection) => ({ ...collection, libraryId: library.id })));
+  const collections = (libraries.data?.libraries ?? []).flatMap((library) =>
+    library.collections.map((collection) => ({ ...collection, libraryId: library.id })),
+  );
 
   const header = (
     <View style={{ gap: 12, paddingBottom: 12 }}>
       {collections.map((collection) => (
-        <Card.Root key={collection.id} onPress={() => router.navigate(routes.library(locale, collection.libraryId, collection.id) as never)}>
+        <Card.Root
+          key={collection.id}
+          onPress={() => router.navigate(routes.library(locale, collection.libraryId, collection.id) as never)}
+        >
           <Card.Body>
             <Txt variant="label">{collection.name}</Txt>
             <Txt tone="muted" variant="caption">

@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { HttpError } from "./http";
 import { resetRateLimits } from "./limits";
-import { applyReset, requestReset,type ResetDeps } from "./password-reset";
+import { applyReset, requestReset, type ResetDeps } from "./password-reset";
 import { defOf } from "./settings/registry";
 
 /** A deployment with one account, `known@example.test`. The service is the package's: it answers the same either way, mails only the known one. */
@@ -58,7 +58,9 @@ describe("asking for a reset link", () => {
     const { deps } = world();
     for (const email of ["known@example.test", "nobody@example.test"]) {
       for (let i = 0; i < 3; i += 1) await requestReset(deps, { email }, request(`198.51.100.${email.length}`), NOW);
-      const refused = await requestReset(deps, { email }, request(`198.51.100.${email.length}`), NOW).catch((e: unknown) => e);
+      const refused = await requestReset(deps, { email }, request(`198.51.100.${email.length}`), NOW).catch(
+        (e: unknown) => e,
+      );
       expect(refused).toBeInstanceOf(HttpError);
       expect(refused).toMatchObject({ status: 429, body: { code: "RATE_LIMITED" } });
       expect((refused as HttpError).headers["Retry-After"]).toBeDefined();
@@ -67,9 +69,14 @@ describe("asking for a reset link", () => {
 
   it("is limited per client address too: 10 an hour whatever the addresses asked", async () => {
     const { deps } = world();
-    for (let i = 0; i < 10; i += 1) await requestReset(deps, { email: `p${i}@example.test` }, request("192.0.2.9"), NOW);
-    await expect(requestReset(deps, { email: "p11@example.test" }, request("192.0.2.9"), NOW)).rejects.toMatchObject({ status: 429 });
-    await expect(requestReset(deps, { email: "p11@example.test" }, request("192.0.2.10"), NOW)).resolves.toEqual({ ok: true });
+    for (let i = 0; i < 10; i += 1)
+      await requestReset(deps, { email: `p${i}@example.test` }, request("192.0.2.9"), NOW);
+    await expect(requestReset(deps, { email: "p11@example.test" }, request("192.0.2.9"), NOW)).rejects.toMatchObject({
+      status: 429,
+    });
+    await expect(requestReset(deps, { email: "p11@example.test" }, request("192.0.2.10"), NOW)).resolves.toEqual({
+      ok: true,
+    });
   });
 
   it("an audit line per request, naming neither the address nor any token", async () => {
@@ -94,7 +101,9 @@ describe("choosing the new password", () => {
 
   it("refuses an expired or already used link (the package says INVALID for both) with a stable code, and audits it without the token", async () => {
     const { deps, audits } = world({ reset: async () => "INVALID" });
-    const refused = await applyReset(deps, { token: TOKEN, password: PASSWORD }, request(), NOW).catch((e: unknown) => e);
+    const refused = await applyReset(deps, { token: TOKEN, password: PASSWORD }, request(), NOW).catch(
+      (e: unknown) => e,
+    );
     expect(refused).toMatchObject({ status: 400, body: { code: "RESET_INVALID" } });
     expect(audits[0]).toMatchObject({ action: "auth.password_reset", detail: { result: "invalid" } });
     expect(JSON.stringify({ ...audits[0], headers: undefined })).not.toContain(TOKEN);
@@ -112,14 +121,20 @@ describe("choosing the new password", () => {
         throw new AccountError(400, "PASSWORD_TOO_SHORT", "At least 12 characters");
       },
     });
-    await expect(applyReset(deps, { token: TOKEN, password: "short" }, request(), NOW)).rejects.toMatchObject({ status: 400, body: { code: "PASSWORD_TOO_SHORT" } });
+    await expect(applyReset(deps, { token: TOKEN, password: "short" }, request(), NOW)).rejects.toMatchObject({
+      status: 400,
+      body: { code: "PASSWORD_TOO_SHORT" },
+    });
     expect(audits).toHaveLength(0);
   });
 
   it("is limited too: a guess of links is refused after 20 tries an hour", async () => {
     const { deps } = world({ reset: async () => "INVALID" });
-    for (let i = 0; i < 20; i += 1) await applyReset(deps, { token: TOKEN, password: PASSWORD }, request("192.0.2.50"), NOW).catch(() => undefined);
-    await expect(applyReset(deps, { token: TOKEN, password: PASSWORD }, request("192.0.2.50"), NOW)).rejects.toMatchObject({ status: 429 });
+    for (let i = 0; i < 20; i += 1)
+      await applyReset(deps, { token: TOKEN, password: PASSWORD }, request("192.0.2.50"), NOW).catch(() => undefined);
+    await expect(
+      applyReset(deps, { token: TOKEN, password: PASSWORD }, request("192.0.2.50"), NOW),
+    ).rejects.toMatchObject({ status: 429 });
   });
 });
 
@@ -133,7 +148,11 @@ describe("the lifetime of the link is a setting", () => {
 });
 
 describe("the forms that run in the browser", () => {
-  it.each(["../components/console/ResetPasswordForm.tsx", "../components/console/SignUpForm.tsx", "../components/console/ForgotPasswordForm.tsx"])("%s does not pull the hashing (node:crypto) into the bundle", (file) => {
+  it.each([
+    "../components/console/ResetPasswordForm.tsx",
+    "../components/console/SignUpForm.tsx",
+    "../components/console/ForgotPasswordForm.tsx",
+  ])("%s does not pull the hashing (node:crypto) into the bundle", (file) => {
     const source = readFileSync(new URL(file, import.meta.url), "utf8");
     expect(source).not.toMatch(/from "@\/lib\/password"/);
   });

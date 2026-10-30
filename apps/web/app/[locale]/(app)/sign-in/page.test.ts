@@ -21,7 +21,12 @@ type Locale = keyof typeof MESSAGES;
 const render = async (locale: Locale, query: { verified?: string; verify?: string; reset?: string } = {}) =>
   renderToStaticMarkup(await SignInPage({ params: Promise.resolve({ locale }), searchParams: Promise.resolve(query) }));
 
-const readable = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ");
+const readable = (html: string) =>
+  html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&#x27;|&#39;/g, "'")
+    .replace(/&[a-z#0-9]+;/gi, " ")
+    .replace(/\s+/g, " ");
 
 describe("sign-in (the UX review's Y8)", () => {
   beforeEach(() => {

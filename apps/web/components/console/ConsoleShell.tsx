@@ -1,6 +1,16 @@
 "use client";
 
-import { CheckIcon, HomeIcon, KnowledgeIcon, PlusIcon, SettingsIcon, ShieldIcon, UserIcon, UsersIcon, WalletIcon } from "@krizaka/icons";
+import {
+  CheckIcon,
+  HomeIcon,
+  KnowledgeIcon,
+  PlusIcon,
+  SettingsIcon,
+  ShieldIcon,
+  UserIcon,
+  UsersIcon,
+  WalletIcon,
+} from "@krizaka/icons";
 import { krizakaFetch, useMutation } from "@krizaka/query";
 import { YomizakaLogo } from "@krizaka/ui";
 import { AppFrame } from "@krizaka/ui/app-frame";
@@ -88,7 +98,10 @@ export function ConsoleShell({
   });
   return (
     <>
-      <a href="#content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-[100] focus:rounded-sm focus:bg-surface-1 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold">
+      <a
+        href="#content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-[100] focus:rounded-sm focus:bg-surface-1 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold"
+      >
         {say("shell.skip")}
       </a>
       <AppFrame
@@ -159,7 +172,15 @@ export function ConsoleShell({
         }}
         primary={
           // The one action of every signed-in screen: its word from `sm`, its icon and accessible name below.
-          <ButtonLink href={href(CONSOLE_ROUTES.check)} variant="gradient" size="sm" shape="cut" aria-label={say("shell.checkAction")} title={say("shell.checkAction")} data-testid="header-check">
+          <ButtonLink
+            href={href(CONSOLE_ROUTES.check)}
+            variant="gradient"
+            size="sm"
+            shape="cut"
+            aria-label={say("shell.checkAction")}
+            title={say("shell.checkAction")}
+            data-testid="header-check"
+          >
             <PlusIcon size={16} aria-hidden />
             <span className="hidden sm:inline">{say("shell.checkAction")}</span>
           </ButtonLink>

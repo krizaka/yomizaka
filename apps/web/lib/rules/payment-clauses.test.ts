@@ -6,13 +6,22 @@ import { checkPaymentClauses, PAYMENT_CLAUSES_RULE, paymentClauseMessageKey } fr
 
 describe("payment clauses (art. 1904 C.c.Q., slice 3 of #104)", () => {
   it("finds nothing in a lease that asks for the first month only", () => {
-    expect(checkPaymentClauses({ advanceMonths: 1, depositCents: 0, postdatedCheques: false })).toEqual({ ruleId: PAYMENT_CLAUSES_RULE.id, status: "ok", findings: [], citations: [] });
+    expect(checkPaymentClauses({ advanceMonths: 1, depositCents: 0, postdatedCheques: false })).toEqual({
+      ruleId: PAYMENT_CLAUSES_RULE.id,
+      status: "ok",
+      findings: [],
+      citations: [],
+    });
     expect(checkPaymentClauses({}).status).toBe("ok");
   });
 
   it("flags an advance of more than one month", () => {
     const r = checkPaymentClauses({ advanceMonths: 2 });
-    expect(r).toMatchObject({ status: "finding", findings: [{ code: "advance-over-one-month" }], citations: ["C.c.Q., art. 1904"] });
+    expect(r).toMatchObject({
+      status: "finding",
+      findings: [{ code: "advance-over-one-month" }],
+      citations: ["C.c.Q., art. 1904"],
+    });
   });
 
   it("flags a deposit or any sum other than the rent", () => {
@@ -24,11 +33,19 @@ describe("payment clauses (art. 1904 C.c.Q., slice 3 of #104)", () => {
   });
 
   it("lists every finding, in a stable order", () => {
-    expect(checkPaymentClauses({ advanceMonths: 3, depositCents: 1, postdatedCheques: true }).findings.map((f) => f.code)).toEqual(["advance-over-one-month", "deposit", "postdated-cheques"]);
+    expect(
+      checkPaymentClauses({ advanceMonths: 3, depositCents: 1, postdatedCheques: true }).findings.map((f) => f.code),
+    ).toEqual(["advance-over-one-month", "deposit", "postdated-cheques"]);
   });
 
   it("makes no claim on figures that are not usable", () => {
-    for (const input of [{ advanceMonths: -1 }, { advanceMonths: Number.NaN }, { depositCents: -5 }, { depositCents: 1.5 }]) expect(checkPaymentClauses(input).status).toBe("no-claim");
+    for (const input of [
+      { advanceMonths: -1 },
+      { advanceMonths: Number.NaN },
+      { depositCents: -5 },
+      { depositCents: 1.5 },
+    ])
+      expect(checkPaymentClauses(input).status).toBe("no-claim");
   });
 
   it("has an EN and FR message for every code, and the disclaimer, without a verdict on the landlord", () => {

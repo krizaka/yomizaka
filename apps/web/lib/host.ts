@@ -5,14 +5,23 @@
  */
 export const isAdminHost = (host: string | null | undefined) => /^admin\./i.test(host ?? "");
 
-export type HostRoute = { kind: "next" } | { kind: "rewrite"; path: string } | { kind: "redirect"; path: string } | { kind: "notFound" } | { kind: "robotsClosed" };
+export type HostRoute =
+  | { kind: "next" }
+  | { kind: "rewrite"; path: string }
+  | { kind: "redirect"; path: string }
+  | { kind: "notFound" }
+  | { kind: "robotsClosed" };
 
 const LOCALE = /^\/(en|fr)(?=\/|$)/;
 
 const isConsolePath = (rest: string) => rest === "/console" || rest.startsWith("/console/");
-const isMachineFile = (pathname: string) => pathname === "/robots.txt" || pathname === "/sitemap.xml" || pathname === "/llms.txt";
+const isMachineFile = (pathname: string) =>
+  pathname === "/robots.txt" || pathname === "/sitemap.xml" || pathname === "/llms.txt";
 /** An address without a language goes to the visitor's choice. */
-const toLocale = (pathname: string, preferred: "en" | "fr"): HostRoute => ({ kind: "redirect", path: `/${preferred}${pathname === "/" ? "" : pathname}` });
+const toLocale = (pathname: string, preferred: "en" | "fr"): HostRoute => ({
+  kind: "redirect",
+  path: `/${preferred}${pathname === "/" ? "" : pathname}`,
+});
 
 /** admin.*: every page is the console (`/en/users` is served by `/en/console/users`), nothing else. */
 function adminRoute(pathname: string, locale: string | undefined, preferred: "en" | "fr"): HostRoute {

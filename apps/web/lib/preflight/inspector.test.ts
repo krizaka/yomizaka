@@ -14,11 +14,18 @@ const why = async (bytes: Uint8Array, declared = pdf()) => {
 describe("pre-flight: what the bytes are", () => {
   it("accepts a healthy PDF, with its hash, pages and cheap facts", async () => {
     const r = await inspect(await fx.cleanPdf(), pdf());
-    expect(r).toMatchObject({ kind: "accepted", fileKind: "pdf", pages: 1, facts: { producer: "Fixture", incrementalSaves: 0 } });
+    expect(r).toMatchObject({
+      kind: "accepted",
+      fileKind: "pdf",
+      pages: 1,
+      facts: { producer: "Fixture", incrementalSaves: 0 },
+    });
     expect(r.kind === "accepted" && r.sha256).toMatch(/^[0-9a-f]{64}$/);
   });
   it("accepts UTF-8 text", async () => {
-    expect(await why(new TextEncoder().encode("Loyer mensuel : 1 120 $"), { name: "bail.txt", type: "text/plain" })).toBe("accepted");
+    expect(
+      await why(new TextEncoder().encode("Loyer mensuel : 1 120 $"), { name: "bail.txt", type: "text/plain" }),
+    ).toBe("accepted");
   });
   it("refuses an empty file and a file over the size limit", async () => {
     expect(await why(new Uint8Array())).toBe("EMPTY");
@@ -47,7 +54,12 @@ describe("pre-flight: what the bytes are", () => {
   it("recognises a Word file and accepts it (yomizaka#229); a workspace that allows no Word files still refuses it", async () => {
     expect(sniff(fx.docx())).toBe("docx");
     expect(await why(fx.docx(), { name: "bail.docx", type: "" })).toBe("accepted");
-    expect(await createInspector({ ...YOMIZAKA_RULES, allowedKinds: ["pdf", "text"] }).inspect(fx.docx(), { name: "bail.docx", type: "" })).toMatchObject({ kind: "rejected", reason: "UNSUPPORTED_TYPE" });
+    expect(
+      await createInspector({ ...YOMIZAKA_RULES, allowedKinds: ["pdf", "text"] }).inspect(fx.docx(), {
+        name: "bail.docx",
+        type: "",
+      }),
+    ).toMatchObject({ kind: "rejected", reason: "UNSUPPORTED_TYPE" });
   });
 });
 
@@ -76,13 +88,18 @@ describe("pre-flight: safety — nothing is executed, active content is refused"
     expect(await why(await fx.launchPdf())).toBe("ACTIVE_CONTENT");
   });
   it("sees through #xx-obfuscated names", async () => {
-    const js = Buffer.from(await fx.javascriptPdf()).toString("latin1").replace("/JavaScript", "/J#61vaScript").replace("/OpenAction", "/Op#65nAction");
+    const js = Buffer.from(await fx.javascriptPdf())
+      .toString("latin1")
+      .replace("/JavaScript", "/J#61vaScript")
+      .replace("/OpenAction", "/Op#65nAction");
     expect(await why(Buffer.from(js, "latin1"))).toBe("ACTIVE_CONTENT");
   });
   it("refuses a zip bomb from its directory alone, and macro-enabled Word files", async () => {
     expect(archiveProblem(fx.zipBomb(), YOMIZAKA_RULES)).toBe("ARCHIVE_BOMB");
     expect(await why(fx.zipBomb(), { name: "bail.docx", type: "" })).toBe("ARCHIVE_BOMB");
-    expect(archiveProblem(fx.docx([{ name: "word/vbaProject.bin", data: Buffer.from("x") }]), YOMIZAKA_RULES)).toBe("ACTIVE_CONTENT");
+    expect(archiveProblem(fx.docx([{ name: "word/vbaProject.bin", data: Buffer.from("x") }]), YOMIZAKA_RULES)).toBe(
+      "ACTIVE_CONTENT",
+    );
     expect(archiveProblem(fx.docx(), YOMIZAKA_RULES)).toBeNull();
   });
 });

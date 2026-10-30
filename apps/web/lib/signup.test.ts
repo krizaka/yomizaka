@@ -13,12 +13,22 @@ function fakeDb() {
   const query = async <T extends object>(text: string, values: unknown[] = []): Promise<T[]> => {
     if (text.startsWith("SELECT id, email_verified_at")) return accounts.filter((a) => a.email === values[0]) as T[];
     if (text.startsWith("INSERT INTO accounts")) {
-      const a = { id: `acc-${accounts.length + 1}`, email: String(values[0]), email_verified_at: null, terms_version: String(values[3]) };
+      const a = {
+        id: `acc-${accounts.length + 1}`,
+        email: String(values[0]),
+        email_verified_at: null,
+        terms_version: String(values[3]),
+      };
       accounts.push(a);
       return [{ id: a.id }] as T[];
     }
     if (text.startsWith("INSERT INTO email_verifications")) {
-      tokens.push({ account_id: String(values[0]), token_hash: String(values[1]), expires_at: new Date((values[2] as Date).getTime() + Number(values[3]) * 3_600_000), used_at: null });
+      tokens.push({
+        account_id: String(values[0]),
+        token_hash: String(values[1]),
+        expires_at: new Date((values[2] as Date).getTime() + Number(values[3]) * 3_600_000),
+        used_at: null,
+      });
       return [];
     }
     if (text.startsWith("UPDATE email_verifications")) {
@@ -33,9 +43,20 @@ function fakeDb() {
     }
     throw new Error(`unexpected SQL: ${text}`);
   };
-  return { accounts, tokens, mails, deps: { query, mail: async (m: AccountMail) => void mails.push(m), baseUrl: "https://www.yomizaka.com" } };
+  return {
+    accounts,
+    tokens,
+    mails,
+    deps: { query, mail: async (m: AccountMail) => void mails.push(m), baseUrl: "https://www.yomizaka.com" },
+  };
 }
-const input = signUpBody.parse({ email: " Eric@Example.com ", password: "correct horse battery", locale: "fr", acceptTerms: true, acceptPrivacy: true });
+const input = signUpBody.parse({
+  email: " Eric@Example.com ",
+  password: "correct horse battery",
+  locale: "fr",
+  acceptTerms: true,
+  acceptPrivacy: true,
+});
 
 describe("sign-up", () => {
   it("refuses an account that has not accepted the terms and the privacy notice, or has a short password", () => {
@@ -50,9 +71,18 @@ describe("sign-up", () => {
     const now = new Date("2026-10-21T12:00:00Z");
     await signUp(db.deps, input, now);
     expect(db.accounts).toHaveLength(1);
-    expect(db.accounts[0]).toMatchObject({ email: "eric@example.com", email_verified_at: null, terms_version: expect.stringContaining("2026") });
+    expect(db.accounts[0]).toMatchObject({
+      email: "eric@example.com",
+      email_verified_at: null,
+      terms_version: expect.stringContaining("2026"),
+    });
     expect(db.mails).toHaveLength(1);
-    expect(db.mails[0]).toMatchObject({ kind: "confirmEmail", to: "eric@example.com", locale: "fr", hours: VERIFY_TTL_HOURS });
+    expect(db.mails[0]).toMatchObject({
+      kind: "confirmEmail",
+      to: "eric@example.com",
+      locale: "fr",
+      hours: VERIFY_TTL_HOURS,
+    });
     const token = decodeURIComponent(db.mails[0]!.url.match(/token=([^\s]+)/)![1]!);
     expect(isVerifyToken(token)).toBe(true);
     expect(db.tokens[0]!.expires_at.getTime() - now.getTime()).toBe(VERIFY_TTL_HOURS * 3_600_000);
@@ -67,7 +97,9 @@ describe("sign-up", () => {
     const now = new Date("2026-10-21T12:00:00Z");
     await signUp(db.deps, input, now);
     const token = decodeURIComponent(db.mails[0]!.url.match(/token=([^\s]+)/)![1]!);
-    expect(await verifyEmail({ query: db.deps.query }, token, new Date(now.getTime() + (VERIFY_TTL_HOURS + 1) * 3_600_000))).toBe("INVALID");
+    expect(
+      await verifyEmail({ query: db.deps.query }, token, new Date(now.getTime() + (VERIFY_TTL_HOURS + 1) * 3_600_000)),
+    ).toBe("INVALID");
     expect(await verifyEmail({ query: db.deps.query }, "nope", new Date())).toBe("INVALID");
   });
 
@@ -90,7 +122,11 @@ describe("sign-up", () => {
 
   it("the mail promises nothing about the check, in its language: it confirms an address, in Yomizaka's brand and no other", async () => {
     for (const locale of ["fr", "en"] as const) {
-      const mail = await renderEmail("confirmEmail", { brand: "yomizaka", confirmUrl: "https://www.yomizaka.com/fr/verify-email?token=x", hours: VERIFY_TTL_HOURS }, { locale });
+      const mail = await renderEmail(
+        "confirmEmail",
+        { brand: "yomizaka", confirmUrl: "https://www.yomizaka.com/fr/verify-email?token=x", hours: VERIFY_TTL_HOURS },
+        { locale },
+      );
       expect(mail.text).toContain("Yomizaka");
       expect(mail.text).not.toMatch(/conforme|compliant|garanti|guarantee|approuv|approved/i);
       expect(mail.html + mail.text).not.toMatch(/Orazaka|Akinaza/);

@@ -6,13 +6,25 @@ import { localDocuments } from "./local-documents";
 import { rememberFiles } from "./use-batch";
 
 const leaves = (value: unknown, path = ""): string[] =>
-  value && typeof value === "object" ? Object.entries(value).flatMap(([key, child]) => leaves(child, path ? `${path}.${key}` : key)) : [path];
+  value && typeof value === "object"
+    ? Object.entries(value).flatMap(([key, child]) => leaves(child, path ? `${path}.${key}` : key))
+    : [path];
 
 describe("the Mac app's own words", () => {
   it("exist in French and in English, with the same keys and the same placeholders", () => {
     expect(leaves(en).sort()).toEqual(leaves(fr).sort());
-    const at = (o: unknown, path: string) => path.split(".").reduce<unknown>((v, k) => (v as Record<string, unknown>)[k], o) as string;
-    for (const key of leaves(fr)) expect(at(en, key).match(/\{\w+\}/g)?.sort() ?? []).toEqual(at(fr, key).match(/\{\w+\}/g)?.sort() ?? []);
+    const at = (o: unknown, path: string) =>
+      path.split(".").reduce<unknown>((v, k) => (v as Record<string, unknown>)[k], o) as string;
+    for (const key of leaves(fr))
+      expect(
+        at(en, key)
+          .match(/\{\w+\}/g)
+          ?.sort() ?? [],
+      ).toEqual(
+        at(fr, key)
+          .match(/\{\w+\}/g)
+          ?.sort() ?? [],
+      );
   });
 });
 

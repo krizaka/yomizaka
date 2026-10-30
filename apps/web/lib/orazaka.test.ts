@@ -2,14 +2,26 @@ import { describe, expect, it } from "vitest";
 
 import { createOrazakaClient, orazakaRefusal } from "./orazaka";
 
-const RUN = { id: "8f6b1c2e-1d2c-4b8a-9a55-0d1e2f3a4b5c", studioKey: "compliance-check", blueprintVersion: "1.1.1", status: "RUNNING", outputs: [], steps: [] };
+const RUN = {
+  id: "8f6b1c2e-1d2c-4b8a-9a55-0d1e2f3a4b5c",
+  studioKey: "compliance-check",
+  blueprintVersion: "1.1.1",
+  status: "RUNNING",
+  outputs: [],
+  steps: [],
+};
 
 function fakeEdge(routes: Record<string, (init: RequestInit) => { status: number; body?: unknown }>) {
   const calls: { method: string; url: string; auth: string | null; body: unknown }[] = [];
   const fetch = (async (url: string, init: RequestInit = {}) => {
     const method = init.method ?? "GET";
     const path = new URL(url).pathname;
-    calls.push({ method, url: path, auth: new Headers(init.headers).get("authorization"), body: init.body ? JSON.parse(String(init.body)) : undefined });
+    calls.push({
+      method,
+      url: path,
+      auth: new Headers(init.headers).get("authorization"),
+      body: init.body ? JSON.parse(String(init.body)) : undefined,
+    });
     const route = routes[`${method} ${path}`];
     const { status, body } = route ? route(init) : { status: 404 };
     return new Response(body === undefined ? null : JSON.stringify(body), { status });
@@ -21,11 +33,22 @@ describe("the Orazaka client", () => {
   it("installs the Studio once, then starts the run with the service key", async () => {
     const edge = fakeEdge({
       "GET /edge/api/v1/studios/installations": () => ({ status: 200, body: [] }),
-      "POST /edge/api/v1/studios/compliance-check/installations": () => ({ status: 201, body: { studioKey: "compliance-check" } }),
+      "POST /edge/api/v1/studios/compliance-check/installations": () => ({
+        status: 201,
+        body: { studioKey: "compliance-check" },
+      }),
       "POST /edge/api/v1/studios/compliance-check/runs": () => ({ status: 202, body: RUN }),
     });
-    const client = createOrazakaClient({ baseUrl: "https://dev.orazaka.com/edge", apiKey: "oz_test", fetch: edge.fetch });
-    const run = await client.startRun("compliance-check", { document: "Bail…", jurisdiction: "FR", asOf: "2026-10-14" });
+    const client = createOrazakaClient({
+      baseUrl: "https://dev.orazaka.com/edge",
+      apiKey: "oz_test",
+      fetch: edge.fetch,
+    });
+    const run = await client.startRun("compliance-check", {
+      document: "Bail…",
+      jurisdiction: "FR",
+      asOf: "2026-10-14",
+    });
     expect(run.id).toBe(RUN.id);
     await client.startRun("compliance-check", { document: "Bail…", jurisdiction: "FR" });
     expect(edge.calls.map((c) => `${c.method} ${c.url}`)).toEqual([
@@ -41,9 +64,16 @@ describe("the Orazaka client", () => {
   it("does not install a Studio already installed", async () => {
     const edge = fakeEdge({
       "GET /edge/api/v1/studios/installations": () => ({ status: 200, body: [{ studioKey: "document-authenticity" }] }),
-      "POST /edge/api/v1/studios/document-authenticity/runs": () => ({ status: 202, body: { ...RUN, studioKey: "document-authenticity" } }),
+      "POST /edge/api/v1/studios/document-authenticity/runs": () => ({
+        status: 202,
+        body: { ...RUN, studioKey: "document-authenticity" },
+      }),
     });
-    const client = createOrazakaClient({ baseUrl: "https://dev.orazaka.com/edge/", apiKey: "oz_test", fetch: edge.fetch });
+    const client = createOrazakaClient({
+      baseUrl: "https://dev.orazaka.com/edge/",
+      apiKey: "oz_test",
+      fetch: edge.fetch,
+    });
     await client.startRun("document-authenticity", { documentBase64: "JVBERi0=" });
     expect(edge.calls.map((c) => c.method)).toEqual(["GET", "POST"]);
   });
@@ -52,35 +82,67 @@ describe("the Orazaka client", () => {
     expect(orazakaRefusal(401).code).toBe("ORAZAKA_KEY");
     expect(orazakaRefusal(409).code).toBe("ORAZAKA_LOCKED");
     expect(orazakaRefusal(500).code).toBe("ORAZAKA_UNAVAILABLE");
-    const locked = fakeEdge({ "GET /edge/api/v1/studios/installations": () => ({ status: 200, body: [{ studioKey: "compliance-check" }] }), "POST /edge/api/v1/studios/compliance-check/runs": () => ({ status: 409 }) });
-    await expect(createOrazakaClient({ baseUrl: "https://x/edge", apiKey: "oz_t", fetch: locked.fetch }).startRun("compliance-check", {})).rejects.toMatchObject({ body: { code: "ORAZAKA_LOCKED" } });
-    await expect(createOrazakaClient({ baseUrl: "https://x/edge", apiKey: undefined, fetch: locked.fetch }).getRun(RUN.id)).rejects.toMatchObject({ body: { code: "ORAZAKA_NOT_CONFIGURED" } });
+    const locked = fakeEdge({
+      "GET /edge/api/v1/studios/installations": () => ({ status: 200, body: [{ studioKey: "compliance-check" }] }),
+      "POST /edge/api/v1/studios/compliance-check/runs": () => ({ status: 409 }),
+    });
+    await expect(
+      createOrazakaClient({ baseUrl: "https://x/edge", apiKey: "oz_t", fetch: locked.fetch }).startRun(
+        "compliance-check",
+        {},
+      ),
+    ).rejects.toMatchObject({ body: { code: "ORAZAKA_LOCKED" } });
+    await expect(
+      createOrazakaClient({ baseUrl: "https://x/edge", apiKey: undefined, fetch: locked.fetch }).getRun(RUN.id),
+    ).rejects.toMatchObject({ body: { code: "ORAZAKA_NOT_CONFIGURED" } });
   });
 
   it("does not start a kind that the pinned 1.x Studio would judge as a lease (declaredKind is read by 2.x only)", async () => {
-    const old = fakeEdge({ "GET /edge/api/v1/studios/installations": () => ({ status: 200, body: [{ studioKey: "compliance-check", pinnedVersion: "1.4.0" }] }) });
+    const old = fakeEdge({
+      "GET /edge/api/v1/studios/installations": () => ({
+        status: 200,
+        body: [{ studioKey: "compliance-check", pinnedVersion: "1.4.0" }],
+      }),
+    });
     const client = createOrazakaClient({ baseUrl: "https://x/edge", apiKey: "oz_t", fetch: old.fetch });
-    await expect(client.startRun("compliance-check", { document: "Avis", declaredKind: "NOTICE" })).rejects.toMatchObject({ body: { code: "ORAZAKA_STUDIO_OLD" } });
+    await expect(
+      client.startRun("compliance-check", { document: "Avis", declaredKind: "NOTICE" }),
+    ).rejects.toMatchObject({ body: { code: "ORAZAKA_STUDIO_OLD" } });
     expect(old.calls.some((c) => c.url.includes("/runs"))).toBe(false);
   });
   it("a busy engine (429, « too many concurrent runs ») is ORAZAKA_BUSY with the wait it asked for — not a failure (yomizaka#248)", async () => {
     expect(orazakaRefusal(429)).toEqual({ status: 429, code: "ORAZAKA_BUSY" });
     const busy = fakeEdge({
       "GET /edge/api/v1/studios/installations": () => ({ status: 200, body: [{ studioKey: "compliance-check" }] }),
-      "POST /edge/api/v1/studios/compliance-check/runs": () => ({ status: 429, body: { status: "too_many_concurrent_runs", limit: 2, active: 2, retryAfterSeconds: 15 } }),
+      "POST /edge/api/v1/studios/compliance-check/runs": () => ({
+        status: 429,
+        body: { status: "too_many_concurrent_runs", limit: 2, active: 2, retryAfterSeconds: 15 },
+      }),
     });
-    const error = await createOrazakaClient({ baseUrl: "https://x/edge", apiKey: "oz_t", fetch: busy.fetch }).startRun("compliance-check", {}).catch((e: unknown) => e as { status: number; body: Record<string, unknown>; headers: Record<string, string> });
-    expect(error).toMatchObject({ status: 429, body: { code: "ORAZAKA_BUSY", retryAfter: 15 }, headers: { "Retry-After": "15" } });
+    const error = await createOrazakaClient({ baseUrl: "https://x/edge", apiKey: "oz_t", fetch: busy.fetch })
+      .startRun("compliance-check", {})
+      .catch((e: unknown) => e as { status: number; body: Record<string, unknown>; headers: Record<string, string> });
+    expect(error).toMatchObject({
+      status: 429,
+      body: { code: "ORAZAKA_BUSY", retryAfter: 15 },
+      headers: { "Retry-After": "15" },
+    });
   });
 
   it("refuses a run id that is not one before calling anyone", async () => {
     const edge = fakeEdge({});
-    expect(() => createOrazakaClient({ baseUrl: "https://x/edge", apiKey: "oz_t", fetch: edge.fetch }).getRun("../admin")).toThrow();
+    expect(() =>
+      createOrazakaClient({ baseUrl: "https://x/edge", apiKey: "oz_t", fetch: edge.fetch }).getRun("../admin"),
+    ).toThrow();
     expect(edge.calls).toHaveLength(0);
   });
 
   it("refuses an answer of the wrong shape rather than guessing", async () => {
-    const edge = fakeEdge({ "GET /edge/api/v1/studios/runs/8f6b1c2e-1d2c-4b8a-9a55-0d1e2f3a4b5c": () => ({ status: 200, body: { nope: 1 } }) });
-    await expect(createOrazakaClient({ baseUrl: "https://x/edge", apiKey: "oz_t", fetch: edge.fetch }).getRun(RUN.id)).rejects.toMatchObject({ body: { code: "ORAZAKA_SHAPE" } });
+    const edge = fakeEdge({
+      "GET /edge/api/v1/studios/runs/8f6b1c2e-1d2c-4b8a-9a55-0d1e2f3a4b5c": () => ({ status: 200, body: { nope: 1 } }),
+    });
+    await expect(
+      createOrazakaClient({ baseUrl: "https://x/edge", apiKey: "oz_t", fetch: edge.fetch }).getRun(RUN.id),
+    ).rejects.toMatchObject({ body: { code: "ORAZAKA_SHAPE" } });
   });
 });

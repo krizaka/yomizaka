@@ -12,10 +12,7 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
-      "associatedDomains": [
-        "applinks:www.yomizaka.com",
-        "applinks:dev.yomizaka.com"
-      ]
+      "associatedDomains": ["applinks:www.yomizaka.com", "applinks:dev.yomizaka.com"]
     },
     "android": {
       "package": "com.krizaka.yomizaka",
@@ -33,15 +30,10 @@
               "host": "dev.yomizaka.com"
             }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
         }
       ],
-      "permissions": [
-        "android.permission.RECORD_AUDIO"
-      ],
+      "permissions": ["android.permission.RECORD_AUDIO"],
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#3b36b3"

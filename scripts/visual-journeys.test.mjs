@@ -19,12 +19,28 @@ test("the pending first paint settles the date and the account picture before th
 
 test("the dates of the library come from the injected clock: the seed is stamped from APP_VISUAL_NOW, the journey masks nothing (#641)", () => {
   const documents = source.split("\n").find((line) => line.includes('name: "documents"')) ?? "";
-  assert.doesNotMatch(documents, /ready:/, "the documents journey does not rewrite its dates: they are already fixed at the source");
-  assert.doesNotMatch(source, /addStyleTag|replaceChildren\(/, "no width override and no text swap over the page's dates (clock injection, not masking)");
+  assert.doesNotMatch(
+    documents,
+    /ready:/,
+    "the documents journey does not rewrite its dates: they are already fixed at the source",
+  );
+  assert.doesNotMatch(
+    source,
+    /addStyleTag|replaceChildren\(/,
+    "no width override and no text swap over the page's dates (clock injection, not masking)",
+  );
   const start = readFileSync(new URL("./ci-visual-start.sh", import.meta.url), "utf8");
-  assert.ok(start.indexOf("export APP_VISUAL_NOW=") > 0 && start.indexOf("export APP_VISUAL_NOW=") < start.indexOf("demo-seed/cli.mjs"), "the clock is frozen before the cast is seeded");
+  assert.ok(
+    start.indexOf("export APP_VISUAL_NOW=") > 0 &&
+      start.indexOf("export APP_VISUAL_NOW=") < start.indexOf("demo-seed/cli.mjs"),
+    "the clock is frozen before the cast is seeded",
+  );
   const cli = readFileSync(new URL("./demo-seed/cli.mjs", import.meta.url), "utf8");
   assert.match(cli, /APP_VISUAL_NOW/, "the seed reads the frozen clock");
   const seed = readFileSync(new URL("./demo-seed/seed.mjs", import.meta.url), "utf8");
-  assert.doesNotMatch(seed.slice(seed.indexOf("async function seedInTransaction")), /make_interval|created_at, finished_at\)\n\s*SELECT[^\n]*now\(\)/, "reports are stamped from the injected clock, not now()");
+  assert.doesNotMatch(
+    seed.slice(seed.indexOf("async function seedInTransaction")),
+    /make_interval|created_at, finished_at\)\n\s*SELECT[^\n]*now\(\)/,
+    "reports are stamped from the injected clock, not now()",
+  );
 });

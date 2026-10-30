@@ -39,9 +39,15 @@ export function renewalNotice(input: NoticeInput, locale: Locale): Notice {
     format(words.door, { door: input.door }),
     format(words.end, { end: day(input.endDay) }),
     format(words.current, { rent: money(input.rentCents) }),
-    input.newRentCents === null ? format(words.proposedBlank, { effective }) : format(words.proposed, { rent: money(input.newRentCents), effective }),
+    input.newRentCents === null
+      ? format(words.proposedBlank, { effective })
+      : format(words.proposed, { rent: money(input.newRentCents), effective }),
     words.refusal,
-    format(words.window, { opens: day(input.window.opens), closes: day(input.window.closes), citation: input.window.citation }),
+    format(words.window, {
+      opens: day(input.window.opens),
+      closes: day(input.window.closes),
+      citation: input.window.citation,
+    }),
     words.signature,
     words.disclaimer,
   ];

@@ -29,10 +29,14 @@ describe("the visual runs have one date", () => {
   });
   it("every page that writes « today » passes it through displayNow", () => {
     for (const page of ["app/[locale]/(app)/app/page.tsx", "app/[locale]/(app)/app/check/page.tsx"]) {
-      expect(readFileSync(new URL(`../${page}`, import.meta.url), "utf8"), page).toContain("now={displayNow(now, appEnvironment(), appVisualNow()).toISOString()}");
+      expect(readFileSync(new URL(`../${page}`, import.meta.url), "utf8"), page).toContain(
+        "now={displayNow(now, appEnvironment(), appVisualNow()).toISOString()}",
+      );
     }
   });
   it("no journey pins a date by hand, nor reads a clock", () => {
-    expect(fromRoot("apps/web/e2e/visual/journeys.visual.mjs")).not.toMatch(/PINNED_|textContent\s*=|new Date\(|Date\.now\(/);
+    expect(fromRoot("apps/web/e2e/visual/journeys.visual.mjs")).not.toMatch(
+      /PINNED_|textContent\s*=|new Date\(|Date\.now\(/,
+    );
   });
 });

@@ -24,7 +24,13 @@ describe.runIf(enabled)("the owner link of a report (yomizaka#128)", () => {
     await migrate();
     a = await account("a");
     b = await account("b");
-    fileId = (await requestApplicantFile(a, { candidateName: "Camille Fictif", candidateEmail: `c-${stamp}@exemple.test`, types: ["pay-stub"] }, NOW)).id;
+    fileId = (
+      await requestApplicantFile(
+        a,
+        { candidateName: "Camille Fictif", candidateEmail: `c-${stamp}@exemple.test`, types: ["pay-stub"] },
+        NOW,
+      )
+    ).id;
   });
   afterAll(async () => {
     await query("DELETE FROM accounts WHERE id = ANY($1)", [[a.id, b.id]]);
@@ -32,7 +38,11 @@ describe.runIf(enabled)("the owner link of a report (yomizaka#128)", () => {
 
   it("opens while live, records each view and the audit, and never carries the name", async () => {
     const { token } = await createShare(a, fileId, { recipient: "Owner", days: 3 }, NOW);
-    const report = await openShare(token, new Date(NOW.getTime() + DAY_MS), new Headers({ "x-forwarded-for": "203.0.113.9" }));
+    const report = await openShare(
+      token,
+      new Date(NOW.getTime() + DAY_MS),
+      new Headers({ "x-forwarded-for": "203.0.113.9" }),
+    );
     expect(report?.reference).toHaveLength(8);
     expect(JSON.stringify(report)).not.toContain("Camille");
     const shares = await listShares(a.id, fileId, NOW);
@@ -62,16 +72,38 @@ describe.runIf(enabled)("the owner link of a report (yomizaka#128)", () => {
   });
 
   describe("e-mailing the link (yomizaka#130)", () => {
-    const deps = (sent: AccountMail[]) => ({ mail: async (m: AccountMail) => void sent.push(m), origin: "https://www.yomizaka.com" });
+    const deps = (sent: AccountMail[]) => ({
+      mail: async (m: AccountMail) => void sent.push(m),
+      origin: "https://www.yomizaka.com",
+    });
     const owner = (who: { id: string; email: string }) => ({ ...who, name: "Eric" });
 
     it("sends the link in the owner's language, keeps the address on the row and logs a hash, never the address", async () => {
       const sent: AccountMail[] = [];
       const { id, token } = await createShare(a, fileId, { days: 3 }, NOW);
-      await emailShare(owner(a), fileId, { token, email: "  Owner@Exemple.test ", message: "Voici", locale: "fr" }, deps(sent), NOW);
-      expect(sent).toEqual([{ kind: "reportLink", to: "owner@exemple.test", locale: "fr", url: `https://www.yomizaka.com/fr/rapport/${token}`, senderName: "Eric", expiresOn: "2026-10-30", message: "Voici" }]);
+      await emailShare(
+        owner(a),
+        fileId,
+        { token, email: "  Owner@Exemple.test ", message: "Voici", locale: "fr" },
+        deps(sent),
+        NOW,
+      );
+      expect(sent).toEqual([
+        {
+          kind: "reportLink",
+          to: "owner@exemple.test",
+          locale: "fr",
+          url: `https://www.yomizaka.com/fr/rapport/${token}`,
+          senderName: "Eric",
+          expiresOn: "2026-10-30",
+          message: "Voici",
+        },
+      ]);
       expect((await listShares(a.id, fileId, NOW)).find((s) => s.id === id)?.emailedTo).toBe("owner@exemple.test");
-      const [entry] = await query<{ detail: { to: string } }>("SELECT detail FROM audit.entry WHERE action = 'report.emailed' AND detail->>'shareId' = $1", [id]);
+      const [entry] = await query<{ detail: { to: string } }>(
+        "SELECT detail FROM audit.entry WHERE action = 'report.emailed' AND detail->>'shareId' = $1",
+        [id],
+      );
       expect(entry?.detail.to).toHaveLength(64);
       expect(JSON.stringify(entry)).not.toContain("exemple.test");
     });
@@ -79,7 +111,8 @@ describe.runIf(enabled)("the owner link of a report (yomizaka#128)", () => {
     it("forgets the address when the link is revoked or has expired", async () => {
       const one = await createShare(a, fileId, { days: 1 }, NOW);
       const two = await createShare(a, fileId, { days: 5 }, NOW);
-      for (const l of [one, two]) await emailShare(owner(a), fileId, { token: l.token, email: "o@exemple.test", locale: "en" }, deps([]), NOW);
+      for (const l of [one, two])
+        await emailShare(owner(a), fileId, { token: l.token, email: "o@exemple.test", locale: "en" }, deps([]), NOW);
       await revokeShare(a, fileId, two.id);
       const later = new Date(NOW.getTime() + 2 * DAY_MS);
       const shares = await listShares(a.id, fileId, later);
@@ -93,25 +126,36 @@ describe.runIf(enabled)("the owner link of a report (yomizaka#128)", () => {
       const gone = await createShare(a, fileId, {}, NOW);
       await revokeShare(a, fileId, gone.id);
       const later = new Date(NOW.getTime() + 2 * DAY_MS);
-      await expect(emailShare(owner(a), fileId, { token: old.token, email: "o@exemple.test", locale: "en" }, deps(sent), later)).rejects.toMatchObject({ status: 404 });
-      await expect(emailShare(owner(a), fileId, { token: gone.token, email: "o@exemple.test", locale: "en" }, deps(sent), NOW)).rejects.toMatchObject({ status: 404 });
-      await expect(emailShare(owner(a), fileId, { token: "sc1.nope", email: "o@exemple.test", locale: "en" }, deps(sent), NOW)).rejects.toMatchObject({ status: 404 });
+      await expect(
+        emailShare(owner(a), fileId, { token: old.token, email: "o@exemple.test", locale: "en" }, deps(sent), later),
+      ).rejects.toMatchObject({ status: 404 });
+      await expect(
+        emailShare(owner(a), fileId, { token: gone.token, email: "o@exemple.test", locale: "en" }, deps(sent), NOW),
+      ).rejects.toMatchObject({ status: 404 });
+      await expect(
+        emailShare(owner(a), fileId, { token: "sc1.nope", email: "o@exemple.test", locale: "en" }, deps(sent), NOW),
+      ).rejects.toMatchObject({ status: 404 });
       const live = await createShare(a, fileId, {}, NOW);
-      await expect(emailShare(owner(a), fileId, { token: live.token, email: "a@x.test, b@x.test", locale: "en" }, deps(sent), NOW)).rejects.toMatchObject({ status: 400 });
+      await expect(
+        emailShare(owner(a), fileId, { token: live.token, email: "a@x.test, b@x.test", locale: "en" }, deps(sent), NOW),
+      ).rejects.toMatchObject({ status: 400 });
       expect(sent).toEqual([]);
     });
 
     it("another manager cannot send this file's link, nor send a link of theirs through this file", async () => {
       const sent: AccountMail[] = [];
       const { token } = await createShare(a, fileId, {}, NOW);
-      await expect(emailShare(owner(b), fileId, { token, email: "o@exemple.test", locale: "en" }, deps(sent), NOW)).rejects.toMatchObject({ status: 404 });
+      await expect(
+        emailShare(owner(b), fileId, { token, email: "o@exemple.test", locale: "en" }, deps(sent), NOW),
+      ).rejects.toMatchObject({ status: 404 });
       expect(sent).toEqual([]);
     });
   });
 
   it("cleans an address: one plain address, lower case", () => {
     expect(cleanAddress(" A@B.test ")).toBe("a@b.test");
-    for (const bad of ["", "a", "a@b", "Eric <a@b.test>", "a@b.test,c@d.test", "a b@c.test"]) expect(cleanAddress(bad), bad).toBeNull();
+    for (const bad of ["", "a", "a@b", "Eric <a@b.test>", "a@b.test,c@d.test", "a b@c.test"])
+      expect(cleanAddress(bad), bad).toBeNull();
   });
 });
 
@@ -119,14 +163,28 @@ describe.runIf(enabled)("the owner report's expiry and isolation (yomizaka#481)"
   it("carries the link's expiry, and a link opens only its own manager's file", async () => {
     const stamp2 = Date.now();
     const mk = async (who: string) => {
-      const [row] = await query<{ id: string }>("INSERT INTO accounts (email) VALUES ($1) RETURNING id", [`pdf-${who}-${stamp2}@yomizaka.test`]);
+      const [row] = await query<{ id: string }>("INSERT INTO accounts (email) VALUES ($1) RETURNING id", [
+        `pdf-${who}-${stamp2}@yomizaka.test`,
+      ]);
       return { id: row!.id, email: `pdf-${who}-${stamp2}@yomizaka.test` };
     };
     await migrate();
     const [x, y] = [await mk("x"), await mk("y")];
     try {
-      const fx = (await requestApplicantFile(x, { candidateName: "Xavier Fictif", candidateEmail: `x-${stamp2}@exemple.test`, types: ["pay-stub"] }, NOW)).id;
-      const fy = (await requestApplicantFile(y, { candidateName: "Yves Fictif", candidateEmail: `y-${stamp2}@exemple.test`, types: ["pay-stub"] }, NOW)).id;
+      const fx = (
+        await requestApplicantFile(
+          x,
+          { candidateName: "Xavier Fictif", candidateEmail: `x-${stamp2}@exemple.test`, types: ["pay-stub"] },
+          NOW,
+        )
+      ).id;
+      const fy = (
+        await requestApplicantFile(
+          y,
+          { candidateName: "Yves Fictif", candidateEmail: `y-${stamp2}@exemple.test`, types: ["pay-stub"] },
+          NOW,
+        )
+      ).id;
       const sx = await createShare(x, fx, { days: 3 }, NOW);
       const sy = await createShare(y, fy, { days: 5 }, NOW);
       const rx = await openShare(sx.token, NOW);

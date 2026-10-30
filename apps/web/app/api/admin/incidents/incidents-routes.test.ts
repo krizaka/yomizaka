@@ -15,14 +15,18 @@ vi.mock("@/lib/incidents", () => ({
   incidentRegister: async () => (calls.listed++, []),
   openIncident: async () => (calls.opened++, { id: "i1" }),
   stepIncident: async () => (calls.stepped++, { id: "i1" }),
-  exportIncidentRegister: async () => (calls.exported++, { body: "a,b", type: "text/csv; charset=utf-8", filename: "r.csv" }),
+  exportIncidentRegister: async () => (
+    calls.exported++,
+    { body: "a,b", type: "text/csv; charset=utf-8", filename: "r.csv" }
+  ),
 }));
 
 import { POST as step } from "./[id]/route";
 import { GET as exportRegister } from "./export/route";
 import { GET as list, POST as open } from "./route";
 
-const json = (body: unknown) => new Request("http://x/api/admin/incidents", { method: "POST", body: JSON.stringify(body) });
+const json = (body: unknown) =>
+  new Request("http://x/api/admin/incidents", { method: "POST", body: JSON.stringify(body) });
 const ctx = { params: Promise.resolve({ id: "i1" }) };
 const valid = { kind: "loss", description: "A laptop was lost.", information: ["lease"] };
 

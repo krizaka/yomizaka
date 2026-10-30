@@ -16,7 +16,19 @@ export const POST = (req: Request) =>
     const { entries } = await describePrices(appPrices(), new Date());
     const result = await processorSync(env(), entries);
     if (result === "off") throw refuse(409, "PAYMENTS_OFF", "Payments are not configured on this installation");
-    if (result === "live") throw refuse(409, "LIVE_PRICES_ARE_THE_OWNERS", "The processor is in live mode: its prices are changed by the owner");
-    await audit({ action: "prices.synced", actorId: session.account.id, actorLabel: session.account.email, targetId: null, detail: { prices: result.prices.map((p) => `${p.lookupKey}:${p.status}`) }, headers: req.headers });
+    if (result === "live")
+      throw refuse(
+        409,
+        "LIVE_PRICES_ARE_THE_OWNERS",
+        "The processor is in live mode: its prices are changed by the owner",
+      );
+    await audit({
+      action: "prices.synced",
+      actorId: session.account.id,
+      actorLabel: session.account.email,
+      targetId: null,
+      detail: { prices: result.prices.map((p) => `${p.lookupKey}:${p.status}`) },
+      headers: req.headers,
+    });
     return Response.json({ sync: result });
   });

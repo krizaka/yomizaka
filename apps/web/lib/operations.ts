@@ -1,4 +1,4 @@
-import { pool,query } from "./db";
+import { pool, query } from "./db";
 import { budgetLimit } from "./operations-shared";
 import { signingKey } from "./report-signer";
 
@@ -50,7 +50,12 @@ export async function queue(stuckMinutes = 10): Promise<Queue> {
     "SELECT count(*) FILTER (WHERE created_at < now() - make_interval(mins => $1)) AS stuck, extract(epoch FROM now() - min(created_at)) / 60 AS oldest FROM analyses WHERE status = 'running'",
     [stuckMinutes],
   );
-  return { byStatus: Object.fromEntries(rows.map((x) => [x.status, Number(x.n)])), stuck: Number(r?.stuck ?? 0), stuckMinutes, oldestRunningMinutes: r?.oldest == null ? null : Math.round(r.oldest) };
+  return {
+    byStatus: Object.fromEntries(rows.map((x) => [x.status, Number(x.n)])),
+    stuck: Number(r?.stuck ?? 0),
+    stuckMinutes,
+    oldestRunningMinutes: r?.oldest == null ? null : Math.round(r.oldest),
+  };
 }
 
 export interface RecentError {
@@ -66,10 +71,23 @@ export async function recentErrors(limit = 20): Promise<RecentError[]> {
     "SELECT coalesce(finished_at, created_at) AS at, studio, error, id FROM analyses WHERE status = 'failed' ORDER BY 1 DESC LIMIT $1",
     [limit],
   );
-  const refusals = await query<{ at: Date; detail: { reason?: string }; target_id: string | null }>("SELECT at, detail, target_id FROM audit.entry WHERE action = 'auth.sign_in_refused' ORDER BY at DESC LIMIT $1", [limit]);
+  const refusals = await query<{ at: Date; detail: { reason?: string }; target_id: string | null }>(
+    "SELECT at, detail, target_id FROM audit.entry WHERE action = 'auth.sign_in_refused' ORDER BY at DESC LIMIT $1",
+    [limit],
+  );
   return [
-    ...runs.map((r): RecentError => ({ at: r.at.toISOString(), kind: "run", detail: `${r.studio}: ${r.error ?? "—"}`, target: r.id })),
-    ...refusals.map((r): RecentError => ({ at: r.at.toISOString(), kind: "sign-in", detail: r.detail.reason ?? "refused", target: r.target_id })),
+    ...runs.map((r): RecentError => ({
+      at: r.at.toISOString(),
+      kind: "run",
+      detail: `${r.studio}: ${r.error ?? "—"}`,
+      target: r.id,
+    })),
+    ...refusals.map((r): RecentError => ({
+      at: r.at.toISOString(),
+      kind: "sign-in",
+      detail: r.detail.reason ?? "refused",
+      target: r.target_id,
+    })),
   ]
     .sort((a, b) => Date.parse(b.at) - Date.parse(a.at))
     .slice(0, limit);
@@ -85,11 +103,23 @@ export interface RulesetUse {
 
 /** Which rulesets the checks really ran against (read from the reports Orazaka returned), and how often. */
 export async function rulesetsInUse(): Promise<RulesetUse[]> {
-  const rows = await query<{ id: string | null; version: string | null; jurisdiction: string | null; n: string; last: Date }>(
+  const rows = await query<{
+    id: string | null;
+    version: string | null;
+    jurisdiction: string | null;
+    n: string;
+    last: Date;
+  }>(
     `SELECT report->>'rulesetId' AS id, report->>'rulesetVersion' AS version, report->>'jurisdiction' AS jurisdiction, count(*) AS n, max(created_at) AS last
        FROM analyses WHERE studio = 'compliance-check' AND report IS NOT NULL GROUP BY 1, 2, 3 ORDER BY n DESC`,
   );
-  return rows.map((r) => ({ rulesetId: r.id ?? "—", rulesetVersion: r.version ?? "—", jurisdiction: r.jurisdiction ?? "—", checks: Number(r.n), lastAt: r.last.toISOString() }));
+  return rows.map((r) => ({
+    rulesetId: r.id ?? "—",
+    rulesetVersion: r.version ?? "—",
+    jurisdiction: r.jurisdiction ?? "—",
+    checks: Number(r.n),
+    lastAt: r.last.toISOString(),
+  }));
 }
 
 /** The id of the key that signs reports (never the key): `development` when it is the public development key. */

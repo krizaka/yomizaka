@@ -16,7 +16,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /** The mailed link lands here. Opening the page spends nothing (a mail scanner may open it): the password is set by the form's POST. */
-export default async function ResetPasswordPage({ params, searchParams }: Readonly<{ params: Promise<{ locale: string }>; searchParams: Promise<{ token?: string }> }>) {
+export default async function ResetPasswordPage({
+  params,
+  searchParams,
+}: Readonly<{ params: Promise<{ locale: string }>; searchParams: Promise<{ token?: string }> }>) {
   const locale = asLocale((await params).locale);
   const token = (await searchParams).token;
   const t = getDictionary(locale).console.resetPassword;

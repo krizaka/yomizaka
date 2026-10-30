@@ -28,17 +28,27 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /** The library's first screen (ADR-0007, § 5.1): « À traiter », the latest checks, the activity of the period, the collections; read on the server. */
-export default async function LibraryPage({ params, searchParams }: Readonly<{ params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }>) {
+export default async function LibraryPage({
+  params,
+  searchParams,
+}: Readonly<{
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}>) {
   const locale = asLocale((await params).locale);
   const search = await searchParams;
   const session = await pageSession();
   const onboarding = session ? onboardingTarget(session.account.perspective ?? null) : null;
-  if (onboarding) {redirect(`/${locale}${onboarding}`);}
+  if (onboarding) {
+    redirect(`/${locale}${onboarding}`);
+  }
   const perspective = session?.account.perspective ?? null;
   const flows = await availableFlows(appEnvironment());
   const screeningOffered = !!session && applicantFilesOffered(flows, perspective);
   const owner = session?.account.id;
-  if (!owner) {return null;}
+  if (!owner) {
+    return null;
+  }
   // The sweep: documents that were not kept and never checked are purged once their window has passed.
   await purgeExpired(query, new Date());
   await org.ensureLibrary(query, owner, getDictionary(locale).console.organisation.library);
@@ -55,7 +65,33 @@ export default async function LibraryPage({ params, searchParams }: Readonly<{ p
   ]);
   const documents = libraries.reduce((n, l) => n + l.collections.reduce((m, c) => m + c.files, 0), 0);
   const paid = paymentReturnOf(search[PAID_KEY]);
-  const view = <LibraryView libraries={libraries} documents={documents} latest={latest} tags={tags} perspective={perspective} screening={screeningOffered} examples={SAMPLES} jurisdictions={offerFor(flows, perspective).jurisdictions} todo={todo} activity={series.checks} strip={stripOf(series)} credits={credits} period={period} chosen={typeof search[BINDER_KEY] === "string" ? search[BINDER_KEY] : null} now={displayNow(now, appEnvironment(), appVisualNow()).toISOString()} />;
+  const view = (
+    <LibraryView
+      libraries={libraries}
+      documents={documents}
+      latest={latest}
+      tags={tags}
+      perspective={perspective}
+      screening={screeningOffered}
+      examples={SAMPLES}
+      jurisdictions={offerFor(flows, perspective).jurisdictions}
+      todo={todo}
+      activity={series.checks}
+      strip={stripOf(series)}
+      credits={credits}
+      period={period}
+      chosen={typeof search[BINDER_KEY] === "string" ? search[BINDER_KEY] : null}
+      now={displayNow(now, appEnvironment(), appVisualNow()).toISOString()}
+    />
+  );
   const problem = paymentProblemOf(entitlement);
-  return paid || problem ? <>{problem ? <PaymentProblem /> : null}{paid ? <PaymentReturn result={paid} /> : null}{view}</> : view;
+  return paid || problem ? (
+    <>
+      {problem ? <PaymentProblem /> : null}
+      {paid ? <PaymentReturn result={paid} /> : null}
+      {view}
+    </>
+  ) : (
+    view
+  );
 }

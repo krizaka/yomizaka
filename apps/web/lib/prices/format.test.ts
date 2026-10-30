@@ -8,5 +8,7 @@ describe("a catalogue amount is written from its cents, in Canadian French and E
     [65, "en", "$0.65"],
     [5900, "fr", "59,00 $"],
     [27900, "en", "$279.00"],
-  ] as const)("%i cents in %s", (cents, locale, shown) => expect(money(cents, locale).replace(/\s/gu, " ")).toBe(shown));
+  ] as const)("%i cents in %s", (cents, locale, shown) =>
+    expect(money(cents, locale).replace(/\s/gu, " ")).toBe(shown),
+  );
 });

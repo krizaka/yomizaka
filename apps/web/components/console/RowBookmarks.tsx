@@ -18,12 +18,20 @@ import { TagChips } from "./TagChips";
  * One tap to bookmark a document from its row (yomizaka#339): a menu of the person's bookmarks, each a toggle that applies or lifts it on
  * this document alone (`/api/organize/document/tags/apply`, one audit line). The row's chips follow at once; the page refreshes behind.
  */
-export function RowBookmarks({ id, name, bookmarks, worn }: Readonly<{ id: string; name: string; bookmarks: readonly Tag[]; worn: readonly string[] }>) {
+export function RowBookmarks({
+  id,
+  name,
+  bookmarks,
+  worn,
+}: Readonly<{ id: string; name: string; bookmarks: readonly Tag[]; worn: readonly string[] }>) {
   const { say } = useSay();
   const router = useRouter();
   const [mine, setMine] = useState<readonly string[]>(worn);
   const [problem, setProblem] = useState<string | null>(null);
-  const apply = useMutation({ mutationFn: (json: { ids: string[]; add?: string[]; remove?: string[] }) => krizakaFetch("/api/organize/document/tags/apply", { method: "POST", json }) });
+  const apply = useMutation({
+    mutationFn: (json: { ids: string[]; add?: string[]; remove?: string[] }) =>
+      krizakaFetch("/api/organize/document/tags/apply", { method: "POST", json }),
+  });
   const toggle = async (tagId: string, on: boolean) => {
     const before = mine;
     setProblem(null);
@@ -53,7 +61,11 @@ export function RowBookmarks({ id, name, bookmarks, worn }: Readonly<{ id: strin
           </DropdownMenu.Trigger>
           <DropdownMenu.Content align="end">
             {bookmarks.map((b) => (
-              <DropdownMenu.CheckboxItem key={b.id} checked={mine.includes(b.id)} onCheckedChange={(on: boolean) => void toggle(b.id, on)}>
+              <DropdownMenu.CheckboxItem
+                key={b.id}
+                checked={mine.includes(b.id)}
+                onCheckedChange={(on: boolean) => void toggle(b.id, on)}
+              >
                 <TagChips tags={[b]} />
               </DropdownMenu.CheckboxItem>
             ))}

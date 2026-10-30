@@ -1,7 +1,14 @@
 "use client";
 
 import { krizakaFetch, useQuery } from "@krizaka/query";
-import { CommandDialog, CommandGroup, CommandInput, CommandItem, CommandList, CommandLoading } from "@krizaka/ui/command";
+import {
+  CommandDialog,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandLoading,
+} from "@krizaka/ui/command";
 import { queryKeys, searchHit } from "@yomizaka/core";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -19,7 +26,10 @@ const LEAST_LETTERS = 2;
  * and the ⌘K / Ctrl K shortcut, the shell holds `open`. It asks `/api/search` as the person types (the same hits as the search page, the passages
  * escaped by the server), a hit opens its document, and « Tous les résultats » leads to the page with the query in its address.
  */
-export function ConsoleSearch({ open, onOpenChange }: Readonly<{ open: boolean; onOpenChange: (open: boolean) => void }>) {
+export function ConsoleSearch({
+  open,
+  onOpenChange,
+}: Readonly<{ open: boolean; onOpenChange: (open: boolean) => void }>) {
   const { say, locale } = useSay();
   const router = useRouter();
   const [q, setQ] = useState("");
@@ -46,14 +56,21 @@ export function ConsoleSearch({ open, onOpenChange }: Readonly<{ open: boolean; 
       shouldFilter={false}
       footer={
         ready ? (
-          <Link href={`/${locale}/app/search?q=${encodeURIComponent(words)}`} onClick={() => close(false)} className="text-sm font-semibold text-fg-accent hover:underline">
+          <Link
+            href={`/${locale}/app/search?q=${encodeURIComponent(words)}`}
+            onClick={() => close(false)}
+            className="text-sm font-semibold text-fg-accent hover:underline"
+          >
             {say("shell.palette.all")}
           </Link>
         ) : undefined
       }
     >
       <CommandInput placeholder={say("shell.palette.placeholder")} value={q} onValueChange={setQ} />
-      <CommandList label={say("shell.palette.hits")} emptyLabel={ready ? say("shell.palette.none", { q: words }) : say("shell.palette.type")}>
+      <CommandList
+        label={say("shell.palette.hits")}
+        emptyLabel={ready ? say("shell.palette.none", { q: words }) : say("shell.palette.type")}
+      >
         {ready && hits.isPending ? <CommandLoading>{say("shell.palette.hits")}</CommandLoading> : null}
         {ready && !hits.isPending && hits.data?.length ? (
           <CommandGroup heading={say("shell.palette.hits")}>
@@ -69,7 +86,10 @@ export function ConsoleSearch({ open, onOpenChange }: Readonly<{ open: boolean; 
                 <span className="flex min-w-0 flex-col">
                   <span className="truncate font-semibold text-fg">{hit.title}</span>
                   {/* The server escapes the passage and adds only <b> around the words found (lib/search.ts). */}
-                  <span className="truncate text-xs text-fg-secondary [&_b]:font-semibold [&_b]:text-fg" dangerouslySetInnerHTML={{ __html: hit.passage }} />
+                  <span
+                    className="truncate text-xs text-fg-secondary [&_b]:font-semibold [&_b]:text-fg"
+                    dangerouslySetInnerHTML={{ __html: hit.passage }}
+                  />
                 </span>
               </CommandItem>
             ))}

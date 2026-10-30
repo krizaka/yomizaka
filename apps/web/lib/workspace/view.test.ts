@@ -6,13 +6,24 @@ import { DEFAULT_CONFIGS } from "./defaults";
 import { resolveView } from "./view";
 
 const system = DEFAULT_CONFIGS[KIND.applicantFile].views;
-const mine: SavedView = { id: "00000000-0000-4000-8000-0000000000aa", kind: KIND.applicantFile, authorId: "a", name: "Villeray", filters: { q: "villeray" }, shared: false };
+const mine: SavedView = {
+  id: "00000000-0000-4000-8000-0000000000aa",
+  kind: KIND.applicantFile,
+  authorId: "a",
+  name: "Villeray",
+  filters: { q: "villeray" },
+  shared: false,
+};
 const read = (search: string) => parseView(new URLSearchParams(search));
 
 describe("the view named by the address", () => {
   it("a system view alone is its own filters, and is not modified", () => {
     const r = resolveView(read("view=to_decide"), system, [mine], "fr");
-    expect(r).toEqual({ active: { kind: "system", id: "to_decide", label: "À décider" }, filters: { status: [DECISION.toDecide] }, modified: false });
+    expect(r).toEqual({
+      active: { kind: "system", id: "to_decide", label: "À décider" },
+      filters: { status: [DECISION.toDecide] },
+      modified: false,
+    });
   });
   it("speaks the language of the person", () => {
     expect(resolveView(read("view=decided"), system, [], "en").active?.label).toBe("Decided");
@@ -31,6 +42,10 @@ describe("the view named by the address", () => {
     expect(resolveView(read("view=to_decide&status=a_decider"), system, [], "fr").modified).toBe(false);
   });
   it("an unknown view is ignored and the address's filters stand", () => {
-    expect(resolveView(read("view=nope&status=retenu"), system, [], "fr")).toEqual({ active: null, filters: { status: [DECISION.selected] }, modified: false });
+    expect(resolveView(read("view=nope&status=retenu"), system, [], "fr")).toEqual({
+      active: null,
+      filters: { status: [DECISION.selected] },
+      modified: false,
+    });
   });
 });

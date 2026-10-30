@@ -1,5 +1,3 @@
-
-
 import { cloudFlow } from "@/app/cloud-flow";
 import { accountAct } from "@/lib/account/act";
 import { refuse } from "@/lib/http";
@@ -12,10 +10,14 @@ export const dynamic = "force-dynamic";
 export const POST = (req: Request, ctx: { params: Promise<{ cloud: string }> }) =>
   accountAct(req, "storage-cloud", async (s) => {
     const { cloud } = await ctx.params;
-    if (!isCloudName(cloud)) {throw refuse(404, "CLOUD_NOT_OFFERED", "Unknown cloud");}
+    if (!isCloudName(cloud)) {
+      throw refuse(404, "CLOUD_NOT_OFFERED", "Unknown cloud");
+    }
     await assertFeature("ownStorage", s.account.id);
     await assertUserConnectors();
     const flow = cloudFlow();
-    if (!flow) {throw refuse(503, "SETTINGS_KEY_MISSING", "Connecting a cloud is not available on this deployment");}
+    if (!flow) {
+      throw refuse(503, "SETTINGS_KEY_MISSING", "Connecting a cloud is not available on this deployment");
+    }
     return beginConnection(flow, s.account.id, cloud);
   });

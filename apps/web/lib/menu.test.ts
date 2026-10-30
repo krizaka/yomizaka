@@ -39,7 +39,8 @@ describe("every menu item resolves", () => {
 
   it("every public page is reachable from the bar (the terms and the downloads from the footer): the home by the mark, the others by the menu or the action", () => {
     const reachable = new Set<string>(["home", ...MENU.map((m) => m.page)]);
-    for (const page of PAGES.filter((p) => p !== "terms" && p !== "download")) expect(reachable.has(page), page).toBe(true);
+    for (const page of PAGES.filter((p) => p !== "terms" && p !== "download"))
+      expect(reachable.has(page), page).toBe(true);
     expect(pagePath("en", "home")).toBe("/en");
   });
 
@@ -65,7 +66,8 @@ function pageExists(path: string): boolean {
     for (const entry of entries) {
       if (/^\(.+\)$/.test(entry.name)) {
         if (walk(join(dir, entry.name), segments)) return true;
-      } else if ((entry.name === head || /^\[[^.].*\]$/.test(entry.name)) && walk(join(dir, entry.name), rest)) return true;
+      } else if ((entry.name === head || /^\[[^.].*\]$/.test(entry.name)) && walk(join(dir, entry.name), rest))
+        return true;
     }
     return false;
   };
@@ -75,7 +77,9 @@ function pageExists(path: string): boolean {
 /** What Next does with `redirects()`: the first rule whose source matches (`:path*` is the rest of the address). */
 function resolve(path: string): string | null {
   for (const rule of redirectRules()) {
-    const match = new RegExp(`^${rule.source.replace(/\/:path\*$/, "(?:/(.*))?").replace(/\/:path\+$/, "/(.+)")}$`).exec(path);
+    const match = new RegExp(
+      `^${rule.source.replace(/\/:path\*$/, "(?:/(.*))?").replace(/\/:path\+$/, "/(.+)")}$`,
+    ).exec(path);
     if (match) return rule.destination.replace(/:path[*+]/, match[1] ?? "").replace(/\/$/, "") || "/";
   }
   return null;
@@ -83,7 +87,9 @@ function resolve(path: string): string | null {
 
 describe("every removed address redirects (308) to its new home", () => {
   const rules = redirectRules();
-  const redirects = (config as { redirects: () => Promise<{ source: string; destination: string; permanent: boolean }[]> }).redirects;
+  const redirects = (
+    config as { redirects: () => Promise<{ source: string; destination: string; permanent: boolean }[]> }
+  ).redirects;
 
   it("next.config serves exactly these rules, all permanent (308)", async () => {
     expect(await redirects()).toEqual([...rules, ...ALIAS_RULES]);
@@ -106,8 +112,10 @@ describe("every removed address redirects (308) to its new home", () => {
   });
 
   it("no page file is left behind a removed address", () => {
-    for (const dir of ["run", "changelog", "[side]", "tenant", "landlord", "locataire", "verify"]) expect(existsSync(join(ROOT, "app/[locale]", dir)), dir).toBe(false);
-    for (const dir of ["recherche", "verifier", "bibliotheque", "bienvenue"]) expect(existsSync(join(ROOT, "app/[locale]/(app)/app", dir)), dir).toBe(false);
+    for (const dir of ["run", "changelog", "[side]", "tenant", "landlord", "locataire", "verify"])
+      expect(existsSync(join(ROOT, "app/[locale]", dir)), dir).toBe(false);
+    for (const dir of ["recherche", "verifier", "bibliotheque", "bienvenue"])
+      expect(existsSync(join(ROOT, "app/[locale]/(app)/app", dir)), dir).toBe(false);
   });
 
   it("every moved address answers 308 to a page that exists (yomizaka#389)", () => {
@@ -133,7 +141,8 @@ describe("every removed address redirects (308) to its new home", () => {
       ["/app/bibliotheque/l1/c1/f1", "/app/library/l1/c1/f1"],
     ];
     for (const [from, to] of table) {
-      for (const prefix of ["/en", "/fr", ""]) expect(resolve(`${prefix}${from}`), `${prefix}${from}`).toBe(`${prefix}${to}`);
+      for (const prefix of ["/en", "/fr", ""])
+        expect(resolve(`${prefix}${from}`), `${prefix}${from}`).toBe(`${prefix}${to}`);
     }
   });
 
@@ -150,7 +159,11 @@ describe("every removed address redirects (308) to its new home", () => {
   });
 
   it("the report checker moved into the app: /verify answers 308 to /app/verifications/report, which exists and is no longer public", () => {
-    expect(rules).toContainEqual({ source: "/fr/verify", destination: "/fr/app/verifications/report", permanent: true });
+    expect(rules).toContainEqual({
+      source: "/fr/verify",
+      destination: "/fr/app/verifications/report",
+      permanent: true,
+    });
     expect(existsSync(join(ROOT, "app/[locale]/(app)/app/verifications/report/page.tsx"))).toBe(true);
   });
 

@@ -40,13 +40,46 @@ export type ExampleDocuments = Record<"tenant" | "landlord", { title: string; fi
  * check. « Récents » left the home (yomizaka#325). A file dropped anywhere on the page is checked (`LibraryDrop`). With
  * nothing yet: the owl, one sentence, the only drop zone, and two examples.
  */
-export function LibraryView({ libraries, documents, latest = [], tags, perspective = null, screening = false, examples, jurisdictions = ["QC"], todo = null, strip = [], credits = null, period = "30d", chosen = null, now = new Date().toISOString() }: Readonly<{ libraries: LibraryOverview[]; documents: number; latest?: CheckSummary[]; tags: TagOption[]; perspective?: Audience | null; screening?: boolean; examples?: ExampleDocuments; jurisdictions?: readonly Jurisdiction[]; todo?: ToDo | null; activity?: readonly ActivityDay[]; strip?: readonly StripFigure[]; credits?: CreditsFigure | null; period?: HomePeriod; chosen?: string | null; now?: string }>) {
+export function LibraryView({
+  libraries,
+  documents,
+  latest = [],
+  tags,
+  perspective = null,
+  screening = false,
+  examples,
+  jurisdictions = ["QC"],
+  todo = null,
+  strip = [],
+  credits = null,
+  period = "30d",
+  chosen = null,
+  now = new Date().toISOString(),
+}: Readonly<{
+  libraries: LibraryOverview[];
+  documents: number;
+  latest?: CheckSummary[];
+  tags: TagOption[];
+  perspective?: Audience | null;
+  screening?: boolean;
+  examples?: ExampleDocuments;
+  jurisdictions?: readonly Jurisdiction[];
+  todo?: ToDo | null;
+  activity?: readonly ActivityDay[];
+  strip?: readonly StripFigure[];
+  credits?: CreditsFigure | null;
+  period?: HomePeriod;
+  chosen?: string | null;
+  now?: string;
+}>) {
   const { say, locale } = useSay();
   const collections = libraries.flatMap((l) => l.collections);
   const screen = libraryScreen({ documents, screening });
   // The teaching empty state only when there is nothing at all: a collection the person made stays reachable, documents or not.
   const nothingYet = screen.emptyDropzone && collections.every((c) => c.isDefault && c.files === 0);
-  const order = (perspective === "landlord" ? ["landlord", "tenant"] : ["tenant", "landlord"]) as ("tenant" | "landlord")[];
+  const order = (perspective === "landlord" ? ["landlord", "tenant"] : ["tenant", "landlord"]) as (
+    "tenant" | "landlord"
+  )[];
   const first = libraries[0];
   const mine = say("organisation.defaultName");
   const labelOf = (c: { name: string; isDefault: boolean }) => collectionLabel(c.name, c.isDefault, mine);
@@ -83,8 +116,20 @@ export function LibraryView({ libraries, documents, latest = [], tags, perspecti
         side={<LibrarySide strip={strip} period={period} collectionId={selected?.id ?? null} credits={credits} />}
       >
         <Widget title={say("home.binder.title")} span="full" data-testid="binder">
-          {tabs.length === 0 ? <p className="m-0 text-sm text-fg-secondary">{say("organisation.noCollections")}</p> : <BinderTabs tabs={tabs} selectedHref={homeHref(locale, { period, collection: selected?.id ?? null })} />}
-          {selected && lib ? <CollectionCard libraryId={lib.id} selected={selected} label={labelOf(selected)} destinations={destinations} tags={tags} /> : null}
+          {tabs.length === 0 ? (
+            <p className="m-0 text-sm text-fg-secondary">{say("organisation.noCollections")}</p>
+          ) : (
+            <BinderTabs tabs={tabs} selectedHref={homeHref(locale, { period, collection: selected?.id ?? null })} />
+          )}
+          {selected && lib ? (
+            <CollectionCard
+              libraryId={lib.id}
+              selected={selected}
+              label={labelOf(selected)}
+              destinations={destinations}
+              tags={tags}
+            />
+          ) : null}
         </Widget>
 
         <LatestChecks latest={latest} />
@@ -93,7 +138,17 @@ export function LibraryView({ libraries, documents, latest = [], tags, perspecti
   );
 }
 
-function LibrarySide({ strip, period, collectionId, credits }: Readonly<{ strip: readonly StripFigure[]; period: HomePeriod; collectionId: string | null; credits: CreditsFigure | null }>) {
+function LibrarySide({
+  strip,
+  period,
+  collectionId,
+  credits,
+}: Readonly<{
+  strip: readonly StripFigure[];
+  period: HomePeriod;
+  collectionId: string | null;
+  credits: CreditsFigure | null;
+}>) {
   return (
     <>
       {strip.length ? <ActivityStrip figures={strip} period={period} collection={collectionId} /> : null}
@@ -119,32 +174,53 @@ function LibraryActions({ firstId, secondary }: Readonly<{ firstId?: string; sec
 }
 
 /** The two examples offered under the drop zone (a tenant's lease, a landlord's file): a chip each adds it to the drop. */
-const examplesSlot = (examples: ExampleDocuments | undefined, order: readonly ("tenant" | "landlord")[], say: ReturnType<typeof useSay>["say"]) =>
+const examplesSlot = (
+  examples: ExampleDocuments | undefined,
+  order: readonly ("tenant" | "landlord")[],
+  say: ReturnType<typeof useSay>["say"],
+) =>
   function ExamplesSlot(add: (files: File[]) => void) {
     return examples ? (
-    <div className="flex flex-wrap items-center gap-2" data-testid="library-examples">
-      <span className="text-sm text-fg-secondary">{say("library.tryExamples")}</span>
-      {order.map((role) => (
-        <Chip key={role} size="sm" selected={false} onClick={() => add([new File([examples[role].text], examples[role].filename, { type: "text/plain" })])}>
-          {say(role === "tenant" ? "library.exampleTenant" : "library.exampleLandlord")}
-        </Chip>
-      ))}
-      <span className="text-xs text-fg-muted">{say("library.examplesNote")}</span>
-    </div>
-  ) : null;
+      <div className="flex flex-wrap items-center gap-2" data-testid="library-examples">
+        <span className="text-sm text-fg-secondary">{say("library.tryExamples")}</span>
+        {order.map((role) => (
+          <Chip
+            key={role}
+            size="sm"
+            selected={false}
+            onClick={() => add([new File([examples[role].text], examples[role].filename, { type: "text/plain" })])}
+          >
+            {say(role === "tenant" ? "library.exampleTenant" : "library.exampleLandlord")}
+          </Chip>
+        ))}
+        <span className="text-xs text-fg-muted">{say("library.examplesNote")}</span>
+      </div>
+    ) : null;
   };
 
 /** Nothing at all yet: the owl, one sentence, the only drop zone, and two examples. */
-function LibraryEmpty({ jurisdictions, examples, order }: Readonly<{ jurisdictions: readonly Jurisdiction[]; examples?: ExampleDocuments; order: readonly ("tenant" | "landlord")[] }>) {
+function LibraryEmpty({
+  jurisdictions,
+  examples,
+  order,
+}: Readonly<{
+  jurisdictions: readonly Jurisdiction[];
+  examples?: ExampleDocuments;
+  order: readonly ("tenant" | "landlord")[];
+}>) {
   const { say } = useSay();
   return (
-    <section className="mx-auto flex w-full max-w-3xl flex-col gap-5" aria-label={say("library.emptyTitle")} data-testid="library-empty">
-      <EmptyState icon={<Mascot bird="owl" mood="welcome" size={120} />} title={say("library.emptyTitle")} description={say("library.emptyPitch")} />
-      <LibraryDrop
-        zone
-        jurisdictions={jurisdictions}
-        examples={examplesSlot(examples, order, say)}
+    <section
+      className="mx-auto flex w-full max-w-3xl flex-col gap-5"
+      aria-label={say("library.emptyTitle")}
+      data-testid="library-empty"
+    >
+      <EmptyState
+        icon={<Mascot bird="owl" mood="welcome" size={120} />}
+        title={say("library.emptyTitle")}
+        description={say("library.emptyPitch")}
       />
+      <LibraryDrop zone jurisdictions={jurisdictions} examples={examplesSlot(examples, order, say)} />
     </section>
   );
 }
@@ -168,9 +244,24 @@ function LastCheckExtra({ selected }: Readonly<{ selected: Collection }>) {
   );
 }
 
-function CollectionCard({ libraryId, selected, label, destinations, tags }: Readonly<{ libraryId: string; selected: Collection; label: string; destinations: { id: string; name: string; avatar: Collection["avatar"] }[]; tags: TagOption[] }>) {
+function CollectionCard({
+  libraryId,
+  selected,
+  label,
+  destinations,
+  tags,
+}: Readonly<{
+  libraryId: string;
+  selected: Collection;
+  label: string;
+  destinations: { id: string; name: string; avatar: Collection["avatar"] }[];
+  tags: TagOption[];
+}>) {
   const { say, locale } = useSay();
-  const folders = selected.folders > 0 ? ` · ${say(pluralKey("organisation.folders", selected.folders), { count: selected.folders })}` : "";
+  const folders =
+    selected.folders > 0
+      ? ` · ${say(pluralKey("organisation.folders", selected.folders), { count: selected.folders })}`
+      : "";
   return (
     <div className="relative mt-3" data-testid="collection-card">
       <LinkCard
@@ -185,7 +276,10 @@ function CollectionCard({ libraryId, selected, label, destinations, tags }: Read
       />
       {/* An empty folder: one compact line and one action, never a tall box (yomizaka#435). The card's height is its content's. */}
       {selected.files === 0 && selected.folders === 0 ? (
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-dashed border-border-default px-3 py-2" data-testid="collection-empty">
+        <div
+          className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-dashed border-border-default px-3 py-2"
+          data-testid="collection-empty"
+        >
           <span className="min-w-0 text-sm text-fg-secondary">{say("home.binder.empty")}</span>
           <Button asChild variant="secondary" size="sm">
             <Link href={libraryPath(locale, libraryId, selected.id)}>{say("home.binder.add")}</Link>
@@ -194,7 +288,16 @@ function CollectionCard({ libraryId, selected, label, destinations, tags }: Read
       ) : null}
       {/* The card is one link; its menu sits beside it, over the corner, never inside the anchor. */}
       <span className="absolute right-2 top-2">
-        <ItemMenu kind="collection" id={selected.id} name={label} avatar={selected.avatar} isDefault={selected.isDefault} collections={destinations} tags={tags} current={selected.tags.map((t) => t.id)} />
+        <ItemMenu
+          kind="collection"
+          id={selected.id}
+          name={label}
+          avatar={selected.avatar}
+          isDefault={selected.isDefault}
+          collections={destinations}
+          tags={tags}
+          current={selected.tags.map((t) => t.id)}
+        />
       </span>
     </div>
   );
@@ -209,7 +312,10 @@ function LatestChecks({ latest }: Readonly<{ latest: CheckSummary[] }>) {
       data-testid="latest-checks"
       action={
         latest.length ? (
-          <Link href={`/${locale}${CONSOLE_ROUTES.checks}`} className="text-sm font-semibold text-fg-accent hover:underline">
+          <Link
+            href={`/${locale}${CONSOLE_ROUTES.checks}`}
+            className="text-sm font-semibold text-fg-accent hover:underline"
+          >
             {say("organisation.seeAll")} →
           </Link>
         ) : undefined
@@ -221,7 +327,10 @@ function LatestChecks({ latest }: Readonly<{ latest: CheckSummary[] }>) {
         <ul className="m-0 flex list-none flex-col divide-y divide-border-default rounded-lg border border-border-default p-0">
           {latest.map((c) => (
             <li key={c.id}>
-              <Link href={`/${locale}/app/documents/${c.documentId}/rapport`} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 hover:bg-surface-1">
+              <Link
+                href={`/${locale}/app/documents/${c.documentId}/rapport`}
+                className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 hover:bg-surface-1"
+              >
                 <span className="flex min-w-0 items-center gap-2">
                   <Badge tone={STATUS_TONE[c.result]} dot size="sm">
                     {say(`statuses.${c.result}`)}

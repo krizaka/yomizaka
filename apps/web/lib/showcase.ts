@@ -18,7 +18,14 @@ export interface Showcase {
   runId: string;
   studioVersion: string | null;
   finishedAt: string;
-  document: { title: string; filename: string; sha256: string; pages: number | null; text: string; mimeType: AcceptedType };
+  document: {
+    title: string;
+    filename: string;
+    sha256: string;
+    pages: number | null;
+    text: string;
+    mimeType: AcceptedType;
+  };
   report: ComplianceReport;
 }
 
@@ -38,7 +45,9 @@ export const SHOWCASE_SQL = `SELECT a.*, d.title AS d_title, d.filename AS d_fil
  WHERE a.showcase AND d.sample AND a.studio = 'compliance-check' AND a.status = 'succeeded' AND a.run_id IS NOT NULL
  ORDER BY a.finished_at DESC NULLS LAST LIMIT 1`;
 
-export function showcaseOf(row: ShowcaseRow): { showcase: Showcase; analysis: Analysis; document: Parameters<typeof buildPayload>[0] } | null {
+export function showcaseOf(
+  row: ShowcaseRow,
+): { showcase: Showcase; analysis: Analysis; document: Parameters<typeof buildPayload>[0] } | null {
   const parsed = complianceReport.safeParse(toAnalysis(row).report);
   if (!parsed.success || !row.run_id || !row.finished_at) return null;
   return {
@@ -47,11 +56,24 @@ export function showcaseOf(row: ShowcaseRow): { showcase: Showcase; analysis: An
       runId: row.run_id,
       studioVersion: row.blueprint_version,
       finishedAt: row.finished_at.toISOString(),
-      document: { title: row.d_title, filename: row.d_filename, sha256: row.d_sha256, pages: row.d_pages, text: row.d_text, mimeType: row.d_mime_type },
+      document: {
+        title: row.d_title,
+        filename: row.d_filename,
+        sha256: row.d_sha256,
+        pages: row.d_pages,
+        text: row.d_text,
+        mimeType: row.d_mime_type,
+      },
       report: parsed.data,
     },
     analysis: toAnalysis(row),
-    document: { sha256: row.d_sha256, filename: row.d_filename, title: row.d_title, sizeBytes: row.d_size_bytes, pages: row.d_pages },
+    document: {
+      sha256: row.d_sha256,
+      filename: row.d_filename,
+      title: row.d_title,
+      sizeBytes: row.d_size_bytes,
+      pages: row.d_pages,
+    },
   };
 }
 
@@ -76,17 +98,33 @@ export async function showcaseFile(): Promise<{ filename: string; mimeType: stri
 type Actor = { id: string; email: string };
 
 /** Declares a document a sample (or not). Taking the flag away also withdraws its checks from the showcase. */
-export async function setSample(actor: Actor, documentId: string, sample: boolean, headers?: Headers): Promise<{ id: string; sample: boolean }> {
+export async function setSample(
+  actor: Actor,
+  documentId: string,
+  sample: boolean,
+  headers?: Headers,
+): Promise<{ id: string; sample: boolean }> {
   if (!isUuid(documentId)) throw refuse(404, "NOT_FOUND", "No such document");
   const rows = await query("UPDATE documents SET sample = $2 WHERE id = $1 RETURNING id", [documentId, sample]);
   if (rows.length === 0) throw refuse(404, "NOT_FOUND", "No such document");
   if (!sample) await query("UPDATE analyses SET showcase = false WHERE document_id = $1 AND showcase", [documentId]);
-  await audit({ action: sample ? "admin.document_sample_set" : "admin.document_sample_unset", actorId: actor.id, actorLabel: actor.email, targetId: documentId, headers });
+  await audit({
+    action: sample ? "admin.document_sample_set" : "admin.document_sample_unset",
+    actorId: actor.id,
+    actorLabel: actor.email,
+    targetId: documentId,
+    headers,
+  });
   return { id: documentId, sample };
 }
 
 /** Promotes a finished compliance check of a sample document to the public showcase (replacing the previous one), or withdraws it. */
-export async function setShowcase(actor: Actor, analysisId: string, on: boolean, headers?: Headers): Promise<{ id: string; showcase: boolean }> {
+export async function setShowcase(
+  actor: Actor,
+  analysisId: string,
+  on: boolean,
+  headers?: Headers,
+): Promise<{ id: string; showcase: boolean }> {
   if (!isUuid(analysisId)) throw refuse(404, "NOT_FOUND", "No such analysis");
   if (!on) {
     const rows = await query("UPDATE analyses SET showcase = false WHERE id = $1 RETURNING id", [analysisId]);
@@ -97,11 +135,22 @@ export async function setShowcase(actor: Actor, analysisId: string, on: boolean,
       [analysisId],
     );
     if (!row) throw refuse(404, "NOT_FOUND", "No such analysis");
-    if (!row.sample) throw refuse(409, "NOT_A_SAMPLE", "Only a check on a document marked as a sample can be shown publicly");
-    if (row.studio !== "compliance-check" || row.status !== "succeeded") throw refuse(409, "NOT_SHOWABLE", "Only a finished compliance check can be shown publicly");
-    await query("WITH off AS (UPDATE analyses SET showcase = false WHERE showcase AND id <> $1) UPDATE analyses SET showcase = true WHERE id = $1", [analysisId]);
+    if (!row.sample)
+      throw refuse(409, "NOT_A_SAMPLE", "Only a check on a document marked as a sample can be shown publicly");
+    if (row.studio !== "compliance-check" || row.status !== "succeeded")
+      throw refuse(409, "NOT_SHOWABLE", "Only a finished compliance check can be shown publicly");
+    await query(
+      "WITH off AS (UPDATE analyses SET showcase = false WHERE showcase AND id <> $1) UPDATE analyses SET showcase = true WHERE id = $1",
+      [analysisId],
+    );
   }
-  await audit({ action: on ? "admin.showcase_set" : "admin.showcase_unset", actorId: actor.id, actorLabel: actor.email, targetId: analysisId, headers });
+  await audit({
+    action: on ? "admin.showcase_set" : "admin.showcase_unset",
+    actorId: actor.id,
+    actorLabel: actor.email,
+    targetId: analysisId,
+    headers,
+  });
   return { id: analysisId, showcase: on };
 }
 

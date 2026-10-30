@@ -14,5 +14,17 @@ export const defaultLocalDir = () => join(tmpdir(), "yomizaka-documents");
  * to the person): it holds the bytes of a document until its purge, so that PostgreSQL never does (ADR-0012).
  */
 export function localStore(dir: string = defaultLocalDir()): DocumentStore {
-  return documentStoreOver(folderStore({ root: dir }), { kind: "none", endpoint: null, region: null, residency: "unknown", encrypted: false, owner: "krizaka", devOnly: true }, 900);
+  return documentStoreOver(
+    folderStore({ root: dir }),
+    {
+      kind: "none",
+      endpoint: null,
+      region: null,
+      residency: "unknown",
+      encrypted: false,
+      owner: "krizaka",
+      devOnly: true,
+    },
+    900,
+  );
 }

@@ -30,7 +30,15 @@ export const contractPayload = z.object({
   complianceRuleset: z.string(),
   /** SHA-256 of the canonical JSON of the content the partner sent. */
   contentSha256: z.string().regex(/^[0-9a-f]{64}$/),
-  parties: z.array(z.object({ role: z.string(), name: z.string().optional(), userId: z.string().optional(), attestationId: z.string().optional(), signedAt: z.string() })),
+  parties: z.array(
+    z.object({
+      role: z.string(),
+      name: z.string().optional(),
+      userId: z.string().optional(),
+      attestationId: z.string().optional(),
+      signedAt: z.string(),
+    }),
+  ),
   sealedAt: z.string(),
   zone: z.string(),
   lang: z.enum(["en", "fr"]),
@@ -47,29 +55,75 @@ export interface ContractAttestation {
   signature: string;
 }
 
-const attestationSchema = z.object({ schema: z.literal(CONTRACT_SCHEMA), algorithm: z.literal("Ed25519"), keyId: z.string(), payload: contractPayload, bodySha256: z.string().regex(/^[0-9a-f]{64}$/), signature: z.string() });
-const messageOf = (payload: ContractPayload, bodySha256: string) => Buffer.from(canonicalJson({ bodySha256, payload }), "utf8");
+const attestationSchema = z.object({
+  schema: z.literal(CONTRACT_SCHEMA),
+  algorithm: z.literal("Ed25519"),
+  keyId: z.string(),
+  payload: contractPayload,
+  bodySha256: z.string().regex(/^[0-9a-f]{64}$/),
+  signature: z.string(),
+});
+const messageOf = (payload: ContractPayload, bodySha256: string) =>
+  Buffer.from(canonicalJson({ bodySha256, payload }), "utf8");
 
 /** The contract's id: the same request from the same account is the same contract, so a partner's retry seals nothing twice. */
 export const contractIdOf = (ownerId: string, request: SealRequest): string =>
-  `ctr_${crypto.createHash("sha256").update(canonicalJson({ ownerId, partnerId: request.partnerId, documentType: request.documentType, contractPayload: request.contractPayload, parties: request.parties })).digest("hex").slice(0, 24)}`;
+  `ctr_${crypto
+    .createHash("sha256")
+    .update(
+      canonicalJson({
+        ownerId,
+        partnerId: request.partnerId,
+        documentType: request.documentType,
+        contractPayload: request.contractPayload,
+        parties: request.parties,
+      }),
+    )
+    .digest("hex")
+    .slice(0, 24)}`;
 
 /** The payload the seal signs, from the request (the content is hashed, not copied: the file carries the content, the attestation its hash). */
-export function payloadOf(request: SealRequest, input: { contractId: string; sealedAt: string; zone: string }): ContractPayload {
-  const parties = request.parties.map((p: SealParty) => ({ role: p.role, ...(p.name ? { name: p.name } : {}), ...(p.userId ? { userId: p.userId } : {}), ...(p.attestationId ? { attestationId: p.attestationId } : {}), signedAt: p.signedAt }));
-  return { schema: CONTRACT_SCHEMA, contractId: input.contractId, partnerId: request.partnerId, documentType: request.documentType, complianceRuleset: request.complianceRuleset, contentSha256: sha256(canonicalJson(request.contractPayload)), parties, sealedAt: input.sealedAt, zone: input.zone, lang: request.locale };
+export function payloadOf(
+  request: SealRequest,
+  input: { contractId: string; sealedAt: string; zone: string },
+): ContractPayload {
+  const parties = request.parties.map((p: SealParty) => ({
+    role: p.role,
+    ...(p.name ? { name: p.name } : {}),
+    ...(p.userId ? { userId: p.userId } : {}),
+    ...(p.attestationId ? { attestationId: p.attestationId } : {}),
+    signedAt: p.signedAt,
+  }));
+  return {
+    schema: CONTRACT_SCHEMA,
+    contractId: input.contractId,
+    partnerId: request.partnerId,
+    documentType: request.documentType,
+    complianceRuleset: request.complianceRuleset,
+    contentSha256: sha256(canonicalJson(request.contractPayload)),
+    parties,
+    sealedAt: input.sealedAt,
+    zone: input.zone,
+    lang: request.locale,
+  };
 }
 
 /** The order of the keys: by UTF-16 code unit, the same on every machine (the seal is hashed). */
 const compareKeys = (a: string, b: string): number => {
-  if (a < b) {return -1;}
+  if (a < b) {
+    return -1;
+  }
   return a > b ? 1 : 0;
 };
 
 /** The content as `path: value` lines, keys in order: indentation does not survive a PDF's wrapping, a path does. */
 export function flatten(value: unknown, path = ""): string[] {
-  if (path === "" && value !== null && typeof value === "object" && Object.keys(value).length === 0) {return ["{}"];}
-  if (Array.isArray(value)) {return value.length ? value.flatMap((v, i) => flatten(v, `${path}[${i}]`)) : [`${path}: []`];}
+  if (path === "" && value !== null && typeof value === "object" && Object.keys(value).length === 0) {
+    return ["{}"];
+  }
+  if (Array.isArray(value)) {
+    return value.length ? value.flatMap((v, i) => flatten(v, `${path}[${i}]`)) : [`${path}: []`];
+  }
   if (value !== null && typeof value === "object") {
     const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) => compareKeys(a, b));
     return entries.length ? entries.flatMap(([k, v]) => flatten(v, path ? `${path}.${k}` : k)) : [`${path}: {}`];
@@ -89,7 +143,18 @@ const block = (text: string, size: number, face: Face = "regular", gap = 4): Blo
 export function contractBlocks(payload: ContractPayload, content: unknown, locale: Locale): Block[] {
   const w = getDictionary(locale).contractSeal;
   const party = (p: ContractPayload["parties"][number]) =>
-    block([`${p.role}`, p.name ? `${w.partyName}: ${p.name}` : "", p.userId ? `${w.partyUser}: ${p.userId}` : "", p.attestationId ? `${w.partyAttestation}: ${p.attestationId}` : "", `${w.partySignedAt}: ${p.signedAt}`].filter(Boolean).join(" · "), 9);
+    block(
+      [
+        `${p.role}`,
+        p.name ? `${w.partyName}: ${p.name}` : "",
+        p.userId ? `${w.partyUser}: ${p.userId}` : "",
+        p.attestationId ? `${w.partyAttestation}: ${p.attestationId}` : "",
+        `${w.partySignedAt}: ${p.signedAt}`,
+      ]
+        .filter(Boolean)
+        .join(" · "),
+      9,
+    );
   return [
     block(w.eyebrow, 8, "regular", 2),
     block(payload.documentType, 18, "bold", 6),
@@ -118,18 +183,38 @@ export interface SealedPdf {
 }
 
 /** Lays out, hashes the text, signs, embeds. Deterministic: the same request, id, day and key give the same bytes. */
-export async function sealPdf(request: SealRequest, input: { contractId: string; sealedAt: string; zone: string }, key: SigningKey): Promise<SealedPdf> {
+export async function sealPdf(
+  request: SealRequest,
+  input: { contractId: string; sealedAt: string; zone: string },
+  key: SigningKey,
+): Promise<SealedPdf> {
   const payload = payloadOf(request, input);
   const doc = await PDFDocument.create();
   const fonts = await embedFonts(doc);
-  const blocks = contractBlocks(payload, request.contractPayload, request.locale).map((b) => ({ ...b, text: printable(b.text, fonts.regular) }));
+  const blocks = contractBlocks(payload, request.contractPayload, request.locale).map((b) => ({
+    ...b,
+    text: printable(b.text, fonts.regular),
+  }));
   const body = paginate(blocks, fonts, 0);
-  const bodySha256 = sha256(blocks.map((b) => b.text).join("").replace(/\s+/g, ""));
+  const bodySha256 = sha256(
+    blocks
+      .map((b) => b.text)
+      .join("")
+      .replace(/\s+/g, ""),
+  );
   const signature = crypto.sign(null, messageOf(payload, bodySha256), key.privateKey).toString("base64");
-  const attestation: ContractAttestation = { schema: CONTRACT_SCHEMA, algorithm: "Ed25519", keyId: key.keyId, payload, bodySha256, signature };
+  const attestation: ContractAttestation = {
+    schema: CONTRACT_SCHEMA,
+    algorithm: "Ed25519",
+    keyId: key.keyId,
+    payload,
+    bodySha256,
+    signature,
+  };
 
   const r = getDictionary(request.locale).report;
-  const line = (text: string, size: number, face: Face, gap: number) => block(printable(text, fonts.regular), size, face, gap);
+  const line = (text: string, size: number, face: Face, gap: number) =>
+    block(printable(text, fonts.regular), size, face, gap);
   const [signaturePage] = paginate(
     [
       line(r.signatureHeading, 16, "bold", 8),
@@ -152,7 +237,10 @@ export async function sealPdf(request: SealRequest, input: { contractId: string;
   doc.setCreationDate(sealed);
   doc.setModificationDate(sealed);
   const info = doc.context.lookup(doc.context.trailerInfo.Info, PDFDict);
-  info.set(PDFName.of(CONTRACT_ATTESTATION_KEY), PDFString.of(Buffer.from(JSON.stringify(attestation), "utf8").toString("base64")));
+  info.set(
+    PDFName.of(CONTRACT_ATTESTATION_KEY),
+    PDFString.of(Buffer.from(JSON.stringify(attestation), "utf8").toString("base64")),
+  );
   const bytes = await doc.save({ useObjectStreams: false });
   return { bytes, sha256: sha256(bytes), attestation };
 }
@@ -166,7 +254,9 @@ export async function attestationOf(bytes: Uint8Array): Promise<ContractAttestat
   try {
     const doc = await PDFDocument.load(bytes, { updateMetadata: false });
     const raw = doc.context.lookup(doc.context.trailerInfo.Info, PDFDict).get(PDFName.of(CONTRACT_ATTESTATION_KEY));
-    if (!(raw instanceof PDFString)) {return null;}
+    if (!(raw instanceof PDFString)) {
+      return null;
+    }
     return attestationSchema.parse(JSON.parse(Buffer.from(raw.asString(), "base64").toString("utf8")));
   } catch {
     return null;
@@ -174,16 +264,35 @@ export async function attestationOf(bytes: Uint8Array): Promise<ContractAttestat
 }
 
 /** Checks a sealed file: the signature first, then the text of its pages against the signed hash. */
-export async function verifySeal(bytes: Uint8Array, key: Pick<SigningKey, "keyId" | "publicKey">): Promise<SealVerdict> {
+export async function verifySeal(
+  bytes: Uint8Array,
+  key: Pick<SigningKey, "keyId" | "publicKey">,
+): Promise<SealVerdict> {
   const attestation = await attestationOf(bytes);
-  if (!attestation) {return { valid: false, reason: "NOT_A_SEAL" };}
-  if (attestation.keyId !== key.keyId) {return { valid: false, reason: "UNKNOWN_KEY" };}
-  if (!crypto.verify(null, messageOf(attestation.payload, attestation.bodySha256), key.publicKey, Buffer.from(attestation.signature, "base64"))) {return { valid: false, reason: "BAD_SIGNATURE" };}
+  if (!attestation) {
+    return { valid: false, reason: "NOT_A_SEAL" };
+  }
+  if (attestation.keyId !== key.keyId) {
+    return { valid: false, reason: "UNKNOWN_KEY" };
+  }
+  if (
+    !crypto.verify(
+      null,
+      messageOf(attestation.payload, attestation.bodySha256),
+      key.publicKey,
+      Buffer.from(attestation.signature, "base64"),
+    )
+  ) {
+    return { valid: false, reason: "BAD_SIGNATURE" };
+  }
   try {
     const { extractText, getDocumentProxy } = await import("unpdf");
-    const pages = (await extractText(await getDocumentProxy(new Uint8Array(bytes)), { mergePages: false })).text as string[];
+    const pages = (await extractText(await getDocumentProxy(new Uint8Array(bytes)), { mergePages: false }))
+      .text as string[];
     const body = signedBodyOf(pages);
-    if (body === null || sha256(body) !== attestation.bodySha256) {return { valid: false, reason: "ALTERED" };}
+    if (body === null || sha256(body) !== attestation.bodySha256) {
+      return { valid: false, reason: "ALTERED" };
+    }
   } catch {
     return { valid: false, reason: "ALTERED" };
   }

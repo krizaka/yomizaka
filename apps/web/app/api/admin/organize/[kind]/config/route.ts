@@ -22,7 +22,10 @@ export const GET = (req: Request, { params }: Params) =>
   handle(async () => {
     await requireAdmin(req);
     const kind = await kindOf(params);
-    return Response.json({ configuration: await workspaceFor({ clock: systemClock }).config.get(kind) }, { headers: { "Cache-Control": "private, no-store" } });
+    return Response.json(
+      { configuration: await workspaceFor({ clock: systemClock }).config.get(kind) },
+      { headers: { "Cache-Control": "private, no-store" } },
+    );
   });
 
 /**
@@ -35,6 +38,12 @@ export const PUT = (req: Request, { params }: Params) =>
     const session = await requireAdmin(req);
     const kind = await kindOf(params);
     const input = await readJson(req, z.object({ config: z.unknown(), expected: z.number().int().min(1).nullable() }));
-    const saved = await guard(() => workspaceFor({ clock: systemClock, headers: req.headers }).config.put(actorOf(session.account), { ...(input.config as object), kind }, input.expected));
+    const saved = await guard(() =>
+      workspaceFor({ clock: systemClock, headers: req.headers }).config.put(
+        actorOf(session.account),
+        { ...(input.config as object), kind },
+        input.expected,
+      ),
+    );
     return Response.json({ configuration: saved }, { headers: { "Cache-Control": "private, no-store" } });
   });

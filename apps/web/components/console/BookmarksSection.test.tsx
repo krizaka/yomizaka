@@ -12,7 +12,12 @@ import { BookmarksSection } from "./BookmarksSection";
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push() {}, replace() {}, refresh() {} }) }));
 
 const MESSAGES = { en: { console: en.console }, fr: { console: fr.console } } as const;
-const wrap = (node: React.ReactNode, locale: "en" | "fr") => renderToStaticMarkup(<I18nProvider locale={locale} messages={MESSAGES[locale] as never}><KrizakaQueryProvider>{node}</KrizakaQueryProvider></I18nProvider>);
+const wrap = (node: React.ReactNode, locale: "en" | "fr") =>
+  renderToStaticMarkup(
+    <I18nProvider locale={locale} messages={MESSAGES[locale] as never}>
+      <KrizakaQueryProvider>{node}</KrizakaQueryProvider>
+    </I18nProvider>,
+  );
 const groups = [
   { kind: "applicant_file" as const, bookmarks: [{ id: "t1", name: "Garant", color: "amber" as const }] },
   { kind: "document" as const, bookmarks: [] },

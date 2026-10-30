@@ -22,7 +22,8 @@ export interface CheckFilters {
 }
 export const NO_CHECK_FILTERS: CheckFilters = { q: "", result: [], kind: [], period: null };
 
-const known = <V extends string>(values: readonly string[], vocabulary: readonly V[]): V[] => vocabulary.filter((v) => values.includes(v));
+const known = <V extends string>(values: readonly string[], vocabulary: readonly V[]): V[] =>
+  vocabulary.filter((v) => values.includes(v));
 
 /** The filters an address carries — an unknown value is dropped, so a stale link never breaks the page. */
 export function readCheckFilters(search: string | URLSearchParams): CheckFilters {
@@ -37,22 +38,40 @@ export function readCheckFilters(search: string | URLSearchParams): CheckFilters
 
 /** The address with these filters: the other keys (the tab) kept, an empty filter removed, several values comma-separated. */
 export function writeCheckFilters(base: URLSearchParams, filters: CheckFilters): URLSearchParams {
-  return writeFilterParams(base, { q: filters.q.trim() || null, result: filters.result, kind: filters.kind, period: filters.period });
+  return writeFilterParams(base, {
+    q: filters.q.trim() || null,
+    result: filters.result,
+    kind: filters.kind,
+    period: filters.period,
+  });
 }
 
-export const hasCheckFilters = (f: CheckFilters): boolean => f.q.length > 0 || f.result.length > 0 || f.kind.length > 0 || f.period !== null;
+export const hasCheckFilters = (f: CheckFilters): boolean =>
+  f.q.length > 0 || f.result.length > 0 || f.kind.length > 0 || f.period !== null;
 
 const HOURS_IN_DAY = 24;
 
 /** The minutes a zone is ahead of UTC at an instant (Intl only, no library). */
 function offsetMinutes(zone: string, at: Date): number {
   const parts = Object.fromEntries(
-    new Intl.DateTimeFormat("en-CA", { timeZone: zone, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" })
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone: zone,
+      hourCycle: "h23",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    })
       .formatToParts(at)
       .filter((p) => p.type !== "literal")
       .map((p) => [p.type, Number(p.value)]),
   ) as Record<"year" | "month" | "day" | "hour" | "minute" | "second", number>;
-  return differenceInMinutes(new Date(Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second)), at);
+  return differenceInMinutes(
+    new Date(Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second)),
+    at,
+  );
 }
 
 /** The first instant of `now`'s year in a zone — the console's (America/Toronto) on both sides, so the server and the browser keep the same rows. */
@@ -64,7 +83,9 @@ function startOfYearIn(zone: string, now: Date): Date {
 
 /** When a period starts, from `now`: the last 7 or 30 days (instants — no local calendar, no DST shift), or this year in the console's zone. */
 export function periodStart(period: CheckPeriod, now: Date, zone = DISPLAY_TIME_ZONE): Date {
-  if (period === "year") {return startOfYearIn(zone, now);}
+  if (period === "year") {
+    return startOfYearIn(zone, now);
+  }
   const days = period === "7d" ? 7 : 30;
   return subHours(now, HOURS_IN_DAY * days);
 }
@@ -79,8 +100,12 @@ export interface DraftState {
   seen: string;
 }
 export function reconcileDraft(state: DraftState, q: string): DraftState {
-  if (q === state.seen) {return state;}
-  if (q === state.pending) {return { ...state, seen: q, draft: state.draft === q ? null : state.draft };}
+  if (q === state.seen) {
+    return state;
+  }
+  if (q === state.pending) {
+    return { ...state, seen: q, draft: state.draft === q ? null : state.draft };
+  }
   return { draft: null, pending: q, seen: q };
 }
 
@@ -96,24 +121,41 @@ export function applyCheckFilters(rows: readonly CheckSummary[], f: CheckFilters
   const words = fold(f.q).split(/\s+/).filter(Boolean);
   const since = f.period ? periodStart(f.period, now) : null;
   return rows.filter((c) => {
-    if (words.length && !words.every((w) => fold(c.title).includes(w))) {return false;}
-    if (f.result.length && !f.result.includes(c.result)) {return false;}
-    if (f.kind.length && !f.kind.includes(c.kind)) {return false;}
-    if (since && isBefore(new Date(c.at), since)) {return false;}
+    if (words.length && !words.every((w) => fold(c.title).includes(w))) {
+      return false;
+    }
+    if (f.result.length && !f.result.includes(c.result)) {
+      return false;
+    }
+    if (f.kind.length && !f.kind.includes(c.kind)) {
+      return false;
+    }
+    if (since && isBefore(new Date(c.at), since)) {
+      return false;
+    }
     return true;
   });
 }
 
 /** How many rows each value of one filter would give, with the other filters in force — the count on the menu's options. */
-export function countByValue(rows: readonly CheckSummary[], f: CheckFilters, key: "result" | "kind", now: Date): Record<string, number> {
+export function countByValue(
+  rows: readonly CheckSummary[],
+  f: CheckFilters,
+  key: "result" | "kind",
+  now: Date,
+): Record<string, number> {
   const base = applyCheckFilters(rows, { ...f, [key]: [] }, now);
   const counts: Record<string, number> = {};
-  for (const c of base) {counts[c[key]] = (counts[c[key]] ?? 0) + 1;}
+  for (const c of base) {
+    counts[c[key]] = (counts[c[key]] ?? 0) + 1;
+  }
   return counts;
 }
 
 /** The same for the periods: how many rows each period keeps, the other filters in force. */
 export function countByPeriod(rows: readonly CheckSummary[], f: CheckFilters, now: Date): Record<CheckPeriod, number> {
   const base = applyCheckFilters(rows, { ...f, period: null }, now);
-  return Object.fromEntries(CHECK_PERIODS.map((p) => [p, applyCheckFilters(base, { ...NO_CHECK_FILTERS, period: p }, now).length])) as Record<CheckPeriod, number>;
+  return Object.fromEntries(
+    CHECK_PERIODS.map((p) => [p, applyCheckFilters(base, { ...NO_CHECK_FILTERS, period: p }, now).length]),
+  ) as Record<CheckPeriod, number>;
 }

@@ -11,7 +11,16 @@ import { fileURLToPath } from "node:url";
 
 import { auditContext, loadSettled } from "@krizaka/page-audit";
 
-import { assertTestKey, isHostedCheckout, isSignedPdf, isSubscribed, paidReceipt, PLAN, plain, TEST_CARD } from "./checkout-journey-lib.mjs";
+import {
+  assertTestKey,
+  isHostedCheckout,
+  isSignedPdf,
+  isSubscribed,
+  paidReceipt,
+  PLAN,
+  plain,
+  TEST_CARD,
+} from "./checkout-journey-lib.mjs";
 import { smokeLeaseCheck } from "./smoke-lease-check.mjs";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -31,7 +40,10 @@ async function until(read, done, { what, timeoutMs, everyMs = 3000 }) {
 function processor(key) {
   assertTestKey(key);
   const call = async (path, init = {}) => {
-    const res = await fetch(`https://api.stripe.com/v1${path}`, { ...init, headers: { authorization: `Bearer ${key}` } });
+    const res = await fetch(`https://api.stripe.com/v1${path}`, {
+      ...init,
+      headers: { authorization: `Bearer ${key}` },
+    });
     if (!res.ok) throw new Error(`payment processor ${init.method ?? "GET"} ${path.split("?")[0]}: HTTP ${res.status}`);
     return res.json();
   };
@@ -70,25 +82,44 @@ export async function checkoutJourney({ base, email, password, stripeKey, log = 
   if (!email || !password) throw new Error("SMOKE_EMAIL and SMOKE_PASSWORD are required (the persona)");
   const stripe = processor(stripeKey);
   const call = async (path, init = {}, token) => {
-    const res = await fetch(`${base}${path}`, { ...init, headers: { accept: "application/json", ...(token ? { authorization: `Bearer ${token}` } : {}), ...init.headers } });
+    const res = await fetch(`${base}${path}`, {
+      ...init,
+      headers: { accept: "application/json", ...(token ? { authorization: `Bearer ${token}` } : {}), ...init.headers },
+    });
     return { res, body: await res.json().catch(() => null) };
   };
-  const signIn = await call("/api/auth/sign-in", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, password, client: "native" }) });
+  const signIn = await call("/api/auth/sign-in", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ email, password, client: "native" }),
+  });
   if (!signIn.res.ok || typeof signIn.body?.token !== "string") throw new Error(`sign-in: HTTP ${signIn.res.status}`);
   const token = signIn.body.token;
   const billing = () => call("/api/billing", {}, token).then((r) => r.body);
 
   const cancelled = await stripe.cancelSubscriptionsOf(email);
   log(`clean start (${cancelled} old subscription(s) cancelled)`);
-  await until(billing, (b) => b && !b.entitlement?.pro, { what: "the persona still has a subscription after the clean start", timeoutMs: 60_000 }).catch(() => {});
+  await until(billing, (b) => b && !b.entitlement?.pro, {
+    what: "the persona still has a subscription after the clean start",
+    timeoutMs: 60_000,
+  }).catch(() => {});
 
   const before = await billing();
-  if (!before?.paymentsOn) throw new Error("payments are off on this environment (paymentsOn is false): nothing to buy");
-  if (!before.prices?.some((p) => p.key === PLAN.priceKey)) throw new Error(`the plan ${PLAN.priceKey} is not for sale`);
+  if (!before?.paymentsOn)
+    throw new Error("payments are off on this environment (paymentsOn is false): nothing to buy");
+  if (!before.prices?.some((p) => p.key === PLAN.priceKey))
+    throw new Error(`the plan ${PLAN.priceKey} is not for sale`);
 
   try {
-    const started = await call("/api/billing/checkout", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ kind: PLAN.kind }) }, token);
-    if (!started.res.ok || !isHostedCheckout(started.body?.url)) throw new Error(`start the checkout: HTTP ${started.res.status}, ${isHostedCheckout(started.body?.url) ? "ok" : "no hosted page"}`);
+    const started = await call(
+      "/api/billing/checkout",
+      { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ kind: PLAN.kind }) },
+      token,
+    );
+    if (!started.res.ok || !isHostedCheckout(started.body?.url))
+      throw new Error(
+        `start the checkout: HTTP ${started.res.status}, ${isHostedCheckout(started.body?.url) ? "ok" : "no hosted page"}`,
+      );
     log("checkout started");
 
     const { browser, close } = await openBrowser();
@@ -102,10 +133,17 @@ export async function checkoutJourney({ base, email, password, stripeKey, log = 
       await close();
     }
 
-    const after = await until(billing, (b) => isSubscribed(b?.entitlement), { what: "the subscription did not turn active", timeoutMs: 120_000 });
+    const after = await until(billing, (b) => isSubscribed(b?.entitlement), {
+      what: "the subscription did not turn active",
+      timeoutMs: 120_000,
+    });
     log(`subscription ${after.entitlement.subscriptionStatus}, plan ${after.entitlement.planKey}`);
 
-    const history = await until(() => call("/api/billing/payments", {}, token).then((r) => r.body), (b) => paidReceipt(b?.payments) !== null, { what: "no paid receipt in the payment history", timeoutMs: 60_000 });
+    const history = await until(
+      () => call("/api/billing/payments", {}, token).then((r) => r.body),
+      (b) => paidReceipt(b?.payments) !== null,
+      { what: "no paid receipt in the payment history", timeoutMs: 60_000 },
+    );
     const receipt = paidReceipt(history.payments);
     const receiptPage = await fetch(receipt.receiptUrl, { redirect: "follow" });
     if (!receiptPage.ok) throw new Error(`the receipt did not open: HTTP ${receiptPage.status}`);
@@ -117,9 +155,20 @@ export async function checkoutJourney({ base, email, password, stripeKey, log = 
       password,
       log,
       onReport: async ({ token: bearer, documentId, analysisId }) => {
-        const res = await fetch(`${base}/api/documents/${documentId}/analyses/${analysisId}/report?format=pdf&lang=en`, { headers: { authorization: `Bearer ${bearer}` } });
+        const res = await fetch(
+          `${base}/api/documents/${documentId}/analyses/${analysisId}/report?format=pdf&lang=en`,
+          { headers: { authorization: `Bearer ${bearer}` } },
+        );
         const bytes = new Uint8Array(await res.arrayBuffer());
-        if (!res.ok || !isSignedPdf({ contentType: res.headers.get("content-type"), bytes, sha256: res.headers.get("x-report-sha256") })) throw new Error(`the signed report is not reachable: HTTP ${res.status}`);
+        if (
+          !res.ok ||
+          !isSignedPdf({
+            contentType: res.headers.get("content-type"),
+            bytes,
+            sha256: res.headers.get("x-report-sha256"),
+          })
+        )
+          throw new Error(`the signed report is not reachable: HTTP ${res.status}`);
         log("signed PDF reachable");
       },
     });
@@ -139,7 +188,14 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       const browser = await chromium.launch();
       return { browser, close: () => browser.close() };
     };
-    const result = await checkoutJourney({ base, email: process.env.SMOKE_EMAIL, password: process.env.SMOKE_PASSWORD, stripeKey: process.env.PAYMENTS_STRIPE_TEST_SECRET_KEY, log: (m) => console.log(plain(m)), openBrowser });
+    const result = await checkoutJourney({
+      base,
+      email: process.env.SMOKE_EMAIL,
+      password: process.env.SMOKE_PASSWORD,
+      stripeKey: process.env.PAYMENTS_STRIPE_TEST_SECRET_KEY,
+      log: (m) => console.log(plain(m)),
+      openBrowser,
+    });
     console.log(`checkout on ${plain(base)}: succeeded, plan ${result.plan}, lease check ${result.findings} findings`);
   } catch (error) {
     console.error(`checkout on ${plain(base)} FAILED: ${plain(error.message)}`);

@@ -12,21 +12,43 @@ export const OG_IMAGE = `${SITE_URL}/og.png`;
 
 /** The search bots and AI crawlers the whole family welcomes — the same list on every site. */
 export const CRAWLERS = [
-  "Googlebot", "Google-Extended", "Bingbot", "GPTBot", "OAI-SearchBot", "ChatGPT-User", "PerplexityBot", "Perplexity-User",
-  "Claude-SearchBot", "Claude-User", "ClaudeBot", "anthropic-ai", "Applebot", "Applebot-Extended", "CCBot",
+  "Googlebot",
+  "Google-Extended",
+  "Bingbot",
+  "GPTBot",
+  "OAI-SearchBot",
+  "ChatGPT-User",
+  "PerplexityBot",
+  "Perplexity-User",
+  "Claude-SearchBot",
+  "Claude-User",
+  "ClaudeBot",
+  "anthropic-ai",
+  "Applebot",
+  "Applebot-Extended",
+  "CCBot",
 ] as const;
 
 const url = (locale: Locale, page: PageId) => `${SITE_URL}${pagePath(locale, page)}`;
 
 export function pageMetadata(locale: Locale, page: PageId): Metadata {
   const t = getDictionary(locale);
-  const titles: Record<Exclude<PageId, "home">, string> = { docs: t.docs.title, pricing: t.pricing.title, download: t.download.title, privacy: t.privacy.title, terms: t.terms.title };
+  const titles: Record<Exclude<PageId, "home">, string> = {
+    docs: t.docs.title,
+    pricing: t.pricing.title,
+    download: t.download.title,
+    privacy: t.privacy.title,
+    terms: t.terms.title,
+  };
   const title = page === "home" ? `${t.meta.siteName} · ${t.landing.title}` : `${titles[page]} · ${t.meta.siteName}`;
   const description = t.meta.description;
   return {
     title: { absolute: title },
     description,
-    alternates: { canonical: url(locale, page), languages: { en: url("en", page), fr: url("fr", page), "x-default": url("fr", page) } },
+    alternates: {
+      canonical: url(locale, page),
+      languages: { en: url("en", page), fr: url("fr", page), "x-default": url("fr", page) },
+    },
     openGraph: {
       type: "website",
       siteName: t.meta.siteName,
@@ -47,7 +69,14 @@ export function siteJsonLd(locale: Locale) {
   return {
     "@context": "https://schema.org",
     "@graph": [
-      { "@type": "WebSite", "@id": `${SITE_URL}/#website`, url: `${SITE_URL}/`, name: t.meta.siteName, inLanguage: ["en", "fr"], publisher: ORG },
+      {
+        "@type": "WebSite",
+        "@id": `${SITE_URL}/#website`,
+        url: `${SITE_URL}/`,
+        name: t.meta.siteName,
+        inLanguage: ["en", "fr"],
+        publisher: ORG,
+      },
       {
         "@type": "SoftwareApplication",
         "@id": `${SITE_URL}/#software`,

@@ -12,6 +12,14 @@ export function DocSection({ id, children }: Readonly<{ id: string; children: Re
   );
 }
 
-export const DocH2 = ({ children }: Readonly<{ children: ReactNode }>) => <h2 className="mt-2 text-[length:var(--kz-type-display-sm-size)] leading-tight font-semibold">{children}</h2>;
-export const DocH3 = ({ children }: Readonly<{ children: ReactNode }>) => <h3 className="mt-4 text-[length:var(--kz-type-title-lg-size)] leading-snug font-semibold">{children}</h3>;
-export const DocH4 = ({ children }: Readonly<{ children: ReactNode }>) => <h4 className="mt-2 text-[length:var(--kz-type-title-md-size)] leading-snug font-semibold text-fg-primary">{children}</h4>;
+export const DocH2 = ({ children }: Readonly<{ children: ReactNode }>) => (
+  <h2 className="mt-2 text-[length:var(--kz-type-display-sm-size)] leading-tight font-semibold">{children}</h2>
+);
+export const DocH3 = ({ children }: Readonly<{ children: ReactNode }>) => (
+  <h3 className="mt-4 text-[length:var(--kz-type-title-lg-size)] leading-snug font-semibold">{children}</h3>
+);
+export const DocH4 = ({ children }: Readonly<{ children: ReactNode }>) => (
+  <h4 className="mt-2 text-[length:var(--kz-type-title-md-size)] leading-snug font-semibold text-fg-primary">
+    {children}
+  </h4>
+);

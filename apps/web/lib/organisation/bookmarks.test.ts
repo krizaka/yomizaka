@@ -38,15 +38,26 @@ describe("one tap on a row", () => {
 });
 
 describe("the bookmarks as binder dividers", () => {
-  const marks = [{ id: "a", name: "Urgent", color: "red" as const }, { id: "b", name: "Verified", color: "green" as const }];
+  const marks = [
+    { id: "a", name: "Urgent", color: "red" as const },
+    { id: "b", name: "Verified", color: "green" as const },
+  ];
   const input = { bookmarks: marks, ids: ["d1", "d2", "d3"], tagsByDocument: by, path: "/en/app/documents" };
   it("starts with « All » and counts the documents that wear each bookmark", () => {
     const tabs = dividers({ ...input, selected: [] });
-    expect(tabs.map((t) => [t.name, t.count, t.on])).toEqual([[null, 3, true], ["Urgent", 2, false], ["Verified", 1, false]]);
+    expect(tabs.map((t) => [t.name, t.count, t.on])).toEqual([
+      [null, 3, true],
+      ["Urgent", 2, false],
+      ["Verified", 1, false],
+    ]);
   });
   it("opens a bookmark alone through the address, and marks the one in force", () => {
     const tabs = dividers({ ...input, selected: ["b"] });
-    expect(tabs.map((t) => t.href)).toEqual(["/en/app/documents", "/en/app/documents?tags=a", "/en/app/documents?tags=b"]);
+    expect(tabs.map((t) => t.href)).toEqual([
+      "/en/app/documents",
+      "/en/app/documents?tags=a",
+      "/en/app/documents?tags=b",
+    ]);
     expect(tabs.map((t) => t.on)).toEqual([false, false, true]);
   });
   it("marks no tab when several bookmarks are combined", () => {

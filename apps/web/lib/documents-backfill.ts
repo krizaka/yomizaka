@@ -38,8 +38,15 @@ const sha256Of = (bytes: Uint8Array) => createHash("sha256").update(bytes).diges
 async function moveRow(q: Query, row: LegacyRow, holder: ObjectHolder): Promise<boolean> {
   const key = objectKey(row.owner_id, row.id, row.mime_type);
   try {
-    const store = await holder({ owner_id: row.owner_id, storage: row.storage, storage_owner: row.storage_owner, object_key: key });
-    if (!store) {return false;}
+    const store = await holder({
+      owner_id: row.owner_id,
+      storage: row.storage,
+      storage_owner: row.storage_owner,
+      object_key: key,
+    });
+    if (!store) {
+      return false;
+    }
     await store.put(key, row.content, { contentType: row.mime_type });
     const back = await store.get(key);
     if (!back || sha256Of(back.bytes) !== row.sha256) {
@@ -50,13 +57,18 @@ async function moveRow(q: Query, row: LegacyRow, holder: ObjectHolder): Promise<
     return false;
   }
   // The row is only changed if it is still the one that was read (nobody purged or rewrote it meanwhile).
-  const done = await q<{ id: string }>("UPDATE documents SET object_key = $2, content = ''::bytea WHERE id = $1 AND object_key IS NULL AND sha256 = $3 AND octet_length(content) > 0 RETURNING id", [row.id, key, row.sha256]);
+  const done = await q<{ id: string }>(
+    "UPDATE documents SET object_key = $2, content = ''::bytea WHERE id = $1 AND object_key IS NULL AND sha256 = $3 AND octet_length(content) > 0 RETURNING id",
+    [row.id, key, row.sha256],
+  );
   return done.length === 1;
 }
 
 /** Moves one row; 1 when it moved, 0 when it failed (its id joins `failed`). */
 async function moveCounted(q: Query, row: LegacyRow, holder: ObjectHolder, failed: string[]): Promise<number> {
-  if (await moveRow(q, row, holder)) {return 1;}
+  if (await moveRow(q, row, holder)) {
+    return 1;
+  }
   failed.push(row.id);
   return 0;
 }
@@ -66,16 +78,31 @@ async function moveCounted(q: Query, row: LegacyRow, holder: ObjectHolder, faile
  * column emptied. Idempotent (a row already in the store is not a candidate), batched by `limit`, resumable (a failure leaves the row
  * untouched for the next run) and harmless with `dryRun`. One audit row per run that did something.
  */
-export async function backfillDocuments(q: Query, holder: ObjectHolder, options: BackfillOptions = {}): Promise<BackfillResult> {
+export async function backfillDocuments(
+  q: Query,
+  holder: ObjectHolder,
+  options: BackfillOptions = {},
+): Promise<BackfillResult> {
   const dryRun = options.dryRun === true;
-  const rows = await q<LegacyRow>("SELECT id, owner_id, mime_type, sha256, storage, storage_owner, content FROM documents WHERE object_key IS NULL AND octet_length(content) > 0 ORDER BY created_at LIMIT $1", [options.limit ?? 50]);
+  const rows = await q<LegacyRow>(
+    "SELECT id, owner_id, mime_type, sha256, storage, storage_owner, content FROM documents WHERE object_key IS NULL AND octet_length(content) > 0 ORDER BY created_at LIMIT $1",
+    [options.limit ?? 50],
+  );
   const failed: string[] = [];
   let copied = 0;
   if (!dryRun) {
     for (const row of rows) {
       copied += await moveCounted(q, row, holder, failed);
     }
-    if (rows.length > 0) {await audit({ action: "documents.backfilled", actorId: null, actorLabel: "backfill", targetId: null, detail: { candidates: rows.length, copied, failed: failed.length } });}
+    if (rows.length > 0) {
+      await audit({
+        action: "documents.backfilled",
+        actorId: null,
+        actorLabel: "backfill",
+        targetId: null,
+        detail: { candidates: rows.length, copied, failed: failed.length },
+      });
+    }
   }
   return { candidates: rows.length, copied, failed, dryRun };
 }

@@ -31,7 +31,11 @@ const need = (n) => {
 const email = need("E2E_EMAIL");
 const password = need("E2E_PASSWORD");
 const docs = path.resolve(need("E2E_DOCS"));
-const FILES = { invoice: "facture-modele-krizaka.txt", contract: "contrat-de-prestation-modele-krizaka.txt", akinaza: "facture-akinaza-krizaka.txt" };
+const FILES = {
+  invoice: "facture-modele-krizaka.txt",
+  contract: "contrat-de-prestation-modele-krizaka.txt",
+  akinaza: "facture-akinaza-krizaka.txt",
+};
 
 /** What is said at each beat (also the captions). Honest about what Yomizaka found and what it did not. */
 export const WORDS = {
@@ -88,7 +92,18 @@ const T = {
   contractKind: /^(Contract|Contrat)$/,
 };
 
-const take = await createTake({ chromium, base: BASE, viewport: VIEWPORT, scale: device === "phone" ? 2 : 1, locale, outDir: path.join(out, device), name: `yomizaka-review-${locale}`, mobile: device === "phone", words: WORDS, voices: VOICES });
+const take = await createTake({
+  chromium,
+  base: BASE,
+  viewport: VIEWPORT,
+  scale: device === "phone" ? 2 : 1,
+  locale,
+  outDir: path.join(out, device),
+  name: `yomizaka-review-${locale}`,
+  mobile: device === "phone",
+  words: WORDS,
+  voices: VOICES,
+});
 const { page, context } = take;
 const req = context.request;
 const signIn = await req.post(`${BASE}/api/auth/sign-in`, { data: { email, password } });
@@ -96,17 +111,27 @@ if (!signIn.ok()) throw new Error(`sign-in refused (${signIn.status()})`);
 await req.put(`${BASE}/api/me/perspective`, { data: { perspective: "freelancer" } });
 // A clean library: only what this walkthrough keeps (Éric's own demo documents).
 const listed = await req.get(`${BASE}/api/documents`);
-if (listed.ok()) for (const d of (await listed.json()).documents ?? (await listed.json()) ?? []) if (d?.id) await req.delete(`${BASE}/api/documents/${d.id}`);
+if (listed.ok())
+  for (const d of (await listed.json()).documents ?? (await listed.json()) ?? [])
+    if (d?.id) await req.delete(`${BASE}/api/documents/${d.id}`);
 
 const hold = (ms) => page.waitForTimeout(ms);
 async function upload(kind, file) {
   await page.getByRole("radio", { name: kind }).click();
   await page.locator("input[type=file]").setInputFiles(path.join(docs, file));
-  await page.locator('a[href*="/app/documents/"]').filter({ hasText: file.replace(/\.txt$/, "").replace(/-/g, " ") }).first().waitFor({ timeout: 30_000 });
+  await page
+    .locator('a[href*="/app/documents/"]')
+    .filter({ hasText: file.replace(/\.txt$/, "").replace(/-/g, " ") })
+    .first()
+    .waitFor({ timeout: 30_000 });
   await hold(900);
 }
 async function openDoc(file) {
-  await page.locator('a[href*="/app/documents/"]').filter({ hasText: file.replace(/\.txt$/, "").replace(/-/g, " ") }).first().click();
+  await page
+    .locator('a[href*="/app/documents/"]')
+    .filter({ hasText: file.replace(/\.txt$/, "").replace(/-/g, " ") })
+    .first()
+    .click();
   await page.waitForURL(/\/app\/documents\//);
   await page.waitForLoadState("networkidle");
 }
@@ -122,7 +147,11 @@ async function check(type, ruleset, announce = false) {
   await form.locator('button[type="submit"]').click();
   if (announce) take.beat("running");
   const done = take.fast(8);
-  await page.waitForFunction(([re, n]) => (document.body.innerText.match(new RegExp(re, "g")) ?? []).length > n, [`${ruleset} ·`, before], { timeout: 240_000 });
+  await page.waitForFunction(
+    ([re, n]) => (document.body.innerText.match(new RegExp(re, "g")) ?? []).length > n,
+    [`${ruleset} ·`, before],
+    { timeout: 240_000 },
+  );
   done();
   if (announce) await take.speak("running");
   await hold(800);
@@ -178,4 +207,6 @@ await take.speak("notes");
 take.beat("outro");
 await take.speak("outro");
 const meta = await take.finish({ voice });
-process.stdout.write(`${device}/${locale}: ${meta.seconds} s, ${meta.activeCaptureFps} fps while moving, ${meta.calls.filter((c) => c.status >= 500).length} server errors\n`);
+process.stdout.write(
+  `${device}/${locale}: ${meta.seconds} s, ${meta.activeCaptureFps} fps while moving, ${meta.calls.filter((c) => c.status >= 500).length} server errors\n`,
+);

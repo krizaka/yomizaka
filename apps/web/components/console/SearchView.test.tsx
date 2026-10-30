@@ -7,11 +7,26 @@ import fr from "@/messages/fr.json";
 
 import { SearchResults } from "./SearchView";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push() {}, replace() {}, refresh() {} }), usePathname: () => "/fr/app/search" }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push() {}, replace() {}, refresh() {} }),
+  usePathname: () => "/fr/app/search",
+}));
 
 const MESSAGES = { en: { console: en.console }, fr: { console: fr.console } } as const;
-const readable = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ");
-const hit = (n: number, source: "text" | "finding" | "title" = "text") => ({ documentId: `d${n}`, title: `Bail ${n}`, kind: "lease" as const, source, passage: `… un <b>dépôt</b> de garantie ${n} …`, rank: n });
+const readable = (html: string) =>
+  html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&#x27;|&#39;/g, "'")
+    .replace(/&[a-z#0-9]+;/gi, " ")
+    .replace(/\s+/g, " ");
+const hit = (n: number, source: "text" | "finding" | "title" = "text") => ({
+  documentId: `d${n}`,
+  title: `Bail ${n}`,
+  kind: "lease" as const,
+  source,
+  passage: `… un <b>dépôt</b> de garantie ${n} …`,
+  rank: n,
+});
 const render = (hits: ReturnType<typeof hit>[], q = "dépôt", locale: "en" | "fr" = "fr") =>
   renderToStaticMarkup(
     <I18nProvider locale={locale} messages={MESSAGES[locale] as never}>

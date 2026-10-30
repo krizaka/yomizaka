@@ -8,7 +8,8 @@ import type { SectionGDeadline } from "./section-g-deadline";
  * form and no fee: the TAL's page « Avis au nouveau locataire » does not link the recourse to a form, so the tenant is pointed to the TAL.
  * No finding, no summary. Information, not legal advice. LAWYER REVIEW: see docs/compliance-gate.md.
  */
-export type RequestLineKey = "rentNew" | "rentPrevious" | "previousBlank" | "previousAltered" | "rentMax" | "excess" | "deadline";
+export type RequestLineKey =
+  "rentNew" | "rentPrevious" | "previousBlank" | "previousAltered" | "rentMax" | "excess" | "deadline";
 
 export interface RequestLine {
   key: RequestLineKey;
@@ -36,8 +37,10 @@ export function sectionGRequestSummary(section: SectionGResult, deadline: Sectio
       lines.push({ key: "previousAltered", values: {} });
       break;
     default:
-      if (figures.previousRentCents !== undefined) lines.push({ key: "rentPrevious", values: { cents: figures.previousRentCents } });
-      if (figures.maxRentCents !== undefined) lines.push({ key: "rentMax", values: { cents: figures.maxRentCents, year: section.source.year ?? 0 } });
+      if (figures.previousRentCents !== undefined)
+        lines.push({ key: "rentPrevious", values: { cents: figures.previousRentCents } });
+      if (figures.maxRentCents !== undefined)
+        lines.push({ key: "rentMax", values: { cents: figures.maxRentCents, year: section.source.year ?? 0 } });
       if (figures.excessCents !== undefined) lines.push({ key: "excess", values: { cents: figures.excessCents } });
   }
   if (deadline.lastDay) lines.push({ key: "deadline", values: { lastDay: deadline.lastDay, state: deadline.state } });

@@ -35,17 +35,35 @@ describe.runIf(enabled)("settings (ADR-0009)", () => {
     expect(await service.get("features.documentInsight", { userId: "somebody-else" })).toBe(false);
     await service.set(ADMIN, user("u1"), "features.documentInsight", false, NOW);
     expect(await service.get("features.documentInsight", { userId: "u1" })).toBe(false);
-    expect((await service.snapshot({ userId: "u1" }))["features.documentInsight"]).toEqual({ value: false, source: "user" });
+    expect((await service.snapshot({ userId: "u1" }))["features.documentInsight"]).toEqual({
+      value: false,
+      source: "user",
+    });
     await service.reset(ADMIN, user("u1"), "features.documentInsight", NOW);
-    expect((await service.snapshot({ userId: "u1" }))["features.documentInsight"]).toEqual({ value: true, source: "workspace" });
+    expect((await service.snapshot({ userId: "u1" }))["features.documentInsight"]).toEqual({
+      value: true,
+      source: "workspace",
+    });
   });
 
   it("refuses a value that is not valid, a setting that does not exist and a scope it cannot be set at", async () => {
-    await expect(service.set(ADMIN, GLOBAL, "limits.maxFileMb", 50, NOW)).rejects.toMatchObject({ status: 400, code: "BAD_VALUE" });
-    await expect(service.set(ADMIN, GLOBAL, "features.documentInsight", "yes", NOW)).rejects.toMatchObject({ code: "BAD_VALUE" });
-    await expect(service.set(ADMIN, GLOBAL, "nothing.here", true, NOW)).rejects.toMatchObject({ status: 404, code: "UNKNOWN_SETTING" });
-    await expect(service.set(ADMIN, user("u1"), "app.maintenance", true, NOW)).rejects.toMatchObject({ code: "BAD_SCOPE" });
-    await expect(service.set(ADMIN, { scope: "user", id: "" }, "features.documentInsight", true, NOW)).rejects.toBeInstanceOf(SettingsError);
+    await expect(service.set(ADMIN, GLOBAL, "limits.maxFileMb", 50, NOW)).rejects.toMatchObject({
+      status: 400,
+      code: "BAD_VALUE",
+    });
+    await expect(service.set(ADMIN, GLOBAL, "features.documentInsight", "yes", NOW)).rejects.toMatchObject({
+      code: "BAD_VALUE",
+    });
+    await expect(service.set(ADMIN, GLOBAL, "nothing.here", true, NOW)).rejects.toMatchObject({
+      status: 404,
+      code: "UNKNOWN_SETTING",
+    });
+    await expect(service.set(ADMIN, user("u1"), "app.maintenance", true, NOW)).rejects.toMatchObject({
+      code: "BAD_SCOPE",
+    });
+    await expect(
+      service.set(ADMIN, { scope: "user", id: "" }, "features.documentInsight", true, NOW),
+    ).rejects.toBeInstanceOf(SettingsError);
     expect(await service.get("app.maintenance")).toBe(false);
   });
 
@@ -54,8 +72,17 @@ describe.runIf(enabled)("settings (ADR-0009)", () => {
     await service.set(ADMIN, GLOBAL, "payments.display", "test", new Date("2026-10-22T13:00:00Z"));
     await service.reset(ADMIN, GLOBAL, "payments.display", new Date("2026-10-22T14:00:00Z"));
     const h = await service.history({ key: "payments.display" });
-    expect(h.map((e) => [e.before, e.after])).toEqual([["test", null], ["live", "test"], [null, "live"]]);
-    expect(h[0]).toMatchObject({ actorLabel: "admin@yomizaka.test", scope: "global", scopeId: "", at: "2026-10-22T14:00:00.000Z" });
+    expect(h.map((e) => [e.before, e.after])).toEqual([
+      ["test", null],
+      ["live", "test"],
+      [null, "live"],
+    ]);
+    expect(h[0]).toMatchObject({
+      actorLabel: "admin@yomizaka.test",
+      scope: "global",
+      scopeId: "",
+      at: "2026-10-22T14:00:00.000Z",
+    });
     expect(await service.get("payments.display")).toBe("test");
   });
 
@@ -91,27 +118,46 @@ describe.runIf(enabled)("settings at the server boundary", () => {
 
   it("maintenance closes the app to a person with a message in both languages, and never to an administrator", async () => {
     await appSettings().set(ADMIN, GLOBAL, "app.maintenance", true, NOW);
-    await appSettings().set(ADMIN, GLOBAL, "app.maintenanceMessage", { fr: "Retour à 14 h.", en: "Back at 2 pm." }, NOW);
-    await expect(assertOpen({ role: "USER" })).rejects.toMatchObject({ status: 503, body: { code: "MAINTENANCE", message: { fr: "Retour à 14 h.", en: "Back at 2 pm." } } });
+    await appSettings().set(
+      ADMIN,
+      GLOBAL,
+      "app.maintenanceMessage",
+      { fr: "Retour à 14 h.", en: "Back at 2 pm." },
+      NOW,
+    );
+    await expect(assertOpen({ role: "USER" })).rejects.toMatchObject({
+      status: 503,
+      body: { code: "MAINTENANCE", message: { fr: "Retour à 14 h.", en: "Back at 2 pm." } },
+    });
     await expect(assertOpen({ role: "ADMIN" })).resolves.toBeUndefined();
     expect((await maintenance()).on).toBe(true);
     await appSettings().set(ADMIN, GLOBAL, "app.maintenance", false, NOW);
     await expect(assertOpen({ role: "USER" })).resolves.toBeUndefined();
   });
 
-  it.each(Object.keys(FEATURE) as Feature[])("%s: when it is off the server refuses it with 403 FEATURE_OFF, for one person only if set for them", async (feature) => {
-    const other = "00000000-0000-4000-8000-000000000002";
-    await appSettings().set(ADMIN, { scope: "user", id: other }, FEATURE[feature], !(await appSettings().get(FEATURE[feature])), NOW).catch(() => undefined);
-    await appSettings().set(ADMIN, GLOBAL, FEATURE[feature], false, NOW);
-    await expect(assertFeature(feature, null)).rejects.toMatchObject({ status: 403, body: { code: "FEATURE_OFF", feature } });
-    await appSettings().reset(ADMIN, GLOBAL, FEATURE[feature], NOW);
-  });
+  it.each(Object.keys(FEATURE) as Feature[])(
+    "%s: when it is off the server refuses it with 403 FEATURE_OFF, for one person only if set for them",
+    async (feature) => {
+      const other = "00000000-0000-4000-8000-000000000002";
+      await appSettings()
+        .set(ADMIN, { scope: "user", id: other }, FEATURE[feature], !(await appSettings().get(FEATURE[feature])), NOW)
+        .catch(() => undefined);
+      await appSettings().set(ADMIN, GLOBAL, FEATURE[feature], false, NOW);
+      await expect(assertFeature(feature, null)).rejects.toMatchObject({
+        status: 403,
+        body: { code: "FEATURE_OFF", feature },
+      });
+      await appSettings().reset(ADMIN, GLOBAL, FEATURE[feature], NOW);
+    },
+  );
 
   it("a feature off for one person leaves the others alone (a beta, a quota)", async () => {
     const beta = "00000000-0000-4000-8000-000000000003";
     await appSettings().set(ADMIN, { scope: "user", id: beta }, "features.assistant", true, NOW);
     await expect(assertFeature("assistant", beta)).resolves.toBeUndefined();
-    await expect(assertFeature("assistant", "00000000-0000-4000-8000-000000000004")).rejects.toMatchObject({ status: 403 });
+    await expect(assertFeature("assistant", "00000000-0000-4000-8000-000000000004")).rejects.toMatchObject({
+      status: 403,
+    });
   });
 
   it("a person's snapshot carries their own bonus quota", async () => {

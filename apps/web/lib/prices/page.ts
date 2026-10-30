@@ -26,8 +26,15 @@ export interface PricingSoon {
  * document, then the subscriptions with what they include —, and what is not built yet, without a figure. Nothing here is typed:
  * every amount is the catalogue's.
  */
-export function pricingLines(prices: readonly PublicPrice[], locale: "en" | "fr"): { sold: PricingPlan[]; soon: PricingSoon[] } {
-  const onSale = prices.filter((p) => p.amountCents !== null && (p.availability === AVAILABILITY.public || p.availability === AVAILABILITY.founderLimited));
+export function pricingLines(
+  prices: readonly PublicPrice[],
+  locale: "en" | "fr",
+): { sold: PricingPlan[]; soon: PricingSoon[] } {
+  const onSale = prices.filter(
+    (p) =>
+      p.amountCents !== null &&
+      (p.availability === AVAILABILITY.public || p.availability === AVAILABILITY.founderLimited),
+  );
   const plan = (p: PublicPrice): PricingPlan => ({
     plan: p.plan,
     price: money(p.amountCents!, locale),
@@ -36,5 +43,8 @@ export function pricingLines(prices: readonly PublicPrice[], locale: "en" | "fr"
   });
   const perDocument = onSale.filter((p) => p.unit !== "month" && p.unit !== "year").map(plan);
   const subscriptions = onSale.filter((p) => p.unit === "month" || p.unit === "year").map(plan);
-  return { sold: [...perDocument, ...subscriptions], soon: prices.filter((p) => p.availability === AVAILABILITY.preparing).map((p) => ({ plan: p.plan })) };
+  return {
+    sold: [...perDocument, ...subscriptions],
+    soon: prices.filter((p) => p.availability === AVAILABILITY.preparing).map((p) => ({ plan: p.plan })),
+  };
 }

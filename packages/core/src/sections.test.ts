@@ -9,7 +9,12 @@ describe("the section map", () => {
   it("is Accueil · Dossiers · Documents · Vérifications (B2, P14), in that order, each with its address; Recherche is ⌘K, not a destination", () => {
     expect(SECTION_IDS).toEqual(["library", "files", "documents", "checks"]);
     expect(SECTIONS.map((s) => s.id)).toEqual(SECTION_IDS);
-    expect(Object.fromEntries(SECTIONS.map((s) => [s.id, s.path]))).toEqual({ library: "/app", files: "/app/dossiers", documents: "/app/documents", checks: "/app/verifications" });
+    expect(Object.fromEntries(SECTIONS.map((s) => [s.id, s.path]))).toEqual({
+      library: "/app",
+      files: "/app/dossiers",
+      documents: "/app/documents",
+      checks: "/app/verifications",
+    });
     expect(SECTION_IDS as readonly string[]).not.toContain("search");
   });
 
@@ -30,10 +35,14 @@ describe("the section map", () => {
   it("says why a platform lacks a section, instead of a different map (the parity field)", () => {
     expect(ids(sectionsFor("phone", { applicantFiles: true }))).toEqual(["library", "checks"]);
     expect(ids(sectionsFor("mac", { applicantFiles: true }))).toEqual(["library", "checks"]);
-    for (const section of SECTIONS) for (const reason of Object.values(section.pending)) expect(reason.length, section.id).toBeGreaterThan(20);
+    for (const section of SECTIONS)
+      for (const reason of Object.values(section.pending)) expect(reason.length, section.id).toBeGreaterThan(20);
     expect(SECTIONS.find((s) => s.id === "library")?.pending).toEqual({});
     expect(SECTIONS.find((s) => s.id === "checks")?.pending).toEqual({});
-    expect(SECTIONS.find((s) => s.id === "documents")?.pending).toEqual({ phone: expect.any(String), mac: expect.any(String) });
+    expect(SECTIONS.find((s) => s.id === "documents")?.pending).toEqual({
+      phone: expect.any(String),
+      mac: expect.any(String),
+    });
   });
 
   it("numbers the shortcuts by the shown order: ⌘1 to ⌘4", () => {

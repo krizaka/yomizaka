@@ -26,7 +26,10 @@ describe("The recorded runs: one per side of the lease, or the home does not bui
   });
 
   it("keeps what Orazaka returned, verbatim: the file holds the run as returned and the page reads its findings", () => {
-    for (const [side, file] of [["tenant", tenantFile], ["landlord", landlordFile]] as const) {
+    for (const [side, file] of [
+      ["tenant", tenantFile],
+      ["landlord", landlordFile],
+    ] as const) {
       expect(file.run.status).toBe("SUCCEEDED");
       expect(file.run.id).toBe(recordedRun(side).runId);
       const report = JSON.parse(file.run.outputs.find((o) => o.key === "report")!.value) as { findings: unknown[] };
@@ -35,14 +38,21 @@ describe("The recorded runs: one per side of the lease, or the home does not bui
   });
 
   it("holds no secret", () => {
-    for (const side of PERSPECTIVES) expect(readFileSync(join(ROOT, `content/recorded-runs/${side}.json`), "utf8")).not.toMatch(/oz_[A-Za-z0-9]|Bearer |password/i);
+    for (const side of PERSPECTIVES)
+      expect(readFileSync(join(ROOT, `content/recorded-runs/${side}.json`), "utf8")).not.toMatch(
+        /oz_[A-Za-z0-9]|Bearer |password/i,
+      );
   });
 
   it("fails — a build error, not a blank page — when a recording is missing, unfinished or has no report", () => {
     expect(() => readRecording("tenant", null)).toThrow(RecordedRunError);
     expect(() => readRecording("tenant", { ...tenantFile, side: "landlord" })).toThrow(RecordedRunError);
-    expect(() => readRecording("tenant", { ...tenantFile, run: { ...tenantFile.run, status: "FAILED" } })).toThrow(/did not return a finished run/);
-    expect(() => readRecording("tenant", { ...tenantFile, run: { ...tenantFile.run, outputs: [] } })).toThrow(/holds no compliance report/);
+    expect(() => readRecording("tenant", { ...tenantFile, run: { ...tenantFile.run, status: "FAILED" } })).toThrow(
+      /did not return a finished run/,
+    );
+    expect(() => readRecording("tenant", { ...tenantFile, run: { ...tenantFile.run, outputs: [] } })).toThrow(
+      /holds no compliance report/,
+    );
   });
 
   it("the home imports the recording, so a home without one cannot be built", () => {

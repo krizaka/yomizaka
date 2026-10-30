@@ -18,10 +18,12 @@ export function parseTagsParam(value: string | string[] | undefined): string[] {
   return [...new Set(parts.map((p) => p.trim()).filter(isId))];
 }
 
-export const toggleTag = (current: readonly string[], id: string): string[] => (current.includes(id) ? current.filter((t) => t !== id) : [...current, id]);
+export const toggleTag = (current: readonly string[], id: string): string[] =>
+  current.includes(id) ? current.filter((t) => t !== id) : [...current, id];
 
 /** The same view with another set of tags: the URL is the state. */
-export const tagsHref = (path: string, tags: readonly string[]): string => (tags.length ? `${path}?tags=${tags.join(",")}` : path);
+export const tagsHref = (path: string, tags: readonly string[]): string =>
+  tags.length ? `${path}?tags=${tags.join(",")}` : path;
 
 /** The filters of a library view: all of them live in the URL (`?tags=…&kind=…&status=…`), so back, forward, refresh and a shared link keep them. */
 export interface ViewState {
@@ -32,7 +34,11 @@ export interface ViewState {
 
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
-export function parseView(search: { tags?: string | string[]; kind?: string | string[]; status?: string | string[] }): ViewState {
+export function parseView(search: {
+  tags?: string | string[];
+  kind?: string | string[];
+  status?: string | string[];
+}): ViewState {
   const kind = one(search.kind);
   const status = one(search.status);
   return {
@@ -43,7 +49,13 @@ export function parseView(search: { tags?: string | string[]; kind?: string | st
 }
 
 export function viewHref(path: string, view: ViewState): string {
-  const query = [view.tags.length ? `tags=${view.tags.join(",")}` : "", view.kind ? `kind=${view.kind}` : "", view.status ? `status=${view.status}` : ""].filter(Boolean).join("&");
+  const query = [
+    view.tags.length ? `tags=${view.tags.join(",")}` : "",
+    view.kind ? `kind=${view.kind}` : "",
+    view.status ? `status=${view.status}` : "",
+  ]
+    .filter(Boolean)
+    .join("&");
   return query ? `${path}?${query}` : path;
 }
 

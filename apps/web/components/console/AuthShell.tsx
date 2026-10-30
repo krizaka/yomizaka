@@ -7,7 +7,23 @@ import type { ReactNode } from "react";
 import { getDictionary, type Locale } from "@/lib/i18n";
 
 /** The frame of the sign-in family — sign-in, forgot password, new password: Yomizaka's mark, the owl large and the three proofs. */
-export function AuthShell({ locale, promise, title, description, footer, legal, children }: Readonly<{ locale: Locale; promise: string; title: string; description: string; footer: ReactNode; legal?: ReactNode; children: ReactNode }>) {
+export function AuthShell({
+  locale,
+  promise,
+  title,
+  description,
+  footer,
+  legal,
+  children,
+}: Readonly<{
+  locale: Locale;
+  promise: string;
+  title: string;
+  description: string;
+  footer: ReactNode;
+  legal?: ReactNode;
+  children: ReactNode;
+}>) {
   const t = getDictionary(locale).console.signIn;
   return (
     <AuthLayout

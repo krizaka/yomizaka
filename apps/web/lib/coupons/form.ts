@@ -77,8 +77,23 @@ const WINDOW_ZONE = "America/Toronto";
 /** The instant a wall-clock time is in the zone: the zone's offset is read at that moment (DST included), then taken off. */
 function instantIn(timeZone: string, day: string, time: string): Date {
   const wall = new Date(`${day}T${time}.000Z`);
-  const parts = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" }).formatToParts(wall).map((p) => [p.type, p.value]));
-  const shown = new Date(`${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}.000Z`);
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone,
+      hourCycle: "h23",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    })
+      .formatToParts(wall)
+      .map((p) => [p.type, p.value]),
+  );
+  const shown = new Date(
+    `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}.000Z`,
+  );
   return subSeconds(wall, differenceInSeconds(shown, wall));
 }
 
@@ -100,12 +115,21 @@ export function couponPayload(v: CouponForm): Record<string, unknown> {
     newCustomersOnly: v.newCustomersOnly,
   };
   if (v.kind === KIND.credit) {
-    return { ...common, credits: count(v.credits), capPerDay: count(v.capPerDay), capPerMonth: count(v.capPerMonth), creditsValidDays: count(v.creditsValidDays), onExhausted: v.onExhausted };
+    return {
+      ...common,
+      credits: count(v.credits),
+      capPerDay: count(v.capPerDay),
+      capPerMonth: count(v.capPerMonth),
+      creditsValidDays: count(v.creditsValidDays),
+      onExhausted: v.onExhausted,
+    };
   }
   const amount = v.discountType === DISCOUNT_TYPE.amount;
   return {
     ...common,
-    ...(amount ? { amountOffMinor: v.amountOffMinor, currency: COUPON_CURRENCY } : { percentOffBp: basisPoints(v.percent) }),
+    ...(amount
+      ? { amountOffMinor: v.amountOffMinor, currency: COUPON_CURRENCY }
+      : { percentOffBp: basisPoints(v.percent) }),
     duration: v.duration,
     durationMonths: v.duration === DURATION.repeating ? count(v.durationMonths) : null,
     minimumMinor: v.minimumMinor === 0 ? null : v.minimumMinor,

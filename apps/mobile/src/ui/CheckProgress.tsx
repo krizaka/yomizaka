@@ -15,7 +15,12 @@ export function CheckProgress({ steps, runId }: Readonly<{ steps: readonly Check
       <Stepper
         aria-label={t("steps.label")}
         steps={stepperSteps(steps, (key) => t(key as MessageKey))}
-        statusLabels={{ done: t("steps.state.done"), current: t("steps.state.current"), upcoming: t("steps.state.upcoming"), error: t("steps.state.error") }}
+        statusLabels={{
+          done: t("steps.state.done"),
+          current: t("steps.state.current"),
+          upcoming: t("steps.state.upcoming"),
+          error: t("steps.state.error"),
+        }}
       />
       {working ? <Txt tone="secondary">{t("result.runningHint")}</Txt> : null}
       {runId ? (

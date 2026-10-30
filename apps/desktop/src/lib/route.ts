@@ -67,8 +67,12 @@ export function routeOfLink(link: string): Route {
   if (parts[0] !== "app") return HOME;
   const [, section, id] = parts;
   if (section === "documents" && id) return { screen: "document", documentId: id };
-  if ((section === "check" && id === "batches") || (section === "verifier" && id === "lots")) return parts[3] ? { screen: "batch", batchId: parts[3] } : { screen: "batches" };
-  if (section === "verifications") return new URLSearchParams(link.split("?")[1]?.split("#")[0] ?? "").get("tab") === "lots" ? { screen: "batches" } : { screen: "reports" };
+  if ((section === "check" && id === "batches") || (section === "verifier" && id === "lots"))
+    return parts[3] ? { screen: "batch", batchId: parts[3] } : { screen: "batches" };
+  if (section === "verifications")
+    return new URLSearchParams(link.split("?")[1]?.split("#")[0] ?? "").get("tab") === "lots"
+      ? { screen: "batches" }
+      : { screen: "reports" };
   if (section === "settings") return { screen: "settings" };
   return HOME;
 }

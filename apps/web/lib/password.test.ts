@@ -18,4 +18,3 @@ describe("passwords", () => {
     expect(passwordProblem("a".repeat(300))).toBe("TOO_LONG");
   });
 });
-

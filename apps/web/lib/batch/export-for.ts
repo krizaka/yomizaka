@@ -13,7 +13,8 @@ export async function batchZipFor(ownerId: string, batchId: string, lang: Locale
   const result = await exportBatchZip(batch, lang, {
     readme: getDictionary(lang).console.batch.exportReadme,
     maxBytes: (settings["limits.batchExportMaxMb"].value as number) * 1024 * 1024,
-    analysis: async (item) => (item.documentId && item.analysisId ? getAnalysis(ownerId, item.documentId, item.analysisId) : null),
+    analysis: async (item) =>
+      item.documentId && item.analysisId ? getAnalysis(ownerId, item.documentId, item.analysisId) : null,
     pdf: async (item) => {
       try {
         return { bytes: (await reportPdfFor(ownerId, item.documentId!, item.analysisId!, lang)).issued.bytes };

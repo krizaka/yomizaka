@@ -9,7 +9,12 @@ import fr from "@/messages/fr.json";
 import { LeaseBundleSection } from "./LeaseBundleSection";
 
 const MESSAGES = { en: { console: en.console }, fr: { console: fr.console } } as const;
-const wrap = (node: React.ReactNode, locale: "en" | "fr" = "fr") => renderToStaticMarkup(<I18nProvider locale={locale} messages={MESSAGES[locale] as never}>{node}</I18nProvider>);
+const wrap = (node: React.ReactNode, locale: "en" | "fr" = "fr") =>
+  renderToStaticMarkup(
+    <I18nProvider locale={locale} messages={MESSAGES[locale] as never}>
+      {node}
+    </I18nProvider>,
+  );
 
 const bundle = (reviewStatus: string | null): LeaseBundle => ({
   leaseId: "l1",
@@ -19,8 +24,28 @@ const bundle = (reviewStatus: string | null): LeaseBundle => ({
   ],
   rulesets: [{ jurisdiction: "QC", rulesetId: "qc-residential-lease", rulesetVersion: "1", reviewStatus }],
   lines: [
-    { documentId: "l1", documentTitle: "Bail 2026", role: "lease", line: 12, quote: "Le locataire renonce", ruleId: "r1", article: "C.c.Q. art. 1893", severity: "BLOCKING", verdict: "FAIL" },
-    { documentId: "l1", documentTitle: "Bail 2026", role: "lease", line: 3, quote: null, ruleId: "r2", article: "C.c.Q. art. 1901", severity: "MAJOR", verdict: "PASS" },
+    {
+      documentId: "l1",
+      documentTitle: "Bail 2026",
+      role: "lease",
+      line: 12,
+      quote: "Le locataire renonce",
+      ruleId: "r1",
+      article: "C.c.Q. art. 1893",
+      severity: "BLOCKING",
+      verdict: "FAIL",
+    },
+    {
+      documentId: "l1",
+      documentTitle: "Bail 2026",
+      role: "lease",
+      line: 3,
+      quote: null,
+      ruleId: "r2",
+      article: "C.c.Q. art. 1901",
+      severity: "MAJOR",
+      verdict: "PASS",
+    },
   ],
 });
 
@@ -38,10 +63,13 @@ describe("the bundle screen (yomizaka#499)", () => {
     expect(wrap(<LeaseBundleSection bundle={bundle(null)} />)).not.toContain("C.c.Q. art. 1901");
   });
   it("says the rules await a lawyer's reading only while they do", () => {
-    expect(wrap(<LeaseBundleSection bundle={bundle("TO_REVIEW_BY_LAWYER")} />, "en")).toContain(en.console.bundle.toReview);
+    expect(wrap(<LeaseBundleSection bundle={bundle("TO_REVIEW_BY_LAWYER")} />, "en")).toContain(
+      en.console.bundle.toReview,
+    );
     expect(wrap(<LeaseBundleSection bundle={bundle(null)} />, "en")).not.toContain('data-testid="bundle-review"');
   });
   it("gives no verdict or advice wording", () => {
-    for (const m of [en.console.bundle, fr.console.bundle]) expect(JSON.stringify(m)).not.toMatch(/conforme|compliant|approuv|approved|vous devez|you should/i);
+    for (const m of [en.console.bundle, fr.console.bundle])
+      expect(JSON.stringify(m)).not.toMatch(/conforme|compliant|approuv|approved|vous devez|you should/i);
   });
 });

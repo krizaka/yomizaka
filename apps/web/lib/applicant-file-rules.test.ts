@@ -3,13 +3,32 @@ import { describe, expect, it } from "vitest";
 import en from "@/messages/en.json";
 import fr from "@/messages/fr.json";
 
-import { assertOpen, FILE_JURISDICTION, isRefusedField, LINK, linkState, MAX_DOCUMENTS_PER_FILE, NOT_NECESSARY_TYPES, requestedTypes, retentionOf, SEED_DOCUMENT_TYPES, SEED_FIELDS } from "./applicant-file-rules";
+import {
+  assertOpen,
+  FILE_JURISDICTION,
+  isRefusedField,
+  LINK,
+  linkState,
+  MAX_DOCUMENTS_PER_FILE,
+  NOT_NECESSARY_TYPES,
+  requestedTypes,
+  retentionOf,
+  SEED_DOCUMENT_TYPES,
+  SEED_FIELDS,
+} from "./applicant-file-rules";
 import { MIGRATIONS } from "./migrations";
 
 /** yomizaka#127, the rules that need no database: the link's states, what a request may ask, the retention and the words. */
 const NOW = new Date("2026-10-24T12:00:00Z");
-const open = { status: "requested", expires_at: new Date("2026-11-07T12:00:00Z"), revoked_at: null, submitted_at: null, closed_at: null };
-const BANNED = /certificat de conformit|\bconforme\b|authentiqu|\bfaux\b|certified|guarantee|\bgenuine\b|approuv|refus[ée]\b/i;
+const open = {
+  status: "requested",
+  expires_at: new Date("2026-11-07T12:00:00Z"),
+  revoked_at: null,
+  submitted_at: null,
+  closed_at: null,
+};
+const BANNED =
+  /certificat de conformit|\bconforme\b|authentiqu|\bfaux\b|certified|guarantee|\bgenuine\b|approuv|refus[ée]\b/i;
 /** The error a function throws, for a status and a code to be read from it. */
 const thrown = (fn: () => unknown): unknown => {
   try {
@@ -52,7 +71,10 @@ describe("what a request may ask for", () => {
   const catalogue = [...SEED_DOCUMENT_TYPES];
 
   it("asks for the known documents, once each", () => {
-    expect(requestedTypes(["pay-stub", "pay-stub", "bank-statement"], catalogue)).toEqual(["pay-stub", "bank-statement"]);
+    expect(requestedTypes(["pay-stub", "pay-stub", "bank-statement"], catalogue)).toEqual([
+      "pay-stub",
+      "bank-statement",
+    ]);
   });
 
   it("refuses an empty request, a document that is not necessary, and an unknown type", () => {
@@ -69,7 +91,9 @@ describe("what a request may ask for", () => {
     expect(isRefusedField("sin")).toBe(true);
     expect(isRefusedField("health-card")).toBe(true);
     expect(JSON.stringify(SEED_FIELDS)).not.toMatch(SIN);
-    expect(NOT_NECESSARY_TYPES).toEqual(expect.arrayContaining(["sin", "health-card", "passport", "driver-licence", "bank-details"]));
+    expect(NOT_NECESSARY_TYPES).toEqual(
+      expect.arrayContaining(["sin", "health-card", "passport", "driver-licence", "bank-details"]),
+    );
   });
 
   it("checks against the Québec rules, with a bounded number of documents", () => {
@@ -114,11 +138,30 @@ describe("the catalogue and its words", () => {
   });
 
   it("has every refusal code and every skipped check in both languages", () => {
-    const codes = ["LINK_REVOKED", "LINK_EXPIRED", "LINK_USED", "FILE_CLOSED", "APPLICATION_ERASED", "TYPE_NOT_REQUESTED", "TOO_MANY_DOCUMENTS", "FILE_NOT_ACCEPTED", "DUPLICATE_DOCUMENT", "NO_DOCUMENT", "TYPE_NOT_NECESSARY", "TYPE_UNKNOWN", "STORAGE_UNAVAILABLE", "PURPOSE_NOT_IN_FILE", "CONSENT_REQUIRED", "NOT_FOUND"];
+    const codes = [
+      "LINK_REVOKED",
+      "LINK_EXPIRED",
+      "LINK_USED",
+      "FILE_CLOSED",
+      "APPLICATION_ERASED",
+      "TYPE_NOT_REQUESTED",
+      "TOO_MANY_DOCUMENTS",
+      "FILE_NOT_ACCEPTED",
+      "DUPLICATE_DOCUMENT",
+      "NO_DOCUMENT",
+      "TYPE_NOT_NECESSARY",
+      "TYPE_UNKNOWN",
+      "STORAGE_UNAVAILABLE",
+      "PURPOSE_NOT_IN_FILE",
+      "CONSENT_REQUIRED",
+      "NOT_FOUND",
+    ];
     for (const d of [en, fr]) {
       for (const code of codes) expect(d.applicantFile.error[code as keyof typeof d.applicantFile.error]).toBeTruthy();
-      for (const code of ["NO_TEXT", "PAYWALL", "UNAVAILABLE", "REFUSED"]) expect(d.applicantFile.skipped[code as keyof typeof d.applicantFile.skipped]).toBeTruthy();
-      for (const status of ["open", "revoked", "expired", "used", "closed", "erased"]) expect(d.applicantFile.status[status as keyof typeof d.applicantFile.status]).toBeTruthy();
+      for (const code of ["NO_TEXT", "PAYWALL", "UNAVAILABLE", "REFUSED"])
+        expect(d.applicantFile.skipped[code as keyof typeof d.applicantFile.skipped]).toBeTruthy();
+      for (const status of ["open", "revoked", "expired", "used", "closed", "erased"])
+        expect(d.applicantFile.status[status as keyof typeof d.applicantFile.status]).toBeTruthy();
     }
   });
 
@@ -129,6 +172,8 @@ describe("the catalogue and its words", () => {
     expect(fr.applicantFile.limits).toMatch(/ne décide rien/);
     expect(en.applicant.purpose.DOCUMENT_KEEP.label).toBeTruthy();
     expect(fr.applicant.purpose.DOCUMENT_KEEP.label).toBeTruthy();
-    expect(JSON.stringify([en.applicant.purpose.DOCUMENT_KEEP, fr.applicant.purpose.DOCUMENT_KEEP])).not.toMatch(BANNED);
+    expect(JSON.stringify([en.applicant.purpose.DOCUMENT_KEEP, fr.applicant.purpose.DOCUMENT_KEEP])).not.toMatch(
+      BANNED,
+    );
   });
 });

@@ -14,6 +14,8 @@ export function POST(req: Request, { params }: { params: Promise<{ id: string }>
   return handle(async () => {
     const session = await requireAdmin(req);
     const { plan } = await readJson(req, body);
-    return Response.json({ user: await setUserPlan(session.account, (await params).id, plan, appEnvironment(), req.headers) });
+    return Response.json({
+      user: await setUserPlan(session.account, (await params).id, plan, appEnvironment(), req.headers),
+    });
   });
 }

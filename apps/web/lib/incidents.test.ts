@@ -1,12 +1,18 @@
 import { createIncidentRegister, memoryIncidentStore } from "@krizaka/privacy";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const store = vi.hoisted(() => ({ current: null as unknown as ReturnType<typeof import("@krizaka/privacy").memoryIncidentStore> }));
+const store = vi.hoisted(() => ({
+  current: null as unknown as ReturnType<typeof import("@krizaka/privacy").memoryIncidentStore>,
+}));
 const audited = vi.hoisted(() => [] as { action: string; detail?: unknown }[]);
 
 vi.mock("@krizaka/privacy", async (original) => {
   const real = await original<typeof import("@krizaka/privacy")>();
-  return { ...real, createIncidentRegister: (deps: Parameters<typeof real.createIncidentRegister>[0]) => real.createIncidentRegister({ ...deps, storeFor: () => store.current }) };
+  return {
+    ...real,
+    createIncidentRegister: (deps: Parameters<typeof real.createIncidentRegister>[0]) =>
+      real.createIncidentRegister({ ...deps, storeFor: () => store.current }),
+  };
 });
 vi.mock("./audit", () => ({ audit: async (entry: { action: string; detail?: unknown }) => void audited.push(entry) }));
 vi.mock("./db", () => ({ query: async () => ({ rows: [] }) }));
@@ -14,8 +20,22 @@ vi.mock("./db", () => ({ query: async () => ({ rows: [] }) }));
 import { exportIncidentRegister, INCIDENT_SCOPE, incidentRegister, openIncident, stepIncident } from "./incidents";
 
 const admin = { id: "a1", email: "admin@yomizaka.test" };
-const input = { kind: "access" as const, description: "A shared link stayed public.", information: ["lease"], personsConcerned: 2 };
-const serious = { action: "assess" as const, assessment: { sensitivity: "high" as const, consequences: "high" as const, likelihood: "medium" as const, seriousInjury: true, rationale: "Leases name the tenants." } };
+const input = {
+  kind: "access" as const,
+  description: "A shared link stayed public.",
+  information: ["lease"],
+  personsConcerned: 2,
+};
+const serious = {
+  action: "assess" as const,
+  assessment: {
+    sensitivity: "high" as const,
+    consequences: "high" as const,
+    likelihood: "medium" as const,
+    seriousInjury: true,
+    rationale: "Leases name the tenants.",
+  },
+};
 
 beforeEach(() => {
   store.current = memoryIncidentStore();
@@ -31,19 +51,33 @@ describe("the incident register of the administration (Loi 25, yomizaka#418)", (
     await stepIncident(admin, opened.id, { action: "notice", target: "persons", channel: "email" });
     const closed = await stepIncident(admin, opened.id, { action: "close" });
     expect(closed.status).toBe("closed");
-    expect(audited.map((a) => a.action)).toEqual(["privacy.incident_opened", "privacy.incident_assess", "privacy.incident_notice", "privacy.incident_notice", "privacy.incident_close"]);
+    expect(audited.map((a) => a.action)).toEqual([
+      "privacy.incident_opened",
+      "privacy.incident_assess",
+      "privacy.incident_notice",
+      "privacy.incident_notice",
+      "privacy.incident_close",
+    ]);
     expect(JSON.stringify(audited)).not.toContain("shared link");
   });
 
   it("refuses to close before the notices, with the register's code as the status", async () => {
     const { id } = await openIncident(admin, input);
-    await expect(stepIncident(admin, id, { action: "close" })).rejects.toMatchObject({ status: 409, body: { code: "INCIDENT_NOT_ASSESSED" } });
+    await expect(stepIncident(admin, id, { action: "close" })).rejects.toMatchObject({
+      status: 409,
+      body: { code: "INCIDENT_NOT_ASSESSED" },
+    });
     await stepIncident(admin, id, serious);
-    await expect(stepIncident(admin, id, { action: "close" })).rejects.toMatchObject({ status: 409, body: { code: "INCIDENT_NOTICES_MISSING" } });
+    await expect(stepIncident(admin, id, { action: "close" })).rejects.toMatchObject({
+      status: 409,
+      body: { code: "INCIDENT_NOTICES_MISSING" },
+    });
   });
 
   it("answers 404 for an unknown incident and 400 for a bad input", async () => {
-    await expect(stepIncident(admin, "00000000-0000-4000-8000-000000000000", { action: "close" })).rejects.toMatchObject({ status: 404 });
+    await expect(
+      stepIncident(admin, "00000000-0000-4000-8000-000000000000", { action: "close" }),
+    ).rejects.toMatchObject({ status: 404 });
     await expect(openIncident(admin, { ...input, description: "" })).rejects.toMatchObject({ status: 400 });
   });
 

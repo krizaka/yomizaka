@@ -8,7 +8,10 @@ const holder = globalThis as unknown as { __yomizakaPrices?: PriceCatalogue };
 
 /** This deployment's price catalogue: the seed of `lib/pricing.ts` and the versions an administrator scheduled, in the app's PostgreSQL. */
 export function appPrices(): PriceCatalogue {
-  holder.__yomizakaPrices ??= priceCatalogue(PRICES, priceStore({ query: (sql, params) => query(sql, params) as never }));
+  holder.__yomizakaPrices ??= priceCatalogue(
+    PRICES,
+    priceStore({ query: (sql, params) => query(sql, params) as never }),
+  );
   return holder.__yomizakaPrices;
 }
 

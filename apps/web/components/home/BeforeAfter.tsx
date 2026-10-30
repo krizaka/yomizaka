@@ -45,10 +45,14 @@ export function BeforeAfter({ locale }: Readonly<{ locale: Locale }>) {
         <figcaption className="text-xs font-semibold text-fg-muted">{t.after}</figcaption>
         <div className="flex flex-col gap-3 rounded-lg border border-danger/40 bg-surface-1 p-4">
           <div className="flex flex-wrap items-start justify-between gap-2">
-            <span className="min-w-0 text-base font-semibold leading-snug text-fg">{finding.title ?? finding.ruleId}</span>
+            <span className="min-w-0 text-base font-semibold leading-snug text-fg">
+              {finding.title ?? finding.ruleId}
+            </span>
             <Badge tone="danger">{d.run.verdicts.FAIL}</Badge>
           </div>
-          {quote ? <p className="m-0 border-l-2 border-accent pl-3 text-sm italic text-fg-secondary">« {quote} »</p> : null}
+          {quote ? (
+            <p className="m-0 border-l-2 border-accent pl-3 text-sm italic text-fg-secondary">« {quote} »</p>
+          ) : null}
           <p className="m-0 text-sm leading-relaxed text-fg-secondary">{finding.explanation}</p>
           <p className="m-0 text-sm font-semibold text-fg-accent" data-testid="hero-article">
             {finding.citation}

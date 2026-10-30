@@ -26,7 +26,11 @@ export const PATCH = (req: Request, { params }: Ctx) =>
     const session = await requireAdmin(req);
     const { id } = await params;
     const patch = await readJson(req, couponPatch);
-    const coupon = await guarded(() => transaction((tx) => coupons.admin.update(tx, { id: session.account.id, label: session.account.email }, id, patch)));
+    const coupon = await guarded(() =>
+      transaction((tx) =>
+        coupons.admin.update(tx, { id: session.account.id, label: session.account.email }, id, patch),
+      ),
+    );
     return Response.json({ coupon });
   });
 
@@ -43,7 +47,9 @@ export const POST = (req: Request, { params }: Ctx) =>
           await coupons.revoke(tx, actor, input.redemptionId);
           return Response.json({ revoked: input.redemptionId });
         }
-        const change = { pause: coupons.admin.pause, resume: coupons.admin.resume, archive: coupons.admin.archive }[input.action];
+        const change = { pause: coupons.admin.pause, resume: coupons.admin.resume, archive: coupons.admin.archive }[
+          input.action
+        ];
         return Response.json({ coupon: await change(tx, actor, id) });
       }),
     );

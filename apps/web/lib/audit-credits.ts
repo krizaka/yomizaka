@@ -52,10 +52,16 @@ export async function addPurchased(tx: Query, accountId: string, amount: number,
 /** Spends one audit. The package's refusals are the product's: no credit left is the 402 PAYWALL. */
 export async function spendAudit(tx: Query, accountId: string): Promise<PotKind> {
   try {
-    const { draws } = await ledger.consume(tx, { accountId, amount: 1, reason: REASON, idempotencyKey: `audit-${randomUUID()}` });
-    return (await kindOf(tx, draws[0]?.grantId));
+    const { draws } = await ledger.consume(tx, {
+      accountId,
+      amount: 1,
+      reason: REASON,
+      idempotencyKey: `audit-${randomUUID()}`,
+    });
+    return await kindOf(tx, draws[0]?.grantId);
   } catch (error) {
-    if (error instanceof CreditsError && (error.code === CREDITS_CODE.paywall || error.code === CREDITS_CODE.exhausted)) throw refuse(402, "PAYWALL", "Payment required");
+    if (error instanceof CreditsError && (error.code === CREDITS_CODE.paywall || error.code === CREDITS_CODE.exhausted))
+      throw refuse(402, "PAYWALL", "Payment required");
     throw error;
   }
 }
@@ -75,10 +81,21 @@ export async function giveBackAudit(tx: Query, accountId: string, kind: PotKind)
   const refunded = new Set(lines.filter((l) => l.type === ENTRY_TYPE.refund).map((l) => l.reverses));
   const seen = new Set<string>();
   for (const line of lines) {
-    if (line.type !== ENTRY_TYPE.debit || line.reason !== REASON || !line.grantId || refunded.has(line.operation) || seen.has(line.operation)) continue;
+    if (
+      line.type !== ENTRY_TYPE.debit ||
+      line.reason !== REASON ||
+      !line.grantId ||
+      refunded.has(line.operation) ||
+      seen.has(line.operation)
+    )
+      continue;
     seen.add(line.operation);
     if ((await kindOf(tx, line.grantId)) !== kind) continue;
-    await ledger.refund(tx, { accountId, consumed: line.operation.slice(CONSUME_PREFIX.length), reason: "the audit could not run" });
+    await ledger.refund(tx, {
+      accountId,
+      consumed: line.operation.slice(CONSUME_PREFIX.length),
+      reason: "the audit could not run",
+    });
     return true;
   }
   return false;

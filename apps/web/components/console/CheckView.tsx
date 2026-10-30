@@ -23,13 +23,22 @@ import { DocumentUploader } from "./DocumentUploader";
 import { startIfSure } from "./start-check";
 import { Today } from "./Today";
 
-const ICONS: Record<DocumentKind, typeof HomeIcon> = { lease: HomeIcon, contract: EditIcon, invoice: BillingIcon, other: MoreIcon };
+const ICONS: Record<DocumentKind, typeof HomeIcon> = {
+  lease: HomeIcon,
+  contract: EditIcon,
+  invoice: BillingIcon,
+  other: MoreIcon,
+};
 
 /**
  * « Quel document ? » for one file whose kind Yomizaka did not recognise for sure (yomizaka#318, § 5.4 of the design
  * direction): the kinds as `ChoiceCards`, each with its title and its hint. Picking one starts the check of that file.
  */
-export function KindQuestion({ filename, onPick, disabled = false }: Readonly<{ filename: string; onPick: (kind: DocumentKind) => void; disabled?: boolean }>) {
+export function KindQuestion({
+  filename,
+  onPick,
+  disabled = false,
+}: Readonly<{ filename: string; onPick: (kind: DocumentKind) => void; disabled?: boolean }>) {
   const { say } = useSay();
   return (
     <ChoiceCards
@@ -38,7 +47,13 @@ export function KindQuestion({ filename, onPick, disabled = false }: Readonly<{ 
       description={say("library.kindUnsure", { name: filename })}
       options={DOCUMENT_KINDS.map((kind) => {
         const Icon = ICONS[kind];
-        return { id: kind, icon: <Icon size={20} />, title: say(`kinds.${kind}`), description: say(`library.kindHints.${kind}`), disabled };
+        return {
+          id: kind,
+          icon: <Icon size={20} />,
+          title: say(`kinds.${kind}`),
+          description: say(`library.kindHints.${kind}`),
+          disabled,
+        };
       })}
       onValueChange={(id) => onPick(id as DocumentKind)}
       data-testid="kind-choice"
@@ -47,7 +62,10 @@ export function KindQuestion({ filename, onPick, disabled = false }: Readonly<{ 
 }
 
 /** One row per file that landed, its stage in words (yomizaka#326): « Quel document ? » under each uncertain one; a row under way links to its report. */
-export function CheckQueue({ rows, onPick }: Readonly<{ rows: readonly CheckRow[]; onPick: (row: CheckRow, kind: DocumentKind) => void }>) {
+export function CheckQueue({
+  rows,
+  onPick,
+}: Readonly<{ rows: readonly CheckRow[]; onPick: (row: CheckRow, kind: DocumentKind) => void }>) {
   const { say, locale } = useSay();
   if (!rows.length) return null;
   const linked = (r: CheckRow) => r.stage === "started" || r.stage === "refused";
@@ -80,7 +98,17 @@ export function CheckQueue({ rows, onPick }: Readonly<{ rows: readonly CheckRow[
  * asked « Quel document ? » for that file only. A single file opens its report as soon as it is under way; with several,
  * each row links to its own (yomizaka#318, #326).
  */
-export function CheckView({ jurisdictions = ["QC"], catalogue = [], credits = null, now = new Date().toISOString() }: Readonly<{ jurisdictions?: readonly Jurisdiction[]; catalogue?: readonly CatalogueItem[]; credits?: CreditsFigure | null; now?: string }>) {
+export function CheckView({
+  jurisdictions = ["QC"],
+  catalogue = [],
+  credits = null,
+  now = new Date().toISOString(),
+}: Readonly<{
+  jurisdictions?: readonly Jurisdiction[];
+  catalogue?: readonly CatalogueItem[];
+  credits?: CreditsFigure | null;
+  now?: string;
+}>) {
   const { say, locale } = useSay();
   const router = useRouter();
   const [kind] = useRouteState(ROUTE_STATES.checkKind.state);
@@ -95,7 +123,8 @@ export function CheckView({ jurisdictions = ["QC"], catalogue = [], credits = nu
     const outcome = await startIfSure(id, requested, jurisdictions, new Date());
     dispatch({ type: "outcome", id, outcome, requested });
     // A refusal (an entitlement, a rule) travels to the report tab, which says it above its own form.
-    if (opensAtOnce(dropped.current) && (outcome.started || outcome.refused || requested !== "auto")) router.push(reportHref(locale, { id, refused: outcome.refused }));
+    if (opensAtOnce(dropped.current) && (outcome.started || outcome.refused || requested !== "auto"))
+      router.push(reportHref(locale, { id, refused: outcome.refused }));
   };
   const landed = (document: { id: string; filename: string }, requested: DocumentKind | "auto") => {
     dispatch({ type: "landed", document });
@@ -119,18 +148,32 @@ export function CheckView({ jurisdictions = ["QC"], catalogue = [], credits = nu
         actions={<Today now={now} />}
       />
       {credits ? <CheckPlanStrip credits={credits} /> : null}
-      <div className={catalogue.length ? "grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-start" : "flex max-w-3xl flex-col gap-5"}>
+      <div
+        className={
+          catalogue.length
+            ? "grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-start"
+            : "flex max-w-3xl flex-col gap-5"
+        }
+      >
         <div id="depot" className="flex min-w-0 scroll-mt-24 flex-col gap-5" data-testid="check-drop">
           <h2 className="m-0 font-display text-lg font-bold text-fg">{say("check.dropTitle")}</h2>
           {kind !== "auto" ? (
             <p className="m-0 text-sm text-fg-secondary" data-testid="check-chosen">
               {say("check.catalogue.chosen", { kind: say(`kinds.${kind}`) })} ·{" "}
-              <Link className="font-semibold text-fg-accent underline-offset-2 hover:underline" href={checkHref(locale, "auto").replace(/#depot$/, "")}>
+              <Link
+                className="font-semibold text-fg-accent underline-offset-2 hover:underline"
+                href={checkHref(locale, "auto").replace(/#depot$/, "")}
+              >
                 {say("check.catalogue.change")}
               </Link>
             </p>
           ) : null}
-          <DocumentUploader defaultsFirst kindRef={kindRef} onDrop={(files) => (dropped.current += files.length)} onUploaded={landed} />
+          <DocumentUploader
+            defaultsFirst
+            kindRef={kindRef}
+            onDrop={(files) => (dropped.current += files.length)}
+            onUploaded={landed}
+          />
           <CheckQueue rows={rows} onPick={pick} />
         </div>
         {catalogue.length ? <CheckCatalogue items={catalogue} /> : null}
@@ -138,7 +181,10 @@ export function CheckView({ jurisdictions = ["QC"], catalogue = [], credits = nu
       {app?.features.batches ? (
         <p className="m-0 text-sm text-fg-secondary">
           {say("batch.fromCheck")}{" "}
-          <Link className="font-semibold text-fg-accent underline-offset-2 hover:underline" href={checksTabHref(locale, "lots")}>
+          <Link
+            className="font-semibold text-fg-accent underline-offset-2 hover:underline"
+            href={checksTabHref(locale, "lots")}
+          >
             {say("batch.fromCheckLink")}
           </Link>
         </p>

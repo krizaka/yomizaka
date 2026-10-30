@@ -20,7 +20,12 @@ export function GET(req: Request, { params }: Params) {
     const session = await requireSession(req);
     const id = (await params).id;
     const features = await insightFeatures(session.account.id);
-    return Response.json({ document: { ...withFeatures(await getDocument(session.account.id, id), features), ...(await documentStorage(session.account.id, id, (await storesOf(session.account.id)).describe)) } });
+    return Response.json({
+      document: {
+        ...withFeatures(await getDocument(session.account.id, id), features),
+        ...(await documentStorage(session.account.id, id, (await storesOf(session.account.id)).describe)),
+      },
+    });
   });
 }
 
@@ -34,7 +39,14 @@ export function POST(req: Request, { params }: Params) {
     const started = await startCheck(session.account, id, request, new Date(), appEnvironment());
     if (started.reused) return Response.json({ analysis: started.analysis, reused: true });
     const { analysis, via } = started;
-    await audit({ action: "analysis.started", actorId: session.account.id, actorLabel: session.account.email, targetId: id, detail: { studio: request.studio, runId: analysis.runId, via }, headers: req.headers });
+    await audit({
+      action: "analysis.started",
+      actorId: session.account.id,
+      actorLabel: session.account.email,
+      targetId: id,
+      detail: { studio: request.studio, runId: analysis.runId, via },
+      headers: req.headers,
+    });
     return Response.json({ analysis }, { status: 202 });
   });
 }
@@ -44,7 +56,13 @@ export function DELETE(req: Request, { params }: Params) {
     const session = await requireSession(req);
     const id = (await params).id;
     await deleteDocument(session.account.id, id, await storeForDocument(session.account.id, id));
-    await audit({ action: "document.deleted", actorId: session.account.id, actorLabel: session.account.email, targetId: id, headers: req.headers });
+    await audit({
+      action: "document.deleted",
+      actorId: session.account.id,
+      actorLabel: session.account.email,
+      targetId: id,
+      headers: req.headers,
+    });
     return new Response(null, { status: 204 });
   });
 }

@@ -11,7 +11,11 @@ import { LEASE_RULESET } from "./section-g-report";
 type Messages = Record<string, string>;
 
 /** A finding fails, an ok passes, a no-claim is not a finding. */
-const VERDICT: Record<PaymentClausesResult["status"], string | null> = { finding: "FAIL", ok: "PASS", "no-claim": null };
+const VERDICT: Record<PaymentClausesResult["status"], string | null> = {
+  finding: "FAIL",
+  ok: "PASS",
+  "no-claim": null,
+};
 
 /**
  * Adds the payment clauses' finding (TS-P-001, art. 1904 C.c.Q.) to a Québec lease report that carries the figures, once (yomizaka#104).
@@ -27,7 +31,14 @@ export function withPaymentClauses(report: ComplianceReport): ComplianceReport {
   const verdict = VERDICT[result.status];
   if (!verdict) return report;
   const failing = verdict === "FAIL";
-  const say = (messages: Messages) => [...result.findings.map((f) => messages[f.code] ?? ""), ...(failing ? [] : [messages.ok ?? ""]), messages.disclaimer].filter(Boolean).join(" ");
+  const say = (messages: Messages) =>
+    [
+      ...result.findings.map((f) => messages[f.code] ?? ""),
+      ...(failing ? [] : [messages.ok ?? ""]),
+      messages.disclaimer,
+    ]
+      .filter(Boolean)
+      .join(" ");
   return appendFinding(report, {
     ruleId: result.ruleId,
     title: ruleTitle(PAYMENT_CLAUSES_RULE.id, "fr", null),

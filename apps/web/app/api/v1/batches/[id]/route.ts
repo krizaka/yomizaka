@@ -9,7 +9,14 @@ export const dynamic = "force-dynamic";
 export function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   return handle(async () => {
     const { caller, batch } = await readAdvanced(req, params, "batch", appEnvironment());
-    await audit({ action: "api.batch.read", actorId: caller.account.id, actorLabel: `api-key:${caller.keyId}`, targetId: batch.id, detail: { counts: batch.counts }, headers: req.headers });
+    await audit({
+      action: "api.batch.read",
+      actorId: caller.account.id,
+      actorLabel: `api-key:${caller.keyId}`,
+      targetId: batch.id,
+      detail: { counts: batch.counts },
+      headers: req.headers,
+    });
     return Response.json({ batch });
   });
 }

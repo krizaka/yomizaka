@@ -15,8 +15,20 @@ function files(dir: string): string[] {
     return /\.(tsx|css)$/.test(name) && !/\.(test|stories)\./.test(name) ? [path] : [];
   });
 }
-const code = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "").replace(/\{\/\*[\s\S]*?\*\/\}/g, "");
-const sources = ["app", "components"].flatMap((d) => { try { return files(join(ROOT, d)); } catch { return []; } }).map((f) => [f.slice(ROOT.length + 1), code(readFileSync(f, "utf8"))] as const);
+const code = (s: string) =>
+  s
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/^\s*\/\/.*$/gm, "")
+    .replace(/\{\/\*[\s\S]*?\*\/\}/g, "");
+const sources = ["app", "components"]
+  .flatMap((d) => {
+    try {
+      return files(join(ROOT, d));
+    } catch {
+      return [];
+    }
+  })
+  .map((f) => [f.slice(ROOT.length + 1), code(readFileSync(f, "utf8"))] as const);
 
 describe("Cahier: no template tell in this app's own sources", () => {
   it("no uppercase tracked label", () => {
@@ -30,8 +42,11 @@ describe("Cahier: no template tell in this app's own sources", () => {
   });
   it("no pill on a control or a label, no round card in the stylesheets", () => {
     for (const [f, s] of sources) {
-      for (const cls of s.match(/"[^"\n]*rounded-full[^"\n]*"/g) ?? []) expect(cls, f).toMatch(/\b(?:h-([\d.]+) w-\1|size-[\w.[\]-]+|w-([\d.]+) h-\2|h-1\.5 w-1\.5)\b/);
-      if (f.endsWith(".css")) for (const m of s.matchAll(/border-radius:\s*(\d+)px/g)) expect(Number(m[1]) < 10 || Number(m[1]) >= 999, `${f}: ${m[1]}px`).toBe(true);
+      for (const cls of s.match(/"[^"\n]*rounded-full[^"\n]*"/g) ?? [])
+        expect(cls, f).toMatch(/\b(?:h-([\d.]+) w-\1|size-[\w.[\]-]+|w-([\d.]+) h-\2|h-1\.5 w-1\.5)\b/);
+      if (f.endsWith(".css"))
+        for (const m of s.matchAll(/border-radius:\s*(\d+)px/g))
+          expect(Number(m[1]) < 10 || Number(m[1]) >= 999, `${f}: ${m[1]}px`).toBe(true);
     }
   });
 });

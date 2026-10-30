@@ -20,7 +20,11 @@ export function PaymentReturn({ result }: Readonly<{ result: Return }>) {
   const { open, pending, problem } = useBillingPortal();
   const paid = result.state === "paid";
   return (
-    <Alert tone={paid ? "success" : "info"} data-testid="payment-return" title={say(paid ? "paymentReturn.paidTitle" : "paymentReturn.cancelledTitle")}>
+    <Alert
+      tone={paid ? "success" : "info"}
+      data-testid="payment-return"
+      title={say(paid ? "paymentReturn.paidTitle" : "paymentReturn.cancelledTitle")}
+    >
       <p className="m-0">{say(paid ? `paymentReturn.paid.${result.kind}` : "paymentReturn.cancelled")}</p>
       {problem ? <p className="m-0 mt-2 text-fg-danger">{problem}</p> : null}
       <span className="mt-3 flex flex-wrap gap-3">

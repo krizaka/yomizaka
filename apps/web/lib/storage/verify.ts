@@ -1,4 +1,14 @@
-import { checkEndpointDns, type ObjectStore, type OpenContext, openProvider, residencyOfConfig, type Resolver, StorageError, testConnection, type TestStep } from "@krizaka/storage";
+import {
+  checkEndpointDns,
+  type ObjectStore,
+  type OpenContext,
+  openProvider,
+  residencyOfConfig,
+  type Resolver,
+  StorageError,
+  testConnection,
+  type TestStep,
+} from "@krizaka/storage";
 
 export interface S3Candidate {
   endpoint: string;
@@ -38,7 +48,13 @@ export async function verifyS3(
   candidate: S3Candidate,
   deps: { ctx: OpenContext; resolve?: Resolver; probeId: string; store?: ObjectStore },
 ): Promise<Verification> {
-  const base = { steps: [] as TestStep[], region: candidate.region, residency: residencyOfEndpoint(candidate.endpoint, candidate.region), origin: null, host: null };
+  const base = {
+    steps: [] as TestStep[],
+    region: candidate.region,
+    residency: residencyOfEndpoint(candidate.endpoint, candidate.region),
+    origin: null,
+    host: null,
+  };
   try {
     new URL(candidate.endpoint.trim());
   } catch {
@@ -48,10 +64,25 @@ export async function verifyS3(
   try {
     origin = await checkEndpointDns(candidate.endpoint.trim(), deps.resolve ? { resolve: deps.resolve } : {});
   } catch (error) {
-    if (error instanceof StorageError) {return { ...base, ok: false, error: "ENDPOINT_NOT_ALLOWED" };}
+    if (error instanceof StorageError) {
+      return { ...base, ok: false, error: "ENDPOINT_NOT_ALLOWED" };
+    }
     throw error;
   }
-  const opened = await openProvider("s3", { endpoint: origin, region: candidate.region, bucket: candidate.bucket }, { accessKeyId: candidate.accessKeyId, secretAccessKey: candidate.secretAccessKey }, deps.ctx);
+  const opened = await openProvider(
+    "s3",
+    { endpoint: origin, region: candidate.region, bucket: candidate.bucket },
+    { accessKeyId: candidate.accessKeyId, secretAccessKey: candidate.secretAccessKey },
+    deps.ctx,
+  );
   const out = await testConnection(deps.store ?? opened.store, deps.probeId, () => deps.ctx.clock.now().getTime());
-  return { ok: out.ok, steps: out.steps, origin, host: new URL(origin).host, region: candidate.region, residency: residencyOfEndpoint(origin, candidate.region), error: null };
+  return {
+    ok: out.ok,
+    steps: out.steps,
+    origin,
+    host: new URL(origin).host,
+    region: candidate.region,
+    residency: residencyOfEndpoint(origin, candidate.region),
+    error: null,
+  };
 }

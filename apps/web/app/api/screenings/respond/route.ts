@@ -14,7 +14,11 @@ const body = z.discriminatedUnion("action", [
   z.object({ token: z.string().min(20).max(80), action: z.literal("decline") }),
   z.object({ token: z.string().min(20).max(80), action: z.literal("share") }),
   z.object({ token: z.string().min(20).max(80), action: z.literal("copy"), locale: z.enum(["en", "fr"]) }),
-  z.object({ token: z.string().min(20).max(80), action: z.literal("contest"), comment: z.string().trim().max(500).default("") }),
+  z.object({
+    token: z.string().min(20).max(80),
+    action: z.literal("contest"),
+    comment: z.string().trim().max(500).default(""),
+  }),
 ]);
 
 /**
@@ -29,7 +33,13 @@ export function POST(req: Request) {
     const now = new Date();
     if (input.action === "copy") {
       const t = getDictionary(input.locale).screening.tenant;
-      const copy = await copyForTenant(input.token, await labelsIn(input.locale), { outcome: t.outcome, band: t.band, keptUntil: t.deleteOn, title: t.resultTitle }, now, req.headers);
+      const copy = await copyForTenant(
+        input.token,
+        await labelsIn(input.locale),
+        { outcome: t.outcome, band: t.band, keptUntil: t.deleteOn, title: t.resultTitle },
+        now,
+        req.headers,
+      );
       return Response.json({ copy }, { headers: { "Cache-Control": "private, no-store" } });
     }
     const act = () => {

@@ -31,7 +31,12 @@ export default function Checks() {
 
   const header = (
     <View style={{ paddingBottom: 12 }}>
-      <Segmented aria-label={t("checksTabs.label")} options={CHECKS_TABS.map((value) => ({ value, label: t(`checksTabs.${value}`) }))} value={tab} onValueChange={(next) => router.replace(routes.checks(locale, next) as never)} />
+      <Segmented
+        aria-label={t("checksTabs.label")}
+        options={CHECKS_TABS.map((value) => ({ value, label: t(`checksTabs.${value}`) }))}
+        value={tab}
+        onValueChange={(next) => router.replace(routes.checks(locale, next) as never)}
+      />
     </View>
   );
 

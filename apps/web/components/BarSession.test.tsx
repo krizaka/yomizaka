@@ -4,17 +4,40 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const krizakaFetch = vi.fn();
-vi.mock("@krizaka/query", async (original) => ({ ...(await original<typeof import("@krizaka/query")>()), krizakaFetch: (...args: unknown[]) => krizakaFetch(...args) }));
+vi.mock("@krizaka/query", async (original) => ({
+  ...(await original<typeof import("@krizaka/query")>()),
+  krizakaFetch: (...args: unknown[]) => krizakaFetch(...args),
+}));
 
 import fr from "@/messages/fr.json";
 
-import { BarActions, BarActionsView, ClosingActionsView, ClosingBodyView, HeroActionsView, type Me, ME_KEY, meOf, signOutAndForget } from "./BarSession";
+import {
+  BarActions,
+  BarActionsView,
+  ClosingActionsView,
+  ClosingBodyView,
+  HeroActionsView,
+  type Me,
+  ME_KEY,
+  meOf,
+  signOutAndForget,
+} from "./BarSession";
 import { SiteHeader } from "./SiteChrome";
 
-const text = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/\s+/g, " ");
+const text = (html: string) =>
+  html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&#x27;|&#39;/g, "'")
+    .replace(/\s+/g, " ");
 const ME: Me = { email: "eric@example.test", name: "Éric", avatarSeed: null };
-const view = (props: Partial<Parameters<typeof BarActionsView>[0]> = {}) => renderToStaticMarkup(<BarActionsView locale="en" placement="bar" me={null} signupOpen={false} onSignOut={() => {}} {...props} />);
-const hero = (props: Partial<Parameters<typeof HeroActionsView>[0]> = {}) => renderToStaticMarkup(<HeroActionsView locale="en" me={null} status="In development: sign-up is closed." {...props} />);
+const view = (props: Partial<Parameters<typeof BarActionsView>[0]> = {}) =>
+  renderToStaticMarkup(
+    <BarActionsView locale="en" placement="bar" me={null} signupOpen={false} onSignOut={() => {}} {...props} />,
+  );
+const hero = (props: Partial<Parameters<typeof HeroActionsView>[0]> = {}) =>
+  renderToStaticMarkup(
+    <HeroActionsView locale="en" me={null} status="In development: sign-up is closed." {...props} />,
+  );
 
 beforeEach(() => {
   krizakaFetch.mockReset();
@@ -58,11 +81,13 @@ describe("the public bar knows who is signed in (yomizaka#243) — a quiet accou
 
   it("the bar of every public page says no « Talk to us », in either language", () => {
     for (const locale of ["en", "fr"] as const) {
-      const html = text(renderToStaticMarkup(
+      const html = text(
+        renderToStaticMarkup(
           <ThemeProvider>
             <SiteHeader locale={locale} current="home" />
           </ThemeProvider>,
-        ));
+        ),
+      );
       expect(html).not.toMatch(/Talk to us|Nous parler|Contact us/);
     }
   });
@@ -111,7 +136,9 @@ describe("the hint comes from the server, never from the browser's memory", () =
   it("signing out forgets the person at once — even when the call fails", async () => {
     const signedOut = { signedIn: false, signupOpen: false };
     const cache = new Map<string, unknown>([[ME_KEY.join(), ME]]);
-    const client = { setQueryData: (key: readonly string[], value: typeof signedOut) => void cache.set(key.join(), value) };
+    const client = {
+      setQueryData: (key: readonly string[], value: typeof signedOut) => void cache.set(key.join(), value),
+    };
     await signOutAndForget(client, async () => undefined);
     expect(cache.get(ME_KEY.join())).toEqual(signedOut);
     cache.set(ME_KEY.join(), ME);

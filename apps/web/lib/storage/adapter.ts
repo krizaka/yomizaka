@@ -8,12 +8,17 @@ import { assertKey, StorageError } from "./port";
  * keys, put/get/delete/signedUrl one for one. What the package refuses (a provider that answers an error) becomes the 502 the routes
  * already answer; the descriptor is the one the product says (where it is, whose it is), computed from the configuration. A signed link never outlives `maxTtlSeconds`, whatever a caller asks.
  */
-export function documentStoreOver(objects: ObjectStore, descriptor: StoreDescriptor, maxTtlSeconds: number): DocumentStore {
+export function documentStoreOver(
+  objects: ObjectStore,
+  descriptor: StoreDescriptor,
+  maxTtlSeconds: number,
+): DocumentStore {
   const guard = async <T>(run: () => Promise<T>): Promise<T> => {
     try {
       return await run();
     } catch (error) {
-      if (error instanceof PackageError && error.code === STORAGE_CODE.unreadable) throw new StorageError(500, "The stored object failed its integrity check");
+      if (error instanceof PackageError && error.code === STORAGE_CODE.unreadable)
+        throw new StorageError(500, "The stored object failed its integrity check");
       if (error instanceof PackageError) throw new StorageError(502, `Storage refused the request (${error.code})`);
       throw error;
     }

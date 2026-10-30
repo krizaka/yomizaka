@@ -12,10 +12,16 @@ import fr from "@/messages/fr.json";
 
 import { CheckView } from "./CheckView";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push() {}, replace() {}, refresh() {} }), usePathname: () => "/fr/app/check", useSearchParams: () => new URLSearchParams(window.location.search) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push() {}, replace() {}, refresh() {} }),
+  usePathname: () => "/fr/app/check",
+  useSearchParams: () => new URLSearchParams(window.location.search),
+}));
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-const tenant = catalogueOf(offerOf(SEED_FLOWS.filter((f) => f.definition.audiences.includes("tenant")).map((f) => f.definition)));
+const tenant = catalogueOf(
+  offerOf(SEED_FLOWS.filter((f) => f.definition.audiences.includes("tenant")).map((f) => f.definition)),
+);
 let root: Root | null = null;
 let host: HTMLElement;
 const mount = async (search = "") => {
@@ -34,10 +40,17 @@ const mount = async (search = "") => {
   });
 };
 const rows = () => [...host.querySelectorAll('[data-testid="check-catalogue"] li')].map((li) => li.textContent ?? "");
-const chip = (text: string) => [...host.querySelectorAll<HTMLElement>('[data-testid="catalogue-chips"] [role="radio"]')].find((c) => c.textContent?.startsWith(text))!;
+const chip = (text: string) =>
+  [...host.querySelectorAll<HTMLElement>('[data-testid="catalogue-chips"] [role="radio"]')].find((c) =>
+    c.textContent?.startsWith(text),
+  )!;
 
 beforeAll(() => {
-  globalThis.ResizeObserver ??= class { observe() {} unobserve() {} disconnect() {} } as never;
+  globalThis.ResizeObserver ??= class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as never;
 });
 afterEach(async () => {
   await act(async () => root?.unmount());

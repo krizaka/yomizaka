@@ -14,7 +14,8 @@ const CODE = { ascending: "asc", descending: "desc" } as const;
 export function sortOf(raw: string, sortable: readonly string[]): Sort {
   if (raw === "none") return null;
   const [column, direction, extra] = raw.split(":");
-  if (column && direction && extra === undefined && sortable.includes(column) && Object.hasOwn(DIRECTION, direction)) return { column, direction: DIRECTION[direction as keyof typeof DIRECTION] };
+  if (column && direction && extra === undefined && sortable.includes(column) && Object.hasOwn(DIRECTION, direction))
+    return { column, direction: DIRECTION[direction as keyof typeof DIRECTION] };
   return sortOf(TABLE_DEFAULTS.sort, sortable.includes("added") ? sortable : ["added"]) ?? null;
 }
 

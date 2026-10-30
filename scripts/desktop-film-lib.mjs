@@ -17,7 +17,8 @@ export const FILM_SIZE = { width: 1280, height: 800 };
 /** The window as a crop: whole, even numbers (H.264 wants even sides), never off the screen's top-left. */
 export function cropRect(rect) {
   const [x, y, w, h] = [rect?.x, rect?.y, rect?.width, rect?.height];
-  if (![x, y, w, h].every(Number.isFinite)) throw new Error(`the window's rectangle is unknown: ${JSON.stringify(rect)}`);
+  if (![x, y, w, h].every(Number.isFinite))
+    throw new Error(`the window's rectangle is unknown: ${JSON.stringify(rect)}`);
   if (w < MIN_SIDE || h < MIN_SIDE) throw new Error(`the window is ${w} x ${h}: not shown yet`);
   const even = (n) => Math.floor(n / 2) * 2;
   return { x: Math.max(0, Math.round(x)), y: Math.max(0, Math.round(y)), width: even(w), height: even(h) };
@@ -27,7 +28,9 @@ export function cropRect(rect) {
 export async function windowRect(driver) {
   const w3c = await driver.rect().catch(() => undefined);
   if (w3c && w3c.width >= MIN_SIDE && w3c.height >= MIN_SIDE) return cropRect(w3c);
-  const [x, y, width, height] = await driver.run("return [window.screenX, window.screenY, window.innerWidth, window.innerHeight]");
+  const [x, y, width, height] = await driver.run(
+    "return [window.screenX, window.screenY, window.innerWidth, window.innerHeight]",
+  );
   return cropRect({ x, y, width, height });
 }
 
@@ -45,7 +48,12 @@ const cropFilter = (text) => {
 };
 
 /** The takes of a film: `start(rect)` opens a take on the window, `stop()` ends it; no directory, no film. */
-export function createFilm({ dir, spawnImpl = spawn, save = writeFileSync, sleep = (ms) => new Promise((r) => setTimeout(r, ms)) } = {}) {
+export function createFilm({
+  dir,
+  spawnImpl = spawn,
+  save = writeFileSync,
+  sleep = (ms) => new Promise((r) => setTimeout(r, ms)),
+} = {}) {
   const files = [];
   let take;
   return {
@@ -82,6 +90,11 @@ export function joinArgs(files, out, crops = []) {
     ...files.flatMap((file) => ["-i", file]),
     "-filter_complex",
     `${prepared};${chain}concat=n=${files.length}:v=1:a=0[v]`,
-    "-map", "[v]", "-an", "-pix_fmt", "yuv420p", out,
+    "-map",
+    "[v]",
+    "-an",
+    "-pix_fmt",
+    "yuv420p",
+    out,
   ];
 }

@@ -24,7 +24,18 @@ export const WORKSPACE: WorkspaceDecl = {
   users: "accounts",
   kinds: {
     // An applicant file is a `screenings` row of flow « file » (yomizaka#307): the condition puts it in a manager's scope.
-    [KIND.applicantFile]: { table: "screenings", inScope: "e.landlord_id = $1 AND e.flow = 'file'", dateColumn: "created_at", textColumns: ["tenant_name"] },
-    [KIND.document]: { table: "documents", scopeColumn: "owner_id", dateColumn: "created_at", textColumns: ["title"], collectionColumn: "collection_id" },
+    [KIND.applicantFile]: {
+      table: "screenings",
+      inScope: "e.landlord_id = $1 AND e.flow = 'file'",
+      dateColumn: "created_at",
+      textColumns: ["tenant_name"],
+    },
+    [KIND.document]: {
+      table: "documents",
+      scopeColumn: "owner_id",
+      dateColumn: "created_at",
+      textColumns: ["title"],
+      collectionColumn: "collection_id",
+    },
   },
 };

@@ -7,7 +7,10 @@ import { I18nProvider } from "@/i18n";
 import { SessionBoundary } from "@/session-boundary";
 import { AppHeader } from "@/ui/AppHeader";
 
-jest.mock("expo-router", () => ({ useRouter: () => ({ navigate: jest.fn(), replace: jest.fn() }), usePathname: () => "/fr/app" }));
+jest.mock("expo-router", () => ({
+  useRouter: () => ({ navigate: jest.fn(), replace: jest.fn() }),
+  usePathname: () => "/fr/app",
+}));
 // The account the server answers, read through the real query client: what the header shows is what the cache holds.
 jest.mock("@/config", () => {
   const fetchMe = jest.fn();

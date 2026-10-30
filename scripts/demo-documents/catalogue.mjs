@@ -7,9 +7,29 @@ export const DEFAULT_SEED = 20261023;
 export const AS_OF = "2026-10-23";
 
 const FIRST = ["Camille", "Mathis", "Léa", "Nathan", "Élodie", "Samuel", "Maude", "Olivier", "Rosalie", "Thierry"];
-const LAST = ["Fictif-Beaulieu", "Imaginaire-Roy", "Exemple-Lavoie", "Inventé-Gagné", "Factice-Morin", "Modèle-Bergeron", "Simulé-Pelletier", "Fictif-Caron"];
-const STREETS = ["rue des Fictifs", "avenue de l'Exemple", "boulevard Imaginaire", "rue du Modèle", "chemin des Inventés"];
-const EMPLOYERS = ["Boulangerie Imaginaire ltée", "Atelier Factice inc.", "Services Exemple (fictif) inc.", "Café Inventé s.e.n.c."];
+const LAST = [
+  "Fictif-Beaulieu",
+  "Imaginaire-Roy",
+  "Exemple-Lavoie",
+  "Inventé-Gagné",
+  "Factice-Morin",
+  "Modèle-Bergeron",
+  "Simulé-Pelletier",
+  "Fictif-Caron",
+];
+const STREETS = [
+  "rue des Fictifs",
+  "avenue de l'Exemple",
+  "boulevard Imaginaire",
+  "rue du Modèle",
+  "chemin des Inventés",
+];
+const EMPLOYERS = [
+  "Boulangerie Imaginaire ltée",
+  "Atelier Factice inc.",
+  "Services Exemple (fictif) inc.",
+  "Café Inventé s.e.n.c.",
+];
 
 const money = (cents) => {
   const sign = cents < 0 ? "-" : "";
@@ -27,7 +47,11 @@ function address(rng) {
 function sinLike(rng) {
   return `0${rng.int(10, 99)} ${rng.int(100, 999)} ${rng.int(100, 999)}`;
 }
-const banner = (what) => [`DOCUMENT FICTIF — ${what}`, "Jeu de données de démonstration Yomizaka : personnes, adresses et montants inventés.", ""];
+const banner = (what) => [
+  `DOCUMENT FICTIF — ${what}`,
+  "Jeu de données de démonstration Yomizaka : personnes, adresses et montants inventés.",
+  "",
+];
 
 function lease(rng, flaw) {
   const landlord = person(rng);
@@ -53,13 +77,17 @@ function lease(rng, flaw) {
     "",
   ];
   const findings = [];
-  if (flaw !== "no-tal") lines.push("Le locateur remet au locataire l'avis « Renseignements au nouveau locataire d'un logement » du Tribunal administratif du logement (TAL).");
+  if (flaw !== "no-tal")
+    lines.push(
+      "Le locateur remet au locataire l'avis « Renseignements au nouveau locataire d'un logement » du Tribunal administratif du logement (TAL).",
+    );
   else {
     findings.push({
       code: "QC-LEASE-TAL-NOTICE",
       title: "Avis du TAL non remis",
       severity: "BLOCKING",
-      explanation: "Le bail ne mentionne pas la remise de l'avis « Renseignements au nouveau locataire d'un logement » du Tribunal administratif du logement.",
+      explanation:
+        "Le bail ne mentionne pas la remise de l'avis « Renseignements au nouveau locataire d'un logement » du Tribunal administratif du logement.",
       absent: ["Renseignements au nouveau locataire"],
     });
   }
@@ -71,7 +99,8 @@ function lease(rng, flaw) {
       code: "QC-LEASE-ILLEGAL-CLAUSE",
       title: "Clause illégale",
       severity: "BLOCKING",
-      explanation: "Interdire les enfants, exiger un dépôt de sécurité et des chèques postdatés sont des clauses que le Code civil du Québec interdit (art. 1899 et 1904).",
+      explanation:
+        "Interdire les enfants, exiger un dépôt de sécurité et des chèques postdatés sont des clauses que le Code civil du Québec interdit (art. 1899 et 1904).",
       present: [clauseA, "dépôt de sécurité", "chèques postdatés"],
     });
   }
@@ -83,7 +112,9 @@ function lease(rng, flaw) {
     concludedOn: { status: "found", date: "2026-06-15" },
     startsOn: { status: "found", date: "2026-07-01" },
     noticeGiven: { status: "found", flag: flaw !== "no-tal" },
-    ...(flaw === "illegal-clause" ? { depositCents: { status: "found", cents: rent * 100 }, postdatedCheques: { status: "found", flag: true } } : {}),
+    ...(flaw === "illegal-clause"
+      ? { depositCents: { status: "found", cents: rent * 100 }, postdatedCheques: { status: "found", flag: true } }
+      : {}),
   };
   return { lines, findings, facts };
 }
@@ -141,7 +172,15 @@ function bankStatement(rng, flaw) {
     ["Remboursement entre amis", rng.int(20, 60) * 100],
     ["Abonnement fictif", -rng.int(10, 30) * 100],
   ];
-  const lines = [...banner("relevé bancaire"), "RELEVÉ DE COMPTE", "Banque Imaginaire du Québec (fictive)", `Titulaire : ${holder} (fictif)`, "Période : du 1er au 30 septembre 2026", "", `Solde d'ouverture : ${money(opening)}`];
+  const lines = [
+    ...banner("relevé bancaire"),
+    "RELEVÉ DE COMPTE",
+    "Banque Imaginaire du Québec (fictive)",
+    `Titulaire : ${holder} (fictif)`,
+    "Période : du 1er au 30 septembre 2026",
+    "",
+    `Solde d'ouverture : ${money(opening)}`,
+  ];
   let balance = opening;
   for (const [label, cents] of moves) {
     balance += cents;
@@ -182,7 +221,15 @@ function employmentLetter(rng, flaw) {
     "Signé : Direction des ressources humaines (fictive)",
   ];
   const findings = expired
-    ? [{ code: "DOCUMENT-EXPIRED", title: "Document expiré", severity: "BLOCKING", explanation: `La lettre était valide jusqu'au 31 mars 2025, avant la date de vérification (${AS_OF}).`, present: ["valide jusqu'au 31 mars 2025"] }]
+    ? [
+        {
+          code: "DOCUMENT-EXPIRED",
+          title: "Document expiré",
+          severity: "BLOCKING",
+          explanation: `La lettre était valide jusqu'au 31 mars 2025, avant la date de vérification (${AS_OF}).`,
+          present: ["valide jusqu'au 31 mars 2025"],
+        },
+      ]
     : [];
   return { lines, findings };
 }
@@ -214,7 +261,15 @@ function invoice(rng, flaw, number) {
   ];
   const findings =
     flaw === "bad-totals"
-      ? [{ code: "INVOICE-TOTAL-MISMATCH", title: "Le total ne concorde pas", severity: "BLOCKING", explanation: `Le sous-total et les taxes donnent ${money(total)}, mais la facture indique ${money(printed)}.`, present: [`Total à payer : ${money(printed)}`] }]
+      ? [
+          {
+            code: "INVOICE-TOTAL-MISMATCH",
+            title: "Le total ne concorde pas",
+            severity: "BLOCKING",
+            explanation: `Le sous-total et les taxes donnent ${money(total)}, mais la facture indique ${money(printed)}.`,
+            present: [`Total à payer : ${money(printed)}`],
+          },
+        ]
       : [];
   return { lines, findings };
 }
@@ -236,22 +291,100 @@ function contract(rng) {
 
 /** Every document of the demo: id, kind in Yomizaka, family (what it is), flaw (null = clean) and the builder. */
 export const SPECS = [
-  { id: "bail-rosemont-1-conforme", family: "lease", kind: "lease", flaw: null, title: "Bail — Rosemont, logement 1 (conforme)" },
-  { id: "bail-rosemont-2-conforme", family: "lease", kind: "lease", flaw: null, title: "Bail — Rosemont, logement 2 (conforme)" },
-  { id: "bail-rosemont-3-conforme", family: "lease", kind: "lease", flaw: null, title: "Bail — Rosemont, logement 3 (conforme)" },
-  { id: "bail-rosemont-4-sans-avis-tal", family: "lease", kind: "lease", flaw: "no-tal", title: "Bail — Rosemont, logement 4 (avis du TAL absent)" },
-  { id: "bail-rosemont-5-clause-illegale", family: "lease", kind: "lease", flaw: "illegal-clause", title: "Bail — Rosemont, logement 5 (clause illégale)" },
-  { id: "contrat-entretien-rosemont", family: "contract", kind: "contract", flaw: null, title: "Contrat d'entretien — Rosemont" },
-  { id: "paie-villeray-1-conforme", family: "pay-stub", kind: "other", flaw: null, title: "Relevé de paie — candidat 1" },
-  { id: "paie-villeray-2-totaux-faux", family: "pay-stub", kind: "other", flaw: "bad-totals", title: "Relevé de paie — candidat 2 (totaux inexacts)" },
-  { id: "banque-villeray-1-conforme", family: "bank-statement", kind: "other", flaw: null, title: "Relevé bancaire — candidat 1" },
-  { id: "banque-villeray-2-solde-modifie", family: "bank-statement", kind: "other", flaw: "edited-balance", title: "Relevé bancaire — candidat 2 (solde modifié)" },
-  { id: "emploi-villeray-1-conforme", family: "employment-letter", kind: "other", flaw: null, title: "Lettre d'emploi — candidat 1" },
-  { id: "emploi-villeray-2-expiree", family: "employment-letter", kind: "other", flaw: "expired", title: "Lettre d'emploi — candidat 2 (expirée)" },
+  {
+    id: "bail-rosemont-1-conforme",
+    family: "lease",
+    kind: "lease",
+    flaw: null,
+    title: "Bail — Rosemont, logement 1 (conforme)",
+  },
+  {
+    id: "bail-rosemont-2-conforme",
+    family: "lease",
+    kind: "lease",
+    flaw: null,
+    title: "Bail — Rosemont, logement 2 (conforme)",
+  },
+  {
+    id: "bail-rosemont-3-conforme",
+    family: "lease",
+    kind: "lease",
+    flaw: null,
+    title: "Bail — Rosemont, logement 3 (conforme)",
+  },
+  {
+    id: "bail-rosemont-4-sans-avis-tal",
+    family: "lease",
+    kind: "lease",
+    flaw: "no-tal",
+    title: "Bail — Rosemont, logement 4 (avis du TAL absent)",
+  },
+  {
+    id: "bail-rosemont-5-clause-illegale",
+    family: "lease",
+    kind: "lease",
+    flaw: "illegal-clause",
+    title: "Bail — Rosemont, logement 5 (clause illégale)",
+  },
+  {
+    id: "contrat-entretien-rosemont",
+    family: "contract",
+    kind: "contract",
+    flaw: null,
+    title: "Contrat d'entretien — Rosemont",
+  },
+  {
+    id: "paie-villeray-1-conforme",
+    family: "pay-stub",
+    kind: "other",
+    flaw: null,
+    title: "Relevé de paie — candidat 1",
+  },
+  {
+    id: "paie-villeray-2-totaux-faux",
+    family: "pay-stub",
+    kind: "other",
+    flaw: "bad-totals",
+    title: "Relevé de paie — candidat 2 (totaux inexacts)",
+  },
+  {
+    id: "banque-villeray-1-conforme",
+    family: "bank-statement",
+    kind: "other",
+    flaw: null,
+    title: "Relevé bancaire — candidat 1",
+  },
+  {
+    id: "banque-villeray-2-solde-modifie",
+    family: "bank-statement",
+    kind: "other",
+    flaw: "edited-balance",
+    title: "Relevé bancaire — candidat 2 (solde modifié)",
+  },
+  {
+    id: "emploi-villeray-1-conforme",
+    family: "employment-letter",
+    kind: "other",
+    flaw: null,
+    title: "Lettre d'emploi — candidat 1",
+  },
+  {
+    id: "emploi-villeray-2-expiree",
+    family: "employment-letter",
+    kind: "other",
+    flaw: "expired",
+    title: "Lettre d'emploi — candidat 2 (expirée)",
+  },
   { id: "facture-2026-01", family: "invoice", kind: "invoice", flaw: null, title: "Facture 2026-01 — entretien" },
   { id: "facture-2026-02", family: "invoice", kind: "invoice", flaw: null, title: "Facture 2026-02 — entretien" },
   { id: "facture-2026-03", family: "invoice", kind: "invoice", flaw: null, title: "Facture 2026-03 — entretien" },
-  { id: "facture-2026-04-total-faux", family: "invoice", kind: "invoice", flaw: "bad-totals", title: "Facture 2026-04 — total inexact" },
+  {
+    id: "facture-2026-04-total-faux",
+    family: "invoice",
+    kind: "invoice",
+    flaw: "bad-totals",
+    title: "Facture 2026-04 — total inexact",
+  },
 ];
 
 const BUILDERS = {
@@ -282,5 +415,13 @@ export const PERSONA_ERIC = {
     { key: "empty-b", documents: [] },
   ],
   /** The documents that carry a finished check (seeded, marked as such). */
-  checked: ["bail-rosemont-1-conforme", "bail-rosemont-4-sans-avis-tal", "bail-rosemont-5-clause-illegale", "paie-villeray-2-totaux-faux", "banque-villeray-2-solde-modifie", "emploi-villeray-2-expiree", "facture-2026-04-total-faux"],
+  checked: [
+    "bail-rosemont-1-conforme",
+    "bail-rosemont-4-sans-avis-tal",
+    "bail-rosemont-5-clause-illegale",
+    "paie-villeray-2-totaux-faux",
+    "banque-villeray-2-solde-modifie",
+    "emploi-villeray-2-expiree",
+    "facture-2026-04-total-faux",
+  ],
 };

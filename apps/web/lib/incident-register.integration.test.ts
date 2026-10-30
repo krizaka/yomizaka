@@ -20,15 +20,26 @@ describe.runIf(enabled)("0055_privacy_incident_register", () => {
     const pool = new pg.Pool({ connectionString: url.toString(), max: 2 });
     const connect = async () => {
       const client = await pool.connect();
-      return { query: (text: string, values?: unknown[]) => client.query(text, values), release: () => client.release() };
+      return {
+        query: (text: string, values?: unknown[]) => client.query(text, values),
+        release: () => client.release(),
+      };
     };
     const run = async (text: string, values?: unknown[]) => (await pool.query(text, values)).rows as never;
     try {
       await runMigrations(connect, MIGRATIONS, { lockKey: MIGRATION_LOCK_KEY });
       const register = createIncidentRegister({ clock: { now: () => new Date() } });
       const actor = { id: null, label: "admin@yomizaka.test" };
-      const mine = await register.open(run, { scope: "yomizaka", kind: "loss", description: "A laptop was lost.", information: ["lease"] }, actor);
-      await register.open(run, { scope: "akinaza", kind: "access", description: "Another tenant.", information: ["invoice"] }, actor);
+      const mine = await register.open(
+        run,
+        { scope: "yomizaka", kind: "loss", description: "A laptop was lost.", information: ["lease"] },
+        actor,
+      );
+      await register.open(
+        run,
+        { scope: "akinaza", kind: "access", description: "Another tenant.", information: ["invoice"] },
+        actor,
+      );
       expect((await register.list(run, "yomizaka")).map((i) => i.id)).toEqual([mine.id]);
       expect(await register.get(run, "akinaza", mine.id)).toBeNull();
       await expect(register.close(run, "akinaza", mine.id, actor)).rejects.toMatchObject({ code: "INCIDENT_UNKNOWN" });

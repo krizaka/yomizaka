@@ -14,13 +14,67 @@ type Lang = ReturnType<typeof useSay>["locale"];
 
 function flowColumns(say: Say, locale: Lang): DataTableColumn<AdminFlow>[] {
   return [
-    { id: "key", header: say("adminConsole.flows.columns.key"), sortable: true, card: "title", value: (f) => f.key, cell: (f) => <Link className="font-semibold text-fg hover:text-fg-accent hover:underline" href={`/${locale}/flows/${f.id}`}>{f.key}</Link> },
+    {
+      id: "key",
+      header: say("adminConsole.flows.columns.key"),
+      sortable: true,
+      card: "title",
+      value: (f) => f.key,
+      cell: (f) => (
+        <Link className="font-semibold text-fg hover:text-fg-accent hover:underline" href={`/${locale}/flows/${f.id}`}>
+          {f.key}
+        </Link>
+      ),
+    },
     { id: "title", header: say("adminConsole.flows.columns.title"), value: (f) => f.title },
-    { id: "audiences", header: say("adminConsole.flows.columns.audiences"), value: (f) => f.audiences.join(", "), cell: (f) => <span className="flex flex-wrap gap-1">{f.audiences.map((a) => <Badge key={a} tone="neutral">{say(`adminConsole.flows.editor.${a}`)}</Badge>)}</span> },
-    { id: "version", header: say("adminConsole.flows.columns.version"), align: "end", value: (f) => f.currentVersion ?? 0, cell: (f) => (f.currentVersion ? `v${f.currentVersion}` : "—") },
-    { id: "status", header: say("adminConsole.flows.columns.status"), value: (f) => f.status ?? "", cell: (f) => (f.status ? <Badge tone={f.status === "available" ? "success" : "warning"}>{say(`adminConsole.flows.status.${f.status}`)}</Badge> : "—") },
-    { id: "dev", header: say("adminConsole.flows.columns.dev"), value: (f) => String(f.environments.dev), cell: (f) => <Badge tone={f.environments.dev ? "success" : "neutral"}>{f.environments.dev ? "on" : "off"}</Badge> },
-    { id: "prod", header: say("adminConsole.flows.columns.prod"), value: (f) => String(f.environments.prod), cell: (f) => <Badge tone={f.environments.prod ? "success" : "neutral"}>{f.environments.prod ? "on" : "off"}</Badge> },
+    {
+      id: "audiences",
+      header: say("adminConsole.flows.columns.audiences"),
+      value: (f) => f.audiences.join(", "),
+      cell: (f) => (
+        <span className="flex flex-wrap gap-1">
+          {f.audiences.map((a) => (
+            <Badge key={a} tone="neutral">
+              {say(`adminConsole.flows.editor.${a}`)}
+            </Badge>
+          ))}
+        </span>
+      ),
+    },
+    {
+      id: "version",
+      header: say("adminConsole.flows.columns.version"),
+      align: "end",
+      value: (f) => f.currentVersion ?? 0,
+      cell: (f) => (f.currentVersion ? `v${f.currentVersion}` : "—"),
+    },
+    {
+      id: "status",
+      header: say("adminConsole.flows.columns.status"),
+      value: (f) => f.status ?? "",
+      cell: (f) =>
+        f.status ? (
+          <Badge tone={f.status === "available" ? "success" : "warning"}>
+            {say(`adminConsole.flows.status.${f.status}`)}
+          </Badge>
+        ) : (
+          "—"
+        ),
+    },
+    {
+      id: "dev",
+      header: say("adminConsole.flows.columns.dev"),
+      value: (f) => String(f.environments.dev),
+      cell: (f) => <Badge tone={f.environments.dev ? "success" : "neutral"}>{f.environments.dev ? "on" : "off"}</Badge>,
+    },
+    {
+      id: "prod",
+      header: say("adminConsole.flows.columns.prod"),
+      value: (f) => String(f.environments.prod),
+      cell: (f) => (
+        <Badge tone={f.environments.prod ? "success" : "neutral"}>{f.environments.prod ? "on" : "off"}</Badge>
+      ),
+    },
   ];
 }
 
@@ -36,7 +90,14 @@ export function FlowsTable({ flows }: Readonly<{ flows: AdminFlow[] }>) {
           <Link href={`/${locale}/flows/new`}>{say("adminConsole.flows.new")}</Link>
         </Button>
       </div>
-      <DataTable caption={say("adminConsole.flows.caption")} rows={flows} columns={columns} getRowId={(f) => f.id} rowLabel={(f) => f.key} defaultSort={{ column: "key", direction: "ascending" }} />
+      <DataTable
+        caption={say("adminConsole.flows.caption")}
+        rows={flows}
+        columns={columns}
+        getRowId={(f) => f.id}
+        rowLabel={(f) => f.key}
+        defaultSort={{ column: "key", direction: "ascending" }}
+      />
     </div>
   );
 }

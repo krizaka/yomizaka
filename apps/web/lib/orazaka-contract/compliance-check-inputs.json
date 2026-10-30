@@ -15,7 +15,10 @@
       "properties": {
         "document": { "type": "string", "maxLength": 60000 },
         "jurisdiction": { "type": "string", "enum": ["QC", "FR", "BE-WAL"] },
-        "declaredKind": { "type": "string", "enum": ["LEASE", "NOTICE", "CONDITION_REPORT", "INVOICE", "SERVICE_CONTRACT", "OTHER"] },
+        "declaredKind": {
+          "type": "string",
+          "enum": ["LEASE", "NOTICE", "CONDITION_REPORT", "INVOICE", "SERVICE_CONTRACT", "OTHER"]
+        },
         "asOf": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
         "ruleset": { "type": "string", "enum": ["qc-invoice", "qc-service-contract"] }
       }

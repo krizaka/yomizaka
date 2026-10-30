@@ -6,7 +6,12 @@ import { personaSessions, seededPersona } from "@krizaka/page-audit/journey";
 
 export const BASE = process.env.VISUAL_BASE_URL ?? "http://localhost:3000";
 // CI-only credentials of the seeded cast (scripts/ci-visual-start.sh), never a real account.
-const CAST = { eric: { email: process.env.E2E_EMAIL ?? "eric@demo.yomizaka.test", password: process.env.E2E_PASSWORD ?? "ci-only-demo-password-0123" } };
+const CAST = {
+  eric: {
+    email: process.env.E2E_EMAIL ?? "eric@demo.yomizaka.test",
+    password: process.env.E2E_PASSWORD ?? "ci-only-demo-password-0123",
+  },
+};
 
 /** Signs the persona in through the form, as a person would, and keeps the browser state in `file`. */
 export function sessionsFor(browser, workerIndex) {

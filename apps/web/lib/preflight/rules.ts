@@ -14,5 +14,17 @@ export const YOMIZAKA_RULES: PreflightRules = {
   maxArchiveEntries: 1000,
   maxArchiveBytes: 100 * 1024 * 1024,
   maxArchiveRatio: 100,
-  pdfActiveNames: ["JavaScript", "JS", "Launch", "EmbeddedFile", "EmbeddedFiles", "OpenAction", "AA", "RichMedia", "XFA", "ImportData", "SubmitForm"],
+  pdfActiveNames: [
+    "JavaScript",
+    "JS",
+    "Launch",
+    "EmbeddedFile",
+    "EmbeddedFiles",
+    "OpenAction",
+    "AA",
+    "RichMedia",
+    "XFA",
+    "ImportData",
+    "SubmitForm",
+  ],
 };

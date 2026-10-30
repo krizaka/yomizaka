@@ -19,7 +19,11 @@ describe("page transitions", () => {
 
   it("the stylesheet that carries the transition (and its reduced-motion rule) is loaded: the @krizaka/tailwind preset imports motion.css", () => {
     expect(read("app/globals.css")).toMatch(/@import "@krizaka\/tailwind/);
-    expect(readFileSync(join(ROOT, "node_modules/@krizaka/tailwind/index.css"), "utf8")).toContain("@krizaka/ui/motion.css");
-    expect(readFileSync(join(ROOT, "node_modules/@krizaka/ui/dist/motion.css"), "utf8")).toMatch(/prefers-reduced-motion[^}]*[\s\S]*::view-transition-old\(\*\)/);
+    expect(readFileSync(join(ROOT, "node_modules/@krizaka/tailwind/index.css"), "utf8")).toContain(
+      "@krizaka/ui/motion.css",
+    );
+    expect(readFileSync(join(ROOT, "node_modules/@krizaka/ui/dist/motion.css"), "utf8")).toMatch(
+      /prefers-reduced-motion[^}]*[\s\S]*::view-transition-old\(\*\)/,
+    );
   });
 });

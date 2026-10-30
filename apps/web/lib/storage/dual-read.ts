@@ -8,9 +8,15 @@ const RETIRING = "retiring";
  * document not yet moved is still served from the provider that is retiring. The old provider keeps reading until no row reaches it.
  * A delete reaches every provider that may still hold the file (it is idempotent). With nothing retiring this is the default store itself.
  */
-export async function dualObjectStore(service: Pick<ProviderService, "list" | "open">, primaryId: string, scope: string): Promise<ObjectStore> {
+export async function dualObjectStore(
+  service: Pick<ProviderService, "list" | "open">,
+  primaryId: string,
+  scope: string,
+): Promise<ObjectStore> {
   const primary = await service.open(primaryId);
-  const retiring = (await service.list(scope)).filter((p) => p.status === RETIRING && p.id !== primaryId).map((p) => p.id);
+  const retiring = (await service.list(scope))
+    .filter((p) => p.status === RETIRING && p.id !== primaryId)
+    .map((p) => p.id);
   if (retiring.length === 0) return primary;
   const open = (id: string) => service.open(id);
   const holders = async (key: string): Promise<ObjectStore | null> => {

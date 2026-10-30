@@ -33,17 +33,31 @@ const without = (f: ViewFilters, key: keyof ViewFilters): ViewFilters => {
  * Each tab and chip carries the filters it opens — and **the same filters are what its count counts** (`filterSql`, as the list), so the
  * numbers on the tabs are the lengths of the views. Pure.
  */
-export function binderPlan(set: StatusSet, tagIds: readonly string[], filters: ViewFilters): { tabs: BinderTab[]; chips: BinderChip[]; activeState: string | null } {
+export function binderPlan(
+  set: StatusSet,
+  tagIds: readonly string[],
+  filters: ViewFilters,
+): { tabs: BinderTab[]; chips: BinderChip[]; activeState: string | null } {
   const noState = without(filters, "status");
   const tabs: BinderTab[] = [
     { state: null, label: null, hue: "accent", filters: noState },
-    ...set.states.map((s): BinderTab => ({ state: s.key, label: s.label, hue: HUE[s.tone as keyof typeof HUE] ?? "neutral", filters: { ...noState, status: [s.key] } })),
+    ...set.states.map((s): BinderTab => ({
+      state: s.key,
+      label: s.label,
+      hue: HUE[s.tone as keyof typeof HUE] ?? "neutral",
+      filters: { ...noState, status: [s.key] },
+    })),
   ];
   const worn = filters.tags ?? [];
   const chips = tagIds.map((id): BinderChip => {
     const on = worn.includes(id);
     const next = on ? worn.filter((t) => t !== id) : [...worn, id];
-    return { id, on, filters: next.length ? { ...filters, tags: next } : without(filters, "tags"), countFilters: { ...filters, tags: Array.from(new Set([...worn, id])) } };
+    return {
+      id,
+      on,
+      filters: next.length ? { ...filters, tags: next } : without(filters, "tags"),
+      countFilters: { ...filters, tags: Array.from(new Set([...worn, id])) },
+    };
   });
   const status = filters.status ?? [];
   const activeOf = () => {

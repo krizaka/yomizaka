@@ -35,13 +35,23 @@ describe.runIf(enabled)("webhooks", () => {
   const actor = { id: null, label: "test" };
   const runs = new Map<string, string>();
   let n = 0;
-  const run = (id: string): OrazakaRun => ({ id, studioKey: "compliance-check", blueprintVersion: "1.0.0", status: runs.get(id) ?? "RUNNING", outputs: runs.get(id) === "SUCCEEDED" ? [{ key: "report", type: "JSON", value: REPORT }] : [] });
+  const run = (id: string): OrazakaRun => ({
+    id,
+    studioKey: "compliance-check",
+    blueprintVersion: "1.0.0",
+    status: runs.get(id) ?? "RUNNING",
+    outputs: runs.get(id) === "SUCCEEDED" ? [{ key: "report", type: "JSON", value: REPORT }] : [],
+  });
   let pro = { id: "", perspective: null };
   let free = { id: "", perspective: null };
   let proToken = "";
   let freeToken = "";
   const as = (token: string, method: string, path: string, body?: unknown) =>
-    new Request(`http://localhost${path}`, { method, headers: { cookie: `${SESSION_COOKIE}=${token}`, "content-type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body) });
+    new Request(`http://localhost${path}`, {
+      method,
+      headers: { cookie: `${SESSION_COOKIE}=${token}`, "content-type": "application/json" },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
   const account = async (label: string, isPro: boolean) => {
     const [row] = await query<{ id: string }>(
       isPro
@@ -49,11 +59,21 @@ describe.runIf(enabled)("webhooks", () => {
         : "INSERT INTO accounts (email) VALUES ($1) RETURNING id",
       [`hooks-${label}-${stamp}@yomizaka.test`],
     );
-    return { id: row!.id, perspective: null, token: (await createSession(row!.id, { ip: "203.0.113.20", userAgent: "vitest" })).token };
+    return {
+      id: row!.id,
+      perspective: null,
+      token: (await createSession(row!.id, { ip: "203.0.113.20", userAgent: "vitest" })).token,
+    };
   };
   const pdf = async (name: string, text: string) => ({ name, type: "application/pdf", bytes: await cleanPdf(text) });
   const closeBatch = async (name: string) => {
-    const created = await createBatch(pro, name, `file,check,reference\n${name}.pdf,compliance,REF-${name}`, [await pdf(`${name}.pdf`, `BAIL ${name} ${stamp}`)], { settings: await settingsFor(pro.id), now: new Date(), environment: "dev" });
+    const created = await createBatch(
+      pro,
+      name,
+      `file,check,reference\n${name}.pdf,compliance,REF-${name}`,
+      [await pdf(`${name}.pdf`, `BAIL ${name} ${stamp}`)],
+      { settings: await settingsFor(pro.id), now: new Date(), environment: "dev" },
+    );
     runs.forEach((_, id) => runs.set(id, "SUCCEEDED"));
     return advanceBatch(pro, created.id, { settings: await settingsFor(pro.id), now: new Date(), environment: "dev" });
   };
@@ -87,17 +107,31 @@ describe.runIf(enabled)("webhooks", () => {
   });
 
   it("the free plan has no webhooks; a Pro account registers an endpoint — https and public only — and sees its secret once", async () => {
-    const refused = await createRoute(as(freeToken, "POST", "/api/me/webhooks", { url: "https://hooks.example.test/a", events: ["batch.finished"] }));
+    const refused = await createRoute(
+      as(freeToken, "POST", "/api/me/webhooks", { url: "https://hooks.example.test/a", events: ["batch.finished"] }),
+    );
     expect([refused.status, (await refused.json()).code]).toEqual([403, "WEBHOOK_PLAN"]);
 
-    for (const url of ["http://hooks.example.test/a", "https://127.0.0.1/a", "https://user:pw@hooks.example.test/a", "not a url"]) {
+    for (const url of [
+      "http://hooks.example.test/a",
+      "https://127.0.0.1/a",
+      "https://user:pw@hooks.example.test/a",
+      "not a url",
+    ]) {
       const bad = await createRoute(as(proToken, "POST", "/api/me/webhooks", { url, events: ["batch.finished"] }));
       expect([bad.status, (await bad.json()).code], url).toEqual([400, "WEBHOOK_URL"]);
     }
-    const unknown = await createRoute(as(proToken, "POST", "/api/me/webhooks", { url: "https://hooks.example.test/a", events: ["nope"] }));
+    const unknown = await createRoute(
+      as(proToken, "POST", "/api/me/webhooks", { url: "https://hooks.example.test/a", events: ["nope"] }),
+    );
     expect([unknown.status, (await unknown.json()).code]).toEqual([400, "WEBHOOK_EVENTS"]);
 
-    const made = await createRoute(as(proToken, "POST", "/api/me/webhooks", { url: "https://hooks.example.test/yomizaka", events: ["batch.finished", "check.finished"] }));
+    const made = await createRoute(
+      as(proToken, "POST", "/api/me/webhooks", {
+        url: "https://hooks.example.test/yomizaka",
+        events: ["batch.finished", "check.finished"],
+      }),
+    );
     expect(made.status).toBe(201);
     expect(made.headers.get("cache-control")).toContain("no-store");
     const { endpoint, secret } = await made.json();
@@ -106,7 +140,9 @@ describe.runIf(enabled)("webhooks", () => {
     expect(listed).toContain(endpoint.id);
     expect(listed).not.toContain(secret);
     // at rest the secret is sealed
-    const [stored] = await query<Record<string, string>>("SELECT * FROM webhook_endpoints WHERE id = $1", [endpoint.id]);
+    const [stored] = await query<Record<string, string>>("SELECT * FROM webhook_endpoints WHERE id = $1", [
+      endpoint.id,
+    ]);
     expect(JSON.stringify(stored)).not.toContain(secret);
     (globalThis as { __hook?: unknown }).__hook = { endpoint, secret };
   });
@@ -124,11 +160,18 @@ describe.runIf(enabled)("webhooks", () => {
     };
     const first = await deliverWebhooks(SERVER_SECRET, new Date(), { timeoutMs: 1000, send });
     expect(first?.delivered).toBeGreaterThanOrEqual(2);
-    const mine = seen.filter((r) => JSON.parse(r.body).payload?.id === closed.id || JSON.parse(r.body).id === closed.id || r.body.includes(closed.id));
+    const mine = seen.filter(
+      (r) =>
+        JSON.parse(r.body).payload?.id === closed.id ||
+        JSON.parse(r.body).id === closed.id ||
+        r.body.includes(closed.id),
+    );
     expect(mine.map((r) => r.headers[EVENT_TYPE_HEADER]).sort()).toEqual(["batch.finished", "check.finished"]);
     for (const request of mine) {
       expect(request.url).toBe("https://hooks.example.test/yomizaka");
-      expect(verifySignature(secret, request.body, request.headers[SIGNATURE_HEADER], Math.floor(Date.now() / 1000))).toEqual({ ok: true });
+      expect(
+        verifySignature(secret, request.body, request.headers[SIGNATURE_HEADER], Math.floor(Date.now() / 1000)),
+      ).toEqual({ ok: true });
       expect(request.headers[EVENT_ID_HEADER]).toMatch(/^(batch|check):/);
       expect(request.body).not.toMatch(/quote|findings|documentId/);
     }
@@ -139,8 +182,14 @@ describe.runIf(enabled)("webhooks", () => {
     const sentBefore = seen.length;
     await deliverWebhooks(SERVER_SECRET, new Date(), { timeoutMs: 1000, send });
     expect(seen).toHaveLength(sentBefore);
-    const log = await (await deliveriesRoute(as(proToken, "GET", `/api/me/webhooks/${endpoint.id}/deliveries`), params(endpoint.id))).json();
-    expect(log.deliveries.filter((d: { eventId: string }) => d.eventId.endsWith(closed.id)).map((d: { status: string }) => d.status)).toEqual(["delivered", "delivered"]);
+    const log = await (
+      await deliveriesRoute(as(proToken, "GET", `/api/me/webhooks/${endpoint.id}/deliveries`), params(endpoint.id))
+    ).json();
+    expect(
+      log.deliveries
+        .filter((d: { eventId: string }) => d.eventId.endsWith(closed.id))
+        .map((d: { status: string }) => d.status),
+    ).toEqual(["delivered", "delivered"]);
   });
 
   it("an endpoint that answers 500 is tried again after the wait, not lost", async () => {
@@ -160,27 +209,56 @@ describe.runIf(enabled)("webhooks", () => {
 
   it("another account never sees or touches the endpoint; rotation gives a new secret; switching off or removing stops the sends", async () => {
     const { endpoint } = (globalThis as { __hook?: { endpoint: { id: string } } }).__hook!;
-    expect((await removeRoute(as(freeToken, "DELETE", `/api/me/webhooks/${endpoint.id}`), params(endpoint.id))).status).toBe(403);
+    expect(
+      (await removeRoute(as(freeToken, "DELETE", `/api/me/webhooks/${endpoint.id}`), params(endpoint.id))).status,
+    ).toBe(403);
     // a Pro stranger would get a 404, not the endpoint
     const other = await account("pro2", true);
-    expect((await patchRoute(as(other.token, "PATCH", `/api/me/webhooks/${endpoint.id}`, { active: false }), params(endpoint.id))).status).toBe(404);
+    expect(
+      (
+        await patchRoute(
+          as(other.token, "PATCH", `/api/me/webhooks/${endpoint.id}`, { active: false }),
+          params(endpoint.id),
+        )
+      ).status,
+    ).toBe(404);
     expect((await (await listRoute(as(other.token, "GET", "/api/me/webhooks"))).json()).endpoints).toEqual([]);
     await query("DELETE FROM accounts WHERE id = $1", [other.id]);
 
-    const rotated = await rotateRoute(as(proToken, "POST", `/api/me/webhooks/${endpoint.id}/rotate`), params(endpoint.id));
+    const rotated = await rotateRoute(
+      as(proToken, "POST", `/api/me/webhooks/${endpoint.id}/rotate`),
+      params(endpoint.id),
+    );
     expect(rotated.status).toBe(201);
     expect((await rotated.json()).secret).toBeTruthy();
 
-    expect((await patchRoute(as(proToken, "PATCH", `/api/me/webhooks/${endpoint.id}`, { active: false }), params(endpoint.id))).status).toBe(200);
+    expect(
+      (
+        await patchRoute(
+          as(proToken, "PATCH", `/api/me/webhooks/${endpoint.id}`, { active: false }),
+          params(endpoint.id),
+        )
+      ).status,
+    ).toBe(200);
     const closed = await closeBatch("off");
     const seen: string[] = [];
-    await deliverWebhooks(SERVER_SECRET, new Date(Date.now() + 3_600_000), { timeoutMs: 1000, send: async (r) => (seen.push(r.body), { status: 200 }) });
+    await deliverWebhooks(SERVER_SECRET, new Date(Date.now() + 3_600_000), {
+      timeoutMs: 1000,
+      send: async (r) => (seen.push(r.body), { status: 200 }),
+    });
     expect(seen.some((b) => b.includes(closed.id))).toBe(false);
-    expect((await removeRoute(as(proToken, "DELETE", `/api/me/webhooks/${endpoint.id}`), params(endpoint.id))).status).toBe(200);
+    expect(
+      (await removeRoute(as(proToken, "DELETE", `/api/me/webhooks/${endpoint.id}`), params(endpoint.id))).status,
+    ).toBe(200);
   });
 
   it("the administrator's switch turns it all off: nothing is queued", async () => {
-    const made = await createRoute(as(proToken, "POST", "/api/me/webhooks", { url: "https://hooks.example.test/second", events: ["batch.finished"] }));
+    const made = await createRoute(
+      as(proToken, "POST", "/api/me/webhooks", {
+        url: "https://hooks.example.test/second",
+        events: ["batch.finished"],
+      }),
+    );
     expect(made.status).toBe(201);
     await appSettings().set(actor, GLOBAL, "features.webhooks", false, new Date());
     resetAppSettings();
@@ -190,7 +268,10 @@ describe.runIf(enabled)("webhooks", () => {
     const seen: string[] = [];
     await appSettings().reset(actor, GLOBAL, "features.webhooks", new Date());
     resetAppSettings();
-    await deliverWebhooks(SERVER_SECRET, new Date(Date.now() + 7_200_000), { timeoutMs: 1000, send: async (r) => (seen.push(r.body), { status: 200 }) });
+    await deliverWebhooks(SERVER_SECRET, new Date(Date.now() + 7_200_000), {
+      timeoutMs: 1000,
+      send: async (r) => (seen.push(r.body), { status: 200 }),
+    });
     expect(seen.some((b) => b.includes(closed.id))).toBe(false);
   });
 });

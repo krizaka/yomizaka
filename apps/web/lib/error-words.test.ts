@@ -19,7 +19,8 @@ const walk = (dir: string): string[] =>
 const DECIDED = ["FLOW_NOT_OFFERED", "CONSENT_REQUIRED"];
 const codes = (): string[] => {
   const found = new Set(DECIDED);
-  for (const file of [...walk(join(ROOT, "app")), ...walk(join(ROOT, "lib"))]) for (const m of readFileSync(file, "utf8").matchAll(/refuse\(\s*\d+,\s*"([A-Z][A-Z0-9_]+)"/g)) found.add(m[1]!);
+  for (const file of [...walk(join(ROOT, "app")), ...walk(join(ROOT, "lib"))])
+    for (const m of readFileSync(file, "utf8").matchAll(/refuse\(\s*\d+,\s*"([A-Z][A-Z0-9_]+)"/g)) found.add(m[1]!);
   return [...found].sort();
 };
 
@@ -27,7 +28,10 @@ describe("every error code has words", () => {
   it("finds the codes (the scan is not empty)", () => {
     expect(codes().length).toBeGreaterThan(50);
   });
-  it.each([["en", en], ["fr", fr]] as const)("%s: a sentence for each code", (_l, dict) => {
+  it.each([
+    ["en", en],
+    ["fr", fr],
+  ] as const)("%s: a sentence for each code", (_l, dict) => {
     const errors = dict.console.errors as Record<string, string>;
     expect(codes().filter((c) => !errors[c]?.trim())).toEqual([]);
   });

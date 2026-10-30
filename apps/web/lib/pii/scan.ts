@@ -41,7 +41,11 @@ function countKinds(spans: readonly PiiSpan[]): Partial<Record<PiiKind, number>>
 }
 
 export function createScanner(patterns: readonly PiiPatternDef[]): PersonalInfoScanner {
-  const compiled: Compiled[] = patterns.map((p) => ({ p, re: new RegExp(p.pattern, "giu"), ctx: p.context ? new RegExp(p.context, "iu") : null }));
+  const compiled: Compiled[] = patterns.map((p) => ({
+    p,
+    re: new RegExp(p.pattern, "giu"),
+    ctx: p.context ? new RegExp(p.context, "iu") : null,
+  }));
   const labels = new Map(patterns.map((p) => [p.kind, p.label] as const));
 
   function scan(text: string): PiiScan {

@@ -9,5 +9,8 @@ export const GET = (req: Request) =>
   handle(async () => {
     await requireAdmin(req);
     const key = new URL(req.url).searchParams.get("key") ?? undefined;
-    return Response.json({ history: await appSettings().history({ key, limit: 100 }) }, { headers: { "Cache-Control": "private, no-store" } });
+    return Response.json(
+      { history: await appSettings().history({ key, limit: 100 }) },
+      { headers: { "Cache-Control": "private, no-store" } },
+    );
   });
