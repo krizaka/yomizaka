@@ -190,7 +190,8 @@ frames.forEach((f, i) => {
   const next = frames[i + 1]?.at ?? f.at + 0.04;
   list.push(`file '${name}'`, `duration ${Math.max(0.001, next - f.at).toFixed(4)}`);
 });
-list.push(`file '${path.join(tmp, `${String(frames.length - 1).padStart(5, "0")}.jpg`)}'`);
+const lastFrame = path.join(tmp, `${String(frames.length - 1).padStart(5, "0")}.jpg`);
+list.push(`file '${lastFrame}'`);
 writeFileSync(path.join(tmp, "list.txt"), `${list.join("\n")}\n`);
 execFileSync("ffmpeg", ["-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", path.join(tmp, "list.txt"), "-vf", "fps=30,scale=trunc(iw/2)*2:trunc(ih/2)*2", "-c:v", "libx264", "-crf", "12", "-preset", "fast", "-pix_fmt", "yuv420p", raw], { stdio: "inherit" }); // NOSONAR S4036: a developer-machine script, PATH is the developer's own
 const probed = execFileSync("ffprobe", ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height", "-of", "csv=p=0", raw]).toString().trim().replace(/,+$/, ""); // NOSONAR S4036: a developer-machine script
@@ -207,7 +208,9 @@ const WAIT_SPEED = Math.max(1, (waitTo - waitFrom) / 3);
 const segs = [[0, waitFrom, 1], [waitFrom, waitTo, WAIT_SPEED], [waitTo, real, 1]];
 const total = segs.reduce((n, [x, y, k]) => n + (y - x) / k, 0);
 const ff = (...a) => execFileSync("ffmpeg", ["-y", "-v", "error", ...a], { stdio: "inherit" }); // NOSONAR S4036: a developer-machine script, PATH is the developer's own
-const graph = segs.map(([x, y, k], i) => `[0:v]trim=start=${(start + x).toFixed(3)}:end=${(start + y).toFixed(3)},setpts=(PTS-STARTPTS)/${k.toFixed(4)}[v${i}]`).join(";") + `;${segs.map((_, i) => `[v${i}]`).join("")}concat=n=${segs.length}:v=1:a=0,fps=30[out]`;
+const trims = segs.map(([x, y, k], i) => `[0:v]trim=start=${(start + x).toFixed(3)}:end=${(start + y).toFixed(3)},setpts=(PTS-STARTPTS)/${k.toFixed(4)}[v${i}]`).join(";");
+const joined = segs.map((_, i) => `[v${i}]`).join("");
+const graph = `${trims};${joined}concat=n=${segs.length}:v=1:a=0,fps=30[out]`;
 const input = ["-i", raw, "-an", "-filter_complex", graph, "-map", "[out]"];
 ff(...input, "-c:v", "libvpx-vp9", "-crf", "32", "-b:v", "0", "-row-mt", "1", path.join(dir, "take.webm"));
 ff(...input, "-c:v", "libx264", "-crf", "22", "-preset", "slow", "-pix_fmt", "yuv420p", "-movflags", "+faststart", path.join(dir, "take.mp4"));
