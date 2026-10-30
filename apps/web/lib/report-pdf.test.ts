@@ -186,7 +186,7 @@ describe("the signed PDF is paper: folios, findings numbered as on the screen, f
     expect(payload.findings.map((f) => f.verdict)).toEqual(["FAIL", "PASS"]);
     const screen = numberFindings(payload.findings);
     const expected = [...screen.attention, ...screen.passed].map(({ n, finding }) => `${n}. ${finding.title}`);
-    expect(expected.length).toBe(2);
+    expect(expected).toHaveLength(2);
     const positions = expected.map((e) => text.indexOf(e));
     expect(positions.every((p) => p >= 0)).toBe(true);
     expect([...positions].sort((a, b) => a - b)).toEqual(positions);
