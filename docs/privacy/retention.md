@@ -20,3 +20,8 @@ A purge acts on the live database and the document store. Database backups of th
 ends, and a restore would bring a purged file back until the purge runs again. The backup window is the provider's (see Orazaka
 ADR-078 « not covered »); the lawyer review states it in the privacy notice. Until then the notice says purged documents may remain
 in encrypted backups for their rotation period.
+
+Our own nightly copy (`deploy/backup`, `docs/DISASTER_RECOVERY.md`) adds a second place, with a window of **30 days** (the newest
+7 copies are always kept). It is encrypted before it leaves the server (age, public key; the private key is offline), stored in
+Canada, and holds no document bytes (they are in the document store, ADR-0012) but the database's metadata and extracted text. A
+restore from it replays the purge: after any restore, run the purge sweep before the service is opened again.

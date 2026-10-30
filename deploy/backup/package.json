@@ -1,0 +1,19 @@
+{
+  "name": "@yomizaka/backup",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The nightly encrypted pg_dump, its off-site copy in Canada and its restore drill (krizaka/yomizaka#513).",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "backup": "node bin/backup.mjs"
+  },
+  "dependencies": {
+    "@krizaka/storage": "0.6.0",
+    "date-fns": "^4.4.0",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.11"
+  }
+}

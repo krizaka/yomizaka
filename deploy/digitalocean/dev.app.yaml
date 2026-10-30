@@ -77,3 +77,50 @@ services:
       - { key: MEDIA_STORAGE_API_KEY, scope: RUN_TIME, type: SECRET, value: "__MEDIA_STORAGE_API_KEY__" }
       - { key: MEDIA_DOCUMENTS_PULL_HOSTNAME, scope: RUN_TIME, value: "yomizaka-docs-dev.b-cdn.net" }
       - { key: MEDIA_DOCUMENTS_TOKEN_KEY, scope: RUN_TIME, type: SECRET, value: "__MEDIA_DOCUMENTS_TOKEN_KEY__" }
+# The nightly encrypted backup and its restore drill (krizaka/yomizaka#513, docs/DISASTER_RECOVERY.md). A scheduled job INSIDE the app: it
+# reaches the database with the same trusted connection as the web (no IP rule to open, krizaka-infra#24). It dumps one snapshot,
+# restores it into a scratch database to compare every table's row count, age-encrypts to a PUBLIC key and writes to the admin's default
+# provider for « backups » (Administration -> Storage; refused unless it is verified and in Canada). Retention 30 days, newest 7 always kept.
+# The second job is the dead-man's switch: it fails when the newest backup is missing or older than 36 h. A failed run shows in the
+# job's history and exits 1 with « BACKUP_FAILED <code> ». Written, not applied: the founder applies it (see the PR).
+jobs:
+  - name: backup
+    kind: SCHEDULED
+    schedule:
+      cron: "15 3 * * *"
+      time_zone: "America/Toronto"
+    dockerfile_path: deploy/backup/Dockerfile
+    source_dir: /
+    github:
+      repo: krizaka/yomizaka
+      branch: main
+      deploy_on_push: true
+    instance_count: 1
+    instance_size_slug: apps-s-1vcpu-1gb
+    envs:
+      - { key: APP_ENVIRONMENT, scope: RUN_TIME, value: "dev" }
+      - { key: DATABASE_URL, scope: RUN_TIME, type: SECRET, value: "__DATABASE_URL__" }
+      - { key: DATABASE_CA_CERT, scope: RUN_TIME, type: SECRET, value: "__DATABASE_CA_CERT__" }
+      # Opens the storage provider's sealed credentials (the same key as the web's). The age PRIVATE key is NOT here and never will be.
+      - { key: MEDIA_VAULT_KEY, scope: RUN_TIME, type: SECRET, value: "__MEDIA_VAULT_KEY__" }
+      - { key: BACKUP_AGE_RECIPIENT, scope: RUN_TIME, type: SECRET, value: "__BACKUP_AGE_RECIPIENT__" }
+      - { key: BACKUP_RETENTION_DAYS, scope: RUN_TIME, value: "30" }
+  - name: backup-freshness
+    kind: SCHEDULED
+    schedule:
+      cron: "45 8 * * *"
+      time_zone: "America/Toronto"
+    dockerfile_path: deploy/backup/Dockerfile
+    source_dir: /
+    run_command: node deploy/backup/bin/backup.mjs check
+    github:
+      repo: krizaka/yomizaka
+      branch: main
+      deploy_on_push: true
+    instance_count: 1
+    instance_size_slug: apps-s-1vcpu-0.5gb
+    envs:
+      - { key: APP_ENVIRONMENT, scope: RUN_TIME, value: "dev" }
+      - { key: DATABASE_URL, scope: RUN_TIME, type: SECRET, value: "__DATABASE_URL__" }
+      - { key: DATABASE_CA_CERT, scope: RUN_TIME, type: SECRET, value: "__DATABASE_CA_CERT__" }
+      - { key: MEDIA_VAULT_KEY, scope: RUN_TIME, type: SECRET, value: "__MEDIA_VAULT_KEY__" }

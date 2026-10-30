@@ -1338,7 +1338,8 @@
         },
         "dataKinds": {
           "documents": "les documents",
-          "avatars": "les avatars"
+          "avatars": "les avatars",
+          "backups": "les sauvegardes de nuit"
         },
         "fields": {
           "endpoint": "Adresse",
