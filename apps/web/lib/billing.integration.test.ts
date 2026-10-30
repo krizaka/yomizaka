@@ -24,8 +24,8 @@ const FACTS = {
   metadata: {},
 } as const;
 const caps =
-  (perMonth = 100, perDay = 0, freeFirst = true) =>
-  () => ({ perMonth, perDay, freeFirst });
+  (perMonth = 100, perDay = 0, freeDossiers = 1) =>
+  () => ({ perMonth, perDay, freeDossiers });
 
 describe.runIf(enabled)("billing", () => {
   beforeAll(async () => {
@@ -290,11 +290,11 @@ describe.runIf(enabled)("billing", () => {
 
   it("the free first audit can be switched off: the first audit then needs a credit", async () => {
     const id = await account();
-    await expect(reserveAudit(query, id, NOW, caps(100, 0, false))).rejects.toMatchObject({
+    await expect(reserveAudit(query, id, NOW, caps(100, 0, 0))).rejects.toMatchObject({
       status: 402,
       body: { code: "PAYWALL" },
     });
-    expect(await reserveAudit(query, id, NOW, caps(100, 0, true))).toBe("free");
+    expect(await reserveAudit(query, id, NOW, caps(100, 0, 1))).toBe("free");
   });
   it("a subscription keeps the catalogue version it was sold at (recorded at checkout, kept when it starts) — ADR-009", async () => {
     const id = await account();

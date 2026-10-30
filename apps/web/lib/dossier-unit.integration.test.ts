@@ -31,7 +31,7 @@ describe.runIf(enabled)("the dossier is the unit of billing", () => {
     store,
     purgeAfterHours: 24,
     keepAllowed: false,
-    auditCaps: () => ({ perMonth: 1000, perDay: 0, freeFirst: true }),
+    auditCaps: () => ({ perMonth: 1000, perDay: 0, freeDossiers: 1 }),
   });
   const selfServe = async (who: string) => {
     const email = `dossier-${who}-${stamp}@yomizaka.test`;
@@ -102,7 +102,7 @@ describe.runIf(enabled)("the dossier is the unit of billing", () => {
       "INSERT INTO documents (owner_id, title, filename, mime_type, size_bytes, sha256, content, text) VALUES ($1, 't', 'a.txt', 'text/plain', 1, $2, 'x', 'x') RETURNING id",
       [landlord.id, `same-${stamp}`],
     );
-    const caps = () => ({ perMonth: 100, perDay: 0, freeFirst: true });
+    const caps = () => ({ perMonth: 100, perDay: 0, freeDossiers: 1 });
     const via = await reserveAudit(query, landlord.id, new Date(), caps, doc!.id);
     expect(via).toBe("free");
     await query(
@@ -112,5 +112,27 @@ describe.runIf(enabled)("the dossier is the unit of billing", () => {
     expect(await reserveAudit(query, landlord.id, new Date(), caps, doc!.id)).toBe("dossier");
     await query("UPDATE analyses SET billed_via = 'free-refunded' WHERE document_id = $1", [doc!.id]);
     await expect(reserveAudit(query, landlord.id, new Date(), caps, doc!.id)).rejects.toMatchObject({ status: 402 });
+  });
+
+  it("the free dossier renews each calendar month, and the administrator's number is the allowance", async () => {
+    const landlord = await selfServe("monthly");
+    const oct = new Date("2026-10-10T12:00:00Z");
+    const nov = new Date("2026-11-02T12:00:00Z");
+    const doc = async (tag: string) => {
+      const [d] = await query<{ id: string }>(
+        "INSERT INTO documents (owner_id, title, filename, mime_type, size_bytes, sha256, content, text) VALUES ($1, 't', 'a.txt', 'text/plain', 1, $2, 'x', 'x') RETURNING id",
+        [landlord.id, `${tag}-${stamp}`],
+      );
+      return d!.id;
+    };
+    const two = () => ({ perMonth: 100, perDay: 0, freeDossiers: 2 });
+    const first = await doc("m1");
+    expect(await reserveAudit(query, landlord.id, oct, two, first)).toBe("free");
+    expect(await reserveAudit(query, landlord.id, oct, two, await doc("m2"))).toBe("free");
+    expect(await entitlementOf(query, landlord.id, oct)).toMatchObject({ freeAuditUsed: true });
+    await expect(reserveAudit(query, landlord.id, oct, two, await doc("m3"))).rejects.toMatchObject({ status: 402 });
+    // the 1st of the next month: the allowance is back, no card
+    expect(await entitlementOf(query, landlord.id, nov)).toMatchObject({ freeAuditUsed: false });
+    expect(await reserveAudit(query, landlord.id, nov, two, await doc("m4"))).toBe("free");
   });
 });

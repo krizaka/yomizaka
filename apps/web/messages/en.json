@@ -1444,8 +1444,8 @@
       "invalidBanner": "This confirmation link is invalid or has expired."
     },
     "paywall": {
-      "title": "Your free audit is used",
-      "text": "The first verification is free. To check another document, pay for this one or subscribe.",
+      "title": "Your free dossier is used",
+      "text": "One dossier is free every month. To check another one now, pay for it or subscribe.",
       "payOne": "Pay for this document",
       "soon": "Payment coming soon.",
       "notice": "{document} per document, or {agency} a month for small businesses ({included} verifications included), plus taxes.",
@@ -1672,7 +1672,7 @@
         "planFree": "Free",
         "credits": "Paid audits left: {count}",
         "freeAvailable": "Your free audit is available.",
-        "freeUsed": "Your free audit is used.",
+        "freeUsed": "Your free dossier is used.",
         "until": "Renews on {date}.",
         "portal": "Manage the subscription and invoices",
         "portalHint": "Payment method, invoices (with GST and QST) and cancellation: in Stripe's secure portal.",
@@ -1919,8 +1919,8 @@
         },
         "audit": {
           "freeFirst": {
-            "label": "Free first audit",
-            "hint": "A self-serve account's first audit is free."
+            "label": "Free monthly dossier",
+            "hint": "Switch for the free dossier each month (the number is plans.free.dossiersPerMonth)."
           }
         },
         "features": {
@@ -2485,6 +2485,10 @@
         },
         "plans": {
           "free": {
+            "dossiersPerMonth": {
+              "label": "Free: dossiers per month",
+              "hint": "Verified free each calendar month, no card (0: none)."
+            },
             "auditsPerDay": {
               "label": "Free: audits per day",
               "hint": "0: no cap."
@@ -3920,7 +3924,7 @@
     "perDocument": " per document, plus taxes",
     "included": "{included} verifications included each month",
     "paused": "Past the included volume, checks wait until next month",
-    "freeFirst": "Your first verification is free",
+    "freeFirst": "One dossier verified free every month, no card",
     "cancel": "Billed monthly, cancel any time from the billing portal",
     "noSubscription": "No subscription: you pay for the documents you verify",
     "volume": "More than {included} verifications a month? Write to us",

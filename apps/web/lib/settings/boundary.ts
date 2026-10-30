@@ -84,10 +84,11 @@ export const clientConfigOf = (s: Snapshot): ClientConfig => ({
 export interface AuditCaps {
   perMonth: number;
   perDay: number;
-  freeFirst: boolean;
+  /** The dossiers an account without a plan may verify free each calendar month (0 = none): renewed monthly, no card. */
+  freeDossiers: number;
 }
 export const auditCapsOf = (s: Snapshot, plan: "free" | "pro", included: number): AuditCaps => ({
   perMonth: plan === "pro" ? included + value<number>(s, "limits.bonusAuditsPerMonth") : Number.POSITIVE_INFINITY,
   perDay: value<number>(s, plan === "pro" ? "plans.pro.auditsPerDay" : "plans.free.auditsPerDay"),
-  freeFirst: value<boolean>(s, "audit.freeFirst"),
+  freeDossiers: value<boolean>(s, "audit.freeFirst") ? value<number>(s, "plans.free.dossiersPerMonth") : 0,
 });

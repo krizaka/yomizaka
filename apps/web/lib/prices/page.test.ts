@@ -90,8 +90,8 @@ describe("the pricing page reads the catalogue (#388)", () => {
     }
   });
 
-  it("the first verification is free only while the setting says so", async () => {
-    expect(await render(fresh(), "en", true)).toContain("first verification is free");
-    expect(await render(fresh(), "en", false)).not.toContain("first verification is free");
+  it("the free monthly dossier is shown only while the setting says so", async () => {
+    expect(await render(fresh(), "en", true)).toContain("One dossier verified free every month");
+    expect(await render(fresh(), "en", false)).not.toContain("One dossier verified free every month");
   });
 });

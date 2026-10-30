@@ -1444,8 +1444,8 @@
       "invalidBanner": "Ce lien de confirmation est invalide ou a expiré."
     },
     "paywall": {
-      "title": "Votre audit gratuit est utilisé",
-      "text": "La première vérification est offerte. Pour vérifier un autre document, payez celui-ci ou abonnez-vous.",
+      "title": "Votre dossier gratuit est utilisé",
+      "text": "Un dossier est offert chaque mois. Pour en vérifier un autre maintenant, payez-le ou abonnez-vous.",
       "payOne": "Payer ce document",
       "soon": "Paiement bientôt disponible.",
       "notice": "{document} par document, ou {agency} par mois pour les PME ({included} vérifications incluses), plus taxes.",
@@ -1672,7 +1672,7 @@
         "planFree": "Gratuit",
         "credits": "Audits payés restants : {count}",
         "freeAvailable": "Votre audit gratuit est disponible.",
-        "freeUsed": "Votre audit gratuit est utilisé.",
+        "freeUsed": "Votre dossier gratuit est utilisé.",
         "until": "Renouvelé le {date}.",
         "portal": "Gérer l'abonnement et les factures",
         "portalHint": "Mode de paiement, factures (avec TPS et TVQ) et annulation : dans le portail sécurisé de Stripe.",
@@ -1919,8 +1919,8 @@
         },
         "audit": {
           "freeFirst": {
-            "label": "Premier audit gratuit",
-            "hint": "Le premier audit d'un compte en libre-service est offert."
+            "label": "Dossier gratuit du mois",
+            "hint": "Interrupteur du dossier gratuit chaque mois (le nombre est plans.free.dossiersPerMonth)."
           }
         },
         "features": {
@@ -2485,6 +2485,10 @@
         },
         "plans": {
           "free": {
+            "dossiersPerMonth": {
+              "label": "Gratuit : dossiers par mois",
+              "hint": "Vérifiés gratuitement chaque mois civil, sans carte (0 : aucun)."
+            },
             "auditsPerDay": {
               "label": "Gratuit : audits par jour",
               "hint": "0 : sans plafond."
@@ -3920,7 +3924,7 @@
     "perDocument": " par document, plus taxes",
     "included": "{included} vérifications incluses par mois",
     "paused": "Au-delà du volume inclus, les vérifications attendent le mois suivant",
-    "freeFirst": "Votre première vérification est offerte",
+    "freeFirst": "Un dossier vérifié gratuitement chaque mois, sans carte",
     "cancel": "Facturé au mois, résiliable en tout temps depuis le portail de facturation",
     "noSubscription": "Sans abonnement : vous payez les documents que vous vérifiez",
     "volume": "Plus de {included} vérifications par mois ? Écrivez-nous",
