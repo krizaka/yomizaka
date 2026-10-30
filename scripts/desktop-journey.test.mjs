@@ -64,9 +64,11 @@ describe("the driver never reaches a release", () => {
 });
 
 describe("the workflows", () => {
-  it("run the journey on every desktop pull request, on the dev environment, with the persona passed by name", () => {
+  it("run the journey on main and by hand (the dev environment admits protected branches only), with the persona passed by name", () => {
     const desktop = code(read("../.github/workflows/desktop.yml"));
-    assert.match(desktop, /desktop-journey:\s+if: github\.event_name == 'pull_request'/);
+    assert.match(desktop, /desktop-journey:\s+if: github\.event_name == 'workflow_dispatch' \|\| \(github\.event_name == 'push' && github\.ref == 'refs\/heads\/main'\)/);
+    assert.match(desktop, /workflow_dispatch:/);
+    assert.match(desktop, /desktop-release:\s+if: github\.event_name == 'push' && startsWith\(github\.ref, 'refs\/tags\/'\)/);
     assert.match(desktop, /runs-on: macos-latest/);
     assert.match(desktop, /SMOKE_EMAIL: \$\{\{ secrets\.SMOKE_EMAIL \}\}/);
     assert.doesNotMatch(desktop, /secrets:\s*inherit/);
