@@ -13,11 +13,13 @@ const pending = source.split("\n").find((line) => line.includes('name: "app-home
 test("the pending first paint settles the date and the account picture before the shot", () => {
   assert.match(pending, /ready: settleHeaderLive/, "the pending journey must run settleHeaderLive");
   const body = source.slice(source.indexOf("async function settleHeaderLive"));
-  assert.match(body, /data-testid="today"/, "the date box is pinned to one text");
+  assert.match(body, /data-testid="today"/, "waits for the date box (the server froze its text: APP_VISUAL_NOW)");
   assert.match(body, /naturalWidth/, "waits for the account picture to be decoded");
 });
 
-test("the pinned date is the text the baselines were drawn with (a stable box, whatever the day)", () => {
-  const pinned = source.match(/const PINNED_TODAY = "([^"]+)"/)?.[1];
-  assert.equal(pinned, "vendredi 30 octobre 2026");
+test("the library fixes the dates of its rows before the shot (the table sizes its columns from their text)", () => {
+  const documents = source.split("\n").find((line) => line.includes('name: "documents"')) ?? "";
+  assert.match(documents, /ready: fixListDates/, "the documents journey must run fixListDates");
+  const body = source.slice(source.indexOf("async function fixListDates"));
+  assert.match(body, /replaceChildren\(/, "every row date reads the same text, whatever the day of the seed");
 });
