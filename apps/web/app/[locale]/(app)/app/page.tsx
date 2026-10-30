@@ -1,3 +1,4 @@
+import { displayNow } from "@/lib/display-now";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
@@ -10,7 +11,7 @@ import { entitlementOf } from "@/lib/billing";
 import { listChecks } from "@/lib/checks";
 import { creditsOf } from "@/lib/credits";
 import { query } from "@/lib/db";
-import { appEnvironment } from "@/lib/env";
+import { appEnvironment, appVisualNow } from "@/lib/env";
 import { applicantFilesOffered, availableFlows, offerFor } from "@/lib/flows";
 import { activityStrip, toDo } from "@/lib/home";
 import { BINDER_KEY, stripOf } from "@/lib/home-b2";
@@ -54,7 +55,7 @@ export default async function LibraryPage({ params, searchParams }: Readonly<{ p
   ]);
   const documents = libraries.reduce((n, l) => n + l.collections.reduce((m, c) => m + c.files, 0), 0);
   const paid = paymentReturnOf(search[PAID_KEY]);
-  const view = <LibraryView libraries={libraries} documents={documents} latest={latest} tags={tags} perspective={perspective} screening={screeningOffered} examples={SAMPLES} jurisdictions={offerFor(flows, perspective).jurisdictions} todo={todo} activity={series.checks} strip={stripOf(series)} credits={credits} period={period} chosen={typeof search[BINDER_KEY] === "string" ? search[BINDER_KEY] : null} now={now.toISOString()} />;
+  const view = <LibraryView libraries={libraries} documents={documents} latest={latest} tags={tags} perspective={perspective} screening={screeningOffered} examples={SAMPLES} jurisdictions={offerFor(flows, perspective).jurisdictions} todo={todo} activity={series.checks} strip={stripOf(series)} credits={credits} period={period} chosen={typeof search[BINDER_KEY] === "string" ? search[BINDER_KEY] : null} now={displayNow(now, appEnvironment(), appVisualNow()).toISOString()} />;
   const problem = paymentProblemOf(entitlement);
   return paid || problem ? <>{problem ? <PaymentProblem /> : null}{paid ? <PaymentReturn result={paid} /> : null}{view}</> : view;
 }
