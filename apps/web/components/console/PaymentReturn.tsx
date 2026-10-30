@@ -1,17 +1,12 @@
 "use client";
 
-import { krizakaFetch, useMutation } from "@krizaka/query";
 import { Alert } from "@krizaka/ui/alert";
 import { Button } from "@krizaka/ui/button";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
-import { z } from "zod";
 
-import { errorKey } from "@/lib/client";
 import { useSay } from "@/lib/i18n-client";
 import type { PaymentReturn as Return } from "@/lib/payment-return";
-
-const redirect = z.object({ url: z.string().url() });
+import { useBillingPortal } from "@/lib/use-billing-portal";
 
 /**
  * The band shown when the customer comes back from the processor's checkout: what was bought, that the balance follows the
@@ -22,16 +17,7 @@ export function PaymentReturn({ result }: Readonly<{ result: Return }>) {
   const { say } = useSay();
   const router = useRouter();
   const path = usePathname();
-  const [problem, setProblem] = useState<string | null>(null);
-  const portal = useMutation({ mutationFn: () => krizakaFetch("/api/billing/portal", { method: "POST", schema: redirect }) });
-  const receipt = async () => {
-    setProblem(null);
-    try {
-      globalThis.location.assign((await portal.mutateAsync()).url);
-    } catch (error) {
-      setProblem(say(`errors.${errorKey(error)}`));
-    }
-  };
+  const { open, pending, problem } = useBillingPortal();
   const paid = result.state === "paid";
   return (
     <Alert tone={paid ? "success" : "info"} data-testid="payment-return" title={say(paid ? "paymentReturn.paidTitle" : "paymentReturn.cancelledTitle")}>
@@ -39,7 +25,7 @@ export function PaymentReturn({ result }: Readonly<{ result: Return }>) {
       {problem ? <p className="m-0 mt-2 text-fg-danger">{problem}</p> : null}
       <span className="mt-3 flex flex-wrap gap-3">
         {paid ? (
-          <Button size="md" variant="secondary" loading={portal.isPending} onClick={() => void receipt()}>
+          <Button size="md" variant="secondary" loading={pending} onClick={() => void open()}>
             {say("paymentReturn.receipt")}
           </Button>
         ) : null}

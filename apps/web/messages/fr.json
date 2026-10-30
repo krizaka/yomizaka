@@ -3234,6 +3234,11 @@
         "forever": "chaque mois"
       }
     },
+    "paymentProblem": {
+      "title": "Votre dernier paiement n'est pas passé",
+      "text": "Le processeur de paiement n'a pas pu débiter votre carte : votre forfait est suspendu jusqu'à sa mise à jour. Rien d'autre ne change : vos documents et vos rapports restent tels quels.",
+      "fix": "Mettre ma carte à jour"
+    },
     "paymentReturn": {
       "paidTitle": "Merci, votre paiement est passé",
       "paid": {
