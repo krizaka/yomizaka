@@ -2,6 +2,7 @@ import { Badge } from "@krizaka/ui/badge";
 
 import { format, type Locale, type Messages } from "@/lib/i18n";
 import type { OwnerDocument } from "@/lib/owner-report";
+import { traceCardsOf } from "@/lib/owner-traces";
 import { ruleTitle } from "@/lib/rule-text";
 
 /** One document of the owner's report (yomizaka#128): read by the public page, and drawn — inert, with demo data — on the home. */
@@ -17,9 +18,16 @@ export function OwnerReportDocument({ doc: d, n, words: w, lang }: Readonly<{ do
     </dl>
     <h4 className="font-medium">{w.signals}</h4>
     {d.signals.length === 0 ? <p className="text-sm text-fg-secondary">{w.noSignals}</p> : (
-      <ul className="grid gap-1 text-sm">
-        {d.signals.map((s) => <li key={`${s.id}-${s.observation}`}><Badge>{s.level}</Badge> {s.observation}</li>)}
-      </ul>
+      <div className="grid gap-2 text-sm">
+        {traceCardsOf(d.signals, lang).map((g) => (
+          <div key={g.family} data-family={g.family}>
+            <h5 className="font-medium">{g.title}</h5>
+            <ul className="grid gap-1">
+              {g.cards.map(([head, ordinary, askFor]) => <li key={head}>{head}<br /><span className="text-fg-secondary">{ordinary}</span><br />{askFor}</li>)}
+            </ul>
+          </div>
+        ))}
+      </div>
     )}
     <h4 className="font-medium">{w.findings}</h4>
     {d.findings.length === 0 ? <p className="text-sm text-fg-secondary">{w.noFindings}</p> : (

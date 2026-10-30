@@ -1,4 +1,4 @@
-import { type Analysis, analysisStatus, type AuthenticityReport, type ComplianceReport } from "@yomizaka/core";
+import { type Analysis, analysisStatus, type AuthenticityReport, type ComplianceReport, type Signal, signalFamily } from "@yomizaka/core";
 
 import type { ApplicantFileView } from "./applicant-file";
 
@@ -17,6 +17,9 @@ export interface OwnerSignal {
   id: string;
   level: string;
   observation: string;
+  /** The family and where in the file (page, later save, field): facts, never a value of the document. The box stays in the person's own report. */
+  family?: string;
+  evidence?: { page?: number; revision?: number; field?: string };
 }
 export interface OwnerFinding {
   ruleId: string;
@@ -55,6 +58,13 @@ export interface OwnerReport {
 const isCompliance = (r: Analysis["report"]): r is ComplianceReport => !!r && "findings" in r;
 const isAuthenticity = (r: Analysis["report"]): r is AuthenticityReport => !!r && "signals" in r;
 
+/** A signal as the owner reads it: its family and the page, revision and field it concerns (no box, no value). */
+export const ownerSignalOf = (s: Signal): OwnerSignal => {
+  const { page, revision, field } = s.evidence ?? {};
+  const evidence = { ...(page ? { page } : {}), ...(revision ? { revision } : {}), ...(field ? { field } : {}) };
+  return { id: s.signalId, level: s.level, observation: s.observation, family: signalFamily(s), ...(Object.keys(evidence).length ? { evidence } : {}) };
+};
+
 /** The reference the owner and the manager both read: the first 8 characters of the file's id, no personal data. */
 export const referenceOf = (fileId: string) => fileId.replaceAll("-", "").slice(0, 8).toUpperCase();
 
@@ -69,7 +79,7 @@ export function ownerReportOf(file: ApplicantFileView, hashes: ReadonlyMap<strin
     for (const c of done) {
       doc.runs.push({ studio: c.studio, runId: c.runId!, studioVersion: c.blueprintVersion, finishedAt: c.finishedAt });
       if (isAuthenticity(c.report)) {
-        doc.signals.push(...c.report.signals.map((s) => ({ id: s.signalId, level: s.level, observation: s.observation })));
+        doc.signals.push(...c.report.signals.map(ownerSignalOf));
         const ne = c.report.notExamined;
         doc.notExamined.push(...asList(ne));
       } else if (isCompliance(c.report)) {

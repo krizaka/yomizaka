@@ -6,36 +6,77 @@ import type { AuthenticityReport, TextSource } from "@yomizaka/core";
 
 import { useSay } from "@/lib/i18n-client";
 import { photoOriginSignals } from "@/lib/photo-origin";
+import { askForOf, groupByFamily, levelTone, ordinaryOf, type TraceSay, whereOf } from "@/lib/signal-cards";
 
 import { formatDate } from "./format";
 
-const LEVEL_TONE: Record<string, "neutral" | "warning" | "danger"> = { observé: "neutral", inhabituel: "warning", incohérent: "danger" };
-
-/** The authenticity Studio's signals, each with its plain level, as Orazaka returned them. */
-export function AuthenticitySignals({ report }: Readonly<{ report: Pick<AuthenticityReport, "header" | "signals"> }>) {
-  const { say } = useSay();
+/** The box at the top: what this check is not, and what it did not examine (ADR-0014 §6). */
+function NotACheck({ say, notExamined }: Readonly<{ say: TraceSay; notExamined: string[] }>) {
+  const items = ["alteration", "ordinary", "absence", "person"].map((n) => say(`notItems.${n}`));
   return (
-    <div className="flex flex-col gap-3">
-      {report.header ? <Alert tone="info">{report.header}</Alert> : null}
-      <ul className="flex flex-col gap-2">
-        {report.signals.map((s) => (
-          <li key={s.signalId} className="rounded-lg border border-border-default bg-surface-1 p-3 text-sm">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-xs text-fg-muted">{s.signalId}</span>
-              <Badge tone={LEVEL_TONE[s.level] ?? "neutral"}>{say(`analysis.levels.${s.level}`)}</Badge>
-            </div>
-            <p className="mt-1 text-fg">{s.observation}</p>
-            {s.mayIndicate ? (
-              <p className="mt-1 text-fg-secondary">
-                <strong className="font-semibold">{say("analysis.mayIndicate")} · </strong>
-                {s.mayIndicate}
-              </p>
-            ) : null}
-            {s.where ? <p className="mt-1 text-xs text-fg-muted">{s.where}</p> : null}
-          </li>
+    <Alert tone="info" data-testid="traces-not">
+      <p className="m-0 font-semibold">{say("notTitle")}</p>
+      <ul className="m-0 mt-1 list-disc pl-5">
+        {items.map((t) => (
+          <li key={t}>{t}</li>
         ))}
       </ul>
-    </div>
+      {notExamined.length ? <p className="m-0 mt-1">{say("notExamined", { list: notExamined.join(", ") })}</p> : null}
+    </Alert>
+  );
+}
+
+const asList = (v: string | string[] | undefined): string[] => [v ?? []].flat();
+
+/**
+ * The authenticity Studio's signals as traces of editing (yomizaka#625): grouped by family, each card says what we observed, where
+ * (page, later save, field), what it may indicate with its ordinary explanations, what to ask for, and the run. Levels are words;
+ * « inconsistent » is a warning, never red; no total, no score, no sort of anything.
+ */
+export function AuthenticitySignals({ report, runId }: Readonly<{ report: Pick<AuthenticityReport, "header" | "signals"> & { notExamined?: string | string[] }; runId?: string | null }>) {
+  const { say: sayAll } = useSay();
+  const say: TraceSay = (key, vars) => sayAll(`analysis.traces.${key}`, vars);
+  return (
+    <section className="flex flex-col gap-3" aria-label={say("title")} data-testid="traces">
+      <h2 className="font-display text-lg font-bold text-fg">{say("title")}</h2>
+      <NotACheck say={say} notExamined={asList(report.notExamined)} />
+      {report.header ? <Alert tone="info">{report.header}</Alert> : null}
+      {groupByFamily(report.signals).map((g) => (
+        <div key={g.family} className="flex flex-col gap-2" data-family={g.family}>
+          <h3 className="m-0 text-sm font-semibold text-fg">{say(`families.${g.family}`)}</h3>
+          <ul className="m-0 flex list-none flex-col gap-2 p-0">
+            {g.signals.map((s) => (
+              <li key={`${s.signalId}-${s.observation}`} className="rounded-lg border border-border-default bg-surface-1 p-3 text-sm" data-level={s.level}>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-xs text-fg-muted">{s.signalId}</span>
+                  <Badge tone={levelTone(s.level)}>{sayAll(`analysis.levels.${s.level}`)}</Badge>
+                </div>
+                <p className="mt-1 text-fg">
+                  <strong className="font-semibold">{say("observed")} · </strong>
+                  {s.observation}
+                </p>
+                {whereOf(say, s) ? <p className="mt-1 text-xs text-fg-muted">{whereOf(say, s)}</p> : null}
+                {s.mayIndicate ? (
+                  <p className="mt-1 text-fg-secondary">
+                    <strong className="font-semibold">{sayAll("analysis.mayIndicate")} · </strong>
+                    {s.mayIndicate}
+                  </p>
+                ) : null}
+                <p className="mt-1 text-fg-secondary">
+                  <strong className="font-semibold">{say("ordinaryLabel")} · </strong>
+                  {ordinaryOf(say, s)}
+                </p>
+                <p className="mt-1 text-fg">
+                  <strong className="font-semibold">{say("askForLabel")} · </strong>
+                  {askForOf(say, s)}
+                </p>
+                {runId ? <p className="mt-1 text-xs text-fg-muted">{say("run", { runId })}</p> : null}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </section>
   );
 }
 

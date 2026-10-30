@@ -217,14 +217,43 @@ export const complianceReport = z.preprocess(flatten, complianceReportShape);
 export type ComplianceReport = z.infer<typeof complianceReportShape>;
 
 export const SIGNAL_LEVELS = ["observé", "inhabituel", "incohérent"] as const;
+/** The families of a signal (ADR-0014 §2), in the order a report reads them. */
+export const SIGNAL_FAMILIES = ["history", "layout", "images", "figures", "across"] as const;
+export type SignalFamily = (typeof SIGNAL_FAMILIES)[number];
+/** Where a signal sits in the file: a page, a box in PDF points [x0, y0, x1, y1], the revision of a later save, the field it concerns. All optional; an old report has none. */
+export const signalEvidence = z.object({
+  page: z.number().int().min(1).optional(),
+  box: z.tuple([z.number(), z.number(), z.number(), z.number()]).optional(),
+  revision: z.number().int().min(1).optional(),
+  field: z.string().optional(),
+});
+export type SignalEvidence = z.infer<typeof signalEvidence>;
 export const signal = z.object({
   signalId: z.string(),
   level: z.string(),
   observation: z.string(),
   mayIndicate: z.string().optional(),
   where: z.string().optional(),
+  family: z.string().optional(),
+  evidence: signalEvidence.optional(),
+  askFor: z.string().optional(),
 });
 export type Signal = z.infer<typeof signal>;
+
+const FAMILY_BY_PREFIX: ReadonlyArray<readonly [string, SignalFamily]> = [
+  ["PDF-FONT", "layout"],
+  ["PDF-LAYER", "layout"],
+  ["DOC-PROFILE", "layout"],
+  ["IMG-", "images"],
+  ["CONTENT-", "figures"],
+  ["REG-", "figures"],
+  ["FILE-", "across"],
+];
+/** A signal's family: the one the engine names, else read from the case id (PDF structure and metadata are the file's history). */
+export function signalFamily(s: Pick<Signal, "signalId" | "family">): SignalFamily {
+  const named = SIGNAL_FAMILIES.find((f) => f === s.family);
+  return named ?? FAMILY_BY_PREFIX.find(([p]) => s.signalId.startsWith(p))?.[1] ?? "history";
+}
 
 export const authenticityReport = z.object({
   header: z.string().optional(),
