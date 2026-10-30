@@ -9,7 +9,7 @@ import { it as test } from "vitest";
 
 const source = readFileSync(new URL("../apps/web/e2e/visual/journeys.visual.mjs", import.meta.url), "utf8");
 const pendingAt = source.indexOf('name: "app-home-pending"');
-const pending = pendingAt < 0 ? "" : source.slice(pendingAt, source.indexOf("},", pendingAt));
+const pending = pendingAt < 0 ? "" : source.slice(pendingAt, source.indexOf("\n    },", pendingAt));
 
 test("the pending first paint settles the date and the account picture before the shot", () => {
   assert.match(pending, /ready: settleHeaderLive/, "the pending journey must run settleHeaderLive");
