@@ -9,5 +9,12 @@ import { useI18n } from "@/i18n";
 export function StageNotice({ stageOf = stage }: Readonly<{ stageOf?: string }>) {
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
-  return <EnvironmentNotice stage={stageOf} title={t("stage.title")} message={t("stage.message")} style={{ paddingTop: insets.top }} />;
+  return (
+    <EnvironmentNotice
+      stage={stageOf}
+      title={t("stage.title")}
+      message={t("stage.message")}
+      style={{ paddingTop: insets.top }}
+    />
+  );
 }

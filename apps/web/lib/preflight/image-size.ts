@@ -23,12 +23,17 @@ function jpegSize(bytes: Uint8Array, view: DataView): Size | null {
 export function imageSize(bytes: Uint8Array): Size | null {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   // PNG: the IHDR chunk follows the 8-byte signature and its 8-byte chunk header.
-  if (bytes.length >= 24 && view.getUint32(0) === 0x89504e47) return { width: view.getUint32(16), height: view.getUint32(20) };
+  if (bytes.length >= 24 && view.getUint32(0) === 0x89504e47)
+    return { width: view.getUint32(16), height: view.getUint32(20) };
   return bytes.length > 4 && bytes[0] === 0xff && bytes[1] === 0xd8 ? jpegSize(bytes, view) : null;
 }
 
 /** HEIC and HEIF are ISO base media files: an « ftyp » box whose major brand is one of these. */
 const HEIF_BRANDS = new Set(["heic", "heix", "hevc", "hevx", "heim", "heis", "mif1", "msf1"]);
 export function isHeif(bytes: Uint8Array): boolean {
-  return bytes.length >= 12 && Buffer.from(bytes.subarray(4, 8)).toString("latin1") === "ftyp" && HEIF_BRANDS.has(Buffer.from(bytes.subarray(8, 12)).toString("latin1"));
+  return (
+    bytes.length >= 12 &&
+    Buffer.from(bytes.subarray(4, 8)).toString("latin1") === "ftyp" &&
+    HEIF_BRANDS.has(Buffer.from(bytes.subarray(8, 12)).toString("latin1"))
+  );
 }

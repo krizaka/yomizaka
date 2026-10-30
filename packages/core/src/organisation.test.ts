@@ -6,7 +6,8 @@ const A = "11111111-1111-4111-8111-111111111111";
 const B = "22222222-2222-4222-8222-222222222222";
 
 describe("tag colours are names, mapped to Krizaka tokens by the UI", () => {
-  it("lists the allowed colours", () => expect(TAG_COLORS).toEqual(["blue", "green", "amber", "red", "violet", "gray"]));
+  it("lists the allowed colours", () =>
+    expect(TAG_COLORS).toEqual(["blue", "green", "amber", "red", "violet", "gray"]));
 });
 
 describe("the tags parameter is the filter's state", () => {
@@ -25,14 +26,20 @@ describe("the tags parameter is the filter's state", () => {
 
 describe("the library's filters are the URL's state: ?tags=…&kind=…&status=…", () => {
   it("reads the three, ignoring what is not one of their values", () => {
-    expect(parseView({ tags: `${A}`, kind: "lease", status: "attention" })).toEqual({ tags: [A], kind: "lease", status: "attention" });
+    expect(parseView({ tags: `${A}`, kind: "lease", status: "attention" })).toEqual({
+      tags: [A],
+      kind: "lease",
+      status: "attention",
+    });
     expect(parseView({ kind: "spreadsheet", status: "nope" })).toEqual({ tags: [], kind: null, status: null });
     expect(parseView({})).toEqual({ tags: [], kind: null, status: null });
   });
   it("writes them back in a stable order, keeping the others when one changes", () => {
     const path = "/fr/app/library/l/c";
     expect(viewHref(path, { tags: [], kind: null, status: null })).toBe(path);
-    expect(viewHref(path, { tags: [A], kind: "invoice", status: "checked" })).toBe(`${path}?tags=${A}&kind=invoice&status=checked`);
+    expect(viewHref(path, { tags: [A], kind: "invoice", status: "checked" })).toBe(
+      `${path}?tags=${A}&kind=invoice&status=checked`,
+    );
     expect(viewHref(path, { tags: [], kind: null, status: "failed" })).toBe(`${path}?status=failed`);
   });
   it("filters documents by kind and by status (all given filters must match)", () => {

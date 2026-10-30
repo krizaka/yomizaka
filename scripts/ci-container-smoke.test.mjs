@@ -9,15 +9,24 @@ describe("the container smoke check", () => {
     expect(read(".github/workflows/ci.yml")).toContain("container-smoke: scripts/ci-container-smoke.sh");
     expect(read("scripts/ci-container-smoke.sh")).toContain("--memory=512m");
     expect(read("scripts/ci-container-smoke.sh")).toContain("/smoke/photos.cjs");
-    for (const f of ["photos.cjs", "page.jpg", "page.heic"]) expect(existsSync(new URL(`../deploy/docker/smoke/${f}`, import.meta.url)), f).toBe(true);
+    for (const f of ["photos.cjs", "page.jpg", "page.heic"])
+      expect(existsSync(new URL(`../deploy/docker/smoke/${f}`, import.meta.url)), f).toBe(true);
   });
   it("the Dockerfile carries Tesseract's packages and its trained data into the image", () => {
     const dockerfile = read("deploy/docker/Dockerfile");
-    for (const needle of ["tesseract\\.js-core", "@tesseract\\.js-data", "COPY --from=build --chown=yomizaka:yomizaka /ocr/"]) expect(dockerfile).toContain(needle);
+    for (const needle of [
+      "tesseract\\.js-core",
+      "@tesseract\\.js-data",
+      "COPY --from=build --chown=yomizaka:yomizaka /ocr/",
+    ])
+      expect(dockerfile).toContain(needle);
   });
   it("holds the image to a size budget, and the runtime stays on musl (OpenDAL's linux-gnu binary needs glibc 2.38)", () => {
     const budget = Number(read("deploy/docker/image-size-budget-mb").trim());
-    expect(Number.isInteger(budget) && budget > 0 && budget <= 320, "a positive budget within a few MB of what CI measured (304 MB with OpenDAL)").toBe(true);
+    expect(
+      Number.isInteger(budget) && budget > 0 && budget <= 320,
+      "a positive budget within a few MB of what CI measured (304 MB with OpenDAL)",
+    ).toBe(true);
     expect(read("scripts/ci-container-smoke.sh")).toContain("image-size-budget-mb");
     const dockerfile = read("deploy/docker/Dockerfile");
     expect(dockerfile.match(/^FROM node:22-alpine/gm)?.length, "the build stage is the musl node image").toBe(1);

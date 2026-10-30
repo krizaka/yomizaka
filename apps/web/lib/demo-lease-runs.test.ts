@@ -9,7 +9,12 @@ import { describe, expect, it } from "vitest";
 import { generateDocument } from "../../../scripts/demo-documents/index.mjs";
 
 const DIR = join(__dirname, "../content/demo-lease-runs");
-const recorded = (name: string) => JSON.parse(readFileSync(join(DIR, `${name}.json`), "utf8")) as { document: { text: string }; generator: { id: string }; run: unknown };
+const recorded = (name: string) =>
+  JSON.parse(readFileSync(join(DIR, `${name}.json`), "utf8")) as {
+    document: { text: string };
+    generator: { id: string };
+    run: unknown;
+  };
 
 /** The rules that the errors lease must fail, each with the passage it quotes and the article the pack cites. */
 const EXPECTED_FAILS: Record<string, { quote: string; article: string }> = {
@@ -29,18 +34,25 @@ function reportOfRecording(name: string): { text: string; report: ComplianceRepo
 }
 
 describe("the fictitious leases, checked by the Québec lease pack on dev", () => {
-  it.each([["clean", "bail-rosemont-1-conforme"], ["errors", "bail-rosemont-5-clause-illegale"]])("the %s recording is the text the generator writes today", async (name, id) => {
+  it.each([
+    ["clean", "bail-rosemont-1-conforme"],
+    ["errors", "bail-rosemont-5-clause-illegale"],
+  ])("the %s recording is the text the generator writes today", async (name, id) => {
     const doc = await generateDocument(id);
     expect(recorded(name).generator.id).toBe(id);
     expect(recorded(name).document.text).toBe(doc.text);
   });
 
-  it.each(["clean", "errors"])("%s: a PASS always carries the passage it judged, and every quote is a passage of the document", (name) => {
-    const { text, report } = reportOfRecording(name);
-    expect(report.rulesetId).toBe("qc-residential-lease");
-    expect(report.findings.filter((f) => f.verdict === "PASS" && !f.evidenceSpan?.quote)).toEqual([]);
-    for (const f of report.findings.filter((x) => x.evidenceSpan?.quote)) expect(text, f.ruleId).toContain(f.evidenceSpan!.quote);
-  });
+  it.each(["clean", "errors"])(
+    "%s: a PASS always carries the passage it judged, and every quote is a passage of the document",
+    (name) => {
+      const { text, report } = reportOfRecording(name);
+      expect(report.rulesetId).toBe("qc-residential-lease");
+      expect(report.findings.filter((f) => f.verdict === "PASS" && !f.evidenceSpan?.quote)).toEqual([]);
+      for (const f of report.findings.filter((x) => x.evidenceSpan?.quote))
+        expect(text, f.ruleId).toContain(f.evidenceSpan!.quote);
+    },
+  );
 
   it("clean: the lease raises no FAIL", () => {
     const { report } = reportOfRecording("clean");

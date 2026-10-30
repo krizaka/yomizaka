@@ -19,9 +19,12 @@ function violations(inputs: Record<string, string>, schema: Schema): string[] {
   for (const [key, value] of Object.entries(inputs)) {
     const property = schema.properties[key];
     if (!property) found.push(`${key} is not an input of the Studio`);
-    else if (property.enum && !property.enum.includes(value)) found.push(`${key}: '${value}' is not one of ${property.enum.join(", ")}`);
-    else if (property.pattern && !new RegExp(property.pattern).test(value)) found.push(`${key}: '${value}' does not match ${property.pattern}`);
-    else if (property.maxLength && value.length > property.maxLength) found.push(`${key} is longer than ${property.maxLength}`);
+    else if (property.enum && !property.enum.includes(value))
+      found.push(`${key}: '${value}' is not one of ${property.enum.join(", ")}`);
+    else if (property.pattern && !new RegExp(property.pattern).test(value))
+      found.push(`${key}: '${value}' does not match ${property.pattern}`);
+    else if (property.maxLength && value.length > property.maxLength)
+      found.push(`${key} is longer than ${property.maxLength}`);
   }
   return found;
 }
@@ -31,10 +34,12 @@ const DAYS = ["2024-03-01", "2026-05-01", "2026-10-23", "2026-10-24", "2026-10-2
 
 function everyRequest() {
   const requests = [];
-  for (const kind of CHECK_KINDS) for (const jurisdiction of JURISDICTIONS) for (const asOf of DAYS) {
-    const request = rulesFor(kind, jurisdiction, asOf);
-    if (request) requests.push({ kind, jurisdiction, asOf, request });
-  }
+  for (const kind of CHECK_KINDS)
+    for (const jurisdiction of JURISDICTIONS)
+      for (const asOf of DAYS) {
+        const request = rulesFor(kind, jurisdiction, asOf);
+        if (request) requests.push({ kind, jurisdiction, asOf, request });
+      }
   return requests;
 }
 
@@ -45,17 +50,29 @@ describe("what Yomizaka sends to the compliance Studio is what the Studio accept
   });
   it("sends the lease of a Québec day the Studio accepts, with no ruleset input (the date picks the version)", () => {
     const { request } = requests.find((r) => r.kind === "lease" && r.jurisdiction === "QC" && r.asOf === "2026-10-29")!;
-    expect(runInputs(request, doc, new Date("2026-10-29T15:00:00Z"))).toEqual({ document: doc.text, jurisdiction: "QC", asOf: "2026-10-29" });
+    expect(runInputs(request, doc, new Date("2026-10-29T15:00:00Z"))).toEqual({
+      document: doc.text,
+      jurisdiction: "QC",
+      asOf: "2026-10-29",
+    });
   });
-  it.each(requests.map((r) => [`${r.kind} ${r.jurisdiction} ${r.asOf}`, r] as const))("%s is valid for the Studio 2.0", (_name, { request }) => {
-    expect(violations(runInputs(request, doc, new Date("2026-10-29T15:00:00Z")), contract.versions["2.0.0"] as Schema)).toEqual([]);
-  });
-  it.each(requests.filter((r) => r.kind === "lease" || r.kind === "invoice" || r.kind === "contract").map((r) => [`${r.kind} ${r.jurisdiction} ${r.asOf}`, r] as const))(
-    "%s is also valid for an installation still pinned on 1.x",
+  it.each(requests.map((r) => [`${r.kind} ${r.jurisdiction} ${r.asOf}`, r] as const))(
+    "%s is valid for the Studio 2.0",
     (_name, { request }) => {
-      expect(violations(runInputs(request, doc, new Date("2026-10-29T15:00:00Z")), contract.versions["1.7.2"] as Schema)).toEqual([]);
+      expect(
+        violations(runInputs(request, doc, new Date("2026-10-29T15:00:00Z")), contract.versions["2.0.0"] as Schema),
+      ).toEqual([]);
     },
   );
+  it.each(
+    requests
+      .filter((r) => r.kind === "lease" || r.kind === "invoice" || r.kind === "contract")
+      .map((r) => [`${r.kind} ${r.jurisdiction} ${r.asOf}`, r] as const),
+  )("%s is also valid for an installation still pinned on 1.x", (_name, { request }) => {
+    expect(
+      violations(runInputs(request, doc, new Date("2026-10-29T15:00:00Z")), contract.versions["1.7.2"] as Schema),
+    ).toEqual([]);
+  });
 });
 
 describe("the post-deploy smoke asks for the lease the way the UI does", () => {
@@ -64,6 +81,9 @@ describe("the post-deploy smoke asks for the lease the way the UI does", () => {
     expect(leaseRefOn(day)).toBe(choice.verified ? choice.ruleset : null);
   });
   it("knows every version of the Québec lease", () => {
-    expect(LEASE_REFS.map((v) => v.ref)).toEqual(["qc-residential-lease/2024-02-21", "qc-residential-lease/2026-10-24"]);
+    expect(LEASE_REFS.map((v) => v.ref)).toEqual([
+      "qc-residential-lease/2024-02-21",
+      "qc-residential-lease/2026-10-24",
+    ]);
   });
 });

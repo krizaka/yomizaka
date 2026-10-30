@@ -3,10 +3,12 @@
 Status: accepted (2026-10-22). **Moved**: the generic module is now the package `@krizaka/api-keys` (krizaka/krizaka-ts); Yomizaka keeps its rules (`lib/api-keys/rules.ts`) and the wiring (`lib/api-access.ts`). Issue: krizaka/yomizaka#202. Shared contract: krizaka/.github#183 (Krizaka TS), krizaka/akinaza#178.
 
 ## Context
+
 Yomizaka offers access by API key, and Akinaza will too (same contract, independent data). The org's rule is to share before
 a second copy appears: the logic must live in a folder that can move, unchanged, into a package.
 
 ## Decision
+
 - **`lib/api-keys/` is generic — no import from the app**: no env, no database client, no wall clock. Its ports are
   `ApiKeyStore` (insert, get, findByPublicId, list, update) and `Clock`; its rules are data (`ApiKeyRules`: prefix, scopes,
   secret length, longest life, rotation grace, « last used » throttle). A product's own decisions — its scopes, its limits per
@@ -28,6 +30,7 @@ a second copy appears: the logic must live in a folder that can move, unchanged,
   `POST /api/me/api-keys/{id}/rotate`. Routes that take a key call `requireApiKey(req, scope)`.
 
 ## Consequences
+
 - The store contract (`contract.testkit.ts`) runs on the memory adapter (unit) and the PostgreSQL adapter (integration); a package
   adapter for another database passes the same tests.
 - Out of this ADR, in the next pull requests: `POST /api/v1/checks` and `GET /api/v1/checks/{id}` (+ report and signed PDF), signed

@@ -21,8 +21,18 @@ import { ACCEPT, ACCEPT_RULES, isPhotoFile, type Placement, refusalCode, send, t
 type Say = (key: string, vars?: Record<string, string | number>) => string;
 
 /** The queue's states in the tray's vocabulary: sending is « reading » (the server reads the file as it lands), a pause waits like a queued file. */
-const STATUS: Record<UploadItem["status"], QueueStatus> = { queued: QueueStatus.Queued, uploading: QueueStatus.Reading, paused: QueueStatus.Queued, done: QueueStatus.Done, error: QueueStatus.Failed };
-const REFUSAL: Partial<Record<string, string>> = { size: "library.refusedSize", type: "library.refusedType", count: "library.refusedCount" };
+const STATUS: Record<UploadItem["status"], QueueStatus> = {
+  queued: QueueStatus.Queued,
+  uploading: QueueStatus.Reading,
+  paused: QueueStatus.Queued,
+  done: QueueStatus.Done,
+  error: QueueStatus.Failed,
+};
+const REFUSAL: Partial<Record<string, string>> = {
+  size: "library.refusedSize",
+  type: "library.refusedType",
+  count: "library.refusedCount",
+};
 
 /** Several photos dropped together are the pages of ONE document (the default, as on the task page): the first photo carries the group, the other files go one by one. */
 export function bundlePhotos(files: readonly File[]): { queued: File[]; groups: Map<File, File[]> } {
@@ -35,7 +45,12 @@ export function bundlePhotos(files: readonly File[]): { queued: File[]; groups: 
 const GROUPS = new WeakMap<File, File[]>();
 
 /** The tray's rows from the queue: the file (a photo group says how many it carries), where it stands in words, its progress while it sends, a retry once it failed. */
-export function queueItemsOf(items: readonly UploadItem[], say: Say, retry?: (id: string) => void, pages?: ReadonlyMap<string, number>): UploadQueueItem[] {
+export function queueItemsOf(
+  items: readonly UploadItem[],
+  say: Say,
+  retry?: (id: string) => void,
+  pages?: ReadonlyMap<string, number>,
+): UploadQueueItem[] {
   return items.map((i) => {
     const status = STATUS[i.status];
     const count = pages?.get(i.name) ?? 1;
@@ -61,9 +76,19 @@ export function UploadTray({ items }: Readonly<{ items: readonly UploadQueueItem
   if (!items.length) return null;
   const t = tally(items);
   const working = t.working + t.queued;
-  const summary = [say(pluralKey("library.tray.working", working), { count: working }), say(pluralKey("library.tray.done", t.done), { count: t.done }), ...(t.failed ? [say(pluralKey("library.tray.failed", t.failed), { count: t.failed })] : [])].join(" · ");
+  const summary = [
+    say(pluralKey("library.tray.working", working), { count: working }),
+    say(pluralKey("library.tray.done", t.done), { count: t.done }),
+    ...(t.failed ? [say(pluralKey("library.tray.failed", t.failed), { count: t.failed })] : []),
+  ].join(" · ");
   return (
-    <TaskTray title={say("library.tray.title")} summary={summary} toggleLabel={say("library.tray.collapse")} openLabel={say("library.tray.show")} data-testid="upload-tray">
+    <TaskTray
+      title={say("library.tray.title")}
+      summary={summary}
+      toggleLabel={say("library.tray.collapse")}
+      openLabel={say("library.tray.show")}
+      data-testid="upload-tray"
+    >
       <UploadQueue label={say("library.tray.title")} items={items} />
     </TaskTray>
   );
@@ -73,7 +98,11 @@ export function UploadTray({ items }: Readonly<{ items: readonly UploadQueueItem
 const DropIsland = createContext<{ add: (files: File[]) => void; zone: ReactNode } | null>(null);
 
 /** « Ajouter des documents »: a picker button that feeds the drop island it sits in (the header's action of a place); nothing outside one. */
-export function AddFilesButton({ children, variant = "secondary", size = "md" }: Readonly<{ children: ReactNode; variant?: "primary" | "secondary" | "ghost"; size?: "sm" | "md" }>) {
+export function AddFilesButton({
+  children,
+  variant = "secondary",
+  size = "md",
+}: Readonly<{ children: ReactNode; variant?: "primary" | "secondary" | "ghost"; size?: "sm" | "md" }>) {
   const island = useContext(DropIsland);
   const input = useRef<HTMLInputElement>(null);
   if (!island) return null;
@@ -110,15 +139,38 @@ export function DropZone() {
  * (the empty library's only one) takes a click, and the tray follows the queue while the person keeps browsing. One path
  * (`send`) with the kind left to Yomizaka and the owner's keeping preference; the lists refresh as each file lands.
  */
-export function LibraryDrop({ zone = false, examples, jurisdictions = ["QC"], placement, children }: Readonly<{ zone?: boolean; examples?: (add: (files: File[]) => void) => ReactNode; jurisdictions?: readonly Jurisdiction[]; placement?: Placement; children?: ReactNode }>) {
+export function LibraryDrop({
+  zone = false,
+  examples,
+  jurisdictions = ["QC"],
+  placement,
+  children,
+}: Readonly<{
+  zone?: boolean;
+  examples?: (add: (files: File[]) => void) => ReactNode;
+  jurisdictions?: readonly Jurisdiction[];
+  placement?: Placement;
+  children?: ReactNode;
+}>) {
   const { say } = useSay();
   const router = useRouter();
   const app = useAppConfig();
   const [notice, setNotice] = useState<string | null>(null);
   // How many photos each group carries, by its lead file's name: the tray says it.
   const [pages, setPages] = useState<ReadonlyMap<string, number>>(new Map());
-  const prefs = useQuery({ queryKey: ["storage-prefs"], queryFn: () => krizakaFetch("/api/me/storage", { schema: z.object({ settings: z.object({ mode: z.enum(STORAGE_MODES), keepDefault: z.boolean() }) }) }), throwOnError: false, retry: false });
-  const keep = prefs.data?.settings.mode !== STORAGE_MODE.none && app?.features.keepDocuments !== false && Boolean(prefs.data?.settings.keepDefault);
+  const prefs = useQuery({
+    queryKey: ["storage-prefs"],
+    queryFn: () =>
+      krizakaFetch("/api/me/storage", {
+        schema: z.object({ settings: z.object({ mode: z.enum(STORAGE_MODES), keepDefault: z.boolean() }) }),
+      }),
+    throwOnError: false,
+    retry: false,
+  });
+  const keep =
+    prefs.data?.settings.mode !== STORAGE_MODE.none &&
+    app?.features.keepDocuments !== false &&
+    Boolean(prefs.data?.settings.keepDefault);
   const queue = useUploadQueue({
     previews: false,
     retries: 1,
@@ -139,13 +191,25 @@ export function LibraryDrop({ zone = false, examples, jurisdictions = ["QC"], pl
   const add = (files: readonly File[]) => {
     const { queued, groups } = bundlePhotos(files);
     for (const [lead, group] of groups) GROUPS.set(lead, group);
-    if (groups.size) setPages((m) => new Map([...m, ...[...groups].map(([lead, group]) => [lead.name, group.length] as const)]));
+    if (groups.size)
+      setPages((m) => new Map([...m, ...[...groups].map(([lead, group]) => [lead.name, group.length] as const)]));
     queue.add(queued);
   };
   const items = queueItemsOf(queue.items, say, queue.retry, pages);
   const zoneNode = (
     <div data-testid="library-dropzone">
-      <Dropzone title={say("library.dropTitle")} browseLabel={say("library.browse")} inputLabel={say("library.inputLabel")} hint={say("library.hint")} accept={ACCEPT} maxSize={app?.maxFileBytes ?? MAX_FILE_BYTES} maxFiles={20} multiple onFiles={(files) => add(files)} refusalLabel={refusal} />
+      <Dropzone
+        title={say("library.dropTitle")}
+        browseLabel={say("library.browse")}
+        inputLabel={say("library.inputLabel")}
+        hint={say("library.hint")}
+        accept={ACCEPT}
+        maxSize={app?.maxFileBytes ?? MAX_FILE_BYTES}
+        maxFiles={20}
+        multiple
+        onFiles={(files) => add(files)}
+        refusalLabel={refusal}
+      />
     </div>
   );
   return (
@@ -162,7 +226,9 @@ export function LibraryDrop({ zone = false, examples, jurisdictions = ["QC"], pl
       {zone ? zoneNode : null}
       {examples?.(add)}
       {notice ? <Alert tone="warning">{notice}</Alert> : null}
-      {children !== undefined ? <DropIsland.Provider value={{ add, zone: zoneNode }}>{children}</DropIsland.Provider> : null}
+      {children !== undefined ? (
+        <DropIsland.Provider value={{ add, zone: zoneNode }}>{children}</DropIsland.Provider>
+      ) : null}
       <UploadTray items={items} />
     </>
   );

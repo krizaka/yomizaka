@@ -1,4 +1,8 @@
-import { postgresSettings as postgres, type PostgresSettingsDeps, type SettingsService as Service } from "@krizaka/settings";
+import {
+  postgresSettings as postgres,
+  type PostgresSettingsDeps,
+  type SettingsService as Service,
+} from "@krizaka/settings";
 import type { QueryResultRow } from "pg";
 
 import { SETTINGS, settings } from "./registry";
@@ -11,4 +15,6 @@ export { GLOBAL, SettingsError } from "@krizaka/settings";
 
 type AppQuery = <T extends QueryResultRow>(text: string, values?: unknown[]) => Promise<T[]>;
 
-export const postgresSettings = (deps: Omit<PostgresSettingsDeps<typeof SETTINGS>, "query"> & { query: AppQuery }): SettingsService => postgres(settings, { ...deps, query: (sql, params) => deps.query(sql, params) as never });
+export const postgresSettings = (
+  deps: Omit<PostgresSettingsDeps<typeof SETTINGS>, "query"> & { query: AppQuery },
+): SettingsService => postgres(settings, { ...deps, query: (sql, params) => deps.query(sql, params) as never });

@@ -25,7 +25,11 @@ const CASES = [
 async function call(path, init = {}) {
   const res = await fetch(`${base}${path}`, {
     method: init.method ?? "GET",
-    headers: { authorization: `Bearer ${key}`, accept: "application/json", ...(init.body ? { "content-type": "application/json" } : {}) },
+    headers: {
+      authorization: `Bearer ${key}`,
+      accept: "application/json",
+      ...(init.body ? { "content-type": "application/json" } : {}),
+    },
     body: init.body ? JSON.stringify(init.body) : undefined,
   });
   if (!res.ok) throw new Error(`Orazaka answered ${res.status} on ${init.method ?? "GET"} ${path.split("?")[0]}`);

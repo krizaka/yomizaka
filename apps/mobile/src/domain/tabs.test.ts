@@ -23,6 +23,11 @@ describe("the phone's tabs", () => {
     expect(CHECKS_TABS).toEqual(["checks", "lots"]);
     expect(routes.checks("fr")).toBe("/fr/app/verifications");
     expect(routes.checks("en", "lots")).toBe("/en/app/verifications?tab=lots");
-    expect([checksTabOf("lots"), checksTabOf(undefined), checksTabOf("nope"), checksTabOf(["lots"])]).toEqual(["lots", "checks", "checks", "lots"]);
+    expect([checksTabOf("lots"), checksTabOf(undefined), checksTabOf("nope"), checksTabOf(["lots"])]).toEqual([
+      "lots",
+      "checks",
+      "checks",
+      "lots",
+    ]);
   });
 });

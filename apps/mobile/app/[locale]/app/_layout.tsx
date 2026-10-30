@@ -9,7 +9,12 @@ import { phoneTabs } from "@/domain/tabs";
 import { useI18n } from "@/i18n";
 import { useLocale } from "@/use-locale";
 
-const ICONS: Record<SectionId, typeof KnowledgeIcon> = { library: HomeIcon, files: UsersIcon, documents: KnowledgeIcon, checks: CheckIcon };
+const ICONS: Record<SectionId, typeof KnowledgeIcon> = {
+  library: HomeIcon,
+  files: UsersIcon,
+  documents: KnowledgeIcon,
+  checks: CheckIcon,
+};
 
 const iconOf = (Icon: typeof KnowledgeIcon) => (_on: boolean, color: string) => <Icon color={color} />;
 
@@ -40,7 +45,9 @@ export default function AppLayout() {
   return (
     <Tabs
       screenOptions={{ headerShown: false }}
-      tabBar={tabBarOf(items, t("tabs.label"), (screen) => router.navigate(tabs.find((tab) => tab.screen === screen)?.href as never))}
+      tabBar={tabBarOf(items, t("tabs.label"), (screen) =>
+        router.navigate(tabs.find((tab) => tab.screen === screen)?.href as never),
+      )}
     >
       {tabs.map((tab) => (
         <Tabs.Screen key={tab.screen} name={tab.screen} />

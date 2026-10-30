@@ -5,17 +5,30 @@ import { LINK, type LinkState } from "./applicant-file-rules";
 import { applicantPageOf, loadApplicantPage } from "./applicant-page";
 import { HttpError } from "./http";
 
-const state = (over: Partial<{ status: LinkState; types: string[]; documents: { id: string; typeId: string | null; filename: string; sizeBytes: number }[] }> = {}) => ({
+const state = (
+  over: Partial<{
+    status: LinkState;
+    types: string[];
+    documents: { id: string; typeId: string | null; filename: string; sizeBytes: number }[];
+  }> = {},
+) => ({
   status: over.status ?? LINK.open,
   expiresAt: "2026-11-07T15:00:00.000Z",
-  types: (over.types ?? ["pay-stub", "bank-statement"]).map((id) => ({ id, fields: [], retentionPolicy: "after-check" })),
+  types: (over.types ?? ["pay-stub", "bank-statement"]).map((id) => ({
+    id,
+    fields: [],
+    retentionPolicy: "after-check",
+  })),
   documents: (over.documents ?? []).map((d) => ({ signals: [], ...d })),
 });
 const checked = [CONSENT_PURPOSE.DOCUMENT_CHECK];
 
 describe("the applicant's page (yomizaka#341)", () => {
   it("shows the types of the request, in its order, each with the documents already received of that type", () => {
-    const page = applicantPageOf(state({ documents: [{ id: "d1", typeId: "bank-statement", filename: "releve.pdf", sizeBytes: 1200 }] }), checked);
+    const page = applicantPageOf(
+      state({ documents: [{ id: "d1", typeId: "bank-statement", filename: "releve.pdf", sizeBytes: 1200 }] }),
+      checked,
+    );
     expect(page.rows.map((r) => r.typeId)).toEqual(["pay-stub", "bank-statement"]);
     expect(page.rows[0]!.documents).toEqual([]);
     expect(page.rows[1]!.documents.map((d) => d.filename)).toEqual(["releve.pdf"]);
@@ -65,7 +78,9 @@ describe("the applicant's page (yomizaka#341)", () => {
     const row = { id: "app-1" };
     const deps = {
       fileByToken: async (token: string) => {
-        if (token !== "file-token") {throw new HttpError(404, "No such link");}
+        if (token !== "file-token") {
+          throw new HttpError(404, "No such link");
+        }
         return row;
       },
       applicantFileState: async () => state(),
@@ -79,7 +94,11 @@ describe("the applicant's page (yomizaka#341)", () => {
   });
 
   it("lets any other failure through", async () => {
-    const deps = { fileByToken: async () => Promise.reject(new Error("db down")), applicantFileState: async () => state(), activeConsents: async () => [] };
+    const deps = {
+      fileByToken: async () => Promise.reject(new Error("db down")),
+      applicantFileState: async () => state(),
+      activeConsents: async () => [],
+    };
     await expect(loadApplicantPage("t", new Date(), deps)).rejects.toThrow("db down");
   });
 
@@ -87,6 +106,8 @@ describe("the applicant's page (yomizaka#341)", () => {
     expect(applicantPageOf(state(), checked).canAnswer).toBe(true);
     expect(applicantPageOf(state({ status: LINK.used }), checked).canAnswer).toBe(true);
     expect(applicantPageOf(state(), []).canAnswer).toBe(false);
-    for (const status of [LINK.revoked, LINK.expired, LINK.closed, LINK.erased]) {expect(applicantPageOf(state({ status }), checked).canAnswer).toBe(false);}
+    for (const status of [LINK.revoked, LINK.expired, LINK.closed, LINK.erased]) {
+      expect(applicantPageOf(state({ status }), checked).canAnswer).toBe(false);
+    }
   });
 });

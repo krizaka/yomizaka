@@ -3,7 +3,15 @@ import { describe, expect, it } from "vitest";
 import { objectKey, purgeDeadline, storageFor } from "./retention";
 import type { StoreDescriptor } from "./storage/port";
 
-const D: StoreDescriptor = { kind: "none", endpoint: null, region: null, residency: "unknown", encrypted: false, owner: "krizaka", devOnly: false };
+const D: StoreDescriptor = {
+  kind: "none",
+  endpoint: null,
+  region: null,
+  residency: "unknown",
+  encrypted: false,
+  owner: "krizaka",
+  devOnly: false,
+};
 
 describe("keep or purge: where a new document goes", () => {
   it("not kept: purged after the check, only the report stays — whatever the store", () => {

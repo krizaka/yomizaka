@@ -29,17 +29,37 @@ describe.runIf(enabled)("sealing a contract for a partner (yomizaka#71)", () => 
   let narrow = "";
   let ownerId = "";
   const post = (key: string | null, body: unknown, headers: Record<string, string> = {}) =>
-    sealRoute(new Request("http://localhost/api/v1/contracts/seal", { method: "POST", headers: { "content-type": "application/json", ...(key ? { authorization: `Bearer ${key}` } : {}), ...headers }, body: JSON.stringify(body) }));
-  const get = (path: string, key?: string) => new Request(`http://localhost${path}`, { headers: key ? { authorization: `Bearer ${key}` } : {} });
-  const params = <T,>(value: T) => ({ params: Promise.resolve(value) });
+    sealRoute(
+      new Request("http://localhost/api/v1/contracts/seal", {
+        method: "POST",
+        headers: { "content-type": "application/json", ...(key ? { authorization: `Bearer ${key}` } : {}), ...headers },
+        body: JSON.stringify(body),
+      }),
+    );
+  const get = (path: string, key?: string) =>
+    new Request(`http://localhost${path}`, { headers: key ? { authorization: `Bearer ${key}` } : {} });
+  const params = <T>(value: T) => ({ params: Promise.resolve(value) });
 
   beforeAll(async () => {
     await migrate();
-    const [owner] = await query<{ id: string }>("INSERT INTO accounts (email, plan, subscription_status, current_period_end) VALUES ($1, 'PRO', 'active', now() + interval '30 days') RETURNING id", [`seal-${stamp}@yomizaka.test`]);
+    const [owner] = await query<{ id: string }>(
+      "INSERT INTO accounts (email, plan, subscription_status, current_period_end) VALUES ($1, 'PRO', 'active', now() + interval '30 days') RETURNING id",
+      [`seal-${stamp}@yomizaka.test`],
+    );
     ownerId = owner!.id;
     const { token } = await createSession(ownerId, { ip: "203.0.113.31", userAgent: "vitest" });
     const key = async (scopes: string[]) =>
-      (await (await createKeyRoute(new Request("http://localhost/api/me/api-keys", { method: "POST", headers: { cookie: `${SESSION_COOKIE}=${token}`, "content-type": "application/json" }, body: JSON.stringify({ name: scopes.join("+"), scopes, expiresInDays: 30 }) }))).json()).key as string;
+      (
+        await (
+          await createKeyRoute(
+            new Request("http://localhost/api/me/api-keys", {
+              method: "POST",
+              headers: { cookie: `${SESSION_COOKIE}=${token}`, "content-type": "application/json" },
+              body: JSON.stringify({ name: scopes.join("+"), scopes, expiresInDays: 30 }),
+            }),
+          )
+        ).json()
+      ).key as string;
     bearer = await key(["contracts:seal"]);
     narrow = await key(["reports:read"]);
   });
@@ -49,19 +69,35 @@ describe.runIf(enabled)("sealing a contract for a partner (yomizaka#71)", () => 
     const res = await post(bearer, contract);
     expect(res.status).toBe(201);
     const sealed = await res.json();
-    expect(sealed).toMatchObject({ success: true, contractId: expect.stringMatching(/^ctr_[0-9a-f]{24}$/), sha256: expect.stringMatching(/^[0-9a-f]{64}$/), attestation: { signature: expect.any(String), publicKey: expect.any(String) } });
-    const [line] = await query<{ detail: Record<string, unknown>; actor_label: string }>("SELECT detail, actor_label FROM audit_log WHERE actor_id = $1 AND action = 'api.contract.sealed'", [ownerId]);
+    expect(sealed).toMatchObject({
+      success: true,
+      contractId: expect.stringMatching(/^ctr_[0-9a-f]{24}$/),
+      sha256: expect.stringMatching(/^[0-9a-f]{64}$/),
+      attestation: { signature: expect.any(String), publicKey: expect.any(String) },
+    });
+    const [line] = await query<{ detail: Record<string, unknown>; actor_label: string }>(
+      "SELECT detail, actor_label FROM audit_log WHERE actor_id = $1 AND action = 'api.contract.sealed'",
+      [ownerId],
+    );
     expect(line!.actor_label).toMatch(/^api-key:/);
     expect(JSON.stringify(line!.detail)).not.toMatch(/Plateforme|c79f|att_demo/);
   });
 
   it("the same request is the same contract: 200 with the first seal, nothing sealed twice", async () => {
     resetRateLimits();
-    const first = await (await post(bearer, { ...contract, contractPayload: { ...contract.contractPayload, once: 1 } })).json();
+    const first = await (
+      await post(bearer, { ...contract, contractPayload: { ...contract.contractPayload, once: 1 } })
+    ).json();
     const again = await post(bearer, { ...contract, contractPayload: { ...contract.contractPayload, once: 1 } });
     expect(again.status).toBe(200);
-    expect(await again.json()).toMatchObject({ contractId: first.contractId, sha256: first.sha256, attestation: { signature: first.attestation.signature } });
-    const [count] = await query<{ n: string }>("SELECT count(*) AS n FROM sealed_contracts WHERE id = $1", [first.contractId]);
+    expect(await again.json()).toMatchObject({
+      contractId: first.contractId,
+      sha256: first.sha256,
+      attestation: { signature: first.attestation.signature },
+    });
+    const [count] = await query<{ n: string }>("SELECT count(*) AS n FROM sealed_contracts WHERE id = $1", [
+      first.contractId,
+    ]);
     expect(count!.n).toBe("1");
   });
 
@@ -81,34 +117,67 @@ describe.runIf(enabled)("sealing a contract for a partner (yomizaka#71)", () => 
   it("gives the sealed file back to the account that sealed it, and to no other", async () => {
     resetRateLimits();
     const sealed = await (await post(bearer, contract)).json();
-    const res = await fileRoute(get(`/api/v1/contracts/${sealed.contractId}/file`, bearer), params({ id: sealed.contractId }));
+    const res = await fileRoute(
+      get(`/api/v1/contracts/${sealed.contractId}/file`, bearer),
+      params({ id: sealed.contractId }),
+    );
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toBe("application/pdf");
-    expect(Buffer.from(await res.arrayBuffer()).subarray(0, 5).toString()).toBe("%PDF-");
-    const [other] = await query<{ id: string }>("INSERT INTO accounts (email, plan, subscription_status, current_period_end) VALUES ($1, 'PRO', 'active', now() + interval '30 days') RETURNING id", [`seal-other-${stamp}@yomizaka.test`]);
+    expect(
+      Buffer.from(await res.arrayBuffer())
+        .subarray(0, 5)
+        .toString(),
+    ).toBe("%PDF-");
+    const [other] = await query<{ id: string }>(
+      "INSERT INTO accounts (email, plan, subscription_status, current_period_end) VALUES ($1, 'PRO', 'active', now() + interval '30 days') RETURNING id",
+      [`seal-other-${stamp}@yomizaka.test`],
+    );
     const { token } = await createSession(other!.id, { ip: "203.0.113.32", userAgent: "vitest" });
-    const created = await createKeyRoute(new Request("http://localhost/api/me/api-keys", { method: "POST", headers: { cookie: `${SESSION_COOKIE}=${token}`, "content-type": "application/json" }, body: JSON.stringify({ name: "other", scopes: ["contracts:seal"], expiresInDays: 30 }) }));
+    const created = await createKeyRoute(
+      new Request("http://localhost/api/me/api-keys", {
+        method: "POST",
+        headers: { cookie: `${SESSION_COOKIE}=${token}`, "content-type": "application/json" },
+        body: JSON.stringify({ name: "other", scopes: ["contracts:seal"], expiresInDays: 30 }),
+      }),
+    );
     const stranger = (await created.json()).key as string;
-    const refused = await fileRoute(get(`/api/v1/contracts/${sealed.contractId}/file`, stranger), params({ id: sealed.contractId }));
+    const refused = await fileRoute(
+      get(`/api/v1/contracts/${sealed.contractId}/file`, stranger),
+      params({ id: sealed.contractId }),
+    );
     expect(refused.status).toBe(404);
   });
 
   it("anyone can check a copy by its SHA-256: who sealed it and when — and no name, no account, no content", async () => {
     resetRateLimits();
-    const sealed = await (await post(bearer, { ...contract, contractPayload: { ...contract.contractPayload, forTheCheck: 1 } })).json();
+    const sealed = await (
+      await post(bearer, { ...contract, contractPayload: { ...contract.contractPayload, forTheCheck: 1 } })
+    ).json();
     const res = await verifyRoute(get(`/api/verify/contract/${sealed.sha256}`), params({ sha256: sealed.sha256 }));
     expect(res.status).toBe(200);
     const answer = await res.json();
-    expect(answer).toMatchObject({ valid: true, sha256: sealed.sha256, contractId: sealed.contractId, partnerId: "partner-one", documentType: "CREATOR_PARTNERSHIP_CONTRACT_90_10" });
+    expect(answer).toMatchObject({
+      valid: true,
+      sha256: sealed.sha256,
+      contractId: sealed.contractId,
+      partnerId: "partner-one",
+      documentType: "CREATOR_PARTNERSHIP_CONTRACT_90_10",
+    });
     expect(JSON.stringify(answer)).not.toMatch(/Plateforme|c79f|att_demo|PARTNER-FRAMEWORK|terms/);
-    expect((await verifyRoute(get("/api/verify/contract/" + "0".repeat(64)), params({ sha256: "0".repeat(64) }))).status).toBe(404);
+    expect(
+      (await verifyRoute(get("/api/verify/contract/" + "0".repeat(64)), params({ sha256: "0".repeat(64) }))).status,
+    ).toBe(404);
     expect((await verifyRoute(get("/api/verify/contract/nope"), params({ sha256: "nope" }))).status).toBe(404);
   });
 
   it("does not vouch for a stored copy that was altered", async () => {
     resetRateLimits();
-    const sealed = await (await post(bearer, { ...contract, contractPayload: { ...contract.contractPayload, altered: 1 } })).json();
-    await query("UPDATE sealed_contracts SET content = overlay(content placing 'X' from 600 for 1) WHERE id = $1", [sealed.contractId]);
+    const sealed = await (
+      await post(bearer, { ...contract, contractPayload: { ...contract.contractPayload, altered: 1 } })
+    ).json();
+    await query("UPDATE sealed_contracts SET content = overlay(content placing 'X' from 600 for 1) WHERE id = $1", [
+      sealed.contractId,
+    ]);
     const res = await verifyRoute(get(`/api/verify/contract/${sealed.sha256}`), params({ sha256: sealed.sha256 }));
     expect(res.status).toBe(409);
     expect((await res.json()).valid).toBe(false);

@@ -28,16 +28,29 @@ describe("the W3C client", () => {
     const calls = [];
     const fetchImpl = async (url, init) => {
       calls.push(`${init.method} ${new URL(url).pathname}`);
-      const value = url.endsWith("/session") ? { sessionId: "s1" } : url.endsWith("/element") ? { "element-6066-11e4-a52e-4f735466cecf": "e1" } : null;
+      const value = url.endsWith("/session")
+        ? { sessionId: "s1" }
+        : url.endsWith("/element")
+          ? { "element-6066-11e4-a52e-4f735466cecf": "e1" }
+          : null;
       return { ok: true, json: async () => ({ value }) };
     };
     const driver = await client("http://x", fetchImpl).start();
     await driver.click(await driver.find("button"));
     await driver.quit();
-    assert.deepEqual(calls, ["POST /session", "POST /session/s1/element", "POST /session/s1/element/e1/click", "DELETE /session/s1"]);
+    assert.deepEqual(calls, [
+      "POST /session",
+      "POST /session/s1/element",
+      "POST /session/s1/element/e1/click",
+      "DELETE /session/s1",
+    ]);
   });
   it("names the refused call", async () => {
-    const fetchImpl = async () => ({ ok: false, status: 404, json: async () => ({ value: { message: "no such element" } }) });
+    const fetchImpl = async () => ({
+      ok: false,
+      status: 404,
+      json: async () => ({ value: { message: "no such element" } }),
+    });
     await assert.rejects(client("http://x", fetchImpl).start(), /POST \/session: HTTP 404 no such element/);
   });
 });
@@ -47,7 +60,10 @@ describe("waiting", () => {
     let n = 0;
     assert.equal(await until("three", () => ++n === 3 && "ok", { timeoutMs: 1000, sleep: async () => {} }), "ok");
     let t = 0;
-    await assert.rejects(until("the lease", () => false, { timeoutMs: 10, sleep: async () => {}, now: () => (t += 6) }), /timed out waiting for the lease/);
+    await assert.rejects(
+      until("the lease", () => false, { timeoutMs: 10, sleep: async () => {}, now: () => (t += 6) }),
+      /timed out waiting for the lease/,
+    );
   });
 });
 
@@ -56,10 +72,16 @@ describe("the driver never reaches a release", () => {
     const cargo = read("../apps/desktop/src-tauri/Cargo.toml");
     assert.match(cargo, /tauri-plugin-webdriver = \{ version = "0\.2\.3", optional = true \}/);
     assert.match(cargo, /webdriver = \["dep:tauri-plugin-webdriver"\]/);
-    assert.match(read("../apps/desktop/src-tauri/src/lib.rs"), /#\[cfg\(all\(debug_assertions, feature = "webdriver"\)\)\]\s*let builder = builder\.plugin\(tauri_plugin_webdriver::init\(\)\)/);
+    assert.match(
+      read("../apps/desktop/src-tauri/src/lib.rs"),
+      /#\[cfg\(all\(debug_assertions, feature = "webdriver"\)\)\]\s*let builder = builder\.plugin\(tauri_plugin_webdriver::init\(\)\)/,
+    );
     const desktop = code(read("../.github/workflows/desktop.yml"));
     assert.doesNotMatch(desktop.split("desktop-release:")[1], /webdriver/);
-    assert.match(code(read("../.github/actions/desktop-journey/action.yml")), /tauri build --debug --no-bundle --features webdriver/);
+    assert.match(
+      code(read("../.github/actions/desktop-journey/action.yml")),
+      /tauri build --debug --no-bundle --features webdriver/,
+    );
   });
 });
 
@@ -83,6 +105,13 @@ describe("the workflows", () => {
   });
   it("the journey asserts what the issue asks: a folder, a lease checked, the result, the relaunch", () => {
     const journey = read("./desktop-journey.mjs");
-    for (const needle of ["scopeJson([folder])", "check-document", "check-result", "the relaunch asked to sign in again", "the scope lost the folder"]) assert.ok(journey.includes(needle), needle);
+    for (const needle of [
+      "scopeJson([folder])",
+      "check-document",
+      "check-result",
+      "the relaunch asked to sign in again",
+      "the scope lost the folder",
+    ])
+      assert.ok(journey.includes(needle), needle);
   });
 });

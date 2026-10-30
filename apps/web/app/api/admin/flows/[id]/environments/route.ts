@@ -15,7 +15,13 @@ export function PUT(req: Request, { params }: { params: Promise<{ id: string }> 
     const { id } = await params;
     if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such flow");
     const input = await readJson(req, z.object({ environment: flowEnvironment, enabled: z.boolean() }));
-    await setEnvironment({ id: session.account.id, email: session.account.email }, id, input.environment, input.enabled, req.headers);
+    await setEnvironment(
+      { id: session.account.id, email: session.account.email },
+      id,
+      input.environment,
+      input.enabled,
+      req.headers,
+    );
     return Response.json({ environment: input.environment, enabled: input.enabled });
   });
 }

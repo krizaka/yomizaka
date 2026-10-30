@@ -67,7 +67,15 @@ export async function renderPdf(title, lines) {
     chunk.forEach((line, n) => {
       if (line) page.drawText(line, { x: 56, y: 730 - n * 15, size: 10.5, font, color: rgb(0.1, 0.1, 0.12) });
     });
-    page.drawText(WATERMARK, { x: 70, y: 250, size: 34, font: bold, color: rgb(0.8, 0.2, 0.2), opacity: 0.28, rotate: degrees(35) });
+    page.drawText(WATERMARK, {
+      x: 70,
+      y: 250,
+      size: 34,
+      font: bold,
+      color: rgb(0.8, 0.2, 0.2),
+      opacity: 0.28,
+      rotate: degrees(35),
+    });
     page.drawText(WATERMARK, { x: 56, y: 28, size: 9, font, color: rgb(0.5, 0.1, 0.1) });
   }
   return { bytes: await pdf.save({ useObjectStreams: false }), pages: pageCount(wrapped) };

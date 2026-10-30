@@ -3,11 +3,13 @@
 Status: accepted (2026-10-22). Issue: krizaka/yomizaka#138.
 
 ## Context
+
 Yomizaka offers the first verification free, then sells per document or by subscription (Agencies, Law firms) — the grid is
 the price catalogue's (ADR-009, krizaka/.github#253, yomizaka#367), never typed here. The org rules: the domain has no
 infrastructure and no vendor SDK, a vendor is chosen in configuration, prices and rules are data.
 
 ## Decision
+
 - **A payments port** (the shared `@krizaka/payments` port): `createCustomer`, `checkout`, `portal`, `parseWebhook`. It speaks plans and
   **vendor-free events** (`payment_paid {kind}`, `subscription_started`, `subscription_changed`). The domain (`lib/billing.ts`) imports
   nothing from a vendor.
@@ -27,4 +29,5 @@ infrastructure and no vendor SDK, a vendor is chosen in configuration, prices an
 - **Exempt**: accounts an operator created (QA, personas) have no `terms_accepted_at` and are never charged.
 
 ## Consequences
+
 The webhook is the only writer of paid state. Live mode is a change of keys and of the processor account, not of code.

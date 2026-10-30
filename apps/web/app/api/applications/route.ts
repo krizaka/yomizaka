@@ -15,7 +15,10 @@ export function GET(req: Request) {
   return handle(async () => {
     const session = await requireSession(req);
     await resolveFlow(session.account, FLOW, appEnvironment());
-    return Response.json({ applications: await listApplicantFiles(session.account.id, new Date()) }, { headers: { "Cache-Control": "private, no-store" } });
+    return Response.json(
+      { applications: await listApplicantFiles(session.account.id, new Date()) },
+      { headers: { "Cache-Control": "private, no-store" } },
+    );
   });
 }
 
@@ -27,7 +30,12 @@ export function POST(req: Request) {
     await resolveFlow(session.account, FLOW, appEnvironment());
     // The form's body (lib/applicant-file-face); a SIN-like type is refused by the service with its own code (422 TYPE_NOT_NECESSARY).
     const input = await readJson(req, applicantRequestBody);
-    const made = await requestApplicantFile({ id: session.account.id, email: session.account.email }, input, new Date(), req.headers);
+    const made = await requestApplicantFile(
+      { id: session.account.id, email: session.account.email },
+      input,
+      new Date(),
+      req.headers,
+    );
     return Response.json(made, { status: 201, headers: { "Cache-Control": "no-store" } });
   });
 }

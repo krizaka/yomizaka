@@ -1,4 +1,10 @@
-import { type Actor, type CatalogObject, moveBatch, type ObjectCatalog, type ProviderService } from "@krizaka/storage/provider-admin";
+import {
+  type Actor,
+  type CatalogObject,
+  moveBatch,
+  type ObjectCatalog,
+  type ProviderService,
+} from "@krizaka/storage/provider-admin";
 import { addSeconds } from "@krizaka/time";
 import type { QueryResultRow } from "pg";
 
@@ -74,13 +80,27 @@ const WHERE_HELD = "provider_id = $1 AND object_key IS NOT NULL AND storage_owne
 export function documentCatalog(q: Query, skip: readonly string[]): ObjectCatalog {
   return {
     pending: (providerId, limit) =>
-      q<CatalogObject & QueryResultRow>(`SELECT id, object_key AS key, mime_type AS "contentType", sha256 FROM documents WHERE ${WHERE_HELD} AND id <> ALL($2::uuid[]) ORDER BY id LIMIT $3`, [providerId, skip, limit]),
-    remaining: async (providerId) => Number((await q<{ n: string }>(`SELECT count(*)::text AS n FROM documents WHERE ${WHERE_HELD}`, [providerId]))[0]?.n ?? 0),
-    switchProvider: async (objectId, from, to) => (await q("UPDATE documents SET provider_id = $3 WHERE id = $1 AND provider_id = $2 AND object_key IS NOT NULL RETURNING id", [objectId, from, to])).length > 0,
+      q<CatalogObject & QueryResultRow>(
+        `SELECT id, object_key AS key, mime_type AS "contentType", sha256 FROM documents WHERE ${WHERE_HELD} AND id <> ALL($2::uuid[]) ORDER BY id LIMIT $3`,
+        [providerId, skip, limit],
+      ),
+    remaining: async (providerId) =>
+      Number(
+        (await q<{ n: string }>(`SELECT count(*)::text AS n FROM documents WHERE ${WHERE_HELD}`, [providerId]))[0]?.n ??
+          0,
+      ),
+    switchProvider: async (objectId, from, to) =>
+      (
+        await q(
+          "UPDATE documents SET provider_id = $3 WHERE id = $1 AND provider_id = $2 AND object_key IS NOT NULL RETURNING id",
+          [objectId, from, to],
+        )
+      ).length > 0,
   };
 }
 
-const waitingOf = async (q: Query, row: MoveRow) => Math.max(0, (await documentCatalog(q, []).remaining(row.from_id)) - row.failures.length);
+const waitingOf = async (q: Query, row: MoveRow) =>
+  Math.max(0, (await documentCatalog(q, []).remaining(row.from_id)) - row.failures.length);
 
 async function viewOf(q: Query, row: MoveRow): Promise<MoveView> {
   return {
@@ -99,7 +119,9 @@ async function viewOf(q: Query, row: MoveRow): Promise<MoveView> {
 
 /** The latest move (the open one, else the last finished), or null when none ever ran. */
 export async function currentMove(q: Query): Promise<MoveView | null> {
-  const [row] = await q<MoveRow>(`SELECT ${COLUMNS} FROM storage_moves ORDER BY (status <> 'done') DESC, started_at DESC LIMIT 1`);
+  const [row] = await q<MoveRow>(
+    `SELECT ${COLUMNS} FROM storage_moves ORDER BY (status <> 'done') DESC, started_at DESC LIMIT 1`,
+  );
   return row ? viewOf(q, row) : null;
 }
 
@@ -112,7 +134,8 @@ export async function startMove(deps: MoveDeps, actor: Actor, input: { from: str
   const from = listed.find((p) => p.id === input.from);
   const to = listed.find((p) => p.id === input.to);
   if (!from || !to) throw refuse(404, "STORAGE_PROVIDER_NOT_FOUND", "No such provider");
-  if ((await deps.defaults())[DATA_KIND.documents] !== to.id) throw notAllowed("The target is not the default of the documents");
+  if ((await deps.defaults())[DATA_KIND.documents] !== to.id)
+    throw notAllowed("The target is not the default of the documents");
   if (from.status !== PROVIDER_STATUS.retiring) throw notAllowed("Only a retiring provider is moved from");
   const total = await documentCatalog(deps.q, []).remaining(from.id);
   const now = deps.now();
@@ -120,23 +143,47 @@ export async function startMove(deps: MoveDeps, actor: Actor, input: { from: str
   try {
     [row] = await deps.q<MoveRow>(
       `INSERT INTO storage_moves (from_id, to_id, status, total, started_by, started_at, updated_at, finished_at) VALUES ($1, $2, $3, $4, $5, $6, $6, $7) RETURNING ${COLUMNS}`,
-      [from.id, to.id, total === 0 ? MOVE_STATUS.done : MOVE_STATUS.running, total, actor.id, now, total === 0 ? now : null],
+      [
+        from.id,
+        to.id,
+        total === 0 ? MOVE_STATUS.done : MOVE_STATUS.running,
+        total,
+        actor.id,
+        now,
+        total === 0 ? now : null,
+      ],
     );
   } catch (error) {
     if ((error as { code?: string }).code === "23505") throw refuse(409, "STORAGE_MOVE_OPEN", "A move is already open");
     throw error;
   }
-  await deps.audit({ action: "storage.move.started", actor, targetId: row!.id, detail: { from: from.id, to: to.id, total } });
+  await deps.audit({
+    action: "storage.move.started",
+    actor,
+    targetId: row!.id,
+    detail: { from: from.id, to: to.id, total },
+  });
   return viewOf(deps.q, row!);
 }
 
 /** Pauses the open move, or resumes it (a resume also lets the failed objects be tried again). */
 export async function setMovePaused(deps: MoveDeps, actor: Actor, paused: boolean): Promise<MoveView> {
   const [row] = paused
-    ? await deps.q<MoveRow>(`UPDATE storage_moves SET status = 'paused', updated_at = $1 WHERE status IN ('running', 'attention') RETURNING ${COLUMNS}`, [deps.now()])
-    : await deps.q<MoveRow>(`UPDATE storage_moves SET status = 'running', failures = '[]'::jsonb, leased_until = NULL, updated_at = $1 WHERE status IN ('paused', 'attention') RETURNING ${COLUMNS}`, [deps.now()]);
+    ? await deps.q<MoveRow>(
+        `UPDATE storage_moves SET status = 'paused', updated_at = $1 WHERE status IN ('running', 'attention') RETURNING ${COLUMNS}`,
+        [deps.now()],
+      )
+    : await deps.q<MoveRow>(
+        `UPDATE storage_moves SET status = 'running', failures = '[]'::jsonb, leased_until = NULL, updated_at = $1 WHERE status IN ('paused', 'attention') RETURNING ${COLUMNS}`,
+        [deps.now()],
+      );
   if (!row) throw refuse(409, "STORAGE_MOVE_NONE", paused ? "No move is running" : "No move is waiting");
-  await deps.audit({ action: paused ? "storage.move.paused" : "storage.move.resumed", actor, targetId: row.id, detail: {} });
+  await deps.audit({
+    action: paused ? "storage.move.paused" : "storage.move.resumed",
+    actor,
+    targetId: row.id,
+    detail: {},
+  });
   return viewOf(deps.q, row);
 }
 
@@ -155,7 +202,10 @@ export async function stepMove(deps: MoveDeps): Promise<MoveView | null> {
   if (!row) return null;
   try {
     const result = await moveBatch({
-      catalog: documentCatalog(deps.q, row.failures.map((f) => f.id)),
+      catalog: documentCatalog(
+        deps.q,
+        row.failures.map((f) => f.id),
+      ),
       from: { id: row.from_id, store: await deps.service.open(row.from_id) },
       to: { id: row.to_id, store: await deps.service.open(row.to_id) },
       limit: deps.batch ?? MOVE_BATCH,
@@ -172,7 +222,11 @@ function statusAfter(left: number, failed: number): MoveStatus {
   return failed > 0 ? MOVE_STATUS.attention : MOVE_STATUS.done;
 }
 
-async function settle(deps: MoveDeps, row: MoveRow, result: { switched: number; failed: MoveFailure[] }): Promise<MoveView> {
+async function settle(
+  deps: MoveDeps,
+  row: MoveRow,
+  result: { switched: number; failed: MoveFailure[] },
+): Promise<MoveView> {
   const failures = [...row.failures, ...result.failed].slice(0, FAILURES_KEPT);
   const failedCount = row.failures.length + result.failed.length;
   const left = Math.max(0, (await documentCatalog(deps.q, []).remaining(row.from_id)) - failedCount);
@@ -183,7 +237,19 @@ async function settle(deps: MoveDeps, row: MoveRow, result: { switched: number; 
     [row.id, result.switched, JSON.stringify(failures), status, now, status === MOVE_STATUS.done ? now : null],
   );
   const view = await viewOf(deps.q, saved ?? row);
-  if (result.failed.length > 0) await deps.audit({ action: "storage.move.failed", actor: SYSTEM, targetId: row.id, detail: { count: result.failed.length, reasons: [...new Set(result.failed.map((f) => f.reason))] } });
-  if (status === MOVE_STATUS.done) await deps.audit({ action: "storage.move.completed", actor: SYSTEM, targetId: row.id, detail: { moved: view.moved, from: row.from_id, to: row.to_id } });
+  if (result.failed.length > 0)
+    await deps.audit({
+      action: "storage.move.failed",
+      actor: SYSTEM,
+      targetId: row.id,
+      detail: { count: result.failed.length, reasons: [...new Set(result.failed.map((f) => f.reason))] },
+    });
+  if (status === MOVE_STATUS.done)
+    await deps.audit({
+      action: "storage.move.completed",
+      actor: SYSTEM,
+      targetId: row.id,
+      detail: { moved: view.moved, from: row.from_id, to: row.to_id },
+    });
   return view;
 }

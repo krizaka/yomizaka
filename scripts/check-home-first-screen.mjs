@@ -10,7 +10,6 @@ import { chromium } from "playwright-core";
 
 import { auditPage, auditContext, loadSettled } from "@krizaka/page-audit";
 
-
 // @fixed: the gap between the bar and the page (`--kz-hero-top` = the bar's bottom + this), the family's « One frame for every page »
 export const GAP_PX = 24;
 export const TOLERANCE_PX = 6;
@@ -40,10 +39,16 @@ export function problemsOf(m) {
   // The bar clears the top chrome (the notice of a non-production deployment): it stands below it, so the 24 px are counted from the
   // bar's bottom, never loosened — and an overlap of the two is its own problem below (yomizaka#449).
   const gap = m.contentTop - m.barBottom;
-  if (Math.abs(gap - GAP_PX) > TOLERANCE_PX) out.push(`${where}: the page starts ${Math.round(gap)} px under the bar, not ${GAP_PX}`);
-  if (m.width < 600 && (m.showcaseTop === null || m.showcaseTop >= m.height)) out.push(`${where}: the product's visual is not on the first screen (top ${m.showcaseTop === null ? "none" : Math.round(m.showcaseTop)} of ${m.height})`);
-  if ((m.chromeOverlaps ?? []).length) out.push(`${where}: the top chrome chromeOverlaps (${m.chromeOverlaps.slice(0, 2).join(", ")})`);
-  if (m.visualClipped) out.push(`${where}: the product's visual clips its text (the finding and its article must stay readable)`);
+  if (Math.abs(gap - GAP_PX) > TOLERANCE_PX)
+    out.push(`${where}: the page starts ${Math.round(gap)} px under the bar, not ${GAP_PX}`);
+  if (m.width < 600 && (m.showcaseTop === null || m.showcaseTop >= m.height))
+    out.push(
+      `${where}: the product's visual is not on the first screen (top ${m.showcaseTop === null ? "none" : Math.round(m.showcaseTop)} of ${m.height})`,
+    );
+  if ((m.chromeOverlaps ?? []).length)
+    out.push(`${where}: the top chrome chromeOverlaps (${m.chromeOverlaps.slice(0, 2).join(", ")})`);
+  if (m.visualClipped)
+    out.push(`${where}: the product's visual clips its text (the finding and its article must stay readable)`);
   return out;
 }
 
@@ -83,5 +88,7 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split("/").pop()
   const problems = await check({ base });
   for (const p of problems) console.error(`check-home-first-screen: ${p}`);
   if (problems.length) process.exit(1);
-  console.log(`home first screen: the page 24 px under the bar, the product on a phone's first screen — ${PAGES.length} pages x ${VIEWPORTS.length} viewports x ${THEMES.length} themes`);
+  console.log(
+    `home first screen: the page 24 px under the bar, the product on a phone's first screen — ${PAGES.length} pages x ${VIEWPORTS.length} viewports x ${THEMES.length} themes`,
+  );
 }

@@ -1,4 +1,10 @@
-import { appEnvironmentFrom, createApiClient, createAppDiscovery, createSessionStore, secureStorage } from "@krizaka/app-client";
+import {
+  appEnvironmentFrom,
+  createApiClient,
+  createAppDiscovery,
+  createSessionStore,
+  secureStorage,
+} from "@krizaka/app-client";
 import { createQueries, createYomizakaApi } from "@yomizaka/client";
 import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store";

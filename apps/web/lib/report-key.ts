@@ -19,7 +19,11 @@ const PKCS8_ED25519_PREFIX = Buffer.from("302e020100300506032b657004220420", "he
 export const DEVELOPMENT_KEY_BASE64 = Buffer.concat([PKCS8_ED25519_PREFIX, DEV_SEED]).toString("base64");
 
 export const keyIdOf = (publicKey: crypto.KeyObject, development = false) =>
-  `${development ? "dev" : "ed25519"}:${crypto.createHash("sha256").update(publicKey.export({ type: "spki", format: "der" })).digest("hex").slice(0, 16)}`;
+  `${development ? "dev" : "ed25519"}:${crypto
+    .createHash("sha256")
+    .update(publicKey.export({ type: "spki", format: "der" }))
+    .digest("hex")
+    .slice(0, 16)}`;
 
 /** A key from the base64 PKCS#8 DER the secret holds. Throws (without the value) when it is not an Ed25519 private key. */
 export function parseSigningKey(base64: string, development = false): SigningKey {
@@ -40,4 +44,5 @@ export function generateSigningKeyBase64(): string {
 }
 
 /** The public key as the verify page shows it: base64 of the SPKI DER. */
-export const publicKeyBase64 = (key: SigningKey) => key.publicKey.export({ type: "spki", format: "der" }).toString("base64");
+export const publicKeyBase64 = (key: SigningKey) =>
+  key.publicKey.export({ type: "spki", format: "der" }).toString("base64");

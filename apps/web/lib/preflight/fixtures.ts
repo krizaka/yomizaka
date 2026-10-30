@@ -25,7 +25,12 @@ export async function javascriptPdf(): Promise<Uint8Array> {
 export async function launchPdf(): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
   const page = doc.addPage();
-  const annot = doc.context.obj({ Type: "Annot", Subtype: "Link", Rect: [0, 0, 10, 10], A: { S: "Launch", F: PDFString.of("calc.exe") } });
+  const annot = doc.context.obj({
+    Type: "Annot",
+    Subtype: "Link",
+    Rect: [0, 0, 10, 10],
+    A: { S: "Launch", F: PDFString.of("calc.exe") },
+  });
   page.node.set(PDFName.of("Annots"), doc.context.obj([doc.context.register(annot)]));
   return doc.save({ useObjectStreams: false });
 }
@@ -33,7 +38,10 @@ export async function launchPdf(): Promise<Uint8Array> {
 /** A PDF whose trailer declares encryption (the object tree is not read: the file is refused first). */
 export async function encryptedPdf(): Promise<Uint8Array> {
   const clean = Buffer.from(await cleanPdf()).toString("latin1");
-  return Buffer.from(clean.replace(/trailer\s*<<?/, (m) => `${m} /Encrypt << /Filter /Standard /V 1 /R 2 >> `), "latin1");
+  return Buffer.from(
+    clean.replace(/trailer\s*<<?/, (m) => `${m} /Encrypt << /Filter /Standard /V 1 /R 2 >> `),
+    "latin1",
+  );
 }
 
 export async function truncatedPdf(): Promise<Uint8Array> {
@@ -54,7 +62,8 @@ export async function incrementallySavedPdf(): Promise<Uint8Array> {
   return Buffer.concat([clean, Buffer.from("\n%appended revision\nstartxref\n0\n%%EOF\n", "latin1")]);
 }
 
-export const windowsExecutable = (): Uint8Array => Buffer.concat([Buffer.from("MZ", "latin1"), Buffer.alloc(200, 0x90)]);
+export const windowsExecutable = (): Uint8Array =>
+  Buffer.concat([Buffer.from("MZ", "latin1"), Buffer.alloc(200, 0x90)]);
 import sharp from "sharp";
 
 /** A real, tiny PNG or JPEG (white page): the cleaner decodes these. */
@@ -64,17 +73,24 @@ export async function imageOf(kind: "png" | "jpeg"): Promise<Uint8Array> {
 }
 
 /** The signature of an HEIC file (an ISO base media « ftyp » box, brand heic): enough for the pre-flight, which never decodes. */
-export const heicBytes = (): Uint8Array => Buffer.concat([Buffer.from([0, 0, 0, 24]), Buffer.from("ftypheic"), Buffer.alloc(80)]);
+export const heicBytes = (): Uint8Array =>
+  Buffer.concat([Buffer.from([0, 0, 0, 24]), Buffer.from("ftypheic"), Buffer.alloc(80)]);
 
 /** A PNG header that claims these dimensions (IHDR only): the pixel guard reads the header, it never decodes. */
 export function pngWithSize(width: number, height: number): Uint8Array {
   const ihdr = Buffer.alloc(13);
   ihdr.writeUInt32BE(width, 0);
   ihdr.writeUInt32BE(height, 4);
-  return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13]), Buffer.from("IHDR"), ihdr, Buffer.alloc(8)]);
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13]),
+    Buffer.from("IHDR"),
+    ihdr,
+    Buffer.alloc(8),
+  ]);
 }
 
-export const pngBytes = (): Uint8Array => Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(64)]);
+export const pngBytes = (): Uint8Array =>
+  Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(64)]);
 
 /** A minimal zip (stored directory entries of deflated content) — enough for the directory-only reads. */
 export function zipOf(entries: { name: string; data: Buffer; stored?: boolean }[]): Uint8Array {
@@ -114,6 +130,15 @@ export function zipOf(entries: { name: string; data: Buffer; stored?: boolean }[
   return Buffer.concat([...parts, dirBytes, end]);
 }
 
-export const docx = (extra: { name: string; data: Buffer }[] = []) => zipOf([{ name: "[Content_Types].xml", data: Buffer.from("<Types/>") }, { name: "word/document.xml", data: Buffer.from("<w:document/>") }, ...extra]);
+export const docx = (extra: { name: string; data: Buffer }[] = []) =>
+  zipOf([
+    { name: "[Content_Types].xml", data: Buffer.from("<Types/>") },
+    { name: "word/document.xml", data: Buffer.from("<w:document/>") },
+    ...extra,
+  ]);
 /** A zip bomb: 60 MB of zeros that deflate to ~60 KB. */
-export const zipBomb = () => zipOf([{ name: "[Content_Types].xml", data: Buffer.from("<Types/>") }, { name: "word/document.xml", data: Buffer.alloc(60 * 1024 * 1024) }]);
+export const zipBomb = () =>
+  zipOf([
+    { name: "[Content_Types].xml", data: Buffer.from("<Types/>") },
+    { name: "word/document.xml", data: Buffer.alloc(60 * 1024 * 1024) },
+  ]);

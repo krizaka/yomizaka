@@ -33,7 +33,10 @@ describe("redactSecrets", () => {
 describe("describeError", () => {
   it("never prints the properties of an error, nor a URL in its message or its cause", () => {
     const cause = new Error(`getaddrinfo failed for ${BAD_URL}`);
-    const error = Object.assign(new Error(`Invalid URL ${BAD_URL}`, { cause }), { code: "ERR_INVALID_URL", input: BAD_URL });
+    const error = Object.assign(new Error(`Invalid URL ${BAD_URL}`, { cause }), {
+      code: "ERR_INVALID_URL",
+      input: BAD_URL,
+    });
     const line = describeError(error);
     expect(line).toContain("ERR_INVALID_URL");
     expect(line).not.toContain(PASSWORD);
@@ -68,7 +71,9 @@ describe("a failing database connection logs no password (yomizaka#386)", () => 
   });
 
   it("start-up logs a redacted line and throws a clean error, whatever the database layer throws", async () => {
-    const spies = [vi.spyOn(console, "error"), vi.spyOn(console, "warn"), vi.spyOn(console, "log")].map((s) => s.mockImplementation(() => undefined));
+    const spies = [vi.spyOn(console, "error"), vi.spyOn(console, "warn"), vi.spyOn(console, "log")].map((s) =>
+      s.mockImplementation(() => undefined),
+    );
     vi.stubEnv("NEXT_RUNTIME", "nodejs");
     vi.doMock("./env", () => ({
       assertProductionEnv: () => undefined,
@@ -86,7 +91,10 @@ describe("a failing database connection logs no password (yomizaka#386)", () => 
     );
     expect(failure).toBeInstanceOf(Error);
     expect(failure?.message).not.toContain(PASSWORD);
-    const printed = spies.flatMap((s) => s.mock.calls.flat()).map(String).join("\n");
+    const printed = spies
+      .flatMap((s) => s.mock.calls.flat())
+      .map(String)
+      .join("\n");
     expect(printed).toContain("start-up failed");
     expect(printed).not.toContain(PASSWORD);
     expect(printed).not.toContain("yomizaka_db:");

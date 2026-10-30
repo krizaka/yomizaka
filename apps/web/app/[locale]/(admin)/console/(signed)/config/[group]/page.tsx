@@ -17,7 +17,13 @@ export const dynamic = "force-dynamic";
 const SCOPES = Object.values(SCOPE) as string[];
 
 /** One page of the app configuration, one route: /config/general | features | limits | plans | prices | coupons | packs | orazaka, at a scope given in the URL. */
-export default async function ConfigPage({ params, searchParams }: Readonly<{ params: Promise<{ locale: string; group: string }>; searchParams: Promise<{ scope?: string; id?: string }> }>) {
+export default async function ConfigPage({
+  params,
+  searchParams,
+}: Readonly<{
+  params: Promise<{ locale: string; group: string }>;
+  searchParams: Promise<{ scope?: string; id?: string }>;
+}>) {
   const { locale: raw, group } = await params;
   if (!isConfigPage(group)) notFound();
   const locale = asLocale(raw);
@@ -37,7 +43,9 @@ export default async function ConfigPage({ params, searchParams }: Readonly<{ pa
           {isSettingsGroup(group) ? <ConfigView group={group} scope={scope} /> : null}
           {group === CONFIG_PAGE.prices ? <PriceCatalogueView /> : null}
           {group === CONFIG_PAGE.coupons ? <CouponsView /> : null}
-          {group === CONFIG_PAGE.packs ? <PacksPanel flows={await listAdminFlows()} environment={appEnvironment()} /> : null}
+          {group === CONFIG_PAGE.packs ? (
+            <PacksPanel flows={await listAdminFlows()} environment={appEnvironment()} />
+          ) : null}
           {group === CONFIG_PAGE.organisation ? <OrganisationPanel /> : null}
           {group === CONFIG_PAGE.orazaka ? <OrazakaPanel /> : null}
         </div>

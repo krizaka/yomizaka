@@ -7,7 +7,11 @@ import { describe, expect, it } from "vitest";
  * Plain typography in the app (design § 3.4, P5, yomizaka#322): the sans for everything, a mono only for code and identifiers
  * inside « Détails techniques » — and a run id cut to one line in a table (`RunId`, yomizaka#457). A `font-mono` class is allowed only in the components that draw those details.
  */
-const TECHNICAL_DETAILS: Record<string, readonly string[]> = { "ReportFace.tsx": ["TechnicalDetails"], "DocumentFileTab.tsx": ["FileTechnicalDetails"], "RunId.tsx": ["RunId"] };
+const TECHNICAL_DETAILS: Record<string, readonly string[]> = {
+  "ReportFace.tsx": ["TechnicalDetails"],
+  "DocumentFileTab.tsx": ["FileTechnicalDetails"],
+  "RunId.tsx": ["RunId"],
+};
 const DIRS = [join(__dirname), join(__dirname, "../../../desktop/src/components")];
 
 /** Each `font-mono` of a source file, with the function it sits in (the nearest declaration above it). */
@@ -22,7 +26,11 @@ function monoSites(source: string): string[] {
 }
 
 describe("plain typography in the app (P5)", () => {
-  const files = DIRS.flatMap((dir) => readdirSync(dir).filter((f) => f.endsWith(".tsx") && !f.includes(".test.")).map((f) => ({ name: f, source: readFileSync(join(dir, f), "utf8") })));
+  const files = DIRS.flatMap((dir) =>
+    readdirSync(dir)
+      .filter((f) => f.endsWith(".tsx") && !f.includes(".test."))
+      .map((f) => ({ name: f, source: readFileSync(join(dir, f), "utf8") })),
+  );
 
   it("reads the console's components and the Mac app's", () => {
     expect(files.some((f) => f.name === "ReportFace.tsx")).toBe(true);
@@ -30,7 +38,11 @@ describe("plain typography in the app (P5)", () => {
   });
 
   it("uses a mono only under « Détails techniques »", () => {
-    const outside = files.flatMap((f) => monoSites(f.source).filter((fn) => !(TECHNICAL_DETAILS[f.name] ?? []).includes(fn)).map((fn) => `${f.name} › ${fn}`));
+    const outside = files.flatMap((f) =>
+      monoSites(f.source)
+        .filter((fn) => !(TECHNICAL_DETAILS[f.name] ?? []).includes(fn))
+        .map((fn) => `${f.name} › ${fn}`),
+    );
     expect(outside).toEqual([]);
   });
 

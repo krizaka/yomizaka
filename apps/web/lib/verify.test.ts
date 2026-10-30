@@ -16,7 +16,13 @@ const analysis = {
   runId: "run-123",
   blueprintVersion: "1.0.0",
   inputs: {},
-  report: { rulesetId: "qc", rulesetVersion: "1", jurisdiction: "QC", asOf: "2026-10-14", findings: [{ ruleId: "r1", severity: "BLOCKING", verdict: "FAIL", explanation: "x", evidenceSpan: { quote: "q" } }] },
+  report: {
+    rulesetId: "qc",
+    rulesetVersion: "1",
+    jurisdiction: "QC",
+    asOf: "2026-10-14",
+    findings: [{ ruleId: "r1", severity: "BLOCKING", verdict: "FAIL", explanation: "x", evidenceSpan: { quote: "q" } }],
+  },
   error: null,
   createdAt: "2026-10-14T10:00:00.000Z",
   finishedAt: "2026-10-14T10:00:05.000Z",
@@ -29,7 +35,11 @@ describe("readVerifyForm (the request behind the members-only page)", () => {
     form.set("report", new File([issued.html], "report.html", { type: "text/html" }));
     form.set("document", new File(["lease bytes"], "bail.pdf"));
     const { text, document } = await readVerifyForm(form);
-    expect(verifyReport(text, signingKey(), document)).toMatchObject({ ok: true, documentMatch: true, fileSha256: issued.fileSha256 });
+    expect(verifyReport(text, signingKey(), document)).toMatchObject({
+      ok: true,
+      documentMatch: true,
+      fileSha256: issued.fileSha256,
+    });
   });
 
   it("reads pasted text", async () => {
@@ -61,7 +71,10 @@ describe("readVerifyForm (the request behind the members-only page)", () => {
 
   it("reads an uploaded .pdf report as bytes (the PDF carries its own attestation)", async () => {
     const form = new FormData();
-    form.set("report", new File([new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d])], "report.pdf", { type: "application/pdf" }));
+    form.set(
+      "report",
+      new File([new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d])], "report.pdf", { type: "application/pdf" }),
+    );
     const read = await readVerifyForm(form);
     expect(read.text).toBe("");
     expect(read.pdf).toHaveLength(5);

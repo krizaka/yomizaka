@@ -3,9 +3,11 @@
 Status: accepted (2026-10-22). Issue: krizaka/yomizaka#141.
 
 ## Context
+
 Every check is an engine run (Orazaka) with a cost. A corrupted, encrypted, active or duplicate file must never reach it.
 
 ## Decision
+
 - **`lib/preflight/` is its own module, generic, with no import from the app** (Akinaza can lift it as a package). Its port
   `DocumentPreflight.inspect(bytes, declared)` returns a typed outcome: `accepted` (kind, SHA-256, pages, cheap PDF facts:
   producer, creator, dates, incremental saves) or `rejected(reason)`; the application adds `reused(runId)`.
@@ -23,5 +25,6 @@ Every check is an engine run (Orazaka) with a cost. A corrupted, encrypted, acti
   avoided and an estimated saving from `APP_ESTIMATED_RUN_COST_CENTS` — labelled as an estimate.
 
 ## Consequences
+
 A refusal costs nothing and says why, in French and English. Images and Word files are recognised but not accepted yet (a rules
 change, then an engine capability).

@@ -47,13 +47,21 @@ export interface TenantWords {
  * The applicant's page, reached by the link: who asks, what is checked, why, who sees the result, for how long. They consent
  * or decline; they see the result first; they pass it on or contest it. No account, nothing hidden.
  */
-export function TenantScreening({ token, initial, words, locale }: Readonly<{ token: string; initial: TenantView; words: TenantWords; locale: keyof typeof INTL }>) {
+export function TenantScreening({
+  token,
+  initial,
+  words,
+  locale,
+}: Readonly<{ token: string; initial: TenantView; words: TenantWords; locale: keyof typeof INTL }>) {
   const [view, setView] = useState(initial);
   const [problem, setProblem] = useState<string | null>(null);
   const [contesting, setContesting] = useState(false);
   const [comment, setComment] = useState("");
   const act = useMutation({
-    mutationFn: (body: { action: "consent" | "decline" | "share" | "contest"; comment?: string }) => krizakaFetch("/api/screenings/respond", { method: "POST", json: { token, ...body } }) as Promise<{ screening: TenantView }>,
+    mutationFn: (body: { action: "consent" | "decline" | "share" | "contest"; comment?: string }) =>
+      krizakaFetch("/api/screenings/respond", { method: "POST", json: { token, ...body } }) as Promise<{
+        screening: TenantView;
+      }>,
     onSuccess: (r) => {
       setView(r.screening);
       setContesting(false);
@@ -70,7 +78,10 @@ export function TenantScreening({ token, initial, words, locale }: Readonly<{ to
   const takeCopy = async () => {
     setProblem(null);
     try {
-      const r = (await krizakaFetch("/api/screenings/respond", { method: "POST", json: { token, action: "copy", locale } })) as { copy: { fileName: string; text: string } };
+      const r = (await krizakaFetch("/api/screenings/respond", {
+        method: "POST",
+        json: { token, action: "copy", locale },
+      })) as { copy: { fileName: string; text: string } };
       const url = URL.createObjectURL(new Blob([r.copy.text], { type: "text/plain;charset=utf-8" }));
       const a = document.createElement("a");
       a.href = url;
@@ -100,7 +111,16 @@ export function TenantScreening({ token, initial, words, locale }: Readonly<{ to
             <h3 className="m-0 text-sm font-semibold text-fg">{words.quoteTitle}</h3>
             {view.quote.lines.map((l) => (
               <p key={l.key} className="m-0 text-sm text-fg-secondary">
-                {words.quoteLine.replace("{check}", words.scope[l.key] ?? l.key).replace("{price}", l.cents > 0 ? new Intl.NumberFormat(INTL[locale], { style: "currency", currency: l.currency }).format(l.cents / 100) : words.quoteFree)}
+                {words.quoteLine
+                  .replace("{check}", words.scope[l.key] ?? l.key)
+                  .replace(
+                    "{price}",
+                    l.cents > 0
+                      ? new Intl.NumberFormat(INTL[locale], { style: "currency", currency: l.currency }).format(
+                          l.cents / 100,
+                        )
+                      : words.quoteFree,
+                  )}
               </p>
             ))}
             <p className="m-0 text-sm font-semibold text-fg">{words.quotePayer[view.quote.payer]}</p>
@@ -118,7 +138,9 @@ export function TenantScreening({ token, initial, words, locale }: Readonly<{ to
       <output className="m-0 block text-sm font-semibold text-fg" data-testid="screening-state">
         {words.state[view.status]}
       </output>
-      {view.result ? <ScreeningResultCard result={view.result} words={words.result} demo={view.demo ? words.demo : null} /> : null}
+      {view.result ? (
+        <ScreeningResultCard result={view.result} words={words.result} demo={view.demo ? words.demo : null} />
+      ) : null}
       {view.result ? (
         <div>
           <Button size="md" variant="ghost" onClick={() => void takeCopy()} data-testid="copy-result">
@@ -126,8 +148,17 @@ export function TenantScreening({ token, initial, words, locale }: Readonly<{ to
           </Button>
         </div>
       ) : null}
-      {view.resultExpiresAt && view.result ? <p className="m-0 text-xs text-fg-muted">{words.deleteOn.replace("{date}", new Date(view.resultExpiresAt).toLocaleDateString(INTL[locale], { dateStyle: "long" }))}</p> : null}
-      {view.contestComment ? <p className="m-0 text-sm text-fg-secondary">{words.contested.replace("{comment}", view.contestComment)}</p> : null}
+      {view.resultExpiresAt && view.result ? (
+        <p className="m-0 text-xs text-fg-muted">
+          {words.deleteOn.replace(
+            "{date}",
+            new Date(view.resultExpiresAt).toLocaleDateString(INTL[locale], { dateStyle: "long" }),
+          )}
+        </p>
+      ) : null}
+      {view.contestComment ? (
+        <p className="m-0 text-sm text-fg-secondary">{words.contested.replace("{comment}", view.contestComment)}</p>
+      ) : null}
       {problem ? <Alert tone="danger">{problem}</Alert> : null}
       {pending ? (
         <div className="flex flex-wrap gap-3">
@@ -154,7 +185,13 @@ export function TenantScreening({ token, initial, words, locale }: Readonly<{ to
               <label className="text-sm font-semibold text-fg" htmlFor="contest-comment">
                 {words.comment}
               </label>
-              <textarea id="contest-comment" className="min-h-24 rounded-lg border border-border-default bg-surface-1 p-3 text-sm text-fg" maxLength={500} value={comment} onChange={(e) => setComment(e.target.value)} />
+              <textarea
+                id="contest-comment"
+                className="min-h-24 rounded-lg border border-border-default bg-surface-1 p-3 text-sm text-fg"
+                maxLength={500}
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+              />
               <Button size="md" onClick={() => run({ action: "contest", comment })}>
                 {words.send}
               </Button>

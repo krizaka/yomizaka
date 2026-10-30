@@ -16,13 +16,13 @@ first ticket for a pilot.
 
 What a landlord or a manager pays today in Québec and Canada to screen one applicant (public prices, read 2026-10-29):
 
-| Offer | Price (CAD, plus taxes) | Source |
-|---|---|---|
-| SingleKey tenant report, one credit bureau | 29,99 $ a report, no subscription | [singlekey.com](https://www.singlekey.com/en/knowledge-base/tenant-report-faqs/what-is-the-cost-of-the-tenant-report) |
-| SingleKey, both bureaus | 44,99 $ a report | [singlekey.com](https://www.singlekey.com/en/knowledge-base/%25f0%259f%2592%25bc-singlekey-pricing-breakdown-know-what-youre-paying-for) |
-| FrontLobby credit report | 10,99 $ (Premium member) to 18,99 $ (Basic) | [help.frontlobby.com](https://help.frontlobby.com/what-do-frontlobby-credit-reports-cost-in-canada) |
-| CORPIQ ProprioEnquête | members only, prices not published | [corpiq.com](https://www.corpiq.com/en/services/62-pre-rental-screenings.html) |
-| Document-fraud tools for property managers (pay stubs, bank statements) | per applicant or per document, on quote only | e.g. Snappt, Ocrolus Detect ([docs.ocrolus.com](https://docs.ocrolus.com/docs/product-sku-core)) |
+| Offer                                                                   | Price (CAD, plus taxes)                      | Source                                                                                                                                   |
+| ----------------------------------------------------------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| SingleKey tenant report, one credit bureau                              | 29,99 $ a report, no subscription            | [singlekey.com](https://www.singlekey.com/en/knowledge-base/tenant-report-faqs/what-is-the-cost-of-the-tenant-report)                    |
+| SingleKey, both bureaus                                                 | 44,99 $ a report                             | [singlekey.com](https://www.singlekey.com/en/knowledge-base/%25f0%259f%2592%25bc-singlekey-pricing-breakdown-know-what-youre-paying-for) |
+| FrontLobby credit report                                                | 10,99 $ (Premium member) to 18,99 $ (Basic)  | [help.frontlobby.com](https://help.frontlobby.com/what-do-frontlobby-credit-reports-cost-in-canada)                                      |
+| CORPIQ ProprioEnquête                                                   | members only, prices not published           | [corpiq.com](https://www.corpiq.com/en/services/62-pre-rental-screenings.html)                                                           |
+| Document-fraud tools for property managers (pay stubs, bank statements) | per applicant or per document, on quote only | e.g. Snappt, Ocrolus Detect ([docs.ocrolus.com](https://docs.ocrolus.com/docs/product-sku-core))                                         |
 
 None of the public offers examines the documents themselves (a pay stub as a file, a lease against the Civil Code); the ones
 that do sell to managers on quote. A Yomizaka check is an add-on to a credit report, not a replacement: an applicant's file is
@@ -33,12 +33,12 @@ about three documents (a lease or offer, two pay stubs).
 Prices in CAD, **before taxes**: GST 5 % and QST 9,975 % are added on the invoice by the processor (Stripe Tax, ADR-0004), as
 the page already says. Monthly only, cancel any time, no annual commitment, no setup fee.
 
-| Plan (catalogue key) | Price | Includes |
-|---|---|---|
-| One document (`yomizaka.document`) | **4,99 $** per document | one verification, no subscription |
-| Agency (`yomizaka.agency`) | **49 $** a month | 100 verifications a month |
-| Building manager (`yomizaka.firm`) | **149 $** a month | 500 verifications a month |
-| More than 500 a month | on quote | a line to the contact form, no figure |
+| Plan (catalogue key)               | Price                   | Includes                              |
+| ---------------------------------- | ----------------------- | ------------------------------------- |
+| One document (`yomizaka.document`) | **4,99 $** per document | one verification, no subscription     |
+| Agency (`yomizaka.agency`)         | **49 $** a month        | 100 verifications a month             |
+| Building manager (`yomizaka.firm`) | **149 $** a month       | 500 verifications a month             |
+| More than 500 a month              | on quote                | a line to the contact form, no figure |
 
 - **The free trial is the first verification, once per account** (the `audit.freeFirst` setting, already enforced). No timed
   trial: the code has none, and a pilot account gets the same rule. A pilot price, if one is ever needed, is a catalogue entry

@@ -11,13 +11,13 @@ A **flow** is data: the platform administrator (admin.yomizaka.com) defines and 
 
 **Schema** (migration `0006_flows`):
 
-| table | holds |
-|:---|:---|
-| `flows` | `id`, `key` (`lease-check-tenant`), `current_version_id`, `created_at` |
-| `flow_versions` | `id`, `flow_id`, `version` (1, 2, …), `status` (`draft` · `published` · `retired`), `definition` (jsonb), `created_by`, `published_at` — a published version is **immutable** |
-| `flow_environments` | `flow_id`, `environment` (`dev`, `prod`), `enabled` — a flow is enabled per environment |
-| `consents` | `account_id`, `key`, `granted_at`, `revoked_at` — what the person agreed to |
-| `analyses.flow_version_id` | the exact version that produced a check |
+| table                      | holds                                                                                                                                                                         |
+| :------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `flows`                    | `id`, `key` (`lease-check-tenant`), `current_version_id`, `created_at`                                                                                                        |
+| `flow_versions`            | `id`, `flow_id`, `version` (1, 2, …), `status` (`draft` · `published` · `retired`), `definition` (jsonb), `created_by`, `published_at` — a published version is **immutable** |
+| `flow_environments`        | `flow_id`, `environment` (`dev`, `prod`), `enabled` — a flow is enabled per environment                                                                                       |
+| `consents`                 | `account_id`, `key`, `granted_at`, `revoked_at` — what the person agreed to                                                                                                   |
+| `analyses.flow_version_id` | the exact version that produced a check                                                                                                                                       |
 
 **The definition** (`flowDefinition` in `@yomizaka/core`, validated by zod on both sides): `title` and `lead` in `en`/`fr`;
 `status` (`available` · `soon`); `audiences` (who it is offered to); `steps` — each step names the **Orazaka Studio**, its
@@ -25,7 +25,7 @@ A **flow** is data: the platform administrator (admin.yomizaka.com) defines and 
 must have granted before the flow runs); `providers` (external providers a step uses, e.g. a credit bureau); `pricing`
 (`free` · `per-run` · `subscription`, amount in cents CAD).
 
-**Reading** (`lib/flows.ts`): the app asks for *the flows available to this user in this environment* — published current
+**Reading** (`lib/flows.ts`): the app asks for _the flows available to this user in this environment_ — published current
 version, enabled for `APP_ENVIRONMENT`, offered to the person's audience. Everything that was a constant is derived from it:
 the « Pour qui ? » picker and the audience pages (an audience with no enabled flow is hidden — and its page is a 404), the
 onboarding choices, and the Studio offer on a document (which checks, which jurisdictions). The public pages fall back to the
@@ -42,7 +42,7 @@ seeded definitions only when the database cannot be reached, so a build or an ou
 4. **Every administration action is audit-logged** (`flow.created`, `flow.draft_saved`, `flow.published`,
    `flow.environment_set`) with the actor and the version.
 5. **Nothing is hard-coded but the vocabulary**: audiences keep their words in `messages/` (the keys are the vocabulary); which
-   audiences, studios and jurisdictions are *offered* is data. The existing flows are seeded (`SEED_FLOWS`), idempotently, at start.
+   audiences, studios and jurisdictions are _offered_ is data. The existing flows are seeded (`SEED_FLOWS`), idempotently, at start.
 6. The platform admin edits flows on admin.yomizaka.com (people with the ADMIN role from an allowed address, as for every
    administration page): a list (Krizaka UI `DataTable`), a create/edit form, publish and enable-per-environment actions.
 

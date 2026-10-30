@@ -10,8 +10,16 @@ import { ImageError, PHOTO_KIND, type PhotoInput } from "./port";
  */
 export async function squareAvatar(input: PhotoInput, size: number): Promise<Uint8Array> {
   try {
-    const base = input.kind === PHOTO_KIND.heic ? await decodeHeic(input.bytes) : sharp(Buffer.from(input.bytes), { failOn: "error", limitInputPixels: 80_000_000 });
-    const out = await base.rotate().flatten({ background: "#ffffff" }).resize(size, size, { fit: "cover", position: sharp.strategy.attention }).jpeg({ quality: 85 }).toBuffer();
+    const base =
+      input.kind === PHOTO_KIND.heic
+        ? await decodeHeic(input.bytes)
+        : sharp(Buffer.from(input.bytes), { failOn: "error", limitInputPixels: 80_000_000 });
+    const out = await base
+      .rotate()
+      .flatten({ background: "#ffffff" })
+      .resize(size, size, { fit: "cover", position: sharp.strategy.attention })
+      .jpeg({ quality: 85 })
+      .toBuffer();
     return new Uint8Array(out);
   } catch {
     throw new ImageError("UNREADABLE_IMAGE");

@@ -7,6 +7,7 @@
 ## Context
 
 Technologies Krizaka Inc. operates a House of Brands architecture with distinct product missions:
+
 1. **Orasaka (`orazaka-ai-engine`, `orazaka-tools`):** Sovereign enterprise AI platform running locally or on dedicated GPU hardware. `orazaka-tools` acts as an MCP gateway for generic, non-PII agent operations.
 2. **Yomizaka (`krizaka/yomizaka`):** Elevated from an internal document analysis module to Krizaka’s 2nd flagship B2B commercial product. Yomizaka serves the Montreal/Quebec ecosystem (PropTech, FinTech, LegalTech, regulated platforms subject to **Quebec Law 25**) and global markets (PIPEDA, GDPR, CCPA).
 3. **Orochia (`krizaka/orochia`):** High-performance 4K creator platform (ethical 90/10 revenue share) requiring strict 18+ age gating, creator KYC/identity verification (18 U.S.C. § 2257), and partnership contract vaulting.
@@ -23,6 +24,7 @@ Technologies Krizaka Inc. operates a House of Brands architecture with distinct 
 ## Decision
 
 ### 1. Dedicated Trust SPI in Yomizaka (`@yomizaka/providers`)
+
 - **Third-party connectors live exclusively within Yomizaka.** `orasaka-tools` remains strictly reserved for generic, stateless, non-PII agent tooling (e.g., search, arithmetic, format conversions).
 - Yomizaka defines pluggable Service Provider Interfaces:
   - `IdvProvider` (Didit, Persona, Stripe Identity, Trulioo)
@@ -31,12 +33,14 @@ Technologies Krizaka Inc. operates a House of Brands architecture with distinct 
 - **Hard Invariant:** **NO raw PII, national ID images, or biometrics ever enter Orasaka or `orasaka-tools`.**
 
 ### 2. Orochia is "Customer Zero" of Yomizaka
+
 - Orochia talks **only** to Yomizaka’s B2B API (`/api/v1/verifications/age`, `/api/v1/verifications/id`, `/api/v1/contracts`).
 - Orochia stores **zero** identity documents, selfies, or biometric templates in its database.
 - Orochia receives and stores only tamper-proof, Ed25519-signed cryptographic tokens (`VerificationAttestation`).
 - Human escalation for unclear cases is surfaced directly via Orochia's operator console (in `krizaka/orochia`), backed by Yomizaka audit receipts.
 
 ### 3. Multi-Region Data Residency & Quebec Law 25 Sovereignty
+
 - Every request carries the mandatory context header `X-Data-Residency-Zone`:
   - `CA-QC`: Quebec / Canada (Physical residency at OVHcloud Beauharnois BHS or AWS Montreal `ca-central-1`).
   - `EU-CENTRAL`: European Union (Frankfurt / Paris - GDPR).
@@ -46,14 +50,14 @@ Technologies Krizaka Inc. operates a House of Brands architecture with distinct 
 
 ## Provider Matrix & Unit Economics
 
-| Provider | Capability | Unit Cost | Key Strengths & Fit |
-| :--- | :--- | :--- | :--- |
-| **Didit** | Age (18+) & Basic IDV | ~$0.30 / check (500 free/mo) | High speed (<15s), ultra-low unit cost; primary for Orochia 18+ age gating |
-| **Persona** | Full KYC & AML | ~$1.50 - $2.00 / check | Premier Quebec document parsing (RAMQ, SAAQ); primary for high-risk B2B |
-| **Stripe Identity** | Instant KYC | $1.50 / check | Native integration with creator payouts and Stripe Connect |
-| **Flinks** | Open Banking & Solvency | ~$0.50 - $2.00 CAD / connection | Montreal-based open banking; real-time bank cash-flow for PropTech leasing |
-| **CRS Credit API** | Soft Credit Bureau Pulls | ~$1.50 - $4.50 USD / pull | Instant tri-bureau soft pulls with zero score impact |
-| **OVHcloud Beauharnois** | S3 & Dedicated Compute | ~$0.01 / GB / month | 100% physical Quebec jurisdiction without CLOUD Act exposure |
+| Provider                 | Capability               | Unit Cost                       | Key Strengths & Fit                                                        |
+| :----------------------- | :----------------------- | :------------------------------ | :------------------------------------------------------------------------- |
+| **Didit**                | Age (18+) & Basic IDV    | ~$0.30 / check (500 free/mo)    | High speed (<15s), ultra-low unit cost; primary for Orochia 18+ age gating |
+| **Persona**              | Full KYC & AML           | ~$1.50 - $2.00 / check          | Premier Quebec document parsing (RAMQ, SAAQ); primary for high-risk B2B    |
+| **Stripe Identity**      | Instant KYC              | $1.50 / check                   | Native integration with creator payouts and Stripe Connect                 |
+| **Flinks**               | Open Banking & Solvency  | ~$0.50 - $2.00 CAD / connection | Montreal-based open banking; real-time bank cash-flow for PropTech leasing |
+| **CRS Credit API**       | Soft Credit Bureau Pulls | ~$1.50 - $4.50 USD / pull       | Instant tri-bureau soft pulls with zero score impact                       |
+| **OVHcloud Beauharnois** | S3 & Dedicated Compute   | ~$0.01 / GB / month             | 100% physical Quebec jurisdiction without CLOUD Act exposure               |
 
 ## Architecture Flow
 

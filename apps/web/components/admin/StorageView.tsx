@@ -40,23 +40,67 @@ interface Overview {
 const KEY = ["admin-storage"] as const;
 const overview = z.custom<Overview>();
 const DATA_KINDS = ["documents", "avatars"] as const;
-const TONE = { draft: "neutral", verified: "accent", active: "success", retiring: "warning", disabled: "neutral" } as const;
+const TONE = {
+  draft: "neutral",
+  verified: "accent",
+  active: "success",
+  retiring: "warning",
+  disabled: "neutral",
+} as const;
 
 /** Every field a kind can ask for, as the form knows them: the registry says which ones a kind shows (the screen reads it, never lists a kind). */
-type Field = "endpoint" | "region" | "bucket" | "zone" | "pullHostname" | "prefix" | "accessKey" | "tokenKey" | "accessKeyId" | "secretAccessKey";
+type Field =
+  | "endpoint"
+  | "region"
+  | "bucket"
+  | "zone"
+  | "pullHostname"
+  | "prefix"
+  | "accessKey"
+  | "tokenKey"
+  | "accessKeyId"
+  | "secretAccessKey";
 const text = z.string().trim().max(300);
 const addForm = createKrizakaForm({
-  schema: z.object({ label: z.string().trim().min(1).max(80), endpoint: text, region: text, bucket: text, zone: text, pullHostname: text, prefix: text, accessKey: text, tokenKey: text, accessKeyId: text, secretAccessKey: text }),
-  defaultValues: { label: "", endpoint: "", region: "", bucket: "", zone: "", pullHostname: "", prefix: "", accessKey: "", tokenKey: "", accessKeyId: "", secretAccessKey: "" },
+  schema: z.object({
+    label: z.string().trim().min(1).max(80),
+    endpoint: text,
+    region: text,
+    bucket: text,
+    zone: text,
+    pullHostname: text,
+    prefix: text,
+    accessKey: text,
+    tokenKey: text,
+    accessKeyId: text,
+    secretAccessKey: text,
+  }),
+  defaultValues: {
+    label: "",
+    endpoint: "",
+    region: "",
+    bucket: "",
+    zone: "",
+    pullHostname: "",
+    prefix: "",
+    accessKey: "",
+    tokenKey: "",
+    accessKeyId: "",
+    secretAccessKey: "",
+  },
 });
-const keyForm = createKrizakaForm({ schema: z.object({ value: z.string().min(1).max(500) }), defaultValues: { value: "" } });
+const keyForm = createKrizakaForm({
+  schema: z.object({ value: z.string().min(1).max(500) }),
+  defaultValues: { value: "" },
+});
 
 /** Runs one call of the storage API and refreshes the list; the refusal's stable code becomes a translated sentence. */
 function useStep(onProblem: (message: string | null) => void) {
   const { say } = useSay();
   const client = useQueryClient();
   return useMutation({
-    mutationFn: ({ path, method, json }: { path: string; method: "POST" | "PUT" | "DELETE"; json?: unknown }) => krizakaFetch(path, { method, ...(json === undefined ? {} : { json }) }),
+    mutationFn: ({ path, method, json }: { path: string; method: "POST" | "PUT" | "DELETE"; json?: unknown }) =>
+      krizakaFetch(path, { method, ...(json === undefined ? {} : { json }) }),
     onSuccess: () => client.invalidateQueries({ queryKey: KEY }),
     onError: (error) => onProblem(say(`errors.${errorKey(error)}`)),
   });
@@ -71,7 +115,12 @@ export function StorageView() {
   const { say } = useSay();
   const [problem, setProblem] = useState<string | null>(null);
   const step = useStep(setProblem);
-  const data = useQuery({ queryKey: KEY, queryFn: () => krizakaFetch("/api/admin/storage", { schema: overview }), retry: false, refetchInterval: (query) => (query.state.data?.move?.status === "running" ? 3000 : false) });
+  const data = useQuery({
+    queryKey: KEY,
+    queryFn: () => krizakaFetch("/api/admin/storage", { schema: overview }),
+    retry: false,
+    refetchInterval: (query) => (query.state.data?.move?.status === "running" ? 3000 : false),
+  });
   if (data.error) return <Alert tone="danger">{say(`errors.${errorKey(data.error)}`)}</Alert>;
   if (!data.data) return null;
   const { providers, defaults, kinds, move } = data.data;
@@ -83,7 +132,16 @@ export function StorageView() {
       </div>
       {problem ? <Alert tone="danger">{problem}</Alert> : null}
       {providers.length === 0 ? <Alert tone="warning">{say("adminConsole.storage.none")}</Alert> : null}
-      <StorageMove providers={providers} defaultId={defaults.documents} move={move} busy={step.isPending} onCall={(path, json) => { setProblem(null); step.mutate({ path, method: "POST", ...(json === undefined ? {} : { json }) }); }} />
+      <StorageMove
+        providers={providers}
+        defaultId={defaults.documents}
+        move={move}
+        busy={step.isPending}
+        onCall={(path, json) => {
+          setProblem(null);
+          step.mutate({ path, method: "POST", ...(json === undefined ? {} : { json }) });
+        }}
+      />
       <section aria-label={say("adminConsole.storage.providers")} className="flex flex-col gap-4">
         <h2 className="m-0 font-display text-lg font-bold text-fg">{say("adminConsole.storage.providers")}</h2>
         <ul className="m-0 flex list-none flex-col gap-4 p-0">
@@ -101,7 +159,11 @@ export function StorageView() {
 
 const defaultKinds = (id: string, defaults: Record<string, string>) => DATA_KINDS.filter((k) => defaults[k] === id);
 
-function ProviderCard({ provider, defaults, onProblem }: Readonly<{ provider: ProviderView; defaults: Record<string, string>; onProblem: (m: string | null) => void }>) {
+function ProviderCard({
+  provider,
+  defaults,
+  onProblem,
+}: Readonly<{ provider: ProviderView; defaults: Record<string, string>; onProblem: (m: string | null) => void }>) {
   const { say, locale } = useSay();
   const step = useStep(onProblem);
   const [changing, setChanging] = useState(false);
@@ -113,7 +175,11 @@ function ProviderCard({ provider, defaults, onProblem }: Readonly<{ provider: Pr
   const secrets = Object.entries(provider.credentials);
   const usable = provider.status === "verified" || provider.status === "active";
   return (
-    <article aria-label={provider.label} className="flex flex-col gap-3 rounded-lg border border-border p-4" data-testid="storage-provider">
+    <article
+      aria-label={provider.label}
+      className="flex flex-col gap-3 rounded-lg border border-border p-4"
+      data-testid="storage-provider"
+    >
       <header className="flex flex-wrap items-center gap-2">
         <h3 className="m-0 font-display text-base font-bold text-fg">{provider.label}</h3>
         <Badge tone={TONE[provider.status]}>{say(`adminConsole.storage.statuses.${provider.status}`)}</Badge>
@@ -125,13 +191,23 @@ function ProviderCard({ provider, defaults, onProblem }: Readonly<{ provider: Pr
         ))}
       </header>
       <dl className="m-0 grid grid-cols-1 gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
-        <Row label={say("adminConsole.storage.kind")} value={provider.preset ? `${provider.kind} · ${provider.preset}` : provider.kind} />
-        <Row label={say("adminConsole.storage.residency")} value={provider.lastTest?.residency.text ?? say("adminConsole.storage.untested")} />
+        <Row
+          label={say("adminConsole.storage.kind")}
+          value={provider.preset ? `${provider.kind} · ${provider.preset}` : provider.kind}
+        />
+        <Row
+          label={say("adminConsole.storage.residency")}
+          value={provider.lastTest?.residency.text ?? say("adminConsole.storage.untested")}
+        />
         {Object.entries(provider.coordinates).map(([name, value]) => (
           <Row key={name} label={say(`adminConsole.storage.fields.${name}`)} value={value} />
         ))}
         {secrets.map(([name, state]) => (
-          <Row key={name} label={say(`adminConsole.storage.fields.${name}`)} value={say(state === "set" ? "adminConsole.storage.keySet" : "adminConsole.storage.keyNotSet")} />
+          <Row
+            key={name}
+            label={say(`adminConsole.storage.fields.${name}`)}
+            value={say(state === "set" ? "adminConsole.storage.keySet" : "adminConsole.storage.keyNotSet")}
+          />
         ))}
         <Row label={say("adminConsole.storage.lastTest")} value={lastTestText(provider, say, locale)} />
       </dl>
@@ -140,7 +216,13 @@ function ProviderCard({ provider, defaults, onProblem }: Readonly<{ provider: Pr
           {say("adminConsole.storage.test")}
         </Button>
         {DATA_KINDS.map((k) => (
-          <Button key={k} variant={usable && defaults[k] !== provider.id ? "primary" : "ghost"} size="md" disabled={!usable || defaults[k] === provider.id} onClick={() => act("/default", "POST", { dataKind: k })}>
+          <Button
+            key={k}
+            variant={usable && defaults[k] !== provider.id ? "primary" : "ghost"}
+            size="md"
+            disabled={!usable || defaults[k] === provider.id}
+            onClick={() => act("/default", "POST", { dataKind: k })}
+          >
             {say("adminConsole.storage.makeDefault", { kind: say(`adminConsole.storage.dataKinds.${k}`) })}
           </Button>
         ))}
@@ -156,7 +238,11 @@ function ProviderCard({ provider, defaults, onProblem }: Readonly<{ provider: Pr
   );
 }
 
-const lastTestText = (p: ProviderView, say: ReturnType<typeof useSay>["say"], locale: ReturnType<typeof useSay>["locale"]) => {
+const lastTestText = (
+  p: ProviderView,
+  say: ReturnType<typeof useSay>["say"],
+  locale: ReturnType<typeof useSay>["locale"],
+) => {
   if (!p.lastTest) return say("adminConsole.storage.untested");
   const outcome = say(p.lastTest.ok ? "adminConsole.storage.testOk" : "adminConsole.storage.testFailed");
   return outcome + " · " + formatDate(p.lastTest.at, locale, true);
@@ -172,7 +258,11 @@ function Row({ label, value }: Readonly<{ label: string; value: string }>) {
 }
 
 /** Replaces one credential. The value is typed once, sent once and cleared; the new key is tested before anything is saved. */
-function ChangeKey({ provider, onDone, onProblem }: Readonly<{ provider: ProviderView; onDone: () => void; onProblem: (m: string | null) => void }>) {
+function ChangeKey({
+  provider,
+  onDone,
+  onProblem,
+}: Readonly<{ provider: ProviderView; onDone: () => void; onProblem: (m: string | null) => void }>) {
   const { say, locale } = useSay();
   const step = useStep(onProblem);
   const names = Object.keys(provider.credentials).filter((n) => n !== "encryptionKey");
@@ -181,21 +271,34 @@ function ChangeKey({ provider, onDone, onProblem }: Readonly<{ provider: Provide
     ...formI18n(say, locale),
     onSubmit: async (values) => {
       onProblem(null);
-      await step.mutateAsync({ path: `/api/admin/storage/${provider.id}/key`, method: "PUT", json: { credentials: { [name]: values.value } } });
+      await step.mutateAsync({
+        path: `/api/admin/storage/${provider.id}/key`,
+        method: "PUT",
+        json: { credentials: { [name]: values.value } },
+      });
       form.reset();
       onDone();
     },
   });
   return (
     <form.Form aria-label={say("adminConsole.storage.changeKey")} className="flex flex-col gap-3">
-      <fieldset className="m-0 flex min-w-0 flex-wrap gap-2 border-0 p-0" aria-label={say("adminConsole.storage.whichKey")}>
+      <fieldset
+        className="m-0 flex min-w-0 flex-wrap gap-2 border-0 p-0"
+        aria-label={say("adminConsole.storage.whichKey")}
+      >
         {names.map((n) => (
           <Button key={n} type="button" variant={n === name ? "primary" : "ghost"} size="sm" onClick={() => setName(n)}>
             {say(`adminConsole.storage.fields.${n}`)}
           </Button>
         ))}
       </fieldset>
-      <form.TextField name="value" label={say("adminConsole.storage.newKey")} hint={say("adminConsole.storage.newKeyHint")} type="password" autoComplete="off" />
+      <form.TextField
+        name="value"
+        label={say("adminConsole.storage.newKey")}
+        hint={say("adminConsole.storage.newKeyHint")}
+        type="password"
+        autoComplete="off"
+      />
       <div>
         <form.Submit size="md">{say("adminConsole.storage.saveKey")}</form.Submit>
       </div>
@@ -216,11 +319,25 @@ function AddProvider({ kinds, onProblem }: Readonly<{ kinds: KindForm[]; onProbl
     onSubmit: async (values) => {
       if (!kind) return;
       onProblem(null);
-      const pick = (fields: readonly { name: string }[]) => Object.fromEntries(fields.map((f) => [f.name, (values as Record<string, string>)[f.name] ?? ""]).filter(([, v]) => v !== ""));
+      const pick = (fields: readonly { name: string }[]) =>
+        Object.fromEntries(
+          fields.map((f) => [f.name, (values as Record<string, string>)[f.name] ?? ""]).filter(([, v]) => v !== ""),
+        );
       const chosen = kind.presets.find((p) => p.id === preset);
       const coordinates = pick(kind.coordinates);
-      if (chosen?.endpointTemplate && !coordinates.endpoint && coordinates.region) coordinates.endpoint = chosen.endpointTemplate.replace("{region}", coordinates.region);
-      await step.mutateAsync({ path: "/api/admin/storage", method: "POST", json: { kind: kind.kind, ...(preset ? { preset } : {}), label: values.label, coordinates, credentials: pick(kind.credentials) } });
+      if (chosen?.endpointTemplate && !coordinates.endpoint && coordinates.region)
+        coordinates.endpoint = chosen.endpointTemplate.replace("{region}", coordinates.region);
+      await step.mutateAsync({
+        path: "/api/admin/storage",
+        method: "POST",
+        json: {
+          kind: kind.kind,
+          ...(preset ? { preset } : {}),
+          label: values.label,
+          coordinates,
+          credentials: pick(kind.credentials),
+        },
+      });
       form.reset();
       setShown(false);
     },
@@ -240,16 +357,34 @@ function AddProvider({ kinds, onProblem }: Readonly<{ kinds: KindForm[]; onProbl
       <p className="m-0 max-w-[70ch] text-sm text-fg-secondary">{say("adminConsole.storage.addLead")}</p>
       <fieldset className="m-0 flex min-w-0 flex-wrap gap-2 border-0 p-0" aria-label={say("adminConsole.storage.kind")}>
         {kinds.map((k) => (
-          <Button key={k.kind} type="button" variant={k.kind === kindName ? "primary" : "ghost"} size="sm" onClick={() => { setKindName(k.kind); setPreset(""); }}>
+          <Button
+            key={k.kind}
+            type="button"
+            variant={k.kind === kindName ? "primary" : "ghost"}
+            size="sm"
+            onClick={() => {
+              setKindName(k.kind);
+              setPreset("");
+            }}
+          >
             {k.kind}
             {k.devOnly ? ` · ${say("adminConsole.storage.devOnly")}` : ""}
           </Button>
         ))}
       </fieldset>
       {kind && kind.presets.length > 0 ? (
-        <fieldset className="m-0 flex min-w-0 flex-wrap gap-2 border-0 p-0" aria-label={say("adminConsole.storage.preset")}>
+        <fieldset
+          className="m-0 flex min-w-0 flex-wrap gap-2 border-0 p-0"
+          aria-label={say("adminConsole.storage.preset")}
+        >
           {kind.presets.map((p) => (
-            <Button key={p.id} type="button" variant={p.id === preset ? "primary" : "ghost"} size="sm" onClick={() => setPreset(p.id)}>
+            <Button
+              key={p.id}
+              type="button"
+              variant={p.id === preset ? "primary" : "ghost"}
+              size="sm"
+              onClick={() => setPreset(p.id)}
+            >
               {p.id}
             </Button>
           ))}
@@ -258,7 +393,13 @@ function AddProvider({ kinds, onProblem }: Readonly<{ kinds: KindForm[]; onProbl
       <form.Form aria-label={say("adminConsole.storage.add")} className="flex flex-col gap-4">
         <form.TextField name="label" label={say("adminConsole.storage.label")} autoComplete="off" />
         {[...(kind?.coordinates ?? []), ...(kind?.credentials ?? [])].map((f) => (
-          <form.TextField key={f.name} name={f.name as Field} label={say(`adminConsole.storage.fields.${f.name}`)} {...(f.type === "secret" ? { type: "password", hint: say("adminConsole.storage.enteredOnce") } : {})} autoComplete="off" />
+          <form.TextField
+            key={f.name}
+            name={f.name as Field}
+            label={say(`adminConsole.storage.fields.${f.name}`)}
+            {...(f.type === "secret" ? { type: "password", hint: say("adminConsole.storage.enteredOnce") } : {})}
+            autoComplete="off"
+          />
         ))}
         <div className="flex gap-2">
           <form.Submit size="md">{say("adminConsole.storage.addSubmit")}</form.Submit>

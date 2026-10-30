@@ -6,7 +6,8 @@ import { sectionGRequestSummary } from "./section-g-request";
 type Lang = "en" | "fr";
 type Messages = Record<string, string>;
 
-const fill = (template: string, vars: Record<string, string | number>) => template.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
+const fill = (template: string, vars: Record<string, string | number>) =>
+  template.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
 const day = (iso: string, lang: Lang) => longDate(new Date(`${iso}T12:00:00Z`), lang);
 
 /**
@@ -15,8 +16,23 @@ const day = (iso: string, lang: Lang) => longDate(new Date(`${iso}T12:00:00Z`), 
  * days and months are counted is for the TAL or a lawyer to confirm. Yomizaka files nothing: the summary is for the tenant to carry.
  * These sentences carry no disclaimer of their own: the finding says it once, at its end (`sectionG.disclaimer`, `sectionGFinding`).
  */
-export function requestSentences(result: SectionGResult, deadline: SectionGDeadline | null, lang: Lang, text: { deadline: Messages; request: Messages }): string[] {
-  const summary = sectionGRequestSummary(result, deadline ?? { state: "no-claim", basis: null, lastDay: null, daysLeft: null, citation: "C.c.Q., art. 1950", sourceUrl: "https://www.tal.gouv.qc.ca/fr/signature-d-un-bail/avis-au-nouveau-locataire" });
+export function requestSentences(
+  result: SectionGResult,
+  deadline: SectionGDeadline | null,
+  lang: Lang,
+  text: { deadline: Messages; request: Messages },
+): string[] {
+  const summary = sectionGRequestSummary(
+    result,
+    deadline ?? {
+      state: "no-claim",
+      basis: null,
+      lastDay: null,
+      daysLeft: null,
+      citation: "C.c.Q., art. 1950",
+      sourceUrl: "https://www.tal.gouv.qc.ca/fr/signature-d-un-bail/avis-au-nouveau-locataire",
+    },
+  );
   if (summary.lines.length === 0) return [];
   const lines = summary.lines.map((l) => {
     const values = { ...l.values };

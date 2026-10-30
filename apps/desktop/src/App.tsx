@@ -39,9 +39,17 @@ export function App() {
 }
 
 const LANGUAGE_NAMES: Record<Locale, string> = { fr: "Français", en: "English" };
-const SECTION_ICONS: Record<SectionId, typeof HomeIcon> = { library: HomeIcon, files: UsersIcon, documents: KnowledgeIcon, checks: CheckIcon };
+const SECTION_ICONS: Record<SectionId, typeof HomeIcon> = {
+  library: HomeIcon,
+  files: UsersIcon,
+  documents: KnowledgeIcon,
+  checks: CheckIcon,
+};
 /** Where a destination of the section map opens: Vérifications opens on its first tab, the checked documents. */
-const SECTION_ROUTES: Partial<Record<SectionId, Route>> = { library: { screen: "library", folder: null }, checks: { screen: "reports" } };
+const SECTION_ROUTES: Partial<Record<SectionId, Route>> = {
+  library: { screen: "library", folder: null },
+  checks: { screen: "reports" },
+};
 const TAB_ROUTES: Record<ChecksTab, Route> = { checks: { screen: "reports" }, lots: { screen: "batches" } };
 
 /**
@@ -65,10 +73,15 @@ function Gate({ onLocale }: Readonly<{ onLocale: (locale: Locale) => void }>) {
     if (status !== AUTH.signedIn) return;
     const handlers: Record<string, () => void> = {
       [MENU_IDS.addFolder]: addFolder,
-      ...Object.fromEntries(macSections().flatMap((s) => (SECTION_ROUTES[s.id] ? [[s.menuId, () => go(SECTION_ROUTES[s.id]!)]] : []))),
+      ...Object.fromEntries(
+        macSections().flatMap((s) => (SECTION_ROUTES[s.id] ? [[s.menuId, () => go(SECTION_ROUTES[s.id]!)]] : [])),
+      ),
       [MENU_IDS.settings]: () => go({ screen: "settings" }),
     };
-    const stops = [setNativeMenu(bridge, menuSpec(messages), handlers), followLinks(bridge, (link) => go(routeOfLink(link)))];
+    const stops = [
+      setNativeMenu(bridge, menuSpec(messages), handlers),
+      followLinks(bridge, (link) => go(routeOfLink(link))),
+    ];
     return stopAll(stops);
   }, [status, messages, addFolder, go]);
 
@@ -87,22 +100,42 @@ function Gate({ onLocale }: Readonly<{ onLocale: (locale: Locale) => void }>) {
         }
         collapseLabels={[t("shell.collapse"), t("shell.expand")]}
         closeLabel={t("shell.close")}
-        footer={<AppShell.Item icon={<SettingsIcon size={16} />} label={t("nav.settings")} {...item({ screen: "settings" }, section === "settings")} />}
+        footer={
+          <AppShell.Item
+            icon={<SettingsIcon size={16} />}
+            label={t("nav.settings")}
+            {...item({ screen: "settings" }, section === "settings")}
+          />
+        }
       >
         {/* The section map of @yomizaka/core, the same as the web's rail and the phone's tabs (yomizaka#319). */}
         {macSections().flatMap((s) => {
           const to = SECTION_ROUTES[s.id];
           if (!to) return [];
           const Icon = SECTION_ICONS[s.id];
-          return [<AppShell.Item key={s.id} icon={<Icon size={16} />} label={t(`sections.${s.id}`)} shortcut={s.shortcut} {...item(to, section === s.id)} />];
+          return [
+            <AppShell.Item
+              key={s.id}
+              icon={<Icon size={16} />}
+              label={t(`sections.${s.id}`)}
+              shortcut={s.shortcut}
+              {...item(to, section === s.id)}
+            />,
+          ];
         })}
       </AppShell.Sidebar>
       <AppShell.Body>
-        <AppShell.Header title={section === "settings" ? t("nav.settings") : t(`sections.${section}`)} menuLabel={t("shell.menu")} actions={<Account locale={locale} onLocale={onLocale} go={go} />} />
+        <AppShell.Header
+          title={section === "settings" ? t("nav.settings") : t(`sections.${section}`)}
+          menuLabel={t("shell.menu")}
+          actions={<Account locale={locale} onLocale={onLocale} go={go} />}
+        />
         <AppShell.Main className="min-h-0">
           {route.screen === "reports" || route.screen === "batches" ? <ChecksTabs current={hashOf(route)} /> : null}
           {route.screen === "library" ? <Library folder={route.folder} go={go} onAddFolder={addFolder} /> : null}
-          {route.screen === "check" ? <CheckView documentId={route.documentId} analysisId={route.analysisId} go={go} /> : null}
+          {route.screen === "check" ? (
+            <CheckView documentId={route.documentId} analysisId={route.analysisId} go={go} />
+          ) : null}
           {route.screen === "document" ? <DocumentView documentId={route.documentId} go={go} /> : null}
           {route.screen === "batches" ? <BatchesView go={go} /> : null}
           {route.screen === "batch" ? <BatchView batchId={route.batchId} go={go} /> : null}
@@ -129,7 +162,11 @@ function ChecksTabs({ current }: Readonly<{ current: string }>) {
 }
 
 /** The header's account menu: who is signed in, the settings, the theme, the language, sign out — at every width. */
-function Account({ locale, onLocale, go }: Readonly<{ locale: Locale; onLocale: (locale: Locale) => void; go: (route: Route) => void }>) {
+function Account({
+  locale,
+  onLocale,
+  go,
+}: Readonly<{ locale: Locale; onLocale: (locale: Locale) => void; go: (route: Route) => void }>) {
   const { t } = useI18n();
   const me = useQuery(queries.me());
   const email = me.data?.email ?? "";
@@ -141,10 +178,29 @@ function Account({ locale, onLocale, go }: Readonly<{ locale: Locale; onLocale: 
       name={name ?? email}
       email={name ? email : undefined}
       showName
-      avatar={{ defaultAvatar: { brand: "yomizaka", seed: me.data?.avatarSeed ?? email }, fallback: (name || email || "Y").charAt(0).toUpperCase() }}
-      links={[{ id: "settings", label: t("nav.settings"), href: hashOf({ screen: "settings" }), icon: <SettingsIcon size={16} /> }]}
-      language={{ label: t("shell.language"), value: locale, options: LOCALES.map((value) => ({ value, label: LANGUAGE_NAMES[value] })), onChange: (to) => onLocale(to as Locale) }}
-      signOut={{ label: t("nav.signOut"), onSelect: () => void yomizaka.signOut().then(() => go({ screen: "library", folder: null })), icon: <LogoutIcon size={16} /> }}
+      avatar={{
+        defaultAvatar: { brand: "yomizaka", seed: me.data?.avatarSeed ?? email },
+        fallback: (name || email || "Y").charAt(0).toUpperCase(),
+      }}
+      links={[
+        {
+          id: "settings",
+          label: t("nav.settings"),
+          href: hashOf({ screen: "settings" }),
+          icon: <SettingsIcon size={16} />,
+        },
+      ]}
+      language={{
+        label: t("shell.language"),
+        value: locale,
+        options: LOCALES.map((value) => ({ value, label: LANGUAGE_NAMES[value] })),
+        onChange: (to) => onLocale(to as Locale),
+      }}
+      signOut={{
+        label: t("nav.signOut"),
+        onSelect: () => void yomizaka.signOut().then(() => go({ screen: "library", folder: null })),
+        icon: <LogoutIcon size={16} />,
+      }}
     >
       <div className="px-3 py-1">
         <ThemeToggle label={t("shell.theme")} variant="ghost" />

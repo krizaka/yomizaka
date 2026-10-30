@@ -9,7 +9,12 @@ import type { ReactNode } from "react";
  * Tabs whose state is the URL (`<base>/<tab>`): each tab is a link, the active one is read from the path (Krizaka UI's
  * `Tabs.Nav`), so back, forward, refresh and a shared link all work.
  */
-export function RouteTabs({ base, label, items, children }: Readonly<{ base: string; label: string; items: readonly { value: string; label: string }[]; children: ReactNode }>) {
+export function RouteTabs({
+  base,
+  label,
+  items,
+  children,
+}: Readonly<{ base: string; label: string; items: readonly { value: string; label: string }[]; children: ReactNode }>) {
   const current = usePathname() ?? base;
   return (
     <>

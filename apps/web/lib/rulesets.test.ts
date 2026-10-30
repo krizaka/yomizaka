@@ -4,8 +4,14 @@ import { isCheckKind, rulesetFor, versionInForce } from "./rulesets";
 
 describe("the ruleset of each kind (ADR-089: the kind selects the rules)", () => {
   it("a Québec lease is checked against its ruleset, in the version in force on the check's date", () => {
-    expect(rulesetFor("lease", "QC", "2026-10-24")).toEqual({ verified: true, ruleset: "qc-residential-lease/2026-10-24" });
-    expect(rulesetFor("lease", "QC", "2026-05-01")).toEqual({ verified: true, ruleset: "qc-residential-lease/2024-02-21" });
+    expect(rulesetFor("lease", "QC", "2026-10-24")).toEqual({
+      verified: true,
+      ruleset: "qc-residential-lease/2026-10-24",
+    });
+    expect(rulesetFor("lease", "QC", "2026-05-01")).toEqual({
+      verified: true,
+      ruleset: "qc-residential-lease/2024-02-21",
+    });
   });
 
   it("a France or Wallonia lease keeps its jurisdiction's own ruleset, named by no request", () => {
@@ -18,7 +24,10 @@ describe("the ruleset of each kind (ADR-089: the kind selects the rules)", () =>
   });
 
   it("an état des lieux is checked against Québec's premises-condition ruleset", () => {
-    expect(rulesetFor("premises-condition", "QC", "2026-10-24")).toEqual({ verified: true, ruleset: "qc-premises-condition" });
+    expect(rulesetFor("premises-condition", "QC", "2026-10-24")).toEqual({
+      verified: true,
+      ruleset: "qc-premises-condition",
+    });
   });
 
   it("an invoice and a contract keep Québec's named rulesets, whatever jurisdiction was asked", () => {

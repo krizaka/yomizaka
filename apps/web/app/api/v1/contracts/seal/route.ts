@@ -18,8 +18,27 @@ export function POST(req: Request) {
     const caller = await apiCaller(req, "contracts:seal", systemClock);
     const zone = zoneAsked(req.headers.get("x-data-residency-zone"));
     const request = await readJson(req, sealRequest);
-    const { answer, created } = await sealContract({ ownerId: caller.account.id, request, zone, now: systemClock.now(), key: signingKey() });
-    if (created) await audit({ action: "api.contract.sealed", actorId: caller.account.id, actorLabel: `api-key:${caller.keyId}`, targetId: null, detail: { contractId: answer.contractId, partnerId: request.partnerId, documentType: request.documentType, zone }, headers: req.headers });
+    const { answer, created } = await sealContract({
+      ownerId: caller.account.id,
+      request,
+      zone,
+      now: systemClock.now(),
+      key: signingKey(),
+    });
+    if (created)
+      await audit({
+        action: "api.contract.sealed",
+        actorId: caller.account.id,
+        actorLabel: `api-key:${caller.keyId}`,
+        targetId: null,
+        detail: {
+          contractId: answer.contractId,
+          partnerId: request.partnerId,
+          documentType: request.documentType,
+          zone,
+        },
+        headers: req.headers,
+      });
     return Response.json(answer, { status: created ? 201 : 200 });
   });
 }

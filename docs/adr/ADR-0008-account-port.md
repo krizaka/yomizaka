@@ -3,11 +3,13 @@
 Status: accepted (2026-10-22). Issue: krizaka/yomizaka#152.
 
 ## Context
+
 Every Krizaka product needs the same account features (name, language, avatar, e-mail change with verification, password,
 export and erasure under Loi 25). Products stay independent: each keeps its own database, accounts and customers, with no
 runtime dependency on a central service. What is shared is **code**, as with `@krizaka/payments`.
 
 ## Decision
+
 - **`AccountService` is a port** (`lib/account/port.ts`): `profile`, `updateProfile`, `requestEmailChange` (the password is
   checked, a link goes to the NEW address, the answer is the same whether or not that address is taken), `confirmEmailChange`
   (single use, expires, verifies the address by that very act), `changePassword` (signs the other sessions out),
@@ -21,5 +23,6 @@ runtime dependency on a central service. What is shared is **code**, as with `@k
   Stripe portal. The e-mail change fails closed (503 `MAIL_OFF`) while no mail provider is configured.
 
 ## Consequences
+
 - Moving to `@krizaka/auth` is an adapter and configuration change, not a rewrite.
 - The mailed link opens a page whose button POSTs (a mail scanner cannot spend it).

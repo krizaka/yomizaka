@@ -17,21 +17,29 @@ function recorder(rows: Record<string, Date[]>) {
 }
 
 describe("the activity strip's queries", () => {
-  it.each(["7d", "30d", "90d"] as const)("asks each of the four series from the first day of the %s period, for the owner only", async (period) => {
-    const { q, calls } = recorder({});
-    await activityStrip(q, "owner-1", period, NOW, { applicantFiles: true });
-    expect(calls).toHaveLength(4);
-    for (const call of calls) {
-      expect(call.values[0]).toBe("owner-1");
-      const from = call.values[1] as Date;
-      // one day of slack before the period so its oldest day is whole in Québec
-      expect(Math.round((NOW.getTime() - from.getTime()) / 86_400_000)).toBe(PERIOD_DAYS[period] + 1);
-    }
-  });
+  it.each(["7d", "30d", "90d"] as const)(
+    "asks each of the four series from the first day of the %s period, for the owner only",
+    async (period) => {
+      const { q, calls } = recorder({});
+      await activityStrip(q, "owner-1", period, NOW, { applicantFiles: true });
+      expect(calls).toHaveLength(4);
+      for (const call of calls) {
+        expect(call.values[0]).toBe("owner-1");
+        const from = call.values[1] as Date;
+        // one day of slack before the period so its oldest day is whole in Québec
+        expect(Math.round((NOW.getTime() - from.getTime()) / 86_400_000)).toBe(PERIOD_DAYS[period] + 1);
+      }
+    },
+  );
 
   it("buckets each series by day: the figures are the rows of the period, nothing else", async () => {
     const { q } = recorder({
-      "FROM analyses": [new Date("2026-10-25T12:00:00Z"), new Date("2026-10-25T13:00:00Z"), new Date("2026-10-24T12:00:00Z"), new Date("2026-08-01T12:00:00Z")],
+      "FROM analyses": [
+        new Date("2026-10-25T12:00:00Z"),
+        new Date("2026-10-25T13:00:00Z"),
+        new Date("2026-10-24T12:00:00Z"),
+        new Date("2026-08-01T12:00:00Z"),
+      ],
       "FROM documents": [new Date("2026-10-23T12:00:00Z")],
       "FROM screenings": [new Date("2026-10-22T12:00:00Z")],
     });

@@ -2,10 +2,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { resetRateLimits } from "./limits";
 
-const state = vi.hoisted(() => ({ session: null as null | { account: { id: string; email: string; perspective: string | null } }, saved: [] as unknown[][], audits: [] as Record<string, unknown>[] }));
+const state = vi.hoisted(() => ({
+  session: null as null | { account: { id: string; email: string; perspective: string | null } },
+  saved: [] as unknown[][],
+  audits: [] as Record<string, unknown>[],
+}));
 
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => undefined }) }));
-vi.mock("./session", async (orig) => ({ ...(await orig<typeof import("./session")>()), resolveSession: async () => state.session }));
+vi.mock("./session", async (orig) => ({
+  ...(await orig<typeof import("./session")>()),
+  resolveSession: async () => state.session,
+}));
 vi.mock("./settings/guards", () => ({ assertOpen: async () => undefined }));
 vi.mock("./audit", () => ({ audit: async (entry: Record<string, unknown>) => void state.audits.push(entry) }));
 // The limits read their numbers from the settings (yomizaka#260): here they are the defaults, and not a query of this test's.
@@ -16,7 +23,11 @@ import { firstCheck, wordingOf } from "./perspective-defaults";
 
 const call = async (method: "GET" | "PUT", body?: unknown) => {
   const { GET, PUT } = await import("../app/api/me/perspective/route");
-  const req = new Request("https://dev.yomizaka.com/api/me/perspective", { method, body: body === undefined ? undefined : JSON.stringify(body), headers: { "x-forwarded-for": "203.0.113.7" } });
+  const req = new Request("https://dev.yomizaka.com/api/me/perspective", {
+    method,
+    body: body === undefined ? undefined : JSON.stringify(body),
+    headers: { "x-forwarded-for": "203.0.113.7" },
+  });
   return method === "GET" ? GET(req) : PUT(req);
 };
 
@@ -39,7 +50,11 @@ describe("PUT /api/me/perspective — the side of the lease, chosen at onboardin
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ perspective: "landlord" });
     expect(state.saved).toEqual([["acc-1", "landlord"]]);
-    expect(state.audits[0]).toMatchObject({ action: "profile.perspective_set", actorId: "acc-1", detail: { from: null, to: "landlord" } });
+    expect(state.audits[0]).toMatchObject({
+      action: "profile.perspective_set",
+      actorId: "acc-1",
+      detail: { from: null, to: "landlord" },
+    });
   });
 
   it("refuses any other value with 400", async () => {
@@ -51,7 +66,8 @@ describe("PUT /api/me/perspective — the side of the lease, chosen at onboardin
 
   it("accepts every audience of « Pour qui ? »", async () => {
     state.session = { account: { id: "acc-1", email: "a@x.test", perspective: null } };
-    for (const a of ["tenant", "landlord", "freelancer", "business"]) expect((await call("PUT", { perspective: a })).status).toBe(200);
+    for (const a of ["tenant", "landlord", "freelancer", "business"])
+      expect((await call("PUT", { perspective: a })).status).toBe(200);
   });
 
   it("reads the side back", async () => {
@@ -70,7 +86,9 @@ describe("the side drives the defaults, not the rules", () => {
   });
 
   it("offers a freelancer or a business the file's examination first: no compliance rules exist for them yet", () => {
-    for (const a of ["freelancer", "business"] as const) for (const kind of ["lease", "contract", "invoice", "other"] as const) expect(firstCheck(a, kind)).toBe("document-authenticity");
+    for (const a of ["freelancer", "business"] as const)
+      for (const kind of ["lease", "contract", "invoice", "other"] as const)
+        expect(firstCheck(a, kind)).toBe("document-authenticity");
   });
 
   it("reads the neutral wording until a side is chosen", () => {

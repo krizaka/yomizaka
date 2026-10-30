@@ -3,11 +3,13 @@
 Status: accepted (2026-10-22). Issues: krizaka/yomizaka#148, #149.
 
 ## Context
+
 A real receipt (Revenu Québec, registration of a start-up business) was tagged « Facture » and offered a lease check, and it holds
 personal information (home address, phone, e-mail, a masked SIN). The product must say what a document is, what it holds, which
 check fits — or that none does — and protect personal information (Loi 25).
 
 ## Decision
+
 - **`lib/understanding/`** (port `DocumentUnderstanding`): generic, no import from the app. Given the extracted text it returns the
   nature with a confidence, the issuer, dates (issued / effective / due), parties, reference numbers (NEQ, GST/QST, invoice and
   reference numbers), amounts in cents, language, pages, and the **check that fits** (`CheckTarget`: a rules pack) or `null`.
@@ -24,5 +26,6 @@ check fits — or that none does — and protect personal information (Loi 25).
 - Computed from the stored text at read time: nothing new is stored, so there is nothing to purge.
 
 ## Consequences
+
 Adding a document type or a pattern is a data change with a fixture. Personal information in a document is flagged, not removed:
 the person decides (redacted export, deletion).

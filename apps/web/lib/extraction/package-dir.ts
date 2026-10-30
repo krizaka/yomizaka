@@ -1,13 +1,19 @@
 import { access, readdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
-const exists = (path: string): Promise<boolean> => access(path).then(() => true, () => false);
+const exists = (path: string): Promise<boolean> =>
+  access(path).then(
+    () => true,
+    () => false,
+  );
 
 /** The package inside `dir`'s pnpm store, or null. */
 async function inPnpmStore(dir: string, name: string): Promise<string | null> {
   const store = join(dir, "node_modules", ".pnpm");
   const entries = await readdir(store).catch(() => null);
-  if (!entries) {return null;}
+  if (!entries) {
+    return null;
+  }
   const entry = entries.find((d) => d.startsWith(`${name}@`));
   const candidate = entry ? join(store, entry, "node_modules", name) : null;
   return candidate && (await exists(join(candidate, "package.json"))) ? candidate : null;
@@ -24,9 +30,15 @@ async function inPnpmStore(dir: string, name: string): Promise<string | null> {
 export async function findPackageDir(name: string, from: string = process.cwd()): Promise<string> {
   for (let dir = from; ; dir = dirname(dir)) {
     const linked = join(dir, "node_modules", name);
-    if (await exists(join(linked, "package.json"))) {return linked;}
+    if (await exists(join(linked, "package.json"))) {
+      return linked;
+    }
     const stored = await inPnpmStore(dir, name);
-    if (stored) {return stored;}
-    if (dirname(dir) === dir) {throw new Error(`The package ${name} is not installed above ${from}`);}
+    if (stored) {
+      return stored;
+    }
+    if (dirname(dir) === dir) {
+      throw new Error(`The package ${name} is not installed above ${from}`);
+    }
   }
 }

@@ -12,7 +12,8 @@ const LEGAL_RULES: Record<string, RegExp> = { en: /legal rules/i, fr: /r[èe]gle
 
 function leaves(value: unknown, path = ""): [string, string][] {
   if (typeof value === "string") return [[path, value]];
-  if (value && typeof value === "object") return Object.entries(value).flatMap(([k, v]) => leaves(v, path ? `${path}.${k}` : k));
+  if (value && typeof value === "object")
+    return Object.entries(value).flatMap(([k, v]) => leaves(v, path ? `${path}.${k}` : k));
   return [];
 }
 
@@ -30,10 +31,15 @@ describe.each(["en", "fr"])("public wording (%s)", (lang) => {
 
   it("describes the landing and the report as document verification and file screening", () => {
     const get = (key: string) => texts.find(([k]) => k === key)?.[1] ?? "";
-    const matrices = lang === "fr" ? /matrices d.extraction documentaire et des gabarits technologiques param[ée]trables/ : /extraction matrices and technical templates/;
+    const matrices =
+      lang === "fr"
+        ? /matrices d.extraction documentaire et des gabarits technologiques param[ée]trables/
+        : /extraction matrices and technical templates/;
     expect(get("landing.lead")).toMatch(matrices);
     expect(get("report.disclaimer")).toMatch(matrices);
-    expect(get("report.disclaimer")).toMatch(lang === "fr" ? /valid[ée]s par le conseiller juridique du client/ : /validated by the client's counsel/);
+    expect(get("report.disclaimer")).toMatch(
+      lang === "fr" ? /valid[ée]s par le conseiller juridique du client/ : /validated by the client's counsel/,
+    );
     expect(get("report.disclaimer")).toMatch(lang === "fr" ? /ce n.est pas un avis juridique/ : /not legal advice/);
   });
 });

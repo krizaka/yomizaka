@@ -32,7 +32,8 @@ export const SECTION_G_RULE = {
   citations: { notice: "C.c.Q., art. 1896", recourse: "C.c.Q., art. 1950" },
 } as const;
 
-export type SectionGCode = "previous-blank" | "previous-altered" | "over-rate" | "within-rate" | "not-above-previous" | "no-rate";
+export type SectionGCode =
+  "previous-blank" | "previous-altered" | "over-rate" | "within-rate" | "not-above-previous" | "no-rate";
 
 export interface SectionGResult {
   ruleId: typeof SECTION_G_RULE.id;
@@ -85,23 +86,73 @@ const recourse = { citation: SECTION_G_RULE.citations.recourse, authority: "TAL"
 export function checkSectionG(input: SectionGInput, table: TalTable): SectionGResult {
   const { newRentCents, previousRent, year } = input;
   const base = { ruleId: SECTION_G_RULE.id, figures: { newRentCents } } as const;
-  const sourceOf = (entry: TalYear | null) => ({ url: entry?.sourceUrl ?? table.source.url, enteredOn: entry?.enteredOn ?? null, year: entry ? entry.year : null });
+  const sourceOf = (entry: TalYear | null) => ({
+    url: entry?.sourceUrl ?? table.source.url,
+    enteredOn: entry?.enteredOn ?? null,
+    year: entry ? entry.year : null,
+  });
   if (!("cents" in previousRent)) {
     const code = BLANK_KINDS[previousRent.kind] ? "previous-blank" : "previous-altered";
-    return { ...base, status: "finding", code, citations: [SECTION_G_RULE.citations.notice, SECTION_G_RULE.citations.recourse], recourse, source: sourceOf(null) };
+    return {
+      ...base,
+      status: "finding",
+      code,
+      citations: [SECTION_G_RULE.citations.notice, SECTION_G_RULE.citations.recourse],
+      recourse,
+      source: sourceOf(null),
+    };
   }
   const previous = previousRent.cents;
   if (!Number.isInteger(previous) || previous <= 0 || !Number.isInteger(newRentCents) || newRentCents <= 0) {
     return { ...base, status: "no-claim", code: "no-rate", citations: [], recourse: null, source: sourceOf(null) };
   }
-  const figures = { previousRentCents: previous, newRentCents, increaseBasisPoints: Math.round(((newRentCents - previous) * 10_000) / previous) };
-  if (newRentCents <= previous) return { ...base, figures, status: "ok", code: "not-above-previous", citations: [SECTION_G_RULE.citations.notice], recourse: null, source: sourceOf(null) };
+  const figures = {
+    previousRentCents: previous,
+    newRentCents,
+    increaseBasisPoints: Math.round(((newRentCents - previous) * 10_000) / previous),
+  };
+  if (newRentCents <= previous)
+    return {
+      ...base,
+      figures,
+      status: "ok",
+      code: "not-above-previous",
+      citations: [SECTION_G_RULE.citations.notice],
+      recourse: null,
+      source: sourceOf(null),
+    };
   const cap = capOf(table, year, previous, input.costChangeCents);
-  if ("missing" in cap) return { ...base, figures, status: "no-claim", code: "no-rate", citations: [SECTION_G_RULE.citations.notice], recourse: null, source: sourceOf(null) };
+  if ("missing" in cap)
+    return {
+      ...base,
+      figures,
+      status: "no-claim",
+      code: "no-rate",
+      citations: [SECTION_G_RULE.citations.notice],
+      recourse: null,
+      source: sourceOf(null),
+    };
   const maxRentCents = previous + cap.maxIncreaseCents;
   const withMax = { ...figures, maxRentCents };
-  if (newRentCents <= maxRentCents) return { ...base, figures: withMax, status: "ok", code: "within-rate", citations: [SECTION_G_RULE.citations.notice], recourse: null, source: sourceOf(cap.entry) };
-  return { ...base, figures: { ...withMax, excessCents: newRentCents - maxRentCents }, status: "finding", code: "over-rate", citations: [SECTION_G_RULE.citations.notice, SECTION_G_RULE.citations.recourse], recourse, source: sourceOf(cap.entry) };
+  if (newRentCents <= maxRentCents)
+    return {
+      ...base,
+      figures: withMax,
+      status: "ok",
+      code: "within-rate",
+      citations: [SECTION_G_RULE.citations.notice],
+      recourse: null,
+      source: sourceOf(cap.entry),
+    };
+  return {
+    ...base,
+    figures: { ...withMax, excessCents: newRentCents - maxRentCents },
+    status: "finding",
+    code: "over-rate",
+    citations: [SECTION_G_RULE.citations.notice, SECTION_G_RULE.citations.recourse],
+    recourse,
+    source: sourceOf(cap.entry),
+  };
 }
 
 /** The message key of a result, under `sectionG.<code>` in the catalogues. */

@@ -9,7 +9,11 @@ import type { DocumentKind } from "@yomizaka/core";
 
 /** The defaults, said in one line before the drop (« Effacé après la vérification · Règles du Québec en vigueur aujourd'hui · dans « Mes documents » »). */
 export function checkDefaults({ keep, keepOff }: { keep: boolean; keepOff: boolean }): string[] {
-  return [keep && !keepOff ? "check.defaults.kept" : "check.defaults.erased", "check.defaults.rules", "check.defaults.place"];
+  return [
+    keep && !keepOff ? "check.defaults.kept" : "check.defaults.erased",
+    "check.defaults.rules",
+    "check.defaults.place",
+  ];
 }
 
 /** A row's stages, each said in words (`check.stages.<stage>`): progress is never a bare bar, and stays read under reduced motion. */
@@ -26,10 +30,18 @@ export interface CheckRow {
 
 export type CheckEvent =
   | { type: "landed"; document: { id: string; filename: string } }
-  | { type: "outcome"; id: string; outcome: { started: boolean; refused: string | null }; requested: DocumentKind | "auto" }
+  | {
+      type: "outcome";
+      id: string;
+      outcome: { started: boolean; refused: string | null };
+      requested: DocumentKind | "auto";
+    }
   | { type: "picked"; id: string };
 
-const stageOf = (outcome: { started: boolean; refused: string | null }, requested: DocumentKind | "auto"): CheckStage => {
+const stageOf = (
+  outcome: { started: boolean; refused: string | null },
+  requested: DocumentKind | "auto",
+): CheckStage => {
   if (outcome.refused) return "refused";
   // Nothing sure under « auto »: asked here. A kind the person named that did not start goes to the report tab, which confirms it.
   return outcome.started || requested !== "auto" ? "started" : "asking";
@@ -39,9 +51,15 @@ const stageOf = (outcome: { started: boolean; refused: string | null }, requeste
 export function checkRows(rows: readonly CheckRow[], event: CheckEvent): CheckRow[] {
   switch (event.type) {
     case "landed":
-      return rows.some((r) => r.id === event.document.id) ? [...rows] : [...rows, { id: event.document.id, filename: event.document.filename, stage: "reading", refused: null }];
+      return rows.some((r) => r.id === event.document.id)
+        ? [...rows]
+        : [...rows, { id: event.document.id, filename: event.document.filename, stage: "reading", refused: null }];
     case "outcome":
-      return rows.map((r) => (r.id === event.id ? { ...r, stage: stageOf(event.outcome, event.requested), refused: event.outcome.refused } : r));
+      return rows.map((r) =>
+        r.id === event.id
+          ? { ...r, stage: stageOf(event.outcome, event.requested), refused: event.outcome.refused }
+          : r,
+      );
     case "picked":
       return rows.map((r) => (r.id === event.id ? { ...r, stage: "starting" } : r));
   }

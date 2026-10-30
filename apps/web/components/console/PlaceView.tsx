@@ -23,7 +23,24 @@ type Say = Messages["console"]["organisation"];
  * folder's page); the folders as a row of chips; the tags as a filter bar (`?tags=`); the files; and the whole page as a drop
  * zone that files into this place (the only zone is the empty place's). Rendered on the server; the actions are client islands.
  */
-export function PlaceView({ locale, t, library, collection, folder, folders, documents, tags, documentTags, view, tagsByDocument, folderTags, collections, collectionTags, path, jurisdictions }: Readonly<{
+export function PlaceView({
+  locale,
+  t,
+  library,
+  collection,
+  folder,
+  folders,
+  documents,
+  tags,
+  documentTags,
+  view,
+  tagsByDocument,
+  folderTags,
+  collections,
+  collectionTags,
+  path,
+  jurisdictions,
+}: Readonly<{
   locale: "en" | "fr";
   t: Say;
   library: { id: string; name: string };
@@ -46,13 +63,31 @@ export function PlaceView({ locale, t, library, collection, folder, folders, doc
 }>) {
   const crumbs = [
     { href: `/${locale}/app`, label: t.library },
-    { href: libraryPath(locale, library.id, collection.id), label: collection.name, avatar: <CollectionMark key="crumb-avatar" id={collection.id} name={collection.name} avatar={collection.avatar} size="sm" /> },
+    {
+      href: libraryPath(locale, library.id, collection.id),
+      label: collection.name,
+      avatar: (
+        <CollectionMark
+          key="crumb-avatar"
+          id={collection.id}
+          name={collection.name}
+          avatar={collection.avatar}
+          size="sm"
+        />
+      ),
+    },
     ...(folder ? [{ href: libraryPath(locale, library.id, collection.id, folder.id), label: folder.name }] : []),
   ];
-  const counts = [...(folder ? [] : [countLabel(t, "folders", folders.length)]), countLabel(t, "files", documents.length)].join(" · ");
+  const counts = [
+    ...(folder ? [] : [countLabel(t, "folders", folders.length)]),
+    countLabel(t, "files", documents.length),
+  ].join(" · ");
   const folderOptions = folders.map((f) => ({ id: f.id, name: f.name }));
   return (
-    <LibraryDrop placement={{ collectionId: collection.id, folderId: folder?.id ?? null }} jurisdictions={jurisdictions}>
+    <LibraryDrop
+      placement={{ collectionId: collection.id, folderId: folder?.id ?? null }}
+      jurisdictions={jurisdictions}
+    >
       <div className="flex flex-col gap-6">
         <PageHeader
           breadcrumb={
@@ -85,11 +120,31 @@ export function PlaceView({ locale, t, library, collection, folder, folders, doc
             <>
               <AddFilesButton>{t.addDocuments}</AddFilesButton>
               {folder ? (
-                <ItemMenu kind="folder" id={folder.id} name={folder.name} collections={collections} folders={folderOptions} tags={tags} current={folderTags?.[folder.id] ?? []} collectionId={collection.id} afterDelete={libraryPath(locale, library.id, collection.id)} afterMove={movedFolderHrefs(locale, collections, folder.id)} />
+                <ItemMenu
+                  kind="folder"
+                  id={folder.id}
+                  name={folder.name}
+                  collections={collections}
+                  folders={folderOptions}
+                  tags={tags}
+                  current={folderTags?.[folder.id] ?? []}
+                  collectionId={collection.id}
+                  afterDelete={libraryPath(locale, library.id, collection.id)}
+                  afterMove={movedFolderHrefs(locale, collections, folder.id)}
+                />
               ) : (
                 <>
                   <CreateButton kind="folder" parentId={collection.id} variant="ghost" />
-                  <ItemMenu kind="collection" id={collection.id} name={collection.name} avatar={collection.avatar} isDefault={collection.isDefault} collections={collections} tags={tags} current={collectionTags} />
+                  <ItemMenu
+                    kind="collection"
+                    id={collection.id}
+                    name={collection.name}
+                    avatar={collection.avatar}
+                    isDefault={collection.isDefault}
+                    collections={collections}
+                    tags={tags}
+                    current={collectionTags}
+                  />
                 </>
               )}
             </>
@@ -106,12 +161,28 @@ export function PlaceView({ locale, t, library, collection, folder, folders, doc
             ))}
           </nav>
         ) : null}
-        {documentTags.length > 0 ? <PlaceFilters tags={documentTags} selected={view.tags} path={path} view={view} count={documents.length} /> : null}
+        {documentTags.length > 0 ? (
+          <PlaceFilters tags={documentTags} selected={view.tags} path={path} view={view} count={documents.length} />
+        ) : null}
         <section aria-label={t.filesIn} className="flex flex-col gap-3">
           {documents.length > 0 ? (
-            <DocumentTable rows={documents} organise={{ collections, folders: folderOptions, collectionId: collection.id, tags: documentTags, tagsByDocument }} />
+            <DocumentTable
+              rows={documents}
+              organise={{
+                collections,
+                folders: folderOptions,
+                collectionId: collection.id,
+                tags: documentTags,
+                tagsByDocument,
+              }}
+            />
           ) : (
-            <EmptyState icon={<Mascot bird="owl" mood="empty" size={96} />} title={t.emptyCollection} action={<DropZone />} data-testid="place-empty" />
+            <EmptyState
+              icon={<Mascot bird="owl" mood="empty" size={96} />}
+              title={t.emptyCollection}
+              action={<DropZone />}
+              data-testid="place-empty"
+            />
           )}
         </section>
       </div>

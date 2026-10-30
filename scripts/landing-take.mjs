@@ -54,7 +54,14 @@ const file = path.join(os.tmpdir(), "bail-exemple-fictif.txt");
 (await import("node:fs")).writeFileSync(file, lease);
 
 const browser = await chromium.launch();
-const base = { viewport: VIEWPORT, deviceScaleFactor: SCALE, colorScheme: theme, locale, isMobile: true, hasTouch: true };
+const base = {
+  viewport: VIEWPORT,
+  deviceScaleFactor: SCALE,
+  colorScheme: theme,
+  locale,
+  isMobile: true,
+  hasTouch: true,
+};
 
 // Sign in once, off camera, and choose a side so the onboarding card does not cover the library.
 const auth = await browser.newContext(base);
@@ -70,7 +77,9 @@ await auth.close();
 
 const hideEmail = () => {
   const hide = () => {
-    for (const el of document.querySelectorAll("body *")) if (el.childElementCount === 0 && /@[a-z0-9.-]+\.[a-z]{2,}/i.test(el.textContent ?? "")) el.style.visibility = "hidden";
+    for (const el of document.querySelectorAll("body *"))
+      if (el.childElementCount === 0 && /@[a-z0-9.-]+\.[a-z]{2,}/i.test(el.textContent ?? ""))
+        el.style.visibility = "hidden";
   };
   document.addEventListener("DOMContentLoaded", () => {
     hide();
@@ -88,9 +97,17 @@ const page = await ctx.newPage();
 // wall-clock time, and assembled afterwards. The take is refused below 25 fps on average.
 const cdp = await ctx.newCDPSession(page);
 const capture = async () => {
-  const { result } = await cdp.send("Runtime.evaluate", { expression: "[visualViewport.pageLeft, visualViewport.pageTop]", returnByValue: true });
+  const { result } = await cdp.send("Runtime.evaluate", {
+    expression: "[visualViewport.pageLeft, visualViewport.pageTop]",
+    returnByValue: true,
+  });
   const [x, y] = result.value;
-  return cdp.send("Page.captureScreenshot", { format: "jpeg", quality: 85, optimizeForSpeed: true, clip: { x, y, width: VIEWPORT.width, height: VIEWPORT.height, scale: SCALE } });
+  return cdp.send("Page.captureScreenshot", {
+    format: "jpeg",
+    quality: 85,
+    optimizeForSpeed: true,
+    clip: { x, y, width: VIEWPORT.width, height: VIEWPORT.height, scale: SCALE },
+  });
 };
 const frames = [];
 let filming = true;
@@ -109,8 +126,12 @@ const film = Promise.all([filmLoop(), filmLoop()]);
 const RUN_LABEL = { en: /Run the check/i, fr: /Lancer la v[ée]rification/i };
 const t0 = Date.now();
 const marks = {};
-const mark = (name) => { marks[name] = (Date.now() - t0) / 1000; console.log(`[take ${locale}] ${name} at ${marks[name].toFixed(1)}s`); };
-const waiting = (what) => console.log(`[take ${locale}] waiting for ${what} (${((Date.now() - t0) / 1000).toFixed(1)}s)`);
+const mark = (name) => {
+  marks[name] = (Date.now() - t0) / 1000;
+  console.log(`[take ${locale}] ${name} at ${marks[name].toFixed(1)}s`);
+};
+const waiting = (what) =>
+  console.log(`[take ${locale}] waiting for ${what} (${((Date.now() - t0) / 1000).toFixed(1)}s)`);
 
 // 1 · the library, then « Vérifier un document »: the check page, the lease dropped.
 await page.goto(`${BASE}/${locale}/app`, { waitUntil: "networkidle" });
@@ -124,13 +145,16 @@ mark("drop");
 await page.locator(`${byTestId("defaults")} summary`).click();
 const keepBox = page.locator(`${byTestId("keep")} #keep-documents, ${byTestId("keep")} [role="checkbox"]`).first();
 await keepBox.waitFor({ timeout: 10_000 });
-if ((await keepBox.getAttribute("aria-checked")) !== "true" && !(await keepBox.isChecked().catch(() => false))) await keepBox.click();
+if ((await keepBox.getAttribute("aria-checked")) !== "true" && !(await keepBox.isChecked().catch(() => false)))
+  await keepBox.click();
 await page.setInputFiles('input[type="file"]', file);
 // 2 · the file lands; if Yomizaka is unsure it asks « Which document? » (CheckView's `kind-choice` radiogroup, as CheckView.test
 // reads it): the lease is named and the check starts on its report. A file recognised for sure opens its report by itself.
 const reportUrl = /\/app\/documents\/[^/]+\/rapport/;
 const asked = page.locator(byTestId("kind"));
-await Promise.race([asked.waitFor({ timeout: 40_000 }), page.waitForURL(reportUrl, { timeout: 40_000 })]).catch(() => undefined);
+await Promise.race([asked.waitFor({ timeout: 40_000 }), page.waitForURL(reportUrl, { timeout: 40_000 })]).catch(
+  () => undefined,
+);
 if (await asked.isVisible().catch(() => false)) {
   await page.waitForTimeout(900);
   await asked.getByRole("radio").first().click();
@@ -151,15 +175,29 @@ await page.waitForSelector(byTestId("runId"), { state: "attached", timeout: 150_
 });
 const runId = (await page.locator(byTestId("runId")).first().textContent()).trim();
 // The finding lights its line in the file only once it is selected (« See in the file »).
-await page.getByRole("button", { name: /See in the file|Voir dans le fichier/ }).first().click({ timeout: 30_000 }).catch(() => undefined);
+await page
+  .getByRole("button", { name: /See in the file|Voir dans le fichier/ })
+  .first()
+  .click({ timeout: 30_000 })
+  .catch(() => undefined);
 waiting("a lit line, a <mark> in the document (60 s max)");
-const lit = await page.waitForFunction(() => document.querySelectorAll("mark").length > 0, null, { timeout: 60_000 }).then(() => true).catch(() => false);
+const lit = await page
+  .waitForFunction(() => document.querySelectorAll("mark").length > 0, null, { timeout: 60_000 })
+  .then(() => true)
+  .catch(() => false);
 console.log(`[take ${locale}] lit line: ${lit}; page ${page.url()}`);
-if (!lit) { await page.screenshot({ path: `${outRoot}/nomark-${locale}.png` }).catch(() => undefined); writeFileSync(`${outRoot}/nomark-${locale}.txt`, await page.locator("main").innerText()); }
+if (!lit) {
+  await page.screenshot({ path: `${outRoot}/nomark-${locale}.png` }).catch(() => undefined);
+  writeFileSync(`${outRoot}/nomark-${locale}.txt`, await page.locator("main").innerText());
+}
 // 3 · the finding, with the line lit in the document.
 mark("finding");
 await page.waitForTimeout(900);
-await page.locator("mark").first().scrollIntoViewIfNeeded().catch(() => undefined);
+await page
+  .locator("mark")
+  .first()
+  .scrollIntoViewIfNeeded()
+  .catch(() => undefined);
 await page.waitForTimeout(3800);
 mark("poster");
 // 4 · search.
@@ -177,7 +215,8 @@ await film;
 frames.sort((a, b) => a.at - b.at);
 // Leave the QA library as found: the documents this take created are deleted (they are all « bail exemple fictif »).
 const mine = await ctx.request.get(`${BASE}/api/documents`);
-for (const d of (await mine.json()).documents ?? []) if (/^bail exemple fictif/i.test(d.title)) await ctx.request.delete(`${BASE}/api/documents/${d.id}`);
+for (const d of (await mine.json()).documents ?? [])
+  if (/^bail exemple fictif/i.test(d.title)) await ctx.request.delete(`${BASE}/api/documents/${d.id}`);
 await ctx.close();
 await browser.close();
 
@@ -194,9 +233,50 @@ frames.forEach((f, i) => {
 const lastFrame = path.join(tmp, `${String(frames.length - 1).padStart(5, "0")}.jpg`);
 list.push(`file '${lastFrame}'`);
 writeFileSync(path.join(tmp, "list.txt"), `${list.join("\n")}\n`);
-execFileSync("ffmpeg", ["-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", path.join(tmp, "list.txt"), "-vf", "fps=30,scale=trunc(iw/2)*2:trunc(ih/2)*2", "-c:v", "libx264", "-crf", "12", "-preset", "fast", "-pix_fmt", "yuv420p", raw], { stdio: "inherit" }); // NOSONAR S4036: a developer-machine script, PATH is the developer's own
-const probed = execFileSync("ffprobe", ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height", "-of", "csv=p=0", raw]).toString().trim().replace(/,+$/, ""); // NOSONAR S4036: a developer-machine script
-if (probed !== `${VIEWPORT.width * SCALE},${VIEWPORT.height * SCALE}`) throw new Error(`the take is ${probed}, expected ${VIEWPORT.width * SCALE}x${VIEWPORT.height * SCALE}: refused (public video must be crisp)`);
+execFileSync(
+  "ffmpeg",
+  [
+    "-y",
+    "-v",
+    "error",
+    "-f",
+    "concat",
+    "-safe",
+    "0",
+    "-i",
+    path.join(tmp, "list.txt"),
+    "-vf",
+    "fps=30,scale=trunc(iw/2)*2:trunc(ih/2)*2",
+    "-c:v",
+    "libx264",
+    "-crf",
+    "12",
+    "-preset",
+    "fast",
+    "-pix_fmt",
+    "yuv420p",
+    raw,
+  ],
+  { stdio: "inherit" },
+); // NOSONAR S4036: a developer-machine script, PATH is the developer's own
+const probed = execFileSync("ffprobe", [
+  "-v",
+  "error",
+  "-select_streams",
+  "v:0",
+  "-show_entries",
+  "stream=width,height",
+  "-of",
+  "csv=p=0",
+  raw,
+])
+  .toString()
+  .trim()
+  .replace(/,+$/, ""); // NOSONAR S4036: a developer-machine script
+if (probed !== `${VIEWPORT.width * SCALE},${VIEWPORT.height * SCALE}`)
+  throw new Error(
+    `the take is ${probed}, expected ${VIEWPORT.width * SCALE}x${VIEWPORT.height * SCALE}: refused (public video must be crisp)`,
+  );
 // The raw file starts at the first frame: shift every mark onto its clock.
 const shift = frames[0].at - t0 / 1000;
 for (const k of Object.keys(marks)) marks[k] -= shift;
@@ -206,26 +286,58 @@ const real = marks.end - start;
 const waitFrom = marks.check + 1.6 - start;
 const waitTo = marks.finding - start;
 const WAIT_SPEED = Math.max(1, (waitTo - waitFrom) / 3);
-const segs = [[0, waitFrom, 1], [waitFrom, waitTo, WAIT_SPEED], [waitTo, real, 1]];
+const segs = [
+  [0, waitFrom, 1],
+  [waitFrom, waitTo, WAIT_SPEED],
+  [waitTo, real, 1],
+];
 const total = segs.reduce((n, [x, y, k]) => n + (y - x) / k, 0);
 const ff = (...a) => execFileSync("ffmpeg", ["-y", "-v", "error", ...a], { stdio: "inherit" }); // NOSONAR S4036: a developer-machine script, PATH is the developer's own
-const trims = segs.map(([x, y, k], i) => `[0:v]trim=start=${(start + x).toFixed(3)}:end=${(start + y).toFixed(3)},setpts=(PTS-STARTPTS)/${k.toFixed(4)}[v${i}]`).join(";");
+const trims = segs
+  .map(
+    ([x, y, k], i) =>
+      `[0:v]trim=start=${(start + x).toFixed(3)}:end=${(start + y).toFixed(3)},setpts=(PTS-STARTPTS)/${k.toFixed(4)}[v${i}]`,
+  )
+  .join(";");
 const joined = segs.map((_, i) => `[v${i}]`).join("");
 const graph = `${trims};${joined}concat=n=${segs.length}:v=1:a=0,fps=30[out]`;
 const input = ["-i", raw, "-an", "-filter_complex", graph, "-map", "[out]"];
 ff(...input, "-c:v", "libvpx-vp9", "-crf", "32", "-b:v", "0", "-row-mt", "1", path.join(dir, "take.webm"));
-ff(...input, "-c:v", "libx264", "-crf", "22", "-preset", "slow", "-pix_fmt", "yuv420p", "-movflags", "+faststart", path.join(dir, "take.mp4"));
+ff(
+  ...input,
+  "-c:v",
+  "libx264",
+  "-crf",
+  "22",
+  "-preset",
+  "slow",
+  "-pix_fmt",
+  "yuv420p",
+  "-movflags",
+  "+faststart",
+  path.join(dir, "take.mp4"),
+);
 ff("-ss", marks.poster.toFixed(2), "-i", raw, "-frames:v", "1", "-q:v", "3", path.join(dir, "take.jpg"));
 const speed = real / total;
 // Chapter times in the sped-up take (seconds): what the page highlights while the clip plays.
 const at = (name) => {
   const t = marks[name] - start;
-    if (t <= waitFrom) return +t.toFixed(2);
+  if (t <= waitFrom) return +t.toFixed(2);
   if (t <= waitTo) return +(waitFrom + (t - waitFrom) / WAIT_SPEED).toFixed(2);
   return +(waitFrom + (waitTo - waitFrom) / WAIT_SPEED + (t - waitTo)).toFixed(2);
 };
 const fps = frames.length / (frames[frames.length - 1].at - frames[0].at);
-if (fps < MIN_FPS) throw new Error(`the take was filmed at ${fps.toFixed(1)} fps (< ${MIN_FPS}): run it again on a quieter machine`);
-const evidence = { locale, fps: +fps.toFixed(1), base: BASE, recordedAt: new Date().toISOString(), runId, seconds: +total.toFixed(1), waitSpeed: +WAIT_SPEED.toFixed(2), chapters: { drop: at("drop"), check: at("check"), finding: at("finding"), search: at("search") } };
+if (fps < MIN_FPS)
+  throw new Error(`the take was filmed at ${fps.toFixed(1)} fps (< ${MIN_FPS}): run it again on a quieter machine`);
+const evidence = {
+  locale,
+  fps: +fps.toFixed(1),
+  base: BASE,
+  recordedAt: new Date().toISOString(),
+  runId,
+  seconds: +total.toFixed(1),
+  waitSpeed: +WAIT_SPEED.toFixed(2),
+  chapters: { drop: at("drop"), check: at("check"), finding: at("finding"), search: at("search") },
+};
 writeFileSync(path.join(dir, "evidence.json"), `${JSON.stringify(evidence, null, 2)}\n`);
 process.stdout.write(`✓ ${locale}: ${evidence.seconds} s (wait x${evidence.waitSpeed}) · run ${runId} · ${dir}\n`);

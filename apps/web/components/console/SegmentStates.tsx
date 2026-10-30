@@ -28,7 +28,10 @@ function Header() {
 /** A list's rows: a title and one line of facts each. */
 function Rows({ count = 6 }: Readonly<{ count?: number }>) {
   return (
-    <div className="flex flex-col divide-y divide-border-subtle rounded-lg border border-border-default" data-skeleton="rows">
+    <div
+      className="flex flex-col divide-y divide-border-subtle rounded-lg border border-border-default"
+      data-skeleton="rows"
+    >
       {Array.from({ length: count }, (_, i) => (
         <div key={i} className="flex items-center gap-3 p-3">
           <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -114,7 +117,14 @@ function Body({ shape }: Readonly<{ shape: SegmentShape }>) {
 export function SegmentLoading({ shape }: Readonly<{ shape: SegmentShape }>) {
   const { say } = useSay();
   return (
-    <div role="status" aria-busy="true" aria-live="polite" className="ym-wait flex min-w-0 flex-col gap-6" data-shape={shape} data-testid="segment-loading">
+    <div
+      role="status"
+      aria-busy="true"
+      aria-live="polite"
+      className="ym-wait flex min-w-0 flex-col gap-6"
+      data-shape={shape}
+      data-testid="segment-loading"
+    >
       <span className="sr-only">{say("states.loading")}</span>
       <Header />
       <Body shape={shape} />

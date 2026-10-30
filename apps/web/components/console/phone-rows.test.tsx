@@ -13,12 +13,44 @@ import fr from "@/messages/fr.json";
 import { DocumentTable } from "./DocumentTable";
 import { FilesView } from "./FilesView";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push() {}, replace() {}, refresh() {} }), usePathname: () => "/fr/app", useSearchParams: () => new URLSearchParams("") }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push() {}, replace() {}, refresh() {} }),
+  usePathname: () => "/fr/app",
+  useSearchParams: () => new URLSearchParams(""),
+}));
 
 const MESSAGES = { en: { console: en.console }, fr: { console: fr.console } } as const;
-const wrap = (node: React.ReactNode) => renderToStaticMarkup(<I18nProvider locale="fr" messages={MESSAGES.fr as never}><KrizakaQueryProvider>{node}</KrizakaQueryProvider></I18nProvider>);
-const doc = (n: number): DocumentSummary => ({ id: `d${n}`, title: `Bail ${n}`, filename: `bail-${n}.pdf`, mimeType: "application/pdf", kind: "lease", sizeBytes: 1000, pages: 1, hasText: true, status: "checked", createdAt: "2026-10-20T12:00:00.000Z" });
-const file = (id: string, name: string): FileSummary => ({ id, candidateName: name, status: "used", createdAt: "2026-10-20T14:00:00.000Z", expiresAt: "2026-11-07T15:00:00.000Z", submittedAt: "2026-10-22T14:00:00.000Z", closedAt: null, documents: 1, requested: 2, decision: "a_decider", tagIds: [] });
+const wrap = (node: React.ReactNode) =>
+  renderToStaticMarkup(
+    <I18nProvider locale="fr" messages={MESSAGES.fr as never}>
+      <KrizakaQueryProvider>{node}</KrizakaQueryProvider>
+    </I18nProvider>,
+  );
+const doc = (n: number): DocumentSummary => ({
+  id: `d${n}`,
+  title: `Bail ${n}`,
+  filename: `bail-${n}.pdf`,
+  mimeType: "application/pdf",
+  kind: "lease",
+  sizeBytes: 1000,
+  pages: 1,
+  hasText: true,
+  status: "checked",
+  createdAt: "2026-10-20T12:00:00.000Z",
+});
+const file = (id: string, name: string): FileSummary => ({
+  id,
+  candidateName: name,
+  status: "used",
+  createdAt: "2026-10-20T14:00:00.000Z",
+  expiresAt: "2026-11-07T15:00:00.000Z",
+  submittedAt: "2026-10-22T14:00:00.000Z",
+  closedAt: null,
+  documents: 1,
+  requested: 2,
+  decision: "a_decider",
+  tagIds: [],
+});
 
 /** The phone's list rows, as the table draws them under 36 rem: the checkbox, the title (the row's link) with ONE line of facts, the status at the end. */
 const rowsOf = (html: string) => html.split("<tr ").slice(2);
@@ -33,7 +65,8 @@ const textOf = (markup: string) => {
   }
   return out;
 };
-const factsIn = (row: string) => [...row.matchAll(/<span data-facts="[^"]*"[^>]*>(.*?)<\/span><\/span>/g)].map((m) => textOf(m[1]!));
+const factsIn = (row: string) =>
+  [...row.matchAll(/<span data-facts="[^"]*"[^>]*>(.*?)<\/span><\/span>/g)].map((m) => textOf(m[1]!));
 
 describe("phone lists as list rows (P12, #329)", () => {
   it("Documents: a title linking to its page, one line of facts « Bail · 20 oct. 2026 », the result at the end, no dl per row", () => {
@@ -59,7 +92,7 @@ describe("phone lists as list rows (P12, #329)", () => {
     expect(textOf(row!)).toContain("Documents envoyés le 22 oct. 2026");
   });
 
-  it("every table of the three says phone=\"list\" and types its title column with the row's link", () => {
+  it('every table of the three says phone="list" and types its title column with the row\'s link', () => {
     for (const source of ["DocumentTable.tsx", "FilesView.tsx", "ChecksView.tsx"]) {
       const code = readFileSync(new URL(`./${source}`, import.meta.url), "utf8");
       expect(code, source).toContain('phone="list"');

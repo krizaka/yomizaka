@@ -16,7 +16,14 @@ export function GET(req: Request, { params }: { params: Promise<{ id: string }> 
     const finished = item?.documentId && item.analysisId && hasReport(item.state);
     const report = finished ? (await getAnalysis(caller.account.id, item.documentId!, item.analysisId!)).report : null;
     const check = checkView(batch, report);
-    await audit({ action: "api.check.read", actorId: caller.account.id, actorLabel: `api-key:${caller.keyId}`, targetId: check.id, detail: { state: check.state }, headers: req.headers });
+    await audit({
+      action: "api.check.read",
+      actorId: caller.account.id,
+      actorLabel: `api-key:${caller.keyId}`,
+      targetId: check.id,
+      detail: { state: check.state },
+      headers: req.headers,
+    });
     return Response.json({ check });
   });
 }

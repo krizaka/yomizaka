@@ -20,7 +20,12 @@ export function GET(req: Request, ctx: { params: Promise<{ token: string }> }) {
     const lang = asLocale(new URL(req.url).searchParams.get("locale") ?? "en");
     const { bytes } = await issueOwnerReportPdf(ownerPayloadOf(report, lang), signingKey());
     return new Response(Buffer.from(bytes), {
-      headers: { "Content-Type": "application/pdf", "Content-Disposition": `attachment; filename="yomizaka-${report.reference}.pdf"`, "Cache-Control": "no-store", "X-Robots-Tag": "noindex" },
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="yomizaka-${report.reference}.pdf"`,
+        "Cache-Control": "no-store",
+        "X-Robots-Tag": "noindex",
+      },
     });
   });
 }

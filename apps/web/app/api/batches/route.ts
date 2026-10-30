@@ -24,8 +24,19 @@ export function POST(req: Request) {
     await assertFeature("batches", session.account.id);
     await limit("batchCreate", req, session.account.id);
     const form = await readBatchForm(req);
-    const batch = await createBatch(session.account, form.name, form.manifest, form.files, { settings: await settingsFor(session.account.id), now: new Date(), environment: appEnvironment() });
-    await audit({ action: "batch.created", actorId: session.account.id, actorLabel: session.account.email, targetId: batch.id, detail: { rows: batch.items.length, refused: batch.counts.refused }, headers: req.headers });
+    const batch = await createBatch(session.account, form.name, form.manifest, form.files, {
+      settings: await settingsFor(session.account.id),
+      now: new Date(),
+      environment: appEnvironment(),
+    });
+    await audit({
+      action: "batch.created",
+      actorId: session.account.id,
+      actorLabel: session.account.email,
+      targetId: batch.id,
+      detail: { rows: batch.items.length, refused: batch.counts.refused },
+      headers: req.headers,
+    });
     return Response.json({ batch }, { status: 201 });
   });
 }

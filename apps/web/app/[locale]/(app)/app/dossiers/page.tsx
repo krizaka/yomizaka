@@ -26,7 +26,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /** « Dossiers »: the applicant files of the account (filtered by the link's state with `?state=`) — only for the people offered the flow (the section map); otherwise a 404. */
-export default async function FilesPage({ params, searchParams }: Readonly<{ params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }>) {
+export default async function FilesPage({
+  params,
+  searchParams,
+}: Readonly<{
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}>) {
   const locale = asLocale((await params).locale);
   const session = await pageSession();
   if (!session) notFound();
@@ -35,20 +41,57 @@ export default async function FilesPage({ params, searchParams }: Readonly<{ par
   const workspace = workspaceFor({ clock: systemClock });
   const owner = session.account.id;
   const search = await searchParams;
-  const [configuration, tags, views] = await Promise.all([workspace.config.get(KIND.applicantFile), workspace.tags.list(owner, KIND.applicantFile), workspace.views.list(owner, { id: owner, label: session.account.email, role: "owner" }, KIND.applicantFile)]);
+  const [configuration, tags, views] = await Promise.all([
+    workspace.config.get(KIND.applicantFile),
+    workspace.tags.list(owner, KIND.applicantFile),
+    workspace.views.list(owner, { id: owner, label: session.account.email, role: "owner" }, KIND.applicantFile),
+  ]);
   const set = configuration?.config.status ?? null;
-  const resolved = resolveView(parseView(search as Record<string, string | string[] | undefined>), views.system, [...views.workspace, ...views.mine], locale);
-  const [files, types] = await Promise.all([listApplicantFiles(owner, new Date(), { filters: resolved.filters, set }), documentTypes()]);
+  const resolved = resolveView(
+    parseView(search as Record<string, string | string[] | undefined>),
+    views.system,
+    [...views.workspace, ...views.mine],
+    locale,
+  );
+  const [files, types] = await Promise.all([
+    listApplicantFiles(owner, new Date(), { filters: resolved.filters, set }),
+    documentTypes(),
+  ]);
   // The binder's counts are the lengths of the views: the same filter as the list (yomizaka#334).
-  const plan = set ? binderPlan(set, tags.map((t) => t.id), resolved.filters) : null;
-  const counts = plan ? { tabs: await Promise.all(plan.tabs.map((tab) => countApplicantFiles(owner, { filters: tab.filters, set }))), chips: await Promise.all(plan.chips.map((chip) => countApplicantFiles(owner, { filters: chip.countFilters, set }))) } : null;
+  const plan = set
+    ? binderPlan(
+        set,
+        tags.map((t) => t.id),
+        resolved.filters,
+      )
+    : null;
+  const counts = plan
+    ? {
+        tabs: await Promise.all(plan.tabs.map((tab) => countApplicantFiles(owner, { filters: tab.filters, set }))),
+        chips: await Promise.all(
+          plan.chips.map((chip) => countApplicantFiles(owner, { filters: chip.countFilters, set })),
+        ),
+      }
+    : null;
   return (
     <FilesView
       files={files}
       states={readFileStates(searchOf(search))}
       types={askableTypes(getDictionary(locale).applicantFile.types, types)}
       origin={SITE_URL}
-      workspace={set && plan && counts ? { set, tags: tags.map(asTag), system: views.system, saved: [...views.workspace, ...views.mine], resolved, plan, counts } : undefined}
+      workspace={
+        set && plan && counts
+          ? {
+              set,
+              tags: tags.map(asTag),
+              system: views.system,
+              saved: [...views.workspace, ...views.mine],
+              resolved,
+              plan,
+              counts,
+            }
+          : undefined
+      }
     />
   );
 }

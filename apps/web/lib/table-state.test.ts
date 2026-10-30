@@ -10,7 +10,8 @@ describe("the table's state in the address", () => {
     expect(sortOf("title:asc", SORTABLE)).toEqual({ column: "title", direction: "ascending" });
     expect(sortOf("size:desc", SORTABLE)).toEqual({ column: "size", direction: "descending" });
     expect(sortOf(TABLE_DEFAULTS.sort, SORTABLE)).toEqual({ column: "added", direction: "descending" });
-    for (const bad of ["", "nope", "title", "title:sideways", "status:asc", "title:asc:x", "__proto__:asc"]) expect(sortOf(bad, SORTABLE), bad).toEqual({ column: "added", direction: "descending" });
+    for (const bad of ["", "nope", "title", "title:sideways", "status:asc", "title:asc:x", "__proto__:asc"])
+      expect(sortOf(bad, SORTABLE), bad).toEqual({ column: "added", direction: "descending" });
   });
 
   it("writes a sort back, and nothing for no sort", () => {

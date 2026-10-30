@@ -10,7 +10,11 @@ import fr from "@/messages/fr.json";
 
 import { SignUpForm } from "./SignUpForm";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push() {}, replace() {}, refresh() {} }), usePathname: () => "/fr/sign-up", useSearchParams: () => new URLSearchParams() }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push() {}, replace() {}, refresh() {} }),
+  usePathname: () => "/fr/sign-up",
+  useSearchParams: () => new URLSearchParams(),
+}));
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 // The form's controls observe their size; jsdom has no ResizeObserver.
 (globalThis as { ResizeObserver?: unknown }).ResizeObserver = class {

@@ -21,9 +21,17 @@ export interface FlowFormValues {
   amount: string;
 }
 
-export const DEFAULT_RULESETS: FlowFormValues["rulesets"] = { QC: "qc-residential-lease", FR: "fr-residential-lease", "BE-WAL": "be-residential-lease" };
+export const DEFAULT_RULESETS: FlowFormValues["rulesets"] = {
+  QC: "qc-residential-lease",
+  FR: "fr-residential-lease",
+  "BE-WAL": "be-residential-lease",
+};
 const PACK = "document-validation";
-const csv = (s: string) => s.split(",").map((x) => x.trim()).filter(Boolean);
+const csv = (s: string) =>
+  s
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean);
 
 export const emptyForm = (): FlowFormValues => ({
   titleEn: "",
@@ -44,9 +52,20 @@ export const emptyForm = (): FlowFormValues => ({
 
 export function definitionFromForm(v: FlowFormValues): FlowDefinition {
   const steps: FlowDefinition["steps"] = [];
-  if (v.compliance) steps.push({ id: "compliance", kind: "studio", studio: "compliance-check", pack: PACK, jurisdictions: JURISDICTIONS.filter((j) => v.jur[j]).flatMap((code) => csv(v.rulesets[code]).map((ruleset) => ({ code, ruleset }))) });
-  if (v.authenticity) steps.push({ id: "authenticity", kind: "studio", studio: "document-authenticity", pack: PACK, jurisdictions: [] });
-  for (const provider of csv(v.providers)) steps.push({ id: `provider-${provider}`.slice(0, 40), kind: "provider", provider, jurisdictions: [] });
+  if (v.compliance)
+    steps.push({
+      id: "compliance",
+      kind: "studio",
+      studio: "compliance-check",
+      pack: PACK,
+      jurisdictions: JURISDICTIONS.filter((j) => v.jur[j]).flatMap((code) =>
+        csv(v.rulesets[code]).map((ruleset) => ({ code, ruleset })),
+      ),
+    });
+  if (v.authenticity)
+    steps.push({ id: "authenticity", kind: "studio", studio: "document-authenticity", pack: PACK, jurisdictions: [] });
+  for (const provider of csv(v.providers))
+    steps.push({ id: `provider-${provider}`.slice(0, 40), kind: "provider", provider, jurisdictions: [] });
   const amount = v.amount.trim() === "" ? undefined : Math.round(Number(v.amount) * 100);
   return flowDefinition.parse({
     title: { en: v.titleEn, fr: v.titleFr },
@@ -56,7 +75,10 @@ export function definitionFromForm(v: FlowFormValues): FlowDefinition {
     steps,
     consents: csv(v.consents),
     providers: csv(v.providers),
-    pricing: { model: v.pricingModel, ...(amount !== undefined && Number.isFinite(amount) ? { amountCents: amount } : {}) },
+    pricing: {
+      model: v.pricingModel,
+      ...(amount !== undefined && Number.isFinite(amount) ? { amountCents: amount } : {}),
+    },
   });
 }
 
@@ -73,7 +95,12 @@ export function formFromDefinition(d: FlowDefinition): FlowFormValues {
   form.authenticity = d.steps.some((s) => s.studio === "document-authenticity");
   for (const j of JURISDICTIONS) form.jur[j] = !!compliance?.jurisdictions.some((x) => x.code === j);
   // Several rulesets of one jurisdiction (the lease and the invoice) are one comma-separated field.
-  for (const j of JURISDICTIONS) form.rulesets[j] = (compliance?.jurisdictions ?? []).filter((x) => x.code === j).map((x) => x.ruleset).join(", ") || DEFAULT_RULESETS[j];
+  for (const j of JURISDICTIONS)
+    form.rulesets[j] =
+      (compliance?.jurisdictions ?? [])
+        .filter((x) => x.code === j)
+        .map((x) => x.ruleset)
+        .join(", ") || DEFAULT_RULESETS[j];
   form.consents = d.consents.join(", ");
   form.providers = d.providers.join(", ");
   form.pricingModel = d.pricing.model;

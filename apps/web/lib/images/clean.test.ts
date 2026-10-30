@@ -13,7 +13,11 @@ import { YOMIZAKA_IMAGE_RULES } from "./rules";
 
 const cleaner = createImageCleaner(YOMIZAKA_IMAGE_RULES);
 const grayOf = async (jpeg: Uint8Array) => {
-  const { data, info } = await sharp(jpeg).resize({ width: 600 }).grayscale().raw().toBuffer({ resolveWithObject: true });
+  const { data, info } = await sharp(jpeg)
+    .resize({ width: 600 })
+    .grayscale()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
   return { data: new Uint8Array(data), width: info.width, height: info.height };
 };
 
@@ -37,7 +41,10 @@ describe("cleaning a photo", () => {
   });
 
   it("reads where the photo comes from before dropping it: device, editor, GPS yes/no — never the position", async () => {
-    const { facts } = await cleaner.clean({ bytes: await photoOfPage({ editor: "Adobe Photoshop 25.0" }), kind: "jpeg" });
+    const { facts } = await cleaner.clean({
+      bytes: await photoOfPage({ editor: "Adobe Photoshop 25.0" }),
+      kind: "jpeg",
+    });
     expect(facts).toMatchObject({ software: "Adobe Photoshop 25.0", device: "Apple iPhone 15", hadGps: true });
     expect(JSON.stringify(facts)).not.toMatch(/45|73/);
   });
@@ -45,7 +52,10 @@ describe("cleaning a photo", () => {
   it("reads a PNG, and a HEIC (decoded in WebAssembly)", async () => {
     const png = await cleaner.clean({ bytes: await photoOfPage({ format: "png" }), kind: "png" });
     expect(png.page.jpeg.length).toBeGreaterThan(1000);
-    const heic = await cleaner.clean({ bytes: new Uint8Array(readFileSync(join(__dirname, "samples", "page.heic"))), kind: "heic" });
+    const heic = await cleaner.clean({
+      bytes: new Uint8Array(readFileSync(join(__dirname, "samples", "page.heic"))),
+      kind: "heic",
+    });
     expect(heic.page.width).toBeGreaterThan(300);
     expect((await sharp(heic.page.jpeg).metadata()).exif).toBeUndefined();
   });
@@ -57,14 +67,19 @@ describe("cleaning a photo", () => {
   });
 
   it("refuses bytes that are not the image they claim, with a stable code", async () => {
-    await expect(cleaner.clean({ bytes: new Uint8Array([0xff, 0xd8, 0xff, 1, 2, 3, 4]), kind: "jpeg" })).rejects.toMatchObject({ code: "UNREADABLE_IMAGE" });
+    await expect(
+      cleaner.clean({ bytes: new Uint8Array([0xff, 0xd8, 0xff, 1, 2, 3, 4]), kind: "jpeg" }),
+    ).rejects.toMatchObject({ code: "UNREADABLE_IMAGE" });
     await expect(cleaner.clean({ bytes: new Uint8Array(40), kind: "heic" })).rejects.toBeInstanceOf(ImageError);
   });
 });
 
 describe("several photos make one document", () => {
   it("a PDF with one page per photo, in order, and the same bytes for the same photos", async () => {
-    const pages = [await cleaner.clean({ bytes: await photoOfPage({ degrees: 3 }), kind: "jpeg" }), await cleaner.clean({ bytes: await photoOfPage({ degrees: -2 }), kind: "jpeg" })].map((r) => r.page);
+    const pages = [
+      await cleaner.clean({ bytes: await photoOfPage({ degrees: 3 }), kind: "jpeg" }),
+      await cleaner.clean({ bytes: await photoOfPage({ degrees: -2 }), kind: "jpeg" }),
+    ].map((r) => r.page);
     const pdf = await pagesToPdf(pages);
     const { PDFDocument } = await import("pdf-lib");
     const doc = await PDFDocument.load(pdf, { updateMetadata: false });

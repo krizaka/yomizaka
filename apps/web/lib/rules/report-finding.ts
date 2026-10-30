@@ -6,6 +6,17 @@ import type { ComplianceReport, Finding } from "@yomizaka/core";
  */
 export function appendFinding(report: ComplianceReport, finding: Finding): ComplianceReport {
   if (report.findings.some((f) => f.ruleId === finding.ruleId)) return report;
-  const byVerdict = { ...report.summary?.byVerdict, [finding.verdict]: (report.summary?.byVerdict?.[finding.verdict] ?? 0) + 1 };
-  return { ...report, findings: [...report.findings, finding], summary: { ...report.summary, byVerdict, rulesEvaluated: (report.summary?.rulesEvaluated ?? report.findings.length) + 1 } };
+  const byVerdict = {
+    ...report.summary?.byVerdict,
+    [finding.verdict]: (report.summary?.byVerdict?.[finding.verdict] ?? 0) + 1,
+  };
+  return {
+    ...report,
+    findings: [...report.findings, finding],
+    summary: {
+      ...report.summary,
+      byVerdict,
+      rulesEvaluated: (report.summary?.rulesEvaluated ?? report.findings.length) + 1,
+    },
+  };
 }

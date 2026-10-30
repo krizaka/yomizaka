@@ -12,7 +12,8 @@ describe("the storage cards", () => {
   });
   it("every card has its title and hint in both languages", () => {
     for (const messages of [en, fr]) {
-      const storage = (messages as unknown as { console: { settings: { storage: Record<string, unknown> } } }).console.settings.storage;
+      const storage = (messages as unknown as { console: { settings: { storage: Record<string, unknown> } } }).console
+        .settings.storage;
       for (const mode of storageCards(true)) {
         expect(typeof storage[mode], `${mode}`).toBe("string");
         expect(typeof storage[`${mode}Hint`], `${mode}Hint`).toBe("string");

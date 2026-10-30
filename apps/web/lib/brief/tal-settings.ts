@@ -19,14 +19,31 @@ const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 export function withTalRate(table: TalTable, rate: TalRateSetting): TalTable {
   if (rate.basisPoints <= 0 || !DAY.test(rate.enteredOn) || !URL.canParse(rate.sourceUrl)) return table;
-  const entry = { year: rate.year, enteredOn: rate.enteredOn, sourceUrl: rate.sourceUrl, components: [{ id: "adjustment", kind: "rate-of-rent" as const, basisPoints: rate.basisPoints }] };
+  const entry = {
+    year: rate.year,
+    enteredOn: rate.enteredOn,
+    sourceUrl: rate.sourceUrl,
+    components: [{ id: "adjustment", kind: "rate-of-rent" as const, basisPoints: rate.basisPoints }],
+  };
   return { ...table, years: [...table.years.filter((y) => y.year !== rate.year), entry] };
 }
 
-type Reader = { get(key: "tal.rate.year" | "tal.rate.basisPoints" | "tal.rate.sourceUrl" | "tal.rate.enteredOn"): Promise<unknown> };
+type Reader = {
+  get(key: "tal.rate.year" | "tal.rate.basisPoints" | "tal.rate.sourceUrl" | "tal.rate.enteredOn"): Promise<unknown>;
+};
 
 /** The table in force: the shipped one with the administrator's rate laid over it. */
 export async function talTableFrom(settings: Reader, table: TalTable): Promise<TalTable> {
-  const [year, basisPoints, sourceUrl, enteredOn] = await Promise.all([settings.get("tal.rate.year"), settings.get("tal.rate.basisPoints"), settings.get("tal.rate.sourceUrl"), settings.get("tal.rate.enteredOn")]);
-  return withTalRate(table, { year: Number(year), basisPoints: Number(basisPoints), sourceUrl: String(sourceUrl), enteredOn: String(enteredOn) });
+  const [year, basisPoints, sourceUrl, enteredOn] = await Promise.all([
+    settings.get("tal.rate.year"),
+    settings.get("tal.rate.basisPoints"),
+    settings.get("tal.rate.sourceUrl"),
+    settings.get("tal.rate.enteredOn"),
+  ]);
+  return withTalRate(table, {
+    year: Number(year),
+    basisPoints: Number(basisPoints),
+    sourceUrl: String(sourceUrl),
+    enteredOn: String(enteredOn),
+  });
 }

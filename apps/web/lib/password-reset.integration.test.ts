@@ -45,11 +45,19 @@ describe.runIf(enabled)("the forgot-password flow", () => {
     await requestReset(deps(ttl), { email }, { headers }, now);
     return linkToken();
   };
-  const hashOf = async () => ((await query<{ password_hash: string }>("SELECT password_hash FROM accounts WHERE id = $1", [id])) as [{ password_hash: string }])[0].password_hash;
+  const hashOf = async () =>
+    (
+      (await query<{ password_hash: string }>("SELECT password_hash FROM accounts WHERE id = $1", [id])) as [
+        { password_hash: string },
+      ]
+    )[0].password_hash;
 
   beforeAll(async () => {
     await migrate();
-    [{ id }] = (await query<{ id: string }>("INSERT INTO accounts (email, password_hash, email_verified_at) VALUES ($1, $2, now()) RETURNING id", [email, await hashPassword(OLD)])) as [{ id: string }];
+    [{ id }] = (await query<{ id: string }>(
+      "INSERT INTO accounts (email, password_hash, email_verified_at) VALUES ($1, $2, now()) RETURNING id",
+      [email, await hashPassword(OLD)],
+    )) as [{ id: string }];
   });
   beforeEach(() => resetRateLimits());
 
@@ -63,7 +71,10 @@ describe.runIf(enabled)("the forgot-password flow", () => {
   });
 
   it("sets the new password, uses the link up and ends every session", async () => {
-    const [a, b] = await Promise.all([createSession(id, { ip: null, userAgent: null }), createSession(id, { ip: null, userAgent: null })]);
+    const [a, b] = await Promise.all([
+      createSession(id, { ip: null, userAgent: null }),
+      createSession(id, { ip: null, userAgent: null }),
+    ]);
     expect(await resolveSession(a.token)).not.toBeNull();
     const token = await asked();
     await applyReset(deps(), { token, password: NEW }, { headers }, new Date());
@@ -77,36 +88,54 @@ describe.runIf(enabled)("the forgot-password flow", () => {
   it("refuses the same link a second time", async () => {
     const token = await asked();
     await applyReset(deps(), { token, password: "another secret value 789" }, { headers }, new Date());
-    await expect(applyReset(deps(), { token, password: NEW }, { headers }, new Date())).rejects.toMatchObject({ status: 400, body: { code: "RESET_INVALID" } });
+    await expect(applyReset(deps(), { token, password: NEW }, { headers }, new Date())).rejects.toMatchObject({
+      status: 400,
+      body: { code: "RESET_INVALID" },
+    });
   });
 
   it("refuses a link past its lifetime — 30 minutes by default — and honours it just before", async () => {
     const now = new Date();
     const late = await asked(undefined, now);
-    await expect(applyReset(deps(), { token: late, password: NEW }, { headers }, addMinutes(now, 31))).rejects.toMatchObject({ body: { code: "RESET_INVALID" } });
+    await expect(
+      applyReset(deps(), { token: late, password: NEW }, { headers }, addMinutes(now, 31)),
+    ).rejects.toMatchObject({ body: { code: "RESET_INVALID" } });
     const inTime = await asked(undefined, now);
-    await expect(applyReset(deps(), { token: inTime, password: NEW }, { headers }, addMinutes(now, 29))).resolves.toEqual({ ok: true });
+    await expect(
+      applyReset(deps(), { token: inTime, password: NEW }, { headers }, addMinutes(now, 29)),
+    ).resolves.toEqual({ ok: true });
   });
 
   it("follows the configured lifetime: a 5-minute link is dead at 6 minutes, a 120-minute one lives at 60", async () => {
     const now = new Date();
     const short = await asked(5, now);
-    await expect(applyReset(deps(5), { token: short, password: NEW }, { headers }, addMinutes(now, 6))).rejects.toMatchObject({ body: { code: "RESET_INVALID" } });
+    await expect(
+      applyReset(deps(5), { token: short, password: NEW }, { headers }, addMinutes(now, 6)),
+    ).rejects.toMatchObject({ body: { code: "RESET_INVALID" } });
     const long = await asked(120, now);
     expect(mails.at(-1)!.text).toContain("120 min");
-    await expect(applyReset(deps(120), { token: long, password: NEW }, { headers }, addMinutes(now, 60))).resolves.toEqual({ ok: true });
+    await expect(
+      applyReset(deps(120), { token: long, password: NEW }, { headers }, addMinutes(now, 60)),
+    ).resolves.toEqual({ ok: true });
   });
 
   it("a new request retires the earlier link", async () => {
     const first = await asked();
     const second = await asked();
-    await expect(applyReset(deps(), { token: first, password: NEW }, { headers }, new Date())).rejects.toMatchObject({ body: { code: "RESET_INVALID" } });
-    await expect(applyReset(deps(), { token: second, password: NEW }, { headers }, new Date())).resolves.toEqual({ ok: true });
+    await expect(applyReset(deps(), { token: first, password: NEW }, { headers }, new Date())).rejects.toMatchObject({
+      body: { code: "RESET_INVALID" },
+    });
+    await expect(applyReset(deps(), { token: second, password: NEW }, { headers }, new Date())).resolves.toEqual({
+      ok: true,
+    });
   });
 
   it("does not use the link up on a value that is too short", async () => {
     const token = await asked();
-    await expect(applyReset(deps(), { token, password: "short" }, { headers }, new Date())).rejects.toMatchObject({ status: 400, body: { code: "PASSWORD_TOO_SHORT" } });
+    await expect(applyReset(deps(), { token, password: "short" }, { headers }, new Date())).rejects.toMatchObject({
+      status: 400,
+      body: { code: "PASSWORD_TOO_SHORT" },
+    });
     await expect(applyReset(deps(), { token, password: NEW }, { headers }, new Date())).resolves.toEqual({ ok: true });
   });
 
@@ -114,7 +143,9 @@ describe.runIf(enabled)("the forgot-password flow", () => {
     const chosen = "audit secret value 000 zzz";
     const token = await asked();
     await applyReset(deps(), { token, password: chosen }, { headers }, new Date());
-    const lines = await query<{ action: string; detail: unknown; actor_label: string }>("SELECT action, detail, actor_label FROM audit_log WHERE action IN ('auth.password_reset_requested', 'auth.password_reset')");
+    const lines = await query<{ action: string; detail: unknown; actor_label: string }>(
+      "SELECT action, detail, actor_label FROM audit_log WHERE action IN ('auth.password_reset_requested', 'auth.password_reset')",
+    );
     expect(lines.filter((l) => l.action === "auth.password_reset_requested").length).toBeGreaterThan(0);
     expect(lines.filter((l) => l.action === "auth.password_reset").length).toBeGreaterThan(0);
     const written = JSON.stringify(lines);

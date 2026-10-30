@@ -15,6 +15,8 @@ export function PUT(req: Request, { params }: { params: Promise<{ id: string }> 
     const { id } = await params;
     if (!isUuid(id)) throw refuse(404, "NOT_FOUND", "No such flow");
     const input = await readJson(req, z.object({ definition: flowDefinition }));
-    return Response.json(await saveDraft({ id: session.account.id, email: session.account.email }, id, input.definition, req.headers));
+    return Response.json(
+      await saveDraft({ id: session.account.id, email: session.account.email }, id, input.definition, req.headers),
+    );
   });
 }

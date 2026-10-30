@@ -23,8 +23,14 @@ export function POST(req: Request, { params }: { params: Promise<{ id: string }>
     const session = await requireSession(req);
     await limit("reportGrant", req, session.account.id);
     const { id } = await params;
-    const input = await readJson(req, z.object({ recipient: z.string().max(120).optional(), days: z.number().int().optional() }));
-    return Response.json(await createShare({ id: session.account.id, email: session.account.email }, id, input, new Date(), req.headers), { status: 201, headers: noStore });
+    const input = await readJson(
+      req,
+      z.object({ recipient: z.string().max(120).optional(), days: z.number().int().optional() }),
+    );
+    return Response.json(
+      await createShare({ id: session.account.id, email: session.account.email }, id, input, new Date(), req.headers),
+      { status: 201, headers: noStore },
+    );
   });
 }
 

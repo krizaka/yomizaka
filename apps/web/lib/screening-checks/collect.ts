@@ -55,20 +55,35 @@ export function dueChecks(now: Date, limit: number): Promise<Due[]> {
 
 /** The summary the tenant sees is rebuilt from the checks' lines: same band rule as at consent. */
 export async function refreshResult(screeningId: string, now: Date): Promise<void> {
-  const rows = await query<{ check_type: string; outcome: string; refusal: string | null }>("SELECT check_type, outcome, refusal FROM screening_checks WHERE screening_id = $1 ORDER BY check_type", [screeningId]);
-  const [current] = await query<{ result: ScreeningResult | null }>("SELECT result FROM screenings WHERE id = $1", [screeningId]);
+  const rows = await query<{ check_type: string; outcome: string; refusal: string | null }>(
+    "SELECT check_type, outcome, refusal FROM screening_checks WHERE screening_id = $1 ORDER BY check_type",
+    [screeningId],
+  );
+  const [current] = await query<{ result: ScreeningResult | null }>("SELECT result FROM screenings WHERE id = $1", [
+    screeningId,
+  ]);
   if (!current?.result || rows.length === 0) return;
   const order = new Map(current.result.items.map((i, n) => [i.key, n]));
-  const items = rows.map((r) => itemOf(r.check_type, r as never)).sort((a, b) => (order.get(a.key) ?? 99) - (order.get(b.key) ?? 99));
+  const items = rows
+    .map((r) => itemOf(r.check_type, r as never))
+    .sort((a, b) => (order.get(a.key) ?? 99) - (order.get(b.key) ?? 99));
   const result: ScreeningResult = { ...current.result, band: bandOf(items), items, generatedAt: now.toISOString() };
-  await query("UPDATE screenings SET result = $2 WHERE id = $1 AND result IS NOT NULL", [screeningId, JSON.stringify(result)]);
+  await query("UPDATE screenings SET result = $2 WHERE id = $1 AND result IS NOT NULL", [
+    screeningId,
+    JSON.stringify(result),
+  ]);
 }
 
 /** Polls one check. Returns true when it was settled by this call. */
 export async function collectOne(due: Due, provider: CheckProvider, now: Date): Promise<boolean> {
   let polled: CheckResult;
   try {
-    const call = { userId: due.landlord_id, runId: due.run_id, subject: { subjectId: due.screening_id, ...namesOf(due.tenant_name) }, region: due.region };
+    const call = {
+      userId: due.landlord_id,
+      runId: due.run_id,
+      subject: { subjectId: due.screening_id, ...namesOf(due.tenant_name) },
+      region: due.region,
+    };
     polled = await provider.collect(due.purpose, call, due.provider_ref ?? "");
   } catch (error) {
     // A transient failure of the poll is not an answer: the check stays pending and is asked again.
@@ -77,7 +92,10 @@ export async function collectOne(due: Due, provider: CheckProvider, now: Date): 
   }
   const next = decide(polled, due.polls, due.poll_max, due.poll_minutes, now);
   if ("later" in next) {
-    await query("UPDATE screening_checks SET polls = polls + 1, next_poll_at = $2 WHERE id = $1 AND state = 'pending'", [due.id, next.later]);
+    await query(
+      "UPDATE screening_checks SET polls = polls + 1, next_poll_at = $2 WHERE id = $1 AND state = 'pending'",
+      [due.id, next.later],
+    );
     return false;
   }
   const final = "settle" in next ? next.settle : GAVE_UP;
@@ -89,7 +107,13 @@ export async function collectOne(due: Due, provider: CheckProvider, now: Date): 
   if (settled.length === 0) return false;
   await refreshResult(due.screening_id, now);
   if (isRefundable(state)) await refundIfBilled(due.screening_id, due.check_type, now);
-  await audit({ action: "screening.check.collected", actorId: null, actorLabel: "collector", targetId: due.screening_id, detail: { checkType: due.check_type, outcome: final.outcome, state, runId: due.run_id } });
+  await audit({
+    action: "screening.check.collected",
+    actorId: null,
+    actorLabel: "collector",
+    targetId: due.screening_id,
+    detail: { checkType: due.check_type, outcome: final.outcome, state, runId: due.run_id },
+  });
   return state !== CHECK_STATE.pending;
 }
 

@@ -20,12 +20,24 @@ describe("the binder's plan (yomizaka#334)", () => {
 
   it("toggles a tag chip, and counts it within the rest of the address", () => {
     const [on, off] = plan.chips;
-    expect(on).toMatchObject({ id: "t1", on: true, filters: { status: [DECISION.selected] }, countFilters: { tags: ["t1"], status: [DECISION.selected] } });
-    expect(off).toMatchObject({ id: "t2", on: false, filters: { tags: ["t1", "t2"], status: [DECISION.selected] }, countFilters: { tags: ["t1", "t2"], status: [DECISION.selected] } });
+    expect(on).toMatchObject({
+      id: "t1",
+      on: true,
+      filters: { status: [DECISION.selected] },
+      countFilters: { tags: ["t1"], status: [DECISION.selected] },
+    });
+    expect(off).toMatchObject({
+      id: "t2",
+      on: false,
+      filters: { tags: ["t1", "t2"], status: [DECISION.selected] },
+      countFilters: { tags: ["t1", "t2"], status: [DECISION.selected] },
+    });
   });
 
   it("has no active state without a decision filter", () => {
     expect(binderPlan(DECISION_SET, [], {}).activeState).toBeNull();
-    expect(binderPlan(DECISION_SET, [], { status: [DECISION.toDecide, DECISION.selected] }).activeState).toBe("multiple");
+    expect(binderPlan(DECISION_SET, [], { status: [DECISION.toDecide, DECISION.selected] }).activeState).toBe(
+      "multiple",
+    );
   });
 });

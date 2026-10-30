@@ -14,7 +14,11 @@ describe("atOffsets", () => {
 
 describe("keyedByLabel", () => {
   it("numbers the rows that share a label, in order", () => {
-    const rows = keyedByLabel([["Date", "a"], ["Party", "b"], ["Date", "c"]] as const);
+    const rows = keyedByLabel([
+      ["Date", "a"],
+      ["Party", "b"],
+      ["Date", "c"],
+    ] as const);
     expect(rows.map((r) => r.key)).toEqual(["Date#0", "Party#0", "Date#1"]);
     expect(rows.map((r) => r.value)).toEqual(["a", "b", "c"]);
   });

@@ -16,9 +16,23 @@ export const openIncidentInput = z.object({
 });
 
 export const incidentStepInput = z.discriminatedUnion("action", [
-  z.object({ action: z.literal("assess"), assessment: z.object({ sensitivity: level, consequences: level, likelihood: level, seriousInjury: z.boolean(), rationale: z.string().trim().min(1).max(2000) }) }),
+  z.object({
+    action: z.literal("assess"),
+    assessment: z.object({
+      sensitivity: level,
+      consequences: level,
+      likelihood: level,
+      seriousInjury: z.boolean(),
+      rationale: z.string().trim().min(1).max(2000),
+    }),
+  }),
   z.object({ action: z.literal("measure"), text: z.string().trim().min(1).max(1000) }),
-  z.object({ action: z.literal("notice"), target: z.enum([NOTICE_TARGET.cai, NOTICE_TARGET.persons]), channel: z.string().trim().min(1).max(40), reference: z.string().trim().min(1).max(200).optional() }),
+  z.object({
+    action: z.literal("notice"),
+    target: z.enum([NOTICE_TARGET.cai, NOTICE_TARGET.persons]),
+    channel: z.string().trim().min(1).max(40),
+    reference: z.string().trim().min(1).max(200).optional(),
+  }),
   z.object({ action: z.literal("drill"), drill: z.boolean() }),
   z.object({ action: z.literal("close") }),
 ]);

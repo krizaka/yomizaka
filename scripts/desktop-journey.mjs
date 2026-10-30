@@ -19,10 +19,13 @@ import { generateDocument } from "./demo-documents/index.mjs";
 import { createFilm, windowRect } from "./desktop-film-lib.mjs";
 import { client, libraryHash, scopeFile, scopeJson, until } from "./desktop-journey-lib.mjs";
 
-const { values } = parseArgs({ options: { app: { type: "string" }, out: { type: "string", default: "desktop-journey" } } });
+const { values } = parseArgs({
+  options: { app: { type: "string" }, out: { type: "string", default: "desktop-journey" } },
+});
 if (!values.app) throw new Error("--app <path to the debug binary> is required");
 const persona = { email: process.env.SMOKE_EMAIL, secret: process.env.SMOKE_PASSWORD };
-if (!persona.email || !persona.secret) throw new Error("SMOKE_EMAIL and SMOKE_PASSWORD are required (the persona of the dev environment)");
+if (!persona.email || !persona.secret)
+  throw new Error("SMOKE_EMAIL and SMOKE_PASSWORD are required (the persona of the dev environment)");
 
 const home = homedir();
 const out = resolve(values.out);
@@ -52,7 +55,8 @@ function launch() {
   return child;
 }
 
-const connect = (step) => until(`the app's WebDriver (${step})`, () => client().start(), { timeoutMs: LAUNCH_MS, everyMs: 1000 });
+const connect = (step) =>
+  until(`the app's WebDriver (${step})`, () => client().start(), { timeoutMs: LAUNCH_MS, everyMs: 1000 });
 
 async function shot(driver, name) {
   await mkdir(out, { recursive: true });
@@ -63,7 +67,11 @@ const FOLDER_LINK = "aside a[href^='#/library/']";
 
 /** Signs in when the app asks for it; says whether it did. */
 async function signInIfAsked(driver) {
-  await until("the sign-in or the library", async () => (await driver.exists("input[name=email]")) || (await driver.exists(FOLDER_LINK)), { timeoutMs: SCREEN_MS });
+  await until(
+    "the sign-in or the library",
+    async () => (await driver.exists("input[name=email]")) || (await driver.exists(FOLDER_LINK)),
+    { timeoutMs: SCREEN_MS },
+  );
   if (!(await driver.exists("input[name=email]"))) return false;
   await driver.type(await driver.find("input[name=email]"), persona.email);
   await driver.type(await driver.find("input[name=password]"), persona.secret);

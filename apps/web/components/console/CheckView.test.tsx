@@ -11,10 +11,19 @@ import fr from "@/messages/fr.json";
 
 import { CheckQueue, CheckView, KindQuestion } from "./CheckView";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push() {}, replace() {}, refresh() {} }), usePathname: () => "/fr/app/check", useSearchParams: () => new URLSearchParams() }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push() {}, replace() {}, refresh() {} }),
+  usePathname: () => "/fr/app/check",
+  useSearchParams: () => new URLSearchParams(),
+}));
 
 const MESSAGES = { en: { console: en.console }, fr: { console: fr.console } } as const;
-const readable = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ");
+const readable = (html: string) =>
+  html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&#x27;|&#39;/g, "'")
+    .replace(/&[a-z#0-9]+;/gi, " ")
+    .replace(/\s+/g, " ");
 const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/'/g, "(?:'|&#x27;)");
 const wrap = (node: React.ReactNode, locale: "en" | "fr" = "fr") =>
   renderToStaticMarkup(
@@ -41,7 +50,8 @@ describe("« Vérifier un document » (the UX review's Y4)", () => {
     // Before the drop zone (its title after the page's h1; the section's own label carries it too).
     expect(defaults).toBeLessThan(html.indexOf(fr.console.library.dropTitle, html.indexOf("</h1>")));
     const text = readable(html);
-    for (const key of ["erased", "rules", "place", "modify"] as const) expect(text).toContain(fr.console.check.defaults[key]);
+    for (const key of ["erased", "rules", "place", "modify"] as const)
+      expect(text).toContain(fr.console.check.defaults[key]);
     expect(html).toContain('data-testid="keep-choice"');
     // « Ces photos sont les pages d'un document » only once photos are known (the review's C3).
     expect(html).not.toContain('data-testid="group-photos"');
@@ -73,13 +83,17 @@ describe("the kind picker, asked only when the kind is uncertain (yomizaka#318, 
 });
 
 describe("the queue: one row per file, its stage in words (yomizaka#326, P9)", () => {
-  const row = (id: string, stage: string, refused: string | null = null) => ({ id, filename: `${id}.pdf`, stage, refused }) as never;
-  const queue = (rows: never[], locale: "en" | "fr" = "fr") => wrap(<CheckQueue rows={rows} onPick={() => {}} />, locale);
+  const row = (id: string, stage: string, refused: string | null = null) =>
+    ({ id, filename: `${id}.pdf`, stage, refused }) as never;
+  const queue = (rows: never[], locale: "en" | "fr" = "fr") =>
+    wrap(<CheckQueue rows={rows} onPick={() => {}} />, locale);
 
   it("says every stage in words — progress is never a bare bar, so reduced motion keeps it", () => {
     for (const locale of ["fr", "en"] as const) {
       const m = MESSAGES[locale].console.check.stages;
-      const text = readable(queue([row("a", "reading"), row("b", "starting"), row("c", "started"), row("d", "refused", "PAYWALL")], locale));
+      const text = readable(
+        queue([row("a", "reading"), row("b", "starting"), row("c", "started"), row("d", "refused", "PAYWALL")], locale),
+      );
       expect(text).toContain(m.reading);
       expect(text).toContain(m.starting);
       expect(text).toContain(m.started);
@@ -103,8 +117,19 @@ describe("the queue: one row per file, its stage in words (yomizaka#326, P9)", (
   });
 });
 
-const tenant = catalogueOf(offerOf(SEED_FLOWS.filter((f) => f.definition.audiences.includes("tenant")).map((f) => f.definition)));
-const withCatalogue = (props: Partial<Parameters<typeof CheckView>[0]> = {}, locale: "en" | "fr" = "fr") => wrap(<CheckView catalogue={tenant} credits={{ kind: "pro", used: 18, cap: 100, renewsAt: null, cancelled: false }} now="2026-10-25T16:00:00.000Z" {...props} />, locale);
+const tenant = catalogueOf(
+  offerOf(SEED_FLOWS.filter((f) => f.definition.audiences.includes("tenant")).map((f) => f.definition)),
+);
+const withCatalogue = (props: Partial<Parameters<typeof CheckView>[0]> = {}, locale: "en" | "fr" = "fr") =>
+  wrap(
+    <CheckView
+      catalogue={tenant}
+      credits={{ kind: "pro", used: 18, cap: 100, renewsAt: null, cancelled: false }}
+      now="2026-10-25T16:00:00.000Z"
+      {...props}
+    />,
+    locale,
+  );
 
 describe("« Vérifier un document », B2: the plan strip, the catalogue, the drop and the run (yomizaka#333)", () => {
   it("shows where the account stands: its plan and its audits from the billing state, with the meter", () => {
@@ -120,7 +145,10 @@ describe("« Vérifier un document », B2: the plan strip, the catalogue, the dr
 
   it("credits: the audits left and no meter; an account an operator made says its audits are included", () => {
     const credits = withCatalogue({ credits: { kind: "credits", left: 3 } });
-    const strip = credits.slice(credits.indexOf('data-testid="plan-strip"'), credits.indexOf('data-testid="check-drop"'));
+    const strip = credits.slice(
+      credits.indexOf('data-testid="plan-strip"'),
+      credits.indexOf('data-testid="check-drop"'),
+    );
     expect(readable(strip)).toMatch(/\b3\b/);
     expect(strip).not.toContain('role="meter"');
     expect(readable(withCatalogue({ credits: { kind: "included" } }))).toContain(fr.console.check.plan.included);
@@ -139,7 +167,10 @@ describe("« Vérifier un document », B2: the plan strip, the catalogue, the dr
 
   it("the chips carry the counts of each group, « Toutes » first", () => {
     const html = withCatalogue();
-    const chips = html.slice(html.indexOf('data-testid="catalogue-chips"'), html.indexOf("</div>", html.indexOf('data-testid="catalogue-chips"')));
+    const chips = html.slice(
+      html.indexOf('data-testid="catalogue-chips"'),
+      html.indexOf("</div>", html.indexOf('data-testid="catalogue-chips"')),
+    );
     expect(readable(chips)).toMatch(/Toutes · 6\s+Baux · 3\s+Avis et états · 2\s+Authenticité · 1/);
   });
 

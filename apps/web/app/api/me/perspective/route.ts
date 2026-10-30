@@ -13,7 +13,10 @@ export const dynamic = "force-dynamic";
 export function GET(req: Request) {
   return handle(async () => {
     const session = await requireSession(req);
-    return Response.json({ perspective: session.account.perspective }, { headers: { "Cache-Control": "private, no-store" } });
+    return Response.json(
+      { perspective: session.account.perspective },
+      { headers: { "Cache-Control": "private, no-store" } },
+    );
   });
 }
 
@@ -24,7 +27,14 @@ export function PUT(req: Request) {
     await limit("perspective", req, session.account.id);
     const input = await readJson(req, z.object({ perspective: audience }));
     await setPerspective(session.account.id, input.perspective);
-    await audit({ action: "profile.perspective_set", actorId: session.account.id, actorLabel: session.account.email, targetId: session.account.id, detail: { from: session.account.perspective, to: input.perspective }, headers: req.headers });
+    await audit({
+      action: "profile.perspective_set",
+      actorId: session.account.id,
+      actorLabel: session.account.email,
+      targetId: session.account.id,
+      detail: { from: session.account.perspective, to: input.perspective },
+      headers: req.headers,
+    });
     return Response.json({ perspective: input.perspective }, { headers: { "Cache-Control": "private, no-store" } });
   });
 }

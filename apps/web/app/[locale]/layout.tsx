@@ -32,7 +32,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /** The root of every page, in the language of the address, dark by default (the visitor's `kz-theme` wins). */
-export default async function LocaleLayout({ children, params }: Readonly<{ children: React.ReactNode; params: Promise<{ locale: string }> }>) {
+export default async function LocaleLayout({
+  children,
+  params,
+}: Readonly<{ children: React.ReactNode; params: Promise<{ locale: string }> }>) {
   const { locale } = await params;
   if (!LOCALES.includes(locale as Locale)) notFound();
   return (

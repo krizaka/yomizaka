@@ -23,7 +23,10 @@ describe("paymentReturnOf", () => {
 });
 
 describe("the band words", () => {
-  it.each([["en", en], ["fr", fr]] as const)("%s: a sentence for every kind that is sold", (_l, dict) => {
+  it.each([
+    ["en", en],
+    ["fr", fr],
+  ] as const)("%s: a sentence for every kind that is sold", (_l, dict) => {
     for (const kind of SOLD_KINDS) expect(dict.console.paymentReturn.paid[kind].length).toBeGreaterThan(10);
   });
 });

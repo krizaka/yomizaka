@@ -15,9 +15,20 @@ export function POST(req: Request) {
   return handle(async () => {
     const caller = await apiCaller(req, "checks:write", systemClock);
     const form = await readCheckForm(req);
-    const batch = await createBatch(caller.account, form.name, form.manifest, form.files, { settings: await settingsFor(caller.account.id), now: systemClock.now(), environment: appEnvironment() });
+    const batch = await createBatch(caller.account, form.name, form.manifest, form.files, {
+      settings: await settingsFor(caller.account.id),
+      now: systemClock.now(),
+      environment: appEnvironment(),
+    });
     const check = checkView(batch);
-    await audit({ action: "api.check.created", actorId: caller.account.id, actorLabel: `api-key:${caller.keyId}`, targetId: check.id, detail: { state: check.state, error: check.error }, headers: req.headers });
+    await audit({
+      action: "api.check.created",
+      actorId: caller.account.id,
+      actorLabel: `api-key:${caller.keyId}`,
+      targetId: check.id,
+      detail: { state: check.state, error: check.error },
+      headers: req.headers,
+    });
     return Response.json({ check }, { status: 201 });
   });
 }

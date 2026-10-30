@@ -20,8 +20,10 @@ export function accountsFromEnv(env) {
     { email: env.QA_ADMIN_EMAIL, password: env.QA_ADMIN_PASSWORD, role: "ADMIN" },
   ];
   for (const a of accounts) {
-    if (!a.email || !/^[^@\s]+@[^@\s]+$/.test(a.email)) throw new Error(`a QA e-mail is missing or invalid (${a.role})`);
-    if (!a.password || a.password.length < 12) throw new Error(`the ${a.role} password is missing or shorter than 12 characters`);
+    if (!a.email || !/^[^@\s]+@[^@\s]+$/.test(a.email))
+      throw new Error(`a QA e-mail is missing or invalid (${a.role})`);
+    if (!a.password || a.password.length < 12)
+      throw new Error(`the ${a.role} password is missing or shorter than 12 characters`);
   }
   return accounts.map((a) => ({ ...a, email: a.email.trim().toLowerCase(), name: QA_PERSONAS[a.role].displayName }));
 }
@@ -31,7 +33,10 @@ async function main() {
   const url = new URL(process.env.DATABASE_URL ?? "");
   const tls = ["require", "verify-ca", "verify-full"].includes(url.searchParams.get("sslmode") ?? "");
   url.searchParams.delete("sslmode");
-  const client = new pg.Client({ connectionString: url.toString(), ...(tls ? { ssl: { ca: process.env.DATABASE_CA_CERT?.replace(/\\n/g, "\n"), rejectUnauthorized: true } } : {}) });
+  const client = new pg.Client({
+    connectionString: url.toString(),
+    ...(tls ? { ssl: { ca: process.env.DATABASE_CA_CERT?.replace(/\\n/g, "\n"), rejectUnauthorized: true } } : {}),
+  });
   await client.connect();
   try {
     for (const a of accountsFromEnv(process.env)) {

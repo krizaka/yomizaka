@@ -11,7 +11,11 @@ export interface ContractHarness {
 }
 
 /** What every DocumentStore adapter must do (ADR-0007): the same behaviour behind the same port. */
-export function documentStoreContractWith(name: string, make: () => DocumentStore | Promise<DocumentStore>, { it, expect }: ContractHarness): void {
+export function documentStoreContractWith(
+  name: string,
+  make: () => DocumentStore | Promise<DocumentStore>,
+  { it, expect }: ContractHarness,
+): void {
   const id = () => `contract/${Math.random().toString(36).slice(2)}/doc.pdf`;
   const bytes = () => new Uint8Array([37, 80, 68, 70, 0, 255, 1, 2, 3]);
 
@@ -40,7 +44,8 @@ export function documentStoreContractWith(name: string, make: () => DocumentStor
   it(`${name}: refuses a key that could leave its prefix, or that two adapters could read differently`, async () => {
     const store = await make();
     // A `.` segment is refused everywhere: a store that keeps files would see `a/./b.pdf` and `a/b.pdf` as one object, a Map as two.
-    for (const bad of ["../x", "a/../b", "/abs", "a//b", "UPPER/case", "a/b/", "", "a/./b.pdf", "a/."]) await expect(store.put(bad, bytes(), { contentType: "text/plain" })).rejects.toMatchObject({ status: 400 });
+    for (const bad of ["../x", "a/../b", "/abs", "a//b", "UPPER/case", "a/b/", "", "a/./b.pdf", "a/."])
+      await expect(store.put(bad, bytes(), { contentType: "text/plain" })).rejects.toMatchObject({ status: 400 });
   });
 
   it(`${name}: keeps a key and a longer key under it apart`, async () => {

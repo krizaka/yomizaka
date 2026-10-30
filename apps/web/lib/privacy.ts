@@ -16,7 +16,10 @@ export const accountSubject = (accountId: string): Subject => ({ kind: "account"
 
 /** The purposes a person has said something about (a consent or a withdrawal): what an erasure must withdraw. */
 export async function purposesOf(accountId: string): Promise<string[]> {
-  const rows = await query<{ purpose: string }>("SELECT DISTINCT purpose FROM privacy.consent WHERE subject_kind = 'account' AND subject_id = $1", [accountId]);
+  const rows = await query<{ purpose: string }>(
+    "SELECT DISTINCT purpose FROM privacy.consent WHERE subject_kind = 'account' AND subject_id = $1",
+    [accountId],
+  );
   return rows.map((r) => r.purpose);
 }
 
@@ -26,7 +29,10 @@ const contributors = (deps: { stores: StoresOf; now: Date }, privacy: () => Priv
     // the trail's export is the package's; its erasure is stricter than `redactActor`: the person's entries lose the label, the address AND the detail (which may name them)
     ...auditContributor(trail),
     async eraseFor(tx, subject) {
-      await tx("UPDATE audit.entry SET actor_label = 'deleted account', ip = NULL, detail = '{}'::jsonb WHERE actor_id = $1::uuid OR target_id = $1::text", [subject.id]);
+      await tx(
+        "UPDATE audit.entry SET actor_label = 'deleted account', ip = NULL, detail = '{}'::jsonb WHERE actor_id = $1::uuid OR target_id = $1::text",
+        [subject.id],
+      );
     },
   },
   {
@@ -43,7 +49,10 @@ const contributors = (deps: { stores: StoresOf; now: Date }, privacy: () => Priv
     name: "screenings",
     // the screenings the person asked for as a landlord: who, which scope, where it stands. The result itself is the tenant's, never exported here.
     async exportFor(q, subject) {
-      return q("SELECT id, tenant_name, tenant_email, scope, provider, status, created_at, expires_at, consented_at, shared_at, contested_at FROM screenings WHERE landlord_id = $1 ORDER BY created_at", [subject.id]);
+      return q(
+        "SELECT id, tenant_name, tenant_email, scope, provider, status, created_at, expires_at, consented_at, shared_at, contested_at FROM screenings WHERE landlord_id = $1 ORDER BY created_at",
+        [subject.id],
+      );
     },
     async eraseFor() {
       // cascaded with the identity
@@ -113,4 +122,5 @@ export function privacyFor(deps: { stores: StoresOf; purposes: readonly string[]
 }
 
 /** The consents alone (record, read, history): no module to export or erase. `purposes` are the ones the call may write. */
-export const consentsFor = (purposes: readonly string[]): Privacy => createPrivacy({ clock: systemClock, purposes, contributors: [], transaction });
+export const consentsFor = (purposes: readonly string[]): Privacy =>
+  createPrivacy({ clock: systemClock, purposes, contributors: [], transaction });

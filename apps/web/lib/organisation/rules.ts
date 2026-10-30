@@ -4,7 +4,18 @@ import { z } from "zod";
 import { refuse } from "../http";
 
 /** The rules that need the HTTP layer; the pure ones (ids, tag colours, the filters) are `@yomizaka/core`'s, read by the apps too. */
-export { applyFilters, isId, parseTagsParam, parseView, TAG_COLORS, type TagColor, tagsHref, toggleTag, viewHref,type ViewState } from "@yomizaka/core";
+export {
+  applyFilters,
+  isId,
+  parseTagsParam,
+  parseView,
+  TAG_COLORS,
+  type TagColor,
+  tagsHref,
+  toggleTag,
+  viewHref,
+  type ViewState,
+} from "@yomizaka/core";
 
 export function cleanName(raw: string): string {
   const name = raw.replace(/\s+/g, " ").trim();
@@ -14,7 +25,9 @@ export function cleanName(raw: string): string {
 }
 
 export function libraryPath(locale: string, library: string, collection?: string, folder?: string): string {
-  return ["", locale, "app", "library", library, collection, collection ? folder : undefined].filter((p) => p !== undefined).join("/");
+  return ["", locale, "app", "library", library, collection, collection ? folder : undefined]
+    .filter((p) => p !== undefined)
+    .join("/");
 }
 
 const choice = z.object({ files: z.enum(["move", "delete"]), to: z.string().nullish() });
@@ -31,6 +44,14 @@ export function deleteChoice(input: unknown): DeleteChoice {
 }
 
 /** Where a folder is once moved to each collection the person may choose: its new address (a collection whose library is unknown gives none). */
-export function movedFolderHrefs(locale: string, collections: readonly { id: string; libraryId?: string }[], folderId: string): Record<string, string> {
-  return Object.fromEntries(collections.flatMap((c) => (c.libraryId ? [[c.id, libraryPath(locale, c.libraryId, c.id, folderId)] as const] : [])));
+export function movedFolderHrefs(
+  locale: string,
+  collections: readonly { id: string; libraryId?: string }[],
+  folderId: string,
+): Record<string, string> {
+  return Object.fromEntries(
+    collections.flatMap((c) =>
+      c.libraryId ? [[c.id, libraryPath(locale, c.libraryId, c.id, folderId)] as const] : [],
+    ),
+  );
 }

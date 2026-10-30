@@ -42,7 +42,14 @@ function isStripeReceipt(value: string): boolean {
 
 export function paymentHistoryOf(charges: readonly RawCharge[]): PaymentRow[] {
   return charges
-    .filter((c) => c.paid === true && CHARGE_DONE.has(String(c.status)) && typeof c.id === "string" && typeof c.created === "number" && typeof c.amount === "number")
+    .filter(
+      (c) =>
+        c.paid === true &&
+        CHARGE_DONE.has(String(c.status)) &&
+        typeof c.id === "string" &&
+        typeof c.created === "number" &&
+        typeof c.amount === "number",
+    )
     .map((c) => ({
       id: c.id as string,
       at: new Date((c.created as number) * 1000).toISOString(),

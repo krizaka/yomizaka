@@ -12,8 +12,18 @@ export function fakeBucket() {
   const fetchLike: FetchLike = async (url, init) => {
     const target = new URL(url);
     const key = `${target.origin}${target.pathname}`;
-    calls.push({ method: init.method, url, signed: (init.headers.authorization ?? init.headers.Authorization ?? "").startsWith("AWS4-HMAC-SHA256") });
-    const reply = (status: number, body?: Held) => ({ ok: status < 300, status, headers: { get: (n: string) => (n.toLowerCase() === "content-type" ? (body?.contentType ?? null) : null) }, arrayBuffer: async () => new Uint8Array(body?.bytes ?? []).buffer, text: async () => "" });
+    calls.push({
+      method: init.method,
+      url,
+      signed: (init.headers.authorization ?? init.headers.Authorization ?? "").startsWith("AWS4-HMAC-SHA256"),
+    });
+    const reply = (status: number, body?: Held) => ({
+      ok: status < 300,
+      status,
+      headers: { get: (n: string) => (n.toLowerCase() === "content-type" ? (body?.contentType ?? null) : null) },
+      arrayBuffer: async () => new Uint8Array(body?.bytes ?? []).buffer,
+      text: async () => "",
+    });
     if (init.method === "PUT") {
       objects.set(key, { bytes: init.body!, contentType: init.headers["content-type"] ?? "application/octet-stream" });
       return reply(200);

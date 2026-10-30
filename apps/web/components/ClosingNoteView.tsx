@@ -12,7 +12,11 @@ export function ClosingNoteView({ note }: Readonly<{ note: ClosingNote }>) {
     else groups.at(-1)?.lines.push(line);
   }
   return (
-    <section aria-labelledby="closing-note-title" className="flex flex-col gap-4 rounded-lg border border-border-default bg-surface-1 p-4" data-testid="closing-note">
+    <section
+      aria-labelledby="closing-note-title"
+      className="flex flex-col gap-4 rounded-lg border border-border-default bg-surface-1 p-4"
+      data-testid="closing-note"
+    >
       <h3 id="closing-note-title" className="m-0 font-display text-lg font-bold text-fg">
         {note.title}
       </h3>

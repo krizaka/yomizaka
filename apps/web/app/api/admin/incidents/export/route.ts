@@ -12,5 +12,11 @@ export const GET = (req: Request) =>
     const format = exportFormat.safeParse(new URL(req.url).searchParams.get("format") ?? "json");
     if (!format.success) throw refuse(400, "BAD_REQUEST", "format is csv or json");
     const file = await exportIncidentRegister(session.account, format.data, req.headers);
-    return new Response(file.body, { headers: { "Content-Type": file.type, "Content-Disposition": `attachment; filename="${file.filename}"`, "Cache-Control": "private, no-store" } });
+    return new Response(file.body, {
+      headers: {
+        "Content-Type": file.type,
+        "Content-Disposition": `attachment; filename="${file.filename}"`,
+        "Cache-Control": "private, no-store",
+      },
+    });
   });

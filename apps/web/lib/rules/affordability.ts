@@ -24,7 +24,11 @@ export interface AffordabilityInput {
 }
 
 export type AffordabilityResult =
-  | { ruleId: typeof AFFORDABILITY_RULE.id; code: "share"; figures: { rentCents: number; monthlyIncomeCents: number; shareBasisPoints: number } }
+  | {
+      ruleId: typeof AFFORDABILITY_RULE.id;
+      code: "share";
+      figures: { rentCents: number; monthlyIncomeCents: number; shareBasisPoints: number };
+    }
   | { ruleId: typeof AFFORDABILITY_RULE.id; code: "no-claim"; figures: { rentCents: number } };
 
 const isPositiveInt = (n: unknown): n is number => typeof n === "number" && Number.isInteger(n) && n > 0;

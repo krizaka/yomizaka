@@ -13,13 +13,18 @@ vi.mock("./db", () => ({
 }));
 vi.mock("./audit", () => ({ audit: vi.fn(async () => undefined) }));
 
-
 import { audit } from "./audit";
 import { SAMPLE_LEASE } from "./sample-lease";
 import { getShowcase, getShowcaseView, setSample, setShowcase, SHOWCASE_SQL, showcaseFile } from "./showcase";
 
 // A real Orazaka compliance report (blueprint 1.2.0, jurisdiction Québec, nine findings), as the showcase row holds it.
-const REPORT = reportOf("compliance-check", [{ key: "report", type: "JSON", value: readFileSync(new URL("./fixtures/orazaka-compliance-qc-1.2.0.json", import.meta.url), "utf8") }])!;
+const REPORT = reportOf("compliance-check", [
+  {
+    key: "report",
+    type: "JSON",
+    value: readFileSync(new URL("./fixtures/orazaka-compliance-qc-1.2.0.json", import.meta.url), "utf8"),
+  },
+])!;
 const ID = "7d3f6a52-2f3a-4d44-9a0e-1b7f6f6c2a10";
 const RUN = "de62fe0d-16ec-44c6-8b32-751607e17cdf";
 const row = (over: Record<string, unknown> = {}) => ({
@@ -52,7 +57,9 @@ beforeEach(() => {
 
 describe("what the public can see", () => {
   it("is read only through a query that requires BOTH the showcase flag and the sample flag", () => {
-    expect(SHOWCASE_SQL).toMatch(/WHERE a\.showcase AND d\.sample AND a\.studio = 'compliance-check' AND a\.status = 'succeeded'/);
+    expect(SHOWCASE_SQL).toMatch(
+      /WHERE a\.showcase AND d\.sample AND a\.studio = 'compliance-check' AND a\.status = 'succeeded'/,
+    );
     expect(SHOWCASE_SQL).toMatch(/LIMIT 1/);
   });
 
@@ -107,7 +114,9 @@ describe("what an administrator may promote", () => {
     await expect(setShowcase(actor, ID, true)).resolves.toEqual({ id: ID, showcase: true });
     const last = queries.at(-1)!;
     expect(last.text).toMatch(/showcase = false WHERE showcase AND id <> \$1/);
-    expect(audit).toHaveBeenCalledWith(expect.objectContaining({ action: "admin.showcase_set", actorLabel: actor.email, targetId: ID }));
+    expect(audit).toHaveBeenCalledWith(
+      expect.objectContaining({ action: "admin.showcase_set", actorLabel: actor.email, targetId: ID }),
+    );
   });
 
   it("withdraws a check, and unmarking a sample withdraws its checks too", async () => {

@@ -32,7 +32,9 @@ describe("what happens to the files of a deleted folder or collection", () => {
 
 describe("a folder moved from its own page (the UX review's Y7)", () => {
   it("has a new address under each collection whose library is known — none for the others", () => {
-    expect(movedFolderHrefs("fr", [{ id: "c2", libraryId: "l1" }, { id: "c3" }], "f1")).toEqual({ c2: "/fr/app/library/l1/c2/f1" });
+    expect(movedFolderHrefs("fr", [{ id: "c2", libraryId: "l1" }, { id: "c3" }], "f1")).toEqual({
+      c2: "/fr/app/library/l1/c2/f1",
+    });
     expect(movedFolderHrefs("en", [], "f1")).toEqual({});
   });
 });

@@ -20,8 +20,13 @@ function trainedData(lang: string): string {
   try {
     return path.join(path.dirname(require.resolve(`@tesseract.js-data/${lang}/package.json`)), "4.0.0_best_int", file);
   } catch {
-    for (const store of [path.join(process.cwd(), "node_modules", ".pnpm"), path.join(process.cwd(), "..", "..", "node_modules", ".pnpm")]) {
-      const dir = existsSync(store) ? readdirSync(store).find((d) => d.startsWith(`@tesseract.js-data+${lang}@`)) : undefined;
+    for (const store of [
+      path.join(process.cwd(), "node_modules", ".pnpm"),
+      path.join(process.cwd(), "..", "..", "node_modules", ".pnpm"),
+    ]) {
+      const dir = existsSync(store)
+        ? readdirSync(store).find((d) => d.startsWith(`@tesseract.js-data+${lang}@`))
+        : undefined;
       if (dir) return path.join(store, dir, "node_modules", "@tesseract.js-data", lang, "4.0.0_best_int", file);
     }
     throw new OcrError("OCR_FAILED");
@@ -42,8 +47,25 @@ function languageData(languages: readonly string[]): string {
 const TIMEOUT_MS = 90_000;
 
 /** The words of a recognised page with their boxes, in reading order (blocks → paragraphs → lines → words). */
-export function wordsOf(blocks: ReadonlyArray<{ paragraphs: ReadonlyArray<{ lines: ReadonlyArray<{ words: ReadonlyArray<{ text: string; bbox: OcrWord["bbox"] }> }> }> }> | null | undefined): OcrWord[] {
-  return (blocks ?? []).flatMap((b) => b.paragraphs.flatMap((p) => p.lines.flatMap((l) => l.words.filter((w) => w.text.trim()).map((w) => ({ text: w.text.trim(), bbox: { x0: w.bbox.x0, y0: w.bbox.y0, x1: w.bbox.x1, y1: w.bbox.y1 } })))));
+export function wordsOf(
+  blocks:
+    | ReadonlyArray<{
+        paragraphs: ReadonlyArray<{
+          lines: ReadonlyArray<{ words: ReadonlyArray<{ text: string; bbox: OcrWord["bbox"] }> }>;
+        }>;
+      }>
+    | null
+    | undefined,
+): OcrWord[] {
+  return (blocks ?? []).flatMap((b) =>
+    b.paragraphs.flatMap((p) =>
+      p.lines.flatMap((l) =>
+        l.words
+          .filter((w) => w.text.trim())
+          .map((w) => ({ text: w.text.trim(), bbox: { x0: w.bbox.x0, y0: w.bbox.y0, x1: w.bbox.x1, y1: w.bbox.y1 } })),
+      ),
+    ),
+  );
 }
 
 /**
@@ -55,9 +77,15 @@ export function tesseractEngine(): OcrEngine {
     name: "tesseract",
     async read(images, languages) {
       // The worker answers a non-image with an event nobody can catch: only what is plainly a JPEG or a PNG reaches it.
-      if (!images.length || images.some((b) => !(b[0] === 0xff && b[1] === 0xd8) && !(b[0] === 0x89 && b[1] === 0x50))) throw new OcrError("OCR_FAILED");
+      if (!images.length || images.some((b) => !(b[0] === 0xff && b[1] === 0xd8) && !(b[0] === 0x89 && b[1] === 0x50)))
+        throw new OcrError("OCR_FAILED");
       const { createWorker } = await import("tesseract.js");
-      const worker = await createWorker([...languages], 1, { langPath: languageData(languages), gzip: true, cachePath: os.tmpdir(), cacheMethod: "write" }).catch((error: unknown) => {
+      const worker = await createWorker([...languages], 1, {
+        langPath: languageData(languages),
+        gzip: true,
+        cachePath: os.tmpdir(),
+        cacheMethod: "write",
+      }).catch((error: unknown) => {
         throw new OcrError("OCR_FAILED", error);
       });
       const timer = setTimeout(() => void worker.terminate(), TIMEOUT_MS);

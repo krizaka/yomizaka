@@ -18,15 +18,28 @@ const ANSWER: Record<WebhookCode, number> = {
 export function webhookRefusal(error: unknown): HttpError | null {
   const e = error as { name?: unknown; code?: unknown; detail?: unknown; message?: unknown } | null;
   const known = Object.values(WEBHOOK_CODE) as string[];
-  if (error instanceof WebhookError || (e?.name === "WebhookError" && typeof e.code === "string" && known.includes(e.code))) {
+  if (
+    error instanceof WebhookError ||
+    (e?.name === "WebhookError" && typeof e.code === "string" && known.includes(e.code))
+  ) {
     const code = (error as WebhookError).code;
-    return refuse(ANSWER[code], code, `Webhook refused: ${code}`, typeof (error as WebhookError).detail === "string" ? { detail: (error as WebhookError).detail } : {});
+    return refuse(
+      ANSWER[code],
+      code,
+      `Webhook refused: ${code}`,
+      typeof (error as WebhookError).detail === "string" ? { detail: (error as WebhookError).detail } : {},
+    );
   }
   return null;
 }
 
 /** An endpoint action: signed in, the switch on, the plan holds at least one endpoint, rate-limited; a module refusal becomes its stable answer. */
-export function webhookAct(req: Request, scope: string, now: Date, run: (session: Session, max: number) => Promise<Response | Record<string, unknown> | undefined>) {
+export function webhookAct(
+  req: Request,
+  scope: string,
+  now: Date,
+  run: (session: Session, max: number) => Promise<Response | Record<string, unknown> | undefined>,
+) {
   return accountAct(req, scope, async (session) => {
     await assertFeature("webhooks", session.account.id);
     const max = await maxEndpoints(session.account.id, now);

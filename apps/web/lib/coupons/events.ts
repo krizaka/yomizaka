@@ -24,7 +24,10 @@ export async function confirmCoupon(tx: Query, e: Paid): Promise<void> {
 
 /** An unpaid session expired: its reserved use is free again. */
 export async function releaseCoupon(tx: Query, e: Extract<PaymentEvent, { type: "checkout_expired" }>): Promise<void> {
-  await coupons.release(tx, { ...(e.metadata.redemption_id ? { redemptionId: e.metadata.redemption_id } : {}), checkoutRef: e.checkoutRef });
+  await coupons.release(tx, {
+    ...(e.metadata.redemption_id ? { redemptionId: e.metadata.redemption_id } : {}),
+    checkoutRef: e.checkoutRef,
+  });
 }
 
 /** A refund adds up on the use (the amount is the payment's cumulative refunds); a full refund gives the use back only when the admin allowed it. */

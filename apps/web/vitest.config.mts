@@ -13,8 +13,14 @@ const database = ["**/*.integration.test.ts", "lib/applicant-consent.test.ts"];
 export default defineConfig({
   test: {
     projects: [
-      { resolve: { alias }, test: { name: "unit", include, exclude: database, environment: "node", testTimeout: TIMEOUT_MS } },
-      { resolve: { alias }, test: { name: "database", include: database, environment: "node", fileParallelism: false } },
+      {
+        resolve: { alias },
+        test: { name: "unit", include, exclude: database, environment: "node", testTimeout: TIMEOUT_MS },
+      },
+      {
+        resolve: { alias },
+        test: { name: "database", include: database, environment: "node", fileParallelism: false },
+      },
     ],
   },
 });

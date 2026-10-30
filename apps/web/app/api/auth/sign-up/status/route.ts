@@ -6,5 +6,7 @@ export const dynamic = "force-dynamic";
 
 /** Whether sign-up is open right now (the product's own setting, yomizaka#243): the public bar says « Try » or « Sign in » from it. Public, short-lived, nothing personal. */
 export function GET() {
-  return handle(async () => Response.json({ open: await signupOpenNow(env()) }, { headers: { "Cache-Control": "public, max-age=60" } }));
+  return handle(async () =>
+    Response.json({ open: await signupOpenNow(env()) }, { headers: { "Cache-Control": "public, max-age=60" } }),
+  );
 }

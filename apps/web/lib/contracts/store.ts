@@ -31,7 +31,10 @@ export async function keepSealed(input: SealedInput): Promise<{ row: SealedRow; 
     [id, ownerId, p.partnerId, p.documentType, sha256, p.zone, attestation.keyId, p.sealedAt, Buffer.from(bytes)],
   );
   if (inserted[0]) return { row: inserted[0], created: true };
-  const [existing] = await query<SealedRow>("SELECT * FROM sealed_contracts WHERE id = $1 AND owner_id = $2", [id, ownerId]);
+  const [existing] = await query<SealedRow>("SELECT * FROM sealed_contracts WHERE id = $1 AND owner_id = $2", [
+    id,
+    ownerId,
+  ]);
   return { row: existing!, created: false };
 }
 

@@ -22,14 +22,26 @@ import type { ScopeState } from "./ConfigView";
 const SCOPE_CHOICES = [SCOPE.global, SCOPE.workspace, SCOPE.user] as const;
 
 /** The scope the settings are shown and changed at: global, a workspace or a person — it is in the URL (`?scope=user&id=…`). */
-const idForm = createKrizakaForm({ schema: z.object({ id: z.string().trim().min(1).max(80) }), defaultValues: { id: "" } });
+const idForm = createKrizakaForm({
+  schema: z.object({ id: z.string().trim().min(1).max(80) }),
+  defaultValues: { id: "" },
+});
 
 function ScopeId({ scope, onGo }: Readonly<{ scope: ScopeState; onGo: (scope: Scope, id: string) => void }>) {
   const { say, locale } = useSay();
-  const form = idForm.useForm({ ...formI18n(say, locale), defaultValues: { id: scope.id }, onSubmit: (v) => onGo(scope.scope, v.id) });
+  const form = idForm.useForm({
+    ...formI18n(say, locale),
+    defaultValues: { id: scope.id },
+    onSubmit: (v) => onGo(scope.scope, v.id),
+  });
   return (
     <form.Form aria-label={say("adminConfig.scope.label")} className="flex flex-wrap items-end gap-2">
-      <form.TextField name="id" label={say("adminConfig.scope.id")} placeholder={say("adminConfig.scope.idHint")} autoComplete="off" />
+      <form.TextField
+        name="id"
+        label={say("adminConfig.scope.id")}
+        placeholder={say("adminConfig.scope.idHint")}
+        autoComplete="off"
+      />
       <form.Submit size="md" variant="secondary">
         {say("adminConfig.scope.apply")}
       </form.Submit>
@@ -42,11 +54,17 @@ export function ScopeBar({ scope }: Readonly<{ scope: ScopeState }>) {
   const router = useRouter();
   const path = usePathname() ?? "";
   const id = scope.id;
-  const go = (next: Scope, nextId: string) => router.push(next === SCOPE.global ? path : `${path}?scope=${next}&id=${encodeURIComponent(nextId)}`);
+  const go = (next: Scope, nextId: string) =>
+    router.push(next === SCOPE.global ? path : `${path}?scope=${next}&id=${encodeURIComponent(nextId)}`);
   return (
     <section aria-label={say("adminConfig.scope.label")} className="flex flex-col gap-2" data-testid="scope-bar">
       {/* @ephemeral: already in the URL (?scope=&id=, two linked parameters written by go()) */}
-      <RadioGroup.Root variant="segmented" label={say("adminConfig.scope.label")} value={scope.scope} onValueChange={(v: string) => go(v as Scope, v === SCOPE.global ? "" : id)}>
+      <RadioGroup.Root
+        variant="segmented"
+        label={say("adminConfig.scope.label")}
+        value={scope.scope}
+        onValueChange={(v: string) => go(v as Scope, v === SCOPE.global ? "" : id)}
+      >
         {SCOPE_CHOICES.map((s) => (
           <RadioGroup.Segment key={s} value={s}>
             {say(`adminConfig.scope.${s}`)}
@@ -55,7 +73,8 @@ export function ScopeBar({ scope }: Readonly<{ scope: ScopeState }>) {
       </RadioGroup.Root>
       {scope.scope === SCOPE.global ? null : <ScopeId key={scope.scope} scope={scope} onGo={go} />}
       <p className="m-0 text-xs text-fg-muted">
-        {say("adminConfig.scope.resolution")} {scope.scope === SCOPE.workspace ? say("adminConfig.scope.workspaceNote") : ""}
+        {say("adminConfig.scope.resolution")}{" "}
+        {scope.scope === SCOPE.workspace ? say("adminConfig.scope.workspaceNote") : ""}
       </p>
     </section>
   );
@@ -67,7 +86,11 @@ export function PacksPanel({ flows, environment }: Readonly<{ flows: AdminFlow[]
   const router = useRouter();
   const [problem, setProblem] = useState<string | null>(null);
   const toggle = useMutation({
-    mutationFn: (input: { id: string; enabled: boolean }) => krizakaFetch(`/api/admin/flows/${input.id}/environments`, { method: "PUT", json: { environment, enabled: input.enabled } }),
+    mutationFn: (input: { id: string; enabled: boolean }) =>
+      krizakaFetch(`/api/admin/flows/${input.id}/environments`, {
+        method: "PUT",
+        json: { environment, enabled: input.enabled },
+      }),
     onSuccess: () => router.refresh(),
     onError: () => setProblem(say("errors.UNKNOWN")),
   });
@@ -81,12 +104,20 @@ export function PacksPanel({ flows, environment }: Readonly<{ flows: AdminFlow[]
       {flows.length === 0 ? <p className="m-0 text-sm text-fg-secondary">{say("adminConfig.packs.empty")}</p> : null}
       <ul className="m-0 flex list-none flex-col gap-2 p-0">
         {flows.map((f) => (
-          <li key={f.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border-default bg-surface-1 p-4" data-testid={`pack-${f.key}`}>
+          <li
+            key={f.id}
+            className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border-default bg-surface-1 p-4"
+            data-testid={`pack-${f.key}`}
+          >
             <span className="flex flex-col">
               <span className="font-semibold text-fg">{f.title}</span>
               <code className="text-xs text-fg-muted">{f.key}</code>
             </span>
-            <Switch label={`${say("adminConfig.packs.enabled")}: ${f.key}`} checked={f.environments[environment]} onCheckedChange={(v: boolean) => toggle.mutate({ id: f.id, enabled: v })} />
+            <Switch
+              label={`${say("adminConfig.packs.enabled")}: ${f.key}`}
+              checked={f.environments[environment]}
+              onCheckedChange={(v: boolean) => toggle.mutate({ id: f.id, enabled: v })}
+            />
           </li>
         ))}
       </ul>
@@ -104,14 +135,25 @@ const orazakaStatus = z.object({
   baseUrl: z.string(),
   usage: z.object({ runs: z.number(), failed: z.number(), estimatedCostCents: z.number() }),
 });
-const orazakaTest = z.object({ ok: z.boolean(), ms: z.number(), code: z.string().optional(), studios: z.array(z.string()) });
+const orazakaTest = z.object({
+  ok: z.boolean(),
+  ms: z.number(),
+  code: z.string().optional(),
+  studios: z.array(z.string()),
+});
 
 /** This product's connection to Orazaka: key (masked), address, a connection test, and this month's usage as recorded here. */
 export function OrazakaPanel() {
   const { say, locale } = useSay();
-  const status = useQuery({ queryKey: ["admin-orazaka"], queryFn: () => krizakaFetch("/api/admin/orazaka", { schema: orazakaStatus }) });
-  const test = useMutation({ mutationFn: () => krizakaFetch("/api/admin/orazaka/test", { method: "POST", schema: orazakaTest }) });
-  const money = (cents: number) => new Intl.NumberFormat(locale, { style: "currency", currency: "USD" }).format(cents / 100);
+  const status = useQuery({
+    queryKey: ["admin-orazaka"],
+    queryFn: () => krizakaFetch("/api/admin/orazaka", { schema: orazakaStatus }),
+  });
+  const test = useMutation({
+    mutationFn: () => krizakaFetch("/api/admin/orazaka/test", { method: "POST", schema: orazakaTest }),
+  });
+  const money = (cents: number) =>
+    new Intl.NumberFormat(locale, { style: "currency", currency: "USD" }).format(cents / 100);
   if (!status.data) return null;
   const { key, baseUrl, usage } = status.data;
   const result = test.data;
@@ -119,7 +161,11 @@ export function OrazakaPanel() {
     <section className="flex max-w-2xl flex-col gap-4" data-testid="orazaka-panel">
       <div className="flex flex-col gap-1">
         <h2 className="m-0 font-display text-lg font-bold text-fg">{say("adminConfig.orazaka.keyTitle")}</h2>
-        <p className="m-0 text-sm text-fg-secondary" data-testid="orazaka-key">{key.configured ? say("adminConfig.orazaka.masked", { key: key.masked ?? "" }) : say("adminConfig.orazaka.none")}</p>
+        <p className="m-0 text-sm text-fg-secondary" data-testid="orazaka-key">
+          {key.configured
+            ? say("adminConfig.orazaka.masked", { key: key.masked ?? "" })
+            : say("adminConfig.orazaka.none")}
+        </p>
         <p className="m-0 text-sm text-fg-secondary">{say("adminConfig.orazaka.address", { url: baseUrl })}</p>
         <p className="m-0 text-xs text-fg-muted">{say("adminConfig.orazaka.rotate")}</p>
       </div>
@@ -129,13 +175,21 @@ export function OrazakaPanel() {
             {test.isPending ? say("adminConfig.orazaka.testing") : say("adminConfig.orazaka.test")}
           </Button>
         </div>
-        {result ? <Alert tone={result.ok ? "success" : "danger"}>{result.ok ? say("adminConfig.orazaka.ok", { ms: result.ms, count: result.studios.length }) : say("adminConfig.orazaka.fail", { code: result.code ?? "?" })}</Alert> : null}
+        {result ? (
+          <Alert tone={result.ok ? "success" : "danger"}>
+            {result.ok
+              ? say("adminConfig.orazaka.ok", { ms: result.ms, count: result.studios.length })
+              : say("adminConfig.orazaka.fail", { code: result.code ?? "?" })}
+          </Alert>
+        ) : null}
       </div>
       <div className="flex flex-col gap-1">
         <h2 className="m-0 font-display text-lg font-bold text-fg">{say("adminConfig.orazaka.usageTitle")}</h2>
         <p className="m-0 text-sm text-fg-secondary">{say("adminConfig.orazaka.runs", { count: usage.runs })}</p>
         <p className="m-0 text-sm text-fg-secondary">{say("adminConfig.orazaka.failed", { count: usage.failed })}</p>
-        <p className="m-0 text-sm text-fg-secondary">{say("adminConfig.orazaka.cost", { amount: money(usage.estimatedCostCents) })}</p>
+        <p className="m-0 text-sm text-fg-secondary">
+          {say("adminConfig.orazaka.cost", { amount: money(usage.estimatedCostCents) })}
+        </p>
         <p className="m-0 text-xs text-fg-muted">{say("adminConfig.orazaka.notExposed")}</p>
       </div>
     </section>

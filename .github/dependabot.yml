@@ -7,7 +7,6 @@
 # @krizaka/config supports them (krizaka/krizaka-ui#141), and each deferred major names its tracking issue.
 version: 2
 updates:
-
   - package-ecosystem: github-actions
     directory: "/"
     schedule:

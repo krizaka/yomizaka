@@ -34,7 +34,15 @@ const asList = (v: string | string[] | undefined): string[] => [v ?? []].flat();
  * (page, later save, field), what it may indicate with its ordinary explanations, what to ask for, and the run. Levels are words;
  * « inconsistent » is a warning, never red; no total, no score, no sort of anything.
  */
-export function AuthenticitySignals({ report, runId, answers }: Readonly<{ report: Pick<AuthenticityReport, "header" | "signals"> & { notExamined?: string | string[] }; runId?: string | null; answers?: Record<string, Answer> }>) {
+export function AuthenticitySignals({
+  report,
+  runId,
+  answers,
+}: Readonly<{
+  report: Pick<AuthenticityReport, "header" | "signals"> & { notExamined?: string | string[] };
+  runId?: string | null;
+  answers?: Record<string, Answer>;
+}>) {
   const { say: sayAll, locale } = useSay();
   const say: TraceSay = (key, vars) => sayAll(`analysis.traces.${key}`, vars);
   return (
@@ -47,7 +55,11 @@ export function AuthenticitySignals({ report, runId, answers }: Readonly<{ repor
           <h3 className="m-0 text-sm font-semibold text-fg">{say(`families.${g.family}`)}</h3>
           <ul className="m-0 flex list-none flex-col gap-2 p-0">
             {g.signals.map((s) => (
-              <li key={`${s.signalId}-${s.observation}`} className="rounded-lg border border-border-default bg-surface-1 p-3 text-sm" data-level={s.level}>
+              <li
+                key={`${s.signalId}-${s.observation}`}
+                className="rounded-lg border border-border-default bg-surface-1 p-3 text-sm"
+                data-level={s.level}
+              >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="text-xs text-fg-muted">{s.signalId}</span>
                   <Badge tone={levelTone(s.level)}>{sayAll(`analysis.levels.${s.level}`)}</Badge>
@@ -73,7 +85,9 @@ export function AuthenticitySignals({ report, runId, answers }: Readonly<{ repor
                 </p>
                 {answers?.[s.signalId] ? (
                   <p className="mt-1 rounded-md bg-surface-2 p-2 text-fg" data-testid="trace-answer">
-                    <strong className="font-semibold">{say("answerLabel", { date: formatDate(answers[s.signalId]!.at, locale, true) })} · </strong>
+                    <strong className="font-semibold">
+                      {say("answerLabel", { date: formatDate(answers[s.signalId]!.at, locale, true) })} ·{" "}
+                    </strong>
                     {answers[s.signalId]!.text}
                   </p>
                 ) : null}
@@ -91,8 +105,19 @@ export function AuthenticitySignals({ report, runId, answers }: Readonly<{ repor
 export function PhotoOriginSignals({ source }: Readonly<{ source: TextSource }>) {
   const { say, locale } = useSay();
   const signals = photoOriginSignals(source.origin).map((s) => {
-    const facts = { ...s.facts, ...(s.facts.taken ? { taken: formatDate(s.facts.taken, locale, true), modified: formatDate(s.facts.modified, locale, true) } : {}) };
-    return { signalId: s.signalId, level: s.level, observation: say(`analysis.photoOrigin.${s.case}.observation`, facts), mayIndicate: say(`analysis.photoOrigin.${s.case}.mayIndicate`), where: say("analysis.photoOrigin.where") };
+    const facts = {
+      ...s.facts,
+      ...(s.facts.taken
+        ? { taken: formatDate(s.facts.taken, locale, true), modified: formatDate(s.facts.modified, locale, true) }
+        : {}),
+    };
+    return {
+      signalId: s.signalId,
+      level: s.level,
+      observation: say(`analysis.photoOrigin.${s.case}.observation`, facts),
+      mayIndicate: say(`analysis.photoOrigin.${s.case}.mayIndicate`),
+      where: say("analysis.photoOrigin.where"),
+    };
   });
   return <AuthenticitySignals report={{ header: say("analysis.photoOrigin.header"), signals }} />;
 }

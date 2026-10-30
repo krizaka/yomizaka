@@ -8,7 +8,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { migrate, query } from "../db";
 import { dualObjectStore } from "./dual-read";
-import { currentMove, MOVE_STATUS, type MoveDeps,setMovePaused, startMove, stepMove } from "./provider-move";
+import { currentMove, MOVE_STATUS, type MoveDeps, setMovePaused, startMove, stepMove } from "./provider-move";
 import { DATA_KIND, ORG_SCOPE } from "./providers";
 
 /** ADR-005 §3 on PostgreSQL with two folder providers: the verified, resumable move and the dual read (skipped without YOMIZAKA_DB_IT=1 and DATABASE_URL). */
@@ -25,12 +25,27 @@ describe.runIf(enabled)("the move of documents between providers", () => {
     clock: { now: () => NOW },
     newId: () => crypto.randomUUID(),
     audit: async () => undefined,
-    open: { runtime: "dev", environment: "dev", fetch: async () => new Response(null, { status: 200 }), clock: { now: () => NOW } },
+    open: {
+      runtime: "dev",
+      environment: "dev",
+      fetch: async () => new Response(null, { status: 200 }),
+      clock: { now: () => NOW },
+    },
     probeId: () => crypto.randomUUID(),
-    references: async (id) => Number((await query<{ n: string }>("SELECT count(*)::text AS n FROM documents WHERE provider_id = $1", [id]))[0]!.n),
+    references: async (id) =>
+      Number(
+        (await query<{ n: string }>("SELECT count(*)::text AS n FROM documents WHERE provider_id = $1", [id]))[0]!.n,
+      ),
   });
   const trail: string[] = [];
-  const deps = (batch = 2): MoveDeps => ({ q: query, service, defaults: () => providers.defaults(ORG_SCOPE), audit: async (n) => void trail.push(n.action), now: () => NOW, batch });
+  const deps = (batch = 2): MoveDeps => ({
+    q: query,
+    service,
+    defaults: () => providers.defaults(ORG_SCOPE),
+    audit: async (n) => void trail.push(n.action),
+    now: () => NOW,
+    batch,
+  });
 
   /** A folder provider, verified: `create` refuses a folder at org scope on purpose (dev only), so the row is inserted the way the bootstrap does. */
   const folder = async (label: string) => {
@@ -70,7 +85,12 @@ describe.runIf(enabled)("the move of documents between providers", () => {
     oldId = await folder("Old folder");
     newId = await folder("New folder");
     await service.setDefault(ADMIN, oldId, ORG_SCOPE, DATA_KIND.documents);
-    owner = (await query<{ id: string }>("INSERT INTO accounts (email, password_hash, email_verified_at) VALUES ($1, 'x', now()) RETURNING id", [`m-${Math.random().toString(36).slice(2)}@yomizaka.test`]))[0]!.id;
+    owner = (
+      await query<{ id: string }>(
+        "INSERT INTO accounts (email, password_hash, email_verified_at) VALUES ($1, 'x', now()) RETURNING id",
+        [`m-${Math.random().toString(36).slice(2)}@yomizaka.test`],
+      )
+    )[0]!.id;
     const old = await service.open(oldId);
     for (const n of [1, 2, 3, 4, 5]) {
       const bytes = new TextEncoder().encode(`document number ${n} ${"x".repeat(n)}`);
@@ -88,8 +108,12 @@ describe.runIf(enabled)("the move of documents between providers", () => {
   });
 
   it("refuses a move to anything but the default, or from anything but a retiring provider", async () => {
-    await expect(startMove(deps(), ADMIN, { from: newId, to: oldId })).rejects.toMatchObject({ body: { code: "STORAGE_MOVE_NOT_ALLOWED" } });
-    await expect(startMove(deps(), ADMIN, { from: oldId, to: oldId })).rejects.toMatchObject({ body: { code: "STORAGE_MOVE_NOT_ALLOWED" } });
+    await expect(startMove(deps(), ADMIN, { from: newId, to: oldId })).rejects.toMatchObject({
+      body: { code: "STORAGE_MOVE_NOT_ALLOWED" },
+    });
+    await expect(startMove(deps(), ADMIN, { from: oldId, to: oldId })).rejects.toMatchObject({
+      body: { code: "STORAGE_MOVE_NOT_ALLOWED" },
+    });
   });
 
   it("copies each object, verifies its SHA-256, then flips the row, batch by batch, until done", async () => {
@@ -103,13 +127,16 @@ describe.runIf(enabled)("the move of documents between providers", () => {
     const rows = await query<{ provider_id: string }>("SELECT provider_id FROM documents WHERE owner_id = $1", [owner]);
     expect(rows.every((r) => r.provider_id === newId)).toBe(true);
     const fresh = await service.open(newId);
-    for (const d of documents) expect(new TextDecoder().decode((await fresh.get(d.key))!.bytes)).toBe(new TextDecoder().decode(d.bytes));
+    for (const d of documents)
+      expect(new TextDecoder().decode((await fresh.get(d.key))!.bytes)).toBe(new TextDecoder().decode(d.bytes));
     expect(trail).toEqual(["storage.move.started", "storage.move.completed"]);
   });
 
   it("is idempotent and resumable: a step on a finished move does nothing, a second start is refused while one is open", async () => {
     await startMove(deps(), ADMIN, { from: oldId, to: newId });
-    await expect(startMove(deps(), ADMIN, { from: oldId, to: newId })).rejects.toMatchObject({ body: { code: "STORAGE_MOVE_OPEN" } });
+    await expect(startMove(deps(), ADMIN, { from: oldId, to: newId })).rejects.toMatchObject({
+      body: { code: "STORAGE_MOVE_OPEN" },
+    });
     await stepMove(deps(10));
     expect(await stepMove(deps(10))).toBeNull();
     expect((await currentMove(query))!.moved).toBe(5);
@@ -135,7 +162,10 @@ describe.runIf(enabled)("the move of documents between providers", () => {
     expect(move).toMatchObject({ status: MOVE_STATUS.attention, moved: 4, remaining: 0 });
     expect(move.failed).toHaveLength(1);
     expect(move.failed[0]).toMatchObject({ id: bad.id });
-    expect((await query<{ provider_id: string }>("SELECT provider_id FROM documents WHERE id = $1", [bad.id]))[0]!.provider_id).toBe(oldId);
+    expect(
+      (await query<{ provider_id: string }>("SELECT provider_id FROM documents WHERE id = $1", [bad.id]))[0]!
+        .provider_id,
+    ).toBe(oldId);
     expect(trail).toContain("storage.move.failed");
   });
 

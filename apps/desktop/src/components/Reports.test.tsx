@@ -5,14 +5,18 @@ import { describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
 import { ReportsView } from "./Reports";
 
-vi.mock("@krizaka/query", async (importOriginal) => ({ ...(await importOriginal<typeof import("@krizaka/query")>()), useQuery: vi.fn() }));
+vi.mock("@krizaka/query", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@krizaka/query")>()),
+  useQuery: vi.fn(),
+}));
 vi.mock("../lib/config", () => ({ queries: { documents: () => ({ queryKey: ["yomizaka", "documents"] }) } }));
 
 const OFFLINE = "Yomizaka ne répond pas. Vérifiez votre connexion.";
 const EMPTY = /Aucun document vérifié pour l'instant/;
 
 /** The server state as the screen reads it (the query itself is @krizaka/query's, tested there). */
-const answers = (state: { data?: unknown[]; isError: boolean; isPending: boolean }) => vi.mocked(useQuery).mockReturnValue(state as never);
+const answers = (state: { data?: unknown[]; isError: boolean; isPending: boolean }) =>
+  vi.mocked(useQuery).mockReturnValue(state as never);
 const wrap = (node: React.ReactElement) => <I18nProvider locale="fr">{node}</I18nProvider>;
 
 describe("the reports", () => {

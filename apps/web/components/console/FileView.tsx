@@ -27,9 +27,7 @@ interface AskedRow {
 }
 
 /** The documents asked, in the request's order, each with what came in for it; a type asked twice in is two rows. */
-export function askedRows(
-  file: Pick<ApplicantFileView, "requestedTypes" | "documents">,
-): AskedRow[] {
+export function askedRows(file: Pick<ApplicantFileView, "requestedTypes" | "documents">): AskedRow[] {
   return file.requestedTypes.flatMap((type): AskedRow[] => {
     const received = file.documents.filter((d) => d.typeId === type);
     return received.length
@@ -53,12 +51,16 @@ export function FileView({
   types: readonly AskableType[];
   /** The sentences of the rent-share rule; absent, the section is not shown. */
   affordability?: RentShareWords;
-  workspace?: { set: StatusSet; decision: string; tags: readonly { id: string; name: string; color: "blue" | "green" | "amber" | "red" | "violet" | "gray" }[]; tagIds: readonly string[] };
+  workspace?: {
+    set: StatusSet;
+    decision: string;
+    tags: readonly { id: string; name: string; color: "blue" | "green" | "amber" | "red" | "violet" | "gray" }[];
+    tagIds: readonly string[];
+  };
 }>) {
   const { say, locale } = useSay();
   const facts = useFileFacts();
-  const label = (type: string) =>
-    types.find((t) => t.id === type)?.label ?? type;
+  const label = (type: string) => types.find((t) => t.id === type)?.label ?? type;
   const retention = (d: FileDocumentView) => {
     if (d.purged) return say("dossiers.detail.purged");
     return d.retention === "after-decision" ? say("dossiers.detail.kept") : say("dossiers.detail.afterCheck");
@@ -68,38 +70,26 @@ export function FileView({
       {d.checks.map((c) => {
         const fact = checkFact(c);
         const studio = say(`dossiers.studios.${c.studio}`);
-        const words = fact.count
-          ? say(pluralKey(fact.key, fact.count), { count: fact.count })
-          : say(fact.key);
+        const words = fact.count ? say(pluralKey(fact.key, fact.count), { count: fact.count }) : say(fact.key);
         return (
           <Badge key={c.id} tone={fact.tone}>
             {`${studio} · ${words}`}
           </Badge>
         );
       })}
-      {d.skipped.length ? (
-        <Badge tone="neutral">{say("dossiers.detail.skipped")}</Badge>
-      ) : null}
+      {d.skipped.length ? <Badge tone="neutral">{say("dossiers.detail.skipped")}</Badge> : null}
     </span>
   );
   return (
     <DetailLayout
-      back={
-        <Link href={`/${locale}${CONSOLE_ROUTES.files}`}>
-          {say("dossiers.detail.back")}
-        </Link>
-      }
+      back={<Link href={`/${locale}${CONSOLE_ROUTES.files}`}>{say("dossiers.detail.back")}</Link>}
       eyebrow={file.candidateEmail}
       title={file.candidateName}
       meta={`${facts.link(file)} · ${facts.documents(file.documents.length, file.requestedTypes.length)} · ${say("dossiers.detail.requestedOn", { date: facts.date(file.createdAt) })}`}
     >
       {workspace ? <DecisionActions fileId={file.id} state={workspace.decision} set={workspace.set} /> : null}
       {workspace ? <FileTags fileId={file.id} tags={workspace.tags} current={workspace.tagIds} /> : null}
-      <section
-        aria-labelledby="asked-title"
-        className="flex flex-col gap-3"
-        data-testid="file-asked"
-      >
+      <section aria-labelledby="asked-title" className="flex flex-col gap-3" data-testid="file-asked">
         <h2 id="asked-title" className="m-0 text-lg font-bold text-fg">
           {say("dossiers.detail.asked")}
         </h2>

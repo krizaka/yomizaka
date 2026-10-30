@@ -32,7 +32,13 @@ describe.runIf(enabled)("the public API v1 (yomizaka#202)", () => {
   const stamp = `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
   const runs = new Map<string, string>();
   let n = 0;
-  const run = (id: string, status: string): OrazakaRun => ({ id, studioKey: "compliance-check", blueprintVersion: "1.0.0", status, outputs: status === "SUCCEEDED" ? [{ key: "report", type: "JSON", value: REPORT }] : [] });
+  const run = (id: string, status: string): OrazakaRun => ({
+    id,
+    studioKey: "compliance-check",
+    blueprintVersion: "1.0.0",
+    status,
+    outputs: status === "SUCCEEDED" ? [{ key: "report", type: "JSON", value: REPORT }] : [],
+  });
   let owner = "";
   let stranger = "";
   let bearer = "";
@@ -47,13 +53,24 @@ describe.runIf(enabled)("the public API v1 (yomizaka#202)", () => {
     );
     const token = (await createSession(row!.id, { ip: "203.0.113.9", userAgent: "vitest" })).token;
     const mint = async (name: string, scopes: string[]) => {
-      const res = await createKeyRoute(new Request("http://localhost/api/me/api-keys", { method: "POST", headers: { cookie: `${SESSION_COOKIE}=${token}`, "content-type": "application/json" }, body: JSON.stringify({ name, scopes, expiresInDays: 30 }) }));
+      const res = await createKeyRoute(
+        new Request("http://localhost/api/me/api-keys", {
+          method: "POST",
+          headers: { cookie: `${SESSION_COOKIE}=${token}`, "content-type": "application/json" },
+          body: JSON.stringify({ name, scopes, expiresInDays: 30 }),
+        }),
+      );
       expect(res.status).toBe(201);
       return (await res.json()).key as string;
     };
     return { id: row!.id, mint };
   };
-  const call = (credential: string | null, method: string, path: string, body?: FormData) => new Request(`http://localhost${path}`, { method, headers: credential ? { authorization: `Bearer ${credential}` } : {}, body });
+  const call = (credential: string | null, method: string, path: string, body?: FormData) =>
+    new Request(`http://localhost${path}`, {
+      method,
+      headers: credential ? { authorization: `Bearer ${credential}` } : {},
+      body,
+    });
   const checkForm = async (name: string, text: string, check = "compliance", reference = "R-1") => {
     const form = new FormData();
     form.set("file", new File([new Uint8Array(await cleanPdf(text))], name, { type: "application/pdf" }));
@@ -89,13 +106,17 @@ describe.runIf(enabled)("the public API v1 (yomizaka#202)", () => {
 
   it("starts a check, reads it back while it runs, then with its report once Orazaka has finished", async () => {
     resetRateLimits();
-    const created = await createCheckRoute(call(bearer, "POST", "/api/v1/checks", await checkForm("bail.pdf", "BAIL RESIDENTIEL")));
+    const created = await createCheckRoute(
+      call(bearer, "POST", "/api/v1/checks", await checkForm("bail.pdf", "BAIL RESIDENTIEL")),
+    );
     expect(created.status).toBe(201);
     const { check } = await created.json();
     expect(check).toMatchObject({ state: "running", file: "bail.pdf", reference: "R-1", error: null, report: null });
     expect(check.documentId).toBeTruthy();
 
-    const running = await (await checkRoute(call(bearer, "GET", `/api/v1/checks/${check.id}`), params(check.id))).json();
+    const running = await (
+      await checkRoute(call(bearer, "GET", `/api/v1/checks/${check.id}`), params(check.id))
+    ).json();
     expect(running.check).toMatchObject({ id: check.id, state: "running", report: null });
 
     runs.set([...runs.keys()].at(-1)!, "SUCCEEDED");
@@ -115,22 +136,37 @@ describe.runIf(enabled)("the public API v1 (yomizaka#202)", () => {
     noCheck.set("file", new File([new Uint8Array(await cleanPdf("A"))], "a.pdf", { type: "application/pdf" }));
     const bad = await createCheckRoute(call(bearer, "POST", "/api/v1/checks", noCheck));
     expect([bad.status, (await bad.json()).code]).toEqual([400, "BAD_REQUEST"]);
-    const unknown = await (await createCheckRoute(call(bearer, "POST", "/api/v1/checks", await checkForm("b.pdf", "B", "magic")))).json();
+    const unknown = await (
+      await createCheckRoute(call(bearer, "POST", "/api/v1/checks", await checkForm("b.pdf", "B", "magic")))
+    ).json();
     expect(unknown.check).toMatchObject({ state: "refused", error: "UNKNOWN_CHECK" });
   });
 
   it("a check or a batch belongs to its owner: another account's key sees a 404, a malformed id too", async () => {
     resetRateLimits();
-    const { check } = await (await createCheckRoute(call(bearer, "POST", "/api/v1/checks", await checkForm("c.pdf", "C", "compliance", "R-C")))).json();
-    expect((await checkRoute(call(strangerBearer, "GET", `/api/v1/checks/${check.id}`), params(check.id))).status).toBe(404);
-    expect((await batchRoute(call(strangerBearer, "GET", `/api/v1/batches/${check.id}`), params(check.id))).status).toBe(404);
+    const { check } = await (
+      await createCheckRoute(call(bearer, "POST", "/api/v1/checks", await checkForm("c.pdf", "C", "compliance", "R-C")))
+    ).json();
+    expect((await checkRoute(call(strangerBearer, "GET", `/api/v1/checks/${check.id}`), params(check.id))).status).toBe(
+      404,
+    );
+    expect(
+      (await batchRoute(call(strangerBearer, "GET", `/api/v1/batches/${check.id}`), params(check.id))).status,
+    ).toBe(404);
     expect((await checkRoute(call(bearer, "GET", "/api/v1/checks/not-an-id"), params("not-an-id"))).status).toBe(404);
   });
 
   it("runs a batch from a CSV: per-row states, the refused row with its reason", async () => {
     resetRateLimits();
     const form = new FormData();
-    form.set("manifest", new File([["file,check,reference", "d.pdf,compliance,R-D", "e.pdf,authenticity,R-E"].join("\n")], "Immeuble.csv", { type: "text/csv" }));
+    form.set(
+      "manifest",
+      new File(
+        [["file,check,reference", "d.pdf,compliance,R-D", "e.pdf,authenticity,R-E"].join("\n")],
+        "Immeuble.csv",
+        { type: "text/csv" },
+      ),
+    );
     form.append("files", new File([new Uint8Array(await cleanPdf("BAIL D"))], "d.pdf", { type: "application/pdf" }));
     const created = await createBatchRoute(call(bearer, "POST", "/api/v1/batches", form));
     expect(created.status).toBe(201);
@@ -144,9 +180,13 @@ describe.runIf(enabled)("the public API v1 (yomizaka#202)", () => {
   });
 
   it("records every call in the audit trail under the key's id, never the key itself", async () => {
-    const rows = await query<{ action: string; actor_label: string; detail: unknown }>("SELECT action, actor_label, detail FROM audit_log WHERE actor_id = $1 AND action LIKE 'api.%'", [owner]);
+    const rows = await query<{ action: string; actor_label: string; detail: unknown }>(
+      "SELECT action, actor_label, detail FROM audit_log WHERE actor_id = $1 AND action LIKE 'api.%'",
+      [owner],
+    );
     const actions = new Set(rows.map((r) => r.action));
-    for (const action of ["api.check.created", "api.check.read", "api.batch.created", "api.batch.read"]) expect(actions, action).toContain(action);
+    for (const action of ["api.check.created", "api.check.read", "api.batch.created", "api.batch.read"])
+      expect(actions, action).toContain(action);
     expect(rows.every((r) => /^api-key:[0-9a-f-]{36}$/.test(r.actor_label))).toBe(true);
     expect(JSON.stringify(rows)).not.toContain(secretOf(bearer));
   });

@@ -29,7 +29,18 @@ async function processorAmounts(): Promise<{ mode: "test" | "live" | null; amoun
   const port = paymentsFrom(e);
   if (!port) return { mode: null, amounts: {} };
   const amounts = Object.fromEntries(
-    await Promise.all(SOLD_KINDS.map(async (kind) => [SOLD[kind].key, await port.price(kind).then((p) => p.amount, () => null)] as const)),
+    await Promise.all(
+      SOLD_KINDS.map(
+        async (kind) =>
+          [
+            SOLD[kind].key,
+            await port.price(kind).then(
+              (p) => p.amount,
+              () => null,
+            ),
+          ] as const,
+      ),
+    ),
   );
   return { mode: e.PAYMENTS_STRIPE_SECRET_KEY?.startsWith("sk_live_") ? "live" : "test", amounts };
 }
@@ -41,8 +52,13 @@ export const GET = (req: Request) =>
     const catalogue = appPrices();
     const now = new Date();
     const description = await describePrices(catalogue, now);
-    const history = Object.fromEntries(await Promise.all(description.entries.map(async (e) => [e.key, await catalogue.history(e.key)] as const)));
-    return Response.json({ ...description, history, processor: await processorAmounts() }, { headers: { "Cache-Control": "private, no-store" } });
+    const history = Object.fromEntries(
+      await Promise.all(description.entries.map(async (e) => [e.key, await catalogue.history(e.key)] as const)),
+    );
+    return Response.json(
+      { ...description, history, processor: await processorAmounts() },
+      { headers: { "Cache-Control": "private, no-store" } },
+    );
   });
 
 const change = z.object({
@@ -61,9 +77,25 @@ export const POST = (req: Request) =>
     const { key, effectiveFrom, ...fields } = await readJson(req, change);
     const now = new Date();
     const patch = Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== undefined)) as Partial<Price>;
-    const entry = await appPrices().schedule({ id: session.account.id, label: session.account.email }, key, patch, effectiveFrom ? new Date(effectiveFrom) : now, now);
-    await audit({ action: "prices.scheduled", actorId: session.account.id, actorLabel: session.account.email, targetId: null, detail: { key, versionId: entry.versionId, effectiveFrom: entry.effectiveFrom.toISOString(), ...patch }, headers: req.headers });
+    const entry = await appPrices().schedule(
+      { id: session.account.id, label: session.account.email },
+      key,
+      patch,
+      effectiveFrom ? new Date(effectiveFrom) : now,
+      now,
+    );
+    await audit({
+      action: "prices.scheduled",
+      actorId: session.account.id,
+      actorLabel: session.account.email,
+      targetId: null,
+      detail: { key, versionId: entry.versionId, effectiveFrom: entry.effectiveFrom.toISOString(), ...patch },
+      headers: req.headers,
+    });
     // A change that applies now reaches the processor at once (test mode; a live key is the owner's); a scheduled one is synced when its day comes (the screen's « Sync » or the next change).
-    const sync = entry.effectiveFrom <= now ? await processorSync(env(), (await describePrices(appPrices(), now)).entries).catch(() => "failed" as const) : "later";
+    const sync =
+      entry.effectiveFrom <= now
+        ? await processorSync(env(), (await describePrices(appPrices(), now)).entries).catch(() => "failed" as const)
+        : "later";
     return Response.json({ entry, sync });
   });

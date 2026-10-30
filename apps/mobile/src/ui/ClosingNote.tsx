@@ -15,7 +15,11 @@ export function ClosingNote({ note }: Readonly<{ note: Note }>) {
           {note.next.none ? <Txt>{note.next.none}</Txt> : null}
           {note.next.items.map((item) => (
             <View key={`${item.problem}-${item.advice}`} style={{ gap: 4 }}>
-              {item.important ? <Badge tone="warning">{item.problem}</Badge> : <Txt variant="label">{item.problem}</Txt>}
+              {item.important ? (
+                <Badge tone="warning">{item.problem}</Badge>
+              ) : (
+                <Txt variant="label">{item.problem}</Txt>
+              )}
               <Txt tone="secondary">{item.advice}</Txt>
             </View>
           ))}

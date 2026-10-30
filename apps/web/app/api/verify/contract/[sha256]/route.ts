@@ -22,10 +22,23 @@ export function GET(req: Request, { params }: { params: Promise<{ sha256: string
     const row = /^[0-9a-f]{64}$/.test(sha256) ? await sealedBySha(sha256) : null;
     if (!row) throw refuse(404, "UNKNOWN_SEAL", "Yomizaka has no seal with this SHA-256");
     // The file is read again and checked now: a stored copy that was altered is not vouched for — its bytes are no longer the ones that were sealed.
-    if (sha256Of(row.content) !== row.sha256) return Response.json({ valid: false, reason: "ALTERED", sha256 }, { status: 409 });
+    if (sha256Of(row.content) !== row.sha256)
+      return Response.json({ valid: false, reason: "ALTERED", sha256 }, { status: 409 });
     const verdict = await verifySeal(new Uint8Array(row.content), signingKey());
     if (!verdict.valid) return Response.json({ valid: false, reason: verdict.reason, sha256 }, { status: 409 });
     const p = verdict.attestation.payload;
-    return Response.json({ valid: true, sha256, contractId: p.contractId, partnerId: p.partnerId, documentType: p.documentType, sealedAt: p.sealedAt, zone: p.zone, keyId: verdict.attestation.keyId }, { headers: { "cache-control": "public, max-age=300" } });
+    return Response.json(
+      {
+        valid: true,
+        sha256,
+        contractId: p.contractId,
+        partnerId: p.partnerId,
+        documentType: p.documentType,
+        sealedAt: p.sealedAt,
+        zone: p.zone,
+        keyId: verdict.attestation.keyId,
+      },
+      { headers: { "cache-control": "public, max-age=300" } },
+    );
   });
 }

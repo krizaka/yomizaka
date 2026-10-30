@@ -39,10 +39,19 @@ export const DEFAULT_CONFIGS: Record<Kind, KindConfig> = {
     status: DECISION_SET,
     views: [
       { key: "to_decide", label: { fr: "À décider", en: "To decide" }, filters: { status: [DECISION.toDecide] } },
-      { key: "decided", label: { fr: "Décidés", en: "Decided" }, filters: { status: [DECISION.selected, DECISION.notSelected] } },
+      {
+        key: "decided",
+        label: { fr: "Décidés", en: "Decided" },
+        filters: { status: [DECISION.selected, DECISION.notSelected] },
+      },
     ],
   },
   // Documents carry tags only: a document already has Orazaka's fact (« À regarder », « Aucun problème trouvé… »), and a second,
   // user-made status on the same row would compete with it (design § 4).
-  [KIND.document]: { kind: KIND.document, tags: { ...tags, writers: [...tags.writers], presets: { default: [] } }, status: null, views: [] },
+  [KIND.document]: {
+    kind: KIND.document,
+    tags: { ...tags, writers: [...tags.writers], presets: { default: [] } },
+    status: null,
+    views: [],
+  },
 };

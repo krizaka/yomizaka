@@ -13,7 +13,9 @@ import { systemClock } from "./system-clock";
 export function cloudFlow(): CloudFlow | null {
   const e = env();
   const vault = vaultFrom(e);
-  if (!vault) {return null;}
+  if (!vault) {
+    return null;
+  }
   return {
     connector: (name) => cloudConnector(CLOUD[name]),
     registration: (name) => registrationOf(name, e, e.APP_PUBLIC_URL),
@@ -26,7 +28,9 @@ export function cloudFlow(): CloudFlow | null {
 /** The clouds a person may connect right now: the deployment holds their registration and the administrator opened user connections. */
 export async function cloudsOffered(): Promise<string[]> {
   const e = env();
-  if (!vaultFrom(e)) {return [];}
+  if (!vaultFrom(e)) {
+    return [];
+  }
   try {
     await assertUserConnectors();
   } catch {

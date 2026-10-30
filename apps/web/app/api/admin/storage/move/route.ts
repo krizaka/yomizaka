@@ -15,5 +15,8 @@ export const POST = (req: Request) =>
     managedProviders(providers);
     const deps = moveDeps();
     if (!deps) throw refuse(503, "STORAGE_VAULT_MISSING", "Storing credentials is not available on this deployment");
-    return Response.json({ move: await guarded(() => startMove(deps, actorOf(session.account), input)) }, { status: 201 });
+    return Response.json(
+      { move: await guarded(() => startMove(deps, actorOf(session.account), input)) },
+      { status: 201 },
+    );
   });

@@ -15,26 +15,26 @@ confirmation oracle on a confidential document, and a door a shared link or a pr
 
 **Verifying a report is for a signed-in Yomizaka member who owns the report, or to whom its owner granted access.**
 
-- *Who*: the owner of the checked document, and the people the owner shared the report with. Yomizaka has no
+- _Who_: the owner of the checked document, and the people the owner shared the report with. Yomizaka has no
   organisations yet: « the owner's members with the right role » is the owner account today; when accounts group into
   organisations the rule `accessTo` (`lib/report-access.ts`) gains the role check, nowhere else.
-- *Grant*: from a report, the owner shares it with an e-mail address, optionally until a date. A member has access at
+- _Grant_: from a report, the owner shares it with an e-mail address, optionally until a date. A member has access at
   once. An address with no account yet is an **invitation** (a pending grant): sign-up is closed on dev, so it waits and is
   honoured the day the account exists. A grant can be **revoked**; a revoked or expired grant opens nothing.
-- *The API* (`POST /api/verify`): no session → 401; a session without a grant, or a report this server does not hold →
+- _The API_ (`POST /api/verify`): no session → 401; a session without a grant, or a report this server does not hold →
   the same 403 `NO_ACCESS` (the answer tells a stranger nothing about what exists); a grant, or the owner → 200 with the
   full check (signature, file hash, Orazaka run id, and the original document if given). `POST /api/verify/request-access`
   (« Demander l'accès ») records a request the owner sees beside the grants; it answers the same 202 whatever exists.
-- *The page* `/verify`: signed out → sign-in, returning to `/verify` (`?next=`, same-site paths only); signed in without a
+- _The page_ `/verify`: signed out → sign-in, returning to `/verify` (`?next=`, same-site paths only); signed in without a
   grant → « Vous n'avez pas accès à ce rapport » with « Demander l'accès ».
-- *Audit*: every verification (`report.verified`: who, which report and run, by owner or grant, ok or the reason), every
+- _Audit_: every verification (`report.verified`: who, which report and run, by owner or grant, ok or the reason), every
   refusal (`report.verify_denied`), every grant, revocation and request (`report.access_granted|revoked|requested`).
-- *No public path remains*: the unauthenticated endpoint and the `APP_PUBLIC_ACTIONS` switch are gone. A report file prints
+- _No public path remains_: the unauthenticated endpoint and the `APP_PUBLIC_ACTIONS` switch are gone. A report file prints
   the route `/verify` (which asks for sign-in); no QR code or share link verifies without a session.
 
 ## Consequences
 
-- The report file itself is still a file: whoever holds it holds its content. What the decision protects is *verification*
+- The report file itself is still a file: whoever holds it holds its content. What the decision protects is _verification_
   as a service — the lookup of the run and its owner, the confirmation that a document was checked — not the bytes the owner
   chose to hand out. The public key stays public (it is not a secret) and is shown on the members' page.
 - The landing's sample (« A real run », a document an administrator declared a non-personal sample) can still be

@@ -38,7 +38,15 @@ export async function activeLaunchOffer(query: Query, code: string, now: Date): 
         AND starts_at <= $2 AND (ends_at IS NULL OR ends_at > $2)`,
     [typed, now],
   );
-  return row ? { code: row.code, percent: row.percent_off_bp / BP_PER_PERCENT, months: row.duration_months, plans: row.plans, endsAt: row.ends_at } : null;
+  return row
+    ? {
+        code: row.code,
+        percent: row.percent_off_bp / BP_PER_PERCENT,
+        months: row.duration_months,
+        plans: row.plans,
+        endsAt: row.ends_at,
+      }
+    : null;
 }
 
 /** What one plan costs in each period of the offer: the discounted amount for `months` months, then the regular one. Integer cents, rounded to the nearest. */
@@ -52,11 +60,17 @@ export interface OfferPrice {
 export function offerPrices(offer: LaunchOffer, plans: readonly { plan: string; amountCents: number }[]): OfferPrice[] {
   return plans
     .filter((p) => (offer.plans.length === 0 || offer.plans.includes(p.plan)) && p.amountCents > 0)
-    .map((p) => ({ plan: p.plan, regularCents: p.amountCents, offerCents: Math.round((p.amountCents * (100 - offer.percent)) / 100), months: offer.months }));
+    .map((p) => ({
+      plan: p.plan,
+      regularCents: p.amountCents,
+      offerCents: Math.round((p.amountCents * (100 - offer.percent)) / 100),
+      months: offer.months,
+    }));
 }
 
 /** The amount billed on month `n` (1 = the first): the offer's for the first `months` months, the regular price after. */
-export const billedOnMonth = (price: OfferPrice, n: number): number => (n <= price.months ? price.offerCents : price.regularCents);
+export const billedOnMonth = (price: OfferPrice, n: number): number =>
+  n <= price.months ? price.offerCents : price.regularCents;
 
 /** The strings the page shows for the offer, from the messages (`pricing.offer.*`): the headline and each plan's line, regular price and end date included. */
 export function offerLines(
@@ -70,6 +84,13 @@ export function offerLines(
   return {
     headline: fill(say.headline, { percent: offer.percent, months: offer.months, code: offer.code }),
     ends: date ? fill(say.ends, { date }) : say.always,
-    lines: prices.map((p) => ({ plan: p.plan, text: fill(say.line, { offer: money(p.offerCents, locale), months: p.months, regular: money(p.regularCents, locale) }) })),
+    lines: prices.map((p) => ({
+      plan: p.plan,
+      text: fill(say.line, {
+        offer: money(p.offerCents, locale),
+        months: p.months,
+        regular: money(p.regularCents, locale),
+      }),
+    })),
   };
 }

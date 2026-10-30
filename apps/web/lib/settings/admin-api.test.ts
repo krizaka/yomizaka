@@ -6,10 +6,27 @@ import { CONFIG_PAGE, CONFIG_PAGES, isConfigPage, isSettingsGroup } from "./admi
 
 const state = vi.hoisted(() => ({ role: "ADMIN" as "ADMIN" | "USER" | null, writes: [] as string[] }));
 
-vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => undefined }), headers: async () => new Headers() }));
+vi.mock("next/headers", () => ({
+  cookies: async () => ({ get: () => undefined }),
+  headers: async () => new Headers(),
+}));
 vi.mock("../session", async (orig) => ({
   ...(await orig<typeof import("../session")>()),
-  resolveSession: async () => (state.role ? { id: "s1", account: { id: "22222222-2222-4222-8222-222222222222", email: "admin@yomizaka.test", role: state.role, locale: "fr", perspective: null, name: null, avatarSeed: null } } : null),
+  resolveSession: async () =>
+    state.role
+      ? {
+          id: "s1",
+          account: {
+            id: "22222222-2222-4222-8222-222222222222",
+            email: "admin@yomizaka.test",
+            role: state.role,
+            locale: "fr",
+            perspective: null,
+            name: null,
+            avatarSeed: null,
+          },
+        }
+      : null,
 }));
 vi.mock("../audit", () => ({ audit: async () => undefined }));
 vi.mock("../db", () => ({
@@ -19,7 +36,12 @@ vi.mock("../db", () => ({
   },
 }));
 
-const json = (method: string, body?: unknown) => new Request("https://admin.yomizaka.com/api/admin/settings", { method, body: body === undefined ? undefined : JSON.stringify(body), headers: { "x-forwarded-for": "203.0.113.20", "content-type": "application/json" } });
+const json = (method: string, body?: unknown) =>
+  new Request("https://admin.yomizaka.com/api/admin/settings", {
+    method,
+    body: body === undefined ? undefined : JSON.stringify(body),
+    headers: { "x-forwarded-for": "203.0.113.20", "content-type": "application/json" },
+  });
 
 beforeEach(() => {
   resetRateLimits();
@@ -31,7 +53,9 @@ describe("the configuration API is the administration's only", () => {
   it.each([null, "USER"] as const)("refuses %s", async (role) => {
     state.role = role;
     const { PUT, GET } = await import("../../app/api/admin/settings/route");
-    expect((await PUT(json("PUT", { scope: "global", key: "app.maintenance", value: true }))).status).toBe(role ? 403 : 401);
+    expect((await PUT(json("PUT", { scope: "global", key: "app.maintenance", value: true }))).status).toBe(
+      role ? 403 : 401,
+    );
     expect((await GET(json("GET"))).status).toBe(role ? 403 : 401);
     expect(state.writes).toEqual([]);
   });
@@ -39,8 +63,18 @@ describe("the configuration API is the administration's only", () => {
   it.each([
     ["a value that is not valid", { scope: "global", key: "limits.maxFileMb", value: 99 }, 400, "BAD_VALUE"],
     ["a setting that does not exist", { scope: "global", key: "nothing.here", value: true }, 404, "UNKNOWN_SETTING"],
-    ["a scope the setting cannot be set at", { scope: "user", id: "u1", key: "app.maintenance", value: true }, 400, "BAD_SCOPE"],
-    ["a person scope without a person", { scope: "user", id: "", key: "features.assistant", value: true }, 400, "BAD_SCOPE"],
+    [
+      "a scope the setting cannot be set at",
+      { scope: "user", id: "u1", key: "app.maintenance", value: true },
+      400,
+      "BAD_SCOPE",
+    ],
+    [
+      "a person scope without a person",
+      { scope: "user", id: "", key: "features.assistant", value: true },
+      400,
+      "BAD_SCOPE",
+    ],
   ] as const)("refuses %s with its stable code, and writes nothing", async (_name, body, status, code) => {
     const { PUT } = await import("../../app/api/admin/settings/route");
     const res = await PUT(json("PUT", body));
@@ -58,7 +92,17 @@ describe("the configuration API is the administration's only", () => {
 
 describe("the configuration pages", () => {
   it("are the setting groups then the price catalogue, the packs, Orazaka and the organisation, each a route", () => {
-    expect(CONFIG_PAGES).toEqual(["general", "features", "limits", "plans", "prices", "coupons", "packs", "orazaka", "organisation"]);
+    expect(CONFIG_PAGES).toEqual([
+      "general",
+      "features",
+      "limits",
+      "plans",
+      "prices",
+      "coupons",
+      "packs",
+      "orazaka",
+      "organisation",
+    ]);
     expect(isSettingsGroup(CONFIG_PAGE.prices)).toBe(false);
     expect(isConfigPage("limits")).toBe(true);
     expect(isConfigPage("secrets")).toBe(false);

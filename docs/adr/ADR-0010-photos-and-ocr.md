@@ -3,10 +3,12 @@
 Status: accepted (2026-10-22). Issue: krizaka/yomizaka#201.
 
 ## Context
+
 People photograph a lease or an invoice with their phone. A photo is not a PDF: it is crooked, dark, full of metadata
 (GPS, device — Loi 25), and its text must be read. An Orazaka run costs; a local reading costs nothing.
 
 ## Decision
+
 - **Pre-flight accepts PNG, JPEG and HEIC** (`lib/preflight`, rules as data): the real type by magic bytes, and a pixel limit
   read from the header (`maxImagePixels`, 40 MP) so a decompression bomb is refused before any decoder runs.
 - **`lib/images/` (generic, no import from the app)** — port `ImageCleaner`: the camera's orientation applied, the page
@@ -25,7 +27,7 @@ People photograph a lease or an invoice with their phone. A photo is not a PDF: 
   **No vision Studio exists in Orazaka yet** (orazaka-packs#100): `vision` is `null`, so a weak reading stays local and is
   flagged « low confidence ».
 - **Where it is kept**: `documents.text_source` (migration 0017): `{ kind: "ocr", engine, confidence, photos, lowConfidence,
-  origin }` or `{ kind: "vision", by: "orazaka", runId, model, localConfidence, photos, origin }`; null for a PDF or a text file.
+origin }` or `{ kind: "vision", by: "orazaka", runId, model, localConfidence, photos, origin }`; null for a PDF or a text file.
 - **Shown**: « Ce document » (source, reliability, device/software/dates as hints, « GPS removed »), the closing note (how
   the text was read, and that a misread digit can change the result — in plain words, no run id), and the signed report
   (`document.textSource`, covered by the signature).
@@ -33,6 +35,7 @@ People photograph a lease or an invoice with their phone. A photo is not a PDF: 
   Yomizaka (the API answers 422 `PHOTO_AUTHENTICITY`; the page says why).
 
 ## Consequences
+
 - Memory: Tesseract measures ~160 MB resident in the 512 MB production image (checked by the container smoke in CI); a
   larger instance is the lever if concurrent uploads grow.
 - The build's file tracing cannot see a worker thread's requires, so the Dockerfile carries Tesseract's packages and trained

@@ -15,7 +15,15 @@ const OBJECT_KEY = "owner-1/doc-1/lease.pdf";
 const OLD_OBJECT = "AQMDAwMDAwMDAwMDA80ZBTgYSsWM66u7qwlZdrQl8cJzKkQ3IRs0KjOFeI9oi3CPltHntB1KsPTEholggpGWXRauy4Vk";
 const OLD_SEALED = "v1.BQUFBQUFBQUFBQUFwqs2Lsa5DC958EhT-YVONJHCqlu0_g1WlFo2Ffw";
 
-const descriptor = { kind: "s3", endpoint: null, region: "tor1", residency: "canada", encrypted: true, owner: "krizaka", devOnly: false } as const;
+const descriptor = {
+  kind: "s3",
+  endpoint: null,
+  region: "tor1",
+  residency: "canada",
+  encrypted: true,
+  owner: "krizaka",
+  devOnly: false,
+} as const;
 
 describe("what was kept before the package stays readable", () => {
   it("opens a document encrypted by the former local wrapper, same key, same object key", async () => {
@@ -28,8 +36,12 @@ describe("what was kept before the package stays readable", () => {
 
   it("still binds a document to its object key: moved under another name, it does not open", async () => {
     const inner = memoryObjectStore();
-    await inner.put("owner-1/doc-2/lease.pdf", Buffer.from(OLD_OBJECT, "base64"), { contentType: "application/octet-stream" });
-    await expect(documentStoreOver(encryptedStore(inner, KEY), descriptor, 900).get("owner-1/doc-2/lease.pdf")).rejects.toThrow();
+    await inner.put("owner-1/doc-2/lease.pdf", Buffer.from(OLD_OBJECT, "base64"), {
+      contentType: "application/octet-stream",
+    });
+    await expect(
+      documentStoreOver(encryptedStore(inner, KEY), descriptor, 900).get("owner-1/doc-2/lease.pdf"),
+    ).rejects.toThrow();
   });
 
   it("writes the same envelope: version 1, 12-byte IV, 16-byte tag, then the ciphertext", async () => {
@@ -54,4 +66,7 @@ describe("what was kept before the package stays readable", () => {
   });
 });
 
-describe("the encryption wrapper behind the product's port", () => documentStoreContract("encryptedStore(memory)", () => documentStoreOver(encryptedStore(memoryObjectStore(), KEY), descriptor, 900)));
+describe("the encryption wrapper behind the product's port", () =>
+  documentStoreContract("encryptedStore(memory)", () =>
+    documentStoreOver(encryptedStore(memoryObjectStore(), KEY), descriptor, 900),
+  ));

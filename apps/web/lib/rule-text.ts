@@ -30,7 +30,10 @@ export function ruleExplanation(ruleId: string, lang: Lang, fallback: string, en
 }
 
 /** The guard: the rule ids (read from recorded runs, a fixture, a ruleset) that lack a name or a plain sentence in either language. */
-export function missingRuleTexts(ruleIds: Iterable<string>, packs: readonly CompliancePack[] = allCompliancePacks()): string[] {
+export function missingRuleTexts(
+  ruleIds: Iterable<string>,
+  packs: readonly CompliancePack[] = allCompliancePacks(),
+): string[] {
   const missing: string[] = [];
   for (const id of ruleIds) {
     const title = packs.map((p) => p.ruleTitles[id]).find(Boolean);

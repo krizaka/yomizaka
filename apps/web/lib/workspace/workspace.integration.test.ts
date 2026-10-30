@@ -27,22 +27,37 @@ describe.runIf(enabled)("the organised workspace (yomizaka#324)", () => {
 
   const account = async (who: string) => {
     const email = `${who}-${stamp}@yomizaka.test`;
-    const [row] = await query<{ id: string }>("INSERT INTO accounts (email, audit_credits) VALUES ($1, 50) RETURNING id", [email]);
+    const [row] = await query<{ id: string }>(
+      "INSERT INTO accounts (email, audit_credits) VALUES ($1, 50) RETURNING id",
+      [email],
+    );
     return { id: row!.id, email };
   };
   const ws = (options: { store?: typeof store } = { store }) => workspaceFor({ clock, store: options.store });
-  const file = async (owner = eric) => (await requestApplicantFile(owner, { candidateName: "Camille Fictif", candidateEmail: `c${++seq}-${stamp}@exemple.test`, types: ["pay-stub"] }, NOW)).id;
+  const file = async (owner = eric) =>
+    (
+      await requestApplicantFile(
+        owner,
+        { candidateName: "Camille Fictif", candidateEmail: `c${++seq}-${stamp}@exemple.test`, types: ["pay-stub"] },
+        NOW,
+      )
+    ).id;
   /** A document of the file: kept in the database, or on the store (its object is there too). */
   const document = async (owner: { id: string }, fileId: string, where: "database" | "s3" = "database") => {
     const [row] = await query<{ id: string }>(
       "INSERT INTO documents (owner_id, screening_id, title, filename, mime_type, size_bytes, sha256, content, text, storage) VALUES ($1, $2, 't', 'f.pdf', 'application/pdf', 1, $3, 'x', 'texte', $4) RETURNING id",
       [owner.id, fileId, `${stamp}-${++seq}`, where],
     );
-    if (where === "s3") await store.put(`${owner.id}/${row!.id}/original.pdf`, new Uint8Array([1]), { contentType: "application/pdf" });
+    if (where === "s3")
+      await store.put(`${owner.id}/${row!.id}/original.pdf`, new Uint8Array([1]), { contentType: "application/pdf" });
     return row!.id;
   };
   const stateOf = async (id: string) => (await ws().status.of(eric.id, KIND.applicantFile, [id])).get(id)?.state;
-  const trail = (id: string, action: string) => query<{ detail: Record<string, unknown> }>("SELECT detail FROM audit_log WHERE target_id = $1 AND action = $2", [id, action]);
+  const trail = (id: string, action: string) =>
+    query<{ detail: Record<string, unknown> }>("SELECT detail FROM audit_log WHERE target_id = $1 AND action = $2", [
+      id,
+      action,
+    ]);
   const codeOf = async (promise: Promise<unknown>) => {
     try {
       await promise;
@@ -70,14 +85,27 @@ describe.runIf(enabled)("the organised workspace (yomizaka#324)", () => {
     const id = await file();
     const kept = await document(eric, id);
     const onStore = await document(eric, id, "s3");
-    await query("INSERT INTO analyses (document_id, studio, status, run_id) VALUES ($1, 'compliance-check', 'succeeded', $2)", [kept, `run-${stamp}-1`]);
-    const result = await ws().status.move(eric.id, actorOf(eric), KIND.applicantFile, { ids: [id], to: DECISION.notSelected, expect: DECISION.toDecide });
+    await query(
+      "INSERT INTO analyses (document_id, studio, status, run_id) VALUES ($1, 'compliance-check', 'succeeded', $2)",
+      [kept, `run-${stamp}-1`],
+    );
+    const result = await ws().status.move(eric.id, actorOf(eric), KIND.applicantFile, {
+      ids: [id],
+      to: DECISION.notSelected,
+      expect: DECISION.toDecide,
+    });
     expect(result.moved.map((m) => [m.entityId, m.to, m.final])).toEqual([[id, DECISION.notSelected, true]]);
     expect(await stateOf(id)).toBe(DECISION.notSelected);
-    const [row] = await query<{ closed_at: Date | null; revoked_at: Date | null }>("SELECT closed_at, revoked_at FROM screenings WHERE id = $1", [id]);
+    const [row] = await query<{ closed_at: Date | null; revoked_at: Date | null }>(
+      "SELECT closed_at, revoked_at FROM screenings WHERE id = $1",
+      [id],
+    );
     expect(row?.closed_at).toEqual(NOW);
     expect(row?.revoked_at).toEqual(NOW);
-    const docs = await query<{ storage: string; len: number; text: string }>("SELECT storage, octet_length(content) AS len, text FROM documents WHERE screening_id = $1", [id]);
+    const docs = await query<{ storage: string; len: number; text: string }>(
+      "SELECT storage, octet_length(content) AS len, text FROM documents WHERE screening_id = $1",
+      [id],
+    );
     expect(docs).toHaveLength(2);
     for (const d of docs) expect(d).toEqual({ storage: "none", len: 0, text: "" });
     expect(await store.get(`${eric.id}/${onStore}/original.pdf`)).toBeNull();
@@ -85,13 +113,19 @@ describe.runIf(enabled)("the organised workspace (yomizaka#324)", () => {
     const lines = await trail(id, "organize.status_changed");
     expect(lines).toHaveLength(1);
     expect(lines[0]!.detail).toMatchObject({ from: DECISION.toDecide, to: DECISION.notSelected, final: true });
-    expect((await trail(id, "applicant_file.closed"))[0]!.detail).toMatchObject({ purged: 2, decision: DECISION.notSelected });
+    expect((await trail(id, "applicant_file.closed"))[0]!.detail).toMatchObject({
+      purged: 2,
+      decision: DECISION.notSelected,
+    });
   });
 
   it("decides many at once: one audit line per file, and the file already decided is skipped, named", async () => {
     const [a, b, c] = [await file(), await file(), await file()];
     await ws().status.move(eric.id, actorOf(eric), KIND.applicantFile, { ids: [a!], to: DECISION.selected });
-    const result = await ws().status.move(eric.id, actorOf(eric), KIND.applicantFile, { ids: [a!, b!, c!], to: DECISION.selected });
+    const result = await ws().status.move(eric.id, actorOf(eric), KIND.applicantFile, {
+      ids: [a!, b!, c!],
+      to: DECISION.selected,
+    });
     expect(result.moved.map((m) => m.entityId).sort(byText)).toEqual([b!, c!].sort(byText));
     expect(result.skipped).toEqual([{ id: a, code: "ALREADY" }]);
     for (const id of [a!, b!, c!]) expect(await trail(id, "organize.status_changed")).toHaveLength(1);
@@ -101,7 +135,12 @@ describe.runIf(enabled)("the organised workspace (yomizaka#324)", () => {
     const [a, b] = [await file(), await file()];
     await document(eric, a!);
     await document(eric, b!, "s3");
-    await expect(ws({ store: undefined }).status.move(eric.id, actorOf(eric), KIND.applicantFile, { ids: [a!, b!], to: DECISION.selected })).rejects.toMatchObject({ status: 409, body: { code: "STORAGE_UNAVAILABLE" } });
+    await expect(
+      ws({ store: undefined }).status.move(eric.id, actorOf(eric), KIND.applicantFile, {
+        ids: [a!, b!],
+        to: DECISION.selected,
+      }),
+    ).rejects.toMatchObject({ status: 409, body: { code: "STORAGE_UNAVAILABLE" } });
     for (const id of [a!, b!]) {
       expect(await stateOf(id)).toBe(DECISION.toDecide);
       expect(await trail(id, "organize.status_changed")).toHaveLength(0);
@@ -109,14 +148,30 @@ describe.runIf(enabled)("the organised workspace (yomizaka#324)", () => {
     }
     const [open] = await query<{ closed_at: Date | null }>("SELECT closed_at FROM screenings WHERE id = $1", [a]);
     expect(open?.closed_at).toBeNull();
-    const [kept] = await query<{ len: number }>("SELECT octet_length(content) AS len FROM documents WHERE screening_id = $1", [a]);
+    const [kept] = await query<{ len: number }>(
+      "SELECT octet_length(content) AS len FROM documents WHERE screening_id = $1",
+      [a],
+    );
     expect(kept?.len).toBe(1);
   });
 
   it("two people deciding the same file at once give one decision and one refusal", async () => {
     const id = await file();
-    const targets = [DECISION.selected, DECISION.notSelected, DECISION.selected, DECISION.notSelected, DECISION.selected, DECISION.notSelected];
-    const outcomes = await Promise.all(targets.map((to) => codeOf(ws().status.move(eric.id, actorOf(eric), KIND.applicantFile, { ids: [id], to, expect: DECISION.toDecide }))));
+    const targets = [
+      DECISION.selected,
+      DECISION.notSelected,
+      DECISION.selected,
+      DECISION.notSelected,
+      DECISION.selected,
+      DECISION.notSelected,
+    ];
+    const outcomes = await Promise.all(
+      targets.map((to) =>
+        codeOf(
+          ws().status.move(eric.id, actorOf(eric), KIND.applicantFile, { ids: [id], to, expect: DECISION.toDecide }),
+        ),
+      ),
+    );
     expect(outcomes.filter((o) => o === "no error")).toHaveLength(1);
     expect(outcomes.filter((o) => o === "STALE")).toHaveLength(outcomes.length - 1);
     expect(await trail(id, "organize.status_changed")).toHaveLength(1);
@@ -125,7 +180,11 @@ describe.runIf(enabled)("the organised workspace (yomizaka#324)", () => {
 
   it("two people deciding the same file at once, without having looked, still give one decision", async () => {
     const id = await file();
-    const outcomes = await Promise.all([DECISION.selected, DECISION.notSelected].map((to) => codeOf(ws().status.move(eric.id, actorOf(eric), KIND.applicantFile, { ids: [id], to }))));
+    const outcomes = await Promise.all(
+      [DECISION.selected, DECISION.notSelected].map((to) =>
+        codeOf(ws().status.move(eric.id, actorOf(eric), KIND.applicantFile, { ids: [id], to })),
+      ),
+    );
     expect(outcomes.filter((o) => o === "no error")).toHaveLength(1);
     expect(outcomes.filter((o) => o === "MOVE_NOT_ALLOWED")).toHaveLength(1);
     expect(await trail(id, "organize.status_changed")).toHaveLength(1);
@@ -134,32 +193,57 @@ describe.runIf(enabled)("the organised workspace (yomizaka#324)", () => {
   it("answers 404 for another account's file, in one id or among others, and decides nothing", async () => {
     const mine = await file();
     const theirs = await file(stranger);
-    expect(await codeOf(ws().status.move(eric.id, actorOf(eric), KIND.applicantFile, { ids: [theirs], to: DECISION.selected }))).toBe("NOT_FOUND");
-    expect(await codeOf(ws().status.move(eric.id, actorOf(eric), KIND.applicantFile, { ids: [mine, theirs], to: DECISION.selected }))).toBe("NOT_FOUND");
+    expect(
+      await codeOf(
+        ws().status.move(eric.id, actorOf(eric), KIND.applicantFile, { ids: [theirs], to: DECISION.selected }),
+      ),
+    ).toBe("NOT_FOUND");
+    expect(
+      await codeOf(
+        ws().status.move(eric.id, actorOf(eric), KIND.applicantFile, { ids: [mine, theirs], to: DECISION.selected }),
+      ),
+    ).toBe("NOT_FOUND");
     expect(await stateOf(mine)).toBe(DECISION.toDecide);
     const [still] = await query<{ closed_at: Date | null }>("SELECT closed_at FROM screenings WHERE id = $1", [theirs]);
     expect(still?.closed_at).toBeNull();
   });
 
   it("does not take an ordinary screening as an applicant file: only flow « file » is the scope's", async () => {
-    const [row] = await query<{ id: string }>("INSERT INTO screenings (landlord_id, tenant_name, tenant_email, provider, token_hash, expires_at) VALUES ($1, 'S', $2, 'x', $3, now() + interval '1 day') RETURNING id", [eric.id, `s-${stamp}@exemple.test`, `h-${stamp}`]);
-    expect(await codeOf(ws().status.move(eric.id, actorOf(eric), KIND.applicantFile, { ids: [row!.id], to: DECISION.selected }))).toBe("NOT_FOUND");
+    const [row] = await query<{ id: string }>(
+      "INSERT INTO screenings (landlord_id, tenant_name, tenant_email, provider, token_hash, expires_at) VALUES ($1, 'S', $2, 'x', $3, now() + interval '1 day') RETURNING id",
+      [eric.id, `s-${stamp}@exemple.test`, `h-${stamp}`],
+    );
+    expect(
+      await codeOf(
+        ws().status.move(eric.id, actorOf(eric), KIND.applicantFile, { ids: [row!.id], to: DECISION.selected }),
+      ),
+    ).toBe("NOT_FOUND");
   });
 
   it(`takes at most ${BULK_MAX} files a call`, async () => {
     const ids = Array.from({ length: BULK_MAX + 1 }, () => crypto.randomUUID());
-    expect(await codeOf(ws().status.move(eric.id, actorOf(eric), KIND.applicantFile, { ids, to: DECISION.selected }))).toBe("TOO_MANY");
+    expect(
+      await codeOf(ws().status.move(eric.id, actorOf(eric), KIND.applicantFile, { ids, to: DECISION.selected })),
+    ).toBe("TOO_MANY");
   });
 
   it("tags files in bulk with a marker, one audit line per file, and keeps a foreign tag out", async () => {
     const [a, b] = [await file(), await file()];
     const w = ws();
-    const garant = await w.tags.create(eric.id, actorOf(eric), KIND.applicantFile, { name: `Garant ${stamp}`, marker: "amber" });
+    const garant = await w.tags.create(eric.id, actorOf(eric), KIND.applicantFile, {
+      name: `Garant ${stamp}`,
+      marker: "amber",
+    });
     expect(garant.marker).toBe("amber");
     expect(await w.tags.apply(eric.id, actorOf(eric), KIND.applicantFile, { ids: [a!, b!], add: [garant.id] })).toBe(2);
     for (const id of [a!, b!]) expect(await trail(id, "organize.tags_changed")).toHaveLength(1);
-    const theirs = await ws().tags.create(stranger.id, actorOf(stranger), KIND.applicantFile, { name: `Autre ${stamp}`, marker: "red" });
-    expect(await codeOf(w.tags.apply(eric.id, actorOf(eric), KIND.applicantFile, { ids: [a!], add: [theirs.id] }))).toBe("NOT_FOUND");
+    const theirs = await ws().tags.create(stranger.id, actorOf(stranger), KIND.applicantFile, {
+      name: `Autre ${stamp}`,
+      marker: "red",
+    });
+    expect(
+      await codeOf(w.tags.apply(eric.id, actorOf(eric), KIND.applicantFile, { ids: [a!], add: [theirs.id] })),
+    ).toBe("NOT_FOUND");
   });
 
   it("filters the files on ALL the tags worn, and on the decision, from the address", async () => {
@@ -169,9 +253,12 @@ describe.runIf(enabled)("the organised workspace (yomizaka#324)", () => {
     const y = await w.tags.create(eric.id, actorOf(eric), KIND.applicantFile, { name: `Y ${stamp}`, marker: "violet" });
     await w.tags.apply(eric.id, actorOf(eric), KIND.applicantFile, { ids: [both!, one!], add: [x.id] });
     await w.tags.apply(eric.id, actorOf(eric), KIND.applicantFile, { ids: [both!], add: [y.id] });
-    const idsOf = async (organised: Parameters<typeof listApplicantFiles>[2]) => (await listApplicantFiles(eric.id, NOW, organised)).map((f) => f.id);
+    const idsOf = async (organised: Parameters<typeof listApplicantFiles>[2]) =>
+      (await listApplicantFiles(eric.id, NOW, organised)).map((f) => f.id);
     expect(await idsOf({ filters: { tags: [x.id, y.id] }, set: DECISION_SET })).toEqual([both]);
-    expect((await idsOf({ filters: { tags: [x.id] }, set: DECISION_SET })).sort(byText)).toEqual([both!, one!].sort(byText));
+    expect((await idsOf({ filters: { tags: [x.id] }, set: DECISION_SET })).sort(byText)).toEqual(
+      [both!, one!].sort(byText),
+    );
     await w.status.move(eric.id, actorOf(eric), KIND.applicantFile, { ids: [one!], to: DECISION.selected });
     expect(await idsOf({ filters: { tags: [x.id], status: [DECISION.selected] }, set: DECISION_SET })).toEqual([one]);
     expect(await idsOf({ filters: { tags: [x.id], status: [DECISION.toDecide] }, set: DECISION_SET })).toEqual([both]);
@@ -183,12 +270,18 @@ describe.runIf(enabled)("the organised workspace (yomizaka#324)", () => {
   it("counts the binder's tabs and chips with the list's own filter: each count is the length of its view (yomizaka#334)", async () => {
     const [a, b, c] = [await file(), await file(), await file()];
     const w = ws();
-    const t = await w.tags.create(eric.id, actorOf(eric), KIND.applicantFile, { name: `Binder ${stamp}`, marker: "green" });
+    const t = await w.tags.create(eric.id, actorOf(eric), KIND.applicantFile, {
+      name: `Binder ${stamp}`,
+      marker: "green",
+    });
     await w.tags.apply(eric.id, actorOf(eric), KIND.applicantFile, { ids: [a!, b!], add: [t.id] });
     await w.status.move(eric.id, actorOf(eric), KIND.applicantFile, { ids: [b!], to: DECISION.selected });
     expect(c).toBeTruthy();
     const plan = binderPlan(DECISION_SET, [t.id], { tags: [t.id] });
-    for (const tab of plan.tabs) expect(await countApplicantFiles(eric.id, { filters: tab.filters, set: DECISION_SET })).toBe((await listApplicantFiles(eric.id, NOW, { filters: tab.filters, set: DECISION_SET })).length);
+    for (const tab of plan.tabs)
+      expect(await countApplicantFiles(eric.id, { filters: tab.filters, set: DECISION_SET })).toBe(
+        (await listApplicantFiles(eric.id, NOW, { filters: tab.filters, set: DECISION_SET })).length,
+      );
     expect(await countApplicantFiles(eric.id, { filters: plan.tabs[0]!.filters, set: DECISION_SET })).toBe(2);
     expect(await countApplicantFiles(eric.id, { filters: plan.tabs[2]!.filters, set: DECISION_SET })).toBe(1);
     expect(await countApplicantFiles(eric.id, { filters: plan.chips[0]!.countFilters, set: DECISION_SET })).toBe(2);
@@ -196,32 +289,56 @@ describe.runIf(enabled)("the organised workspace (yomizaka#324)", () => {
 
   it("filters the documents of a collection on ALL their tags, with the layer's filter (it replaces allTagsClause)", async () => {
     const w = ws();
-    const [col] = await query<{ id: string }>("SELECT id FROM collections WHERE owner_id = $1 AND is_default", [eric.id]);
-    const doc = async () => (await query<{ id: string }>("INSERT INTO documents (owner_id, collection_id, title, filename, mime_type, size_bytes, sha256, content) VALUES ($1, $2, 't', 'f.txt', 'text/plain', 1, $3, 'x') RETURNING id", [eric.id, col!.id, `${stamp}-${++seq}`]))[0]!.id;
+    const [col] = await query<{ id: string }>("SELECT id FROM collections WHERE owner_id = $1 AND is_default", [
+      eric.id,
+    ]);
+    const doc = async () =>
+      (
+        await query<{ id: string }>(
+          "INSERT INTO documents (owner_id, collection_id, title, filename, mime_type, size_bytes, sha256, content) VALUES ($1, $2, 't', 'f.txt', 'text/plain', 1, $3, 'x') RETURNING id",
+          [eric.id, col!.id, `${stamp}-${++seq}`],
+        )
+      )[0]!.id;
     const [d1, d2] = [await doc(), await doc()];
     const t1 = await w.tags.create(eric.id, actorOf(eric), KIND.document, { name: `Bail ${stamp}`, marker: "green" });
     const t2 = await w.tags.create(eric.id, actorOf(eric), KIND.document, { name: `2026 ${stamp}`, marker: "gray" });
     await w.tags.apply(eric.id, actorOf(eric), KIND.document, { ids: [d1, d2], add: [t1.id] });
     await w.tags.apply(eric.id, actorOf(eric), KIND.document, { ids: [d1], add: [t2.id] });
     expect((await browse(query, eric.id, { collectionId: col!.id, tagIds: [t1.id, t2.id] })).documentIds).toEqual([d1]);
-    expect((await browse(query, eric.id, { collectionId: col!.id, tagIds: [t1.id] })).documentIds.sort(byText)).toEqual([d1, d2].sort(byText));
-    expect((await browse(query, eric.id, { collectionId: col!.id, tagIds: [] })).documentIds).toEqual(expect.arrayContaining([d1, d2]));
+    expect((await browse(query, eric.id, { collectionId: col!.id, tagIds: [t1.id] })).documentIds.sort(byText)).toEqual(
+      [d1, d2].sort(byText),
+    );
+    expect((await browse(query, eric.id, { collectionId: col!.id, tagIds: [] })).documentIds).toEqual(
+      expect.arrayContaining([d1, d2]),
+    );
     expect(filterSql(WORKSPACE, KIND.document, { tags: [t1.id] }, { from: 2 }).sql).toContain("organize.document_tag");
   });
 
   it("gives a document tags only: it has no decision to move", async () => {
-    const [doc] = await query<{ id: string }>("INSERT INTO documents (owner_id, title, filename, mime_type, size_bytes, sha256, content) VALUES ($1, 't', 'f.txt', 'text/plain', 1, $2, 'x') RETURNING id", [eric.id, `${stamp}-doc`]);
-    expect(await codeOf(ws().status.move(eric.id, actorOf(eric), KIND.document, { ids: [doc!.id], to: DECISION.selected }))).toBe("BAD_REQUEST");
+    const [doc] = await query<{ id: string }>(
+      "INSERT INTO documents (owner_id, title, filename, mime_type, size_bytes, sha256, content) VALUES ($1, 't', 'f.txt', 'text/plain', 1, $2, 'x') RETURNING id",
+      [eric.id, `${stamp}-doc`],
+    );
+    expect(
+      await codeOf(ws().status.move(eric.id, actorOf(eric), KIND.document, { ids: [doc!.id], to: DECISION.selected })),
+    ).toBe("BAD_REQUEST");
   });
 
   it("shares saved views inside the account and keeps a stranger's out; the system views come first", async () => {
     const w = ws();
-    const mine = await w.views.create(eric.id, actorOf(eric), KIND.applicantFile, { name: `Villeray ${stamp}`, filters: { status: [DECISION.toDecide], q: "villeray" } });
+    const mine = await w.views.create(eric.id, actorOf(eric), KIND.applicantFile, {
+      name: `Villeray ${stamp}`,
+      filters: { status: [DECISION.toDecide], q: "villeray" },
+    });
     const views = await w.views.list(eric.id, actorOf(eric), KIND.applicantFile);
     expect(views.system.map((v) => v.key)).toEqual(["to_decide", "decided"]);
     expect(views.mine.map((v) => v.id)).toContain(mine.id);
     expect(await codeOf(w.views.update(eric.id, actorOf(stranger), mine.id, { name: "x" }))).toBe("NOT_FOUND");
-    expect(await codeOf(w.views.create(eric.id, actorOf(eric), KIND.applicantFile, { name: "Bad", filters: { status: ["nope"] } }))).toBe("BAD_REQUEST");
+    expect(
+      await codeOf(
+        w.views.create(eric.id, actorOf(eric), KIND.applicantFile, { name: "Bad", filters: { status: ["nope"] } }),
+      ),
+    ).toBe("BAD_REQUEST");
   });
 });
 
@@ -249,22 +366,59 @@ describe.runIf(enabled)("migration 0033 on the data of before (yomizaka#324)", (
     const before = MIGRATIONS.filter((m) => m.version < "0033_workspace_organised");
     const after = MIGRATIONS.find((m) => m.version === "0033_workspace_organised")!;
     for (const m of before) await client.query(m.sql);
-    const q = async <T extends pg.QueryResultRow>(text: string, values: unknown[] = []) => (await client.query<T>(text, values)).rows;
-    const [owner] = await q<{ id: string }>("INSERT INTO accounts (email) VALUES ('eric-move@yomizaka.test') RETURNING id");
+    const q = async <T extends pg.QueryResultRow>(text: string, values: unknown[] = []) =>
+      (await client.query<T>(text, values)).rows;
+    const [owner] = await q<{ id: string }>(
+      "INSERT INTO accounts (email) VALUES ('eric-move@yomizaka.test') RETURNING id",
+    );
     const [col] = await q<{ id: string }>("SELECT id FROM collections WHERE owner_id = $1 AND is_default", [owner!.id]);
-    const doc = async (n: number) => (await q<{ id: string }>("INSERT INTO documents (owner_id, collection_id, title, filename, mime_type, size_bytes, sha256, content) VALUES ($1, $2, 't', 'f.txt', 'text/plain', 1, $3, 'x') RETURNING id", [owner!.id, col!.id, `m-${n}`]))[0]!.id;
+    const doc = async (n: number) =>
+      (
+        await q<{ id: string }>(
+          "INSERT INTO documents (owner_id, collection_id, title, filename, mime_type, size_bytes, sha256, content) VALUES ($1, $2, 't', 'f.txt', 'text/plain', 1, $3, 'x') RETURNING id",
+          [owner!.id, col!.id, `m-${n}`],
+        )
+      )[0]!.id;
     const [d1, d2] = [await doc(1), await doc(2)];
-    const tag = async (name: string, color: string) => (await q<{ id: string }>("INSERT INTO tags (owner_id, name, color) VALUES ($1, $2, $3) RETURNING id", [owner!.id, name, color]))[0]!.id;
-    const [bail, garant, onlyCollection] = [await tag("Bail", "green"), await tag("Garant", "amber"), await tag("Immeuble", "blue")];
-    await q("INSERT INTO document_tags (document_id, tag_id) VALUES ($1, $2), ($1, $3), ($4, $3)", [d1, bail, garant, d2]);
+    const tag = async (name: string, color: string) =>
+      (
+        await q<{ id: string }>("INSERT INTO tags (owner_id, name, color) VALUES ($1, $2, $3) RETURNING id", [
+          owner!.id,
+          name,
+          color,
+        ])
+      )[0]!.id;
+    const [bail, garant, onlyCollection] = [
+      await tag("Bail", "green"),
+      await tag("Garant", "amber"),
+      await tag("Immeuble", "blue"),
+    ];
+    await q("INSERT INTO document_tags (document_id, tag_id) VALUES ($1, $2), ($1, $3), ($4, $3)", [
+      d1,
+      bail,
+      garant,
+      d2,
+    ]);
     await q("INSERT INTO collections_tags (collection_id, tag_id) VALUES ($1, $2)", [col!.id, onlyCollection]);
 
     await client.query(after.sql.replaceAll("organize", "organize_move"));
 
-    const moved = await q<{ name: string; marker: string; origin: string }>("SELECT name, marker, origin FROM organize_move.tag WHERE scope_id = $1 AND kind = 'document' ORDER BY name", [owner!.id]);
-    expect(moved).toEqual([{ name: "Bail", marker: "green", origin: "user" }, { name: "Garant", marker: "amber", origin: "user" }]);
-    const worn = await q<{ entity_id: string; name: string }>("SELECT w.entity_id, t.name FROM organize_move.document_tag w JOIN organize_move.tag t ON t.id = w.tag_id");
-    expect(worn.map((r) => `${r.entity_id === d1 ? "d1" : "d2"} ${r.name}`).sort(byText)).toEqual(["d1 Bail", "d1 Garant", "d2 Garant"]);
+    const moved = await q<{ name: string; marker: string; origin: string }>(
+      "SELECT name, marker, origin FROM organize_move.tag WHERE scope_id = $1 AND kind = 'document' ORDER BY name",
+      [owner!.id],
+    );
+    expect(moved).toEqual([
+      { name: "Bail", marker: "green", origin: "user" },
+      { name: "Garant", marker: "amber", origin: "user" },
+    ]);
+    const worn = await q<{ entity_id: string; name: string }>(
+      "SELECT w.entity_id, t.name FROM organize_move.document_tag w JOIN organize_move.tag t ON t.id = w.tag_id",
+    );
+    expect(worn.map((r) => `${r.entity_id === d1 ? "d1" : "d2"} ${r.name}`).sort(byText)).toEqual([
+      "d1 Bail",
+      "d1 Garant",
+      "d2 Garant",
+    ]);
     expect(await q("SELECT to_regclass('move_test.document_tags') AS t")).toEqual([{ t: null }]);
     expect(await q("SELECT 1 FROM collections_tags WHERE collection_id = $1", [col!.id])).toHaveLength(1);
     expect(await q("SELECT 1 FROM tags WHERE id = $1", [onlyCollection])).toHaveLength(1);

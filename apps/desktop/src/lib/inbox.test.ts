@@ -3,8 +3,22 @@ import { describe, expect, it } from "vitest";
 
 import { createInbox } from "./inbox";
 
-const file = (name: string): FolderEntry => ({ name, path: `/Users/eric/Baux/${name}`, isDir: false, size: 10, modified: 0, kind: "pdf" });
-const folder = (name: string): FolderEntry => ({ name, path: `/Users/eric/Baux/${name}`, isDir: true, size: 0, modified: 0, kind: "folder" });
+const file = (name: string): FolderEntry => ({
+  name,
+  path: `/Users/eric/Baux/${name}`,
+  isDir: false,
+  size: 10,
+  modified: 0,
+  kind: "pdf",
+});
+const folder = (name: string): FolderEntry => ({
+  name,
+  path: `/Users/eric/Baux/${name}`,
+  isDir: true,
+  size: 0,
+  modified: 0,
+  kind: "folder",
+});
 
 function memory() {
   const data = new Map<string, string>();
@@ -16,7 +30,9 @@ describe("a watched folder", () => {
     const inbox = createInbox(memory());
     inbox.set("/Users/eric/Baux", true, [file("ancien.pdf"), folder("2025")]);
     expect(inbox.isWatched("/Users/eric/Baux")).toBe(true);
-    expect(inbox.arrivals("/Users/eric/Baux", [file("ancien.pdf"), folder("2025"), file("nouveau.pdf")]).map((e) => e.name)).toEqual(["nouveau.pdf"]);
+    expect(
+      inbox.arrivals("/Users/eric/Baux", [file("ancien.pdf"), folder("2025"), file("nouveau.pdf")]).map((e) => e.name),
+    ).toEqual(["nouveau.pdf"]);
     expect(inbox.arrivals("/Users/eric/Baux", [file("ancien.pdf"), file("nouveau.pdf")])).toEqual([]);
   });
 
@@ -32,7 +48,12 @@ describe("a watched folder", () => {
   it("reads a damaged or refused storage as nothing watched", () => {
     expect(createInbox({ getItem: () => "{not json", setItem: () => undefined }).watched()).toEqual([]);
     expect(createInbox({ getItem: () => "[1,2]", setItem: () => undefined }).watched()).toEqual([]);
-    const refusing = createInbox({ getItem: () => null, setItem: () => { throw new Error("quota"); } });
+    const refusing = createInbox({
+      getItem: () => null,
+      setItem: () => {
+        throw new Error("quota");
+      },
+    });
     expect(() => refusing.set("/x", true)).not.toThrow();
   });
 });

@@ -18,8 +18,13 @@ import { GLOBAL } from "./settings/service";
 const enabled = process.env.YOMIZAKA_DB_IT === "1" && !!process.env.DATABASE_URL;
 
 const as = (token: string, method: string, path: string, body?: unknown) =>
-  new Request(`http://localhost${path}`, { method, headers: { cookie: `${SESSION_COOKIE}=${token}`, "content-type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body) });
-const withKey = (key: string | null) => new Request("http://localhost/api/v1/checks", { headers: key ? { authorization: `Bearer ${key}` } : {} });
+  new Request(`http://localhost${path}`, {
+    method,
+    headers: { cookie: `${SESSION_COOKIE}=${token}`, "content-type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+const withKey = (key: string | null) =>
+  new Request("http://localhost/api/v1/checks", { headers: key ? { authorization: `Bearer ${key}` } : {} });
 const params = (id: string) => ({ params: Promise.resolve({ id }) });
 const status = async (p: Promise<unknown>) => {
   try {
@@ -39,7 +44,10 @@ describe.runIf(enabled)("api keys", () => {
   let token = "";
   beforeAll(async () => {
     await migrate();
-    [{ id: owner }] = (await query<{ id: string }>("INSERT INTO accounts (email, password_hash) VALUES ($1, 'x') RETURNING id", [`keys-${stamp}@yomizaka.test`])) as [{ id: string }];
+    [{ id: owner }] = (await query<{ id: string }>(
+      "INSERT INTO accounts (email, password_hash) VALUES ($1, 'x') RETURNING id",
+      [`keys-${stamp}@yomizaka.test`],
+    )) as [{ id: string }];
     token = (await createSession(owner, { ip: "203.0.113.9", userAgent: "vitest" })).token;
   });
   afterAll(async () => {
@@ -47,11 +55,17 @@ describe.runIf(enabled)("api keys", () => {
     await query("DELETE FROM accounts WHERE id = $1", [owner]);
     await pool().end();
   });
-  const proUntilNextMonth = () => query("UPDATE accounts SET plan = 'PRO', subscription_status = 'active', current_period_end = now() + interval '30 days' WHERE id = $1", [owner]);
+  const proUntilNextMonth = () =>
+    query(
+      "UPDATE accounts SET plan = 'PRO', subscription_status = 'active', current_period_end = now() + interval '30 days' WHERE id = $1",
+      [owner],
+    );
 
   it("the free plan has no API: creating a key is refused with the plan's code", async () => {
     resetRateLimits();
-    const res = await createRoute(as(token, "POST", "/api/me/api-keys", { name: "ERP", scopes: ["checks:write"], expiresInDays: 30 }));
+    const res = await createRoute(
+      as(token, "POST", "/api/me/api-keys", { name: "ERP", scopes: ["checks:write"], expiresInDays: 30 }),
+    );
     expect(res.status).toBe(403);
     expect(await res.json()).toMatchObject({ code: "API_PLAN" });
     expect((await (await listRoute(as(token, "GET", "/api/me/api-keys"))).json()).maxActive).toBe(0);
@@ -60,17 +74,32 @@ describe.runIf(enabled)("api keys", () => {
   it("on Pro: a key is created and shown once; the list never shows the key or a hash", async () => {
     resetRateLimits();
     await proUntilNextMonth();
-    const res = await createRoute(as(token, "POST", "/api/me/api-keys", { name: "Mon ERP", scopes: ["checks:write", "reports:read"], expiresInDays: 90 }));
+    const res = await createRoute(
+      as(token, "POST", "/api/me/api-keys", {
+        name: "Mon ERP",
+        scopes: ["checks:write", "reports:read"],
+        expiresInDays: 90,
+      }),
+    );
     expect(res.status).toBe(201);
     expect(res.headers.get("cache-control")).toContain("no-store");
     const { key, apiKey } = await res.json();
     expect(key).toMatch(/^yzk_[0-9a-f]{12}_/);
-    expect(apiKey).toMatchObject({ name: "Mon ERP", status: "active", scopes: ["checks:write", "reports:read"], hint: key.slice(0, 16) });
+    expect(apiKey).toMatchObject({
+      name: "Mon ERP",
+      status: "active",
+      scopes: ["checks:write", "reports:read"],
+      hint: key.slice(0, 16),
+    });
     const list = JSON.stringify(await (await listRoute(as(token, "GET", "/api/me/api-keys"))).json());
     expect(list).not.toContain(secretOf(key));
     expect(list).not.toMatch(/secret|hash/i);
     // the audit trail says who did what, never the key
-    const rows = JSON.stringify(await query("SELECT action, target_id, detail FROM audit_log WHERE actor_id = $1 AND action LIKE 'apikey.%'", [owner]));
+    const rows = JSON.stringify(
+      await query("SELECT action, target_id, detail FROM audit_log WHERE actor_id = $1 AND action LIKE 'apikey.%'", [
+        owner,
+      ]),
+    );
     expect(rows).toContain("apikey.created");
     expect(rows).not.toContain(secretOf(key));
     (globalThis as { __key?: string }).__key = key;
@@ -83,7 +112,11 @@ describe.runIf(enabled)("api keys", () => {
     expect(await status(requireApiKey(withKey(null), "checks:write", systemClock))).toBe(401);
     expect(await status(requireApiKey(withKey(`${key.slice(0, -4)}AAAA`), "checks:write", systemClock))).toBe(401);
     // a key that has only one scope cannot do the other
-    const narrow = await (await createRoute(as(token, "POST", "/api/me/api-keys", { name: "Lecture", scopes: ["reports:read"], expiresInDays: 30 }))).json();
+    const narrow = await (
+      await createRoute(
+        as(token, "POST", "/api/me/api-keys", { name: "Lecture", scopes: ["reports:read"], expiresInDays: 30 }),
+      )
+    ).json();
     expect(await status(requireApiKey(withKey(narrow.key), "checks:write", systemClock))).toBe(403);
     expect(await requireApiKey(withKey(narrow.key), "reports:read", systemClock)).toMatchObject({ ownerId: owner });
   });
@@ -99,17 +132,31 @@ describe.runIf(enabled)("api keys", () => {
       [owner, publicId, createHash("sha256").update(secret).digest("hex")],
     );
     expect(await requireApiKey(withKey(legacy), "checks:write", systemClock)).toMatchObject({ ownerId: owner });
-    expect(await status(requireApiKey(withKey(`yzk_${publicId}_${randomBytes(32).toString("base64url")}`), "checks:write", systemClock))).toBe(401);
-    const rotated = await (await rotateRoute(as(token, "POST", `/api/me/api-keys/${row!.id}/rotate`), params(row!.id))).json();
+    expect(
+      await status(
+        requireApiKey(withKey(`yzk_${publicId}_${randomBytes(32).toString("base64url")}`), "checks:write", systemClock),
+      ),
+    ).toBe(401);
+    const rotated = await (
+      await rotateRoute(as(token, "POST", `/api/me/api-keys/${row!.id}/rotate`), params(row!.id))
+    ).json();
     expect(await requireApiKey(withKey(legacy), "checks:write", systemClock)).toMatchObject({ ownerId: owner });
     expect(await requireApiKey(withKey(rotated.key), "checks:write", systemClock)).toMatchObject({ ownerId: owner });
-    expect((await revokeRoute(as(token, "DELETE", `/api/me/api-keys/${row!.id}`), params(row!.id))).status).toBeLessThan(300);
+    expect(
+      (await revokeRoute(as(token, "DELETE", `/api/me/api-keys/${row!.id}`), params(row!.id))).status,
+    ).toBeLessThan(300);
     expect(await status(requireApiKey(withKey(legacy), "checks:write", systemClock))).toBe(401);
   });
 
   it("is rate-limited per key by the plan's setting", async () => {
     resetRateLimits();
-    const key = (await (await createRoute(as(token, "POST", "/api/me/api-keys", { name: "Limité", scopes: ["reports:read"], expiresInDays: 30 }))).json()).key;
+    const key = (
+      await (
+        await createRoute(
+          as(token, "POST", "/api/me/api-keys", { name: "Limité", scopes: ["reports:read"], expiresInDays: 30 }),
+        )
+      ).json()
+    ).key;
     await appSettings().set({ id: null, label: "test" }, GLOBAL, "limits.apiRequestsPerMinute", 3, new Date());
     try {
       for (let i = 0; i < 3; i++) await requireApiKey(withKey(key), "reports:read", systemClock);
@@ -122,31 +169,62 @@ describe.runIf(enabled)("api keys", () => {
 
   it("rotation gives a new key and the old one keeps working during its grace period; revocation is immediate", async () => {
     resetRateLimits();
-    const created = await (await createRoute(as(token, "POST", "/api/me/api-keys", { name: "À tourner", scopes: ["reports:read"], expiresInDays: 30 }))).json();
-    const rotated = await rotateRoute(as(token, "POST", `/api/me/api-keys/${created.apiKey.id}/rotate`), params(created.apiKey.id));
+    const created = await (
+      await createRoute(
+        as(token, "POST", "/api/me/api-keys", { name: "À tourner", scopes: ["reports:read"], expiresInDays: 30 }),
+      )
+    ).json();
+    const rotated = await rotateRoute(
+      as(token, "POST", `/api/me/api-keys/${created.apiKey.id}/rotate`),
+      params(created.apiKey.id),
+    );
     expect(rotated.status).toBe(201);
     const next = await rotated.json();
     expect(next.apiKey.name).toBe("À tourner");
     expect(await requireApiKey(withKey(created.key), "reports:read", systemClock)).toBeTruthy();
     expect(await requireApiKey(withKey(next.key), "reports:read", systemClock)).toBeTruthy();
-    expect((await revokeRoute(as(token, "DELETE", `/api/me/api-keys/${next.apiKey.id}`), params(next.apiKey.id))).status).toBe(200);
+    expect(
+      (await revokeRoute(as(token, "DELETE", `/api/me/api-keys/${next.apiKey.id}`), params(next.apiKey.id))).status,
+    ).toBe(200);
     expect(await status(requireApiKey(withKey(next.key), "reports:read", systemClock))).toBe(401);
     expect(await status(requireApiKey(withKey(created.key), "reports:read", systemClock))).toBe(200);
     // a stranger cannot touch it
-    const [{ id: stranger }] = (await query<{ id: string }>("INSERT INTO accounts (email, password_hash) VALUES ($1, 'x') RETURNING id", [`keys-stranger-${stamp}@yomizaka.test`])) as [{ id: string }];
+    const [{ id: stranger }] = (await query<{ id: string }>(
+      "INSERT INTO accounts (email, password_hash) VALUES ($1, 'x') RETURNING id",
+      [`keys-stranger-${stamp}@yomizaka.test`],
+    )) as [{ id: string }];
     const strangerToken = (await createSession(stranger, { ip: "203.0.113.10", userAgent: "vitest" })).token;
-    expect((await revokeRoute(as(strangerToken, "DELETE", `/api/me/api-keys/${created.apiKey.id}`), params(created.apiKey.id))).status).toBe(404);
+    expect(
+      (
+        await revokeRoute(
+          as(strangerToken, "DELETE", `/api/me/api-keys/${created.apiKey.id}`),
+          params(created.apiKey.id),
+        )
+      ).status,
+    ).toBe(404);
     await query("DELETE FROM accounts WHERE id = $1", [stranger]);
   });
 
   it("the administrator's global switch turns every key off at once", async () => {
     resetRateLimits();
-    const key = (await (await createRoute(as(token, "POST", "/api/me/api-keys", { name: "Coupure", scopes: ["reports:read"], expiresInDays: 30 }))).json()).key;
+    const key = (
+      await (
+        await createRoute(
+          as(token, "POST", "/api/me/api-keys", { name: "Coupure", scopes: ["reports:read"], expiresInDays: 30 }),
+        )
+      ).json()
+    ).key;
     await appSettings().set({ id: null, label: "test" }, GLOBAL, "features.apiKeys", false, new Date());
     resetAppSettings();
     try {
       expect(await status(requireApiKey(withKey(key), "reports:read", systemClock))).toBe(403);
-      expect((await createRoute(as(token, "POST", "/api/me/api-keys", { name: "x", scopes: ["reports:read"], expiresInDays: 30 }))).status).toBe(403);
+      expect(
+        (
+          await createRoute(
+            as(token, "POST", "/api/me/api-keys", { name: "x", scopes: ["reports:read"], expiresInDays: 30 }),
+          )
+        ).status,
+      ).toBe(403);
     } finally {
       await appSettings().reset({ id: null, label: "test" }, GLOBAL, "features.apiKeys", new Date());
       resetAppSettings();

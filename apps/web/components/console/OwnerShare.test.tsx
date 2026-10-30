@@ -9,10 +9,21 @@ import fr from "@/messages/fr.json";
 
 import { OwnerShare, SHARE_CHOICES } from "./OwnerShare";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push() {}, replace() {}, refresh() {} }), usePathname: () => "/fr/app/dossiers/x", useSearchParams: () => new URLSearchParams("") }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push() {}, replace() {}, refresh() {} }),
+  usePathname: () => "/fr/app/dossiers/x",
+  useSearchParams: () => new URLSearchParams(""),
+}));
 
 const MESSAGES = { en: { console: en.console }, fr: { console: fr.console } } as const;
-const render = (locale: "en" | "fr") => renderToStaticMarkup(<I18nProvider locale={locale} messages={MESSAGES[locale] as never}><KrizakaQueryProvider><OwnerShare fileId="f1" origin="https://dev.yomizaka.com" /></KrizakaQueryProvider></I18nProvider>);
+const render = (locale: "en" | "fr") =>
+  renderToStaticMarkup(
+    <I18nProvider locale={locale} messages={MESSAGES[locale] as never}>
+      <KrizakaQueryProvider>
+        <OwnerShare fileId="f1" origin="https://dev.yomizaka.com" />
+      </KrizakaQueryProvider>
+    </I18nProvider>,
+  );
 
 describe("the owner link block of a file (yomizaka#128)", () => {
   it("offers 7 days first and 30 at most, with the create action, in French", () => {

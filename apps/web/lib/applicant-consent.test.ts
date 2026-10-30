@@ -34,7 +34,9 @@ describe("the purposes are the engine's names (orazaka-ai-engine CheckPurpose) p
   });
   it("maps the screening scope to the Québec history purpose, and nothing else", () => {
     expect(purposesOfTypes([{ purpose: "COURT_RECORDS" }])).toEqual(["COURT_RECORDS"]);
-    expect(purposesOfTypes([{ purpose: "COURT_RECORDS" }, { purpose: "COURT_RECORDS" }, { purpose: "CREDIT" }])).toEqual(["COURT_RECORDS", "CREDIT"]);
+    expect(
+      purposesOfTypes([{ purpose: "COURT_RECORDS" }, { purpose: "COURT_RECORDS" }, { purpose: "CREDIT" }]),
+    ).toEqual(["COURT_RECORDS", "CREDIT"]);
     expect(purposesOfTypes([{ purpose: "IDENTITY" }])).toEqual([]);
   });
   it("hasConsent answers only for an active purpose", () => {
@@ -75,7 +77,9 @@ describe("the notice says plainly what is collected, why, who sees it, how long,
 describe("no SIN is ever asked by the code either", () => {
   it("the consent service and the applicant route carry no SIN or NAS field", () => {
     for (const file of ["applicant-consent.ts", "../app/api/applicant/route.ts"]) {
-      const code = readFileSync(join(__dirname, file), "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+      const code = readFileSync(join(__dirname, file), "utf8")
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .replace(/\/\/.*$/gm, "");
       expect(code).not.toMatch(/\b(sin|nas|socialInsurance|social_insurance)\b/i);
     }
   });
@@ -90,8 +94,15 @@ describe.runIf(process.env.YOMIZAKA_DB_IT === "1" && !!process.env.DATABASE_URL)
 
   it("sets up an application for a landlord", async () => {
     await migrate();
-    [landlord] = (await query<{ id: string; email: string }>("INSERT INTO accounts (email) VALUES ($1) RETURNING id, email", [`consent-landlord-${stamp}@yomizaka.test`])) as [typeof landlord];
-    const made = await requestScreening(landlord, { tenantName: "Camille Fictif", tenantEmail: `c-${stamp}@exemple.test`, scope: ["payment-history"] }, NOW);
+    [landlord] = (await query<{ id: string; email: string }>(
+      "INSERT INTO accounts (email) VALUES ($1) RETURNING id, email",
+      [`consent-landlord-${stamp}@yomizaka.test`],
+    )) as [typeof landlord];
+    const made = await requestScreening(
+      landlord,
+      { tenantName: "Camille Fictif", tenantEmail: `c-${stamp}@exemple.test`, scope: ["payment-history"] },
+      NOW,
+    );
     app = made.id;
     token = made.token;
     expect(app).toBeTruthy();
@@ -99,30 +110,55 @@ describe.runIf(process.env.YOMIZAKA_DB_IT === "1" && !!process.env.DATABASE_URL)
   });
 
   it("refuses an upload for the application without the document-check consent, and an analysis too", async () => {
-    await expect(assertUploadForApplication(landlord.id, app)).rejects.toMatchObject({ status: 403, body: { code: "CONSENT_REQUIRED" } });
+    await expect(assertUploadForApplication(landlord.id, app)).rejects.toMatchObject({
+      status: 403,
+      body: { code: "CONSENT_REQUIRED" },
+    });
     await expect(assertAnalysisAllowed(app)).rejects.toMatchObject({ status: 403, body: { code: "CONSENT_REQUIRED" } });
   });
 
   it("refuses a consent given to an old notice version", async () => {
-    await expect(grantConsent(app, CONSENT_PURPOSE.DOCUMENT_CHECK, { noticeVersion: "1999-01-01.1", means: "web-form" }, NOW)).rejects.toMatchObject({ status: 409, body: { code: "NOTICE_CHANGED" } });
+    await expect(
+      grantConsent(app, CONSENT_PURPOSE.DOCUMENT_CHECK, { noticeVersion: "1999-01-01.1", means: "web-form" }, NOW),
+    ).rejects.toMatchObject({ status: 409, body: { code: "NOTICE_CHANGED" } });
   });
 
   it("records a consent per purpose once; a repeat changes nothing", async () => {
-    expect(await grantConsent(app, CONSENT_PURPOSE.DOCUMENT_CHECK, { noticeVersion: NOTICE_VERSION, means: "web-form" }, NOW)).toBe(true);
-    expect(await grantConsent(app, CONSENT_PURPOSE.DOCUMENT_CHECK, { noticeVersion: NOTICE_VERSION, means: "web-form" }, NOW)).toBe(false);
+    expect(
+      await grantConsent(
+        app,
+        CONSENT_PURPOSE.DOCUMENT_CHECK,
+        { noticeVersion: NOTICE_VERSION, means: "web-form" },
+        NOW,
+      ),
+    ).toBe(true);
+    expect(
+      await grantConsent(
+        app,
+        CONSENT_PURPOSE.DOCUMENT_CHECK,
+        { noticeVersion: NOTICE_VERSION, means: "web-form" },
+        NOW,
+      ),
+    ).toBe(false);
     await expect(requireConsent(app, CONSENT_PURPOSE.DOCUMENT_CHECK)).resolves.toBeUndefined();
-    await expect(requireConsent(app, CONSENT_PURPOSE.CREDIT)).rejects.toMatchObject({ body: { code: "CONSENT_REQUIRED" } });
+    await expect(requireConsent(app, CONSENT_PURPOSE.CREDIT)).rejects.toMatchObject({
+      body: { code: "CONSENT_REQUIRED" },
+    });
     await expect(assertUploadForApplication(landlord.id, app)).resolves.toBeUndefined();
   });
 
   it("refuses an upload from another landlord as if the application did not exist", async () => {
-    await expect(assertUploadForApplication("00000000-0000-4000-8000-000000000000", app)).rejects.toMatchObject({ status: 404 });
+    await expect(assertUploadForApplication("00000000-0000-4000-8000-000000000000", app)).rejects.toMatchObject({
+      status: 404,
+    });
   });
 
   it("a withdrawal stops the analysis and the upload for that application", async () => {
     expect(await withdrawConsent(app, CONSENT_PURPOSE.DOCUMENT_CHECK, NOW)).toBe(true);
     await expect(assertAnalysisAllowed(app)).rejects.toMatchObject({ body: { code: "CONSENT_REQUIRED" } });
-    await expect(assertUploadForApplication(landlord.id, app)).rejects.toMatchObject({ body: { code: "CONSENT_REQUIRED" } });
+    await expect(assertUploadForApplication(landlord.id, app)).rejects.toMatchObject({
+      body: { code: "CONSENT_REQUIRED" },
+    });
   });
 
   it("a withdrawal of the court-records purpose declines the pending request, so no check runs", async () => {
@@ -136,7 +172,10 @@ describe.runIf(process.env.YOMIZAKA_DB_IT === "1" && !!process.env.DATABASE_URL)
     const row = await byToken(token);
     expect(row).toMatchObject({ status: "erased", tenant_name: "" });
     expect(row.tenant_email).toMatch(/@erased\.invalid$/);
-    const trail = await query<{ detail: unknown; actor_label: string }>("SELECT actor_label, detail FROM audit_log WHERE target_id = $1 AND action = 'applicant.erased'", [app]);
+    const trail = await query<{ detail: unknown; actor_label: string }>(
+      "SELECT actor_label, detail FROM audit_log WHERE target_id = $1 AND action = 'applicant.erased'",
+      [app],
+    );
     expect(trail).toHaveLength(1);
     expect(JSON.stringify(trail)).not.toContain("@exemple.test");
   });

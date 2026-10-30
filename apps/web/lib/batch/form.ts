@@ -9,13 +9,18 @@ export interface BatchForm {
 }
 
 const filesOf = async (form: FormData | null, field: string): Promise<BatchFile[]> =>
-  Promise.all((form?.getAll(field) ?? []).filter((f): f is File => f instanceof File).map(async (f) => ({ name: f.name, type: f.type, bytes: new Uint8Array(await f.arrayBuffer()) })));
+  Promise.all(
+    (form?.getAll(field) ?? [])
+      .filter((f): f is File => f instanceof File)
+      .map(async (f) => ({ name: f.name, type: f.type, bytes: new Uint8Array(await f.arrayBuffer()) })),
+  );
 
 /** `manifest` (the CSV, as a file or text), `name` (or the CSV's file name) and `files`: one reader for the web and the API. */
 export async function readBatchForm(req: Request): Promise<BatchForm> {
   const form = await req.formData().catch(() => null);
   const manifest = form?.get("manifest");
-  if (!(manifest instanceof File) && typeof manifest !== "string") throw refuse(400, "BAD_REQUEST", "A CSV is expected in the field `manifest`");
+  if (!(manifest instanceof File) && typeof manifest !== "string")
+    throw refuse(400, "BAD_REQUEST", "A CSV is expected in the field `manifest`");
   const text = typeof manifest === "string" ? manifest : await manifest.text();
   const named = form?.get("name");
   const fromFile = manifest instanceof File ? manifest.name.replace(/\.[^.]+$/, "") : "";

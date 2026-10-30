@@ -1,7 +1,19 @@
 import { authSettings } from "@krizaka/auth/settings";
 import { couponSettings } from "@krizaka/coupons/settings";
 import { creditsSettings } from "@krizaka/credits/settings";
-import { ALL_SCOPES, bilingual, choice, defineSettings, flag, integer, type Registry, SCOPE, subset, text, WORKSPACE_SCOPES } from "@krizaka/settings";
+import {
+  ALL_SCOPES,
+  bilingual,
+  choice,
+  defineSettings,
+  flag,
+  integer,
+  type Registry,
+  SCOPE,
+  subset,
+  text,
+  WORKSPACE_SCOPES,
+} from "@krizaka/settings";
 import { storageSettings } from "@krizaka/storage/settings";
 import type { z } from "zod";
 
@@ -40,7 +52,10 @@ function inGroup<F extends Registry>(group: Group, fragment: F): F {
 export const SETTINGS = {
   // General: the switches that open and close the app for consumers.
   "app.maintenance": flag(GROUP.general, false),
-  "app.maintenanceMessage": bilingual(GROUP.general, { fr: "Yomizaka est en maintenance. Revenez dans quelques minutes.", en: "Yomizaka is down for maintenance. Please come back in a few minutes." }),
+  "app.maintenanceMessage": bilingual(GROUP.general, {
+    fr: "Yomizaka est en maintenance. Revenez dans quelques minutes.",
+    en: "Yomizaka is down for maintenance. Please come back in a few minutes.",
+  }),
   "signup.open": flag(GROUP.general, false),
   // How long a session lasts (`auth.sessionDays`) and how long a « Forgot your password? » link works (`auth.passwordResetMinutes`): @krizaka/auth's.
   ...inGroup(GROUP.general, authSettings),
@@ -55,7 +70,11 @@ export const SETTINGS = {
   "tal.rate.year": integer(GROUP.general, 2026, { min: 2000, max: 2100, unit: "year" }),
   // @fixed: 3,1 % is the TAL's 2026 base percentage (quebec.ca, 2026-01-19), the seed an administrator replaces each year
   "tal.rate.basisPoints": integer(GROUP.general, 310, { min: 0, max: 5000, unit: "bp" }),
-  "tal.rate.sourceUrl": text(GROUP.general, "https://www.quebec.ca/nouvelles/actualites/details/le-calcul-de-lajustement-des-loyers-en-2026-68053", { max: 300, empty: true }),
+  "tal.rate.sourceUrl": text(
+    GROUP.general,
+    "https://www.quebec.ca/nouvelles/actualites/details/le-calcul-de-lajustement-des-loyers-en-2026-68053",
+    { max: 300, empty: true },
+  ),
   "tal.rate.enteredOn": text(GROUP.general, "2026-10-29", { max: 10, empty: true }),
   /** How long the free first audit, once given, can be used (yomizaka#261: it is a pot of the credits ledger, and a pot lapses). */
   "audit.freeValidDays": integer(GROUP.general, 3650, { min: 1, max: 36500, unit: "days" }),
@@ -83,7 +102,12 @@ export const SETTINGS = {
   "features.screeningBilling": flag(GROUP.features, false),
   "features.avatarSet": subset(GROUP.features, AVATAR_SEED_CHOICES, [...AVATAR_SEED_CHOICES]),
   // Limits: what one document and one account may do.
-  "limits.maxFileMb": integer(GROUP.limits, PLATFORM_MAX_FILE_MB, { min: 1, max: PLATFORM_MAX_FILE_MB, unit: "MB" }, WORKSPACE),
+  "limits.maxFileMb": integer(
+    GROUP.limits,
+    PLATFORM_MAX_FILE_MB,
+    { min: 1, max: PLATFORM_MAX_FILE_MB, unit: "MB" },
+    WORKSPACE,
+  ),
   "limits.maxPages": integer(GROUP.limits, 200, { min: 1, max: 500, unit: "pages" }, WORKSPACE),
   "limits.allowedTypes": subset(GROUP.limits, FILE_TYPES, [...FILE_TYPES], WORKSPACE),
   "limits.reuseDays": integer(GROUP.limits, 365, { min: 0, max: 3650, unit: "days" }),

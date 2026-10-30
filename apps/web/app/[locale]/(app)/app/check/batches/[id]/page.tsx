@@ -23,7 +23,11 @@ export default async function BatchPage({ params }: Readonly<{ params: Promise<{
   const session = await pageSession();
   if (!session) redirect(`/${locale}/sign-in`);
   if (!isUuid(id)) notFound();
-  const batch = await advanceBatch(session.account, id, { settings: await settingsFor(session.account.id), now: new Date(), environment: appEnvironment() }).catch((error: unknown) => {
+  const batch = await advanceBatch(session.account, id, {
+    settings: await settingsFor(session.account.id),
+    now: new Date(),
+    environment: appEnvironment(),
+  }).catch((error: unknown) => {
     if (error instanceof HttpError && error.status === 404) notFound();
     throw error;
   });

@@ -2,19 +2,49 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { resetRateLimits } from "../limits";
 
-const state = vi.hoisted(() => ({ session: null as null | { id: string; account: { id: string; email: string; perspective: null; role: "USER"; locale: "fr"; name: null; avatarSeed: null } } }));
+const state = vi.hoisted(() => ({
+  session: null as null | {
+    id: string;
+    account: { id: string; email: string; perspective: null; role: "USER"; locale: "fr"; name: null; avatarSeed: null };
+  },
+}));
 
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => undefined }) }));
-vi.mock("../session", async (orig) => ({ ...(await orig<typeof import("../session")>()), resolveSession: async () => state.session }));
+vi.mock("../session", async (orig) => ({
+  ...(await orig<typeof import("../session")>()),
+  resolveSession: async () => state.session,
+}));
 vi.mock("../audit", () => ({ audit: async () => undefined }));
 vi.mock("../db", () => ({ query: async () => [] }));
 
-const json = (method: string, body?: unknown) => new Request("https://dev.yomizaka.com/x", { method, body: body === undefined ? undefined : JSON.stringify(body), headers: { "x-forwarded-for": "203.0.113.12", "content-type": "application/json" } });
-const s3 = { endpoint: "https://169.254.169.254", region: "ca-central-1", bucket: "docs", accessKeyId: "id", secretAccessKey: "key" };
+const json = (method: string, body?: unknown) =>
+  new Request("https://dev.yomizaka.com/x", {
+    method,
+    body: body === undefined ? undefined : JSON.stringify(body),
+    headers: { "x-forwarded-for": "203.0.113.12", "content-type": "application/json" },
+  });
+const s3 = {
+  endpoint: "https://169.254.169.254",
+  region: "ca-central-1",
+  bucket: "docs",
+  accessKeyId: "id",
+  secretAccessKey: "key",
+};
 
 beforeEach(() => {
   resetRateLimits();
-  state.session = { id: "s1", account: { id: "22222222-2222-4222-8222-222222222222", email: "eric@yomizaka.test", perspective: null, role: "USER", locale: "fr", name: null, avatarSeed: null } };
+  state.session = {
+    id: "s1",
+    account: {
+      id: "22222222-2222-4222-8222-222222222222",
+      email: "eric@yomizaka.test",
+      perspective: null,
+      role: "USER",
+      locale: "fr",
+      name: null,
+      avatarSeed: null,
+    },
+  };
 });
 
 describe("the storage routes", () => {

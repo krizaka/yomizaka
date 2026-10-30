@@ -24,32 +24,56 @@ export function GET(req: Request, { params }: Params) {
     const session = await requireSession(req);
     const owner = session.account.id;
     const id = (await params).id;
-    const store = (await avatarStore());
+    const store = await avatarStore();
     if (!store) throw refuse(404, "NOT_FOUND", "No avatar image");
     const collection = await ownedCollection(query, owner, id);
     if (collection.avatar?.kind !== AVATAR_KIND.image) throw refuse(404, "NOT_FOUND", "No avatar image");
     const image = await readAvatar(query, owner, id, store);
     if (!image) throw refuse(404, "NOT_FOUND", "No avatar image");
-    return new Response(Buffer.from(image.bytes), { headers: { "Content-Type": image.contentType, "Cache-Control": "private, max-age=31536000, immutable", "X-Content-Type-Options": "nosniff" } });
+    return new Response(Buffer.from(image.bytes), {
+      headers: {
+        "Content-Type": image.contentType,
+        "Cache-Control": "private, max-age=31536000, immutable",
+        "X-Content-Type-Options": "nosniff",
+      },
+    });
   });
 }
 
 /** Uploads the image (multipart, field `file`): checked, made square without metadata, kept under its own prefix. */
 export const POST = (req: Request, { params }: Params) =>
-  act(req, async ({ owner, q, note }) => {
-    await limit("avatar", req, owner);
-    await assertFeature("collectionAvatars", owner);
-    const store = (await avatarStore());
-    if (!store) throw refuse(503, "AVATAR_STORAGE_OFF", "No storage is configured for avatar images");
-    const form = await req.formData().catch(() => null);
-    const file = form?.get("file");
-    if (!(file instanceof File)) throw refuse(400, "BAD_REQUEST", "An image is expected in the field `file`");
-    const id = (await params).id;
-    const settings = await settingsFor(owner);
-    const avatar = await uploadAvatar(q, owner, id, { name: file.name, type: file.type, bytes: new Uint8Array(await file.arrayBuffer()) }, { allowedSeeds: settings["features.avatarSet"].value as string[], maxBytes: (settings["limits.avatarMaxKb"].value as number) * 1024, size: AVATAR_SIDE, store });
-    await note("collection.avatar_uploaded", { id, version: avatar.kind === AVATAR_KIND.image ? avatar.version : null });
-    return { avatar };
-  }, 201);
+  act(
+    req,
+    async ({ owner, q, note }) => {
+      await limit("avatar", req, owner);
+      await assertFeature("collectionAvatars", owner);
+      const store = await avatarStore();
+      if (!store) throw refuse(503, "AVATAR_STORAGE_OFF", "No storage is configured for avatar images");
+      const form = await req.formData().catch(() => null);
+      const file = form?.get("file");
+      if (!(file instanceof File)) throw refuse(400, "BAD_REQUEST", "An image is expected in the field `file`");
+      const id = (await params).id;
+      const settings = await settingsFor(owner);
+      const avatar = await uploadAvatar(
+        q,
+        owner,
+        id,
+        { name: file.name, type: file.type, bytes: new Uint8Array(await file.arrayBuffer()) },
+        {
+          allowedSeeds: settings["features.avatarSet"].value as string[],
+          maxBytes: (settings["limits.avatarMaxKb"].value as number) * 1024,
+          size: AVATAR_SIDE,
+          store,
+        },
+      );
+      await note("collection.avatar_uploaded", {
+        id,
+        version: avatar.kind === AVATAR_KIND.image ? avatar.version : null,
+      });
+      return { avatar };
+    },
+    201,
+  );
 
 /** No avatar: an uploaded image is deleted from its store. */
 export const DELETE = (req: Request, { params }: Params) =>
@@ -58,4 +82,3 @@ export const DELETE = (req: Request, { params }: Params) =>
     await removeAvatar(q, owner, id, (await avatarStore()) ?? undefined);
     await note("collection.avatar_removed", { id });
   });
-

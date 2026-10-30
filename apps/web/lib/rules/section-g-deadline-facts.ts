@@ -16,5 +16,10 @@ export function deadlineInputFromFacts(facts: Facts, asOf: string): SectionGDead
   const startsOn = dateOf(facts?.startsOn);
   const given = facts?.noticeGiven;
   if (!concludedOn || !startsOn || !given || !("flag" in given) || !/^\d{4}-\d{2}-\d{2}/.test(asOf)) return null;
-  return { concludedOn, startsOn, notice: given.flag ? { kind: "given" } : { kind: "not-given" }, today: asOf.slice(0, 10) };
+  return {
+    concludedOn,
+    startsOn,
+    notice: given.flag ? { kind: "given" } : { kind: "not-given" },
+    today: asOf.slice(0, 10),
+  };
 }

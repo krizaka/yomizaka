@@ -1,4 +1,11 @@
-import { CHECKS_TABS, type ChecksTab, DOCUMENT_TABS, type DocumentTab, movedDocumentTab, type SectionId } from "@yomizaka/core";
+import {
+  CHECKS_TABS,
+  type ChecksTab,
+  DOCUMENT_TABS,
+  type DocumentTab,
+  movedDocumentTab,
+  type SectionId,
+} from "@yomizaka/core";
 
 /**
  * The signed-in space's navigation, as data and pure functions (the active state comes from the route, never from local
@@ -8,13 +15,22 @@ import { CHECKS_TABS, type ChecksTab, DOCUMENT_TABS, type DocumentTab, movedDocu
  */
 export type NavId = SectionId | "account";
 
-export const CONSOLE_ROUTES = { library: "/app", files: "/app/dossiers", documents: "/app/documents", checks: "/app/verifications", check: "/app/check", search: "/app/search", account: "/app/settings" } as const;
+export const CONSOLE_ROUTES = {
+  library: "/app",
+  files: "/app/dossiers",
+  documents: "/app/documents",
+  checks: "/app/verifications",
+  check: "/app/check",
+  search: "/app/search",
+  account: "/app/settings",
+} as const;
 
 /** The tabs of the Vérifications destination (the map's, `@yomizaka/core`); the second lives in the address: `/app/verifications?tab=lots`. */
 export { CHECKS_TABS, type ChecksTab };
 export const CHECKS_TAB_KEY = "tab";
 /** The tab named by the address; an unknown or missing one is the list of checks (a stale link never breaks the page). */
-export const checksTabOf = (raw: string | null | undefined): ChecksTab => CHECKS_TABS.find((t) => t === raw) ?? "checks";
+export const checksTabOf = (raw: string | null | undefined): ChecksTab =>
+  CHECKS_TABS.find((t) => t === raw) ?? "checks";
 /** The address of a tab: the first keeps the address clean, the others name themselves. */
 export const checksTabHref = (locale: "en" | "fr", tab: ChecksTab): string => {
   const query = tab === CHECKS_TABS[0] ? "" : `?${CHECKS_TAB_KEY}=${tab}`;
@@ -44,16 +60,34 @@ export { DOCUMENT_TABS, type DocumentTab };
 export const isDocumentTab = (v: string): v is DocumentTab => (DOCUMENT_TABS as readonly string[]).includes(v);
 
 /** The settings' sections, each a route: /app/settings/<section> (the URL is the state). */
-export const SETTINGS_SECTIONS = ["profil", "apparence", "securite", "facturation", "stockage", "signets", "donnees"] as const;
+export const SETTINGS_SECTIONS = [
+  "profil",
+  "apparence",
+  "securite",
+  "facturation",
+  "stockage",
+  "signets",
+  "donnees",
+] as const;
 export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
-export const isSettingsSection = (v: string): v is SettingsSection => (SETTINGS_SECTIONS as readonly string[]).includes(v);
+export const isSettingsSection = (v: string): v is SettingsSection =>
+  (SETTINGS_SECTIONS as readonly string[]).includes(v);
 
 /** A page's `searchParams` as `URLSearchParams` (a repeated key kept, an absent one dropped). */
 export const searchOf = (params: Record<string, string | string[] | undefined>): URLSearchParams =>
-  new URLSearchParams(Object.entries(params).flatMap(([k, v]) => (v === undefined ? [] : [v].flat().map((x) => [k, x] as [string, string]))));
+  new URLSearchParams(
+    Object.entries(params).flatMap(([k, v]) =>
+      v === undefined ? [] : [v].flat().map((x) => [k, x] as [string, string]),
+    ),
+  );
 
 /** The 308 of an old tab address, its query kept (`/verifications?refused=PAYWALL` → `/rapport?refused=PAYWALL`); null when the tab did not move. */
-export function movedDocumentHref(locale: "en" | "fr", id: string, tab: string, search: string | URLSearchParams = ""): string | null {
+export function movedDocumentHref(
+  locale: "en" | "fr",
+  id: string,
+  tab: string,
+  search: string | URLSearchParams = "",
+): string | null {
   const moved = movedDocumentTab(tab);
   if (!moved) return null;
   const qs = new URLSearchParams(search).toString();

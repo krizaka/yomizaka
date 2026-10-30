@@ -21,7 +21,8 @@ describe("dependencies fixed for a known advisory stay fixed", () => {
     it(`${name} is resolved at ${minimum} or later, everywhere in the lockfile`, () => {
       const found = [...lock.matchAll(new RegExp(`^ {2}'?${name}@(\\d+\\.\\d+\\.\\d+)[:(']`, "gm"))].map((m) => m[1]);
       assert.ok(found.length > 0, `${name} is not in the lockfile: remove it from FIXED`);
-      for (const version of found) assert.ok(atLeast(version, minimum), `${name}@${version} is below ${minimum} (advisory)`);
+      for (const version of found)
+        assert.ok(atLeast(version, minimum), `${name}@${version} is below ${minimum} (advisory)`);
     });
   }
 

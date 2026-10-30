@@ -12,7 +12,8 @@ import { DATA_KIND } from "@/lib/storage/providers";
 import { ownS3Store, type StorageSettings, storeForOwner } from "@/lib/storage/settings";
 
 /** The documents store this deployment configures (Krizaka's): the default provider the admin chose in the database (ADR-005); none = nothing is kept. */
-export const krizakaStore = async (): Promise<DocumentStore> => (await defaultStore(DATA_KIND.documents)) ?? noneStore();
+export const krizakaStore = async (): Promise<DocumentStore> =>
+  (await defaultStore(DATA_KIND.documents)) ?? noneStore();
 
 export interface OwnerStores {
   /** Where new kept documents go: nothing, Krizaka's store or the owner's own cloud, from their settings. */
@@ -28,7 +29,10 @@ export async function storesOf(ownerId: string): Promise<OwnerStores> {
   const registry = providers();
   const krizaka = await krizakaStore();
   const own = await ownS3Store(query, ownerId, registry);
-  const { store: write, settings } = await storeForOwner(query, ownerId, registry, krizaka).catch(() => ({ store: noneStore(), settings: { mode: "none", keepDefault: false, s3: null, testedAt: null } as StorageSettings }));
+  const { store: write, settings } = await storeForOwner(query, ownerId, registry, krizaka).catch(() => ({
+    store: noneStore(),
+    settings: { mode: "none", keepDefault: false, s3: null, testedAt: null } as StorageSettings,
+  }));
   const of = (o: CloudOwner) => (o === STORAGE_OWNER.workspace ? own : krizaka);
   return { write, settings, of, describe: (o) => (of(o) ?? noneStore()).describe() };
 }
@@ -45,7 +49,10 @@ export async function workingStore(): Promise<DocumentStore | null> {
 
 /** The store that holds one document: its owner's cloud or Krizaka's for a kept one, the working store for the rest; undefined when it has none to ask. */
 export async function storeForDocument(ownerId: string, documentId: string): Promise<DocumentStore | undefined> {
-  const [row] = await query<{ storage: string; storage_owner: CloudOwner }>("SELECT storage, storage_owner FROM documents WHERE owner_id = $1 AND id = $2", [ownerId, documentId]).catch(() => []);
+  const [row] = await query<{ storage: string; storage_owner: CloudOwner }>(
+    "SELECT storage, storage_owner FROM documents WHERE owner_id = $1 AND id = $2",
+    [ownerId, documentId],
+  ).catch(() => []);
   if (row && !EXTERNAL.has(row.storage as never)) return (await workingStore()) ?? undefined;
   const stores = await storesOf(ownerId);
   return stores.of(row?.storage_owner ?? "krizaka") ?? undefined;

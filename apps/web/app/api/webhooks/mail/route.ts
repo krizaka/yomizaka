@@ -17,9 +17,19 @@ export function POST(req: Request) {
     const signingKey = env().MAIL_WEBHOOK_SIGNING_KEY;
     if (!signingKey) throw refuse(404, "NOT_FOUND", "No mail webhook here");
     const body: unknown = await req.json().catch(() => null);
-    const result = await handleMailgunWebhook(body, { signingKey, suppression: pgSuppression, log: consoleLog(), now: () => systemClock.now() });
+    const result = await handleMailgunWebhook(body, {
+      signingKey,
+      suppression: pgSuppression,
+      log: consoleLog(),
+      now: () => systemClock.now(),
+    });
     // 401 for a bad signature (the vendor keeps trying); 406 for a body that is no event of ours (the vendor stops).
-    if (!result.ok) throw refuse(result.error === "signature" ? 401 : 406, result.error === "signature" ? "BAD_SIGNATURE" : "BAD_PAYLOAD", `Mail webhook refused: ${result.error}`);
+    if (!result.ok)
+      throw refuse(
+        result.error === "signature" ? 401 : 406,
+        result.error === "signature" ? "BAD_SIGNATURE" : "BAD_PAYLOAD",
+        `Mail webhook refused: ${result.error}`,
+      );
     return Response.json({ ok: true, action: result.action });
   });
 }

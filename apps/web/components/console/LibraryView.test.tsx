@@ -9,7 +9,11 @@ import fr from "@/messages/fr.json";
 
 import { LibraryView } from "./LibraryView";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh() {}, push() {}, replace() {} }), usePathname: () => "/fr/app", useSearchParams: () => new URLSearchParams() }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh() {}, push() {}, replace() {} }),
+  usePathname: () => "/fr/app",
+  useSearchParams: () => new URLSearchParams(),
+}));
 
 const MESSAGES = { en: { console: en.console }, fr: { console: fr.console } } as const;
 /** The text of some markup, scanned (no regular expression strips tags): each tag becomes `gap`, a `<style>` element is dropped whole. */
@@ -23,21 +27,57 @@ function flatten(html: string, gap: string): string {
     }
     const end = html.indexOf(">", i);
     if (end < 0) break;
-    const name = html.slice(i + 1, end).split(/[\s/>]/)[0]?.toLowerCase();
+    const name = html
+      .slice(i + 1, end)
+      .split(/[\s/>]/)[0]
+      ?.toLowerCase();
     i = name === "style" ? html.indexOf("</style>", end) + "</style>".length : end + 1;
     out += gap;
   }
   return out;
 }
-const readable = (html: string) => flatten(html, " ").replace(/&#x27;|&#39;/g, "'").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ");
-const collection = (patch: Record<string, unknown> = {}) => ({ id: "c1", name: "My documents", files: 2, folders: 0, tags: [], isDefault: true, avatar: null, description: null, lastCheck: { at: "2026-10-20T15:00:00.000Z", status: "attention" }, ...patch });
-const check = (n: number, result: CheckSummary["result"]): CheckSummary => ({ id: `a${n}`, documentId: `d${n}`, title: `Bail ${n}`, kind: "lease", studio: "compliance-check", result, runId: `run_${n}`, at: `2026-10-2${n}T12:00:00.000Z` });
-const EXAMPLES = { tenant: { title: "Bail locataire", filename: "bail-locataire.txt", text: "…" }, landlord: { title: "Bail propriétaire", filename: "bail-proprietaire.txt", text: "…" } };
+const readable = (html: string) =>
+  flatten(html, " ")
+    .replace(/&#x27;|&#39;/g, "'")
+    .replace(/&[a-z#0-9]+;/gi, " ")
+    .replace(/\s+/g, " ");
+const collection = (patch: Record<string, unknown> = {}) => ({
+  id: "c1",
+  name: "My documents",
+  files: 2,
+  folders: 0,
+  tags: [],
+  isDefault: true,
+  avatar: null,
+  description: null,
+  lastCheck: { at: "2026-10-20T15:00:00.000Z", status: "attention" },
+  ...patch,
+});
+const check = (n: number, result: CheckSummary["result"]): CheckSummary => ({
+  id: `a${n}`,
+  documentId: `d${n}`,
+  title: `Bail ${n}`,
+  kind: "lease",
+  studio: "compliance-check",
+  result,
+  runId: `run_${n}`,
+  at: `2026-10-2${n}T12:00:00.000Z`,
+});
+const EXAMPLES = {
+  tenant: { title: "Bail locataire", filename: "bail-locataire.txt", text: "…" },
+  landlord: { title: "Bail propriétaire", filename: "bail-proprietaire.txt", text: "…" },
+};
 const render = (props: Record<string, unknown>, locale: "en" | "fr" = "fr") =>
   renderToStaticMarkup(
     <I18nProvider locale={locale} messages={MESSAGES[locale] as never}>
       <KrizakaQueryProvider>
-        <LibraryView libraries={[{ id: "l1", name: "Ma bibliothèque", collections: [collection()] }] as never} documents={1} tags={[]} examples={EXAMPLES} {...(props as object)} />
+        <LibraryView
+          libraries={[{ id: "l1", name: "Ma bibliothèque", collections: [collection()] }] as never}
+          documents={1}
+          tags={[]}
+          examples={EXAMPLES}
+          {...(props as object)}
+        />
       </KrizakaQueryProvider>
     </I18nProvider>,
   );
@@ -67,7 +107,10 @@ describe("the library home (yomizaka#275, the UX review's Y3)", () => {
 
   it("lists the latest checks first — each a link to the report — with « Tout voir » to Vérifications; says so when there is none", () => {
     const html = render({ latest: [check(1, "attention"), check(2, "checked")] });
-    const section = html.slice(html.indexOf('data-testid="latest-checks"'), html.indexOf("</section>", html.indexOf('data-testid="latest-checks"')));
+    const section = html.slice(
+      html.indexOf('data-testid="latest-checks"'),
+      html.indexOf("</section>", html.indexOf('data-testid="latest-checks"')),
+    );
     expect(section.match(/<li\b/g)).toHaveLength(2);
     expect(section).toContain('href="/fr/app/documents/d1/rapport"');
     expect(section).toContain('href="/fr/app/verifications"');
@@ -75,7 +118,12 @@ describe("the library home (yomizaka#275, the UX review's Y3)", () => {
     expect(readable(section)).toContain("Tout voir");
     expect(readable(render({ latest: [] }))).toContain(fr.console.organisation.noChecks);
     const none = render({ latest: [] });
-    expect(none.slice(none.indexOf('data-testid="latest-checks"'), none.indexOf("</section>", none.indexOf('data-testid="latest-checks"')))).not.toContain('href="/fr/app/verifications"');
+    expect(
+      none.slice(
+        none.indexOf('data-testid="latest-checks"'),
+        none.indexOf("</section>", none.indexOf('data-testid="latest-checks"')),
+      ),
+    ).not.toContain('href="/fr/app/verifications"');
   });
 
   it("draws each collection as one link card with a place mark, its count and its last check; the menu sits beside the link, never inside it", () => {
@@ -87,13 +135,21 @@ describe("the library home (yomizaka#275, the UX review's Y3)", () => {
     expect(link).toContain('data-testid="place-mark"');
     expect(link).not.toContain("<button");
     expect(html).toContain('data-testid="collection-last-check"');
-    const chosen = cardLink(render({ libraries: [{ id: "l1", name: "L", collections: [collection({ avatar: { kind: "set", seed: "plain-2" } })] }] }));
+    const chosen = cardLink(
+      render({
+        libraries: [{ id: "l1", name: "L", collections: [collection({ avatar: { kind: "set", seed: "plain-2" } })] }],
+      }),
+    );
     expect(chosen).not.toContain('data-testid="place-mark"');
     expect(readable(chosen)).toContain("Mes documents");
   });
 
   it("with nothing yet: the owl, one sentence, the only drop zone and the two examples — no table, no checks list", () => {
-    const html = render({ documents: 0, latest: [], libraries: [{ id: "l1", name: "L", collections: [collection({ files: 0, lastCheck: null })] }] });
+    const html = render({
+      documents: 0,
+      latest: [],
+      libraries: [{ id: "l1", name: "L", collections: [collection({ files: 0, lastCheck: null })] }],
+    });
     expect(html).toContain('data-testid="library-empty"');
     expect(readable(html)).toContain(fr.console.library.emptyPitch);
     expect(html.match(/data-testid="library-dropzone"/g)).toHaveLength(1);
@@ -105,7 +161,20 @@ describe("the library home (yomizaka#275, the UX review's Y3)", () => {
   });
 
   it("keeps a collection the person made reachable even with no document yet (no empty state over it)", () => {
-    const html = render({ documents: 0, latest: [], libraries: [{ id: "l1", name: "L", collections: [collection({ files: 0, lastCheck: null }), collection({ id: "c2", name: "Immeuble Rosemont", isDefault: false, files: 0, lastCheck: null })] }] });
+    const html = render({
+      documents: 0,
+      latest: [],
+      libraries: [
+        {
+          id: "l1",
+          name: "L",
+          collections: [
+            collection({ files: 0, lastCheck: null }),
+            collection({ id: "c2", name: "Immeuble Rosemont", isDefault: false, files: 0, lastCheck: null }),
+          ],
+        },
+      ],
+    });
     expect(html).not.toContain('data-testid="library-empty"');
     expect(html).toContain('href="/fr/app?period=30d&amp;collection=c2"');
     expect(readable(html)).toContain("Immeuble Rosemont");
@@ -125,7 +194,9 @@ describe("the library home (yomizaka#275, the UX review's Y3)", () => {
     expect(lead).toContain('href="/fr/app/verifications?result=attention%2Cfailed"');
     expect(lead).toContain('href="/fr/app/dossiers?state=used"');
     expect(lead).toContain('href="/fr/app/dossiers?state=open"');
-    expect(flatten(lead, "")).toBe("Vous avez 6 vérifications à regarder, 2 dossiers à décider et 1 lien de dépôt ouvert.");
+    expect(flatten(lead, "")).toBe(
+      "Vous avez 6 vérifications à regarder, 2 dossiers à décider et 1 lien de dépôt ouvert.",
+    );
   });
 
   it("without the applicant-file flow the sentence counts the checks only", () => {
@@ -149,7 +220,12 @@ describe("the library home (yomizaka#275, the UX review's Y3)", () => {
   });
 
   it("« Le classeur » comes first on the page — before the latest checks, and (one column on a phone) before the side column", () => {
-    const html = render({ latest: [check(1, "attention")], strip: [{ id: "checks", total: 1, values: [1] }], activity: [{ day: "2026-10-25", checks: 1 }], credits: { kind: "included" } });
+    const html = render({
+      latest: [check(1, "attention")],
+      strip: [{ id: "checks", total: 1, values: [1] }],
+      activity: [{ day: "2026-10-25", checks: 1 }],
+      credits: { kind: "included" },
+    });
     const at = (id: string) => html.indexOf(`data-testid="${id}"`);
     expect(at("binder")).toBeGreaterThan(-1);
     expect(at("binder")).toBeLessThan(at("latest-checks"));
@@ -158,14 +234,25 @@ describe("the library home (yomizaka#275, the UX review's Y3)", () => {
   });
 
   it("the binder: a tab per collection with its count, the address choosing the open one", () => {
-    const libraries = [{ id: "l1", name: "L", collections: [collection(), collection({ id: "c2", name: "Rosemont", isDefault: false, files: 4, lastCheck: null })] }];
+    const libraries = [
+      {
+        id: "l1",
+        name: "L",
+        collections: [
+          collection(),
+          collection({ id: "c2", name: "Rosemont", isDefault: false, files: 4, lastCheck: null }),
+        ],
+      },
+    ];
     const html = render({ libraries, chosen: "c2" });
     const binder = html.slice(html.indexOf('data-testid="binder"'), html.indexOf('data-testid="latest-checks"'));
     expect(binder.match(/data-testid="binder-count"/g)).toHaveLength(2);
     expect(binder).toContain('href="/fr/app?period=30d&amp;collection=c1"');
     expect(binder).toContain('href="/fr/app?period=30d&amp;collection=c2"');
     expect(readable(binder)).toMatch(/Rosemont\s+4/);
-    expect(binder).toMatch(/aria-current="page"[^>]*href="\/fr\/app\?period=30d&amp;collection=c2"|href="\/fr\/app\?period=30d&amp;collection=c2"[^>]*aria-current="page"/);
+    expect(binder).toMatch(
+      /aria-current="page"[^>]*href="\/fr\/app\?period=30d&amp;collection=c2"|href="\/fr\/app\?period=30d&amp;collection=c2"[^>]*aria-current="page"/,
+    );
     // the open tab's panel is that collection
     expect(cardLink(binder.replace("/fr/app/library/l1/c1", "x")).length).toBeGreaterThanOrEqual(0);
     expect(binder).toContain('href="/fr/app/library/l1/c2"');
@@ -178,7 +265,10 @@ describe("the library home (yomizaka#275, the UX review's Y3)", () => {
       { id: "toReview", total: 2, values: [0, 2] },
       { id: "documents", total: 3, values: [1, 2] },
     ];
-    const activity = [{ day: "2026-10-24", checks: 1 }, { day: "2026-10-25", checks: 4 }];
+    const activity = [
+      { day: "2026-10-24", checks: 1 },
+      { day: "2026-10-25", checks: 4 },
+    ];
     const html = render({ strip, activity, credits: { kind: "credits", left: 3 }, screening: true });
     expect(html).not.toContain('data-testid="quick-access"');
     expect(html).not.toContain('data-testid="week"');
@@ -188,7 +278,9 @@ describe("the library home (yomizaka#275, the UX review's Y3)", () => {
   });
 
   it("Pro that renews says « Se renouvelle le »; Pro cancelled at period end says when it ends (never « renews »)", () => {
-    const pro = (cancelled: boolean) => ({ credits: { kind: "pro", used: 4, cap: 100, renewsAt: "2026-11-20T12:00:00.000Z", cancelled } });
+    const pro = (cancelled: boolean) => ({
+      credits: { kind: "pro", used: 4, cap: 100, renewsAt: "2026-11-20T12:00:00.000Z", cancelled },
+    });
     expect(readable(render(pro(false)))).toContain("Se renouvelle le");
     const fr = readable(render(pro(true)));
     expect(fr).toContain("Se termine le");
@@ -199,22 +291,43 @@ describe("the library home (yomizaka#275, the UX review's Y3)", () => {
   });
 
   it("the activity of the period: its total from the days, and the 7 · 30 · 90 d switch in the address", () => {
-    const activity = [{ day: "2026-10-23", checks: 2 }, { day: "2026-10-24", checks: 3 }];
+    const activity = [
+      { day: "2026-10-23", checks: 2 },
+      { day: "2026-10-24", checks: 3 },
+    ];
     const strip = [{ id: "checks", total: 5, values: [2, 3] }];
     const html2 = render({ activity, strip, period: "7d" });
     const section = html2.slice(html2.indexOf('data-testid="activity"'));
     expect(readable(section)).toMatch(/\b5\b/);
     for (const p of ["7d", "30d", "90d"]) expect(section).toContain(`href="/fr/app?period=${p}&amp;collection=c1"`);
-    expect(section).toMatch(/aria-current="page"[^>]*href="\/fr\/app\?period=7d&amp;collection=c1"|href="\/fr\/app\?period=7d&amp;collection=c1"[^>]*aria-current="page"/);
+    expect(section).toMatch(
+      /aria-current="page"[^>]*href="\/fr\/app\?period=7d&amp;collection=c1"|href="\/fr\/app\?period=7d&amp;collection=c1"[^>]*aria-current="page"/,
+    );
   });
 });
 
 describe("an empty folder's card (yomizaka#435)", () => {
-  const empty = () => ({ libraries: [{ id: "l1", name: "Ma bibliothèque", collections: [collection({ files: 0, folders: 0, lastCheck: null }), collection({ id: "c2", name: "Archives", isDefault: false, files: 3 })] }], documents: 3, chosen: "c1" });
+  const empty = () => ({
+    libraries: [
+      {
+        id: "l1",
+        name: "Ma bibliothèque",
+        collections: [
+          collection({ files: 0, folders: 0, lastCheck: null }),
+          collection({ id: "c2", name: "Archives", isDefault: false, files: 3 }),
+        ],
+      },
+    ],
+    documents: 3,
+    chosen: "c1",
+  });
 
   it("follows its content: no fixed or full height, and one compact line with one action", () => {
     const html = render(empty());
-    const card = html.slice(html.indexOf('data-testid="collection-card"'), html.indexOf('data-testid="collection-empty"') + 600);
+    const card = html.slice(
+      html.indexOf('data-testid="collection-card"'),
+      html.indexOf('data-testid="collection-empty"') + 600,
+    );
     expect(card).not.toMatch(/\bh-full\b|\bmin-h-|\bh-\[/);
     expect(readable(html)).toContain("Aucun fichier dans cette collection pour l’instant.");
     expect(html.match(/data-testid="collection-empty"/g)).toHaveLength(1);
@@ -226,4 +339,3 @@ describe("an empty folder's card (yomizaka#435)", () => {
     expect(render({ chosen: "c1" })).not.toContain("collection-empty");
   });
 });
-

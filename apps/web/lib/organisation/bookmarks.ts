@@ -6,7 +6,11 @@
 export type BookmarkRef = { id: string };
 
 /** The ids that wear all of `selected`, in their order. No bookmark asked for: all of them. */
-export function wearingAll(ids: readonly string[], tagsByDocument: Readonly<Record<string, readonly BookmarkRef[]>>, selected: readonly string[]): string[] {
+export function wearingAll(
+  ids: readonly string[],
+  tagsByDocument: Readonly<Record<string, readonly BookmarkRef[]>>,
+  selected: readonly string[],
+): string[] {
   if (selected.length === 0) return [...ids];
   return ids.filter((id) => {
     const worn = new Set((tagsByDocument[id] ?? []).map((t) => t.id));
@@ -28,7 +32,14 @@ export function withBookmark(worn: readonly string[], id: string, on: boolean): 
 
 type Color = "blue" | "green" | "amber" | "red" | "violet" | "gray";
 /** The tab hues are the binder's tones; the word and the count say it too, the colour is never the only signal. */
-const HUE = { blue: "accent", green: "success", amber: "warning", red: "danger", violet: "accent", gray: "neutral" } as const;
+const HUE = {
+  blue: "accent",
+  green: "success",
+  amber: "warning",
+  red: "danger",
+  violet: "accent",
+  gray: "neutral",
+} as const;
 export type DividerHue = (typeof HUE)[Color];
 
 export interface Divider {
@@ -46,12 +57,25 @@ export interface Divider {
  * The bookmarks as the binder's dividers (yomizaka#339): « All » then one tab per bookmark with the number of documents that wear it;
  * a tab opens that bookmark alone (`?tags=<id>`, the address is the state). The active tab is the one bookmark in force, « All » when none.
  */
-export function dividers(input: { bookmarks: readonly { id: string; name: string; color: Color }[]; ids: readonly string[]; tagsByDocument: Readonly<Record<string, readonly BookmarkRef[]>>; selected: readonly string[]; path: string }): Divider[] {
+export function dividers(input: {
+  bookmarks: readonly { id: string; name: string; color: Color }[];
+  ids: readonly string[];
+  tagsByDocument: Readonly<Record<string, readonly BookmarkRef[]>>;
+  selected: readonly string[];
+  path: string;
+}): Divider[] {
   const { bookmarks, ids, tagsByDocument, selected, path } = input;
   const only = selected.length === 1 ? selected[0] : null;
   const count = (tag: string) => wearingAll(ids, tagsByDocument, [tag]).length;
   return [
     { id: null, name: null, hue: "accent", count: ids.length, href: path, on: selected.length === 0 },
-    ...bookmarks.map((b): Divider => ({ id: b.id, name: b.name, hue: HUE[b.color], count: count(b.id), href: `${path}?tags=${b.id}`, on: only === b.id })),
+    ...bookmarks.map((b): Divider => ({
+      id: b.id,
+      name: b.name,
+      hue: HUE[b.color],
+      count: count(b.id),
+      href: `${path}?tags=${b.id}`,
+      on: only === b.id,
+    })),
   ];
 }

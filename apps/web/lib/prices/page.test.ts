@@ -1,4 +1,10 @@
-import { AVAILABILITY, memoryPriceStore, type PriceCatalogue, priceCatalogue, publicCatalogue } from "@krizaka/settings";
+import {
+  AVAILABILITY,
+  memoryPriceStore,
+  type PriceCatalogue,
+  priceCatalogue,
+  publicCatalogue,
+} from "@krizaka/settings";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
@@ -11,9 +17,11 @@ const NOW = new Date("2026-10-26T12:00:00Z");
 const ADMIN = { id: null, label: "admin@yomizaka.test" };
 const nb = (s: string | null) => s?.replaceAll(/\s/gu, " ") ?? null;
 /** The text of an HTML fragment: what sits between a `>` and the next `<`, without entities. No tag is stripped by pattern. */
-const textOf = (html: string) => [...`>${html}<`.matchAll(/>([^<>]*)</g)].map((m) => m[1]!.replaceAll(/&#x?[0-9a-f]+;/gi, "")).join("");
+const textOf = (html: string) =>
+  [...`>${html}<`.matchAll(/>([^<>]*)</g)].map((m) => m[1]!.replaceAll(/&#x?[0-9a-f]+;/gi, "")).join("");
 const fresh = () => priceCatalogue(PRICES, memoryPriceStore());
-const linesOf = async (c: PriceCatalogue, locale: "en" | "fr") => pricingLines(publicCatalogue(await c.catalogue(NOW)), locale);
+const linesOf = async (c: PriceCatalogue, locale: "en" | "fr") =>
+  pricingLines(publicCatalogue(await c.catalogue(NOW)), locale);
 const render = async (c: PriceCatalogue, locale: "en" | "fr", freeFirst = true) => {
   const { sold, soon } = await linesOf(c, locale);
   return renderToStaticMarkup(PricingContent({ locale, sold, soon, freeFirst, status: "In development" }));

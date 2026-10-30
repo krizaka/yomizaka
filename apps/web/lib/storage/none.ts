@@ -14,6 +14,14 @@ export function noneStore(): DocumentStore {
       return null;
     },
     async delete() {},
-    describe: () => ({ kind: "none", endpoint: null, region: null, residency: "unknown", encrypted: false, owner: "krizaka", devOnly: false }),
+    describe: () => ({
+      kind: "none",
+      endpoint: null,
+      region: null,
+      residency: "unknown",
+      encrypted: false,
+      owner: "krizaka",
+      devOnly: false,
+    }),
   };
 }

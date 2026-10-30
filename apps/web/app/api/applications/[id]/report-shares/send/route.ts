@@ -15,9 +15,24 @@ export function POST(req: Request, { params }: { params: Promise<{ id: string }>
     const session = await requireSession(req);
     await limit("reportMail", req, session.account.id);
     const { id } = await params;
-    const input = await readJson(req, z.object({ token: z.string().min(1).max(200), email: z.string().max(254), message: z.string().max(500).optional(), locale: z.enum(["en", "fr"]) }));
+    const input = await readJson(
+      req,
+      z.object({
+        token: z.string().min(1).max(200),
+        email: z.string().max(254),
+        message: z.string().max(500).optional(),
+        locale: z.enum(["en", "fr"]),
+      }),
+    );
     const e = env();
-    const { sentTo } = await emailShare(session.account, id, input, { mail: mailerFor(e), origin: e.APP_PUBLIC_URL }, new Date(), req.headers);
+    const { sentTo } = await emailShare(
+      session.account,
+      id,
+      input,
+      { mail: mailerFor(e), origin: e.APP_PUBLIC_URL },
+      new Date(),
+      req.headers,
+    );
     return Response.json({ sentTo }, { status: 202, headers: { "Cache-Control": "private, no-store" } });
   });
 }

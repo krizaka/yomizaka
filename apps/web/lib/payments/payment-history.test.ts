@@ -21,7 +21,15 @@ const charge = (over: Record<string, unknown> = {}) => ({
 describe("payment history (yomizaka#585)", () => {
   it("keeps the date, what was bought, the amount, the state and the receipt link", () => {
     const [row] = paymentHistoryOf([charge()]);
-    expect(row).toEqual({ id: "ch_1", at: new Date(1_793_000_000 * 1000).toISOString(), what: "Yomizaka — one document verified", amountCents: 999, currency: "cad", state: "paid", receiptUrl: "https://pay.stripe.com/receipts/payment/abc" });
+    expect(row).toEqual({
+      id: "ch_1",
+      at: new Date(1_793_000_000 * 1000).toISOString(),
+      what: "Yomizaka — one document verified",
+      amountCents: 999,
+      currency: "cad",
+      state: "paid",
+      receiptUrl: "https://pay.stripe.com/receipts/payment/abc",
+    });
   });
 
   it("never carries card or billing details", () => {
@@ -49,7 +57,14 @@ describe("payment history (yomizaka#585)", () => {
 
   it("asks the processor for the last charges of the customer, read-only, newest first", async () => {
     const calls: unknown[][] = [];
-    const rows = await fetchPaymentHistory(async (method, path, params) => (calls.push([method, path, params]), { data: [charge({ id: "ch_new", created: 1_793_000_100 }), charge()] }), "cus_1", 5);
+    const rows = await fetchPaymentHistory(
+      async (method, path, params) => (
+        calls.push([method, path, params]),
+        { data: [charge({ id: "ch_new", created: 1_793_000_100 }), charge()] }
+      ),
+      "cus_1",
+      5,
+    );
     expect(calls).toEqual([["GET", "/v1/charges", { customer: "cus_1", limit: 5 }]]);
     expect(rows.map((r) => r.id)).toEqual(["ch_new", "ch_1"]);
   });

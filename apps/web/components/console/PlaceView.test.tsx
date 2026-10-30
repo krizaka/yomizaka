@@ -12,12 +12,33 @@ import fr from "@/messages/fr.json";
 
 import { PlaceView } from "./PlaceView";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push() {}, replace() {}, refresh() {} }), usePathname: () => "/fr/app/library/l1/c1", useSearchParams: () => new URLSearchParams("") }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push() {}, replace() {}, refresh() {} }),
+  usePathname: () => "/fr/app/library/l1/c1",
+  useSearchParams: () => new URLSearchParams(""),
+}));
 
 const MESSAGES = { en: { console: en.console }, fr: { console: fr.console } } as const;
-const readable = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/&#x27;|&#39;/g, "'").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ");
-const doc = (n: number): DocumentSummary => ({ id: `d${n}`, title: `Bail ${n}`, filename: `bail-${n}.pdf`, mimeType: "application/pdf", kind: "lease", sizeBytes: 1000, pages: 1, hasText: true, status: "checked", createdAt: "2026-10-20T12:00:00.000Z" });
-const folder = (id: string, name: string, files: number) => ({ id, name, files, tags: [], collection_id: "c1", owner_id: "o1", created_at: "2026-10-01T00:00:00.000Z" }) as never;
+const readable = (html: string) =>
+  html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&#x27;|&#39;/g, "'")
+    .replace(/&[a-z#0-9]+;/gi, " ")
+    .replace(/\s+/g, " ");
+const doc = (n: number): DocumentSummary => ({
+  id: `d${n}`,
+  title: `Bail ${n}`,
+  filename: `bail-${n}.pdf`,
+  mimeType: "application/pdf",
+  kind: "lease",
+  sizeBytes: 1000,
+  pages: 1,
+  hasText: true,
+  status: "checked",
+  createdAt: "2026-10-20T12:00:00.000Z",
+});
+const folder = (id: string, name: string, files: number) =>
+  ({ id, name, files, tags: [], collection_id: "c1", owner_id: "o1", created_at: "2026-10-01T00:00:00.000Z" }) as never;
 const PATH = "/fr/app/library/l1/c1";
 type Props = Partial<Parameters<typeof PlaceView>[0]>;
 const render = (props: Props = {}, locale: "en" | "fr" = "fr") =>
@@ -57,7 +78,9 @@ describe("a collection (the UX review's Y7)", () => {
 
   it("says what is here under the name — the counts with their plurals — in both languages", () => {
     expect(readable(render())).toContain("2 dossiers · 2 fichiers");
-    expect(readable(render({ folders: [folder("f1", "Baux", 3)], documents: [doc(1)] }))).toContain("1 dossier · 1 fichier");
+    expect(readable(render({ folders: [folder("f1", "Baux", 3)], documents: [doc(1)] }))).toContain(
+      "1 dossier · 1 fichier",
+    );
     expect(readable(render({}, "en"))).toContain("2 folders · 2 files");
   });
 
@@ -89,7 +112,10 @@ describe("a collection (the UX review's Y7)", () => {
     expect(render()).not.toContain('data-testid="place-filters"');
     const T1 = "11111111-1111-4111-8111-111111111111";
     const T2 = "22222222-2222-4222-8222-222222222222";
-    const tags = [{ id: T1, name: "Urgent", color: "red" }, { id: T2, name: "2026", color: "blue" }] as never;
+    const tags = [
+      { id: T1, name: "Urgent", color: "red" },
+      { id: T2, name: "2026", color: "blue" },
+    ] as never;
     const html = render({ documentTags: tags, view: parseView({ tags: T1 }) });
     expect(html).toContain('data-testid="place-filters"');
     const text = readable(html);
@@ -100,7 +126,9 @@ describe("a collection (the UX review's Y7)", () => {
 
   it("a dropped file is checked under the account's offer, and a folder's menu leads somewhere valid once the folder is deleted or moved", () => {
     const page = readFileSync(new URL("./PlacePage.tsx", import.meta.url), "utf8");
-    expect(page).toContain("offerFor(await availableFlows(appEnvironment()), session.account.perspective).jurisdictions");
+    expect(page).toContain(
+      "offerFor(await availableFlows(appEnvironment()), session.account.perspective).jurisdictions",
+    );
     expect(page).toContain("jurisdictions={jurisdictions}");
     expect(page).toContain("libraryId: l.id");
     const view = readFileSync(new URL("./PlaceView.tsx", import.meta.url), "utf8");

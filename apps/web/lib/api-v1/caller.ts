@@ -18,7 +18,10 @@ export interface ApiCaller {
  */
 export async function apiCaller(req: Request, scope: string, clock: Clock): Promise<ApiCaller> {
   const { ownerId, keyId } = await requireApiKey(req, scope, clock);
-  const [account] = await query<ApiCaller["account"]>("SELECT id, email, role, perspective FROM accounts WHERE id = $1", [ownerId]);
+  const [account] = await query<ApiCaller["account"]>(
+    "SELECT id, email, role, perspective FROM accounts WHERE id = $1",
+    [ownerId],
+  );
   if (!account) throw refuse(401, "API_KEY_INVALID", "API key refused: API_KEY_INVALID");
   await assertOpen(account);
   return { account, keyId };

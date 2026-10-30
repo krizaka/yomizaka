@@ -6,7 +6,11 @@ import { readFilterParams, writeFilterParams } from "./filter-params";
 describe("the address's filters, as plain functions (a server page cannot call the client module's, yomizaka#457)", () => {
   const search = new URLSearchParams("state=open,used&state=%20closed%20&q=&page=3&x=1");
   it("reads repeated and comma-separated values, trimmed", () => {
-    expect(readFilterParams(search, ["state", "q", "none"])).toEqual({ state: ["open", "used", "closed"], q: [], none: [] });
+    expect(readFilterParams(search, ["state", "q", "none"])).toEqual({
+      state: ["open", "used", "closed"],
+      q: [],
+      none: [],
+    });
   });
   it("writes a list, deletes an empty key and resets the paging", () => {
     const next = writeFilterParams(search, { state: ["used"], q: null, tags: ["a", "b"] });

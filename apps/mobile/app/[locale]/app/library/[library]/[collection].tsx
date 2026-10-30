@@ -1,7 +1,7 @@
 import { useQuery } from "@krizaka/query";
 import { Chip, EmptyState, Header, Screen, Txt } from "@krizaka/ui/native";
 import { List } from "@krizaka/ui/native/list";
-import { type DocumentSummary,parseTagsParam, toggleTag } from "@yomizaka/core";
+import { type DocumentSummary, parseTagsParam, toggleTag } from "@yomizaka/core";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as React from "react";
 import { View } from "react-native";
@@ -29,7 +29,11 @@ export default function Collection() {
       <Txt variant="label">{t("library.tagsLabel")}</Txt>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
         {allTags.map((tag) => (
-          <Chip key={tag.id} selected={selected.includes(tag.id)} onSelectedChange={() => router.setParams({ tags: toggleTag(selected, tag.id).join(",") || undefined })}>
+          <Chip
+            key={tag.id}
+            selected={selected.includes(tag.id)}
+            onSelectedChange={() => router.setParams({ tags: toggleTag(selected, tag.id).join(",") || undefined })}
+          >
             {tag.name}
           </Chip>
         ))}
@@ -38,7 +42,17 @@ export default function Collection() {
   ) : undefined;
 
   return (
-    <Screen scroll={false} header={<Header title={meta?.name ?? t("library.title")} backLabel={t("common.back")} onBack={() => router.replace(routes.library(locale) as never)} size="inline" />}>
+    <Screen
+      scroll={false}
+      header={
+        <Header
+          title={meta?.name ?? t("library.title")}
+          backLabel={t("common.back")}
+          onBack={() => router.replace(routes.library(locale) as never)}
+          size="inline"
+        />
+      }
+    >
       <List<DocumentSummary>
         label={meta?.name ?? t("library.title")}
         data={documents.data?.documents ?? []}

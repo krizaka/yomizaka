@@ -68,13 +68,19 @@ export interface ApplicantPageDeps {
 }
 
 /** The page's data by link: null when no applicant file answers to the token (unknown, or a screening's — it has its own page). */
-export async function loadApplicantPage(token: string, now: Date, deps: ApplicantPageDeps): Promise<{ state: ApplicantFileState; consents: ConsentPurpose[] } | null> {
+export async function loadApplicantPage(
+  token: string,
+  now: Date,
+  deps: ApplicantPageDeps,
+): Promise<{ state: ApplicantFileState; consents: ConsentPurpose[] } | null> {
   try {
     const row = await deps.fileByToken(token);
     const [state, consents] = await Promise.all([deps.applicantFileState(token, now), deps.activeConsents(row.id)]);
     return { state, consents };
   } catch (error) {
-    if (error instanceof HttpError && error.status === 404) {return null;}
+    if (error instanceof HttpError && error.status === 404) {
+      return null;
+    }
     throw error;
   }
 }

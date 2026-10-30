@@ -11,5 +11,12 @@ export const tableLabels = (say: Say): Partial<DataTableLabels> => ({
   removeFilter: (label) => say("library.table.remove", { label }),
   activeFilter: (header, value) => `${header} : ${value}`,
   search: (header) => say("library.table.search", { header }),
-  pagination: { nav: say("library.table.pagination"), previous: say("library.table.previous"), next: say("library.table.next"), page: (n) => say("library.table.page", { page: n }), compact: (n, count) => say("library.table.compact", { page: n, count }), pageSize: say("library.table.pageSize") },
+  pagination: {
+    nav: say("library.table.pagination"),
+    previous: say("library.table.previous"),
+    next: say("library.table.next"),
+    page: (n) => say("library.table.page", { page: n }),
+    compact: (n, count) => say("library.table.compact", { page: n, count }),
+    pageSize: say("library.table.pageSize"),
+  },
 });

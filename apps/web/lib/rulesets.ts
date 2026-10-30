@@ -36,7 +36,11 @@ const QC_RULESETS: Partial<Record<CheckKind, readonly RulesetVersion[]>> = {
 export function versionInForce(versions: readonly RulesetVersion[], asOf: string): RulesetVersion | null {
   let current: RulesetVersion | null = null;
   for (const version of versions) {
-    if ((version.effectiveFrom === null || version.effectiveFrom <= asOf) && (current === null || (version.effectiveFrom ?? "") >= (current.effectiveFrom ?? ""))) current = version;
+    if (
+      (version.effectiveFrom === null || version.effectiveFrom <= asOf) &&
+      (current === null || (version.effectiveFrom ?? "") >= (current.effectiveFrom ?? ""))
+    )
+      current = version;
   }
   return current;
 }
