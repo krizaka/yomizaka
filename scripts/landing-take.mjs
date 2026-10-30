@@ -83,13 +83,20 @@ const page = await ctx.newPage();
 // device's real pixels (390×844 at 2× = 780×1688) at 25+ frames a second: frames are taken in a tight loop, each with its
 // wall-clock time, and assembled afterwards. The take is refused below 25 fps on average.
 const cdp = await ctx.newCDPSession(page);
+const capture = async () => {
+  const { result } = await cdp.send("Runtime.evaluate", { expression: "[visualViewport.pageLeft, visualViewport.pageTop]", returnByValue: true });
+  const [x, y] = result.value;
+  return cdp.send("Page.captureScreenshot", { format: "jpeg", quality: 85, optimizeForSpeed: true, clip: { x, y, width: VIEWPORT.width, height: VIEWPORT.height, scale: SCALE } });
+};
 const frames = [];
 let filming = true;
 const film = (async () => {
   while (filming) {
     const at = Date.now() / 1000;
     // A capture that never answers (the page is navigating) must not stall the take: give up after 3 s and go on.
-    const shot = await Promise.race([cdp.send("Page.captureScreenshot", { format: "jpeg", quality: 85, optimizeForSpeed: true }), new Promise((r) => setTimeout(r, 3000, null))]).catch(() => null);
+    // The capture comes back at CSS pixels unless it is a clip with a scale; the clip is the VISUAL viewport as it is now (a
+    // clip fixed at y=0 left a blank band over a scrolled page, #602), asked for at the device's scale (390×844 → 780×1688).
+    const shot = await Promise.race([capture(), new Promise((r) => setTimeout(r, 3000, null))]).catch(() => null);
     if (shot) frames.push({ at, data: shot.data });
   }
 })();
@@ -180,6 +187,8 @@ frames.forEach((f, i) => {
 list.push(`file '${path.join(tmp, `${String(frames.length - 1).padStart(5, "0")}.jpg`)}'`);
 writeFileSync(path.join(tmp, "list.txt"), `${list.join("\n")}\n`);
 execFileSync("ffmpeg", ["-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", path.join(tmp, "list.txt"), "-vf", "fps=30,scale=trunc(iw/2)*2:trunc(ih/2)*2", "-c:v", "libx264", "-crf", "12", "-preset", "fast", "-pix_fmt", "yuv420p", raw], { stdio: "inherit" }); // NOSONAR S4036: a developer-machine script, PATH is the developer's own
+const probed = execFileSync("ffprobe", ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height", "-of", "csv=p=0", raw]).toString().trim().replace(/,+$/, ""); // NOSONAR S4036: a developer-machine script
+if (probed !== `${VIEWPORT.width * SCALE},${VIEWPORT.height * SCALE}`) throw new Error(`the take is ${probed}, expected ${VIEWPORT.width * SCALE}x${VIEWPORT.height * SCALE}: refused (public video must be crisp)`);
 // The raw file starts at the first frame: shift every mark onto its clock.
 const shift = frames[0].at - t0 / 1000;
 for (const k of Object.keys(marks)) marks[k] -= shift;

@@ -41,7 +41,7 @@ jobs:
           password="$(openssl rand -hex 16)"
           echo "::add-mask::$password"
           DEMO_ACCOUNT_EMAIL=eric@demo.yomizaka.test DEMO_ACCOUNT_PASSWORD="$password" bash scripts/ci-mobile-backend.sh
-          E2E_EMAIL=eric@demo.yomizaka.test E2E_PASSWORD="$password" node scripts/showcase-web.mjs showcase-web --base http://localhost:3000 --locale fr
+          E2E_EMAIL=eric@demo.yomizaka.test E2E_PASSWORD="$password" node scripts/showcase-web.mjs showcase-web --base http://localhost:3000 --locale fr --sign-in off
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: showcase-web
