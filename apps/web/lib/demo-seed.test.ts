@@ -58,13 +58,27 @@ describe("the demo seed", () => {
     const stamps: { sql: string; values: unknown[] }[] = [];
     const q = async (sql: string, values: unknown[] = []) => {
       stamps.push({ sql, values });
-      if (/INSERT INTO accounts/.test(sql)) return [{ id: "owner", locale: "fr", name: "Éric" }];
-      if (/FROM libraries/.test(sql)) return [{ id: "library" }];
-      if (/INSERT INTO collections/.test(sql)) return [{ id: "collection" }];
-      if (/INSERT INTO documents/.test(sql)) return [{ id: values[0] }];
-      if (/SELECT id FROM documents/.test(sql)) return [{ id: "stored" }];
-      if (/count\(\*\)/.test(sql)) return [{ n: 0 }];
-      if (/INSERT INTO screenings/.test(sql)) return [{ id: "file" }];
+      if (/INSERT INTO accounts/.test(sql)) {
+        return [{ id: "owner", locale: "fr", name: "Éric" }];
+      }
+      if (/FROM libraries/.test(sql)) {
+        return [{ id: "library" }];
+      }
+      if (/INSERT INTO collections/.test(sql)) {
+        return [{ id: "collection" }];
+      }
+      if (/INSERT INTO documents/.test(sql)) {
+        return [{ id: values[0] }];
+      }
+      if (/SELECT id FROM documents/.test(sql)) {
+        return [{ id: "stored" }];
+      }
+      if (/count\(\*\)/.test(sql)) {
+        return [{ n: 0 }];
+      }
+      if (/INSERT INTO screenings/.test(sql)) {
+        return [{ id: "file" }];
+      }
       return [];
     };
     await seedPersona(q, { persona: "eric", email: "eric@demo.yomizaka.test", messagesByLocale: { fr, en }, now });

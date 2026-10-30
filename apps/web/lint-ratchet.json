@@ -32,7 +32,7 @@
     "sonarjs/no-nested-conditional": 4,
     "code/no-console": 5,
     "sonarjs/sql-queries": 2,
-    "sonarjs/no-nested-template-literals": 3,
+    "sonarjs/no-nested-template-literals": 0,
     "code/max-nested-callbacks": 2,
     "sonarjs/duplicates-in-character-class": 1,
     "sonarjs/anchor-precedence": 1,

@@ -49,7 +49,9 @@ describe.runIf(enabled)("the list of checks (Vérifications)", () => {
     await analysis(b, "compliance-check", "succeeded", false, "2026-10-21T10:00:00Z", "run_b");
     await analysis(a, "compliance-check", "succeeded", false, "2026-10-21T10:00:00Z", "run_a");
     const first = (await listChecks(query, owner)).map((c) => c.title);
-    for (let i = 0; i < 5; i++) expect((await listChecks(query, owner)).map((c) => c.title)).toEqual(first);
+    for (let i = 0; i < 5; i++) {
+      expect((await listChecks(query, owner)).map((c) => c.title)).toEqual(first);
+    }
     expect(first).toEqual(["A — first by title", "B — second by title"]);
   });
 });
