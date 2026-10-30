@@ -696,6 +696,46 @@
       "exportUnavailable": "Ce rapport ne peut pas être produit pour l’instant.",
       "exportPdf": "Télécharger le PDF",
       "reused": "Résultat réutilisé : ce document exact a déjà été vérifié avec les mêmes règles, aucune nouvelle vérification n’a été lancée.",
+      "traces": {
+        "title": "Traces de modification",
+        "notTitle": "Ce que cette vérification n'est pas",
+        "notItems": {
+          "alteration": "Ce n'est pas un constat qu'un document a été modifié de mauvaise foi, et elle ne dit rien de la personne.",
+          "ordinary": "Beaucoup d'étapes ordinaires laissent les mêmes traces : signer, remplir un formulaire, fusionner des pages, compresser, convertir depuis un courriel, réimprimer.",
+          "absence": "Un document sans trace n'est pas déclaré authentique : un fichier refait de zéro n'en laisse aucune.",
+          "person": "Une personne décide. Yomizaka ne décide rien."
+        },
+        "notExamined": "Non examiné : {list}.",
+        "families": {
+          "history": "Historique du fichier",
+          "layout": "Mise en page et polices",
+          "images": "Images",
+          "figures": "Montants",
+          "across": "D'un document à l'autre"
+        },
+        "observed": "Ce que nous avons observé",
+        "page": "Page {page}",
+        "revision": "Enregistré de nouveau : révision {revision}",
+        "field": "Champ : {field}",
+        "ordinaryLabel": "Explications ordinaires",
+        "askForLabel": "Quoi demander",
+        "run": "Exécution Orazaka {runId}",
+        "answerLabel": "Explication de la personne, {date}",
+        "ordinary": {
+          "history": "Signer, remplir un formulaire, fusionner des pages, compresser le fichier ou le convertir depuis un courriel laissent les mêmes traces qu'une modification.",
+          "layout": "Une autre police sur une ligne peut venir d'un gabarit, d'un champ de formulaire, d'un tampon ou d'une page ajoutée plus tard par l'émetteur.",
+          "images": "Une photo enregistrée de nouveau, recadrée, pivotée ou envoyée par une messagerie change les mêmes données.",
+          "figures": "Un arrondi, une prime, un rappel de paie, un deuxième employeur ou une correction du service de la paie peuvent expliquer des montants qui diffèrent.",
+          "across": "Deux emplois, un dépôt fractionné, un autre compte bancaire ou une augmentation peuvent expliquer deux documents qui ne concordent pas."
+        },
+        "askFor": {
+          "history": "Demandez le document téléchargé depuis le portail de l'émetteur (le portail de paie pour un talon de paie), ou le fichier d'origine tel que l'émetteur l'a envoyé.",
+          "layout": "Demandez le fichier d'origine tel que l'émetteur l'a produit, et non une copie ouverte puis enregistrée de nouveau.",
+          "images": "Demandez le fichier d'origine, ou une nouvelle photo du document entier, à plat et bien éclairé.",
+          "figures": "Appelez l'émetteur à un numéro que vous avez trouvé vous-même et demandez une copie tirée de ses dossiers.",
+          "across": "Appelez l'employeur à un numéro que vous avez trouvé vous-même et demandez au candidat d'expliquer l'écart."
+        }
+      },
       "photoOrigin": {
         "header": "Lu sur vos photos à l'importation, avant que leurs métadonnées soient retirées : des faits sur les fichiers, pas une expertise. Ils ne disent pas si le document est authentique.",
         "where": "Métadonnées des photos, lues à l'importation",
@@ -946,6 +986,9 @@
       "FILE_NOT_ACCEPTED": "Ce type de fichier n'est pas accepté.",
       "FLOW_EXISTS": "Cette vérification existe déjà.",
       "HAS_ANNEXES": "Ce document a encore des annexes.",
+      "ANSWER_CLOSED": "Ce dossier n'accepte plus d'explications.",
+      "ANSWER_TOO_LONG": "Cette explication est trop longue.",
+      "SIGNAL_NOT_FOUND": "Cette trace n'est plus dans le dossier.",
       "LINK_USED": "Ce lien a déjà été utilisé.",
       "LIVE_PRICES_ARE_THE_OWNERS": "Seul le propriétaire change les prix en vigueur.",
       "NOTICE_CHANGED": "L'avis a changé depuis votre lecture. Lisez-le de nouveau.",
@@ -3405,6 +3448,8 @@
       "howLong": "Par défaut, un document est supprimé dès que sa vérification est terminée. Si vous consentez à le garder (« Garder mes documents jusqu'à la décision du propriétaire »), il est gardé jusqu'à la décision du propriétaire, puis supprimé. Un résultat est supprimé {days} jours après avoir été donné. Vous pouvez toujours en demander la suppression. [À RÉVISER PAR L'AVOCAT]",
       "askTitle": "Comment demander la suppression",
       "ask": "Utilisez l'action « Supprimer mes documents » du lien que vous avez reçu. Elle supprime immédiatement vos documents et le résultat, et ne garde qu'une trace sans renseignement personnel. Vous pouvez aussi retirer un consentement ici, et demander l'accès à vos renseignements ou leur rectification.",
+      "examinedTitle": "Comment vos documents sont examinés",
+      "examined": "Chaque document est aussi examiné comme un fichier : la façon dont il a été enregistré, ses polices, ses images et, pour certains, si ses chiffres concordent. Quand quelque chose est remarqué, vous le voyez ici, dans les mêmes mots que le propriétaire, et vous pouvez ajouter une explication à côté. Le rapport dit ce qui a été observé; il ne conclut rien sur un document ni sur vous, et Yomizaka ne décide de rien : c'est une personne chez le propriétaire.",
       "notAsked": "Jamais demandés : votre numéro d'assurance sociale (NAS), les renseignements de votre carte ou de votre compte bancaire, vos renseignements de santé ou familiaux.",
       "law": "Le présent avis suit la Loi sur la protection des renseignements personnels dans le secteur privé (Québec, telle que modifiée par la Loi 25). Ce n'est pas un avis juridique."
     },
@@ -3499,10 +3544,24 @@
       "closed": "Clos",
       "erased": "Supprimé"
     },
+    "answer": {
+      "title": "Ce que nous avons remarqué dans vos documents",
+      "lead": "Beaucoup d'étapes ordinaires laissent ces traces : signer, remplir un formulaire, convertir depuis un courriel, enregistrer de nouveau. Elles ne disent rien sur vous. Vous pouvez expliquer chacune ci-dessous; le propriétaire lit vos mots à côté de la trace. Si vous avez l'original de l'émetteur, envoyez-le avec la zone de dépôt de son type plus haut.",
+      "label": "Votre explication (facultatif)",
+      "placeholder": "Par exemple : téléchargé depuis le portail de paie, puis signé.",
+      "save": "Enregistrer mon explication",
+      "remove": "Retirer mon explication",
+      "saved": "Enregistrée le {date}",
+      "count": "{n} / {max}",
+      "document": "Document : {name}"
+    },
     "error": {
       "LINK_REVOKED": "Ce lien a été révoqué.",
       "LINK_EXPIRED": "Ce lien a expiré.",
       "LINK_USED": "Ce dossier a déjà été envoyé.",
+      "ANSWER_CLOSED": "Ce dossier n'accepte plus d'explications.",
+      "ANSWER_TOO_LONG": "Cette explication est trop longue.",
+      "SIGNAL_NOT_FOUND": "Cette trace n'est plus dans votre dossier.",
       "FILE_CLOSED": "Ce dossier a été clos.",
       "APPLICATION_ERASED": "Cette demande a été supprimée.",
       "TYPE_NOT_REQUESTED": "Ce document n'a pas été demandé.",
@@ -3945,7 +4004,7 @@
     "versionNone": "non précisée",
     "ruleset": "Jeu de règles {id} version {version} ({jurisdiction})",
     "reviewStatus": "État de relecture du jeu de règles : {status}. Il doit être relu par un avocat avant qu'on s'y fie.",
-    "limits": "Ce que ce rapport ne montre pas : les documents eux-mêmes, le nom ou les coordonnées de la personne, tout pointage ou classement. Les signaux sont des observations sur un fichier, jamais un jugement sur une personne.",
+    "limits": "Ce que ce rapport ne montre pas : les documents eux-mêmes, le nom ou les coordonnées de la personne, toute cote ou tout classement. Les signaux sont des observations sur un fichier, jamais un jugement sur une personne.",
     "download": "Télécharger le PDF signé",
     "expires": "Ce lien est valable jusqu’au {date}.",
     "guarantees": "Ce PDF est signé avec la clé de Yomizaka (Ed25519, détenue par Krizaka). La signature couvre chaque élément de ce rapport (documents, signaux, règles vérifiées, exécutions, versions), l’expiration du lien et le texte complet des pages. Si un seul caractère change, la vérification échoue.",

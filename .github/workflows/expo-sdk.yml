@@ -1,0 +1,30 @@
+name: Expo SDK
+
+# The app builds with the Xcode the App Store requires (docs/standards/expo-sdk.json of krizaka/.github, ITMS-90725):
+# its Expo SDK is recent enough and every iOS build profile of eas.json pins an Xcode 26+ image.
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/mobile/package.json"
+      - "apps/mobile/eas.json"
+      - ".github/workflows/expo-sdk.yml"
+  merge_group:
+
+permissions:
+  contents: read
+
+jobs:
+  expo-sdk:
+    name: Expo SDK and Xcode image
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: krizaka/.github/actions/expo-sdk@944b6e5283428852f463b108b7ec9cd2647345fe # main
+        with:
+          working-directory: apps/mobile

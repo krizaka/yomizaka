@@ -19,6 +19,7 @@ import { useSay } from "@/lib/i18n-client";
 import type { LeaseBundle } from "@/lib/lease-bundle";
 import { collectionLabel } from "@/lib/organisation/display";
 import { libraryPath } from "@/lib/organisation/rules";
+import type { Answer } from "@/lib/signal-answers";
 
 import { documentFacts, highlightsOf } from "./document-view-model";
 import { DocumentActions } from "./DocumentActions";
@@ -84,7 +85,7 @@ function ReportAside({ doc, facts, placeName, retention, startProps }: Readonly<
   );
 }
 
-export function DocumentView({ initial, tab, place = null, perspective = null, bundle = null, offer }: Readonly<{ initial: DocumentViewData; tab: DocumentTab; place?: DocumentPlace | null; perspective?: Audience | null; bundle?: LeaseBundle | null; offer: { studios: readonly Studio[]; jurisdictions: readonly Jurisdiction[]; rulesets: readonly string[] } }>) {
+export function DocumentView({ initial, tab, place = null, perspective = null, bundle = null, answers, offer }: Readonly<{ initial: DocumentViewData; tab: DocumentTab; place?: DocumentPlace | null; perspective?: Audience | null; bundle?: LeaseBundle | null; answers?: Record<string, Answer>; offer: { studios: readonly Studio[]; jurisdictions: readonly Jurisdiction[]; rulesets: readonly string[] } }>) {
   const { say, locale } = useSay();
   const router = useRouter();
   const client = useQueryClient();
@@ -160,7 +161,7 @@ export function DocumentView({ initial, tab, place = null, perspective = null, b
       {doc.analyses.filter((a) => a.status === ANALYSIS_STATUS.running).map((a) => (
         <LiveAnalysis key={a.id} documentId={doc.id} analysis={a} />
       ))}
-      {tab === "rapport" ? <DocumentReportTab doc={doc} facts={facts} selection={selection} perspective={perspective} bundle={bundle} startCards={startCards} /> : null}
+      {tab === "rapport" ? <DocumentReportTab doc={doc} facts={facts} selection={selection} perspective={perspective} bundle={bundle} answers={answers} startCards={startCards} /> : null}
       {tab === "document" ? (
         <DocumentFileTab doc={doc} path={path} isPdf={isPdf} report={latestReport} viewer={{ fileUrl, highlights, activeId, onActiveChange: setActiveId, onLocate: setFound }} viewerRef={viewerRef} found={found} onDelete={() => remove.mutate()} deleting={remove.isPending} />
       ) : null}

@@ -7,6 +7,7 @@ import { INTL } from "@/components/console/format";
 
 import { format, getDictionary, type Locale } from "./i18n";
 import type { OwnerReport } from "./owner-report";
+import { traceCardsOf } from "./owner-traces";
 import { drawPages, embedFonts, type Face, type Fonts, paginate, printable, signedBodyOf } from "./pdf-layout";
 import { canonicalJson, sha256 } from "./report";
 import { type SigningKey } from "./report-key";
@@ -36,7 +37,7 @@ export const ownerReportPayload = z
           typeId: z.string().nullable(),
           sha256: sha,
           pages: z.number().nullable(),
-          signals: z.array(z.object({ id: z.string(), level: z.string(), observation: z.string() }).strict()),
+          signals: z.array(z.object({ id: z.string(), level: z.string(), observation: z.string(), family: z.string().optional(), evidence: z.object({ page: z.number().int().optional(), revision: z.number().int().optional(), field: z.string().optional() }).strict().optional(), answer: z.object({ text: z.string(), at: z.string() }).strict().optional() }).strict()),
           findings: z.array(z.object({ ruleId: z.string(), verdict: z.string(), severity: z.string(), citation: z.string().nullable() }).strict()),
           notExamined: z.array(z.string()),
           runs: z.array(z.object({ studio: z.string(), runId: z.string(), studioVersion: z.string().nullable(), finishedAt: z.string().nullable() }).strict()),
@@ -70,7 +71,7 @@ export const ownerPayloadOf = (report: OwnerReport & { expiresAt: string }, lang
       typeId: d.typeId,
       sha256: d.sha256,
       pages: d.pages,
-      signals: d.signals.map((s) => ({ id: s.id, level: s.level, observation: s.observation })),
+      signals: d.signals.map((s) => ({ id: s.id, level: s.level, observation: s.observation, ...(s.family ? { family: s.family } : {}), ...(s.evidence ? { evidence: s.evidence } : {}), ...(s.answer ? { answer: s.answer } : {}) })),
       findings: d.findings.map((f) => ({ ruleId: f.ruleId, verdict: f.verdict, severity: f.severity, citation: f.citation })),
       notExamined: d.notExamined,
       runs: d.runs.map((r) => ({ studio: r.studio, runId: r.runId, studioVersion: r.studioVersion, finishedAt: r.finishedAt })),
@@ -82,6 +83,10 @@ const signedMessage = (payload: OwnerReportPayload, bodySha256: string) => Buffe
 
 type Block = { text: string; size: number; face?: Face; gap?: number };
 const b = (text: string, size = 9, extra: Partial<Block> = {}): Block => ({ text, size, ...extra });
+
+/** The traces of a document as the owner page draws them (the same cards as the report): by family, each with where it sits, its ordinary explanations and what to ask for. */
+const traceBlocks = (signals: OwnerReportPayload["documents"][number]["signals"], lang: Locale): Block[] =>
+  traceCardsOf(signals, lang).flatMap((g) => [b(g.title, 9, { face: "bold", gap: 1 }), ...g.cards.flatMap((c) => c.map((line, i) => b(i === 0 ? `- ${line}` : `  ${line}`)))]);
 
 /** The pages' text, in reading order, from the messages of the payload's language. Exactly the owner page's content. */
 export function ownerReportBlocks(payload: OwnerReportPayload): Block[] {
@@ -103,7 +108,7 @@ export function ownerReportBlocks(payload: OwnerReportPayload): Block[] {
       b(`${w.sha}: ${d.sha256}`, 8, { face: "mono" }),
       ...(d.pages ? [b(`${w.pages}: ${d.pages}`)] : []),
       b(w.signals, 9, { face: "bold", gap: 1 }),
-      ...(d.signals.length ? d.signals.map((s) => b(`- ${s.level}: ${s.observation}`)) : [b(w.noSignals)]),
+      ...(d.signals.length ? traceBlocks(d.signals, payload.lang) : [b(w.noSignals)]),
       b(w.findings, 9, { face: "bold", gap: 1 }),
       ...(d.findings.length ? d.findings.map((f) => b(`- ${verdicts[f.verdict] ?? f.verdict}: ${[f.ruleId, f.citation].filter(Boolean).join(", ")}`)) : [b(w.noFindings)]),
       ...(d.notExamined.length ? [b(`${w.notExamined}: ${d.notExamined.join(", ")}`, 9, { face: "bold" })] : []),

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { complianceReport, finding, fromRunStatus, isSeededCheck, isTerminal, passages, queryKeys, reportOf, SEEDED_INPUTS, startAnalysis } from "./index";
+import { authenticityReport, complianceReport, finding, fromRunStatus, isSeededCheck, isTerminal, passages, queryKeys, reportOf, SEEDED_INPUTS, signalFamily, startAnalysis } from "./index";
 
 // A report exactly as the compliance Studio assembles it (orazaka-packs document-validation worker, `_assemble`).
 const COMPLIANCE = {
@@ -73,6 +73,20 @@ describe("Orazaka runs", () => {
       { key: "signals", type: "JSON", value: JSON.stringify(report) },
     ]);
     expect(read && "signals" in read ? read.signals[0]?.level : null).toBe("incohérent");
+  });
+
+  it("reads a signal's evidence and family when the engine sends them, and an old report without them still parses", () => {
+    const old = authenticityReport.parse({ signals: [{ signalId: "PDF-REV-001", level: "inhabituel", observation: "Deux sauvegardes." }] });
+    expect(old.signals[0]?.evidence).toBeUndefined();
+    const rich = authenticityReport.parse({ signals: [{ signalId: "PDF-REV-002", level: "incohérent", observation: "x", family: "history", evidence: { page: 2, box: [72, 600, 240, 618], revision: 2, field: "net" } }] });
+    expect(rich.signals[0]?.evidence).toEqual({ page: 2, box: [72, 600, 240, 618], revision: 2, field: "net" });
+    expect(authenticityReport.safeParse({ signals: [{ signalId: "a", level: "observé", observation: "x", evidence: { page: 0 } }] }).success).toBe(false);
+  });
+
+  it("puts a signal in a family from its id when the engine names none", () => {
+    expect([signalFamily({ signalId: "PDF-REV-001" }), signalFamily({ signalId: "PDF-FONT-001" }), signalFamily({ signalId: "IMG-META-003" }), signalFamily({ signalId: "CONTENT-PAY-001" }), signalFamily({ signalId: "FILE-002" }), signalFamily({ signalId: "XYZ-1" })]).toEqual(["history", "layout", "images", "figures", "across", "history"]);
+    expect(signalFamily({ signalId: "PDF-REV-001", family: "layout" })).toBe("layout");
+    expect(signalFamily({ signalId: "PDF-REV-001", family: "nonsense" })).toBe("history");
   });
 
   it("never guesses: a missing, broken or foreign output is null", () => {

@@ -15,6 +15,7 @@ import { codeOf, HttpError, refuse } from "./http";
 import { EXTERNAL, HOLDS_BYTES, objectKey, purgeIfDone } from "./retention";
 import { policyFor } from "./retention-policy";
 import { addDays, hash, newToken, REQUEST_VALID_DAYS } from "./screening";
+import { type Answer, answersOf, applicantSignalsOf, authenticityReportOf } from "./signal-answers";
 import type { DocumentStore } from "./storage/port";
 import { DECISION, KIND, WORKSPACE } from "./workspace/decl";
 
@@ -116,6 +117,7 @@ export async function applicantFileState(token: string, now: Date) {
     [row.landlord_id, row.id],
   );
   const types = await documentTypes();
+  const answers = await answersOf(documents.map((d) => d.id));
   return {
     status: linkState(row, now),
     expiresAt: row.expires_at.toISOString(),
@@ -123,7 +125,7 @@ export async function applicantFileState(token: string, now: Date) {
       const t = types.find((x) => x.id === id);
       return { id, fields: t?.fields ?? [], retentionPolicy: t?.retentionPolicy ?? "after-check" };
     }),
-    documents: documents.map((d) => ({ id: d.id, typeId: d.document_type, filename: d.filename, sizeBytes: d.size_bytes })),
+    documents: await Promise.all(documents.map(async (d) => ({ id: d.id, typeId: d.document_type, filename: d.filename, sizeBytes: d.size_bytes, signals: applicantSignalsOf(await authenticityReportOf(d.id), answers.get(d.id) ?? new Map()) }))),
   };
 }
 
@@ -271,6 +273,8 @@ export interface FileDocumentView {
   skipped: SkippedCheck[];
   /** One analysis per studio: the signals or findings Orazaka returned, its run id, and its state. */
   checks: Analysis[];
+  /** The applicant's explanations of the traces, by signal id (ADR-0014, yomizaka#626). */
+  answers: Record<string, Answer>;
 }
 
 export interface ApplicantFileView {
@@ -300,6 +304,7 @@ export async function applicantFileOf(landlordId: string, id: string, now: Date)
     const latest = await query<AnalysisRow>("SELECT DISTINCT ON (studio) * FROM analyses WHERE document_id = $1 ORDER BY studio, created_at DESC", [documentId]);
     checksOf.set(documentId, await Promise.all(latest.map((a) => refresh(a))));
   }
+  const answers = await answersOf(ids.map((d) => d.id));
   const docs = await query<{ id: string; document_type: string | null; title: string; filename: string; size_bytes: number; pages: number | null; retention_policy: string | null; storage: string; checks_skipped: SkippedCheck[]; purged: boolean }>(
     `SELECT d.id, d.document_type, d.title, d.filename, d.size_bytes, d.pages, d.retention_policy, d.storage, d.checks_skipped,
             (d.storage = 'none' AND d.object_key IS NULL AND octet_length(d.content) = 0 AND d.text = '') AS purged
@@ -328,6 +333,7 @@ export async function applicantFileOf(landlordId: string, id: string, now: Date)
       purged: d.purged,
       skipped: d.checks_skipped ?? [],
       checks: checksOf.get(d.id) ?? [],
+      answers: Object.fromEntries(answers.get(d.id) ?? []),
     })),
   };
 }
