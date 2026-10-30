@@ -1,0 +1,148 @@
+#!/usr/bin/env node
+// The checkout journey (yomizaka P0, 2026-10-30): a persona BUYS a plan on the deployed dev with Stripe's TEST card, as a customer would.
+//   sign in (bearer) -> the plan is for sale (paymentsOn) -> start the checkout -> pay on Stripe's hosted page with the 4242 card ->
+//   the subscription turns active (the webhook) -> the payment history carries a receipt that opens -> one lease check ends in the signed PDF.
+// It runs on main and by hand against the dev environment (never on a pull request: the persona and the TEST key are that environment's), and
+// it ends by cancelling what it bought, so the next run starts clean. A red run on main opens an issue (checkout-journey-guard.mjs).
+//
+//   SMOKE_EMAIL=... SMOKE_PASSWORD=... PAYMENTS_STRIPE_TEST_SECRET_KEY=sk_test_... node scripts/checkout-journey.mjs --base https://dev.yomizaka.com
+import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
+
+import { auditContext, loadSettled } from "@krizaka/page-audit";
+
+import { assertTestKey, isHostedCheckout, isSignedPdf, isSubscribed, paidReceipt, PLAN, plain, TEST_CARD } from "./checkout-journey-lib.mjs";
+import { smokeLeaseCheck } from "./smoke-lease-check.mjs";
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** Polls `read` until `done(value)`, or fails with the sentence given. */
+async function until(read, done, { what, timeoutMs, everyMs = 3000 }) {
+  const end = Date.now() + timeoutMs;
+  for (;;) {
+    const value = await read();
+    if (done(value)) return value;
+    if (Date.now() > end) throw new Error(`${what} (not within ${Math.round(timeoutMs / 1000)} s)`);
+    await sleep(everyMs);
+  }
+}
+
+/** The processor's REST API with a TEST key: only to give back what the journey bought (cancel the subscriptions of the persona's customers). */
+function processor(key) {
+  assertTestKey(key);
+  const call = async (path, init = {}) => {
+    const res = await fetch(`https://api.stripe.com/v1${path}`, { ...init, headers: { authorization: `Bearer ${key}` } });
+    if (!res.ok) throw new Error(`payment processor ${init.method ?? "GET"} ${path.split("?")[0]}: HTTP ${res.status}`);
+    return res.json();
+  };
+  return {
+    async cancelSubscriptionsOf(email) {
+      const customers = await call(`/customers?limit=10&email=${encodeURIComponent(email)}`);
+      let cancelled = 0;
+      for (const customer of customers.data) {
+        const subs = await call(`/subscriptions?limit=20&status=active&customer=${customer.id}`);
+        for (const sub of subs.data) {
+          await call(`/subscriptions/${sub.id}`, { method: "DELETE" });
+          cancelled += 1;
+        }
+      }
+      return cancelled;
+    },
+  };
+}
+
+/** Fills the hosted page with the TEST card and pays. The page's fields change now and then: each is filled when it is there. */
+async function pay(page, hostedUrl) {
+  await loadSettled(page, hostedUrl, { waitUntil: "domcontentloaded" });
+  await page.locator("#cardNumber").waitFor({ timeout: 60_000 });
+  // Card is the default method on the hosted page; when it shows a method list, pick the card.
+  await page.locator("#cardNumber").fill(TEST_CARD.number);
+  await page.locator("#cardExpiry").fill(TEST_CARD.expiry);
+  await page.locator("#cardCvc").fill(TEST_CARD.cvc);
+  const name = page.locator("#billingName");
+  if (await name.isVisible().catch(() => false)) await name.fill(TEST_CARD.name);
+  const postal = page.locator("#billingPostalCode");
+  if (await postal.isVisible().catch(() => false)) await postal.fill(TEST_CARD.postal);
+  await page.locator("[data-testid=hosted-payment-submit-button], button.SubmitButton").first().click();
+}
+
+export async function checkoutJourney({ base, email, password, stripeKey, log = () => {}, openBrowser }) {
+  if (!email || !password) throw new Error("SMOKE_EMAIL and SMOKE_PASSWORD are required (the persona)");
+  const stripe = processor(stripeKey);
+  const call = async (path, init = {}, token) => {
+    const res = await fetch(`${base}${path}`, { ...init, headers: { accept: "application/json", ...(token ? { authorization: `Bearer ${token}` } : {}), ...init.headers } });
+    return { res, body: await res.json().catch(() => null) };
+  };
+  const signIn = await call("/api/auth/sign-in", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, password, client: "native" }) });
+  if (!signIn.res.ok || typeof signIn.body?.token !== "string") throw new Error(`sign-in: HTTP ${signIn.res.status}`);
+  const token = signIn.body.token;
+  const billing = () => call("/api/billing", {}, token).then((r) => r.body);
+
+  const cancelled = await stripe.cancelSubscriptionsOf(email);
+  log(`clean start (${cancelled} old subscription(s) cancelled)`);
+  await until(billing, (b) => b && !b.entitlement?.pro, { what: "the persona still has a subscription after the clean start", timeoutMs: 60_000 }).catch(() => {});
+
+  const before = await billing();
+  if (!before?.paymentsOn) throw new Error("payments are off on this environment (paymentsOn is false): nothing to buy");
+  if (!before.prices?.some((p) => p.key === PLAN.priceKey)) throw new Error(`the plan ${PLAN.priceKey} is not for sale`);
+
+  try {
+    const started = await call("/api/billing/checkout", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ kind: PLAN.kind }) }, token);
+    if (!started.res.ok || !isHostedCheckout(started.body?.url)) throw new Error(`start the checkout: HTTP ${started.res.status}, ${isHostedCheckout(started.body?.url) ? "ok" : "no hosted page"}`);
+    log("checkout started");
+
+    const { browser, close } = await openBrowser();
+    try {
+      const context = await auditContext(browser);
+      const page = await context.newPage();
+      await pay(page, started.body.url);
+      await page.waitForURL((url) => url.origin === new URL(base).origin, { timeout: 90_000 });
+      log("paid, back on the site");
+    } finally {
+      await close();
+    }
+
+    const after = await until(billing, (b) => isSubscribed(b?.entitlement), { what: "the subscription did not turn active", timeoutMs: 120_000 });
+    log(`subscription ${after.entitlement.subscriptionStatus}, plan ${after.entitlement.planKey}`);
+
+    const history = await until(() => call("/api/billing/payments", {}, token).then((r) => r.body), (b) => paidReceipt(b?.payments) !== null, { what: "no paid receipt in the payment history", timeoutMs: 60_000 });
+    const receipt = paidReceipt(history.payments);
+    const receiptPage = await fetch(receipt.receiptUrl, { redirect: "follow" });
+    if (!receiptPage.ok) throw new Error(`the receipt did not open: HTTP ${receiptPage.status}`);
+    log("receipt opens");
+
+    const lease = await smokeLeaseCheck({
+      base,
+      email,
+      password,
+      log,
+      onReport: async ({ token: bearer, documentId, analysisId }) => {
+        const res = await fetch(`${base}/api/documents/${documentId}/analyses/${analysisId}/report?format=pdf&lang=en`, { headers: { authorization: `Bearer ${bearer}` } });
+        const bytes = new Uint8Array(await res.arrayBuffer());
+        if (!res.ok || !isSignedPdf({ contentType: res.headers.get("content-type"), bytes, sha256: res.headers.get("x-report-sha256") })) throw new Error(`the signed report is not reachable: HTTP ${res.status}`);
+        log("signed PDF reachable");
+      },
+    });
+    return { plan: after.entitlement.planKey, findings: lease.findings };
+  } finally {
+    const gone = await stripe.cancelSubscriptionsOf(email).catch(() => -1);
+    log(`gave back: ${gone} subscription(s) cancelled`);
+  }
+}
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  const i = process.argv.indexOf("--base");
+  const base = (i >= 0 ? process.argv[i + 1] : "https://dev.yomizaka.com").replace(/\/$/, "");
+  try {
+    const { chromium } = createRequire(import.meta.url)("playwright-core");
+    const openBrowser = async () => {
+      const browser = await chromium.launch();
+      return { browser, close: () => browser.close() };
+    };
+    const result = await checkoutJourney({ base, email: process.env.SMOKE_EMAIL, password: process.env.SMOKE_PASSWORD, stripeKey: process.env.PAYMENTS_STRIPE_TEST_SECRET_KEY, log: (m) => console.log(plain(m)), openBrowser });
+    console.log(`checkout on ${plain(base)}: succeeded, plan ${result.plan}, lease check ${result.findings} findings`);
+  } catch (error) {
+    console.error(`checkout on ${plain(base)} FAILED: ${plain(error.message)}`);
+    process.exitCode = 1;
+  }
+}

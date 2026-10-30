@@ -59,7 +59,7 @@ async function waitForAnalysis({ call, token, documentId, first, deadline, now, 
   return analysis;
 }
 
-export async function smokeLeaseCheck({ base, email, password, fetchImpl = fetch, now = () => new Date(), wait = sleep, timeoutMs = 240_000, log = () => {} }) {
+export async function smokeLeaseCheck({ base, email, password, fetchImpl = fetch, now = () => new Date(), wait = sleep, timeoutMs = 240_000, log = () => {}, onReport = null }) {
   if (!email || !password) throw new Error("SMOKE_EMAIL and SMOKE_PASSWORD are required (the persona)");
   const call = async (path, init = {}, token) => {
     const res = await fetchImpl(`${base}${path}`, { ...init, headers: { accept: "application/json", ...(token ? { authorization: `Bearer ${token}` } : {}), ...init.headers } });
@@ -86,6 +86,7 @@ export async function smokeLeaseCheck({ base, email, password, fetchImpl = fetch
     const analysis = await waitForAnalysis({ call, token, documentId, first: start.body.analysis, deadline, now, wait });
     const report = analysis.report;
     if (!report || !Array.isArray(report.findings)) throw new Error("the lease check succeeded without a report with findings");
+    if (onReport) await onReport({ base, token, documentId, analysisId: analysis.id });
     return { analysisId: analysis.id, runId: analysis.runId ?? null, findings: report.findings.length, facts: report.facts ? Object.keys(report.facts) : [] };
   } finally {
     if (documentId) await call(`/api/documents/${documentId}`, { method: "DELETE" }, token).catch(() => {});
