@@ -62,7 +62,7 @@ async function settleHeaderLive(page) {
 }
 /** The dates of a list are stamped by the database at seed time (real, not frozen): the masked box still takes the width of its text, and a table sizes its columns from it, so a day with other digits moved the columns by a pixel. They read the same text before the shot. */
 async function fixListDates(page) {
-  await page.locator('time:not([data-testid="today"])').first().waitFor();
+  await page.locator('time:not([data-testid="today"])').first().waitFor({ state: "attached" });
   await page.evaluate(() => {
     for (const t of document.querySelectorAll('time:not([data-testid="today"])')) t.replaceChildren("00 mmm. 0000");
   });
