@@ -764,6 +764,21 @@
           "observation": "A photo carried a GPS position. It was removed at upload and never kept.",
           "mayIndicate": "Nothing about authenticity: most phones write it by default."
         }
+      },
+      "registry": {
+        "title": "Business registers",
+        "lead": "The numbers printed on the document, read against public registers. A question to ask the issuer, never a verdict on the document.",
+        "qst": "QST number {number}",
+        "gstHst": "GST/HST number",
+        "neq": "NEQ (Québec enterprise number)",
+        "source": "Source: {source}, consulted {date}.",
+        "nothingToAsk": "The register holds this number: nothing to ask.",
+        "notLookedUp": {
+          "bad-format": "Not looked up: the number is not in the expected format.",
+          "unavailable": "Not looked up: the register did not answer.",
+          "not-authorised": "Not looked up: this register is not consulted yet.",
+          "not-covered": "Not looked up: this register is not consulted."
+        }
       }
     },
     "search": {
@@ -1748,7 +1763,11 @@
         "cloudResultConnected": "Your cloud is connected.",
         "cloudResultDenied": "The connection was not allowed, or was cancelled. Nothing changed.",
         "cloudResultFailed": "The connection could not be completed. Nothing changed: try again.",
-        "clouds": { "dropbox": "Dropbox", "google-drive": "Google Drive", "onedrive": "OneDrive" }
+        "clouds": {
+          "dropbox": "Dropbox",
+          "google-drive": "Google Drive",
+          "onedrive": "OneDrive"
+        }
       },
       "appearance": {
         "lead": "How the app looks on this device. Kept in this browser.",

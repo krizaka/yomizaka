@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
 import { I18nProvider } from "@/lib/i18n-client";
+import type { RegistryReport } from "@/lib/registries/report";
 import en from "@/messages/en.json";
 import fr from "@/messages/fr.json";
 
@@ -119,6 +120,7 @@ const render = (
   tab: "rapport" | "document" | "historique" = "rapport",
   locale: "en" | "fr" = "fr",
   place: { libraryId: string; collectionId: string; name: string; isDefault: boolean } | null = null,
+  registry: RegistryReport | null = null,
 ) =>
   renderToStaticMarkup(
     <I18nProvider locale={locale} messages={MESSAGES[locale] as never}>
@@ -127,6 +129,7 @@ const render = (
           initial={doc as never}
           tab={tab}
           place={place}
+          registry={registry}
           perspective="landlord"
           offer={{ studios: ["compliance-check", "document-authenticity"], jurisdictions: ["QC"], rulesets: [] }}
         />
@@ -303,5 +306,63 @@ describe("the document on DetailLayout (the UX review's Y5)", () => {
     expect(readable(render(document([])))).toContain(fr.console.errors.RATE_LIMITED ?? fr.console.errors.UNKNOWN);
     nav.search = "";
     expect(readable(render(document([]), "rapport", "en"))).toContain(en.console.reportFace.notChecked);
+  });
+});
+
+describe("the business registers in the report (yomizaka#627)", () => {
+  // Synthetic: a fictitious number and a fake register answer, nothing from a real document.
+  const registry: RegistryReport = {
+    source: "Revenu Québec (SW-340)",
+    consultedAt: "2026-10-30T15:00:00.000Z",
+    number: "0000000000TQ0001",
+    qst: {
+      looked: true,
+      reason: null,
+      signals: [
+        {
+          signalId: "REG-001",
+          family: "figures",
+          level: "inhabituel",
+          observation: "The QST number printed on the document was not found in the Revenu Québec register.",
+          mayIndicate: "A typing error, or a number that belongs to another business.",
+          askFor: "Ask the issuer to confirm the QST number.",
+          evidence: { field: "issuer QST number" },
+        },
+      ],
+    },
+    gstHst: "not-covered",
+    neq: "not-authorised",
+  };
+
+  it("shows REG-001 as a question, the source with the day it was consulted, and « not looked up » for GST/HST and the NEQ", () => {
+    nav.search = "";
+    const html = render(document([check({ jurisdiction: "QC" })]), "rapport", "en", null, registry);
+    expect(html).toContain('data-testid="registry-checks"');
+    const text = readable(html);
+    expect(text).toContain("REG-001");
+    expect(text).toContain("Ask the issuer to confirm the QST number.");
+    expect(text).toContain("Source: Revenu Québec (SW-340), consulted Oct 30, 2026");
+    const gst = html.slice(html.indexOf('data-testid="registry-gst"'), html.indexOf('data-testid="registry-neq"'));
+    expect(readable(gst)).toContain(en.console.analysis.registry.notLookedUp["not-covered"]);
+    expect(readable(html.slice(html.indexOf('data-testid="registry-neq"')))).toContain(
+      en.console.analysis.registry.notLookedUp["not-authorised"],
+    );
+  });
+
+  it("says the same in French", () => {
+    nav.search = "";
+    const text = readable(render(document([check({ jurisdiction: "QC" })]), "rapport", "fr", null, registry));
+    expect(text).toContain(fr.console.analysis.registry.title);
+    expect(text).toContain("Source : Revenu Québec (SW-340), consulté le 30 oct. 2026");
+    expect(text).toContain(fr.console.analysis.registry.notLookedUp["not-covered"]);
+  });
+
+  it("is absent when the document carries no QST number, and a register that did not answer says « not looked up » for the QST too", () => {
+    nav.search = "";
+    expect(render(document([check({ jurisdiction: "QC" })]))).not.toContain('data-testid="registry-checks"');
+    const down: RegistryReport = { ...registry, qst: { looked: false, reason: "unavailable", signals: [] } };
+    const text = readable(render(document([check({ jurisdiction: "QC" })]), "rapport", "en", null, down));
+    expect(text).toContain(en.console.analysis.registry.notLookedUp.unavailable);
+    expect(text).not.toContain("REG-001");
   });
 });

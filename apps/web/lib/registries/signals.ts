@@ -1,6 +1,6 @@
 import type { Signal } from "@yomizaka/core";
 
-import { ANSWER, type BusinessRegistry, FOUND_STATUS, type RegistryAnswer } from "./model";
+import { ANSWER, type BusinessRegistry, FOUND_STATUS, type NotLookedUpReason, type RegistryAnswer } from "./model";
 
 /*
  * The registry signals REG-001…003 (ADR-0014): a question to ask the issuer, never a verdict. They are `inhabituel`, never `incohérent`
@@ -96,11 +96,15 @@ export function registrySignals(answer: RegistryAnswer, issuer: PrintedIssuer, s
   return signals;
 }
 
-/** Looks the number up and returns the signals; `looked` says whether the register answered, so the report can say « not looked up » honestly. */
+/** Looks the number up and returns the signals; `reason` says why the register did not answer (null when it did), so the report can say « not looked up » honestly. */
 export async function checkIssuer(
   registry: BusinessRegistry,
   issuer: PrintedIssuer,
-): Promise<{ looked: boolean; signals: Signal[] }> {
+): Promise<{ looked: boolean; reason: NotLookedUpReason | null; signals: Signal[] }> {
   const answer = await registry.lookupQst(issuer.number);
-  return { looked: answer.kind !== ANSWER.notLookedUp, signals: registrySignals(answer, issuer, registry.source) };
+  return {
+    looked: answer.kind !== ANSWER.notLookedUp,
+    reason: answer.kind === ANSWER.notLookedUp ? answer.reason : null,
+    signals: registrySignals(answer, issuer, registry.source),
+  };
 }

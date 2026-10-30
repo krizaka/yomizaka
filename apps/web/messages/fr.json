@@ -764,6 +764,21 @@
           "observation": "Une photo portait une position GPS. Elle a été retirée à l'importation et n'a jamais été conservée.",
           "mayIndicate": "Rien quant à l'authenticité : la plupart des téléphones l'inscrivent d'office."
         }
+      },
+      "registry": {
+        "title": "Registres d’entreprises",
+        "lead": "Les numéros imprimés sur le document, lus dans les registres publics. Une question à poser à l’émetteur, jamais un verdict sur le document.",
+        "qst": "Numéro de TVQ {number}",
+        "gstHst": "Numéro de TPS/TVH",
+        "neq": "NEQ (numéro d’entreprise du Québec)",
+        "source": "Source : {source}, consulté le {date}.",
+        "nothingToAsk": "Le registre contient ce numéro : rien à demander.",
+        "notLookedUp": {
+          "bad-format": "Non consulté : le numéro n’a pas le format attendu.",
+          "unavailable": "Non consulté : le registre n’a pas répondu.",
+          "not-authorised": "Non consulté : ce registre n’est pas encore consulté.",
+          "not-covered": "Non consulté : ce registre n’est pas consulté."
+        }
       }
     },
     "search": {
@@ -1748,7 +1763,11 @@
         "cloudResultConnected": "Votre nuage est connecté.",
         "cloudResultDenied": "La connexion n'a pas été autorisée, ou a été annulée. Rien n'a changé.",
         "cloudResultFailed": "La connexion n'a pas pu aboutir. Rien n'a changé : réessayez.",
-        "clouds": { "dropbox": "Dropbox", "google-drive": "Google Drive", "onedrive": "OneDrive" }
+        "clouds": {
+          "dropbox": "Dropbox",
+          "google-drive": "Google Drive",
+          "onedrive": "OneDrive"
+        }
       },
       "appearance": {
         "lead": "L’allure de l’application sur cet appareil. Gardé dans ce navigateur.",

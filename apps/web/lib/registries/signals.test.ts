@@ -73,7 +73,7 @@ describe("registry signals", () => {
 
   it("raises nothing when the register did not answer", async () => {
     const r = await checkIssuer(closedRegistry("Revenu Québec", "unavailable"), issuer);
-    expect(r).toEqual({ looked: false, signals: [] });
+    expect(r).toEqual({ looked: false, reason: "unavailable", signals: [] });
   });
 
   it("never uses a verdict word", () => {
