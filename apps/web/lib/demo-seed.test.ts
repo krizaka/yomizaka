@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { generateDocument, PERSONA_ERIC } from "../../../scripts/demo-documents/index.mjs";
 import { CAST_MEMBER } from "../../../scripts/demo-seed/cast.mjs";
-import { assertNotProduction, collectionWords, PERSONAS, SEEDED_INPUTS as SEED_MARKER, seededReport } from "../../../scripts/demo-seed/seed.mjs";
+import { assertNotProduction, collectionWords, PERSONAS, SEEDED_INPUTS as SEED_MARKER, seededReport, seedPersona, stampBefore } from "../../../scripts/demo-seed/seed.mjs";
 import en from "../messages/en.json";
 import fr from "../messages/fr.json";
 
@@ -52,4 +52,33 @@ describe("the demo seed", () => {
       expect(flagged, id).toBe(doc.flaw !== null);
     }
   });
+
+  it("stamps every document and report from the injected clock, one minute apart, never from the database's own clock (#641)", async () => {
+    const now = new Date("2026-10-30T12:00:00Z");
+    const stamps: { sql: string; values: unknown[] }[] = [];
+    const q = async (sql: string, values: unknown[] = []) => {
+      stamps.push({ sql, values });
+      if (/INSERT INTO accounts/.test(sql)) return [{ id: "owner", locale: "fr", name: "Éric" }];
+      if (/FROM libraries/.test(sql)) return [{ id: "library" }];
+      if (/INSERT INTO collections/.test(sql)) return [{ id: "collection" }];
+      if (/INSERT INTO documents/.test(sql)) return [{ id: values[0] }];
+      if (/SELECT id FROM documents/.test(sql)) return [{ id: "stored" }];
+      if (/count\(\*\)/.test(sql)) return [{ n: 0 }];
+      if (/INSERT INTO screenings/.test(sql)) return [{ id: "file" }];
+      return [];
+    };
+    await seedPersona(q, { persona: "eric", email: "eric@demo.yomizaka.test", messagesByLocale: { fr, en }, now });
+    const docs = stamps.filter((s) => /INSERT INTO documents/.test(s.sql)).map((s) => s.values[11] as string);
+    const checks = stamps.filter((s) => /INSERT INTO analyses/.test(s.sql));
+    expect(docs.length).toBeGreaterThan(1);
+    expect(new Set(docs).size).toBe(docs.length);
+    expect(docs.every((d) => Date.parse(d) <= now.getTime() && Date.parse(d) > now.getTime() - 3_600_000)).toBe(true);
+    expect(checks.length).toBeGreaterThan(0);
+    for (const c of checks) {
+      expect(c.sql).not.toMatch(/now\(\)/i);
+      expect(Date.parse(c.values[6] as string)).toBeLessThanOrEqual(now.getTime());
+    }
+    expect(stampBefore(now, 3)).toBe("2026-10-30T11:57:00.000Z");
+  });
 });
+

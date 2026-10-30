@@ -15,12 +15,19 @@ const arg = (name) => {
   return i >= 0 ? process.argv[i + 1] : undefined;
 };
 
+/** The seed's clock: `--now <ISO>` or APP_VISUAL_NOW (the visual runs freeze it, scripts/ci-visual-start.sh), else the real instant. Dates are stamped from it. */
+function seedClock() {
+  const frozen = arg("now") ?? process.env.APP_VISUAL_NOW;
+  if (frozen && Number.isNaN(Date.parse(frozen))) throw new Error("--now / APP_VISUAL_NOW must be an ISO instant");
+  return frozen ? new Date(frozen) : new Date();
+}
+
 const LOCAL_HOSTS = ["localhost", "127.0.0.1", "::1", "[::1]", "postgres", "db"];
 
 /** The whole cast on the database; with --check, compared to the recorded fingerprint (exact on a local database, « all there » on dev). */
 async function runCast(client, url, { messagesByLocale, locale }) {
   const { hashPassword } = await import("../../apps/web/scripts/qa-accounts.mjs");
-  const run = await seedCast((sql, values) => client.query(sql, values).then((r) => r.rows), { env: process.env, hashPassword, locale, messagesByLocale, reset: process.argv.includes("--reset") });
+  const run = await seedCast((sql, values) => client.query(sql, values).then((r) => r.rows), { env: process.env, hashPassword, locale, messagesByLocale, reset: process.argv.includes("--reset"), now: seedClock() });
   console.log(`demo:seed --cast: ${run.member.name} (member), ${run.admin.name} (administrator), ${run.camille.name}`);
   console.log(`fingerprint: ${run.fingerprint}`);
   if (!process.argv.includes("--check")) return;
@@ -59,6 +66,7 @@ async function main() {
       messagesByLocale,
       reset: process.argv.includes("--reset"),
       passwordHash,
+      now: seedClock(),
     });
     console.log(`demo:seed (${persona}): ${result.email} — ${result.name ?? "(no name)"}`);
     for (const [name, n] of Object.entries(result.collections)) console.log(`  ${name}: ${n} documents`);
