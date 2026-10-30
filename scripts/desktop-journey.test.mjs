@@ -88,9 +88,15 @@ describe("the driver never reaches a release", () => {
 describe("the workflows", () => {
   it("run the journey on main and by hand (the dev environment admits protected branches only), with the persona passed by name", () => {
     const desktop = code(read("../.github/workflows/desktop.yml"));
-    assert.match(desktop, /desktop-journey:\s+if: github\.event_name == 'workflow_dispatch' \|\| \(github\.event_name == 'push' && github\.ref == 'refs\/heads\/main'\)/);
+    assert.match(
+      desktop,
+      /desktop-journey:\s+if: github\.event_name == 'workflow_dispatch' \|\| \(github\.event_name == 'push' && github\.ref == 'refs\/heads\/main'\)/,
+    );
     assert.match(desktop, /workflow_dispatch:/);
-    assert.match(desktop, /desktop-release:\s+if: github\.event_name == 'push' && startsWith\(github\.ref, 'refs\/tags\/'\)/);
+    assert.match(
+      desktop,
+      /desktop-release:\s+if: github\.event_name == 'push' && startsWith\(github\.ref, 'refs\/tags\/'\)/,
+    );
     assert.match(desktop, /runs-on: macos-latest/);
     assert.match(desktop, /SMOKE_EMAIL: \$\{\{ secrets\.SMOKE_EMAIL \}\}/);
     assert.doesNotMatch(desktop, /secrets:\s*inherit/);
@@ -100,7 +106,10 @@ describe("the workflows", () => {
     assert.match(videos, /showcase-mac:[\s\S]*?continue-on-error: true/);
     assert.match(videos, /needs: \[showcase-web, mobile-showcase, showcase-mac\]/);
     assert.match(videos, /artifacts: \|\s+showcase-web\s+maestro-showcase\s+showcase-mac/);
-    assert.match(read("../.github/workflows/download-videos.yml"), /desktop-film-join\.mjs showcase-mac showcase-mac\/mac-library\.mp4/);
+    assert.match(
+      read("../.github/workflows/download-videos.yml"),
+      /desktop-film-join\.mjs showcase-mac showcase-mac\/mac-library\.mp4/,
+    );
     assert.doesNotMatch(code(read("../.github/actions/desktop-journey/action.yml")), /screencapture/);
   });
   it("the journey asserts what the issue asks: a folder, a lease checked, the result, the relaunch", () => {

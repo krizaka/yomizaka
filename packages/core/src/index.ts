@@ -313,10 +313,25 @@ export function signalFamily(s: Pick<Signal, "signalId" | "family">): SignalFami
  * limits the withholding to the case measured (the « absent » cases are `inhabituel`; the « declared » ones are plain facts).
  * A signal returns to the landlord's view when its measured rate passes the bar: remove its line, with the measurement linked in the PR.
  */
-export const WITHHELD_FROM_LANDLORD: ReadonlyArray<{ signalId: string; level?: string; falsePositiveRate: number; measurement: string }> = [
+export const WITHHELD_FROM_LANDLORD: ReadonlyArray<{
+  signalId: string;
+  level?: string;
+  falsePositiveRate: number;
+  measurement: string;
+}> = [
   { signalId: "PDF-ID-001", falsePositiveRate: 0.12, measurement: "https://github.com/krizaka/orazaka-packs/pull/191" },
-  { signalId: "PDF-META-001", level: "inhabituel", falsePositiveRate: 0.125, measurement: "https://github.com/krizaka/orazaka-packs/pull/191" },
-  { signalId: "IMG-META-001", level: "inhabituel", falsePositiveRate: 0.06, measurement: "https://github.com/krizaka/orazaka-packs/pull/191" },
+  {
+    signalId: "PDF-META-001",
+    level: "inhabituel",
+    falsePositiveRate: 0.125,
+    measurement: "https://github.com/krizaka/orazaka-packs/pull/191",
+  },
+  {
+    signalId: "IMG-META-001",
+    level: "inhabituel",
+    falsePositiveRate: 0.06,
+    measurement: "https://github.com/krizaka/orazaka-packs/pull/191",
+  },
 ];
 
 /** Whether a signal is withheld from the landlord's view (applicant, console, report, note, export, search). */
@@ -324,7 +339,8 @@ export const isWithheldFromLandlord = (s: Pick<Signal, "signalId" | "level">): b
   WITHHELD_FROM_LANDLORD.some((w) => w.signalId === s.signalId && (w.level === undefined || w.level === s.level));
 
 /** The signals the landlord may see: the same list without the withheld ones. */
-export const landlordSignals = <T extends Pick<Signal, "signalId" | "level">>(signals: readonly T[]): T[] => signals.filter((s) => !isWithheldFromLandlord(s));
+export const landlordSignals = <T extends Pick<Signal, "signalId" | "level">>(signals: readonly T[]): T[] =>
+  signals.filter((s) => !isWithheldFromLandlord(s));
 
 export const authenticityReport = z.object({
   header: z.string().optional(),
