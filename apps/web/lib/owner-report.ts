@@ -75,7 +75,7 @@ export function ownerReportOf(file: ApplicantFileView, hashes: ReadonlyMap<strin
   const rulesets = new Map<string, OwnerRuleset>();
   const documents: OwnerDocument[] = file.documents.flatMap((d) => {
     const sha256 = hashes.get(d.id);
-    if (!sha256) return [];
+    if (!sha256) {return [];}
     const done = d.checks.filter((c) => c.status === analysisStatus.enum.succeeded && c.runId && !c.inputs.seeded);
     const doc: OwnerDocument = { typeId: d.typeId, sha256, pages: d.pages, signals: [], findings: [], notExamined: [], runs: [] };
     for (const c of done) {
@@ -96,14 +96,14 @@ export function ownerReportOf(file: ApplicantFileView, hashes: ReadonlyMap<strin
 
 /** Nothing, one value or a list → a list. */
 const asList = <T,>(v: T | T[] | null | undefined): T[] => {
-  if (Array.isArray(v)) return v;
+  if (Array.isArray(v)) {return v;}
   return v ? [v] : [];
 };
 
 /** A share's state as of now. Pure. */
 export type ShareState = "live" | "expired" | "revoked";
 export const shareState = (s: { expiresAt: Date; revokedAt: Date | null }, now: Date): ShareState => {
-  if (s.revokedAt) return "revoked";
+  if (s.revokedAt) {return "revoked";}
   return s.expiresAt.getTime() <= now.getTime() ? "expired" : "live";
 };
 

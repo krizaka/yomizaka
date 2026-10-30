@@ -31,9 +31,9 @@ export function normaliseText(raw: string): string {
 }
 
 export async function readText(mimeType: AcceptedType, bytes: Uint8Array): Promise<ReadText> {
-  if (mimeType === DOCX_MIME) return { text: normaliseText(docxText(bytes)), pages: null };
-  if (mimeType === ODT_MIME) return { text: normaliseText(odtText(bytes)), pages: null };
-  if (mimeType === "text/plain") return { text: normaliseText(new TextDecoder("utf-8", { fatal: false }).decode(bytes)), pages: null };
+  if (mimeType === DOCX_MIME) {return { text: normaliseText(docxText(bytes)), pages: null };}
+  if (mimeType === ODT_MIME) {return { text: normaliseText(odtText(bytes)), pages: null };}
+  if (mimeType === "text/plain") {return { text: normaliseText(new TextDecoder("utf-8", { fatal: false }).decode(bytes)), pages: null };}
   // Off the web process: an isolated worker with its own heap, deadline and page ceiling (yomizaka#21).
   const { text, pages } = await extractPdfText(bytes);
   return { text: normaliseText(text), pages };

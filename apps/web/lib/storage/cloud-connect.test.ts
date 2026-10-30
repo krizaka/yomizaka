@@ -32,7 +32,7 @@ beforeAll(async () => {
         res.end(JSON.stringify({ access_token: "access-1", refresh_token: "refresh-1", expires_in: 3600, token_type: "bearer" }));
         return;
       }
-      if (req.url === "/revoke") revoked.push(body.get("token") ?? "");
+      if (req.url === "/revoke") {revoked.push(body.get("token") ?? "");}
       res.end("{}");
     });
   });

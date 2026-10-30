@@ -54,10 +54,10 @@ export function vaultFrom(e: VaultEnv): { keyId: string; key: Uint8Array; ring: 
   const media = e.MEDIA_VAULT_KEY ? parseVaultKey(e.MEDIA_VAULT_KEY) : null;
   const settings = e.APP_SETTINGS_ENCRYPTION_KEY ? parseVaultKey(e.APP_SETTINGS_ENCRYPTION_KEY) : null;
   const current = media ?? settings;
-  if (!current) return null;
+  if (!current) {return null;}
   const keys: Record<string, Uint8Array> = {};
-  if (media) keys[MEDIA_KEY_ID] = media;
-  if (settings) keys[SETTINGS_KEY_ID] = settings;
+  if (media) {keys[MEDIA_KEY_ID] = media;}
+  if (settings) {keys[SETTINGS_KEY_ID] = settings;}
   return { keyId: media ? MEDIA_KEY_ID : SETTINGS_KEY_ID, key: current, ring: { keys, ...(settings ? { legacy: settings } : {}) } };
 }
 
@@ -66,13 +66,13 @@ export function envProvider(e: ProviderEnv) {
   const dataKinds = [DATA_KIND.documents, DATA_KIND.avatars];
   const encryptionKey = e.MEDIA_DOCUMENTS_ENCRYPTION_KEY;
   if (e.MEDIA_DOCUMENTS_PROVIDER === "bunny") {
-    if (!e.MEDIA_STORAGE_ZONE || !e.MEDIA_STORAGE_API_KEY) return null;
+    if (!e.MEDIA_STORAGE_ZONE || !e.MEDIA_STORAGE_API_KEY) {return null;}
     const coordinates = given({ endpoint: e.MEDIA_STORAGE_ENDPOINT, zone: e.MEDIA_STORAGE_ZONE, prefix: e.MEDIA_DOCUMENTS_PREFIX, pullHostname: e.MEDIA_DOCUMENTS_PULL_HOSTNAME });
     const credentials = given({ accessKey: e.MEDIA_STORAGE_API_KEY, tokenKey: e.MEDIA_DOCUMENTS_TOKEN_KEY, encryptionKey });
     return { kind: "bunny", coordinates, credentials, label: `Bunny zone ${e.MEDIA_STORAGE_ZONE} (imported from the environment)`, dataKinds };
   }
   if (e.MEDIA_DOCUMENTS_PROVIDER === "s3") {
-    if (!e.MEDIA_S3_ENDPOINT || !e.MEDIA_S3_REGION || !e.MEDIA_S3_BUCKET || !e.MEDIA_S3_ACCESS_KEY_ID || !e.MEDIA_S3_SECRET_ACCESS_KEY) return null;
+    if (!e.MEDIA_S3_ENDPOINT || !e.MEDIA_S3_REGION || !e.MEDIA_S3_BUCKET || !e.MEDIA_S3_ACCESS_KEY_ID || !e.MEDIA_S3_SECRET_ACCESS_KEY) {return null;}
     const coordinates = given({ endpoint: e.MEDIA_S3_ENDPOINT, region: e.MEDIA_S3_REGION, bucket: e.MEDIA_S3_BUCKET, prefix: e.MEDIA_DOCUMENTS_PREFIX });
     const credentials = given({ accessKeyId: e.MEDIA_S3_ACCESS_KEY_ID, secretAccessKey: e.MEDIA_S3_SECRET_ACCESS_KEY, encryptionKey });
     return { kind: "s3", coordinates, credentials, label: `S3 bucket ${e.MEDIA_S3_BUCKET} (imported from the environment)`, dataKinds };
@@ -89,9 +89,9 @@ export const bootstrapStorage = (service: ProviderService, e: ProviderEnv): Prom
  */
 export async function documentsStoreOver(service: ProviderService, providers: Pick<ProviderStore, "defaultFor">, dataKind: string = DATA_KIND.documents): Promise<{ id: string; store: DocumentStore } | null> {
   const id = await providers.defaultFor(ORG_SCOPE, dataKind);
-  if (!id) return null;
+  if (!id) {return null;}
   const provider = (await service.list(ORG_SCOPE)).find((p) => p.id === id);
-  if (!provider) return null;
+  if (!provider) {return null;}
   let objects;
   try {
     objects = await dualObjectStore(service, id, ORG_SCOPE);

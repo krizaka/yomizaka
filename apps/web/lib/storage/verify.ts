@@ -48,7 +48,7 @@ export async function verifyS3(
   try {
     origin = await checkEndpointDns(candidate.endpoint.trim(), deps.resolve ? { resolve: deps.resolve } : {});
   } catch (error) {
-    if (error instanceof StorageError) return { ...base, ok: false, error: "ENDPOINT_NOT_ALLOWED" };
+    if (error instanceof StorageError) {return { ...base, ok: false, error: "ENDPOINT_NOT_ALLOWED" };}
     throw error;
   }
   const opened = await openProvider("s3", { endpoint: origin, region: candidate.region, bucket: candidate.bucket }, { accessKeyId: candidate.accessKeyId, secretAccessKey: candidate.secretAccessKey }, deps.ctx);

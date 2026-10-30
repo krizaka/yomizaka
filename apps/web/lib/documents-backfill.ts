@@ -39,7 +39,7 @@ async function moveRow(q: Query, row: LegacyRow, holder: ObjectHolder): Promise<
   const key = objectKey(row.owner_id, row.id, row.mime_type);
   try {
     const store = await holder({ owner_id: row.owner_id, storage: row.storage, storage_owner: row.storage_owner, object_key: key });
-    if (!store) return false;
+    if (!store) {return false;}
     await store.put(key, row.content, { contentType: row.mime_type });
     const back = await store.get(key);
     if (!back || sha256Of(back.bytes) !== row.sha256) {
@@ -54,6 +54,13 @@ async function moveRow(q: Query, row: LegacyRow, holder: ObjectHolder): Promise<
   return done.length === 1;
 }
 
+/** Moves one row; 1 when it moved, 0 when it failed (its id joins `failed`). */
+async function moveCounted(q: Query, row: LegacyRow, holder: ObjectHolder, failed: string[]): Promise<number> {
+  if (await moveRow(q, row, holder)) {return 1;}
+  failed.push(row.id);
+  return 0;
+}
+
 /**
  * Moves the bytes still in `documents.content` to the store (ADR-0012): put under the row's key, read back, SHA-256 checked, then the
  * column emptied. Idempotent (a row already in the store is not a candidate), batched by `limit`, resumable (a failure leaves the row
@@ -66,10 +73,9 @@ export async function backfillDocuments(q: Query, holder: ObjectHolder, options:
   let copied = 0;
   if (!dryRun) {
     for (const row of rows) {
-      if (await moveRow(q, row, holder)) copied += 1;
-      else failed.push(row.id);
+      copied += await moveCounted(q, row, holder, failed);
     }
-    if (rows.length > 0) await audit({ action: "documents.backfilled", actorId: null, actorLabel: "backfill", targetId: null, detail: { candidates: rows.length, copied, failed: failed.length } });
+    if (rows.length > 0) {await audit({ action: "documents.backfilled", actorId: null, actorLabel: "backfill", targetId: null, detail: { candidates: rows.length, copied, failed: failed.length } });}
   }
   return { candidates: rows.length, copied, failed, dryRun };
 }

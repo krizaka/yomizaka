@@ -12,7 +12,7 @@ const PARTY_ORDER = ["tenant", "landlord", "client", "contractor", "supplier", "
 export function displayTitle(doc: { title: string; insight?: { understanding: Pick<Understanding, "nature" | "parties" | "issuer"> } | null }, lang: "fr" | "en"): string {
   const u = doc.insight?.understanding;
   const nature = u?.nature;
-  if (!u || !nature || (nature.confidence !== "high" && nature.confidence !== "medium")) return doc.title;
+  if (!u || !nature || (nature.confidence !== "high" && nature.confidence !== "medium")) {return doc.title;}
   const party = PARTY_ORDER.map((role) => u.parties.find((p) => p.role === role)?.name).find(Boolean) ?? u.parties[0]?.name ?? u.issuer ?? null;
   const title = party ? `${nature.label[lang]} — ${party}` : nature.label[lang];
   return title.length > 120 ? `${title.slice(0, 119)}…` : title;
@@ -62,7 +62,7 @@ export function uniqueFindings<F extends Pick<Finding, "verdict" | "severity"> &
   const out: { finding: F; anchor: string }[] = [];
   for (const finding of findings) {
     const same = `${finding.ruleId}|${finding.verdict}|${finding.explanation ?? ""}`;
-    if (seen.has(same)) continue;
+    if (seen.has(same)) {continue;}
     seen.add(same);
     const k = (perRule.get(finding.ruleId) ?? 0) + 1;
     perRule.set(finding.ruleId, k);
@@ -83,8 +83,8 @@ export type SeverityWord = "blocking" | "major" | "advice";
 
 /** A severity in words and tone (the review's D2): bloquant · majeur · conseil — the code stays in the technical details. */
 export function severityOf(severity: string): { word: SeverityWord; tone: VerdictTone | "neutral" } {
-  if (severity === "BLOCKING") return { word: "blocking", tone: "danger" };
-  if (severity === "MAJOR") return { word: "major", tone: "warning" };
+  if (severity === "BLOCKING") {return { word: "blocking", tone: "danger" };}
+  if (severity === "MAJOR") {return { word: "major", tone: "warning" };}
   return { word: "advice", tone: "neutral" };
 }
 

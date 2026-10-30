@@ -54,7 +54,7 @@ describe.runIf(enabled)("the applicant file (yomizaka#127)", () => {
   /** A new applicant file for landlord A, with the consent to the document check already given (the applicant read the notice). */
   const askWithConsent = async (types: string[] = ["pay-stub", "employment-letter"], purposes: ConsentPurpose[] = [CONSENT_PURPOSE.DOCUMENT_CHECK]) => {
     const made = await requestApplicantFile(landlordA, { candidateName: "Camille Fictif", candidateEmail: `c${++seq}-${stamp}@exemple.test`, types }, NOW);
-    for (const purpose of purposes) await grantConsent(made.id, purpose, { noticeVersion: NOTICE_VERSION, means: CONSENT_MEANS.WEB_FORM }, NOW);
+    for (const purpose of purposes) {await grantConsent(made.id, purpose, { noticeVersion: NOTICE_VERSION, means: CONSENT_MEANS.WEB_FORM }, NOW);}
     return made;
   };
   const pdf = async (text: string) => {
@@ -127,7 +127,7 @@ describe.runIf(enabled)("the applicant file (yomizaka#127)", () => {
     expect(doc).toMatchObject({ document_type: "pay-stub", retention_policy: "after-check", storage: "none" });
     expect(doc).toMatchObject({ content_len: 0, in_store: true });
     // The checks end: both runs fail at Orazaka here, which is an end of the check all the same.
-    for (const id of runs.keys()) runs.set(id, "FAILED");
+    for (const id of runs.keys()) {runs.set(id, "FAILED");}
     const view = await applicantFileOf(landlordA.id, made.id, NOW);
     expect(view.documents[0]).toMatchObject({ purged: true, retention: "after-check" });
     expect(view.documents[0]!.checks.map((c) => c.status)).toEqual(["failed"]);

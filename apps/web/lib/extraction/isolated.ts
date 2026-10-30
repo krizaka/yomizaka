@@ -72,16 +72,16 @@ let queue: Promise<unknown> = Promise.resolve();
 export const extractionWorkersStarted = (): number => started;
 
 function endWorker(w: Warm | null) {
-  if (!w) return;
+  if (!w) {return;}
   clearTimeout(w.idle);
   void w.worker.terminate();
-  if (warm === w) warm = null;
+  if (warm === w) {warm = null;}
 }
 
-function workerFor(maxHeapMb: number): Warm {
-  if (warm && warm.heapMb === maxHeapMb && warm.jobs < WARM.jobs) return warm;
+function workerFor(maxHeapMb: number, unpdf: string): Warm {
+  if (warm && warm.heapMb === maxHeapMb && warm.jobs < WARM.jobs) {return warm;}
   endWorker(warm);
-  const worker = new Worker(WORKER_SOURCE, { eval: true, workerData: { unpdf: findPackageDir("unpdf") }, resourceLimits: { maxOldGenerationSizeMb: maxHeapMb } });
+  const worker = new Worker(WORKER_SOURCE, { eval: true, workerData: { unpdf }, resourceLimits: { maxOldGenerationSizeMb: maxHeapMb } });
   // A worker never keeps the process alive: when the work is done the process may end.
   worker.unref();
   started++;
@@ -91,15 +91,15 @@ function workerFor(maxHeapMb: number): Warm {
 
 let nextId = 0;
 
-function runJob(bytes: Uint8Array, { timeoutMs, maxHeapMb, maxPages }: ExtractionLimits): Promise<{ text: string; pages: number }> {
+function runJob(bytes: Uint8Array, { timeoutMs, maxHeapMb, maxPages }: ExtractionLimits, unpdf: string): Promise<{ text: string; pages: number }> {
   return new Promise((resolve, reject) => {
-    const w = workerFor(maxHeapMb);
+    const w = workerFor(maxHeapMb, unpdf);
     clearTimeout(w.idle);
     w.jobs++;
     const id = ++nextId;
     let settled = false;
     const settle = (finish: () => void, keep: boolean) => {
-      if (settled) return;
+      if (settled) {return;}
       settled = true;
       clearTimeout(deadline);
       w.worker.off("message", onMessage);
@@ -109,11 +109,11 @@ function runJob(bytes: Uint8Array, { timeoutMs, maxHeapMb, maxPages }: Extractio
       if (keep && warm === w) {
         w.idle = setTimeout(() => endWorker(w), WARM.idleMs);
         w.idle.unref();
-      } else endWorker(w);
+      } else {endWorker(w);}
       finish();
     };
     const onMessage = (answer: Answer) => {
-      if (answer.id !== id) return;
+      if (answer.id !== id) {return;}
       settle(() => (answer.ok ? resolve({ text: answer.text, pages: answer.pages }) : reject(new ExtractionError(answer.code))), answer.ok || answer.code === "TOO_MANY_PAGES");
     };
     const onError = (error: NodeJS.ErrnoException) => settle(() => reject(new ExtractionError(error.code === "ERR_WORKER_OUT_OF_MEMORY" ? "MEMORY" : "FAILED")), false);
@@ -129,7 +129,7 @@ function runJob(bytes: Uint8Array, { timeoutMs, maxHeapMb, maxPages }: Extractio
 
 /** Reads a PDF's text layer (as pdf.js gives it: normalising is the caller's) in an isolated worker. Rejects with an `ExtractionError`, never with a crash of this process. */
 export function extractPdfText(bytes: Uint8Array, limits: Partial<ExtractionLimits> = {}): Promise<{ text: string; pages: number }> {
-  const job = queue.then(() => runJob(bytes, { ...DEFAULT_LIMITS, ...limits }));
+  const job = queue.then(async () => runJob(bytes, { ...DEFAULT_LIMITS, ...limits }, await findPackageDir("unpdf")));
   queue = job.catch(() => undefined);
   return job;
 }

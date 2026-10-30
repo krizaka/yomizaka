@@ -43,7 +43,7 @@ export async function ownBucketStore(own: Pick<OwnProviders, "service">, provide
 /** The secret access key a person saved, opened for a test or a coordinate change (never sent back to a browser). Null when none is stored. */
 export async function storedSecret(own: Pick<OwnProviders, "store" | "vault">, providerId: string | null): Promise<string | null> {
   const record = providerId ? await own.store.get(providerId) : null;
-  if (!record) return null;
+  if (!record) {return null;}
   const credentials = JSON.parse(openEnvelope(record.sealedCredentials, own.vault.ring)) as { secretAccessKey?: string };
   return credentials.secretAccessKey ?? null;
 }
@@ -79,7 +79,7 @@ export async function replaceOwnS3Key(own: Pick<OwnProviders, "service">, actor:
   try {
     await own.service.changeKey(actor, providerId, credentials);
   } catch (error) {
-    if (error instanceof StorageError) throw refuse(422, "CONNECTION_FAILED", "The connection test failed");
+    if (error instanceof StorageError) {throw refuse(422, "CONNECTION_FAILED", "The connection test failed");}
     throw error;
   }
 }
@@ -127,7 +127,7 @@ export async function migrateOwnS3(q: Query, own: Pick<OwnProviders, "store" | "
 
 /** The secret of a complete row, or null: an incomplete row, or one sealed under a key this deployment no longer holds, is left for a later start. */
 function openLegacySecret(row: LegacyRow, ring: LocalKeys): string | null {
-  if (!row.s3_region || !row.s3_bucket || !row.s3_access_key_id) return null;
+  if (!row.s3_region || !row.s3_bucket || !row.s3_access_key_id) {return null;}
   try {
     return openEnvelope(row.s3_secret_sealed, ring) || null;
   } catch {
@@ -219,7 +219,7 @@ export async function registerCloud(own: Pick<OwnProviders, "service">, actor: A
 /** The grant of a connected cloud, opened to be revoked at the provider (never sent to a browser). Null when none is stored. */
 export async function storedRefreshToken(own: Pick<OwnProviders, "store" | "vault">, providerId: string | null): Promise<string | null> {
   const record = providerId ? await own.store.get(providerId) : null;
-  if (!record) return null;
+  if (!record) {return null;}
   return (JSON.parse(openEnvelope(record.sealedCredentials, own.vault.ring)) as { refreshToken?: string }).refreshToken ?? null;
 }
 

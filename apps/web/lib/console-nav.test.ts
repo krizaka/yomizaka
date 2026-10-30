@@ -87,7 +87,7 @@ describe("tabs are routes: the URL is the state", () => {
     expect(movedDocumentHref("en", "d1", "infos")).toBe("/en/app/documents/d1/document");
     expect(movedDocumentHref("fr", "d1", "toString")).toBeNull();
     expect(searchOf({ a: "1", b: ["2", "3"], c: undefined }).toString()).toBe("a=1&b=2&b=3");
-    expect(page).toMatch(/isDocumentTab\(tab\)\) notFound\(\)/);
+    expect(page).toMatch(/isDocumentTab\(tab\)\) \{\s*notFound\(\);?\s*\}/);
     expect(OLD_DOCUMENT_TABS).toEqual({ infos: "document", fichier: "document", texte: "document", verifications: "rapport" });
   });
   it("the view takes its tab from the route and a click navigates (no local tab state)", () => {

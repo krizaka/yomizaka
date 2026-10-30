@@ -65,7 +65,7 @@ describe("the applicant's page (yomizaka#341)", () => {
     const row = { id: "app-1" };
     const deps = {
       fileByToken: async (token: string) => {
-        if (token !== "file-token") throw new HttpError(404, "No such link");
+        if (token !== "file-token") {throw new HttpError(404, "No such link");}
         return row;
       },
       applicantFileState: async () => state(),
@@ -87,6 +87,6 @@ describe("the applicant's page (yomizaka#341)", () => {
     expect(applicantPageOf(state(), checked).canAnswer).toBe(true);
     expect(applicantPageOf(state({ status: LINK.used }), checked).canAnswer).toBe(true);
     expect(applicantPageOf(state(), []).canAnswer).toBe(false);
-    for (const status of [LINK.revoked, LINK.expired, LINK.closed, LINK.erased]) expect(applicantPageOf(state({ status }), checked).canAnswer).toBe(false);
+    for (const status of [LINK.revoked, LINK.expired, LINK.closed, LINK.erased]) {expect(applicantPageOf(state({ status }), checked).canAnswer).toBe(false);}
   });
 });

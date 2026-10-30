@@ -180,7 +180,7 @@ export async function ownerAttestationOfPdf(bytes: Uint8Array): Promise<OwnerAtt
   try {
     const doc = await PDFDocument.load(bytes, { updateMetadata: false });
     const raw = doc.context.lookup(doc.context.trailerInfo.Info, PDFDict).get(PDFName.of(ATTESTATION_KEY));
-    if (!(raw instanceof PDFString)) return null;
+    if (!(raw instanceof PDFString)) {return null;}
     return attestationSchema.parse(JSON.parse(Buffer.from(raw.asString(), "base64").toString("utf8")));
   } catch {
     return null;
@@ -191,16 +191,16 @@ export async function ownerAttestationOfPdf(bytes: Uint8Array): Promise<OwnerAtt
 export async function verifyOwnerReportPdf(bytes: Uint8Array, key: Pick<SigningKey, "keyId" | "publicKey">): Promise<OwnerVerification> {
   const fileSha256 = sha256(bytes);
   const fail = (reason: Extract<OwnerVerification, { ok: false }>["reason"]): OwnerVerification => ({ ok: false, reason, fileSha256 });
-  if (!(bytes.length > 5 && Buffer.from(bytes.subarray(0, 5)).toString("latin1") === "%PDF-")) return fail("NOT_A_REPORT");
+  if (!(bytes.length > 5 && Buffer.from(bytes.subarray(0, 5)).toString("latin1") === "%PDF-")) {return fail("NOT_A_REPORT");}
   const attestation = await ownerAttestationOfPdf(bytes);
-  if (!attestation) return fail("UNREADABLE");
-  if (attestation.keyId !== key.keyId) return fail("UNKNOWN_KEY");
-  if (!crypto.verify(null, signedMessage(attestation.payload, attestation.bodySha256), key.publicKey, Buffer.from(attestation.signature, "base64"))) return fail("BAD_SIGNATURE");
+  if (!attestation) {return fail("UNREADABLE");}
+  if (attestation.keyId !== key.keyId) {return fail("UNKNOWN_KEY");}
+  if (!crypto.verify(null, signedMessage(attestation.payload, attestation.bodySha256), key.publicKey, Buffer.from(attestation.signature, "base64"))) {return fail("BAD_SIGNATURE");}
   const { extractText, getDocumentProxy } = await import("unpdf");
   try {
     const pages = (await extractText(await getDocumentProxy(new Uint8Array(bytes)), { mergePages: false })).text as string[];
     const text = signedBodyOf(pages);
-    if (text === null || sha256(text) !== attestation.bodySha256) return fail("ALTERED");
+    if (text === null || sha256(text) !== attestation.bodySha256) {return fail("ALTERED");}
   } catch {
     return fail("UNREADABLE");
   }

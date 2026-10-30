@@ -21,14 +21,14 @@ function fakeS3() {
   const state = { down: false };
   const fetchLike: FetchLike = async (url, init) => {
     const reply = (status: number, bytes?: Uint8Array) => ({ ok: status < 300, status, headers: { get: () => null }, arrayBuffer: async () => new Uint8Array(bytes ?? []).buffer, text: async () => "" });
-    if (state.down) return reply(403);
+    if (state.down) {return reply(403);}
     const key = new URL(url).pathname;
     if (init.method === "PUT") {
       objects.set(key, init.body!);
       return reply(200);
     }
-    if (init.method === "GET") return objects.has(key) ? reply(200, objects.get(key)) : reply(404);
-    if (init.method === "DELETE") return reply(objects.delete(key) ? 204 : 404);
+    if (init.method === "GET") {return objects.has(key) ? reply(200, objects.get(key)) : reply(404);}
+    if (init.method === "DELETE") {return reply(objects.delete(key) ? 204 : 404);}
     return reply(405);
   };
   return { objects, state, fetchLike };

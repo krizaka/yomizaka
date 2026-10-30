@@ -29,7 +29,7 @@ export type { Placement } from "./upload";
 const REFUSAL_KEY: Record<string, "library.refusedSize" | "library.refusedType"> = { size: "library.refusedSize", type: "library.refusedType" };
 
 function KeepNextNote({ shown, text }: Readonly<{ shown: boolean; text: string }>) {
-  if (!shown) return null;
+  if (!shown) {return null;}
   return (
     <span className="text-fg-secondary" data-testid="keep-next">
       {text}
@@ -62,8 +62,8 @@ export function DocumentUploader({ kindRef, placement, onUploaded, onDrop, defau
       try {
         const result = await send([file], requested, placement, keepRef.current, signal, onProgress);
         setNotices((n) => [say(result.duplicate ? "library.duplicate" : "library.uploaded", { name: file.name }), ...n].slice(0, 3));
-        if (onUploaded) onUploaded(result.document, requested);
-        else router.refresh();
+        if (onUploaded) {onUploaded(result.document, requested);}
+        else {router.refresh();}
       } catch (error) {
         throw translated(error, say);
       }
@@ -79,7 +79,7 @@ export function DocumentUploader({ kindRef, placement, onUploaded, onDrop, defau
     onDrop?.(files);
     setDropped((d) => [...d, ...files.map((f) => ({ name: f.name, type: f.type }))]);
     const photos = files.filter(isPhotoFile);
-    if (grouping !== "1" || photos.length < 2) return queue.add(files);
+    if (grouping !== "1" || photos.length < 2) {return queue.add(files);}
     queue.add(files.filter((f) => !isPhotoFile(f)));
     setGrouped(true);
     setGroupNotice(null);
@@ -87,8 +87,8 @@ export function DocumentUploader({ kindRef, placement, onUploaded, onDrop, defau
     send(photos, requested, placement, keepRef.current, new AbortController().signal, () => undefined)
       .then((result) => {
         setGroupNotice({ tone: "success", text: say("library.groupedUploaded", { count: photos.length }) });
-        if (onUploaded) onUploaded(result.document, requested);
-        else router.refresh();
+        if (onUploaded) {onUploaded(result.document, requested);}
+        else {router.refresh();}
       })
       .catch((error: { body?: { code?: string } }) => setGroupNotice({ tone: "danger", text: say(`errors.${error.body?.code ?? "UNKNOWN"}`) }))
       .finally(() => setGrouped(false));

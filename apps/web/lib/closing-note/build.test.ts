@@ -16,10 +16,10 @@ function reportsIn(dir: string) {
     const raw = JSON.parse(readFileSync(join(ROOT, dir, file), "utf8"));
     const found: Record<string, unknown>[] = [];
     const walk = (o: unknown) => {
-      if (typeof o === "string" && o.trim().startsWith("{")) return walk(JSON.parse(o));
-      if (Array.isArray(o)) return o.forEach(walk);
+      if (typeof o === "string" && o.trim().startsWith("{")) {return walk(JSON.parse(o));}
+      if (Array.isArray(o)) {return o.forEach(walk);}
       if (o && typeof o === "object") {
-        if ("findings" in o && "rulesetId" in o) found.push(o as Record<string, unknown>);
+        if ("findings" in o && "rulesetId" in o) {found.push(o as Record<string, unknown>);}
         Object.values(o).forEach(walk);
       }
     };
@@ -54,7 +54,7 @@ describe("the closing note", () => {
     it.each(LANGS)("%s: has every section, the disclaimer and who decides", (lang) => {
       const note = buildNote(input, lang);
       expect(closingNote.parse(note)).toEqual(note);
-      for (const text of [note.what.text, note.result.text, note.decides.text, note.disclaimer, note.how.sentences[0]!]) expect(text.length).toBeGreaterThan(10);
+      for (const text of [note.what.text, note.result.text, note.decides.text, note.disclaimer, note.how.sentences[0]!]) {expect(text.length).toBeGreaterThan(10);}
       expect(note.how.sentences.length).toBeGreaterThanOrEqual(2);
       expect(note.notChecked.items.length).toBeGreaterThanOrEqual(1);
       expect(note.disclaimer).toMatch(lang === "fr" ? /pas un avis juridique/ : /not legal advice/);
@@ -73,8 +73,8 @@ describe("the closing note", () => {
       const undecided = findings.filter((f) => f.verdict === VERDICT.undecided).length;
       expect(note.next.items).toHaveLength(failed + undecided);
       expect(note.what.text).toContain(String(findings.length));
-      if (failed === 0 && undecided === 0) expect(note.next.none).not.toBeNull();
-      else expect(note.result.text).toMatch(/\d/);
+      if (failed === 0 && undecided === 0) {expect(note.next.none).not.toBeNull();}
+      else {expect(note.result.text).toMatch(/\d/);}
     });
 
     it.each(LANGS)("%s: the most important findings come first, and every one has a plain text from the pack", (lang) => {
@@ -127,7 +127,7 @@ describe("the plain-language data", () => {
     const data = compliancePackOf(pack)!;
     for (const [ruleId, text] of Object.entries(data.rules)) {
       for (const lang of LANGS) {
-        for (const kind of ["ok", "attention", "advice"] as const) expect(text[kind][lang].length, `${ruleId} ${kind} ${lang}`).toBeGreaterThan(8);
+        for (const kind of ["ok", "attention", "advice"] as const) {expect(text[kind][lang].length, `${ruleId} ${kind} ${lang}`).toBeGreaterThan(8);}
         expect(readabilityProblems([text.ok[lang], text.attention[lang], text.advice[lang]]), `${ruleId} ${lang}`).toEqual([]);
       }
     }
