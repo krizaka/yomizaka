@@ -24,4 +24,8 @@ describe("the /story take", () => {
     expect(source).toMatch(/VIEWPORT\.width \* SCALE/);
     expect(source).not.toMatch(/setDeviceMetricsOverride/); // it moved the page under Playwright's clicks (the header intercepted them)
   });
+  it("films with two capture loops in flight, frames put back in time order", () => {
+    expect(source).toMatch(/Promise\.all\(\[filmLoop\(\), filmLoop\(\)\]\)/);
+    expect(source).toMatch(/frames\.sort\(\(a, b\) => a\.at - b\.at\)/);
+  });
 });

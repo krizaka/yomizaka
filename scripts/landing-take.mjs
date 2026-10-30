@@ -90,7 +90,8 @@ const capture = async () => {
 };
 const frames = [];
 let filming = true;
-const film = (async () => {
+// Two capture loops in flight: a frame at 780×1688 takes ~40 ms to come back, and one loop alone filmed 22 fps on a busy machine.
+const filmLoop = async () => {
   while (filming) {
     const at = Date.now() / 1000;
     // A capture that never answers (the page is navigating) must not stall the take: give up after 3 s and go on.
@@ -99,7 +100,8 @@ const film = (async () => {
     const shot = await Promise.race([capture(), new Promise((r) => setTimeout(r, 3000, null))]).catch(() => null);
     if (shot) frames.push({ at, data: shot.data });
   }
-})();
+};
+const film = Promise.all([filmLoop(), filmLoop()]);
 const RUN_LABEL = { en: /Run the check/i, fr: /Lancer la v[ée]rification/i };
 const t0 = Date.now();
 const marks = {};
@@ -168,6 +170,7 @@ await page.waitForTimeout(2600);
 mark("end");
 filming = false;
 await film;
+frames.sort((a, b) => a.at - b.at);
 // Leave the QA library as found: the documents this take created are deleted (they are all « bail exemple fictif »).
 const mine = await ctx.request.get(`${BASE}/api/documents`);
 for (const d of (await mine.json()).documents ?? []) if (/^bail exemple fictif/i.test(d.title)) await ctx.request.delete(`${BASE}/api/documents/${d.id}`);
