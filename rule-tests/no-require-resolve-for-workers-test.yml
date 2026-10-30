@@ -1,0 +1,7 @@
+id: no-require-resolve-for-workers
+valid:
+  - |
+    const worker = new Worker(source, { eval: true, workerData: { unpdf: findPackageDir("unpdf") } });
+invalid:
+  - |
+    const worker = new Worker(source, { eval: true, workerData: { unpdf: require.resolve("unpdf") } });
