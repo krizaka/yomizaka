@@ -494,6 +494,7 @@
       "keep": "Keep my documents",
       "keepOn": "The document stays in your library, where the info panel says.",
       "keepOff": "By default the document is deleted after its check: only the report stays.",
+      "keepNext": "This applies to the documents you add next: the ones already sent follow what was set when you dropped them.",
       "keepDisabled": "Keeping is switched off in your settings: the document is deleted after its check.",
       "groupPhotos": "These photos are the pages of one document",
       "groupPhotosOn": "Dropped together, they make one document, in the order you choose them.",

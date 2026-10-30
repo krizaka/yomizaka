@@ -494,6 +494,7 @@
       "keep": "Conserver mes documents",
       "keepOn": "Le document reste dans votre bibliothèque, là où le panneau d'information l'indique.",
       "keepOff": "Par défaut, le document est supprimé après sa vérification : seul le rapport reste.",
+      "keepNext": "Cela vaut pour les documents que vous ajoutez ensuite : ceux déjà envoyés suivent ce qui était réglé au moment du dépôt.",
       "keepDisabled": "La conservation est désactivée dans vos réglages : le document sera supprimé après sa vérification.",
       "groupPhotos": "Ces photos sont les pages d'un seul document",
       "groupPhotosOn": "Déposées ensemble, elles forment un document, dans l'ordre où vous les choisissez.",

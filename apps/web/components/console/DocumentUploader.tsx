@@ -10,7 +10,7 @@ import { type MutableRefObject, type ReactNode, useEffect, useRef, useState } fr
 import { z } from "zod";
 
 import { useAppConfig } from "@/lib/app-config-client";
-import { groupingOffered, optionsShown } from "@/lib/check-flow";
+import { groupingOffered, keepAppliesToNext, optionsShown } from "@/lib/check-flow";
 import { checkDefaults } from "@/lib/check-queue";
 import { useSay } from "@/lib/i18n-client";
 import { ROUTE_STATES } from "@/lib/route-state";
@@ -101,6 +101,7 @@ export function DocumentUploader({ kindRef, placement, onUploaded, onDrop, defau
               <label htmlFor="keep-documents" className="flex cursor-pointer flex-col text-sm">
                 <span className="font-semibold text-fg">{say("library.keep")}</span>
                 <span className="text-fg-secondary">{say(keep ? "library.keepOn" : "library.keepOff")}</span>
+                {keepAppliesToNext(known, defaultsFirst) ? <span className="text-fg-secondary" data-testid="keep-next">{say("library.keepNext")}</span> : null}
               </label>
             </div>
             )}
