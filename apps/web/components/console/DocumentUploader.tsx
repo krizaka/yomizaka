@@ -28,6 +28,15 @@ export type { Placement } from "./upload";
  */
 const REFUSAL_KEY: Record<string, "library.refusedSize" | "library.refusedType"> = { size: "library.refusedSize", type: "library.refusedType" };
 
+function KeepNextNote({ shown, text }: Readonly<{ shown: boolean; text: string }>) {
+  if (!shown) return null;
+  return (
+    <span className="text-fg-secondary" data-testid="keep-next">
+      {text}
+    </span>
+  );
+}
+
 export function DocumentUploader({ kindRef, placement, onUploaded, onDrop, defaultsFirst = false, extra }: Readonly<{ kindRef?: MutableRefObject<DocumentKind | "auto">; placement?: Placement; onUploaded?: (document: DocumentSummary, requested: DocumentKind | "auto") => void; onDrop?: (files: readonly File[]) => void; defaultsFirst?: boolean; extra?: (add: (files: File[]) => void) => ReactNode }>) {
   const { say, locale } = useSay();
   const router = useRouter();
@@ -101,7 +110,7 @@ export function DocumentUploader({ kindRef, placement, onUploaded, onDrop, defau
               <label htmlFor="keep-documents" className="flex cursor-pointer flex-col text-sm">
                 <span className="font-semibold text-fg">{say("library.keep")}</span>
                 <span className="text-fg-secondary">{say(keep ? "library.keepOn" : "library.keepOff")}</span>
-                {keepAppliesToNext(known, defaultsFirst) ? <span className="text-fg-secondary" data-testid="keep-next">{say("library.keepNext")}</span> : null}
+                <KeepNextNote shown={keepAppliesToNext(known, defaultsFirst)} text={say("library.keepNext")} />
               </label>
             </div>
             )}
