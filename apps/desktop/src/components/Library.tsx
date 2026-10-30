@@ -109,7 +109,7 @@ function FolderEntries({ folder, listing, busy, onCheck }: Readonly<{ folder: st
               title: entry.name,
               meta: <span>{sizeOf(entry.size, locale)}</span>,
               actions: (
-                <Button size="sm" variant="secondary" disabled={busy} onClick={() => onCheck(entry.path)}>
+                <Button size="sm" variant="secondary" disabled={busy} onClick={() => onCheck(entry.path)} data-testid="check-document">
                   {t("library.check")}
                 </Button>
               ),

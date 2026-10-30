@@ -73,9 +73,43 @@ jobs:
         EXPO_PUBLIC_APP_URL=http://localhost:3000
         EXPO_PUBLIC_APP_ENV=dev
 
+  # The Mac's video (yomizaka#636): the Mac journey filmed on a macOS runner (screencapture), on main only, never required.
+  showcase-mac:
+    name: Showcase video (Mac)
+    if: github.ref == 'refs/heads/main'
+    runs-on: macos-latest
+    timeout-minutes: 40
+    # A recorder or a runner that fails must not take the web and phone videos down with it (app-videos needs this job).
+    continue-on-error: true
+    environment: dev
+    permissions:
+      contents: read
+    env:
+      SMOKE_EMAIL: ${{ secrets.SMOKE_EMAIL }}
+      SMOKE_PASSWORD: ${{ secrets.SMOKE_PASSWORD }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: main
+      - uses: ./.github/actions/desktop-journey
+        with:
+          out: showcase-mac
+          record: "true"
+      - name: The film as mp4 (the app-videos workflow names files <platform>-<flow>)
+        run: |
+          brew install ffmpeg
+          ffmpeg -y -i showcase-mac/mac-library.mov -an -pix_fmt yuv420p showcase-mac/mac-library.mp4
+          rm showcase-mac/mac-library.mov
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: showcase-mac
+          path: showcase-mac/mac-library.mp4
+          retention-days: 7
+
   app-videos:
     name: Download page videos
-    needs: [showcase-web, mobile-showcase]
+    needs: [showcase-web, mobile-showcase, showcase-mac]
     if: github.ref == 'refs/heads/main'
     permissions:
       contents: write
@@ -87,6 +121,7 @@ jobs:
       artifacts: |
         showcase-web
         maestro-showcase
+        showcase-mac
     secrets:
       MEDIA_STORAGE_API_KEY: ${{ secrets.MEDIA_STORAGE_API_KEY }}
       MEDIA_STORAGE_ZONE: ${{ secrets.MEDIA_STORAGE_ZONE }}

@@ -58,7 +58,11 @@ fn store_delete(store: State<'_, store::FolderStore>, key: String) -> Result<(),
 }
 
 pub fn run() {
-    tauri::Builder::default()
+    let builder = tauri::Builder::default();
+    // The Mac journey's embedded WebDriver (yomizaka#636, 127.0.0.1:4445): a debug build with `--features webdriver`, never a release.
+    #[cfg(all(debug_assertions, feature = "webdriver"))]
+    let builder = builder.plugin(tauri_plugin_webdriver::init());
+    builder
         // The API calls go through Rust's HTTP client (no CORS), to Yomizaka's own addresses (the capability).
         .plugin(tauri_plugin_http::init())
         // The folder picker the kit's commands open (re-exported by the kit).
