@@ -11,7 +11,7 @@ const say = (key: string, vars?: Record<string, string | number>) => {
   return Object.entries(vars ?? {}).reduce((s, [k, v]) => s.replace(`{${k}}`, String(v)), words ?? key);
 };
 const date = (iso: string) => iso.slice(0, 10);
-const FREE: Entitlement = { credits: 0, pro: false, proUntil: null, freeAuditUsed: false, selfServe: true, hasCustomer: false, planKey: null };
+const FREE: Entitlement = { credits: 0, pro: false, proUntil: null, freeAuditUsed: false, selfServe: true, hasCustomer: false, planKey: null, cancelsAtPeriodEnd: false };
 
 describe("billing as flat rows (the review's E3)", () => {
   it("a free self-serve account: the plan, the free audit, the paid audits left — no renewal", () => {
@@ -29,6 +29,17 @@ describe("billing as flat rows (the review's E3)", () => {
       ["credits", "0"],
       ["until", "2026-11-23"],
     ]);
+  });
+});
+
+describe("a subscription cancelled at the end of the period (yomizaka#139)", () => {
+  const CANCELLED = { ...FREE, pro: true, proUntil: "2026-11-23T00:00:00.000Z", selfServe: false, cancelsAtPeriodEnd: true };
+  it("says when it ends, never « renewal »", () => {
+    expect(billingRows(CANCELLED, say, date).find((r) => r.id === "until")).toEqual({ id: "until", label: fr.console.settings.billing.ends, value: "2026-11-23" });
+    expect(fr.console.settings.billing.ends).not.toBe(fr.console.settings.billing.renewal);
+  });
+  it("keeps « renewal » while nothing is cancelled", () => {
+    expect(billingRows({ ...CANCELLED, cancelsAtPeriodEnd: false }, say, date).find((r) => r.id === "until")?.label).toBe(fr.console.settings.billing.renewal);
   });
 });
 

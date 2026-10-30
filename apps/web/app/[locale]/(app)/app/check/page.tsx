@@ -1,10 +1,11 @@
+import { displayNow } from "@/lib/display-now";
 import type { Metadata } from "next";
 
 import { CheckView } from "@/components/console/CheckView";
 import { pageSession } from "@/lib/access";
 import { catalogueOf } from "@/lib/check-catalogue";
 import { creditsOf } from "@/lib/credits";
-import { appEnvironment } from "@/lib/env";
+import { appEnvironment, appVisualNow } from "@/lib/env";
 import { availableFlows, offerFor } from "@/lib/flows";
 import { asLocale, getDictionary } from "@/lib/i18n";
 
@@ -17,5 +18,5 @@ export default async function CheckPage() {
   const session = await pageSession();
   const offer = offerFor(await availableFlows(appEnvironment()), session?.account.perspective ?? null);
   const now = new Date();
-  return <CheckView jurisdictions={offer.jurisdictions} catalogue={catalogueOf(offer)} credits={session ? await creditsOf(session.account.id, now) : null} now={now.toISOString()} />;
+  return <CheckView jurisdictions={offer.jurisdictions} catalogue={catalogueOf(offer)} credits={session ? await creditsOf(session.account.id, now) : null} now={displayNow(now, appEnvironment(), appVisualNow()).toISOString()} />;
 }

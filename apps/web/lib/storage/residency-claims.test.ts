@@ -54,6 +54,7 @@ const CLAIMS: Record<string, Store> = {
   "console.document.where.krizakaCanadaEncrypted": "database",
   "console.document.where.krizakaCanada": "configured",
   "console.settings.storage.whereCanada": "configured",
+  "console.errors.STORAGE_NOT_IN_CANADA": "configured", // the refusal is generated from the tested region of the provider (assertDefaultResidency)
   "console.settings.storage.whereElsewhere": "configured", // « outside Canada »: generated from the configured region
 };
 

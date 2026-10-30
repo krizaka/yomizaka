@@ -9,6 +9,8 @@ export DATABASE_URL="postgresql://ci:ci-only-password@postgres:5432/ci"
 export AUTH_SESSION_SECRET=ci-only-session-secret-0123456789abcdef
 export AI_API_KEY=oz_ci_only_not_a_key
 export PORT=3000
+# The date the console writes as « today »: one day for every capture, whatever day the job runs (lib/display-now.ts; the baselines were drawn on it).
+export APP_VISUAL_NOW=2026-10-30T12:00:00Z
 APP_REPORT_SIGNING_KEY="$(node -e 'process.stdout.write(require("crypto").generateKeyPairSync("ed25519").privateKey.export({type:"pkcs8",format:"der"}).toString("base64"))')"
 export APP_REPORT_SIGNING_KEY
 pnpm --filter @yomizaka/web build

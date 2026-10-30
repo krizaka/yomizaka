@@ -158,7 +158,7 @@ describe.runIf(enabled)("a person's own S3 in the registry (ADR-005)", () => {
       expect((await loadSettings(query, owner)).s3).toMatchObject({ accessKeyId: "AKIALEGACY", hasSecret: true });
       expect((await ownS3Store(query, owner, own))!.describe()).toMatchObject({ owner: "workspace", region: "ca-central-1" });
       expect((await migrateOwnS3(query, own, NOW)).moved).toBe(0);
-      expect((await service.list(userScope(owner))).length).toBe(1);
+      expect(await service.list(userScope(owner))).toHaveLength(1);
     });
 
     it("the documents already kept on that S3 name the provider", async () => {
@@ -173,7 +173,7 @@ describe.runIf(enabled)("a person's own S3 in the registry (ADR-005)", () => {
       await migrateOwnS3(query, own, NOW);
       await query("UPDATE storage_settings SET provider_id = NULL, s3_secret_sealed = $2 WHERE owner_id = $1", [owner, seal("legacy-secret", oldKey)]);
       await migrateOwnS3(query, own, NOW);
-      expect((await service.list(userScope(owner))).length).toBe(1);
+      expect(await service.list(userScope(owner))).toHaveLength(1);
       expect((await loadSettings(query, owner)).s3?.hasSecret).toBe(true);
       expect(await sealedInRow(owner)).toBeNull();
     });
