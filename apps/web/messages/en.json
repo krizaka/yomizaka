@@ -922,6 +922,7 @@
       "COUPON_KEY_REUSED": "Try again.",
       "COUPON_NOT_REVOCABLE": "This redemption can't be revoked.",
       "COUPON_BAD_SETTINGS": "The coupon settings are not valid.",
+      "STORAGE_NOT_IN_CANADA": "In production the documents are kept in Canada: test this provider and check that its region is Canadian first.",
       "STORAGE_VAULT_MISSING": "Storing credentials is not available: the vault key is not deployed.",
       "STORAGE_PROVIDER_NOT_FOUND": "This provider no longer exists.",
       "STORAGE_PROVIDER_IN_USE": "The provider is a default, or documents still reach it.",

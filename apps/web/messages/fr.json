@@ -922,6 +922,7 @@
       "COUPON_KEY_REUSED": "Réessayez.",
       "COUPON_NOT_REVOCABLE": "Cette utilisation ne peut pas être révoquée.",
       "COUPON_BAD_SETTINGS": "Les réglages des coupons ne sont pas valides.",
+      "STORAGE_NOT_IN_CANADA": "En production, les documents restent au Canada : testez ce fournisseur et vérifiez que sa région est canadienne d'abord.",
       "STORAGE_VAULT_MISSING": "Le stockage des clés n'est pas disponible : la clé du coffre n'est pas déployée.",
       "STORAGE_PROVIDER_NOT_FOUND": "Ce fournisseur n'existe plus.",
       "STORAGE_PROVIDER_IN_USE": "Le fournisseur est un défaut, ou des documents y sont encore.",
