@@ -32,7 +32,7 @@ export const BLANK_BYTES = 4000;
 
 /** Leading frames that are blank are dropped: the film starts on the first screen that shows something. */
 export function trimStart(frames) {
-  const first = frames.findIndex((f) => !(f.size < BLANK_BYTES));
+  const first = frames.findIndex((f) => f.size >= BLANK_BYTES);
   return first < 0 ? [] : frames.slice(first);
 }
 
@@ -96,10 +96,11 @@ export function createFilm({
   const frames = [];
   const origin = now();
   let running = false;
+  const isRunning = () => running;
   let loop = Promise.resolve();
   const interval = 1000 / fps;
   async function run() {
-    while (running) {
+    while (isRunning()) {
       const began = now();
       try {
         const png = await shoot();
@@ -111,7 +112,7 @@ export function createFilm({
             file,
             at: began - origin,
             size: bytes.length,
-            hash: createHash("sha1").update(bytes).digest("hex"),
+            hash: createHash("sha256").update(bytes).digest("hex"),
           });
         }
       } catch {

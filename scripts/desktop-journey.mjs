@@ -108,7 +108,7 @@ try {
   await waitFor(driver, "the granted folder in the library", FOLDER_LINK);
   await shot(driver, "1-library");
   await mkdir(out, { recursive: true });
-  await filmWindow();
+  filmWindow();
   await hold();
 
   // 2. Open the folder: its lease is listed; check it.
@@ -126,7 +126,7 @@ try {
   const hash = await driver.hash();
   if (!hash.startsWith("#/check/")) throw new Error(`the result is shown on ${hash}, not on a check`);
   await shot(driver, "3-result");
-  await filmWindow();
+  filmWindow();
   await hold(4000);
   await film.stop(); // the app is about to quit: nothing of the desktop is filmed
 
@@ -141,7 +141,7 @@ try {
   const kept = JSON.parse(await readFile(scope, "utf8")).roots;
   if (!kept.includes(folder)) throw new Error(`the scope lost the folder: ${JSON.stringify(kept)}`);
   await shot(driver, "4-relaunch");
-  await filmWindow();
+  filmWindow();
   await hold(4000);
   await film.stop();
   film.finish(); // too few frames: the journey fails loudly, no empty clip
