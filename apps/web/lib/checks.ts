@@ -59,7 +59,7 @@ export async function startCheck(
     await recordPreflight(query, account.id, "reused");
     return { analysis: await getAnalysis(account.id, documentId, reusable), reused: true };
   }
-  const via = await reserveAudit(query, account.id, now, capsFor(settings, now));
+  const via = await reserveAudit(query, account.id, now, capsFor(settings, now), documentId);
   try {
     return {
       analysis: await startAnalysis(

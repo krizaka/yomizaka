@@ -18,7 +18,8 @@ import type { AuditCaps } from "./settings/boundary";
  * the processor's notifications, each applied once.
  */
 type Query = <T extends QueryResultRow>(text: string, values?: unknown[]) => Promise<T[]>;
-export type AuditVia = "exempt" | "free" | "credit" | "pro";
+/** `dossier`: the document belongs to a dossier already billed this month (the unit is the dossier, not the check): nothing is spent again. */
+export type AuditVia = "exempt" | "free" | "credit" | "pro" | "dossier";
 
 export interface Entitlement {
   selfServe: boolean;
@@ -95,29 +96,55 @@ export type Plan = "free" | "pro";
 /** The caps of an account's plan: the subscription's come from its catalogue entry, so they may be read asynchronously. */
 export type CapsOf = (plan: Plan, entitlement: Entitlement) => AuditCaps | Promise<AuditCaps>;
 
-/** The audits an account started this calendar month (what the included volume counts): the home's meter reads the same number. */
-export async function auditsUsedThisMonth(query: Query, accountId: string, now: Date): Promise<number> {
+/**
+ * The dossier of a document: the application file it was sent in, or itself when it stands alone. A dossier is the unit the
+ * included volume counts and the credit buys (all the documents and checks of one applicant), not each check.
+ */
+const DOSSIER = "COALESCE(d.screening_id, d.id)";
+
+/** The dossiers an account started this calendar month (what the included volume counts): the home's meter reads the same number. */
+export async function dossiersUsedThisMonth(query: Query, accountId: string, now: Date): Promise<number> {
   return Number((await query<{ n: string }>(COUNT_SINCE, [accountId, now, "month"]))[0]?.n ?? 0);
 }
 
-const COUNT_SINCE =
-  "SELECT count(*) AS n FROM analyses a JOIN documents d ON d.id = a.document_id WHERE d.owner_id = $1 AND a.created_at >= date_trunc($3, $2::timestamptz)";
+const COUNT_SINCE = `SELECT count(DISTINCT ${DOSSIER}) AS n FROM analyses a JOIN documents d ON d.id = a.document_id WHERE d.owner_id = $1 AND a.created_at >= date_trunc($3, $2::timestamptz)`;
+
+/** The dossier of this document already has a check billed this month (a refunded one does not count): its next checks are on the house. */
+async function dossierIsBilled(query: Query, documentId: string, now: Date): Promise<boolean> {
+  const rows = await query(
+    `SELECT 1 FROM documents me JOIN documents d ON ${DOSSIER} = COALESCE(me.screening_id, me.id)
+       JOIN analyses a ON a.document_id = d.id
+      WHERE me.id = $1 AND a.billed_via IS NOT NULL AND a.billed_via NOT LIKE '%-refunded'
+        AND a.created_at >= date_trunc('month', $2::timestamptz) LIMIT 1`,
+    [documentId, now],
+  );
+  return rows.length > 0;
+}
 
 /**
- * Takes the right to one audit, atomically (two requests cannot spend the same free audit or credit). Throws 402 PAYWALL when
+ * Takes the right to one dossier's audit, atomically (two requests cannot spend the same free audit or credit). Throws 402 PAYWALL when
  * there is none, 429 FAIR_USE past the verifications the subscription includes and 429 DAILY_LIMIT past its daily cap. The
  * caps are the configuration's and the catalogue's (`capsOf`); the caller gives the audit back with `releaseAudit` if the run
- * could not start.
+ * could not start. Given the document, a second check of a dossier already billed this month spends nothing (`dossier`).
  */
-export async function reserveAudit(query: Query, accountId: string, now: Date, capsOf: CapsOf): Promise<AuditVia> {
+export async function reserveAudit(
+  query: Query,
+  accountId: string,
+  now: Date,
+  capsOf: CapsOf,
+  documentId?: string,
+): Promise<AuditVia> {
   const e = await entitlementOf(query, accountId, now);
   if (!e.selfServe) {
     return "exempt";
   }
+  if (documentId && (await dossierIsBilled(query, documentId, now))) {
+    return "dossier";
+  }
   const caps = await capsOf(e.pro ? "pro" : "free", e);
   const used = async (period: "day" | "month") =>
     period === "month"
-      ? auditsUsedThisMonth(query, accountId, now)
+      ? dossiersUsedThisMonth(query, accountId, now)
       : Number((await query<{ n: string }>(COUNT_SINCE, [accountId, now, period]))[0]?.n ?? 0);
   if (caps.perDay > 0 && (await used("day")) >= caps.perDay) {
     throw refuse(429, "DAILY_LIMIT", "Daily limit reached", { limit: caps.perDay });
