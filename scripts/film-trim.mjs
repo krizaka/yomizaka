@@ -11,7 +11,11 @@ const dir = process.argv[2];
 if (!dir) throw new Error("usage: film-trim.mjs <dir with .webm/.mp4 films>");
 const ffmpeg = "ffmpeg";
 const ffprobe = "ffprobe";
-const run = (command, args) => spawnSync(command, args, { encoding: "utf8" }); // NOSONAR S4036: a CI step on a runner, PATH is the runner's own
+const run = (command, args) => {
+  const result = spawnSync(command, args, { encoding: "utf8" }); // NOSONAR S4036: a CI step on a runner, PATH is the runner's own
+  if (result.error) throw new Error(`cannot run ${command}: ${result.error.message}`); // a missing tool is an error, never an empty reading
+  return result;
+};
 const durationOf = (file) =>
   Number(run(ffprobe, ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", file]).stdout.trim());
 const analyse = (file) => {

@@ -12,6 +12,13 @@ describe("the download videos workflow", () => {
     assert.match(code, /workflow_dispatch:/);
     assert.doesNotMatch(code, /workflow_run/);
   });
+  // Run 41135654722: the web job's trim died on a runner without ffprobe.
+  it("installs ffmpeg before the web films are trimmed, and the trim fails loudly without it", () => {
+    assert.ok(
+      code.indexOf("apt-get install -y --no-install-recommends ffmpeg") < code.indexOf("film-trim.mjs showcase-web"),
+    );
+    assert.match(readFileSync(new URL("./film-trim.mjs", import.meta.url), "utf8"), /result\.error/);
+  });
   it("names the secrets it passes, never inherits them", () => {
     assert.doesNotMatch(code, /secrets:\s*inherit/);
     assert.match(code, /MEDIA_STORAGE_API_KEY: \$\{\{ secrets\.MEDIA_STORAGE_API_KEY \}\}/);
