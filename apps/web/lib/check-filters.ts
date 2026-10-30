@@ -64,7 +64,9 @@ function startOfYearIn(zone: string, now: Date): Date {
 
 /** When a period starts, from `now`: the last 7 or 30 days (instants — no local calendar, no DST shift), or this year in the console's zone. */
 export function periodStart(period: CheckPeriod, now: Date, zone = DISPLAY_TIME_ZONE): Date {
-  return period === "year" ? startOfYearIn(zone, now) : subHours(now, HOURS_IN_DAY * (period === "7d" ? 7 : 30));
+  if (period === "year") return startOfYearIn(zone, now);
+  const days = period === "7d" ? 7 : 30;
+  return subHours(now, HOURS_IN_DAY * days);
 }
 
 /** The search field's draft against the address: our own commit landing retires the draft unless a newer edit is in flight; a change made elsewhere (a chip, « Effacer », back) replaces it. */

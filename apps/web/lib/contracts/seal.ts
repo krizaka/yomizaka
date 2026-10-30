@@ -60,12 +60,18 @@ export function payloadOf(request: SealRequest, input: { contractId: string; sea
   return { schema: CONTRACT_SCHEMA, contractId: input.contractId, partnerId: request.partnerId, documentType: request.documentType, complianceRuleset: request.complianceRuleset, contentSha256: sha256(canonicalJson(request.contractPayload)), parties, sealedAt: input.sealedAt, zone: input.zone, lang: request.locale };
 }
 
+/** The order of the keys: by UTF-16 code unit, the same on every machine (the seal is hashed). */
+const compareKeys = (a: string, b: string): number => {
+  if (a < b) return -1;
+  return a > b ? 1 : 0;
+};
+
 /** The content as `path: value` lines, keys in order: indentation does not survive a PDF's wrapping, a path does. */
 export function flatten(value: unknown, path = ""): string[] {
   if (path === "" && value !== null && typeof value === "object" && Object.keys(value).length === 0) return ["{}"];
   if (Array.isArray(value)) return value.length ? value.flatMap((v, i) => flatten(v, `${path}[${i}]`)) : [`${path}: []`];
   if (value !== null && typeof value === "object") {
-    const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+    const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) => compareKeys(a, b));
     return entries.length ? entries.flatMap(([k, v]) => flatten(v, path ? `${path}.${k}` : k)) : [`${path}: {}`];
   }
   return [`${path}: ${JSON.stringify(value)}`];

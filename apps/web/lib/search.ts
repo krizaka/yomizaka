@@ -18,7 +18,7 @@ export function passageHtml(raw: string): string {
 }
 
 export function normaliseQuery(q: string): string {
-  return Array.from(q, (c) => (c.charCodeAt(0) < 32 ? " " : c)).join("").trim().slice(0, 200);
+  return Array.from(q, (c) => ((c.codePointAt(0) ?? 0) < 32 ? " " : c)).join("").trim().slice(0, 200);
 }
 
 export async function search(ownerId: string, q: string): Promise<SearchHit[]> {
