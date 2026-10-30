@@ -64,7 +64,7 @@ export function staleness(backups, now, maxHours = MAX_AGE_HOURS) {
 
 /** Row counts (table → n) that must be identical after the restore. Returns the differences; empty means the drill passed. */
 export function countDifferences(source, restored) {
-  const names = [...new Set([...Object.keys(source), ...Object.keys(restored)])].sort();
+  const names = [...new Set([...Object.keys(source), ...Object.keys(restored)])].sort((a, b) => a.localeCompare(b));
   return names.flatMap((t) => {
     const a = source[t];
     const b = restored[t];
