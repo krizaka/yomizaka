@@ -53,6 +53,18 @@ async function firstFile(page, { origin }) {
   if (!id) throw new Error("no seeded applicant file: is the cast seeded?");
   return `/fr/app/dossiers/${id}`;
 }
+// The date in words is written by the server's clock (the browser's is frozen): its masked box would take the width of the day's text.
+const PINNED_TODAY = "vendredi 30 octobre 2026";
+/** The hydrated first paint, settled: the date box pinned to one text, and the account picture decoded (the initial gives way to it). */
+async function settleHeaderLive(page) {
+  await page.locator('time[data-testid="today"]').first().waitFor();
+  await page.evaluate((text) => {
+    for (const el of document.querySelectorAll('time[data-testid="today"]')) el.textContent = text;
+  }, PINNED_TODAY);
+  await page.waitForFunction(() =>
+    [...document.images].some((img) => img.getBoundingClientRect().top < 120 && img.complete && img.naturalWidth > 0),
+  );
+}
 /** A finding stays inside its card: no long address pushes the page wider than the screen (the TAL address on a phone). */
 const staysInside = (ruleId) => async (page) => {
   const wide = await page.evaluate((id) => {
@@ -95,6 +107,6 @@ defineJourneyTests({
     { name: "file-rent-share", path: firstFile, session: true, ready: typeRentShare, mask: LIVE },
     // The first paint of a signed-in page: the HTML the server sent, and the hydrated page while the account query is pending (krizaka-ui#827).
     { name: "app-home", path: "/fr/app", session: true, firstPaint: true, viewports: ["phone"], mask: LIVE },
-    { name: "app-home-pending", path: "/fr/app", session: true, firstPaint: { hold: ["**/api/me"] }, viewports: ["phone"], mask: LIVE },
+    { name: "app-home-pending", path: "/fr/app", session: true, firstPaint: { hold: ["**/api/me"] }, ready: settleHeaderLive, viewports: ["phone"], mask: LIVE },
   ],
 });
