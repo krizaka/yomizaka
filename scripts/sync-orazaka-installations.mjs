@@ -52,12 +52,14 @@ export async function syncInstallations({ base, token, wanted, check = false, fe
     }
     behind++;
     if (check) {
-      log(`${step.studioKey}: ${step.action === "install" ? "not installed" : `on ${step.pinnedVersion}`}, wanted ${step.version}`);
+      const state = step.action === "install" ? "not installed" : `on ${step.pinnedVersion}`;
+      log(`${step.studioKey}: ${state}, wanted ${step.version}`);
       continue;
     }
     const done = step.action === "install" ? await call(`/api/v1/studios/${step.studioKey}/installations?locale=en`, "POST", { config: {} }) : await call(`/api/v1/studios/installations/${step.id}/upgrade`, "POST");
     if (compareVersions(done.pinnedVersion, step.version) < 0) throw new Error(`${step.studioKey} is on ${done.pinnedVersion} after the ${step.action}, wanted ${step.version}`);
-    log(`${step.studioKey}: ${step.action === "install" ? "installed" : `upgraded ${step.pinnedVersion} -> ${done.pinnedVersion}`}`);
+    const result = step.action === "install" ? "installed" : `upgraded ${step.pinnedVersion} -> ${done.pinnedVersion}`;
+    log(`${step.studioKey}: ${result}`);
   }
   return { behind, steps };
 }

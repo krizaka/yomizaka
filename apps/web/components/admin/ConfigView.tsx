@@ -179,7 +179,10 @@ function auditEntryColumns(say: Say, locale: Lang): DataTableColumn<AuditEntry>[
     { id: "when", header: say("adminConfig.history.when"), value: (e) => e.at, cell: (e) => new Intl.DateTimeFormat(locale, { dateStyle: "short", timeStyle: "medium" }).format(new Date(e.at)) },
     { id: "who", header: say("adminConfig.history.who"), value: (e) => e.actorLabel },
     { id: "what", header: say("adminConfig.history.what"), value: (e) => e.key, cell: (e) => <code className="text-xs">{e.key}</code> },
-    { id: "scope", header: say("adminConfig.history.scope"), value: (e) => e.scope, cell: (e) => `${say(`adminConfig.sources.${e.scope}`)}${e.scopeId ? ` ${e.scopeId.slice(0, 8)}` : ""}` },
+    { id: "scope", header: say("adminConfig.history.scope"), value: (e) => e.scope, cell: (e) => {
+        const source = say(`adminConfig.sources.${e.scope}`);
+        return e.scopeId ? `${source} ${e.scopeId.slice(0, 8)}` : source;
+      } },
     { id: "before", header: say("adminConfig.history.before"), value: (e) => show(e.before), cell: (e) => <code className="text-xs">{e.before === null ? "—" : show(e.before)}</code> },
     { id: "after", header: say("adminConfig.history.after"), value: (e) => show(e.after), cell: (e) => <code className="text-xs">{e.after === null ? "—" : show(e.after)}</code> },
   ];
