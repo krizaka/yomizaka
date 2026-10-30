@@ -108,7 +108,7 @@ export function OwnerShare({ fileId, origin }: Readonly<{ fileId: string; origin
       {problem ? <Alert tone="danger">{problem}</Alert> : null}
       {link ? (
         <div className="flex flex-col gap-2" data-testid="owner-share-link">
-          <p className="m-0 text-sm text-fg-secondary" role="status">{say("dossiers.share.created")}</p>
+          <output className="m-0 block text-sm text-fg-secondary">{say("dossiers.share.created")}</output>
           <div className="flex flex-wrap items-center gap-2">
             <Input readOnly aria-label={say("dossiers.share.linkLabel")} value={link} className="min-w-0 flex-1" onFocus={(e) => e.currentTarget.select()} />
             <Button variant="secondary" size="md" onClick={() => void copy()}>{say(copied ? "dossiers.share.copied" : "dossiers.share.copy")}</Button>
@@ -126,7 +126,7 @@ export function OwnerShare({ fileId, origin }: Readonly<{ fileId: string; origin
             <div>
               <Button variant="secondary" size="md" onClick={() => void send()} disabled={mail.isPending || !to.trim()}>{say(mail.isPending ? "dossiers.share.email.sending" : "dossiers.share.email.send")}</Button>
             </div>
-            {sentTo ? <p className="m-0 text-sm text-fg-secondary" role="status">{say("dossiers.share.email.sent", { email: sentTo })}</p> : null}
+            {sentTo ? <output className="m-0 block text-sm text-fg-secondary">{say("dossiers.share.email.sent", { email: sentTo })}</output> : null}
           </div>
         </div>
       ) : null}

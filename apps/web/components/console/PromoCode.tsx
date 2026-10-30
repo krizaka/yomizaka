@@ -73,9 +73,9 @@ export function PromoCode({ kind, onCode, onRedeemed }: Readonly<{ kind: SoldKin
     <div className="flex flex-col gap-2" data-testid="promo-code">
       {applied ? (
         <div className="flex flex-wrap items-center gap-3">
-          <p className="m-0 text-sm font-semibold" role="status">
+          <output className="m-0 block text-sm font-semibold">
             {applied}
-          </p>
+          </output>
           <Button variant="ghost" size="sm" onClick={remove}>
             {say("promo.remove")}
           </Button>

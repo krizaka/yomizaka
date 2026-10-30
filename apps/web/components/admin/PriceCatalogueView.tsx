@@ -142,7 +142,7 @@ export function PriceCatalogueView() {
           </ul>
           <p className="m-0 max-w-[70ch] text-sm text-fg-secondary">{say(mismatched.length > 0 ? "adminConfig.prices.chargedHint" : "adminConfig.prices.sync.hint")}</p>
           {processor.mode === "live" ? <Alert tone="warning">{say("adminConfig.prices.sync.live")}</Alert> : <div><Button variant="secondary" onClick={sync}>{say("adminConfig.prices.sync.button")}</Button></div>}
-          {note ? <p role="status" className="m-0 text-sm">{note}</p> : null}
+          {note ? <output className="m-0 block text-sm">{note}</output> : null}
         </section>
       )}
       <AlertDialog
