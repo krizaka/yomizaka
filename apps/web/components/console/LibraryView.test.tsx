@@ -187,6 +187,17 @@ describe("the library home (yomizaka#275, the UX review's Y3)", () => {
     expect(readable(html.slice(html.indexOf('data-testid="credits"')))).toContain("3 vérifications restantes");
   });
 
+  it("Pro that renews says « Se renouvelle le »; Pro cancelled at period end says when it ends (never « renews »)", () => {
+    const pro = (cancelled: boolean) => ({ credits: { kind: "pro", used: 4, cap: 100, renewsAt: "2026-11-20T12:00:00.000Z", cancelled } });
+    expect(readable(render(pro(false)))).toContain("Se renouvelle le");
+    const fr = readable(render(pro(true)));
+    expect(fr).toContain("Se termine le");
+    expect(fr).not.toContain("Se renouvelle");
+    const en = readable(render(pro(true), "en"));
+    expect(en).toContain("Ends on");
+    expect(en).not.toContain("Renews");
+  });
+
   it("the activity of the period: its total from the days, and the 7 · 30 · 90 d switch in the address", () => {
     const activity = [{ day: "2026-10-23", checks: 2 }, { day: "2026-10-24", checks: 3 }];
     const strip = [{ id: "checks", total: 5, values: [2, 3] }];

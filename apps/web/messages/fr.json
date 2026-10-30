@@ -370,6 +370,7 @@
         "leftMany": "{count} vérifications restantes",
         "pro": "{used} sur {cap} vérifications ce mois-ci",
         "renews": "Se renouvelle le {date}",
+        "ends": "Se termine le {date}",
         "manage": "Crédits et usage"
       }
     },

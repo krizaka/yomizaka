@@ -96,7 +96,10 @@ describe("the credits: what the account has, said as the billing state says it",
     expect(creditsFigure(e({ selfServe: false }), 4, 100)).toEqual({ kind: "included" });
   });
   it("Pro: audits used this month against the fair-use cap, and when it renews", () => {
-    expect(creditsFigure(e({ pro: true, proUntil: "2026-11-20T00:00:00.000Z" }), 12, 100)).toEqual({ kind: "pro", used: 12, cap: 100, renewsAt: "2026-11-20T00:00:00.000Z" });
+    expect(creditsFigure(e({ pro: true, proUntil: "2026-11-20T00:00:00.000Z" }), 12, 100)).toEqual({ kind: "pro", used: 12, cap: 100, renewsAt: "2026-11-20T00:00:00.000Z", cancelled: false });
+  });
+  it("Pro cancelled at period end: the same date, said as the end", () => {
+    expect(creditsFigure(e({ pro: true, proUntil: "2026-11-20T00:00:00.000Z", cancelsAtPeriodEnd: true }), 3, 100)).toEqual({ kind: "pro", used: 3, cap: 100, renewsAt: "2026-11-20T00:00:00.000Z", cancelled: true });
   });
   it("otherwise the audits left: the credits, plus the free audit while it is unspent", () => {
     expect(creditsFigure(e({ credits: 3 }), 0, 100)).toEqual({ kind: "credits", left: 3 });
