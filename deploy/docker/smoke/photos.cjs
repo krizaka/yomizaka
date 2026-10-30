@@ -1,7 +1,7 @@
 // The photo stack inside the built image (ADR-0010): the image library, the HEIC decoder and Tesseract (fra + eng, in a worker thread)
 // must run in the production image — the build's file tracing cannot see a worker thread's requires, so this proves the Dockerfile
 // carries them. Run by scripts/ci-container-smoke.sh with the fixtures of deploy/docker/smoke mounted at /smoke.
-const path = require("path"), fs = require("fs"), os = require("os");
+const path = require("node:path"), fs = require("node:fs"), os = require("node:os");
 const root = "/app/node_modules/.pnpm";
 const find = (prefix) => path.join(root, fs.readdirSync(root).find((d) => d.startsWith(prefix)), "node_modules");
 const sharp = require(path.join(find("sharp@"), "sharp"));
