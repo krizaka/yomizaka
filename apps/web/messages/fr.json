@@ -1619,6 +1619,7 @@
         "freeAudit": "Audit gratuit",
         "creditsLabel": "Audits payés restants",
         "renewal": "Renouvellement",
+        "ends": "Se termine le",
         "planFree": "Gratuit",
         "credits": "Audits payés restants : {count}",
         "freeAvailable": "Votre audit gratuit est disponible.",

@@ -1415,4 +1415,12 @@ CREATE TABLE storage_moves (
 CREATE UNIQUE INDEX storage_moves_one_open ON storage_moves ((true)) WHERE status <> 'done';
 `,
   },
+  {
+    version: "0062_cancel_at_period_end",
+    sql: `
+-- A subscription cancelled in the portal stays active until the end of the period, then ends (@krizaka/payments 0.5: cancelAtPeriodEnd).
+-- The account then says « ends on » instead of « renewal ». Every existing account renews.
+ALTER TABLE accounts ADD COLUMN cancel_at_period_end boolean NOT NULL DEFAULT false;
+`,
+  },
 ];
