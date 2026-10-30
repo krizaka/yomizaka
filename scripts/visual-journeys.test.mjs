@@ -23,3 +23,14 @@ test("the library fixes the dates of its rows before the shot (the table sizes i
   const body = source.slice(source.indexOf("async function fixListDates"));
   assert.match(body, /replaceChildren\(/, "every row date reads the same text, whatever the day of the seed");
 });
+
+test("every journey with JavaScript starts from a settled stream and unique ids (#635: two elements with one id)", () => {
+  assert.match(source, /\]\.map\(withSettledDom\)/, "the journeys go through withSettledDom");
+  const settle = source.slice(source.indexOf("async function settleStream"), source.indexOf("async function expectUniqueIds"));
+  assert.match(settle, /\[hidden\]\[id\^="S:"\]/, "waits for React's hidden streaming containers to be moved into place");
+  const unique = source.slice(source.indexOf("async function expectUniqueIds"), source.indexOf("const withSettledDom"));
+  assert.match(unique, /querySelectorAll\("\[id\]"\)/, "reads every id of the page");
+  assert.match(unique, /toEqual\(\[\]\)/, "fails on a duplicate, naming where it is");
+  const wrap = source.slice(source.indexOf("const withSettledDom"));
+  assert.match(wrap, /firstPaint === true/, "the page without JavaScript keeps its streamed containers: not settled");
+});
