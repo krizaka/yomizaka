@@ -4,7 +4,14 @@ import { localDay } from "@krizaka/intl/date";
 import { applyOnceInTransaction, type PaymentEvent, type Transaction } from "@krizaka/payments";
 import type { QueryResultRow } from "pg";
 
-import { addPurchased, ensureFreeAudit, FREE_AUDIT_SOURCE, giveBackAudit, spendAudit } from "./audit-credits";
+import {
+  addPurchased,
+  ensureFreeAudit,
+  FREE_AUDIT_SOURCE,
+  giveBackAudit,
+  nextMonth,
+  spendAudit,
+} from "./audit-credits";
 import { confirmCoupon, refundCoupon, releaseCoupon } from "./coupons/events";
 import { transaction } from "./db";
 import { refuse } from "./http";
@@ -12,7 +19,7 @@ import type { AuditCaps } from "./settings/boundary";
 
 /**
  * Entitlements — the domain, vendor-free (it speaks the payments port's events, never a processor's). A self-serve account
- * (one that accepted the terms at sign-up) gets ONE free audit (`audit.freeFirst`), then pays per document (a credit) or
+ * (one that accepted the terms at sign-up) gets free dossiers each month (`plans.free.dossiersPerMonth`, 1 by default, renewed on the 1st, no card), then pays per document (a credit) or
  * subscribes (Agencies or Law firms), up to the verifications its catalogue entry includes — the version it was sold at
  * (ADR-009, passed in by `capsOf`). Accounts created by an operator (QA, demo personas) are exempt. The stored state mirrors
  * the processor's notifications, each applied once.
@@ -76,7 +83,7 @@ const calendarOf = (now: Date) => {
   return { timeZone: "UTC", day, month: day.slice(0, 7) };
 };
 
-/** What the ledger says of an account: the paid credits left, and whether the free first audit was given and is gone (spent or lapsed). */
+/** What the ledger says of an account: the paid credits left, and whether this month's free dossier was given and is gone (spent or lapsed). A month without a pot yet is not used: the pot is made when the first check asks. */
 export async function ledgerState(
   query: Query,
   accountId: string,
@@ -84,10 +91,11 @@ export async function ledgerState(
 ): Promise<{ credits: number; freeAuditUsed: boolean }> {
   const states = await dbCreditStore(query as unknown as DbQuery).grantStates(accountId, calendarOf(now));
   const live = states.filter((s) => !s.closed && (s.grant.expiresAt === null || s.grant.expiresAt > now));
-  const free = states.find((s) => s.grant.source === FREE_AUDIT_SOURCE);
+  const free = states.filter((s) => s.grant.source === FREE_AUDIT_SOURCE);
+  const thisMonth = free.some((s) => s.grant.expiresAt?.getTime() === nextMonth(now).getTime());
   return {
     credits: live.filter((s) => s.grant.bucket === "purchased").reduce((n, s) => n + s.remaining, 0),
-    freeAuditUsed: free !== undefined && !(live.includes(free) && free.remaining > 0),
+    freeAuditUsed: thisMonth && !free.some((s) => live.includes(s) && s.remaining > 0),
   };
 }
 
@@ -156,8 +164,8 @@ export async function reserveAudit(
     return "pro";
   }
   return transaction(async (tx) => {
-    if (caps.freeFirst) {
-      await ensureFreeAudit(tx, accountId);
+    if (caps.freeDossiers > 0) {
+      await ensureFreeAudit(tx, accountId, now, caps.freeDossiers);
     }
     return spendAudit(tx, accountId);
   });

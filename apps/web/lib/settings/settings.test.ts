@@ -57,5 +57,6 @@ describe("what the registry says is configurable", () => {
     "features.keepDocuments",
     "limits.maxFileMb",
     "plans.free.auditsPerDay",
+    "plans.free.dossiersPerMonth",
   ] as const)("%s exists", (key) => expect(SETTINGS[key]).toBeDefined());
 });
