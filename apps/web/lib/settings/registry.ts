@@ -77,7 +77,6 @@ export const SETTINGS = {
   ),
   "tal.rate.enteredOn": text(GROUP.general, "2026-10-29", { max: 10, empty: true }),
   /** How long the free first audit, once given, can be used (yomizaka#261: it is a pot of the credits ledger, and a pot lapses). */
-  "audit.freeValidDays": integer(GROUP.general, 3650, { min: 1, max: 36500, unit: "days" }),
   // The credits ledger's knobs (the zone days and months are counted in, how long a hold keeps credits back): @krizaka/credits'.
   ...inGroup(GROUP.general, creditsSettings),
   // Where kept documents live (ADR-010): the provider and its coordinates, chosen by the admin. `local` (the default) follows the deployment's environment.
@@ -129,6 +128,8 @@ export const SETTINGS = {
   ...LIMIT_SETTINGS,
   // Plans: what each plan allows beside its price. The prices and the verifications a subscription includes are the price
   // catalogue's (ADR-009, `lib/pricing.ts`, admin `/config/prices`); « pro » is any subscription (Agencies or Law firms).
+  // The free allowance of an account without a plan: dossiers a calendar month, no card (krizaka-internal#45); `audit.freeFirst` switches it off.
+  "plans.free.dossiersPerMonth": integer(GROUP.plans, 1, { min: 0, max: 100, unit: "dossiers" }, WORKSPACE),
   "plans.free.auditsPerDay": integer(GROUP.plans, 0, { min: 0, max: 1000, unit: "audits" }, WORKSPACE),
   "plans.free.apiKeys": integer(GROUP.plans, 0, { min: 0, max: 100, unit: "keys" }, WORKSPACE),
   "plans.pro.apiKeys": integer(GROUP.plans, 10, { min: 0, max: 100, unit: "keys" }, WORKSPACE),

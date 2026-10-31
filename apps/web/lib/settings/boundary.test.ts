@@ -49,18 +49,18 @@ describe("maintenance", () => {
 
 describe("the audit caps of a plan: the included volume is the catalogue entry's, the rest the settings'", () => {
   it.each([
-    ["pro", 100, {}, { perMonth: 100, perDay: 0, freeFirst: true }],
+    ["pro", 100, {}, { perMonth: 100, perDay: 0, freeDossiers: 1 }],
     [
       "pro",
       750,
       { "limits.bonusAuditsPerMonth": 20, "plans.pro.auditsPerDay": 10 },
-      { perMonth: 770, perDay: 10, freeFirst: true },
+      { perMonth: 770, perDay: 10, freeDossiers: 1 },
     ],
     [
       "free",
       0,
       { "plans.free.auditsPerDay": 3, "audit.freeFirst": false },
-      { perMonth: Number.POSITIVE_INFINITY, perDay: 3, freeFirst: false },
+      { perMonth: Number.POSITIVE_INFINITY, perDay: 3, freeDossiers: 0 },
     ],
   ] as const)("%s including %i with %j", (plan, included, changes, caps) =>
     expect(auditCapsOf(snapshot(changes), plan, included)).toEqual(caps),

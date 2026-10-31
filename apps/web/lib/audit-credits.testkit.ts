@@ -1,16 +1,17 @@
 import type { Query } from "@krizaka/db";
 
+import { systemClock } from "../app/system-clock";
 import { ensureFreeAudit, ledger, spendAudit } from "./audit-credits";
 import { transaction } from "./db";
 
-/** For tests: puts an account's audits where the ledger keeps them — the free first audit given and spent, then `credits` paid ones. */
+/** For tests: puts an account's audits where the ledger keeps them — the month's free dossier given and spent, then `credits` paid ones. */
 export async function seedAudits(
   accountId: string,
   { credits = 0, freeUsed = false }: { credits?: number; freeUsed?: boolean },
 ): Promise<void> {
   await transaction(async (tx: Query) => {
     if (freeUsed) {
-      await ensureFreeAudit(tx, accountId);
+      await ensureFreeAudit(tx, accountId, systemClock.now(), 1);
       await spendAudit(tx, accountId);
     }
     if (credits > 0)

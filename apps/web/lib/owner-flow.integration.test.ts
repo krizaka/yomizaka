@@ -76,7 +76,7 @@ describe.runIf(enabled)("from the applicant's upload to the owner's report (yomi
       store,
       purgeAfterHours: 24,
       keepAllowed: true,
-      auditCaps: () => ({ perMonth: 1000, perDay: 0, freeFirst: false }),
+      auditCaps: () => ({ perMonth: 1000, perDay: 0, freeDossiers: 0 }),
     };
     for (const [type, text] of [
       ["pay-stub", "PAY FLOW"],

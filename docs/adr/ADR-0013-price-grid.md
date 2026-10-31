@@ -40,7 +40,7 @@ the page already says. Monthly only, cancel any time, no annual commitment, no s
 | Building manager (`yomizaka.firm`) | **149 $** a month | 500 verifications a month |
 | More than 500 a month | on quote | a line to the contact form, no figure |
 
-- **The free trial is the first verification, once per account** (the `audit.freeFirst` setting, already enforced). No timed
+- **The free offer is one dossier a calendar month, renewed on the 1st, no card** (krizaka-internal#45: `plans.free.dossiersPerMonth`, set by the administrator; `audit.freeFirst` switches it off). No timed
   trial: the code has none, and a pilot account gets the same rule. A pilot price, if one is ever needed, is a catalogue entry
   scheduled by the administrator, never a code path.
 - **Past the included volume** the account waits until next month (429 `FAIR_USE`): the code bills no usage (#373), so no

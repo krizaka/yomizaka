@@ -3,15 +3,14 @@ import { randomUUID } from "node:crypto";
 import { createCredits, CREDITS_CODE, CreditsError, dbCreditStore, ENTRY_TYPE, ON_EXHAUSTED } from "@krizaka/credits";
 import { readCreditsSettings } from "@krizaka/credits/settings";
 import type { Query } from "@krizaka/db";
-import { addHours } from "@krizaka/time";
 
 import { systemClock } from "../app/system-clock";
 import { refuse } from "./http";
 import { appSettings } from "./settings/instance";
 
 /**
- * The credits of audits, on `@krizaka/credits`'s ledger (yomizaka#261). A paid credit is a PURCHASED pot; the free first audit is a granted
- * pot of one (source `free-audit`) that, once spent, moves on to purchased credits (`fallback_paid`). The pots are never edited: what is left
+ * The credits of audits, on `@krizaka/credits`'s ledger (yomizaka#261). A paid credit is a PURCHASED pot; the month's free dossiers are a granted
+ * pot (source `free-audit`, one a month) that, once spent, moves on to purchased credits (`fallback_paid`). The pots are never edited: what is left
  * is the sum of their lines, and a spent audit is one operation (`consume.audit-<id>`) that a refund gives back, once, to the pots it drew from.
  */
 export const ledger = createCredits({
@@ -19,27 +18,30 @@ export const ledger = createCredits({
   settings: () => readCreditsSettings((key) => appSettings().get(key) as Promise<string | number | undefined>),
 });
 
-/** Where the free first audit comes from: the `source` of its pot. */
+/** Where the free dossiers come from: the `source` of its pot. */
 export const FREE_AUDIT_SOURCE = "free-audit";
 const REASON = "audit";
 const HISTORY_WINDOW = 100;
-// @fixed: hours in a day, the unit the time package adds in
-const HOURS_PER_DAY = 24;
 // @fixed: the stem of a consume key; the reader of a refund strips it to name the operation the package keyed
 const CONSUME_PREFIX = "consume.";
 
 export type PotKind = "free" | "credit";
 
-/** The pot of the free first audit, made once per account (the key is the account): a replay answers the same pot. */
-export async function ensureFreeAudit(tx: Query, accountId: string): Promise<string> {
-  const validDays = (await appSettings().get("audit.freeValidDays")) as number;
+/** The month a date falls in, in UTC (`2026-10`): the free allowance renews on the 1st. */
+const monthOf = (now: Date): string => now.toISOString().slice(0, 7);
+
+/** The first instant of the month after `now`'s, in UTC: when a month's free pot lapses. */
+export const nextMonth = (now: Date): Date => new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+
+/** The pot of the month's free dossiers (`plans.free.dossiersPerMonth`), made once per account and month (the key is both): a replay answers the same pot. */
+export async function ensureFreeAudit(tx: Query, accountId: string, now: Date, amount: number): Promise<string> {
   const { grantId } = await ledger.grant(tx, {
     accountId,
-    amount: 1,
-    expiresAt: addHours(systemClock.now(), validDays * HOURS_PER_DAY),
+    amount,
+    expiresAt: nextMonth(now),
     onExhausted: ON_EXHAUSTED.fallbackPaid,
     source: FREE_AUDIT_SOURCE,
-    idempotencyKey: `free-audit-${accountId}`,
+    idempotencyKey: `free-audit-${accountId}-${monthOf(now)}`,
   });
   return grantId;
 }
