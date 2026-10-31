@@ -3852,6 +3852,10 @@
         "android-documents": {
           "name": "On Android: the app",
           "body": "Your collections and the documents in them, then the checks and their batches, on the phone."
+        },
+        "mac-library": {
+          "name": "On the Mac: the library",
+          "body": "Your library in a folder on the Mac, and the documents in it."
         }
       }
     }
