@@ -30,7 +30,9 @@ export default async function Pricing({ params }: Readonly<{ params: Promise<{ l
   const locale = asLocale((await params).locale);
   const view = await pricingView(locale, new Date());
   const session = await pageSession();
-  if (session) redirect(`/${locale}${CONSOLE_ROUTES.plans}`);
+  if (session) {
+    redirect(`/${locale}${CONSOLE_ROUTES.plans}`);
+  }
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />

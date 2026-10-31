@@ -30,10 +30,14 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
  * checkout as Plan and billing.
  */
 export default async function PlansPage({ params }: Readonly<{ params: Promise<{ locale: string }> }>) {
-  if (!PRICING_PUBLISHED) notFound();
+  if (!PRICING_PUBLISHED) {
+    notFound();
+  }
   const locale = asLocale((await params).locale);
   const session = await pageSession();
-  if (!session) notFound();
+  if (!session) {
+    notFound();
+  }
   const now = new Date();
   const [view, entitlement, settings] = await Promise.all([
     pricingView(locale, now),
