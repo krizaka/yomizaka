@@ -57,7 +57,8 @@ async function firstFile(page, { origin }) {
 }
 /** The hydrated first paint, settled: the account picture decoded (the initial gives way to it). The date in words is the server's, frozen by APP_VISUAL_NOW (scripts/ci-visual-start.sh). */
 async function settleHeaderLive(page) {
-  await page.locator('time[data-testid="today"]').first().waitFor();
+  // The home no longer writes the date in words (yomizaka#680: « Check a document » is its one action); the check page still does.
+  if (!/\/app\/?$/.test(new URL(page.url()).pathname)) await page.locator('time[data-testid="today"]').first().waitFor();
   await page.waitForFunction(() =>
     [...document.images].some((img) => img.getBoundingClientRect().top < 120 && img.complete && img.naturalWidth > 0),
   );
