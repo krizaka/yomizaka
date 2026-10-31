@@ -15,7 +15,7 @@ const refuses = (over, message) => assert.throws(() => assertFilm(film(over)), m
 // yomizaka#1968: bug -> missing guard. Each case is a defect the founder saw on the live download page.
 describe("the guard of a film before it is published (yomizaka#1968)", () => {
   it("accepts a film in its language, its frame's shape, clean, ending on its result", () => {
-    assertFilm(film());
+    assert.doesNotThrow(() => assertFilm(film()));
   });
   it("reads the language from the name and refuses a name without one", () => {
     assert.deepEqual(parseFilmName("mac-library-fr.mp4"), { platform: "mac", flow: "library", locale: "fr" });

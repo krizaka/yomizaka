@@ -12,7 +12,7 @@ case "$LOCALE" in en|fr) ;; *) echo "DEMO_LOCALE must be en or fr" >&2; exit 1 ;
 : "${DEMO_ACCOUNT_EMAIL:?DEMO_ACCOUNT_EMAIL is required}"
 : "${DEMO_ACCOUNT_PASSWORD:?DEMO_ACCOUNT_PASSWORD is required}"
 
-if [ "${1:-}" = "reseed" ]; then
+if [[ "${1:-}" == "reseed" ]]; then
   LOCALE="${2:?usage: ci-mobile-backend.sh reseed <en|fr>}"
   DB_PASS="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' e2e-pg | sed -n 's/^POSTGRES_PASSWORD=//p')"
   echo "::add-mask::$DB_PASS"
