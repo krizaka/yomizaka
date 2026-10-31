@@ -130,6 +130,11 @@ export function FlowSteps({ rows }: Readonly<{ rows: readonly CheckRow[] }>) {
  * asked « Quel document ? » for that file only. A single file opens its report as soon as it is under way; with several,
  * each row links to its own (yomizaka#318, #326).
  */
+/** The question arrives under the title and the steps: on a phone it is brought on screen, never left below the fold. */
+function showQuestion(el: HTMLDivElement | null) {
+  el?.scrollIntoView({ block: "nearest" });
+}
+
 export function CheckView({
   jurisdictions = ["QC"],
   catalogue = [],
@@ -203,7 +208,7 @@ export function CheckView({
           ) : null}
           <FlowSteps rows={rows} />
           {asking.map((r) => (
-            <div key={r.id} data-testid="check-kind-question">
+            <div key={r.id} data-testid="check-kind-question" ref={showQuestion}>
               <KindQuestion filename={r.filename} onPick={(kind) => pick(r, kind)} />
             </div>
           ))}
