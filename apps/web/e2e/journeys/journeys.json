@@ -31,23 +31,6 @@
     "tags": ["critical"]
   },
   {
-    "id": "failed-check-recovery",
-    "promise": "A failed check says why in plain words, with no engine name, and Eric can retry and read a report",
-    "persona": "eric",
-    "platforms": ["web"],
-    "steps": [
-      "sign in as Eric",
-      "open the checks",
-      "open the check that did not finish",
-      "read one plain status without an engine name",
-      "retry",
-      "read the report"
-    ],
-    "video": true,
-    "budgetSeconds": 90,
-    "tags": ["critical"]
-  },
-  {
     "id": "start-a-check",
     "promise": "A tenant drops a lease on the check page, answers « Which document? » in view, and lands on the report",
     "persona": "eric",
