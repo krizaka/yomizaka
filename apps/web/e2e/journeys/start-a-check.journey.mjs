@@ -42,8 +42,15 @@ for (const screen of SCREENS) {
 
     const question = page.getByTestId("check-kind-question");
     await expect(question, "« Quel document ? » appears").toBeVisible({ timeout: 30_000 });
-    const box = await question.boundingBox();
-    expect(box && box.y + box.height <= screen.viewport.height, "the question is on the screen, no scroll").toBe(true);
+    await expect
+      .poll(
+        async () => {
+          const box = await question.boundingBox();
+          return Boolean(box && box.y >= 0 && box.y + box.height <= screen.viewport.height);
+        },
+        { message: "the question is on the screen" },
+      )
+      .toBe(true);
 
     await question.getByRole("radio", { name: /Bail/ }).click();
     await expect(page, "the report opens").toHaveURL(/\/app\/documents\/[^/]+\/rapport/, { timeout: 30_000 });
