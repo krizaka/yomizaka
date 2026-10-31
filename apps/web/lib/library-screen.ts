@@ -22,3 +22,11 @@ export function libraryScreen({ documents, screening }: { documents: number; scr
     emptyDropzone: documents === 0,
   };
 }
+
+/**
+ * Whether a list shows its tabs, filters and count (krizaka-internal#1902): only once there is something to filter. A list with no
+ * row and no filter in force is an empty state with one action, never a wall of zeros; a filter that empties the list stays visible
+ * so that it can be removed.
+ */
+export const controlsShown = ({ total, filtering }: { total: number; filtering: boolean }): boolean =>
+  total > 0 || filtering;

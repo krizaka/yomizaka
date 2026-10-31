@@ -510,6 +510,8 @@
       "screeningCta": "Check a tenant's file",
       "examplesTitle": "Or try an example",
       "examplesNote": "Fictitious documents, checked like yours.",
+      "sampleReport": "See a sample report (demo data)",
+      "emptyDossiers": "Your dossiers appear here: a collection per building or topic, and the applicant files you open. Your first check creates the first one.",
       "tryExample": "Try this example",
       "exampleTenant": "A lease offered to a tenant",
       "exampleLandlord": "A landlord's lease template",

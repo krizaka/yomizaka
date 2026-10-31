@@ -11,6 +11,11 @@ const CAST = {
     email: process.env.E2E_EMAIL ?? "eric@demo.yomizaka.test",
     password: process.env.E2E_PASSWORD ?? "ci-only-demo-password-0123",
   },
+  // The cast's Camille holds no document and no dossier: a person on their first day (the local cast secret of a CI database).
+  camille: {
+    email: process.env.E2E_CAMILLE_EMAIL ?? "camille@demo.yomizaka.test",
+    password: process.env.E2E_CAMILLE_PASSWORD ?? "local-cast-password-0123",
+  },
 };
 
 /** Signs the persona in through the form, as a person would, and keeps the browser state in `file`. */
