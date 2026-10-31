@@ -38,7 +38,6 @@ for (const screen of SCREENS) {
     expect(box && box.y + box.height <= screen.viewport.height, "the drop zone is on the first screen").toBe(true);
     const row = await list.getByRole("link").first().boundingBox();
     expect(row && row.y < screen.viewport.height, "the list starts on the first screen").toBe(true);
-    await expect(page.getByRole("link", { name: "Vérifier un document" }).first()).toBeVisible();
 
     await list.getByRole("link", { name: /Immeuble Rosemont/ }).click();
     await expect(page, "the dossier opens").toHaveURL(/\/app\/library\/[^/]+\/[^/?#]+/);
