@@ -23,6 +23,7 @@ export const CONSOLE_ROUTES = {
   check: "/app/check",
   search: "/app/search",
   account: "/app/settings",
+  plans: "/app/plans",
 } as const;
 
 /** The tabs of the Vérifications destination (the map's, `@yomizaka/core`); the second lives in the address: `/app/verifications?tab=lots`. */

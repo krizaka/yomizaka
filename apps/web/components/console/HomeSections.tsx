@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { CONSOLE_ROUTES } from "@/lib/console-nav";
 import type { CreditsFigure } from "@/lib/home-b2";
 import { useSay } from "@/lib/i18n-client";
 import { pluralKey } from "@/lib/plural";
@@ -32,7 +33,7 @@ export function UsageLine({ figure }: Readonly<{ figure: CreditsFigure }>) {
       data-testid="credits"
     >
       <span>{text}</span>
-      <Link href={`/${locale}/app/settings/facturation`} className="font-semibold text-fg-accent hover:underline">
+      <Link href={`/${locale}${CONSOLE_ROUTES.plans}`} className="font-semibold text-fg-accent hover:underline">
         {say("home.credits.manage")} →
       </Link>
     </p>

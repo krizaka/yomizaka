@@ -120,11 +120,11 @@ describe("the home (krizaka-internal#1898)", () => {
     }
   });
 
-  it("says the plan and usage as one line leading to Plan and billing", () => {
+  it("says the plan and usage as one line leading to the plans", () => {
     const html = render({ credits: { kind: "pro", used: 12, cap: 100, renewsAt: null, cancelled: false } });
     expect(html.match(/data-testid="credits"/g)).toHaveLength(1);
     expect(readable(html)).toContain("12 sur 100");
-    expect(html).toContain('href="/fr/app/settings/facturation"');
+    expect(html).toContain('href="/fr/app/plans"');
   });
 
   it("keeps a sticky « Vérifier un document » for a phone, and links the batch import quietly", () => {

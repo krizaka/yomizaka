@@ -1,4 +1,5 @@
 import { PricingPage } from "@krizaka/ui/pricing-page";
+import type { ReactNode } from "react";
 
 import { ButtonLink } from "@/components/ButtonLink";
 import { format, getDictionary, type Locale } from "@/lib/i18n";
@@ -19,6 +20,7 @@ export function PricingContent({
   freeFirst,
   launch,
   status,
+  action,
 }: Readonly<{
   locale: Locale;
   sold: PricingPlan[];
@@ -26,6 +28,8 @@ export function PricingContent({
   freeFirst: boolean;
   launch?: { headline: string; ends: string; lines: { plan: string; text: string }[] };
   status: string;
+  /** The call to action of a plan; without it, the public page's « Sign in ». The in-app plans page passes its own (subscribe / current plan). */
+  action?: (plan: string) => ReactNode;
 }>) {
   const p = getDictionary(locale).pricing;
   const words = (plan: string) => p.plans[plan as keyof typeof p.plans];
@@ -66,7 +70,7 @@ export function PricingContent({
             ...(s.plan === "document" && freeFirst ? [p.freeFirst] : []),
             s.per === "month" ? p.cancel : p.noSubscription,
           ],
-          action: (
+          action: action?.(s.plan) ?? (
             <ButtonLink href={signInPath(locale)} variant="secondary" size="md">
               {getDictionary(locale).chrome.signIn}
             </ButtonLink>

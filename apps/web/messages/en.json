@@ -371,7 +371,7 @@
         "pro": "{used} of {cap} audits this month",
         "renews": "Renews on {date}",
         "ends": "Ends on {date}",
-        "manage": "Credits and usage"
+        "manage": "Plans and usage"
       },
       "check": {
         "title": "Check a document",
@@ -3978,6 +3978,10 @@
       "always": "The regular price applies after the offer."
     },
     "plansLabel": "Plans",
+    "subscribe": "Subscribe — {plan}",
+    "current": "Current plan",
+    "paymentsOff": "Payment is not available yet on this environment.",
+    "inApp": "Choose your plan",
     "perMonth": " a month, plus taxes",
     "perDossier": " per dossier, plus taxes",
     "beyond": "Then {rate} for each further dossier, charged to your card on file, plus taxes",
