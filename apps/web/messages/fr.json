@@ -3815,6 +3815,10 @@
         "android-documents": {
           "name": "Sur Android : l’application",
           "body": "Vos collections et leurs documents, puis les vérifications et leurs lots, sur le téléphone."
+        },
+        "mac-library": {
+          "name": "Sur le Mac : la bibliothèque",
+          "body": "Votre bibliothèque dans un dossier du Mac, et les documents qu’elle contient."
         }
       }
     }
