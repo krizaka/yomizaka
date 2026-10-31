@@ -106,12 +106,16 @@ const off = signInMode === "off" ? await session() : undefined;
  * leases is looked for off camera, and the film opens ON it. The guard stays as strict as it was.
  */
 const DEMO_COLLECTION = /Rosemont/;
+const BINDER_NAME = '[data-testid="binder-name"]'; // the name inside a binder tab (an anchor)
 const binderHref = async (state) => {
   const ctx = await browser.newContext({ viewport: VIEWPORT, colorScheme: "dark", locale, storageState: state });
   const page = await ctx.newPage();
   await page.goto(`${base}/${locale}/app`, { waitUntil: "networkidle" });
-  const tab = page.locator("a[title]").filter({ hasText: DEMO_COLLECTION }).first();
-  const href = (await tab.count()) ? await tab.getAttribute("href") : null;
+  const name = page.locator(BINDER_NAME).filter({ hasText: DEMO_COLLECTION }).first();
+  const href = await name
+    .waitFor({ timeout: 30_000 })
+    .then(() => name.evaluate((el) => el.closest("a")?.getAttribute("href") ?? null))
+    .catch(() => null);
   await ctx.close();
   if (!href) throw new Error("no binder tab holds the demo leases: the demo data is missing");
   return href;
@@ -125,7 +129,7 @@ await record(
     else await page.goto(binderUrl, { waitUntil: "networkidle" });
     // Signed in on camera, the app opens on the empty default collection: the tab with the demo leases is opened before the first marker.
     if (signInMode === "camera") {
-      const tab = page.locator("a[title]").filter({ hasText: DEMO_COLLECTION }).first();
+      const tab = page.locator(BINDER_NAME).filter({ hasText: DEMO_COLLECTION }).first();
       await tab.waitFor({ timeout: 30_000 });
       await tab.click();
       await page.waitForLoadState("networkidle");
