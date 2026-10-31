@@ -11,7 +11,9 @@ const CURRENCY = "cad";
 /** The overage biller on the configured processor, or null while payments are off (an overage is then never charged: the account waits). */
 export function overageBiller(): OverageBiller | null {
   const port = paymentsFrom(env());
-  if (!port) return null;
+  if (!port) {
+    return null;
+  }
   return {
     async charge({ key, customerId, amountMinor, description }) {
       const { ref } = await port.charge({

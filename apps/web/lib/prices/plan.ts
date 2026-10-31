@@ -43,10 +43,12 @@ export function onSale(
   if (
     entry.amountCents === null ||
     (entry.availability !== AVAILABILITY.public && entry.availability !== AVAILABILITY.founderLimited)
-  )
+  ) {
     throw refuse(409, "NOT_ON_SALE", "This price is not on sale");
-  if (processor.amount !== entry.amountCents || processor.currency.toLowerCase() !== entry.currency.toLowerCase())
+  }
+  if (processor.amount !== entry.amountCents || processor.currency.toLowerCase() !== entry.currency.toLowerCase()) {
     throw refuse(503, "PRICE_MISMATCH", "The processor's price differs from the catalogue's");
+  }
   return { ...entry, amountCents: entry.amountCents };
 }
 

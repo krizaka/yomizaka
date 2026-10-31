@@ -36,7 +36,9 @@ export async function dossierOf(query: Query, documentId: string): Promise<strin
     "SELECT COALESCE(screening_id, id) AS dossier FROM documents WHERE id = $1",
     [documentId],
   );
-  if (!row) throw refuse(404, "NOT_FOUND", "No such document");
+  if (!row) {
+    throw refuse(404, "NOT_FOUND", "No such document");
+  }
   return row.dossier;
 }
 
@@ -55,7 +57,9 @@ export async function chargeOverage(
     "SELECT refunded_at FROM overage_charges WHERE dossier_id = $1 AND period = $2",
     [charge.dossierId, charge.period],
   );
-  if (kept && !kept.refunded_at) return;
+  if (kept && !kept.refunded_at) {
+    return;
+  }
   let ref: string;
   try {
     ({ ref } = await biller.charge({
@@ -65,8 +69,9 @@ export async function chargeOverage(
       description: sale.description,
     }));
   } catch (error) {
-    if (biller.isDeclined(error))
+    if (biller.isDeclined(error)) {
       throw refuse(402, "PAYWALL", "The card was declined for the dossier beyond the included volume");
+    }
     throw error;
   }
   await query(
@@ -89,7 +94,9 @@ export async function refundOverage(
     "SELECT charge_ref FROM overage_charges WHERE dossier_id = $1 AND period = $2 AND refunded_at IS NULL",
     [charge.dossierId, charge.period],
   );
-  if (!row) return false;
+  if (!row) {
+    return false;
+  }
   // The processor first (its key makes a retry harmless), then the record: a refund that failed stays to give back.
   await biller.refund(row.charge_ref, `${keyOf(charge)}-refund`);
   await query("UPDATE overage_charges SET refunded_at = $3 WHERE dossier_id = $1 AND period = $2", [

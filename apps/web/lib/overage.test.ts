@@ -12,22 +12,31 @@ function fakes() {
   const calls: string[] = [];
   let declined = false;
   const query = async <T extends QueryResultRow>(text: string, values: unknown[] = []): Promise<T[]> => {
-    if (text.includes("COALESCE(screening_id, id)")) return [{ dossier: DOSSIER } as unknown as T];
+    if (text.includes("COALESCE(screening_id, id)")) {
+      return [{ dossier: DOSSIER } as unknown as T];
+    }
     const id = `${values[0]}/${values[1]}`;
-    if (text.startsWith("SELECT refunded_at"))
+    if (text.startsWith("SELECT refunded_at")) {
       return charges.has(id) ? [{ refunded_at: charges.get(id)!.refunded ? NOW : null } as unknown as T] : [];
+    }
     if (text.startsWith("SELECT charge_ref")) {
       const c = charges.get(id);
       return c && !c.refunded ? [{ charge_ref: c.ref } as unknown as T] : [];
     }
-    if (text.startsWith("INSERT INTO overage_charges")) charges.set(id, { ref: String(values[3]), refunded: false });
-    if (text.startsWith("UPDATE overage_charges")) charges.get(id)!.refunded = true;
+    if (text.startsWith("INSERT INTO overage_charges")) {
+      charges.set(id, { ref: String(values[3]), refunded: false });
+    }
+    if (text.startsWith("UPDATE overage_charges")) {
+      charges.get(id)!.refunded = true;
+    }
     return [];
   };
   const biller: OverageBiller = {
     async charge({ key, amountMinor }) {
       calls.push(`charge ${key} ${amountMinor}`);
-      if (declined) throw new Error("declined");
+      if (declined) {
+        throw new Error("declined");
+      }
       return { ref: `in_${key}` };
     },
     async refund(ref, key) {

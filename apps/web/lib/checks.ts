@@ -37,8 +37,9 @@ export async function startCheck(
   now: Date,
   environment: FlowEnvironment,
 ): Promise<StartedCheck> {
-  if (request.studio === "document-authenticity" && (await isPhotoDocument(account.id, documentId)))
+  if (request.studio === "document-authenticity" && (await isPhotoDocument(account.id, documentId))) {
     throw refuse(422, "PHOTO_AUTHENTICITY", "A document made from photos has no file of its own to examine");
+  }
   const { flowVersionId } = await resolveStart(
     account,
     request.studio,

@@ -168,21 +168,19 @@ export async function reserveAudit(
     throw refuse(429, "DAILY_LIMIT", "Daily limit reached", { limit: caps.perDay });
   }
   if (e.pro) {
-    if ((await used("month")) >= caps.perMonth) {
-      if (caps.overageCents > 0 && biller && documentId && e.customerId) {
-        await chargeOverage(query, biller, {
-          accountId,
-          customerId: e.customerId,
-          documentId,
-          cents: caps.overageCents,
-          now,
-          description: "Yomizaka — dossier beyond the included volume",
-        });
-        return "overage";
-      }
-      throw refuse(429, "FAIR_USE", "Monthly fair-use limit reached", { limit: caps.perMonth });
+    if ((await used("month")) < caps.perMonth) {
+      return "pro";
     }
-    return "pro";
+    if (caps.overageCents > 0 && biller && documentId && e.customerId) {
+      return billOverage(query, biller, {
+        accountId,
+        customerId: e.customerId,
+        documentId,
+        cents: caps.overageCents,
+        now,
+      });
+    }
+    throw refuse(429, "FAIR_USE", "Monthly fair-use limit reached", { limit: caps.perMonth });
   }
   return transaction(async (tx) => {
     if (caps.freeDossiers > 0) {
@@ -190,6 +188,16 @@ export async function reserveAudit(
     }
     return spendAudit(tx, accountId);
   });
+}
+
+/** Charges the dossier beyond the included volume (ADR-0015) and says so: the audit is then `overage`. */
+async function billOverage(
+  query: Query,
+  biller: OverageBiller,
+  sale: { accountId: string; customerId: string; documentId: string; cents: number; now: Date },
+): Promise<AuditVia> {
+  await chargeOverage(query, biller, { ...sale, description: "Yomizaka — dossier beyond the included volume" });
+  return "overage";
 }
 
 /** Gives the audit back when the run could not start: the free first audit or the paid credit it spent, or the overage charged (Pro and exempt spent nothing). */
@@ -219,7 +227,9 @@ export async function refundFailedAudit(
     "UPDATE analyses SET billed_via = 'overage-refunded' WHERE id = $1 AND billed_via = 'overage' RETURNING document_id",
     [analysisId],
   );
-  if (overage) return biller ? refundOverage(query, biller, overage.document_id, now) : false;
+  if (overage) {
+    return biller ? refundOverage(query, biller, overage.document_id, now) : false;
+  }
   return transaction(async (tx) => {
     const [done] = await tx<{ billed_via: string; document_id: string }>(
       "UPDATE analyses SET billed_via = billed_via || '-refunded' WHERE id = $1 AND billed_via IN ('free', 'credit') RETURNING billed_via, document_id",

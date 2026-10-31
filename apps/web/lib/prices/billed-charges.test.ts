@@ -33,8 +33,11 @@ describe("no public page advertises a charge the code does not make (#373)", () 
     const subscriptions = Object.values(SOLD)
       .filter((s) => s.mode === "subscription")
       .map((s) => s.key);
-    for (const entry of await priceCatalogue(PRICES, memoryPriceStore()).catalogue(NOW))
-      if (Object.keys(entry.limits).includes(LIMIT.overage)) expect(subscriptions, entry.key).toContain(entry.key);
+    for (const entry of await priceCatalogue(PRICES, memoryPriceStore()).catalogue(NOW)) {
+      if (Object.keys(entry.limits).includes(LIMIT.overage)) {
+        expect(subscriptions, entry.key).toContain(entry.key);
+      }
+    }
     const billing = readFileSync(join(ROOT, "lib/billing.ts"), "utf8");
     expect(billing).toContain("chargeOverage(");
     expect(billing).toContain("caps.overageCents > 0");
@@ -52,7 +55,9 @@ describe("no public page advertises a charge the code does not make (#373)", () 
         .map((e) => squash(money(e.amountCents!, locale)));
       const shown = (html.match(MONEY) ?? []).map(squash);
       expect(shown.length).toBeGreaterThan(0);
-      for (const amount of shown) expect(billed, amount).toContain(amount);
+      for (const amount of shown) {
+        expect(billed, amount).toContain(amount);
+      }
     });
   }
 
@@ -78,7 +83,9 @@ describe("no public page advertises a charge the code does not make (#373)", () 
     const sources = (dir: string): string[] =>
       readdirSync(dir).flatMap((name) => {
         const path = join(dir, name);
-        if (statSync(path).isDirectory()) return name === "node_modules" || name.startsWith(".") ? [] : sources(path);
+        if (statSync(path).isDirectory()) {
+          return name === "node_modules" || name.startsWith(".") ? [] : sources(path);
+        }
         return /\.(tsx?|json)$/.test(name) && !/\.test\.tsx?$/.test(name) ? [path] : [];
       });
     const readers = [

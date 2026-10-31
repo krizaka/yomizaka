@@ -2,7 +2,7 @@ import { memoryStore, type OrazakaRun } from "@yomizaka/core";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { CONSENT_MEANS, CONSENT_PURPOSE, grantConsent, NOTICE_VERSION } from "./applicant-consent";
-import { requestApplicantFile, type UploadContext, uploadApplicantDocument } from "./applicant-file";
+import { requestApplicantFile, uploadApplicantDocument, type UploadContext } from "./applicant-file";
 import { dossiersUsedThisMonth, entitlementOf, reserveAudit } from "./billing";
 import { migrate, query } from "./db";
 import { useOrazakaClient } from "./orazaka";

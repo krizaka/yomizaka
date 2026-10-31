@@ -32,9 +32,12 @@ export function withFeatures<T extends { insight?: DocumentInsight }>(
   doc: T,
   features: { documentInsight: boolean; personalInfo: boolean },
 ): T {
-  if (!features.documentInsight) return { ...doc, insight: undefined };
-  if (!features.personalInfo && doc.insight)
+  if (!features.documentInsight) {
+    return { ...doc, insight: undefined };
+  }
+  if (!features.personalInfo && doc.insight) {
     return { ...doc, insight: { ...doc.insight, pii: { total: 0, counts: {} } } };
+  }
   return doc;
 }
 
