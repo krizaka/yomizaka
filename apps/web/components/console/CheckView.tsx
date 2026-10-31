@@ -4,6 +4,7 @@ import { BillingIcon, EditIcon, HomeIcon, MoreIcon } from "@krizaka/icons";
 import { ChoiceCards } from "@krizaka/ui/account-settings";
 import { List } from "@krizaka/ui/list";
 import { PageHeader } from "@krizaka/ui/page-header";
+import { Stepper, type StepStatus } from "@krizaka/ui/stepper";
 import { DOCUMENT_KINDS, type DocumentKind, type Jurisdiction } from "@yomizaka/core";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -11,7 +12,7 @@ import { useEffect, useReducer, useRef } from "react";
 
 import { useAppConfig } from "@/lib/app-config-client";
 import { type CatalogueItem, checkHref } from "@/lib/check-catalogue";
-import { type CheckRow, checkRows, opensAtOnce, reportHref } from "@/lib/check-queue";
+import { type CheckRow, checkRows, FLOW_STEPS, flowStep, opensAtOnce, reportHref } from "@/lib/check-queue";
 import { checksTabHref, CONSOLE_ROUTES } from "@/lib/console-nav";
 import type { CreditsFigure } from "@/lib/home-b2";
 import { useSay } from "@/lib/i18n-client";
@@ -65,7 +66,13 @@ export function KindQuestion({
 export function CheckQueue({
   rows,
   onPick,
-}: Readonly<{ rows: readonly CheckRow[]; onPick: (row: CheckRow, kind: DocumentKind) => void }>) {
+  questions = true,
+}: Readonly<{
+  rows: readonly CheckRow[];
+  onPick: (row: CheckRow, kind: DocumentKind) => void;
+  /** False when the page asks « Which document? » itself, above the drop, in view (krizaka-internal#1899). */
+  questions?: boolean;
+}>) {
   const { say, locale } = useSay();
   if (!rows.length) return null;
   const linked = (r: CheckRow) => r.stage === "started" || r.stage === "refused";
@@ -82,12 +89,37 @@ export function CheckQueue({
           ...(linked(r) ? { href: reportHref(locale, r) } : {}),
         })}
       />
-      {rows
+      {(questions ? rows : [])
         .filter((r) => r.stage === "asking")
         .map((r) => (
           <KindQuestion key={r.id} filename={r.filename} onPick={(kind) => onPick(r, kind)} />
         ))}
     </div>
+  );
+}
+
+/** The flow in four steps (krizaka-internal#1899): the person always sees where they are and what comes next. */
+export function FlowSteps({ rows }: Readonly<{ rows: readonly CheckRow[] }>) {
+  const { say } = useSay();
+  const current = FLOW_STEPS.indexOf(flowStep(rows));
+  const statusOf = (index: number): StepStatus => {
+    if (index < current) {
+      return "done";
+    }
+    return index === current ? "current" : "upcoming";
+  };
+  return (
+    <Stepper
+      aria-label={say("check.flow.label")}
+      data-testid="check-flow"
+      labels={{
+        done: say("steps.state.done"),
+        current: say("steps.state.current"),
+        upcoming: say("steps.state.upcoming"),
+        error: say("steps.state.error"),
+      }}
+      steps={FLOW_STEPS.map((id, index) => ({ title: say(`check.flow.${id}`), status: statusOf(index) }))}
+    />
   );
 }
 
@@ -98,6 +130,11 @@ export function CheckQueue({
  * asked « Quel document ? » for that file only. A single file opens its report as soon as it is under way; with several,
  * each row links to its own (yomizaka#318, #326).
  */
+/** The question arrives under the title and the steps: on a phone it is brought on screen, never left below the fold. */
+function showQuestion(el: HTMLDivElement | null) {
+  el?.scrollIntoView({ block: "nearest" });
+}
+
 export function CheckView({
   jurisdictions = ["QC"],
   catalogue = [],
@@ -130,6 +167,7 @@ export function CheckView({
     dispatch({ type: "landed", document });
     void follow(document.id, requested);
   };
+  const asking = rows.filter((r) => r.stage === "asking");
   const pick = (row: CheckRow, chosen: DocumentKind) => {
     dispatch({ type: "picked", id: row.id });
     // Named by the person, the kind is sure; a mismatch with what Yomizaka read is still confirmed on the report tab.
@@ -168,13 +206,19 @@ export function CheckView({
               </Link>
             </p>
           ) : null}
+          <FlowSteps rows={rows} />
+          {asking.map((r) => (
+            <div key={r.id} data-testid="check-kind-question" ref={showQuestion}>
+              <KindQuestion filename={r.filename} onPick={(kind) => pick(r, kind)} />
+            </div>
+          ))}
           <DocumentUploader
             defaultsFirst
             kindRef={kindRef}
             onDrop={(files) => (dropped.current += files.length)}
             onUploaded={landed}
           />
-          <CheckQueue rows={rows} onPick={pick} />
+          <CheckQueue rows={rows} onPick={pick} questions={false} />
         </div>
         {catalogue.length ? <CheckCatalogue items={catalogue} /> : null}
       </div>

@@ -424,4 +424,21 @@ export const PERSONA_ERIC = {
     "emploi-villeray-2-expiree",
     "facture-2026-04-total-faux",
   ],
+  /**
+   * The checks that did not finish, one per real cause (krizaka-internal#1936): the error is the sentence the app stores, which a
+   * person never reads — `lib/check-failure` turns it into plain words. Idempotent like the rest of the seed.
+   */
+  failed: [
+    {
+      id: "bail-rosemont-2-conforme",
+      studio: "compliance-check",
+      error: "Orazaka finished without a report Yomizaka can read",
+    },
+    { id: "bail-rosemont-3-conforme", studio: "compliance-check", error: "The run ended failed" },
+    {
+      id: "contrat-entretien-rosemont",
+      studio: "document-authenticity",
+      error: "Orazaka refused the document as sent",
+    },
+  ],
 };

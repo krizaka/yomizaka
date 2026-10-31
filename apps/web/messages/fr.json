@@ -207,11 +207,18 @@
         "place": "dans « Mes documents »",
         "modify": "Modifier"
       },
+      "flow": {
+        "label": "Vos étapes",
+        "drop": "Dépôt",
+        "kind": "Type",
+        "running": "Vérification",
+        "result": "Rapport"
+      },
       "queueLabel": "Les fichiers déposés",
       "stages": {
         "reading": "Lecture du document…",
         "starting": "Lancement de la vérification…",
-        "asking": "Quel document ? Dites-le ci-dessous.",
+        "asking": "Quel document ? Répondez juste au-dessus.",
         "started": "Vérification lancée",
         "refused": "Non lancée : {reason}"
       },
@@ -3404,6 +3411,33 @@
       "kinds": {
         "applicant_file": "Dossiers de candidature",
         "document": "Documents"
+      }
+    },
+    "checkFailure": {
+      "title": "Cette vérification n'a pas abouti",
+      "retry": "Réessayer",
+      "chooseFile": "Choisir un autre fichier",
+      "retrying": "Nouvelle vérification…",
+      "unreadable": {
+        "pdf": "Nous n'avons pas pu lire ce PDF assez bien pour le vérifier. Réessayez, ou choisissez une autre copie du document.",
+        "scan": "Ce PDF est un scan ou une photo : nous n'avons pas pu en lire le texte. Choisissez une version dont on peut sélectionner le texte, ou réessayez.",
+        "office": "Nous n'avons pas pu ouvrir ce document. Enregistrez-le de nouveau en PDF ou en Word et choisissez-le encore, ou réessayez.",
+        "text": "Nous n'avons pas pu lire ce fichier texte. Vérifiez qu'il n'est pas vide, puis réessayez ou choisissez un autre fichier.",
+        "other": "Nous n'avons pas pu lire ce fichier. Choisissez un PDF ou un fichier Word, ou réessayez."
+      },
+      "refused": {
+        "pdf": "Ce PDF n'est pas sous une forme que nous pouvons vérifier. Choisissez une autre copie du document, ou réessayez.",
+        "scan": "Ce scan n'est pas sous une forme que nous pouvons vérifier. Choisissez un PDF dont on peut sélectionner le texte, ou réessayez.",
+        "office": "Ce document n'est pas sous une forme que nous pouvons vérifier. Enregistrez-le en PDF et choisissez-le de nouveau.",
+        "text": "Ce texte n'est pas sous une forme que nous pouvons vérifier. Collez-le dans un document, enregistrez-le en PDF, puis choisissez-le de nouveau.",
+        "other": "Ce fichier n'est pas sous une forme que nous pouvons vérifier. Choisissez un PDF ou un fichier Word."
+      },
+      "interrupted": {
+        "pdf": "La vérification s'est arrêtée avant la fin, sans que votre document y soit pour rien. Réessayez.",
+        "scan": "La vérification s'est arrêtée avant la fin, sans que votre document y soit pour rien. Réessayez.",
+        "office": "La vérification s'est arrêtée avant la fin, sans que votre document y soit pour rien. Réessayez.",
+        "text": "La vérification s'est arrêtée avant la fin, sans que votre fichier y soit pour rien. Réessayez.",
+        "other": "La vérification s'est arrêtée avant la fin, sans que votre fichier y soit pour rien. Réessayez."
       }
     }
   },

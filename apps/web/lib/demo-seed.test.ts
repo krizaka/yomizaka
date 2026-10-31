@@ -107,7 +107,7 @@ describe("the demo seed", () => {
     expect(checks.length).toBeGreaterThan(0);
     for (const c of checks) {
       expect(c.sql).not.toMatch(/now\(\)/i);
-      expect(Date.parse(c.values[6] as string)).toBeLessThanOrEqual(now.getTime());
+      expect(Date.parse(c.values.at(-1) as string)).toBeLessThanOrEqual(now.getTime());
     }
     expect(stampBefore(now, 3)).toBe("2026-10-30T11:57:00.000Z");
   });

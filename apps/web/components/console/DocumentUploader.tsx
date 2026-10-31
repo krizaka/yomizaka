@@ -91,9 +91,12 @@ export function DocumentUploader({
       const requested = kindRef?.current ?? "auto";
       try {
         const result = await send([file], requested, placement, keepRef.current, signal, onProgress);
-        setNotices((n) =>
-          [say(result.duplicate ? "library.duplicate" : "library.uploaded", { name: file.name }), ...n].slice(0, 3),
-        );
+        // In the check flow the queue's row says where the file stands; a green notice would push « Which document? » out of view.
+        if (!defaultsFirst) {
+          setNotices((n) =>
+            [say(result.duplicate ? "library.duplicate" : "library.uploaded", { name: file.name }), ...n].slice(0, 3),
+          );
+        }
         if (onUploaded) {
           onUploaded(result.document, requested);
         } else {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { CHECK_STAGES, checkDefaults, checkRows, opensAtOnce, reportHref } from "./check-queue";
+import { CHECK_STAGES, checkDefaults, checkRows, FLOW_STEPS, flowStep, opensAtOnce, reportHref } from "./check-queue";
 
 /** The check flow's logic (yomizaka#326, P9 of the design direction § 5.4). */
 describe("the defaults, named before the drop (Errata 6)", () => {
@@ -64,5 +64,20 @@ describe("where a row leads", () => {
     expect(opensAtOnce(3)).toBe(false);
     expect(reportHref("fr", { id: "a", refused: null })).toBe("/fr/app/documents/a/rapport");
     expect(reportHref("en", { id: "a", refused: "PAYWALL" })).toBe("/en/app/documents/a/rapport?refused=PAYWALL");
+  });
+});
+
+describe("the flow's step (krizaka-internal#1899)", () => {
+  const rows = (...stages: Array<(typeof CHECK_STAGES)[number]>) => stages.map((stage) => ({ stage }));
+  it("goes drop, kind, running, result, in that order", () => {
+    expect(FLOW_STEPS).toEqual(["drop", "kind", "running", "result"]);
+  });
+  it("is drop with nothing dropped and result once every file is under way or refused", () => {
+    expect(flowStep([])).toBe("drop");
+    expect(flowStep(rows("started", "refused"))).toBe("result");
+  });
+  it("puts the question first: a file waiting for its kind outranks one still running", () => {
+    expect(flowStep(rows("reading", "asking"))).toBe("kind");
+    expect(flowStep(rows("starting", "started"))).toBe("running");
   });
 });

@@ -43,7 +43,11 @@ describe.runIf(enabled)("the demo seed (Éric)", () => {
     expect(a.owner).toBe(b.owner);
     expect(a.collections).toEqual(expected);
     expect(b.collections).toEqual(expected);
-    expect(await snapshot(a.owner)).toEqual({ documents: 16, analyses: PERSONA_ERIC.checked.length, collections: 6 });
+    expect(await snapshot(a.owner)).toEqual({
+      documents: 16,
+      analyses: PERSONA_ERIC.checked.length + PERSONA_ERIC.failed.length,
+      collections: 6,
+    });
   });
   const fresh = () => `eric-${Math.random().toString(36).slice(2)}@demo.yomizaka.test`;
   const snapshot = async (owner: string) => ({
@@ -71,7 +75,7 @@ describe.runIf(enabled)("the demo seed (Éric)", () => {
       "SELECT a.run_id, a.blueprint_version, a.inputs FROM analyses a JOIN documents d ON d.id = a.document_id WHERE d.owner_id = $1",
       [owner],
     );
-    expect(checks).toHaveLength(PERSONA_ERIC.checked.length);
+    expect(checks).toHaveLength(PERSONA_ERIC.checked.length + PERSONA_ERIC.failed.length);
     for (const c of checks) {
       expect(c.run_id).toMatch(/^seeded-/);
       expect(c.blueprint_version).toBeNull();

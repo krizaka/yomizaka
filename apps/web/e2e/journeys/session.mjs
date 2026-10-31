@@ -32,3 +32,22 @@ export function sessionsFor(browser, workerIndex) {
     },
   });
 }
+
+/** The two screens the journeys run on: the first screen of each is the promise (desktop films, the phone is checked as is). */
+export const SCREENS = [
+  { name: "desktop", viewport: { width: 1440, height: 900 } },
+  { name: "phone", viewport: { width: 390, height: 844 } },
+];
+
+/** A page of `persona` on `screen`, signed in, at `path`; the desktop one is filmed when the journey says so. */
+export async function openAs({ browser, info, persona, screen, journey, videoContextOptions, path }) {
+  const state = await sessionsFor(browser, info.workerIndex).stateFor(persona);
+  const context = await browser.newContext({
+    storageState: state,
+    viewport: screen.viewport,
+    ...(screen.name === "desktop" ? videoContextOptions(journey, { dir: info.outputDir }) : {}),
+  });
+  const page = await context.newPage();
+  await page.goto(new URL(path, BASE).toString());
+  return page;
+}

@@ -9,7 +9,7 @@ import { I18nProvider } from "@/lib/i18n-client";
 import en from "@/messages/en.json";
 import fr from "@/messages/fr.json";
 
-import { CheckQueue, CheckView, KindQuestion } from "./CheckView";
+import { CheckQueue, CheckView, FlowSteps, KindQuestion } from "./CheckView";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push() {}, replace() {}, refresh() {} }),
@@ -107,6 +107,25 @@ describe("the queue: one row per file, its stage in words (yomizaka#326, P9)", (
     expect(readable(html)).toContain(fr.console.library.kindUnsure.replace("{name}", "a.pdf"));
     expect(readable(html)).toContain(fr.console.library.kindUnsure.replace("{name}", "c.pdf"));
     expect(readable(html)).not.toContain(fr.console.library.kindUnsure.replace("{name}", "b.pdf"));
+  });
+
+  it("leaves the question to the page when asked to: the queue lists the row without its own radiogroup", () => {
+    const html = wrap(<CheckQueue rows={[row("a", "asking")] as never} onPick={() => undefined} questions={false} />);
+    expect(html).not.toContain('role="radiogroup"');
+    expect(readable(html)).toContain("a.pdf");
+  });
+
+  it("draws the flow in four steps, the current one marked, in both languages (krizaka-internal#1899)", () => {
+    for (const locale of ["fr", "en"] as const) {
+      const m = MESSAGES[locale].console.check.flow;
+      const html = wrap(<FlowSteps rows={[row("a", "asking")] as never} />, locale);
+      const text = readable(html);
+      for (const label of [m.drop, m.kind, m.running, m.result]) {
+        expect(text).toContain(label);
+      }
+      expect(html).toContain('data-testid="check-flow"');
+    }
+    expect(render()).toContain('data-testid="check-flow"');
   });
 
   it("links a row that is under way, or refused, to its report", () => {

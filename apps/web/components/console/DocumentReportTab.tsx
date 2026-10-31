@@ -1,11 +1,11 @@
 "use client";
 
-import { Alert } from "@krizaka/ui/alert";
 import { Footnotes } from "@krizaka/ui/footnote";
 import { type Audience, checkSteps, type DocumentView, isSeededCheck } from "@yomizaka/core";
 import type { ReactNode } from "react";
 
 import { ClosingNoteView } from "@/components/ClosingNoteView";
+import { CheckFailure } from "@/components/console/CheckFailure";
 import { CheckSteps } from "@/components/console/CheckSteps";
 import { buildNote, noteInputOf, noteSourceOf } from "@/lib/closing-note/build";
 import { useSay } from "@/lib/i18n-client";
@@ -53,6 +53,9 @@ export function DocumentReportTab({
     ...(latestReport?.reviewStatus ? [say("analysis.toReview")] : []),
     ...(shown && isSeededCheck(shown) ? [say("analysis.seededNote")] : []),
   ];
+  // The newest check decides: one that did not finish is said once, in plain words, with a way out; an older failure behind a report is history.
+  const newest = doc.analyses[0];
+  const failure = newest && failures.includes(newest) && !newest.report && !runningStudio ? newest : null;
   const body = () => {
     if (latestCompliance && latestReport) {
       return (
@@ -88,10 +91,12 @@ export function DocumentReportTab({
     }
     return (
       <>
-        <div>
-          <h2 className="font-display text-lg font-bold text-fg">{say("reportFace.notChecked")}</h2>
-          <p className="text-sm text-fg-secondary">{say(`document.checksLeadBy.${wordingOf(perspective)}`)}</p>
-        </div>
+        {failure ? null : (
+          <div>
+            <h2 className="font-display text-lg font-bold text-fg">{say("reportFace.notChecked")}</h2>
+            <p className="text-sm text-fg-secondary">{say(`document.checksLeadBy.${wordingOf(perspective)}`)}</p>
+          </div>
+        )}
         <div className="grid gap-4 md:grid-cols-2">{startCards}</div>
       </>
     );
@@ -107,11 +112,7 @@ export function DocumentReportTab({
           steps={checkSteps({ hasText: doc.hasText, analysis: { studio: runningStudio, status: "running" } })}
         />
       ) : null}
-      {failures.map((a) => (
-        <Alert key={a.id} tone="danger">
-          {a.error}
-        </Alert>
-      ))}
+      {failure ? <CheckFailure doc={doc} failed={failure} /> : null}
       {body()}
       {bundle && bundle.documents.length > 1 ? <LeaseBundleSection bundle={bundle} /> : null}
       <p className="m-0 text-xs text-fg-muted">{say("library.informative")}</p>

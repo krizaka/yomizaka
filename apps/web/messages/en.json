@@ -207,11 +207,18 @@
         "place": "in « My documents »",
         "modify": "Change"
       },
+      "flow": {
+        "label": "Your steps",
+        "drop": "Drop",
+        "kind": "Kind",
+        "running": "Check",
+        "result": "Report"
+      },
       "queueLabel": "The files dropped",
       "stages": {
         "reading": "Reading the document…",
         "starting": "Starting the check…",
-        "asking": "Which document? Say it below.",
+        "asking": "Which document? Answer just above.",
         "started": "Check started",
         "refused": "Not started: {reason}"
       },
@@ -3404,6 +3411,33 @@
       "kinds": {
         "applicant_file": "Applicant files",
         "document": "Documents"
+      }
+    },
+    "checkFailure": {
+      "title": "This check did not finish",
+      "retry": "Try again",
+      "chooseFile": "Choose another file",
+      "retrying": "Checking again…",
+      "unreadable": {
+        "pdf": "We could not read this PDF well enough to check it. Try again, or choose another copy of the document.",
+        "scan": "This PDF is a scan or a photo: we could not read its text. Choose a version you can select text in, or try again.",
+        "office": "We could not open this document. Save it again as a PDF or a Word file and choose it again, or try again.",
+        "text": "We could not read this text file. Check that it is not empty, then try again or choose another file.",
+        "other": "We could not read this file. Choose a PDF or a Word file, or try again."
+      },
+      "refused": {
+        "pdf": "This PDF is not in a form we can check. Choose another copy of the document, or try again.",
+        "scan": "This scan is not in a form we can check. Choose a PDF you can select text in, or try again.",
+        "office": "This document is not in a form we can check. Save it as a PDF and choose it again.",
+        "text": "This text is not in a form we can check. Paste it into a document and save it as a PDF, then choose it again.",
+        "other": "This file is not in a form we can check. Choose a PDF or a Word file."
+      },
+      "interrupted": {
+        "pdf": "The check stopped before the end, through no fault of your document. Try again.",
+        "scan": "The check stopped before the end, through no fault of your document. Try again.",
+        "office": "The check stopped before the end, through no fault of your document. Try again.",
+        "text": "The check stopped before the end, through no fault of your file. Try again.",
+        "other": "The check stopped before the end, through no fault of your file. Try again."
       }
     }
   },
