@@ -7,7 +7,7 @@ import Link from "next/link";
 import { AppVideoPlayer } from "@/components/download/AppVideoPlayer";
 import { SiteHeader } from "@/components/SiteChrome";
 import { SiteFooter } from "@/components/SiteFooter";
-import { APP_VIDEOS, videoId, videoUrl } from "@/lib/app-videos";
+import { frameOf, videoId, videosFor, videoUrl, wordsId } from "@/lib/app-videos";
 import { DOWNLOAD_STATE, DOWNLOADS, downloadState } from "@/lib/downloads";
 import { asLocale, format, getDictionary } from "@/lib/i18n";
 import { pageMetadata, siteJsonLd } from "@/lib/seo";
@@ -17,14 +17,12 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return pageMetadata(asLocale((await params).locale), "download");
 }
 
-/** The shape of a recording: the web at 16:10, a phone at its screen's 9:19.5 (the box is the same before and after the play). */
-const SHAPE = { web: { width: 1280, height: 800 } } as const;
-const PHONE = { width: 390, height: 845 };
-
 /** Where the apps are: a card per platform, « soon » until its link exists; then the videos the e2e tests recorded. */
 export default async function Download({ params }: Readonly<{ params: Promise<{ locale: string }> }>) {
   const locale = asLocale((await params).locale);
   const t = getDictionary(locale);
+  // The clips of this page's language only, each in its platform's frame (content/video-frames.json: desktop 16:10 for the web and the Mac, a phone for the phone).
+  const videos = videosFor(locale);
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd(locale)) }} />
@@ -63,13 +61,16 @@ export default async function Download({ params }: Readonly<{ params: Promise<{ 
               })}
             </ul>
           </Section>
-          {APP_VIDEOS.length > 0 && (
+          {videos.length > 0 && (
             <Section divider>
               <SectionHeading title={t.download.videos.title} lead={t.download.videos.lead} />
               <ul className="grid gap-6 sm:grid-cols-2">
-                {APP_VIDEOS.map((video) => {
-                  const words = t.download.videos.items[videoId(video) as keyof typeof t.download.videos.items];
-                  const shape = SHAPE[video.platform as keyof typeof SHAPE] ?? PHONE;
+                {videos.map((video) => {
+                  const words = t.download.videos.items[wordsId(video) as keyof typeof t.download.videos.items];
+                  const shape = frameOf(video.platform);
+                  if (!shape) {
+                    return null;
+                  }
                   const date = new Intl.DateTimeFormat(locale, { dateStyle: "long" }).format(
                     new Date(video.capturedAt),
                   );
