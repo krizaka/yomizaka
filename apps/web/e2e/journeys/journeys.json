@@ -13,5 +13,19 @@
     "video": true,
     "budgetSeconds": 60,
     "tags": ["smoke"]
+  },
+  {
+    "id": "home-check-and-dossiers",
+    "promise": "A tenant signs in and sees « Check a document » and the dossiers on one screen, then opens a dossier",
+    "persona": "eric",
+    "platforms": ["web"],
+    "steps": [
+      "sign in as Eric",
+      "see the home titled Accueil with the drop zone and the list of dossiers on the first screen",
+      "open Immeuble Rosemont from the list"
+    ],
+    "video": true,
+    "budgetSeconds": 60,
+    "tags": []
   }
 ]
