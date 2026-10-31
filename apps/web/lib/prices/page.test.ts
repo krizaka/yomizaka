@@ -31,11 +31,25 @@ describe("the pricing page reads the catalogue (#388)", () => {
   it("shows one document, then the two subscriptions with what they include, then what is soon", async () => {
     const lines = await linesOf(fresh(), "fr");
     expect(lines.sold.map((l) => [l.plan, nb(l.price), l.per, l.included])).toEqual([
-      ["document", "4,99 $", "document", null],
-      ["agency", "49,00 $", "month", 100],
-      ["firm", "149,00 $", "month", 500],
+      ["document", "9,99 $", "dossier", null],
+      ["agency", "49,00 $", "month", 15],
+      ["firm", "149,00 $", "month", 60],
     ]);
     expect(lines.soon).toEqual([{ plan: "fullFile" }, { plan: "backgroundCheck" }, { plan: "screening" }]);
+  });
+
+  it("says the rate of a dossier past the volume, per dossier, from the catalogue (#44, ADR-0015)", async () => {
+    const lines = await linesOf(fresh(), "en");
+    expect(lines.sold.map((l) => [l.plan, l.overage])).toEqual([
+      ["document", null],
+      ["agency", "$3.00"],
+      ["firm", "$2.00"],
+    ]);
+    const html = nb(await render(fresh(), "en"));
+    expect(html).toContain("Then $3.00 for each further dossier");
+    expect(html).toContain("15 dossiers included each month");
+    expect(html).toContain("per dossier, plus taxes");
+    expect(nb(await render(fresh(), "fr"))).toContain("Puis 3,00 $ par dossier supplémentaire");
   });
 
   it("never shows the internal entry", async () => {
@@ -58,8 +72,8 @@ describe("the pricing page reads the catalogue (#388)", () => {
     const volume = (html: string) => /<p data-volume[^>]*><a href="([^"]+)">([^<]+)<\/a><\/p>/.exec(html);
     const fr = volume(nb(await render(c, "fr"))!)!;
     expect(fr[1]).toContain("/contact?topic=yomizaka");
-    expect(fr[2]).toBe("Plus de 500 vérifications par mois ? Écrivez-nous");
-    expect(volume(nb(await render(c, "en"))!)![2]).toBe("More than 500 verifications a month? Write to us");
+    expect(fr[2]).toBe("Plus de 60 dossiers par mois ? Écrivez-nous");
+    expect(volume(nb(await render(c, "en"))!)![2]).toBe("More than 60 dossiers a month? Write to us");
     await c.schedule(ADMIN, PRICE.firm, { limits: { included: 600 } }, NOW, NOW);
     expect(volume(nb(await render(c, "en"))!)![2]).toContain("600");
   });

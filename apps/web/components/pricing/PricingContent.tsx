@@ -57,11 +57,11 @@ export function PricingContent({
           id: s.plan,
           name: words(s.plan).name,
           price: s.price,
-          unit: s.per === "month" ? p.perMonth : p.perDocument,
+          unit: s.per === "month" ? p.perMonth : p.perDossier,
           features: [
             ...words(s.plan).features,
             ...(s.included === null ? [] : [format(p.included, { included: s.included })]),
-            ...(s.included !== null ? [p.paused] : []),
+            ...(s.included !== null ? [s.overage === null ? p.paused : format(p.beyond, { rate: s.overage })] : []),
             ...(launch?.lines.filter((l) => l.plan === s.plan).map((l) => l.text) ?? []),
             ...(s.plan === "document" && freeFirst ? [p.freeFirst] : []),
             s.per === "month" ? p.cancel : p.noSubscription,

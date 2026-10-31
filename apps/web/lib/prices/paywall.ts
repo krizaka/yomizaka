@@ -8,7 +8,7 @@ export interface SoldPrice {
   limits: Record<string, number>;
 }
 
-/** The paywall's figures, from the catalogue: the price of one document, the Agencies subscription and what it includes. Null while one is missing (nothing is guessed). */
+/** The paywall's figures, from the catalogue: the price of one dossier, the Agencies subscription and what it includes. Null while one is missing (nothing is guessed). */
 export function paywallFigures(
   prices: readonly SoldPrice[],
   locale: "en" | "fr",
