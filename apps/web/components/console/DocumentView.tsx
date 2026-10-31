@@ -28,6 +28,7 @@ import { useSay } from "@/lib/i18n-client";
 import type { LeaseBundle } from "@/lib/lease-bundle";
 import { collectionLabel } from "@/lib/organisation/display";
 import { libraryPath } from "@/lib/organisation/rules";
+import type { RegistryReport } from "@/lib/registries/report";
 import type { Answer } from "@/lib/signal-answers";
 
 import { documentFacts, highlightsOf } from "./document-view-model";
@@ -134,6 +135,7 @@ export function DocumentView({
   place = null,
   perspective = null,
   bundle = null,
+  registry = null,
   answers,
   offer,
 }: Readonly<{
@@ -142,6 +144,7 @@ export function DocumentView({
   place?: DocumentPlace | null;
   perspective?: Audience | null;
   bundle?: LeaseBundle | null;
+  registry?: RegistryReport | null;
   answers?: Record<string, Answer>;
   offer: { studios: readonly Studio[]; jurisdictions: readonly Jurisdiction[]; rulesets: readonly string[] };
 }>) {
@@ -257,6 +260,7 @@ export function DocumentView({
           selection={selection}
           perspective={perspective}
           bundle={bundle}
+          registry={registry}
           answers={answers}
           startCards={startCards}
         />

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 
 import { storesOf } from "@/app/active-store";
+import { systemClock } from "@/app/system-clock";
 import { DocumentView } from "@/components/console/DocumentView";
 import { pageSession } from "@/lib/access";
 import { isDocumentTab, movedDocumentHref, searchOf } from "@/lib/console-nav";
@@ -13,6 +14,7 @@ import { HttpError } from "@/lib/http";
 import { asLocale, getDictionary } from "@/lib/i18n";
 import { leaseBundle } from "@/lib/lease-bundle";
 import { placeOf } from "@/lib/organisation/store";
+import { registries, registryReport } from "@/lib/registries";
 import { withFeatures } from "@/lib/settings/boundary";
 import { insightFeatures } from "@/lib/settings/guards";
 import { answersOf } from "@/lib/signal-answers";
@@ -58,11 +60,17 @@ export default async function DocumentTabPage({
   }
   // The lease and its annexes read as one (yomizaka#499): read for the report tab only, and shown only when there are annexes.
   const bundle = tab === "rapport" ? await leaseBundle(session.account.id, id) : null;
+  // The QST number printed on the document, read against Revenu Québec's public register (yomizaka#627): the report tab only.
+  const registry =
+    tab === "rapport" && document.insight
+      ? await registryReport(document.insight.understanding, registries(systemClock), systemClock.now())
+      : null;
   return (
     <DocumentView
       initial={document}
       tab={tab}
       bundle={bundle}
+      registry={registry}
       place={await placeOf(query, session.account.id, id)}
       perspective={session.account.perspective}
       answers={Object.fromEntries((await answersOf([id])).get(id) ?? [])}

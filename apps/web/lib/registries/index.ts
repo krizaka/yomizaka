@@ -5,6 +5,7 @@ import { revenuQuebecQstAdapter } from "./revenu-quebec-qst";
 
 export * from "./model";
 export { normaliseQstNumber } from "./qst-number";
+export { type PrintedFacts, QST_API, type RegistryReport, registryReport } from "./report";
 export { revenuQuebecQstAdapter } from "./revenu-quebec-qst";
 export { checkIssuer, registrantOfNeq, registrySignals } from "./signals";
 

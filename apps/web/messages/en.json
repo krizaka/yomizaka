@@ -764,6 +764,39 @@
           "observation": "A photo carried a GPS position. It was removed at upload and never kept.",
           "mayIndicate": "Nothing about authenticity: most phones write it by default."
         }
+      },
+      "registry": {
+        "title": "Business registers",
+        "lead": "The numbers printed on the document, read against public registers. A question to ask the issuer, never a verdict on the document.",
+        "qst": "QST number {number}",
+        "gstHst": "GST/HST number",
+        "neq": "NEQ (Québec enterprise number)",
+        "source": "Source: {source}, consulted {date}.",
+        "nothingToAsk": "The register holds this number: nothing to ask.",
+        "notLookedUp": {
+          "bad-format": "Not looked up: the number is not in the expected format.",
+          "unavailable": "Not looked up: the register did not answer.",
+          "not-authorised": "Not looked up: this register is not consulted yet.",
+          "not-covered": "Not looked up: this register is not consulted."
+        },
+        "signals": {
+          "REG-001": {
+            "observation": "The QST number printed on the document was not found in the {source} register.",
+            "mayIndicate": "A typing error, a number not yet registered, or a number that belongs to another business.",
+            "askFor": "Ask the issuer to confirm the QST number."
+          },
+          "REG-002": {
+            "observation": "The name printed on the document differs from the name in the register.",
+            "mayIndicate": "A trade name, a recent change of name, or an abbreviation.",
+            "where": "Document: {document} · Register: {register}",
+            "askFor": "Ask the issuer how the two names relate."
+          },
+          "REG-003": {
+            "observation": "The {source} register shows this registration revoked or cancelled as of {date}, on or before the date of the document.",
+            "mayIndicate": "A registration closed and reopened under the same number, or a late filing.",
+            "askFor": "Ask the issuer for the current registration."
+          }
+        }
       }
     },
     "search": {
@@ -1748,7 +1781,11 @@
         "cloudResultConnected": "Your cloud is connected.",
         "cloudResultDenied": "The connection was not allowed, or was cancelled. Nothing changed.",
         "cloudResultFailed": "The connection could not be completed. Nothing changed: try again.",
-        "clouds": { "dropbox": "Dropbox", "google-drive": "Google Drive", "onedrive": "OneDrive" }
+        "clouds": {
+          "dropbox": "Dropbox",
+          "google-drive": "Google Drive",
+          "onedrive": "OneDrive"
+        }
       },
       "appearance": {
         "lead": "How the app looks on this device. Kept in this browser.",

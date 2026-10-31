@@ -11,11 +11,13 @@ import { buildNote, noteInputOf, noteSourceOf } from "@/lib/closing-note/build";
 import { useSay } from "@/lib/i18n-client";
 import type { LeaseBundle } from "@/lib/lease-bundle";
 import { wordingOf } from "@/lib/perspective-defaults";
+import type { RegistryReport } from "@/lib/registries/report";
 import type { Answer } from "@/lib/signal-answers";
 
 import { AuthenticitySignals } from "./AuthenticitySignals";
 import type { DocumentFacts } from "./document-view-model";
 import { LeaseBundleSection } from "./LeaseBundleSection";
+import { RegistryChecks } from "./RegistryChecks";
 import { FindingList, type FindingSelection, TechnicalDetails, VerdictBand } from "./ReportFace";
 
 /**
@@ -30,6 +32,7 @@ export function DocumentReportTab({
   selection,
   perspective,
   bundle = null,
+  registry = null,
   answers,
   startCards,
 }: Readonly<{
@@ -38,6 +41,7 @@ export function DocumentReportTab({
   selection: FindingSelection;
   perspective: Audience | null;
   bundle?: LeaseBundle | null;
+  registry?: RegistryReport | null;
   answers?: Record<string, Answer>;
   startCards: ReactNode;
 }>) {
@@ -62,6 +66,7 @@ export function DocumentReportTab({
               answers={answers}
             />
           ) : null}
+          {registry ? <RegistryChecks report={registry} /> : null}
           <TechnicalDetails documentId={doc.id} analysis={latestCompliance} />
           <details className="rounded-lg border border-border-default p-3">
             <summary className="cursor-pointer text-sm font-semibold text-fg">{say("document.details")}</summary>
@@ -76,6 +81,7 @@ export function DocumentReportTab({
       return (
         <>
           <AuthenticitySignals report={latestAuthenticity.report} runId={latestAuthenticity.runId} answers={answers} />
+          {registry ? <RegistryChecks report={registry} /> : null}
           <TechnicalDetails documentId={doc.id} analysis={latestAuthenticity} />
         </>
       );
