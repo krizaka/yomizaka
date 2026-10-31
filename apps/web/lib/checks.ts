@@ -11,6 +11,7 @@ import type {
 
 import { storeForDocument } from "@/app/active-store";
 
+import { overageBiller } from "../app/overage-biller";
 import { getAnalysis, startAnalysis } from "./analyses";
 import { type AuditVia, releaseAudit, reserveAudit } from "./billing";
 import { query } from "./db";
@@ -36,8 +37,9 @@ export async function startCheck(
   now: Date,
   environment: FlowEnvironment,
 ): Promise<StartedCheck> {
-  if (request.studio === "document-authenticity" && (await isPhotoDocument(account.id, documentId)))
+  if (request.studio === "document-authenticity" && (await isPhotoDocument(account.id, documentId))) {
     throw refuse(422, "PHOTO_AUTHENTICITY", "A document made from photos has no file of its own to examine");
+  }
   const { flowVersionId } = await resolveStart(
     account,
     request.studio,
@@ -59,7 +61,7 @@ export async function startCheck(
     await recordPreflight(query, account.id, "reused");
     return { analysis: await getAnalysis(account.id, documentId, reusable), reused: true };
   }
-  const via = await reserveAudit(query, account.id, now, capsFor(settings, now), documentId);
+  const via = await reserveAudit(query, account.id, now, capsFor(settings, now), documentId, overageBiller());
   try {
     return {
       analysis: await startAnalysis(
@@ -74,7 +76,7 @@ export async function startCheck(
       via,
     };
   } catch (error) {
-    await releaseAudit(query, account.id, via);
+    await releaseAudit(query, account.id, via, now, documentId, overageBiller());
     throw error;
   }
 }

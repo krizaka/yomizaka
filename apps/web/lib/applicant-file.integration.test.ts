@@ -51,7 +51,7 @@ describe.runIf(enabled)("the applicant file (yomizaka#127)", () => {
     store,
     purgeAfterHours: 24,
     keepAllowed,
-    auditCaps: () => ({ perMonth: 1000, perDay: 0, freeDossiers: 0 }),
+    auditCaps: () => ({ perMonth: 1000, perDay: 0, freeDossiers: 0, overageCents: 0 }),
   });
   let landlordA: { id: string; email: string };
   let landlordB: { id: string; email: string };

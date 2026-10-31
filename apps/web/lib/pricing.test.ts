@@ -45,8 +45,9 @@ describe("the seed is the grid of ADR-0013 (yomizaka#367, #388)", () => {
       limits: { included: 500 },
     });
     expect(byKey[PRICE.api]).toMatchObject({ unit: "document", amountCents: 22, availability: AVAILABILITY.internal });
-    for (const k of [PRICE.fullFile, PRICE.backgroundCheck, PRICE.screening])
+    for (const k of [PRICE.fullFile, PRICE.backgroundCheck, PRICE.screening]) {
       expect(byKey[k]).toMatchObject({ amountCents: null, availability: AVAILABILITY.preparing });
+    }
   });
 });
 
@@ -97,8 +98,9 @@ describe("every price shown comes from the catalogue", () => {
     expect(shown.map((e) => e.key)).not.toContain(PRICE.api);
     expect(JSON.stringify(shown)).not.toContain('"amountCents":22');
     expect(shown.filter((e) => e.availability === AVAILABILITY.internal)).toEqual([]);
-    for (const e of shown.filter((p) => p.availability === AVAILABILITY.preparing))
+    for (const e of shown.filter((p) => p.availability === AVAILABILITY.preparing)) {
       expect(e).toMatchObject({ amountCents: null, limits: {} });
+    }
   });
 });
 
@@ -142,5 +144,19 @@ describe("a checkout charges the catalogue's amount, or nothing", () => {
     await c.schedule(ADMIN, PRICE.agency, { availability: AVAILABILITY.preparing }, NOW, NOW);
     const entry = await c.entry(PRICE.agency, NOW);
     expect(() => onSale(entry, { amount: 4900, currency: "cad" })).toThrow(expect.objectContaining({ status: 409 }));
+  });
+});
+
+describe("the rate of a dossier beyond the included volume is the version's (ADR-0015)", () => {
+  it("is 0 where the entry has none, and a subscription keeps the rate it was sold at", async () => {
+    const { overageFor } = await import("./prices/plan");
+    const c = catalogue();
+    const sold = await soldEntry(c, "agency", NOW);
+    const oldSub = { planKey: PRICE.agency, priceVersionId: sold.versionId };
+    expect(await overageFor(c, oldSub, NOW)).toBe(0);
+    await c.schedule(ADMIN, PRICE.agency, { limits: { [LIMIT.included]: 100, [LIMIT.overage]: 300 } }, LATER, NOW);
+    const fresh = await soldEntry(c, "agency", LATER);
+    expect(await overageFor(c, { planKey: PRICE.agency, priceVersionId: fresh.versionId }, LATER)).toBe(300);
+    expect(await overageFor(c, oldSub, LATER)).toBe(0);
   });
 });

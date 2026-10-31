@@ -32,9 +32,12 @@ export function withFeatures<T extends { insight?: DocumentInsight }>(
   doc: T,
   features: { documentInsight: boolean; personalInfo: boolean },
 ): T {
-  if (!features.documentInsight) return { ...doc, insight: undefined };
-  if (!features.personalInfo && doc.insight)
+  if (!features.documentInsight) {
+    return { ...doc, insight: undefined };
+  }
+  if (!features.personalInfo && doc.insight) {
     return { ...doc, insight: { ...doc.insight, pii: { total: 0, counts: {} } } };
+  }
   return doc;
 }
 
@@ -86,8 +89,11 @@ export interface AuditCaps {
   perDay: number;
   /** The dossiers an account without a plan may verify free each calendar month (0 = none): renewed monthly, no card. */
   freeDossiers: number;
+  /** What a dossier beyond `perMonth` costs, in cents before taxes (0: none is billed, the account waits for next month). */
+  overageCents: number;
 }
-export const auditCapsOf = (s: Snapshot, plan: "free" | "pro", included: number): AuditCaps => ({
+export const auditCapsOf = (s: Snapshot, plan: "free" | "pro", included: number, overageCents = 0): AuditCaps => ({
+  overageCents,
   perMonth: plan === "pro" ? included + value<number>(s, "limits.bonusAuditsPerMonth") : Number.POSITIVE_INFINITY,
   perDay: value<number>(s, plan === "pro" ? "plans.pro.auditsPerDay" : "plans.free.auditsPerDay"),
   freeDossiers: value<boolean>(s, "audit.freeFirst") ? value<number>(s, "plans.free.dossiersPerMonth") : 0,
