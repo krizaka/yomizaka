@@ -20,9 +20,15 @@ const FAILED = FR.console.dossiers.check.failed;
 const ENGINE_WORDS = /orazaka|engine|moteur|stack ?trace|exception|runId|run id|ENGINE_/i;
 
 test("a failed check says why in plain words and recovers", async ({ browser }, info) => {
-  test.fail(true, "krizaka-internal#1900: a failed check does not say why or recover yet (and the seed has no failed check)");
+  test.fail(
+    true,
+    "krizaka-internal#1900: a failed check does not say why or recover yet (and the seed has no failed check)",
+  );
   const state = await sessionsFor(browser, info.workerIndex).stateFor("eric");
-  const context = await browser.newContext({ storageState: state, ...videoContextOptions(JOURNEY, { dir: info.outputDir }) });
+  const context = await browser.newContext({
+    storageState: state,
+    ...videoContextOptions(JOURNEY, { dir: info.outputDir }),
+  });
   const page = await context.newPage();
 
   await page.goto(new URL("/fr/app/verifications", BASE).toString());
@@ -37,6 +43,9 @@ test("a failed check says why in plain words and recovers", async ({ browser }, 
   expect(words, "without an engine name").not.toMatch(ENGINE_WORDS);
 
   await page.getByRole("button", { name: FR.console.checks.retry ?? "Réessayer" }).click();
-  await expect(page.locator('[data-testid="finding-citation"]').first(), "the retried check ends in a report").toBeVisible({ timeout: 60_000 });
+  await expect(
+    page.locator('[data-testid="finding-citation"]').first(),
+    "the retried check ends in a report",
+  ).toBeVisible({ timeout: 60_000 });
   await context.close();
 });

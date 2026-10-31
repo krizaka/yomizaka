@@ -24,7 +24,11 @@ for (const viewport of [
   test(`the home offers « Check a document » and the dossiers (${viewport.width} px)`, async ({ browser }, info) => {
     test.fail(true, "krizaka-internal#1898: the home does not offer « Check a document » yet");
     const state = await sessionsFor(browser, info.workerIndex).stateFor("eric");
-    const context = await browser.newContext({ storageState: state, viewport, ...videoContextOptions(JOURNEY, { dir: info.outputDir }) });
+    const context = await browser.newContext({
+      storageState: state,
+      viewport,
+      ...videoContextOptions(JOURNEY, { dir: info.outputDir }),
+    });
     const page = await context.newPage();
 
     await page.goto(new URL("/fr/app", BASE).toString());
