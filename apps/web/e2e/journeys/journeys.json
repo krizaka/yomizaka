@@ -46,5 +46,21 @@
     "video": true,
     "budgetSeconds": 90,
     "tags": ["critical"]
+  },
+  {
+    "id": "upgrade-from-home",
+    "promise": "Eric, signed in on the free plan, reaches the plans from the home's plan line in one step, sees no « Sign in », and Subscribe starts the checkout",
+    "persona": "eric",
+    "platforms": ["web"],
+    "steps": [
+      "sign in as Eric",
+      "open the home",
+      "follow the plan line to the plans",
+      "see Subscribe on every plan and no Sign in",
+      "choose Agency and reach the payment page"
+    ],
+    "video": false,
+    "budgetSeconds": 60,
+    "tags": []
   }
 ]

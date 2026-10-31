@@ -371,7 +371,7 @@
         "pro": "{used} sur {cap} vérifications ce mois-ci",
         "renews": "Se renouvelle le {date}",
         "ends": "Se termine le {date}",
-        "manage": "Crédits et usage"
+        "manage": "Forfaits et usage"
       },
       "check": {
         "title": "Vérifier un document",
@@ -3978,6 +3978,10 @@
       "always": "Le prix régulier s’applique après l’offre."
     },
     "plansLabel": "Forfaits",
+    "subscribe": "S’abonner — {plan}",
+    "current": "Forfait actuel",
+    "paymentsOff": "Le paiement n’est pas encore disponible sur cet environnement.",
+    "inApp": "Choisir votre forfait",
     "perMonth": " par mois, plus taxes",
     "perDossier": " par dossier, plus taxes",
     "beyond": "Puis {rate} par dossier supplémentaire, prélevé sur votre carte enregistrée, plus taxes",
