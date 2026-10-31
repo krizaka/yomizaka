@@ -11,11 +11,11 @@ describe("the paywall says the catalogue's prices", () => {
     const prices = publicCatalogue(await priceCatalogue(PRICES, memoryPriceStore()).catalogue(NOW));
     const fr = paywallFigures(prices, "fr")!;
     expect({ ...fr, document: fr.document.replace(/\s/gu, " "), agency: fr.agency.replace(/\s/gu, " ") }).toEqual({
-      document: "4,99 $",
+      document: "9,99 $",
       agency: "49,00 $",
-      included: 100,
+      included: 15,
     });
-    expect(paywallFigures(prices, "en")).toMatchObject({ document: "$4.99", agency: "$49.00", included: 100 });
+    expect(paywallFigures(prices, "en")).toMatchObject({ document: "$9.99", agency: "$49.00", included: 15 });
   });
 
   it("says nothing it does not have (an entry withdrawn from sale)", () => {

@@ -36,3 +36,24 @@ jobs:
           SMOKE_EMAIL: ${{ secrets.SMOKE_EMAIL }}
           SMOKE_PASSWORD: ${{ secrets.SMOKE_PASSWORD }}
         run: node scripts/smoke-lease-check.mjs --base https://dev.yomizaka.com
+
+  # The download page's films, per language (yomizaka#1968): /en shows English clips only, /fr French ones, each in its platform's frame
+  # (a Mac clip in a phone frame, French data on /en, an iOS slot with another platform's film). A public page: no secret.
+  download-page:
+    name: Download page films (en, fr)
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        base: [https://dev.yomizaka.com, https://www.yomizaka.com]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: main
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - run: node scripts/check-download-page.mjs --base ${{ matrix.base }}

@@ -1505,7 +1505,7 @@
       "text": "One dossier is free every month. To check another one now, pay for it or subscribe.",
       "payOne": "Pay for this document",
       "soon": "Payment coming soon.",
-      "notice": "{document} per document, or {agency} a month for small businesses ({included} verifications included), plus taxes.",
+      "notice": "{document} per dossier, or {agency} a month for small businesses ({included} dossiers included), plus taxes.",
       "fairUseTitle": "Monthly limit reached",
       "fairUse": "Your subscription includes {limit} verifications a month. The limit resets at the start of next month.",
       "testMode": "Test mode: no real card is charged.",
@@ -3977,7 +3977,7 @@
   },
   "pricing": {
     "title": "Pricing",
-    "lead": "No annual subscription. Pay per document, or subscribe by the month and cancel when you like. Prices in CAD, before taxes: GST and QST are added on the invoice.",
+    "lead": "No annual subscription. Pay per dossier, or subscribe by the month and cancel when you like. Prices in CAD, before taxes: GST and QST are added on the invoice.",
     "offer": {
       "headline": "Launch offer: {percent}% off the first {months} months with the code {code}",
       "line": "{offer} a month for the first {months} months, then {regular} a month",
@@ -3986,13 +3986,14 @@
     },
     "plansLabel": "Plans",
     "perMonth": " a month, plus taxes",
-    "perDocument": " per document, plus taxes",
-    "included": "{included} verifications included each month",
+    "perDossier": " per dossier, plus taxes",
+    "beyond": "Then {rate} for each further dossier, charged to your card on file, plus taxes",
+    "included": "{included} dossiers included each month",
     "paused": "Past the included volume, checks wait until next month",
     "freeFirst": "One dossier verified free every month, no card",
     "cancel": "Billed monthly, cancel any time from the billing portal",
-    "noSubscription": "No subscription: you pay for the documents you verify",
-    "volume": "More than {included} verifications a month? Write to us",
+    "noSubscription": "No subscription: you pay for the dossiers you verify",
+    "volume": "More than {included} dossiers a month? Write to us",
     "plans": {
       "document": {
         "name": "One document",

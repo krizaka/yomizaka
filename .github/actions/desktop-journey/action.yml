@@ -42,6 +42,8 @@ runs:
       working-directory: apps/desktop
       env:
         VITE_APP_ENV: dev
+        # The filmed build wears no development notice (yomizaka#1968); the journey build keeps it.
+        VITE_APP_SHOWCASE: ${{ inputs.record == 'true' && '1' || '0' }}
       run: pnpm exec tauri build --debug --no-bundle --features webdriver
     - name: Run the journey
       shell: bash

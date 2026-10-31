@@ -108,7 +108,7 @@ describe("the workflows", () => {
     assert.match(videos, /artifacts: \|\s+showcase-web\s+maestro-showcase\s+showcase-mac/);
     assert.match(
       read("../.github/workflows/download-videos.yml"),
-      /desktop-film-join\.mjs showcase-mac showcase-mac\/mac-library\.mp4/,
+      /desktop-film-join\.mjs showcase-mac "showcase-mac\/mac-library-\$locale\.mp4"/,
     );
     assert.doesNotMatch(code(read("../.github/actions/desktop-journey/action.yml")), /screencapture/);
   });

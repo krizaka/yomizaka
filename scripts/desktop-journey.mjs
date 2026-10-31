@@ -42,8 +42,9 @@ const SCREEN_MS = 30_000;
 
 /** The fixture: a folder under the home (the kit refuses the home itself, `/`, `/tmp`, `/var`) holding one demo lease. */
 async function fixtureFolder() {
-  const folder = join(home, "Yomizaka journey", "Baux");
-  await rm(dirname(folder), { recursive: true, force: true });
+  // A friendly name (the library shows it), not a work folder under the runner's home (yomizaka#1968).
+  const folder = join(home, "Leases");
+  await rm(folder, { recursive: true, force: true });
   await mkdir(folder, { recursive: true });
   const lease = await generateDocument("bail-rosemont-5-clause-illegale");
   await writeFile(join(folder, lease.filename), lease.bytes);
@@ -90,6 +91,15 @@ const READ_MS = 3000;
 const hold = (ms = READ_MS) => new Promise((resolveHold) => setTimeout(resolveHold, ms));
 const filmWindow = () => film.start();
 
+// yomizaka#1968: a filmed screen is never an error, an empty state or the development notice. Checked by the app's own markers at each
+// screen of the film; the journey fails (and so no clip is published) rather than film one.
+const UNFIT = { error: "[data-testid$='-error']", empty: "[data-testid$='-empty']", notice: "[data-stage]" };
+async function assertFit(drv, screen) {
+  if (!values.film) return;
+  for (const [what, css] of Object.entries(UNFIT))
+    if (await drv.exists(css)) throw new Error(`the film of "${screen}" would show an ${what} (${css}): not published`);
+}
+
 const waitFor = (driver, what, css, timeoutMs = SCREEN_MS) => until(what, () => driver.exists(css), { timeoutMs });
 
 let app;
@@ -109,12 +119,14 @@ try {
   await shot(driver, "1-library");
   await mkdir(out, { recursive: true });
   filmWindow();
+  await assertFit(driver, "library");
   await hold();
 
   // 2. Open the folder: its lease is listed; check it.
   await driver.run("window.location.hash = arguments[0]", libraryHash(folder));
   await waitFor(driver, "the lease in the folder", "[data-testid=check-document]");
   await shot(driver, "2-folder");
+  await assertFit(driver, "folder");
   await hold();
   await driver.click(await driver.find("[data-testid=check-document]"));
   await hold(2000);
@@ -126,7 +138,11 @@ try {
   const hash = await driver.hash();
   if (!hash.startsWith("#/check/")) throw new Error(`the result is shown on ${hash}, not on a check`);
   await shot(driver, "3-result");
+  // The language the film is in (the page of the same language shows it, yomizaka#1968): the workflow names the clip after it.
+  if (values.film)
+    await writeFile(join(out, "film-locale.txt"), String(await driver.run("return document.documentElement.lang")));
   filmWindow();
+  await assertFit(driver, "result"); // the film ends on the result
   await hold(4000);
   await film.stop(); // the app is about to quit: nothing of the desktop is filmed
 
@@ -141,9 +157,7 @@ try {
   const kept = JSON.parse(await readFile(scope, "utf8")).roots;
   if (!kept.includes(folder)) throw new Error(`the scope lost the folder: ${JSON.stringify(kept)}`);
   await shot(driver, "4-relaunch");
-  filmWindow();
-  await hold(4000);
-  await film.stop();
+  // The relaunch is proved, not filmed: the film ends on the check's result, never on the library it is reached from (yomizaka#1968).
   film.finish(); // too few frames: the journey fails loudly, no empty clip
   console.log("desktop journey: ok");
 } catch (error) {
