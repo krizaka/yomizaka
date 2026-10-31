@@ -104,7 +104,8 @@ async function auditAt({ page, path, width, theme, base, locale, shots, a11y, er
   await page.waitForTimeout(300);
   const result = await page.evaluate(auditPage);
   const where = `${publicPage ? "/rapport/<demo token>" : path} @${width} ${theme}`;
-  const found = problemsOf(where, result, { errors, h1: true, headerAction: !publicPage });
+  // The home (/app) has no header "+": its one primary action is the drop zone itself (journey home-check-and-dossiers).
+  const found = problemsOf(where, result, { errors, h1: true, headerAction: !publicPage && path !== "/app" });
   if (A11Y_WIDTHS.includes(width))
     a11y.add({ route: publicPage ? "/rapport/<demo token>" : path, theme }, await auditA11y(page));
   if (shots) {

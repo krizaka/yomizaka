@@ -170,7 +170,7 @@
   "console": {
     "meta": {
       "signIn": "Sign in",
-      "library": "Library",
+      "library": "Home",
       "search": "Search",
       "users": "People",
       "admin": "Administration",
@@ -372,6 +372,23 @@
         "renews": "Renews on {date}",
         "ends": "Ends on {date}",
         "manage": "Credits and usage"
+      },
+      "check": {
+        "title": "Check a document",
+        "lead": "Drop a lease, a contract or an invoice: Yomizaka reads it and tells you what to look at.",
+        "import": "Import a batch"
+      },
+      "dossiers": {
+        "title": "My dossiers",
+        "label": "Your dossiers",
+        "empty": "No dossier yet.",
+        "never": "Not checked yet",
+        "moved": "Last activity {date}",
+        "kindFile": "Applicant file",
+        "kindCollection": "Collection"
+      },
+      "usage": {
+        "label": "Plan and usage"
       }
     },
     "sections": {
@@ -407,7 +424,7 @@
       "settings": "Settings",
       "billing": "Credits and usage",
       "titles": {
-        "library": "Library",
+        "library": "Home",
         "checks": "Checks",
         "check": "Check a document",
         "search": "Search",

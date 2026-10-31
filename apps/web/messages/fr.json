@@ -170,7 +170,7 @@
   "console": {
     "meta": {
       "signIn": "Connexion",
-      "library": "Bibliothèque",
+      "library": "Accueil",
       "search": "Recherche",
       "users": "Personnes",
       "admin": "Administration",
@@ -372,6 +372,23 @@
         "renews": "Se renouvelle le {date}",
         "ends": "Se termine le {date}",
         "manage": "Crédits et usage"
+      },
+      "check": {
+        "title": "Vérifier un document",
+        "lead": "Déposez un bail, un contrat ou une facture : Yomizaka le lit et vous dit quoi regarder.",
+        "import": "Importer un lot"
+      },
+      "dossiers": {
+        "title": "Mes dossiers",
+        "label": "Vos dossiers",
+        "empty": "Aucun dossier pour l'instant.",
+        "never": "Pas encore vérifié",
+        "moved": "Dernière activité le {date}",
+        "kindFile": "Dossier de candidat",
+        "kindCollection": "Collection"
+      },
+      "usage": {
+        "label": "Forfait et usage"
       }
     },
     "sections": {
@@ -407,7 +424,7 @@
       "settings": "Réglages",
       "billing": "Crédits et usage",
       "titles": {
-        "library": "Bibliothèque",
+        "library": "Accueil",
         "checks": "Vérifications",
         "check": "Vérifier un document",
         "search": "Recherche",

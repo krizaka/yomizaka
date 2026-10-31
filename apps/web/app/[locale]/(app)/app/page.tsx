@@ -1,4 +1,3 @@
-import { displayNow } from "@/lib/display-now";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
@@ -7,27 +6,24 @@ import { PaymentProblem } from "@/components/console/PaymentProblem";
 import { PaymentReturn } from "@/components/console/PaymentReturn";
 import { SAMPLES } from "@/content/recorded-runs/samples.mjs";
 import { pageSession } from "@/lib/access";
+import { listApplicantFiles } from "@/lib/applicant-file";
 import { entitlementOf } from "@/lib/billing";
-import { listChecks } from "@/lib/checks";
 import { creditsOf } from "@/lib/credits";
 import { query } from "@/lib/db";
-import { appEnvironment, appVisualNow } from "@/lib/env";
+import { appEnvironment } from "@/lib/env";
 import { applicantFilesOffered, availableFlows, offerFor } from "@/lib/flows";
-import { activityStrip, toDo } from "@/lib/home";
-import { BINDER_KEY, stripOf } from "@/lib/home-b2";
-import { HOME_PERIOD_KEY, homePeriodOf } from "@/lib/home-figures";
 import { asLocale, getDictionary } from "@/lib/i18n";
 import { onboardingTarget } from "@/lib/library-screen";
 import * as org from "@/lib/organisation/store";
-import { PAID_KEY, paymentReturnOf } from "@/lib/payment-return";
 import { paymentProblemOf } from "@/lib/payment-problem";
+import { PAID_KEY, paymentReturnOf } from "@/lib/payment-return";
 import { purgeExpired } from "@/lib/retention";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   return { title: getDictionary(asLocale((await params).locale)).console.meta.library };
 }
 
-/** The library's first screen (ADR-0007, § 5.1): « À traiter », the latest checks, the activity of the period, the collections; read on the server. */
+/** The home (krizaka-internal#1898): the check to start, the dossiers (collections and applicant files), the plan and usage in one line; read on the server. */
 export default async function LibraryPage({
   params,
   searchParams,
@@ -52,14 +48,10 @@ export default async function LibraryPage({
   // The sweep: documents that were not kept and never checked are purged once their window has passed.
   await purgeExpired(query, new Date());
   await org.ensureLibrary(query, owner, getDictionary(locale).console.organisation.library);
-  const period = homePeriodOf(typeof search[HOME_PERIOD_KEY] === "string" ? search[HOME_PERIOD_KEY] : null);
   const now = new Date();
-  const [libraries, tags, latest, todo, series, credits, entitlement] = await Promise.all([
+  const [libraries, files, credits, entitlement] = await Promise.all([
     org.overview(query, owner),
-    org.listTags(query, owner),
-    listChecks(query, owner, 5),
-    toDo(query, owner, now, { applicantFiles: screeningOffered }),
-    activityStrip(query, owner, period, now, { applicantFiles: screeningOffered }),
+    screeningOffered ? listApplicantFiles(owner, now) : Promise.resolve([]),
     creditsOf(owner, now),
     entitlementOf(query, owner, now),
   ]);
@@ -69,19 +61,12 @@ export default async function LibraryPage({
     <LibraryView
       libraries={libraries}
       documents={documents}
-      latest={latest}
-      tags={tags}
+      files={files}
       perspective={perspective}
       screening={screeningOffered}
       examples={SAMPLES}
       jurisdictions={offerFor(flows, perspective).jurisdictions}
-      todo={todo}
-      activity={series.checks}
-      strip={stripOf(series)}
       credits={credits}
-      period={period}
-      chosen={typeof search[BINDER_KEY] === "string" ? search[BINDER_KEY] : null}
-      now={displayNow(now, appEnvironment(), appVisualNow()).toISOString()}
     />
   );
   const problem = paymentProblemOf(entitlement);

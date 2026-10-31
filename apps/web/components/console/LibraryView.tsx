@@ -3,94 +3,69 @@
 import { Badge } from "@krizaka/ui/badge";
 import { Button } from "@krizaka/ui/button";
 import { Chip } from "@krizaka/ui/chip";
-import { DashboardLayout, Widget } from "@krizaka/ui/dashboard-layout";
 import { EmptyState } from "@krizaka/ui/empty-state";
-import { LinkCard } from "@krizaka/ui/link-card";
+import { List } from "@krizaka/ui/list";
 import { Mascot } from "@krizaka/ui/mascots";
 import { PageHeader } from "@krizaka/ui/page-header";
+import { StickyAction } from "@krizaka/ui/sticky-action";
 import { type Audience, type Jurisdiction } from "@yomizaka/core";
 import Link from "next/link";
 
-import type { CheckSummary } from "@/lib/checks";
-import { CONSOLE_ROUTES } from "@/lib/console-nav";
-import { binderOf, type CreditsFigure, homeHref, type StripFigure } from "@/lib/home-b2";
-import type { ActivityDay, HomePeriod, ToDo } from "@/lib/home-figures";
+import { ButtonLink } from "@/components/ButtonLink";
+import type { FileSummary } from "@/lib/applicant-file";
+import { checksTabHref, CONSOLE_ROUTES } from "@/lib/console-nav";
+import { type CreditsFigure } from "@/lib/home-b2";
+import { type DossierRow, dossiersOf } from "@/lib/home-dossiers";
 import { useSay } from "@/lib/i18n-client";
 import { libraryScreen } from "@/lib/library-screen";
-import { collectionLabel } from "@/lib/organisation/display";
-import { libraryPath } from "@/lib/organisation/rules";
 import type { LibraryOverview } from "@/lib/organisation/store";
 import { pluralKey } from "@/lib/plural";
 
-import { CollectionMark } from "./CollectionMark";
 import { STATUS_TONE } from "./DocumentTable";
 import { formatDate } from "./format";
-import { ActivityStrip, BinderTabs, Credits, HomeLead } from "./HomeSections";
+import { UsageLine } from "./HomeSections";
 import { LibraryDrop } from "./LibraryDrop";
-import { CreateButton, ItemMenu, type TagOption } from "./OrganisationActions";
-import { TagChips } from "./TagChips";
-import { Today } from "./Today";
+import { CreateButton } from "./OrganisationActions";
 
 export type ExampleDocuments = Record<"tenant" | "landlord", { title: string; filename: string; text: string }>;
 
 /**
- * The library's first screen (ADR-0007, the UX review's Y3, § 5.1 of the design direction): the page's `h1` with its secondary
- * actions (the one primary, « Vérifier un document », is the header's); « À traiter », each figure a door to its view; what
- * was checked last; the activity of the period; the collections as cards with a place mark, their count and their last
- * check. « Récents » left the home (yomizaka#325). A file dropped anywhere on the page is checked (`LibraryDrop`). With
- * nothing yet: the owl, one sentence, the only drop zone, and two examples.
+ * The home (krizaka-internal#1898, the UX review of #1890): « Accueil », three blocks in the order of the two jobs —
+ * « Vérifier un document » (the one primary action: the drop zone itself, so the drop on the home is the first step; a sticky
+ * action on a phone once the zone has scrolled away), « Mes dossiers » (one list: the binder's collections and the applicant files,
+ * each with the status of its last result, the whole row opens it) and the plan and usage as one discreet line. Activity and
+ * sparklines are not here. A file dropped anywhere on the page is checked (`LibraryDrop`). With nothing yet: the owl, one
+ * sentence, the only drop zone, and two examples.
  */
 export function LibraryView({
   libraries,
   documents,
-  latest = [],
-  tags,
+  files = [],
   perspective = null,
   screening = false,
   examples,
   jurisdictions = ["QC"],
-  todo = null,
-  strip = [],
   credits = null,
-  period = "30d",
-  chosen = null,
-  now = new Date().toISOString(),
 }: Readonly<{
   libraries: LibraryOverview[];
   documents: number;
-  latest?: CheckSummary[];
-  tags: TagOption[];
+  files?: readonly FileSummary[];
   perspective?: Audience | null;
   screening?: boolean;
   examples?: ExampleDocuments;
   jurisdictions?: readonly Jurisdiction[];
-  todo?: ToDo | null;
-  activity?: readonly ActivityDay[];
-  strip?: readonly StripFigure[];
   credits?: CreditsFigure | null;
-  period?: HomePeriod;
-  chosen?: string | null;
-  now?: string;
 }>) {
   const { say, locale } = useSay();
   const collections = libraries.flatMap((l) => l.collections);
   const screen = libraryScreen({ documents, screening });
   // The teaching empty state only when there is nothing at all: a collection the person made stays reachable, documents or not.
-  const nothingYet = screen.emptyDropzone && collections.every((c) => c.isDefault && c.files === 0);
+  const nothingYet =
+    screen.emptyDropzone && files.length === 0 && collections.every((c) => c.isDefault && c.files === 0);
   const order = (perspective === "landlord" ? ["landlord", "tenant"] : ["tenant", "landlord"]) as (
     "tenant" | "landlord"
   )[];
-  const first = libraries[0];
-  const mine = say("organisation.defaultName");
-  const labelOf = (c: { name: string; isDefault: boolean }) => collectionLabel(c.name, c.isDefault, mine);
-  const destinations = collections.map((c) => ({ id: c.id, name: labelOf(c), avatar: c.avatar }));
-  const header = (
-    <PageHeader
-      title={say("shell.titles.library")}
-      description={say("library.lead")}
-      actions={<LibraryActions firstId={first?.id} secondary={screen.secondary} />}
-    />
-  );
+  const header = <PageHeader title={say("shell.titles.library")} />;
   if (nothingYet) {
     return (
       <div className="flex flex-col gap-8">
@@ -99,79 +74,96 @@ export function LibraryView({
       </div>
     );
   }
-  const { tabs, selected } = binderOf(
-    collections.map((c) => ({ ...c, name: labelOf(c) })),
-    chosen,
-    (id) => homeHref(locale, { period, collection: id }),
-  );
-  const lib = libraries.find((l) => l.collections.some((c) => c.id === selected?.id)) ?? first;
+  const rows = dossiersOf(libraries, files, locale, say("organisation.defaultName"));
   return (
-    <>
-      <LibraryDrop jurisdictions={jurisdictions} />
-      <DashboardLayout
-        title={say("shell.titles.library")}
-        date={<Today now={now} />}
-        description={todo ? <HomeLead todo={todo} /> : say("library.lead")}
-        actions={<LibraryActions firstId={first?.id} secondary={screen.secondary} />}
-        side={<LibrarySide strip={strip} period={period} collectionId={selected?.id ?? null} credits={credits} />}
+    <div className="flex flex-col gap-8">
+      {header}
+      <section
+        className="flex flex-col gap-3"
+        aria-labelledby="home-check-title"
+        id="home-check"
+        data-testid="home-check"
       >
-        <Widget title={say("home.binder.title")} span="full" data-testid="binder">
-          {tabs.length === 0 ? (
-            <p className="m-0 text-sm text-fg-secondary">{say("organisation.noCollections")}</p>
-          ) : (
-            <BinderTabs tabs={tabs} selectedHref={homeHref(locale, { period, collection: selected?.id ?? null })} />
-          )}
-          {selected && lib ? (
-            <CollectionCard
-              libraryId={lib.id}
-              selected={selected}
-              label={labelOf(selected)}
-              destinations={destinations}
-              tags={tags}
-            />
-          ) : null}
-        </Widget>
-
-        <LatestChecks latest={latest} />
-      </DashboardLayout>
-    </>
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <h2 id="home-check-title" className="m-0 font-display text-lg font-bold text-fg">
+            {say("home.check.title")}
+          </h2>
+          <Link
+            href={checksTabHref(locale, "lots")}
+            className="text-sm font-semibold text-fg-accent hover:underline"
+            data-testid="home-import"
+          >
+            {say("home.check.import")}
+          </Link>
+        </div>
+        <p className="m-0 text-sm text-fg-secondary">{say("home.check.lead")}</p>
+        <LibraryDrop zone jurisdictions={jurisdictions} examples={examplesSlot(examples, order, say)} />
+      </section>
+      <DossiersList rows={rows} screening={screen.secondary} firstId={libraries[0]?.id} />
+      {credits ? <UsageLine figure={credits} /> : null}
+      <StickyAction hideWhileVisible="#home-check [data-testid='library-dropzone']">
+        <ButtonLink href={`/${locale}${CONSOLE_ROUTES.check}`} variant="primary" shape="cut" size="lg">
+          {say("shell.checkAction")}
+        </ButtonLink>
+      </StickyAction>
+    </div>
   );
 }
 
-function LibrarySide({
-  strip,
-  period,
-  collectionId,
-  credits,
-}: Readonly<{
-  strip: readonly StripFigure[];
-  period: HomePeriod;
-  collectionId: string | null;
-  credits: CreditsFigure | null;
-}>) {
-  return (
-    <>
-      {strip.length ? <ActivityStrip figures={strip} period={period} collection={collectionId} /> : null}
-      {credits ? <Credits figure={credits} /> : null}
-    </>
-  );
-}
-
-type Collection = LibraryOverview["collections"][number];
-
-function LibraryActions({ firstId, secondary }: Readonly<{ firstId?: string; secondary?: string | null }>) {
+/** « Mes dossiers »: collections and applicant files in one list; the name, what it holds and its kind, the status of the last result, the whole row opens it. */
+function DossiersList({
+  rows,
+  screening,
+  firstId,
+}: Readonly<{ rows: readonly DossierRow[]; screening: string | null; firstId?: string }>) {
   const { say, locale } = useSay();
   return (
-    <span className="flex flex-wrap items-center gap-3" data-testid="library-actions">
-      {firstId ? <CreateButton kind="collection" parentId={firstId} /> : null}
-      {secondary ? (
-        <Button asChild variant="secondary" size="md">
-          <Link href={`/${locale}${secondary}`}>{say("library.screeningCta")}</Link>
-        </Button>
-      ) : null}
-    </span>
+    <section className="flex flex-col gap-3" aria-labelledby="home-dossiers-title" data-testid="home-dossiers">
+      {/* On a phone the list comes right under the title (first screen) and the actions follow it; from sm up they sit on the title's row. */}
+      <div className="contents sm:flex sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
+        <h2 id="home-dossiers-title" className="order-1 m-0 font-display text-lg font-bold text-fg sm:order-none">
+          {say("home.dossiers.title")}
+        </h2>
+        <span className="order-3 flex flex-wrap items-center gap-3 sm:order-none">
+          {firstId ? <CreateButton kind="collection" parentId={firstId} /> : null}
+          {screening ? (
+            <Button asChild variant="secondary" size="md">
+              <Link href={`/${locale}${screening}`}>{say("library.screeningCta")}</Link>
+            </Button>
+          ) : null}
+        </span>
+      </div>
+      <List
+        className="order-2 sm:order-none"
+        items={rows}
+        getId={(r) => `${r.kind}:${r.id}`}
+        aria-label={say("home.dossiers.label")}
+        chevrons
+        empty={<p className="m-0 text-sm text-fg-secondary">{say("home.dossiers.empty")}</p>}
+        row={(r) => ({
+          title: r.name,
+          href: r.href,
+          description: [
+            say(r.kind === "collection" ? "home.dossiers.kindCollection" : "home.dossiers.kindFile"),
+            say(pluralKey("organisation.files", r.count), { count: r.count }),
+            r.at ? say("home.dossiers.moved", { date: formatDate(r.at, locale) }) : say("home.dossiers.never"),
+          ].join(" · "),
+          meta: r.status ? (
+            <Badge tone={rowTone(r)} dot size="sm">
+              {say(r.kind === "collection" ? `statuses.${r.status}` : `dossiers.filter.states.${r.status}`)}
+            </Badge>
+          ) : undefined,
+        })}
+      />
+    </section>
   );
 }
+
+const FILE_TONE = { open: "accent", used: "warning", closed: "success" } as const;
+const rowTone = (r: DossierRow) =>
+  r.kind === "collection"
+    ? STATUS_TONE[r.status ?? "stored"]
+    : ((FILE_TONE as Record<string, "accent" | "warning" | "success">)[r.status] ?? "neutral");
 
 /** The two examples offered under the drop zone (a tenant's lease, a landlord's file): a chip each adds it to the drop. */
 const examplesSlot = (
@@ -222,129 +214,5 @@ function LibraryEmpty({
       />
       <LibraryDrop zone jurisdictions={jurisdictions} examples={examplesSlot(examples, order, say)} />
     </section>
-  );
-}
-
-function LastCheckExtra({ selected }: Readonly<{ selected: Collection }>) {
-  const { say, locale } = useSay();
-  return (
-    <div className="flex flex-wrap items-center gap-2 text-sm text-fg-secondary" data-testid="collection-last-check">
-      {selected.lastCheck ? (
-        <>
-          <Badge tone={STATUS_TONE[selected.lastCheck.status]} size="sm">
-            {say(`statuses.${selected.lastCheck.status}`)}
-          </Badge>
-          <span>{say("organisation.lastCheck", { date: formatDate(selected.lastCheck.at, locale) })}</span>
-        </>
-      ) : (
-        <span>{say("organisation.neverChecked")}</span>
-      )}
-      <TagChips tags={selected.tags} />
-    </div>
-  );
-}
-
-function CollectionCard({
-  libraryId,
-  selected,
-  label,
-  destinations,
-  tags,
-}: Readonly<{
-  libraryId: string;
-  selected: Collection;
-  label: string;
-  destinations: { id: string; name: string; avatar: Collection["avatar"] }[];
-  tags: TagOption[];
-}>) {
-  const { say, locale } = useSay();
-  const folders =
-    selected.folders > 0
-      ? ` · ${say(pluralKey("organisation.folders", selected.folders), { count: selected.folders })}`
-      : "";
-  return (
-    <div className="relative mt-3" data-testid="collection-card">
-      <LinkCard
-        href={libraryPath(locale, libraryId, selected.id)}
-        linkAs={Link}
-        className="pr-12"
-        icon={<CollectionMark id={selected.id} name={label} avatar={selected.avatar} />}
-        title={label}
-        meta={selected.isDefault ? say("organisation.default") : undefined}
-        description={`${say(pluralKey("organisation.files", selected.files), { count: selected.files })}${folders}`}
-        extra={<LastCheckExtra selected={selected} />}
-      />
-      {/* An empty folder: one compact line and one action, never a tall box (yomizaka#435). The card's height is its content's. */}
-      {selected.files === 0 && selected.folders === 0 ? (
-        <div
-          className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-dashed border-border-default px-3 py-2"
-          data-testid="collection-empty"
-        >
-          <span className="min-w-0 text-sm text-fg-secondary">{say("home.binder.empty")}</span>
-          <Button asChild variant="secondary" size="sm">
-            <Link href={libraryPath(locale, libraryId, selected.id)}>{say("home.binder.add")}</Link>
-          </Button>
-        </div>
-      ) : null}
-      {/* The card is one link; its menu sits beside it, over the corner, never inside the anchor. */}
-      <span className="absolute right-2 top-2">
-        <ItemMenu
-          kind="collection"
-          id={selected.id}
-          name={label}
-          avatar={selected.avatar}
-          isDefault={selected.isDefault}
-          collections={destinations}
-          tags={tags}
-          current={selected.tags.map((t) => t.id)}
-        />
-      </span>
-    </div>
-  );
-}
-
-function LatestChecks({ latest }: Readonly<{ latest: CheckSummary[] }>) {
-  const { say, locale } = useSay();
-  return (
-    <Widget
-      title={say("organisation.latestChecks")}
-      span="full"
-      data-testid="latest-checks"
-      action={
-        latest.length ? (
-          <Link
-            href={`/${locale}${CONSOLE_ROUTES.checks}`}
-            className="text-sm font-semibold text-fg-accent hover:underline"
-          >
-            {say("organisation.seeAll")} →
-          </Link>
-        ) : undefined
-      }
-    >
-      {latest.length === 0 ? (
-        <p className="m-0 text-sm text-fg-secondary">{say("organisation.noChecks")}</p>
-      ) : (
-        <ul className="m-0 flex list-none flex-col divide-y divide-border-default rounded-lg border border-border-default p-0">
-          {latest.map((c) => (
-            <li key={c.id}>
-              <Link
-                href={`/${locale}/app/documents/${c.documentId}/rapport`}
-                className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 hover:bg-surface-1"
-              >
-                <span className="flex min-w-0 items-center gap-2">
-                  <Badge tone={STATUS_TONE[c.result]} dot size="sm">
-                    {say(`statuses.${c.result}`)}
-                  </Badge>
-                  <span className="min-w-0 break-words font-semibold text-fg">{c.title}</span>
-                </span>
-                <span className="text-xs text-fg-muted">
-                  {say(`kinds.${c.kind}`)} · {formatDate(c.at, locale)}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-    </Widget>
   );
 }
