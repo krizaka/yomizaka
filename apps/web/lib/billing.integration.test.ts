@@ -27,6 +27,28 @@ const caps =
   (perMonth = 100, perDay = 0, freeDossiers = 1) =>
   () => ({ perMonth, perDay, freeDossiers, overageCents: 0 });
 
+const startPro = async (id: string, tag: string) => {
+  await applyPaymentEvent(transaction, {
+    id: `evt-${tag}1-${id}`,
+    type: "subscription_started",
+    accountId: id,
+    customerId: `cus-${id}`,
+    subscriptionId: `sub-${id}`,
+    ...FACTS,
+  });
+  await applyPaymentEvent(transaction, {
+    id: `evt-${tag}2-${id}`,
+    type: "subscription_changed",
+    accountId: id,
+    customerId: `cus-${id}`,
+    subscriptionId: `sub-${id}`,
+    status: "active",
+    active: true,
+    cancelAtPeriodEnd: false,
+    periodEnd: Math.floor(NOW.getTime() / 1000) + 86_400 * 30,
+  });
+};
+
 describe.runIf(enabled)("billing", () => {
   beforeAll(async () => {
     await migrate();
@@ -128,25 +150,7 @@ describe.runIf(enabled)("billing", () => {
   it("Pro: unlimited under the cap, then FAIR_USE; cancelled, back to the paywall", async () => {
     const id = await account();
     await reserveAudit(query, id, NOW, caps());
-    await applyPaymentEvent(transaction, {
-      id: `evt-s1-${id}`,
-      type: "subscription_started",
-      accountId: id,
-      customerId: `cus-${id}`,
-      subscriptionId: `sub-${id}`,
-      ...FACTS,
-    });
-    await applyPaymentEvent(transaction, {
-      id: `evt-s2-${id}`,
-      type: "subscription_changed",
-      accountId: id,
-      customerId: `cus-${id}`,
-      subscriptionId: `sub-${id}`,
-      status: "active",
-      active: true,
-      cancelAtPeriodEnd: false,
-      periodEnd: Math.floor(NOW.getTime() / 1000) + 86_400 * 30,
-    });
+    await startPro(id, "s");
     expect((await entitlementOf(query, id, NOW)).pro).toBe(true);
     expect(await reserveAudit(query, id, NOW, caps())).toBe("pro");
     const [doc] = await query<{ id: string }>(
@@ -176,25 +180,7 @@ describe.runIf(enabled)("billing", () => {
   });
   it("Pro past the included volume: a plan with a rate charges the dossier once and refunds a check that did not run (ADR-0015)", async () => {
     const id = await account();
-    await applyPaymentEvent(transaction, {
-      id: `evt-o1-${id}`,
-      type: "subscription_started",
-      accountId: id,
-      customerId: `cus-${id}`,
-      subscriptionId: `sub-${id}`,
-      ...FACTS,
-    });
-    await applyPaymentEvent(transaction, {
-      id: `evt-o2-${id}`,
-      type: "subscription_changed",
-      accountId: id,
-      customerId: `cus-${id}`,
-      subscriptionId: `sub-${id}`,
-      status: "active",
-      active: true,
-      cancelAtPeriodEnd: false,
-      periodEnd: Math.floor(NOW.getTime() / 1000) + 86_400 * 30,
-    });
+    await startPro(id, "o");
     const document = async (n: number) =>
       (
         await query<{ id: string }>(
