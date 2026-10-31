@@ -40,7 +40,7 @@ export function PricingContent({
           <p>{status}</p>
           {largest > 0 ? (
             <p data-volume>
-              <a href={contactHref("dev-yomizaka-pricing-volume")}>{format(p.volume, { included: largest })}</a>
+              <a href={contactHref("dev-yomizaka-pricing-volume", locale)}>{format(p.volume, { included: largest })}</a>
             </p>
           ) : null}
           {launch ? (

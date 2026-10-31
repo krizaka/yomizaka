@@ -11,9 +11,9 @@ export const PAGES = ["home", "docs", "pricing", "download", "privacy", "terms"]
 export type PageId = (typeof PAGES)[number];
 export const pagePath = (locale: "en" | "fr", page: PageId) => (page === "home" ? `/${locale}` : `/${locale}/${page}`);
 
-/** Krizaka's contact form, Yomizaka pre-selected. */
-export function contactHref(source: string): string {
-  return `${KRIZAKA_URL}/contact?topic=yomizaka&source=${encodeURIComponent(source)}`;
+/** Krizaka's contact form (the final, localized address: no redirect hop for crawlers), Yomizaka pre-selected. */
+export function contactHref(source: string, locale: "en" | "fr"): string {
+  return `${KRIZAKA_URL}/${locale}/contact?topic=yomizaka&source=${encodeURIComponent(source)}`;
 }
 
 /** Where sign-in returns to: a path of this site in the page's language, never another address (no open redirect). */

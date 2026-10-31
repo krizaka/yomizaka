@@ -22,7 +22,7 @@
     "routeStateSelection": 0,
     "cognitiveComplexity": 0,
     "sonar": 10,
-    "codeRules": 1102,
+    "codeRules": 1101,
     "code/curly": 1067,
     "code/max-depth": 27,
     "sonarjs/no-nested-conditional": 4,
