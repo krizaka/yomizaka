@@ -76,7 +76,7 @@ describe.runIf(enabled)("from the applicant's upload to the owner's report (yomi
       store,
       purgeAfterHours: 24,
       keepAllowed: true,
-      auditCaps: () => ({ perMonth: 1000, perDay: 0, freeDossiers: 0 }),
+      auditCaps: () => ({ perMonth: 1000, perDay: 0, freeDossiers: 0, overageCents: 0 }),
     };
     for (const [type, text] of [
       ["pay-stub", "PAY FLOW"],
@@ -92,7 +92,9 @@ describe.runIf(enabled)("from the applicant's upload to the owner's report (yomi
       );
     }
     await submitApplicantFile(made.token, NOW);
-    for (const id of runs.keys()) runs.set(id, "FAILED");
+    for (const id of runs.keys()) {
+      runs.set(id, "FAILED");
+    }
     const view = await applicantFileOf(agent.id, made.id, NOW);
     expect(view.documents).toHaveLength(2);
 
@@ -102,8 +104,9 @@ describe.runIf(enabled)("from the applicant's upload to the owner's report (yomi
       [made.id],
     );
     expect(docs).toHaveLength(2);
-    for (const d of docs)
+    for (const d of docs) {
       expect(d).toMatchObject({ storage: "none", bytes: 0, text: "", sha256: expect.stringMatching(/^[0-9a-f]{64}$/) });
+    }
     expect(
       await query("SELECT 1 FROM audit.entry WHERE action = 'document.purged' AND target_id = ANY($1)", [
         view.documents.map((d) => d.id),

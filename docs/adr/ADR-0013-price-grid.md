@@ -3,6 +3,7 @@
 - Status: accepted (2026-10-29, the CTO, a decision the founder delegated: « définis les prix avec notre audit ; on essaie
   d'être concurrentiel et on ajuste »)
 - Issues: yomizaka#388 (the public page), #360 (the volume line), #133 (per-check billing, later), krizaka/.github#269
+- Superseded in part by ADR-0015: « past the included volume the account waits, no overage » is replaced by a billed overage where the plan has a rate; the rest of this grid stands.
 - Builds on: ADR-0004 (payments port), ADR-009 of krizaka/.github (prices are catalogue data the administrator schedules)
 
 ## Context
