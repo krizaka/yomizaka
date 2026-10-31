@@ -219,7 +219,7 @@ describe.runIf(enabled)("billing", () => {
       },
       isDeclined: () => false,
     };
-    const rated = () => ({ perMonth: 1, perDay: 0, freeFirst: true, overageCents: 300 });
+    const rated = () => ({ perMonth: 1, perDay: 0, freeDossiers: 1, overageCents: 300 });
     // no processor: the account still waits
     await expect(reserveAudit(query, id, NOW, rated, second, null)).rejects.toMatchObject({
       body: { code: "FAIR_USE" },

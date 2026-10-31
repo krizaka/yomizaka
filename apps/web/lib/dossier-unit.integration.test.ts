@@ -125,7 +125,7 @@ describe.runIf(enabled)("the dossier is the unit of billing", () => {
       );
       return d!.id;
     };
-    const two = () => ({ perMonth: 100, perDay: 0, freeDossiers: 2 });
+    const two = () => ({ perMonth: 100, perDay: 0, freeDossiers: 2, overageCents: 0 });
     const first = await doc("m1");
     expect(await reserveAudit(query, landlord.id, oct, two, first)).toBe("free");
     expect(await reserveAudit(query, landlord.id, oct, two, await doc("m2"))).toBe("free");
