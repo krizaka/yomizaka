@@ -5,8 +5,23 @@
 # always reset. The emulator reaches it through `adb reverse`. Dev only: the seed refuses anything but APP_ENVIRONMENT=dev,
 # and nothing here is a real secret or a real account.
 set -euo pipefail
+# DEMO_LOCALE (en | fr, default fr) is the language of the persona's data: a film shows English fixtures on /en, French ones on /fr
+# (yomizaka#1968). `ci-mobile-backend.sh reseed <locale>` seeds the running database again in the other language (the web films).
+LOCALE="${DEMO_LOCALE:-fr}"
+case "$LOCALE" in en|fr) ;; *) echo "DEMO_LOCALE must be en or fr" >&2; exit 1 ;; esac
 : "${DEMO_ACCOUNT_EMAIL:?DEMO_ACCOUNT_EMAIL is required}"
 : "${DEMO_ACCOUNT_PASSWORD:?DEMO_ACCOUNT_PASSWORD is required}"
+
+if [[ "${1:-}" == "reseed" ]]; then
+  LOCALE="${2:?usage: ci-mobile-backend.sh reseed <en|fr>}"
+  DB_PASS="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' e2e-pg | sed -n 's/^POSTGRES_PASSWORD=//p')"
+  echo "::add-mask::$DB_PASS"
+  APP_ENVIRONMENT=dev DATABASE_URL="postgresql://yomizaka_db:${DB_PASS}@localhost:5432/yomizaka_db" \
+    APP_DEMO_ACCOUNT_EMAIL="$DEMO_ACCOUNT_EMAIL" APP_DEMO_ACCOUNT_PASSWORD="$DEMO_ACCOUNT_PASSWORD" \
+    node scripts/demo-seed/cli.mjs --cast --reset --locale "$LOCALE"
+  echo "reseeded in $LOCALE"
+  exit 0
+fi
 
 DB_PASS="$(openssl rand -hex 16)"
 echo "::add-mask::$DB_PASS"
@@ -32,5 +47,5 @@ for _ in $(seq 1 90); do curl -sf http://localhost:3000/api/healthz >/dev/null &
 curl -sf http://localhost:3000/api/healthz >/dev/null
 
 # The migrations ran at the server's start; now the persona (idempotent, refused outside dev).
-APP_DEMO_ACCOUNT_EMAIL="$DEMO_ACCOUNT_EMAIL" APP_DEMO_ACCOUNT_PASSWORD="$DEMO_ACCOUNT_PASSWORD" node scripts/demo-seed/cli.mjs --cast --reset --check
+APP_DEMO_ACCOUNT_EMAIL="$DEMO_ACCOUNT_EMAIL" APP_DEMO_ACCOUNT_PASSWORD="$DEMO_ACCOUNT_PASSWORD" node scripts/demo-seed/cli.mjs --cast --reset --locale "$LOCALE" --check
 echo "backend ready: http://localhost:3000 (dev, persona Éric)"

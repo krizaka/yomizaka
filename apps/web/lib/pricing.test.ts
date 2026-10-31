@@ -27,7 +27,7 @@ describe("the seed is the grid of ADR-0013 (yomizaka#367, #388)", () => {
     const byKey = Object.fromEntries((await catalogue().catalogue(NOW)).map((e) => [e.key, e]));
     expect(byKey[PRICE.document]).toMatchObject({
       unit: "document",
-      amountCents: 499,
+      amountCents: 999,
       availability: AVAILABILITY.public,
       currency: "CAD",
       taxes: "plus-taxes",
@@ -36,17 +36,18 @@ describe("the seed is the grid of ADR-0013 (yomizaka#367, #388)", () => {
       unit: "month",
       amountCents: 4900,
       availability: AVAILABILITY.public,
-      limits: { included: 100 },
+      limits: { included: 15, overageCents: 300 },
     });
     expect(byKey[PRICE.firm]).toMatchObject({
       unit: "month",
       amountCents: 14900,
       availability: AVAILABILITY.public,
-      limits: { included: 500 },
+      limits: { included: 60, overageCents: 200 },
     });
     expect(byKey[PRICE.api]).toMatchObject({ unit: "document", amountCents: 22, availability: AVAILABILITY.internal });
-    for (const k of [PRICE.fullFile, PRICE.backgroundCheck, PRICE.screening])
+    for (const k of [PRICE.fullFile, PRICE.backgroundCheck, PRICE.screening]) {
       expect(byKey[k]).toMatchObject({ amountCents: null, availability: AVAILABILITY.preparing });
+    }
   });
 });
 
@@ -60,15 +61,24 @@ describe("the grid keeps the rules of ADR-0013", () => {
     expect(seed(PRICE.document)).toMatchObject({ unit: "document", availability: AVAILABILITY.public });
   });
 
-  it("Agency pays for itself from the 10th document of the month (about three applicant files), not before", () => {
-    expect(9 * amount(PRICE.document)).toBeLessThan(amount(PRICE.agency));
-    expect(amount(PRICE.agency)).toBeLessThanOrEqual(10 * amount(PRICE.document));
+  it("Agency pays for itself from the 5th dossier of the month, not before", () => {
+    expect(4 * amount(PRICE.document)).toBeLessThan(amount(PRICE.agency));
+    expect(amount(PRICE.agency)).toBeLessThanOrEqual(5 * amount(PRICE.document));
   });
 
   it("each step up includes more and costs less per verification", () => {
     expect(included(PRICE.firm)).toBeGreaterThan(included(PRICE.agency));
     expect(amount(PRICE.firm) / included(PRICE.firm)).toBeLessThan(amount(PRICE.agency) / included(PRICE.agency));
     expect(amount(PRICE.agency) / included(PRICE.agency)).toBeLessThan(amount(PRICE.document));
+  });
+
+  it("a dossier past the volume costs less than a single one and falls with the plan (the validated grid)", () => {
+    const over = (key: string) => seed(key).limits?.[LIMIT.overage] ?? 0;
+    expect(over(PRICE.agency)).toBe(300);
+    expect(over(PRICE.firm)).toBe(200);
+    expect(over(PRICE.firm)).toBeLessThan(over(PRICE.agency));
+    expect(over(PRICE.agency)).toBeLessThan(amount(PRICE.document));
+    expect(over(PRICE.document)).toBe(0);
   });
 });
 
@@ -97,8 +107,9 @@ describe("every price shown comes from the catalogue", () => {
     expect(shown.map((e) => e.key)).not.toContain(PRICE.api);
     expect(JSON.stringify(shown)).not.toContain('"amountCents":22');
     expect(shown.filter((e) => e.availability === AVAILABILITY.internal)).toEqual([]);
-    for (const e of shown.filter((p) => p.availability === AVAILABILITY.preparing))
+    for (const e of shown.filter((p) => p.availability === AVAILABILITY.preparing)) {
       expect(e).toMatchObject({ amountCents: null, limits: {} });
+    }
   });
 });
 
@@ -109,7 +120,7 @@ describe("the included volume is the catalogue's, for the version a subscription
     expect(sold.versionId).toBe(seedVersionId(PRICE.agency));
     await c.schedule(ADMIN, PRICE.agency, { limits: { [LIMIT.included]: 120 } }, LATER, NOW);
     const after = new Date("2026-12-02T00:00:00Z");
-    expect(await includedFor(c, { planKey: PRICE.agency, priceVersionId: sold.versionId }, after)).toBe(100);
+    expect(await includedFor(c, { planKey: PRICE.agency, priceVersionId: sold.versionId }, after)).toBe(15);
     const fresh = await soldEntry(c, "agency", after);
     expect(await includedFor(c, { planKey: PRICE.agency, priceVersionId: fresh.versionId }, after)).toBe(120);
   });
@@ -119,8 +130,8 @@ describe("the included volume is the catalogue's, for the version a subscription
     expect((await subscriptionEntry(c, { planKey: null, priceVersionId: null }, NOW)).key).toBe(
       SOLD[DEFAULT_SUBSCRIPTION].key,
     );
-    expect(await includedFor(c, { planKey: PRICE.firm, priceVersionId: null }, NOW)).toBe(500);
-    expect(await includedFor(c, { planKey: null, priceVersionId: "999" }, NOW)).toBe(100);
+    expect(await includedFor(c, { planKey: PRICE.firm, priceVersionId: null }, NOW)).toBe(60);
+    expect(await includedFor(c, { planKey: null, priceVersionId: "999" }, NOW)).toBe(15);
   });
 });
 
@@ -142,5 +153,19 @@ describe("a checkout charges the catalogue's amount, or nothing", () => {
     await c.schedule(ADMIN, PRICE.agency, { availability: AVAILABILITY.preparing }, NOW, NOW);
     const entry = await c.entry(PRICE.agency, NOW);
     expect(() => onSale(entry, { amount: 4900, currency: "cad" })).toThrow(expect.objectContaining({ status: 409 }));
+  });
+});
+
+describe("the rate of a dossier beyond the included volume is the version's (ADR-0015)", () => {
+  it("is the seed rate, and a subscription keeps the rate it was sold at", async () => {
+    const { overageFor } = await import("./prices/plan");
+    const c = catalogue();
+    const sold = await soldEntry(c, "agency", NOW);
+    const oldSub = { planKey: PRICE.agency, priceVersionId: sold.versionId };
+    expect(await overageFor(c, oldSub, NOW)).toBe(300);
+    await c.schedule(ADMIN, PRICE.agency, { limits: { [LIMIT.included]: 15, [LIMIT.overage]: 400 } }, LATER, NOW);
+    const fresh = await soldEntry(c, "agency", LATER);
+    expect(await overageFor(c, { planKey: PRICE.agency, priceVersionId: fresh.versionId }, LATER)).toBe(400);
+    expect(await overageFor(c, oldSub, LATER)).toBe(300);
   });
 });

@@ -3,6 +3,7 @@ import type { Analysis, StartAnalysis, StorageKind, Studio } from "@yomizaka/cor
 
 import { holderOf as documentHolder, storeForDocument } from "@/app/active-store";
 
+import { overageBiller } from "../app/overage-biller";
 import { refresh, startAnalysis } from "./analyses";
 import {
   activeConsents,
@@ -222,11 +223,11 @@ async function runChecks(
     const request: StartAnalysis =
       studio === "compliance-check" ? { studio, jurisdiction: FILE_JURISDICTION } : { studio };
     try {
-      const via = await reserveAudit(query, ownerId, now, ctx.auditCaps, documentId);
+      const via = await reserveAudit(query, ownerId, now, ctx.auditCaps, documentId, overageBiller());
       try {
         await startAnalysis(ownerId, documentId, request, null, via, await storeForDocument(ownerId, documentId));
       } catch (error) {
-        await releaseAudit(query, ownerId, via);
+        await releaseAudit(query, ownerId, via, now, documentId, overageBiller());
         throw error;
       }
       started.push(studio);

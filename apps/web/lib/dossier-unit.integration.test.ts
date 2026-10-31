@@ -2,7 +2,7 @@ import { memoryStore, type OrazakaRun } from "@yomizaka/core";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { CONSENT_MEANS, CONSENT_PURPOSE, grantConsent, NOTICE_VERSION } from "./applicant-consent";
-import { requestApplicantFile, type UploadContext, uploadApplicantDocument } from "./applicant-file";
+import { requestApplicantFile, uploadApplicantDocument, type UploadContext } from "./applicant-file";
 import { dossiersUsedThisMonth, entitlementOf, reserveAudit } from "./billing";
 import { migrate, query } from "./db";
 import { useOrazakaClient } from "./orazaka";
@@ -31,7 +31,7 @@ describe.runIf(enabled)("the dossier is the unit of billing", () => {
     store,
     purgeAfterHours: 24,
     keepAllowed: false,
-    auditCaps: () => ({ perMonth: 1000, perDay: 0, freeDossiers: 1 }),
+    auditCaps: () => ({ perMonth: 1000, perDay: 0, freeDossiers: 1, overageCents: 0 }),
   });
   const selfServe = async (who: string) => {
     const email = `dossier-${who}-${stamp}@yomizaka.test`;
@@ -102,7 +102,7 @@ describe.runIf(enabled)("the dossier is the unit of billing", () => {
       "INSERT INTO documents (owner_id, title, filename, mime_type, size_bytes, sha256, content, text) VALUES ($1, 't', 'a.txt', 'text/plain', 1, $2, 'x', 'x') RETURNING id",
       [landlord.id, `same-${stamp}`],
     );
-    const caps = () => ({ perMonth: 100, perDay: 0, freeDossiers: 1 });
+    const caps = () => ({ perMonth: 100, perDay: 0, freeDossiers: 1, overageCents: 0 });
     const via = await reserveAudit(query, landlord.id, new Date(), caps, doc!.id);
     expect(via).toBe("free");
     await query(
@@ -125,7 +125,7 @@ describe.runIf(enabled)("the dossier is the unit of billing", () => {
       );
       return d!.id;
     };
-    const two = () => ({ perMonth: 100, perDay: 0, freeDossiers: 2 });
+    const two = () => ({ perMonth: 100, perDay: 0, freeDossiers: 2, overageCents: 0 });
     const first = await doc("m1");
     expect(await reserveAudit(query, landlord.id, oct, two, first)).toBe("free");
     expect(await reserveAudit(query, landlord.id, oct, two, await doc("m2"))).toBe("free");

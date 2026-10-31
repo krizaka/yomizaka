@@ -7,7 +7,7 @@ import { AVAILABILITY, definePrices, UNIT } from "@krizaka/settings";
  * Nothing but the catalogue (`lib/prices/catalogue.ts`) reads this module; pages, the paywall and the checkout read the catalogue.
  */
 export const PRICE = {
-  /** One document verified, paid per document. */
+  /** One dossier verified, paid per dossier (the applicant's documents of the month are one dossier, ADR-0015). */
   document: "yomizaka.document",
   /** Agencies and landlords with several files: a month, with verifications included (past them, the account waits until next month). */
   agency: "yomizaka.agency",
@@ -23,21 +23,22 @@ export const PRICE = {
 export type PriceKey = (typeof PRICE)[keyof typeof PRICE];
 
 /**
- * The named limits an entry holds: the verifications a month includes. There is NO price for a verification beyond them: the
- * code does not bill usage (the account is held at its volume until next month, 429 `FAIR_USE`), so the catalogue carries no
- * such figure and no page can advertise it (yomizaka#373, `lib/prices/billed-charges.test.ts`).
+ * The named limits an entry holds: the dossiers a month includes, and the price of each dossier beyond them (`overageCents`, before
+ * taxes). The rate is the administrator's, versioned with the entry (a subscription keeps the rate it was sold at) and BILLED by
+ * `lib/overage.ts` (ADR-0015): an entry without one holds the account at its volume until next month (429 `FAIR_USE`). No page
+ * shows a rate the code does not charge (`lib/prices/billed-charges.test.ts`).
  */
-export const LIMIT = { included: "included" } as const;
+export const LIMIT = { included: "included", overage: "overageCents" } as const;
 
 export const PRICES = definePrices([
-  { product: "yomizaka", plan: "document", unit: UNIT.document, amountCents: 499, availability: AVAILABILITY.public },
+  { product: "yomizaka", plan: "document", unit: UNIT.document, amountCents: 999, availability: AVAILABILITY.public },
   {
     product: "yomizaka",
     plan: "agency",
     unit: UNIT.month,
     amountCents: 4900,
     availability: AVAILABILITY.public,
-    limits: { [LIMIT.included]: 100 },
+    limits: { [LIMIT.included]: 15, [LIMIT.overage]: 300 },
   },
   {
     product: "yomizaka",
@@ -45,7 +46,7 @@ export const PRICES = definePrices([
     unit: UNIT.month,
     amountCents: 14900,
     availability: AVAILABILITY.public,
-    limits: { [LIMIT.included]: 500 },
+    limits: { [LIMIT.included]: 60, [LIMIT.overage]: 200 },
   },
   { product: "yomizaka", plan: "api", unit: UNIT.document, amountCents: 22, availability: AVAILABILITY.internal },
   {
@@ -77,7 +78,7 @@ export const PRICES = definePrices([
  * catalogue needs a new processor price under a new key — the checkout refuses while the two differ.
  */
 export const SOLD = {
-  document: { key: PRICE.document, lookupKey: "yomizaka_document_pilot_cad", mode: "payment" },
+  document: { key: PRICE.document, lookupKey: "yomizaka_dossier_grid_cad", mode: "payment" },
   agency: { key: PRICE.agency, lookupKey: "yomizaka_agency_monthly_pilot_cad", mode: "subscription" },
   firm: { key: PRICE.firm, lookupKey: "yomizaka_firm_monthly_pilot_cad", mode: "subscription" },
 } as const;

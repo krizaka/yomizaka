@@ -2,9 +2,10 @@
 // Trims every film of a directory in place and checks its start: node scripts/film-trim.mjs <dir>
 // (the web clips of the download page; the Mac film is trimmed as it is joined, scripts/desktop-film-lib.mjs)
 import { spawnSync } from "node:child_process";
-import { readdirSync, renameSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, renameSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
+import { assertFilm } from "./film-markers-lib.mjs";
 import { assertStart, cutsOf, parseBlacks, parseFreezes, trimFilter } from "./film-trim-lib.mjs";
 
 const dir = process.argv[2];
@@ -33,6 +34,24 @@ const analyse = (file) => {
   return { freezes: parseFreezes(log, durationOf(file)), blacks: parseBlacks(log) };
 };
 
+const sizeOf = (file) => {
+  const [width, height] = run(ffprobe, [
+    "-v",
+    "error",
+    "-select_streams",
+    "v:0",
+    "-show_entries",
+    "stream=width,height",
+    "-of",
+    "csv=p=0:s=x",
+    file,
+  ])
+    .stdout.trim()
+    .split("x")
+    .map(Number);
+  return { width, height };
+};
+
 for (const name of readdirSync(dir).filter((n) => /\.(webm|mp4)$/.test(n))) {
   const file = join(dir, name);
   const filter = trimFilter(cutsOf(analyse(file)));
@@ -43,5 +62,11 @@ for (const name of readdirSync(dir).filter((n) => /\.(webm|mp4)$/.test(n))) {
     renameSync(tmp, file);
   }
   assertStart(analyse(file));
+  // yomizaka#1968: the film's language, shape, banner and ending are checked against what the journey saw (<film>.markers.json).
+  // A film without markers is refused (the Mac film is joined, and checked, by desktop-film-join.mjs).
+  const markersFile = join(dir, name.replace(/\.(webm|mp4)$/, ".markers.json"));
+  const markers = existsSync(markersFile) ? JSON.parse(readFileSync(markersFile, "utf8")) : undefined;
+  assertFilm({ name, markers, size: sizeOf(file) });
+  if (markers) rmSync(markersFile); // not part of the artifact the org workflow uploads
   console.log(`film-trim: ${name} ok`);
 }

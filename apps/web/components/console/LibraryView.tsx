@@ -119,11 +119,12 @@ function DossiersList({
   const { say, locale } = useSay();
   return (
     <section className="flex flex-col gap-3" aria-labelledby="home-dossiers-title" data-testid="home-dossiers">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="home-dossiers-title" className="m-0 font-display text-lg font-bold text-fg">
+      {/* On a phone the list comes right under the title (first screen) and the actions follow it; from sm up they sit on the title's row. */}
+      <div className="contents sm:flex sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
+        <h2 id="home-dossiers-title" className="order-1 m-0 font-display text-lg font-bold text-fg sm:order-none">
           {say("home.dossiers.title")}
         </h2>
-        <span className="flex flex-wrap items-center gap-3">
+        <span className="order-3 flex flex-wrap items-center gap-3 sm:order-none">
           {firstId ? <CreateButton kind="collection" parentId={firstId} /> : null}
           {screening ? (
             <Button asChild variant="secondary" size="md">
@@ -133,6 +134,7 @@ function DossiersList({
         </span>
       </div>
       <List
+        className="order-2 sm:order-none"
         items={rows}
         getId={(r) => `${r.kind}:${r.id}`}
         aria-label={say("home.dossiers.label")}

@@ -204,15 +204,23 @@ describe("the journey films the window, after the sign-in, without the engine's 
       assert.ok(next > at, `${needle} comes after the previous step`);
       at = next;
     }
-    assert.equal((journey.match(/film\.stop\(\)/g) ?? []).length >= 4, true);
+    assert.equal((journey.match(/film\.stop\(\)/g) ?? []).length >= 3, true);
   });
   it("accepts the --film flag the action passes (it was lost in a merge: run 41085183044, Unknown option '--film')", () => {
     assert.match(read("./desktop-journey.mjs"), /film: \{\s*type: "boolean"/);
     assert.match(read("../.github/actions/desktop-journey/action.yml"), /--film/);
   });
-  it("the phone showcase finds « Factures 2026 » by scrollUntilVisible alone (a bare scroll first pushed it past the screen)", () => {
-    const flow = read("../apps/mobile/.maestro-showcase/android-documents.yaml");
+  it("the phone showcase finds the second collection by scrollUntilVisible alone (a bare scroll first pushed it past the screen)", () => {
+    const flow = read("../apps/mobile/.maestro-showcase/android-documents-en.yaml");
     assert.ok(!/^- scroll$/m.test(flow));
-    assert.match(flow, /scrollUntilVisible:\s+element: "Factures 2026"/);
+    assert.match(flow, /scrollUntilVisible:\s+element: "Invoices 2026"/);
+  });
+  // yomizaka#1968: the phone film ends on a result and is named after its language; never an empty state in it.
+  it("the phone showcase is English, ends on a collection's documents and never films the empty batches", () => {
+    const flow = read("../apps/mobile/.maestro-showcase/android-documents-en.yaml");
+    assert.match(flow, /startRecording: android-documents-en/);
+    assert.doesNotMatch(flow, /tapOn: "(Lots|Batches)"/);
+    assert.match(flow, /assertNotVisible/);
+    assert.match(flow.slice(flow.indexOf("stopRecording") - 200), /extendedWaitUntil|assertNotVisible/);
   });
 });

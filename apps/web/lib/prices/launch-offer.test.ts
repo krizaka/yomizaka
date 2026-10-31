@@ -68,7 +68,7 @@ describe("the launch offer is a promo code the admin created (#548, ADR-0013)", 
       const html = renderToStaticMarkup(
         PricingContent({
           locale,
-          sold: [{ plan: "agency", price: "49", per: "month", included: 100 }],
+          sold: [{ plan: "agency", price: "49", per: "month", included: 15, overage: null }],
           soon: [],
           freeFirst: false,
           launch,

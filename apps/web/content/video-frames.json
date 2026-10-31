@@ -1,0 +1,17 @@
+{
+  "frames": {
+    "desktop": {
+      "width": 1280,
+      "height": 800
+    },
+    "phone": {
+      "width": 390,
+      "height": 845
+    }
+  },
+  "platforms": {
+    "web": "desktop",
+    "mac": "desktop",
+    "android": "phone"
+  }
+}

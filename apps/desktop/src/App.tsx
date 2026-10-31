@@ -32,7 +32,7 @@ export function App() {
   }, []);
   return (
     <I18nProvider locale={locale} setLocale={choose}>
-      <StageNotice stage={stage} />
+      <StageNotice stage={stage} showcase={import.meta.env.VITE_APP_SHOWCASE === "1"} />
       <Gate onLocale={choose} />
     </I18nProvider>
   );

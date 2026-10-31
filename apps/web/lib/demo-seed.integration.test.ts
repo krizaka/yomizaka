@@ -133,4 +133,15 @@ describe.runIf(enabled)("the demo seed (Éric)", () => {
       "To file",
     ]);
   });
+
+  // yomizaka#1968: the English web film was made on French fixtures, because a re-seed kept the account's first language.
+  it("a reset takes the language asked for, a plain re-run keeps the person's", async () => {
+    const email = fresh();
+    await run(email, { locale: "fr" });
+    const kept = await run(email, { locale: "en" });
+    expect(Object.keys(kept.collections)).toContain("Immeuble Rosemont");
+    const reset = await run(email, { locale: "en", reset: true });
+    expect(Object.keys(reset.collections)).toContain("Rosemont building");
+    expect(Object.keys(reset.collections)).not.toContain("Immeuble Rosemont");
+  });
 });

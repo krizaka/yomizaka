@@ -191,12 +191,13 @@ async function seedInTransaction(
   { persona, address, locale, messagesByLocale, reset, passwordHash, seed, now },
 ) {
   // An existing account keeps what the person chose (language, password, perspective, name); the seed only fills what is missing.
+  // A reset starts the demo over: it takes the language asked for, or the English films were made on French fixtures (yomizaka#1968).
   const [account] = await q(
     `INSERT INTO accounts (email, locale, email_verified_at, password_hash, perspective, name) VALUES ($1, $2, now(), $3, 'landlord', $4)
-     ON CONFLICT (email) DO UPDATE SET locale = accounts.locale, password_hash = coalesce(EXCLUDED.password_hash, accounts.password_hash),
+     ON CONFLICT (email) DO UPDATE SET locale = CASE WHEN $5::boolean THEN EXCLUDED.locale ELSE accounts.locale END, password_hash = coalesce(EXCLUDED.password_hash, accounts.password_hash),
        perspective = coalesce(accounts.perspective, EXCLUDED.perspective), name = coalesce(accounts.name, EXCLUDED.name)
      RETURNING id, locale, name`,
-    [address, locale, passwordHash, def.name],
+    [address, locale, passwordHash, def.name, reset],
   );
   const owner = account.id;
   const words = (key) => collectionWords(messagesByLocale[account.locale] ?? messagesByLocale.fr, persona, key);

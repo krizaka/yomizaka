@@ -39,4 +39,43 @@ describe("the download videos workflow", () => {
     const read = script.indexOf("new URL(page.url())", click);
     assert.ok(click > 0 && wait > click && read > wait, "waitForURL must sit between the click and the URL read");
   });
+  it("opens the dossier with the demo leases, never the first row (the empty default collection) (yomizaka#1968)", () => {
+    const script = readFileSync(new URL("./showcase-web.mjs", import.meta.url), "utf8");
+    assert.match(script, /const DEMO_COLLECTION = \/Rosemont\//);
+    // The home is the list of dossiers (#680): the film waits for the row of the demo leases and clicks that one.
+    assert.match(
+      script,
+      /\[data-testid="home-dossiers"\] a\[href\*="\/app\/library\/"\]'\)\.filter\(\{ hasText: DEMO_COLLECTION \}\)/,
+    );
+    assert.match(script, /dossierRow\(page\)\.waitFor\(\{ timeout: 30_000 \}\)/);
+    assert.doesNotMatch(script, /a\[title\]|binder-name|binderUrl/);
+  });
+  // yomizaka#1968: the films were French on /en, in a dev banner, with a runner path and an empty state.
+  it("films the web in both languages, on data seeded in each", () => {
+    assert.match(code, /for locale in fr en/);
+    assert.match(code, /ci-mobile-backend\.sh reseed en/);
+    assert.match(code, /showcase-web\.mjs[^\n]*--locale "\$locale"/);
+  });
+  it("films the phone and the Mac in showcase mode (no development notice) and names the Mac clip after its language", () => {
+    assert.match(code, /EXPO_PUBLIC_APP_SHOWCASE=1/);
+    assert.match(code, /DEMO_LOCALE=en bash scripts\/ci-mobile-backend\.sh/);
+    assert.match(code, /film-locale\.txt/);
+    assert.match(
+      readFileSync(new URL("../.github/actions/desktop-journey/action.yml", import.meta.url), "utf8"),
+      /VITE_APP_SHOWCASE/,
+    );
+  });
+  it("shows no runner path: the Mac folder has a friendly name", () => {
+    const journey = readFileSync(new URL("./desktop-journey.mjs", import.meta.url), "utf8");
+    assert.doesNotMatch(journey, /Yomizaka journey/);
+    assert.match(journey, /join\(home, "Leases"\)/);
+  });
+  it("trims the films with the markers guard (language, shape, empty/error/banner, ends on a result)", () => {
+    assert.match(readFileSync(new URL("./film-trim.mjs", import.meta.url), "utf8"), /assertFilm\(/);
+    assert.match(readFileSync(new URL("./showcase-web.mjs", import.meta.url), "utf8"), /markers\.json/);
+  });
+  it("checks the deployed download page in both languages", () => {
+    const smoke = readFileSync(new URL("../.github/workflows/dev-smoke.yml", import.meta.url), "utf8");
+    assert.match(smoke, /check-download-page\.mjs --base/);
+  });
 });
