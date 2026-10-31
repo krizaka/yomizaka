@@ -25,7 +25,29 @@ const FACTS = {
 } as const;
 const caps =
   (perMonth = 100, perDay = 0, freeDossiers = 1) =>
-  () => ({ perMonth, perDay, freeDossiers });
+  () => ({ perMonth, perDay, freeDossiers, overageCents: 0 });
+
+const startPro = async (id: string, tag: string) => {
+  await applyPaymentEvent(transaction, {
+    id: `evt-${tag}1-${id}`,
+    type: "subscription_started",
+    accountId: id,
+    customerId: `cus-${id}`,
+    subscriptionId: `sub-${id}`,
+    ...FACTS,
+  });
+  await applyPaymentEvent(transaction, {
+    id: `evt-${tag}2-${id}`,
+    type: "subscription_changed",
+    accountId: id,
+    customerId: `cus-${id}`,
+    subscriptionId: `sub-${id}`,
+    status: "active",
+    active: true,
+    cancelAtPeriodEnd: false,
+    periodEnd: Math.floor(NOW.getTime() / 1000) + 86_400 * 30,
+  });
+};
 
 describe.runIf(enabled)("billing", () => {
   beforeAll(async () => {
@@ -114,7 +136,7 @@ describe.runIf(enabled)("billing", () => {
   it("the free audit is given back when the run cannot start", async () => {
     const id = await account();
     const via = await reserveAudit(query, id, NOW, caps());
-    await releaseAudit(query, id, via);
+    await releaseAudit(query, id, via, NOW);
     expect(await reserveAudit(query, id, NOW, caps())).toBe("free");
   });
   it("two simultaneous requests cannot spend the same free audit", async () => {
@@ -128,25 +150,7 @@ describe.runIf(enabled)("billing", () => {
   it("Pro: unlimited under the cap, then FAIR_USE; cancelled, back to the paywall", async () => {
     const id = await account();
     await reserveAudit(query, id, NOW, caps());
-    await applyPaymentEvent(transaction, {
-      id: `evt-s1-${id}`,
-      type: "subscription_started",
-      accountId: id,
-      customerId: `cus-${id}`,
-      subscriptionId: `sub-${id}`,
-      ...FACTS,
-    });
-    await applyPaymentEvent(transaction, {
-      id: `evt-s2-${id}`,
-      type: "subscription_changed",
-      accountId: id,
-      customerId: `cus-${id}`,
-      subscriptionId: `sub-${id}`,
-      status: "active",
-      active: true,
-      cancelAtPeriodEnd: false,
-      periodEnd: Math.floor(NOW.getTime() / 1000) + 86_400 * 30,
-    });
+    await startPro(id, "s");
     expect((await entitlementOf(query, id, NOW)).pro).toBe(true);
     expect(await reserveAudit(query, id, NOW, caps())).toBe("pro");
     const [doc] = await query<{ id: string }>(
@@ -173,6 +177,46 @@ describe.runIf(enabled)("billing", () => {
     });
     expect((await entitlementOf(query, id, NOW)).pro).toBe(false);
     await expect(reserveAudit(query, id, NOW, caps())).rejects.toMatchObject({ status: 402 });
+  });
+  it("Pro past the included volume: a plan with a rate charges the dossier once and refunds a check that did not run (ADR-0015)", async () => {
+    const id = await account();
+    await startPro(id, "o");
+    const document = async (n: number) =>
+      (
+        await query<{ id: string }>(
+          "INSERT INTO documents (owner_id, title, filename, mime_type, size_bytes, sha256, content, text) VALUES ($1, 't', 'a.txt', 'text/plain', 1, $2, 'x', 'x') RETURNING id",
+          [id, `o${n}-${id}`],
+        )
+      )[0]!.id;
+    const first = await document(1);
+    const second = await document(2);
+    await query(
+      "INSERT INTO analyses (document_id, studio, status, billed_via) VALUES ($1, 'compliance-check', 'succeeded', 'pro')",
+      [first],
+    );
+    const calls: string[] = [];
+    const biller = {
+      charge: async ({ key, amountMinor }: { key: string; amountMinor: number }) => {
+        calls.push(`charge ${amountMinor}`);
+        return { ref: `in_${key}` };
+      },
+      refund: async (ref: string) => {
+        calls.push(`refund ${ref}`);
+      },
+      isDeclined: () => false,
+    };
+    const rated = () => ({ perMonth: 1, perDay: 0, freeDossiers: 1, overageCents: 300 });
+    // no processor: the account still waits
+    await expect(reserveAudit(query, id, NOW, rated, second, null)).rejects.toMatchObject({
+      body: { code: "FAIR_USE" },
+    });
+    expect(await reserveAudit(query, id, NOW, rated, second, biller)).toBe("overage");
+    expect(await reserveAudit(query, id, NOW, rated, second, biller)).toBe("overage");
+    expect(calls).toEqual(["charge 300"]);
+    await releaseAudit(query, id, "overage", NOW, second, biller);
+    expect(calls.filter((c) => c.startsWith("refund"))).toHaveLength(1);
+    await releaseAudit(query, id, "overage", NOW, second, biller);
+    expect(calls.filter((c) => c.startsWith("refund"))).toHaveLength(1);
   });
   it("a subscription cancelled in the portal stays Pro until the period ends, and says so (yomizaka#139)", async () => {
     const id = await account();
@@ -215,8 +259,8 @@ describe.runIf(enabled)("billing", () => {
       [doc!.id, via],
     );
     await expect(reserveAudit(query, id, NOW, caps())).rejects.toMatchObject({ status: 402 });
-    expect(await refundFailedAudit(query, a!.id)).toBe(true);
-    expect(await refundFailedAudit(query, a!.id)).toBe(false); // once
+    expect(await refundFailedAudit(query, a!.id, NOW)).toBe(true);
+    expect(await refundFailedAudit(query, a!.id, NOW)).toBe(false); // once
     expect(await reserveAudit(query, id, NOW, caps())).toBe("free");
   });
 
@@ -249,11 +293,11 @@ describe.runIf(enabled)("billing", () => {
         )
       )[0]!.id;
     const [a1, a2] = [await failed("free"), await failed("credit")];
-    expect(await refundFailedAudit(query, a1)).toBe(true);
+    expect(await refundFailedAudit(query, a1, NOW)).toBe(true);
     expect(await reserveAudit(query, id, NOW, caps())).toBe("free");
     await expect(reserveAudit(query, id, NOW, caps())).rejects.toMatchObject({ status: 402 });
-    expect(await refundFailedAudit(query, a2)).toBe(true);
-    expect(await refundFailedAudit(query, a2)).toBe(false);
+    expect(await refundFailedAudit(query, a2, NOW)).toBe(true);
+    expect(await refundFailedAudit(query, a2, NOW)).toBe(false);
     expect(await reserveAudit(query, id, NOW, caps())).toBe("credit");
     expect((await entitlementOf(query, id, NOW)).credits).toBe(0);
   });

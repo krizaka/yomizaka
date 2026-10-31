@@ -23,11 +23,12 @@ export const PRICE = {
 export type PriceKey = (typeof PRICE)[keyof typeof PRICE];
 
 /**
- * The named limits an entry holds: the verifications a month includes. There is NO price for a verification beyond them: the
- * code does not bill usage (the account is held at its volume until next month, 429 `FAIR_USE`), so the catalogue carries no
- * such figure and no page can advertise it (yomizaka#373, `lib/prices/billed-charges.test.ts`).
+ * The named limits an entry holds: the dossiers a month includes, and the price of each dossier beyond them (`overageCents`, before
+ * taxes). The rate is the administrator's, versioned with the entry (a subscription keeps the rate it was sold at) and BILLED by
+ * `lib/overage.ts` (ADR-0015): an entry without one holds the account at its volume until next month (429 `FAIR_USE`). No page
+ * shows a rate the code does not charge (`lib/prices/billed-charges.test.ts`).
  */
-export const LIMIT = { included: "included" } as const;
+export const LIMIT = { included: "included", overage: "overageCents" } as const;
 
 export const PRICES = definePrices([
   { product: "yomizaka", plan: "document", unit: UNIT.document, amountCents: 499, availability: AVAILABILITY.public },
