@@ -12,7 +12,7 @@ import { productStatus } from "@/lib/landing";
 import { paymentsFrom } from "@/lib/payments/config";
 import { pricingView } from "@/lib/prices/pricing-view";
 import { PRICING_PUBLISHED } from "@/lib/prices/publication";
-import { soldKindOfPlan } from "@/lib/pricing";
+import { isSoldKind, SOLD } from "@/lib/pricing";
 import { settingsFor } from "@/lib/settings/guards";
 
 import preview from "../../../../../../../dev-preview.json";
@@ -53,12 +53,11 @@ export default async function PlansPage({ params }: Readonly<{ params: Promise<{
         {...view}
         status={dict.landing.status[productStatus(preview)]}
         action={(plan) => {
-          const kind = soldKindOfPlan(plan);
-          return kind ? (
+          return isSoldKind(plan) ? (
             <SubscribeButton
-              kind={kind}
+              kind={plan}
               plan={dict.pricing.plans[plan as keyof typeof dict.pricing.plans]?.name ?? plan}
-              current={entitlement.pro && entitlement.planKey === plan}
+              current={entitlement.pro && entitlement.planKey === SOLD[plan].key}
             />
           ) : null;
         }}

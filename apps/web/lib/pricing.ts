@@ -84,8 +84,6 @@ export const SOLD = {
 } as const;
 export type SoldKind = keyof typeof SOLD;
 export const SOLD_KINDS = Object.keys(SOLD) as SoldKind[];
-/** The sold kind of a catalogue entry key (`agency` for `PRICE.agency`), or undefined for an entry that is not sold. */
-export const soldKindOfPlan = (plan: string): SoldKind | undefined => SOLD_KINDS.find((k) => SOLD[k].key === plan);
 export const isSoldKind = (v: string): v is SoldKind => (SOLD_KINDS as string[]).includes(v);
 /** The subscription a subscribed account is on when it recorded none (one sold before the catalogue): the first plan. */
 export const DEFAULT_SUBSCRIPTION: SoldKind = "agency";
