@@ -43,6 +43,10 @@ describe("the download videos workflow", () => {
     const script = readFileSync(new URL("./showcase-web.mjs", import.meta.url), "utf8");
     assert.match(script, /const DEMO_COLLECTION = \/Rosemont\//);
     assert.match(script, /page\.goto\(binderUrl/);
+    // The tab is found by the name's test id and waited for (run 41188991383: `a[title]` matched nothing and the lookup did not wait).
+    assert.match(script, /BINDER_NAME = '\[data-testid="binder-name"\]'/);
+    assert.match(script, /\.waitFor\(\{ timeout: 30_000 \}\)\s*\.then\(\(\) => name\.evaluate/);
+    assert.doesNotMatch(script, /a\[title\]/);
     assert.doesNotMatch(
       script,
       /\$\{base\}\/\$\{locale\}\/app`, \{ waitUntil: "networkidle" \}\);\n\s+await page\.waitForTimeout\(1800\)/,
