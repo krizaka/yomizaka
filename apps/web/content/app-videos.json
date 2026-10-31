@@ -3,25 +3,47 @@
   "cdn": "https://krizaka-assets.b-cdn.net",
   "videos": [
     {
+      "platform": "android",
+      "flow": "documents",
+      "seconds": 16.2,
+      "capturedAt": "2026-10-30T23:02:42.856Z",
+      "files": {
+        "webm": "sites/yomizaka/download/android-documents.b8d61acecd.webm",
+        "mp4": "sites/yomizaka/download/android-documents.b8c117b40c.mp4",
+        "poster": "sites/yomizaka/download/android-documents.6ee683146f.jpg"
+      }
+    },
+    {
+      "platform": "mac",
+      "flow": "library",
+      "seconds": 8,
+      "capturedAt": "2026-10-30T23:02:47.744Z",
+      "files": {
+        "webm": "sites/yomizaka/download/mac-library.ff63c469dd.webm",
+        "mp4": "sites/yomizaka/download/mac-library.f3b3d85fd3.mp4",
+        "poster": "sites/yomizaka/download/mac-library.2f5f277906.jpg"
+      }
+    },
+    {
       "platform": "web",
       "flow": "binder",
-      "seconds": 15.7,
-      "capturedAt": "2026-10-27T13:15:58.113Z",
+      "seconds": 6.8,
+      "capturedAt": "2026-10-30T23:02:26.656Z",
       "files": {
-        "webm": "sites/yomizaka/download/web-binder.d9ac1d112f.webm",
-        "mp4": "sites/yomizaka/download/web-binder.062af1c472.mp4",
-        "poster": "sites/yomizaka/download/web-binder.be53801d97.jpg"
+        "webm": "sites/yomizaka/download/web-binder.da22f2f4f1.webm",
+        "mp4": "sites/yomizaka/download/web-binder.37ada1407e.mp4",
+        "poster": "sites/yomizaka/download/web-binder.85f18470e2.jpg"
       }
     },
     {
       "platform": "web",
       "flow": "report",
-      "seconds": 10.6,
-      "capturedAt": "2026-10-27T13:16:04.736Z",
+      "seconds": 3.1,
+      "capturedAt": "2026-10-30T23:02:29.873Z",
       "files": {
-        "webm": "sites/yomizaka/download/web-report.8b227856d1.webm",
-        "mp4": "sites/yomizaka/download/web-report.2813a67179.mp4",
-        "poster": "sites/yomizaka/download/web-report.3ca0931124.jpg"
+        "webm": "sites/yomizaka/download/web-report.1d8ae9f2e1.webm",
+        "mp4": "sites/yomizaka/download/web-report.734f500774.mp4",
+        "poster": "sites/yomizaka/download/web-report.52a6a10afb.jpg"
       }
     }
   ]
