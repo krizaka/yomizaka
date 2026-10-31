@@ -39,6 +39,15 @@ describe("the download videos workflow", () => {
     const read = script.indexOf("new URL(page.url())", click);
     assert.ok(click > 0 && wait > click && read > wait, "waitForURL must sit between the click and the URL read");
   });
+  it("opens the binder film on the collection with the demo leases, never on the empty default one (yomizaka#1968)", () => {
+    const script = readFileSync(new URL("./showcase-web.mjs", import.meta.url), "utf8");
+    assert.match(script, /const DEMO_COLLECTION = \/Rosemont\//);
+    assert.match(script, /page\.goto\(binderUrl/);
+    assert.doesNotMatch(
+      script,
+      /\$\{base\}\/\$\{locale\}\/app`, \{ waitUntil: "networkidle" \}\);\n\s+await page\.waitForTimeout\(1800\)/,
+    );
+  });
   // yomizaka#1968: the films were French on /en, in a dev banner, with a runner path and an empty state.
   it("films the web in both languages, on data seeded in each", () => {
     assert.match(code, /for locale in fr en/);

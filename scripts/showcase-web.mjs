@@ -100,23 +100,40 @@ const firstDocument = (page) => page.locator('a[href*="/app/documents/"]').first
 
 const off = signInMode === "off" ? await session() : undefined;
 
+/**
+ * The binder opens on the account's default collection, which the demo data leaves empty (the demo files are in the named collections):
+ * a film that starts there films an empty state, and the marker guard refuses it (run 41185385772). The collection with the demo
+ * leases is looked for off camera, and the film opens ON it. The guard stays as strict as it was.
+ */
+const DEMO_COLLECTION = /Rosemont/;
+const binderHref = async (state) => {
+  const ctx = await browser.newContext({ viewport: VIEWPORT, colorScheme: "dark", locale, storageState: state });
+  const page = await ctx.newPage();
+  await page.goto(`${base}/${locale}/app`, { waitUntil: "networkidle" });
+  const tab = page.locator("a[title]").filter({ hasText: DEMO_COLLECTION }).first();
+  const href = (await tab.count()) ? await tab.getAttribute("href") : null;
+  await ctx.close();
+  if (!href) throw new Error("no binder tab holds the demo leases: the demo data is missing");
+  return href;
+};
+const binderUrl = off ? new URL(await binderHref(off), base).toString() : undefined;
+
 await record(
   "web-binder",
   async (page, mark) => {
     if (signInMode === "camera") await signIn(page, { slow: true });
-    else await page.goto(`${base}/${locale}/app`, { waitUntil: "networkidle" });
+    else await page.goto(binderUrl, { waitUntil: "networkidle" });
+    // Signed in on camera, the app opens on the empty default collection: the tab with the demo leases is opened before the first marker.
+    if (signInMode === "camera") {
+      const tab = page.locator("a[title]").filter({ hasText: DEMO_COLLECTION }).first();
+      await tab.waitFor({ timeout: 30_000 });
+      await tab.click();
+      await page.waitForLoadState("networkidle");
+    }
     await page.waitForTimeout(1800);
     await page.mouse.wheel(0, 360);
     await page.waitForTimeout(1600);
     await mark();
-    // The binder's tabs (the collections): the one with the demo leases, then its own page.
-    const tab = page.getByText(/Rosemont/).first();
-    if (await tab.count()) {
-      await tab.scrollIntoViewIfNeeded();
-      await page.waitForTimeout(600);
-      await tab.click();
-      await page.waitForTimeout(1600);
-    }
     const open = page.locator('a[href*="/app/library/"]').first();
     if (await open.count()) {
       await open.click();
