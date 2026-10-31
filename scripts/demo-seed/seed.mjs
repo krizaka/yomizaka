@@ -185,6 +185,15 @@ export async function seedPersona(
 /** The instant `minutesAgo` before the injected clock: every stamp the seed writes comes from `now`, never from the database's own clock. */
 export const stampBefore = (now, minutesAgo) => new Date(new Date(now).getTime() - minutesAgo * 60_000).toISOString();
 
+/** A reset starts the demo over: the owner's documents go, and so do the collections the seed made (in every language they were named). */
+async function resetDemo(q, { owner, def, persona, messagesByLocale }) {
+  await q("DELETE FROM documents WHERE owner_id = $1", [owner]);
+  const names = def.collections.flatMap((c) =>
+    Object.values(messagesByLocale).map((m) => collectionWords(m, persona, c.key).name),
+  );
+  await q("DELETE FROM collections WHERE owner_id = $1 AND NOT is_default AND name = ANY($2)", [owner, names]);
+}
+
 async function seedInTransaction(
   q,
   def,
@@ -202,13 +211,7 @@ async function seedInTransaction(
   const owner = account.id;
   const words = (key) => collectionWords(messagesByLocale[account.locale] ?? messagesByLocale.fr, persona, key);
 
-  if (reset) {
-    await q("DELETE FROM documents WHERE owner_id = $1", [owner]);
-    const names = def.collections.flatMap((c) =>
-      Object.values(messagesByLocale).map((m) => collectionWords(m, persona, c.key).name),
-    );
-    await q("DELETE FROM collections WHERE owner_id = $1 AND NOT is_default AND name = ANY($2)", [owner, names]);
-  }
+  if (reset) await resetDemo(q, { owner, def, persona, messagesByLocale });
 
   const [library] = await q("SELECT id FROM libraries WHERE owner_id = $1 ORDER BY created_at, id LIMIT 1", [owner]);
   const counts = {};

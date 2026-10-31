@@ -5,28 +5,25 @@ import { readFileSync } from "node:fs";
 import { videoContextOptions } from "@krizaka/page-audit/journey";
 import { expect, test } from "@playwright/test";
 
-import { BASE, sessionsFor } from "./session.mjs";
+import { openAs, SCREENS } from "./session.mjs";
 
 const JOURNEY = JSON.parse(readFileSync(new URL("./journeys.json", import.meta.url), "utf8")).find(
   (j) => j.id === "home-check-and-dossiers",
 );
-const SCREENS = [
-  { name: "desktop", viewport: { width: 1440, height: 900 } },
-  { name: "phone", viewport: { width: 390, height: 844 } },
-];
 
 for (const screen of SCREENS) {
   test(`Eric sees « Vérifier un document » and his dossiers on one screen, then opens one (${screen.name})`, async ({
     browser,
   }, info) => {
-    const state = await sessionsFor(browser, info.workerIndex).stateFor("eric");
-    const context = await browser.newContext({
-      storageState: state,
-      viewport: screen.viewport,
-      ...(screen.name === "desktop" ? videoContextOptions(JOURNEY, { dir: info.outputDir }) : {}),
+    const page = await openAs({
+      browser,
+      info,
+      persona: "eric",
+      screen,
+      journey: JOURNEY,
+      videoContextOptions,
+      path: "/fr/app",
     });
-    const page = await context.newPage();
-    await page.goto(new URL("/fr/app", BASE).toString());
 
     await expect(page.getByRole("heading", { level: 1 }), "the home is titled Accueil").toHaveText("Accueil");
     const drop = page.getByTestId("library-dropzone");
@@ -42,6 +39,6 @@ for (const screen of SCREENS) {
     await list.getByRole("link", { name: /Immeuble Rosemont/ }).click();
     await expect(page, "the dossier opens").toHaveURL(/\/app\/library\/[^/]+\/[^/?#]+/);
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Immeuble Rosemont");
-    await context.close();
+    await page.context().close();
   });
 }
