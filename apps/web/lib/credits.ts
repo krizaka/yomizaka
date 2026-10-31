@@ -1,4 +1,4 @@
-import { auditsUsedThisMonth, entitlementOf } from "./billing";
+import { dossiersUsedThisMonth, entitlementOf } from "./billing";
 import { query } from "./db";
 import { type CreditsFigure, creditsFigure } from "./home-b2";
 import { capsFor } from "./prices/caps";
@@ -8,7 +8,7 @@ import { settingsFor } from "./settings/guards";
 export async function creditsOf(owner: string, now: Date): Promise<CreditsFigure> {
   const [entitlement, used, settings] = await Promise.all([
     entitlementOf(query, owner, now),
-    auditsUsedThisMonth(query, owner, now),
+    dossiersUsedThisMonth(query, owner, now),
     settingsFor(owner),
   ]);
   return creditsFigure(entitlement, used, (await capsFor(settings, now)("pro", entitlement)).perMonth);
