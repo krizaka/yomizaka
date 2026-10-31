@@ -18,7 +18,7 @@ permissions: {}
 
 jobs:
   bump:
-    uses: krizaka/.github/.github/workflows/bump-krizaka.yml@1002810b78ccc24e284ec8209e8e0b55ff06ea33 # main
+    uses: krizaka/.github/.github/workflows/bump-krizaka.yml@b2058c12e77ca0da44efb5420d876e80516d8015 # main
     with:
       packages: ${{ github.event.client_payload.packages && toJSON(github.event.client_payload.packages) || inputs.packages }}
       dry-run: ${{ inputs.dry-run == true }}
