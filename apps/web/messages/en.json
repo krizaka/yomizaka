@@ -207,11 +207,18 @@
         "place": "in « My documents »",
         "modify": "Change"
       },
+      "flow": {
+        "label": "Your steps",
+        "drop": "Drop",
+        "kind": "Kind",
+        "running": "Check",
+        "result": "Report"
+      },
       "queueLabel": "The files dropped",
       "stages": {
         "reading": "Reading the document…",
         "starting": "Starting the check…",
-        "asking": "Which document? Say it below.",
+        "asking": "Which document? Answer just above.",
         "started": "Check started",
         "refused": "Not started: {reason}"
       },

@@ -73,3 +73,24 @@ export const reportHref = (locale: string, row: Pick<CheckRow, "id" | "refused">
   const query = row.refused ? `?refused=${encodeURIComponent(row.refused)}` : "";
   return `/${locale}/app/documents/${row.id}/rapport${query}`;
 };
+
+/** The check flow's four steps (krizaka-internal#1899): drop, then the kind when asked, then the run, then the report. */
+export const FLOW_STEPS = ["drop", "kind", "running", "result"] as const;
+export type FlowStep = (typeof FLOW_STEPS)[number];
+
+/**
+ * Where the flow stands, from the rows: nothing dropped is « drop »; a file waiting for its kind is « kind » (it comes first,
+ * the person must answer); a file being read or started is « running »; every file under way or refused is « result ».
+ */
+export function flowStep(rows: readonly Pick<CheckRow, "stage">[]): FlowStep {
+  if (!rows.length) {
+    return "drop";
+  }
+  if (rows.some((r) => r.stage === "asking")) {
+    return "kind";
+  }
+  if (rows.some((r) => r.stage === "reading" || r.stage === "starting")) {
+    return "running";
+  }
+  return "result";
+}
