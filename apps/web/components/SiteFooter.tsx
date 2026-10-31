@@ -47,7 +47,7 @@ export function SiteFooter({ locale }: Readonly<{ locale: Locale }>) {
           <Link href={pagePath(locale, "terms")}>{t("chrome.terms")}</Link>
         </SiteFooterLink>
         <SiteFooterLink href={REPO_URL}>{t("chrome.sourceCode")}</SiteFooterLink>
-        <SiteFooterLink href={contactHref("dev-yomizaka-footer")}>{t("chrome.contact")}</SiteFooterLink>
+        <SiteFooterLink href={contactHref("dev-yomizaka-footer", locale)}>{t("chrome.contact")}</SiteFooterLink>
       </SiteFooterColumn>
     </FamilyFooter>
   );

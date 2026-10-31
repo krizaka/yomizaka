@@ -108,7 +108,7 @@ export function llmsText(): string {
 - [${getDictionary("fr").docs.title}](${SITE_URL}/fr/docs) · [${en.docs.title} (en)](${SITE_URL}/en/docs): how a check works, the API (OpenAPI at ${SITE_URL}/api/v1/openapi.json), your data
 ${isListed("pricing") ? `- [${getDictionary("fr").pricing.title}](${SITE_URL}/fr/pricing) · [${en.pricing.title} (en)](${SITE_URL}/en/pricing): the prices, read from the catalogue\n` : ""}- [${getDictionary("fr").privacy.title}](${SITE_URL}/fr/privacy) · [${en.privacy.title} (en)](${SITE_URL}/en/privacy)
 - Signed reports are verified by signed-in members the report's owner gave access to; there is no public verification.
-- [Talk to us about Yomizaka](${KRIZAKA_URL}/contact?topic=yomizaka): the one way to reach the team
+- [Talk to us about Yomizaka](${KRIZAKA_URL}/en/contact?topic=yomizaka): the one way to reach the team
 ## Source
 
 - [Yomizaka repository](${REPO_URL}): the app, its BFF and its contracts (Apache-2.0)
