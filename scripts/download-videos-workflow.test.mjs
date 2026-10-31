@@ -39,18 +39,16 @@ describe("the download videos workflow", () => {
     const read = script.indexOf("new URL(page.url())", click);
     assert.ok(click > 0 && wait > click && read > wait, "waitForURL must sit between the click and the URL read");
   });
-  it("opens the binder film on the collection with the demo leases, never on the empty default one (yomizaka#1968)", () => {
+  it("opens the dossier with the demo leases, never the first row (the empty default collection) (yomizaka#1968)", () => {
     const script = readFileSync(new URL("./showcase-web.mjs", import.meta.url), "utf8");
     assert.match(script, /const DEMO_COLLECTION = \/Rosemont\//);
-    assert.match(script, /page\.goto\(binderUrl/);
-    // The tab is found by the name's test id and waited for (run 41188991383: `a[title]` matched nothing and the lookup did not wait).
-    assert.match(script, /BINDER_NAME = '\[data-testid="binder-name"\]'/);
-    assert.match(script, /\.waitFor\(\{ timeout: 30_000 \}\)\s*\.then\(\(\) => name\.evaluate/);
-    assert.doesNotMatch(script, /a\[title\]/);
-    assert.doesNotMatch(
+    // The home is the list of dossiers (#680): the film waits for the row of the demo leases and clicks that one.
+    assert.match(
       script,
-      /\$\{base\}\/\$\{locale\}\/app`, \{ waitUntil: "networkidle" \}\);\n\s+await page\.waitForTimeout\(1800\)/,
+      /\[data-testid="home-dossiers"\] a\[href\*="\/app\/library\/"\]'\)\.filter\(\{ hasText: DEMO_COLLECTION \}\)/,
     );
+    assert.match(script, /dossierRow\(page\)\.waitFor\(\{ timeout: 30_000 \}\)/);
+    assert.doesNotMatch(script, /a\[title\]|binder-name|binderUrl/);
   });
   // yomizaka#1968: the films were French on /en, in a dev banner, with a runner path and an empty state.
   it("films the web in both languages, on data seeded in each", () => {
