@@ -31,11 +31,14 @@ for (const screen of SCREENS) {
     const flow = page.getByTestId("check-flow");
     await expect(flow, "the four steps are shown before the drop").toBeVisible();
     // A text the engine cannot place: it asks which document it is.
-    await page.locator("input[type=file]").first().setInputFiles({
-      name: "papier.txt",
-      mimeType: "text/plain",
-      buffer: Buffer.from("Un papier sans titre, que Yomizaka ne reconnaît pas."),
-    });
+    await page
+      .locator("input[type=file]")
+      .first()
+      .setInputFiles({
+        name: "papier.txt",
+        mimeType: "text/plain",
+        buffer: Buffer.from("Un papier sans titre, que Yomizaka ne reconnaît pas."),
+      });
 
     const question = page.getByTestId("check-kind-question");
     await expect(question, "« Quel document ? » appears").toBeVisible({ timeout: 30_000 });
