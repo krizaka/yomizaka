@@ -2,9 +2,9 @@
   "product": "yomizaka",
   "plans": [
     {
-      "lookupKey": "yomizaka_document_pilot_cad",
-      "name": "Yomizaka — one document verified",
-      "amount": 499,
+      "lookupKey": "yomizaka_dossier_grid_cad",
+      "name": "Yomizaka — one dossier verified",
+      "amount": 999,
       "currency": "cad",
       "taxCode": "txcd_10103001"
     },

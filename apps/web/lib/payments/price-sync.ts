@@ -10,7 +10,7 @@ import { SOLD, SOLD_KINDS, type SoldKind } from "../pricing";
  */
 // The product's name at the processor and its tax code: the same as deploy/payments-catalogue.json (guarded by price-sync.test.ts).
 export const PROCESSOR_PLANS: Record<SoldKind, { name: string; taxCode: string }> = {
-  document: { name: "Yomizaka — one document verified", taxCode: "txcd_10103001" },
+  document: { name: "Yomizaka — one dossier verified", taxCode: "txcd_10103001" },
   agency: { name: "Yomizaka Agency — monthly", taxCode: "txcd_10103001" },
   firm: { name: "Yomizaka Building manager — monthly", taxCode: "txcd_10103001" },
 };

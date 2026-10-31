@@ -12,8 +12,10 @@ export interface PricingPlan {
   plan: string;
   price: string;
   /** Per month for a subscription, per document otherwise. */
-  per: "month" | "document";
+  per: "month" | "dossier";
   included: number | null;
+  /** The price of each dossier past the included volume, formatted; null where none is billed (the account waits). */
+  overage: string | null;
 }
 
 /** An entry in preparation: a name and « soon », never a figure. */
@@ -38,8 +40,9 @@ export function pricingLines(
   const plan = (p: PublicPrice): PricingPlan => ({
     plan: p.plan,
     price: money(p.amountCents!, locale),
-    per: p.unit === "month" || p.unit === "year" ? "month" : "document",
+    per: p.unit === "month" || p.unit === "year" ? "month" : "dossier",
     included: p.limits[LIMIT.included] ?? null,
+    overage: p.limits[LIMIT.overage] ? money(p.limits[LIMIT.overage]!, locale) : null,
   });
   const perDocument = onSale.filter((p) => p.unit !== "month" && p.unit !== "year").map(plan);
   const subscriptions = onSale.filter((p) => p.unit === "month" || p.unit === "year").map(plan);

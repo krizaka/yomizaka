@@ -7,7 +7,7 @@ import { PRICE } from "../pricing";
 import { LiveRefused, PORTAL, PROCESSOR_PLANS, processorCatalogue, syncProcessorPrices } from "./price-sync";
 
 const ENTRIES = [
-  { key: PRICE.document, amountCents: 499, currency: "CAD" },
+  { key: PRICE.document, amountCents: 999, currency: "CAD" },
   { key: PRICE.agency, amountCents: 4900, currency: "CAD" },
   { key: PRICE.firm, amountCents: 14900, currency: "CAD" },
   { key: PRICE.api, amountCents: null, currency: "CAD" },
@@ -17,7 +17,7 @@ describe("the processor follows the catalogue (yomizaka#548)", () => {
   it("builds the sold plans from the entries in force: integer cents, monthly for subscriptions, nothing for an entry on quote", () => {
     const { plans } = processorCatalogue(ENTRIES);
     expect(plans.map((p) => [p.lookupKey, p.amount, p.currency, p.interval])).toEqual([
-      ["yomizaka_document_pilot_cad", 499, "cad", undefined],
+      ["yomizaka_dossier_grid_cad", 999, "cad", undefined],
       ["yomizaka_agency_monthly_pilot_cad", 4900, "cad", "month"],
       ["yomizaka_firm_monthly_pilot_cad", 14900, "cad", "month"],
     ]);
@@ -51,7 +51,7 @@ describe("the processor follows the catalogue (yomizaka#548)", () => {
   it("in test mode a changed amount gives a new processor price and an equal one is left alone", async () => {
     const posts: string[] = [];
     const existing: Record<string, number> = {
-      yomizaka_document_pilot_cad: 499,
+      yomizaka_dossier_grid_cad: 999,
       yomizaka_agency_monthly_pilot_cad: 4900,
       yomizaka_firm_monthly_pilot_cad: 14900,
     };
