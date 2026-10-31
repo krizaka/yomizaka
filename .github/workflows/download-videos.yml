@@ -41,7 +41,13 @@ jobs:
           password="$(openssl rand -hex 16)"
           echo "::add-mask::$password"
           DEMO_ACCOUNT_EMAIL=eric@demo.yomizaka.test DEMO_ACCOUNT_PASSWORD="$password" bash scripts/ci-mobile-backend.sh
-          E2E_EMAIL=eric@demo.yomizaka.test E2E_PASSWORD="$password" node scripts/showcase-web.mjs showcase-web --base http://localhost:3000 --locale fr --sign-in off
+          # One film per page language (yomizaka#1968): the French fixtures first, then the same database seeded in English.
+          for locale in fr en; do
+            if [ "$locale" = "en" ]; then
+              DEMO_ACCOUNT_EMAIL=eric@demo.yomizaka.test DEMO_ACCOUNT_PASSWORD="$password" bash scripts/ci-mobile-backend.sh reseed en
+            fi
+            E2E_EMAIL=eric@demo.yomizaka.test E2E_PASSWORD="$password" node scripts/showcase-web.mjs showcase-web --base http://localhost:3000 --locale "$locale" --sign-in off
+          done
       # The runner has no ffmpeg/ffprobe of its own (Playwright's is a private build): run 41135654722 died in the trim for want of ffprobe.
       - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
       - name: Trim the films (they start on the first meaningful frame, idle stretches are cut)
@@ -52,7 +58,8 @@ jobs:
           path: showcase-web
           retention-days: 7
 
-  # The phone's video: a second call of the Maestro workflow, never required, so it can not block `mobile-e2e / gate`. Its flows are
+  # The phone's video (English only for now: the emulator is in English, so is the app; the English fixtures are seeded, and the build wears no
+  # development notice, EXPO_PUBLIC_APP_SHOWCASE; yomizaka#1968): a second call of the Maestro workflow, never required, so it can not block `mobile-e2e / gate`. Its flows are
   # in apps/mobile/.maestro-showcase (startRecording / stopRecording); the whole-run recorder is off (two recorders fight).
   mobile-showcase:
     name: Showcase video (phone)
@@ -70,12 +77,13 @@ jobs:
       lockfile-directory: .
       install-command: pnpm install --frozen-lockfile
       demo-email: eric@demo.yomizaka.test
-      setup-command: bash scripts/ci-mobile-backend.sh
+      setup-command: DEMO_LOCALE=en bash scripts/ci-mobile-backend.sh
       reverse-ports: "3000"
       allow-cleartext: true
       env: |
         EXPO_PUBLIC_APP_URL=http://localhost:3000
         EXPO_PUBLIC_APP_ENV=dev
+        EXPO_PUBLIC_APP_SHOWCASE=1
 
   # The Mac's video (yomizaka#636): the Mac journey filmed on a macOS runner (WebDriver screenshots of the window, no screen-recording permission), on main only, never required.
   showcase-mac:
@@ -103,12 +111,15 @@ jobs:
       - name: The film as mp4 (the app-videos workflow names files <platform>-<flow>)
         run: |
           brew install ffmpeg
-          node scripts/desktop-film-join.mjs showcase-mac showcase-mac/mac-library.mp4
+          # The clip is named after the language the app was filmed in (film-locale.txt); the page of that language shows it, yomizaka#1968.
+          locale="$(cat showcase-mac/film-locale.txt)"
+          case "$locale" in en|fr) ;; *) echo "the Mac film is in '$locale', not en or fr" >&2; exit 1 ;; esac
+          node scripts/desktop-film-join.mjs showcase-mac "showcase-mac/mac-library-$locale.mp4"
           rm -r showcase-mac/frames showcase-mac/film-frames.txt
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: showcase-mac
-          path: showcase-mac/mac-library.mp4
+          path: showcase-mac/mac-library-*.mp4
           retention-days: 7
 
   app-videos:

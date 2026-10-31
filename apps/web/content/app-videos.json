@@ -3,30 +3,8 @@
   "cdn": "https://krizaka-assets.b-cdn.net",
   "videos": [
     {
-      "platform": "android",
-      "flow": "documents",
-      "seconds": 16.2,
-      "capturedAt": "2026-10-30T23:02:42.856Z",
-      "files": {
-        "webm": "sites/yomizaka/download/android-documents.b8d61acecd.webm",
-        "mp4": "sites/yomizaka/download/android-documents.b8c117b40c.mp4",
-        "poster": "sites/yomizaka/download/android-documents.6ee683146f.jpg"
-      }
-    },
-    {
-      "platform": "mac",
-      "flow": "library",
-      "seconds": 8,
-      "capturedAt": "2026-10-30T23:02:47.744Z",
-      "files": {
-        "webm": "sites/yomizaka/download/mac-library.ff63c469dd.webm",
-        "mp4": "sites/yomizaka/download/mac-library.f3b3d85fd3.mp4",
-        "poster": "sites/yomizaka/download/mac-library.2f5f277906.jpg"
-      }
-    },
-    {
       "platform": "web",
-      "flow": "binder",
+      "flow": "binder-fr",
       "seconds": 6.8,
       "capturedAt": "2026-10-30T23:02:26.656Z",
       "files": {
@@ -37,7 +15,7 @@
     },
     {
       "platform": "web",
-      "flow": "report",
+      "flow": "report-fr",
       "seconds": 3.1,
       "capturedAt": "2026-10-30T23:02:29.873Z",
       "files": {

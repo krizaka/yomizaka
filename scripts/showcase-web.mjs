@@ -5,15 +5,18 @@
 //   web-report  a document of the library, then its signed report.
 // « Run a check » needs the Orazaka engine, which the CI backend does not have: that step is the landing's `check` clip
 // (scripts/landing-journey.mjs, on dev). Nothing personal is on screen: the e-mail shown in the app is hidden, the password
-// is a field of dots, the dev banner stays visible.
+// is a field of dots, the development banner is hidden (showcase mode, yomizaka#1968).
 //
 //   E2E_EMAIL=… E2E_PASSWORD=… node scripts/showcase-web.mjs <out-dir> [--base http://localhost:3000] [--locale en|fr] [--sign-in camera|off]
 //
-// Writes <out-dir>/web-binder.webm and <out-dir>/web-report.webm (no audio is recorded), ready for the app-videos action.
-import { mkdirSync, renameSync } from "node:fs";
+// Writes <out-dir>/web-binder-<locale>.webm and web-report-<locale>.webm (no audio is recorded) with their markers JSON (what was on
+// screen at each step: language, error, empty state, banner, result: scripts/film-trim.mjs refuses a film they condemn), ready for the
+// app-videos action. Run it once per language, on a database seeded in that language (demo-seed --cast --locale <en|fr>).
+import { mkdirSync, renameSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 
+import { probe } from "./film-markers-lib.mjs";
 import { applyTheme, flagReader, hideEmail, themesOf } from "./lib/recording-kit.mjs";
 
 const require = createRequire(import.meta.url);
@@ -58,8 +61,11 @@ async function session() {
   return state;
 }
 
-/** One journey = one context = one video; the file is renamed <id>.webm in the out directory. */
-async function record(id, act, storageState) {
+/** Showcase mode: the development notice (« data can be reset ») is not part of a film; the marker probe checks it stayed hidden. */
+const SHOWCASE_CSS = "[data-top-chrome]{display:none !important}";
+
+/** One journey = one context = one video; the file is renamed <id>-<locale>.webm in the out directory, with its markers. */
+async function record(id, act, storageState, resultSelector) {
   const ctx = await browser.newContext({
     viewport: VIEWPORT,
     colorScheme: theme,
@@ -69,13 +75,25 @@ async function record(id, act, storageState) {
   });
   await applyTheme(ctx, theme);
   await ctx.addInitScript(hideEmail);
+  await ctx.addInitScript((css) => {
+    document.addEventListener("DOMContentLoaded", () => {
+      const style = document.createElement("style");
+      style.textContent = css;
+      document.head.append(style);
+    });
+  }, SHOWCASE_CSS);
   const page = await ctx.newPage();
-  await act(page);
+  const frames = [];
+  const mark = async () => frames.push(await page.evaluate(probe, resultSelector));
+  await act(page, mark);
   await page.waitForTimeout(1500);
+  await mark();
   const video = page.video();
   await ctx.close();
-  renameSync(await video.path(), path.join(outDir, `${id}.webm`));
-  process.stdout.write(`recorded ${id}\n`);
+  const film = `${id}-${locale}`;
+  renameSync(await video.path(), path.join(outDir, `${film}.webm`));
+  writeFileSync(path.join(outDir, `${film}.markers.json`), JSON.stringify({ frames }, null, 2));
+  process.stdout.write(`recorded ${film}\n`);
 }
 
 const firstDocument = (page) => page.locator('a[href*="/app/documents/"]').first();
@@ -84,12 +102,13 @@ const off = signInMode === "off" ? await session() : undefined;
 
 await record(
   "web-binder",
-  async (page) => {
+  async (page, mark) => {
     if (signInMode === "camera") await signIn(page, { slow: true });
     else await page.goto(`${base}/${locale}/app`, { waitUntil: "networkidle" });
     await page.waitForTimeout(1800);
     await page.mouse.wheel(0, 360);
     await page.waitForTimeout(1600);
+    await mark();
     // The binder's tabs (the collections): the one with the demo leases, then its own page.
     const tab = page.getByText(/Rosemont/).first();
     if (await tab.count()) {
@@ -104,8 +123,10 @@ await record(
       await page.locator('a[href*="/app/documents/"]').first().waitFor({ timeout: 30_000 });
       await page.waitForTimeout(2600);
     }
+    await mark();
   },
   off,
+  'a[href*="/app/documents/"]',
 );
 
 const state = off ?? (await session());
@@ -125,14 +146,16 @@ const reportPath = await (async () => {
 })();
 await record(
   "web-report",
-  async (page) => {
+  async (page, mark) => {
     // The poster is the frame at 2 s (yomizaka#575): the film opens ON the report, not on the library it is reached from.
     await page.goto(`${base}/${locale}${reportPath}/rapport`, { waitUntil: "networkidle" });
     await page.waitForTimeout(2200);
     await page.mouse.wheel(0, 320);
     await page.waitForTimeout(2000);
+    await mark();
   },
   state,
+  "main h1",
 );
 
 await browser.close();
