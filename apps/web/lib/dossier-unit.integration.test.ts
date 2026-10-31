@@ -31,7 +31,7 @@ describe.runIf(enabled)("the dossier is the unit of billing", () => {
     store,
     purgeAfterHours: 24,
     keepAllowed: false,
-    auditCaps: () => ({ perMonth: 1000, perDay: 0, freeDossiers: 1 }),
+    auditCaps: () => ({ perMonth: 1000, perDay: 0, freeDossiers: 1, overageCents: 0 }),
   });
   const selfServe = async (who: string) => {
     const email = `dossier-${who}-${stamp}@yomizaka.test`;
@@ -102,7 +102,7 @@ describe.runIf(enabled)("the dossier is the unit of billing", () => {
       "INSERT INTO documents (owner_id, title, filename, mime_type, size_bytes, sha256, content, text) VALUES ($1, 't', 'a.txt', 'text/plain', 1, $2, 'x', 'x') RETURNING id",
       [landlord.id, `same-${stamp}`],
     );
-    const caps = () => ({ perMonth: 100, perDay: 0, freeDossiers: 1 });
+    const caps = () => ({ perMonth: 100, perDay: 0, freeDossiers: 1, overageCents: 0 });
     const via = await reserveAudit(query, landlord.id, new Date(), caps, doc!.id);
     expect(via).toBe("free");
     await query(

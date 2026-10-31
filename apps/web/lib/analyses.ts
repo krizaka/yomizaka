@@ -19,6 +19,8 @@ import {
 
 import { holderOf as documentHolder } from "@/app/active-store";
 
+import { overageBiller } from "../app/overage-biller";
+import { systemClock } from "../app/system-clock";
 import { assertAnalysisAllowed } from "./applicant-consent";
 import { refundFailedAudit } from "./billing";
 import { query } from "./db";
@@ -213,7 +215,7 @@ export async function refresh(row: AnalysisRow, known?: OrazakaRun): Promise<Ana
     ],
   );
   // A run that failed gives its audit back (once): the person is not charged for a check that produced nothing.
-  if (!report) await refundFailedAudit(query, row.id);
+  if (!report) await refundFailedAudit(query, row.id, systemClock.now(), overageBiller());
   // Not kept: once the check has run, the file and the text are purged; only the report stays.
   await purgeIfDone(query, row.document_id, documentHolder);
   return toAnalysis(updated!);

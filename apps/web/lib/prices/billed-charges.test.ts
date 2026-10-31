@@ -12,9 +12,10 @@ import { money } from "./format";
 import { pricingLines } from "./page";
 
 /**
- * yomizaka#373: the page never advertises a charge the code does not make. The code charges exactly what the processor sells
- * (`SOLD`: one document, two monthly subscriptions); a verification beyond the included volume is not billed — the account
- * is held until next month (429 `FAIR_USE`, `lib/billing.ts`). So no public page shows any other amount.
+ * yomizaka#373, rewritten by ADR-0015 (it supersedes the « no overage » clause of ADR-0013): the page never advertises a charge the
+ * code does not make. The code charges what the processor sells (`SOLD`: one document, two monthly subscriptions) and, beyond the
+ * included volume, ONE thing more: the dossier at the plan's `overageCents` (`lib/overage.ts`). A plan with no rate holds the account
+ * until next month (429 `FAIR_USE`, `lib/billing.ts`). So no public page shows any amount that is none of these.
  */
 const ROOT = join(import.meta.dirname, "../..");
 const NOW = new Date("2026-10-26T12:00:00Z");
@@ -22,15 +23,21 @@ const MONEY = /\d[\d\p{Zs},.]*\p{Zs}?\$|\$\p{Zs}?\d[\d,.]*/gu;
 const squash = (s: string) => s.replaceAll(/\p{Zs}/gu, "");
 
 describe("no public page advertises a charge the code does not make (#373)", () => {
-  it("bills only what the processor sells: a document, a month — never a metered usage", async () => {
+  it("bills what the processor sells (a document, a month) and a dossier beyond the volume — only on a subscription, and only where the code bills it", async () => {
     expect(
       Object.values(SOLD)
         .map((s) => s.mode)
         .sort(),
     ).toEqual(["payment", "subscription", "subscription"]);
-    expect(Object.keys(LIMIT)).toEqual(["included"]);
+    expect(Object.keys(LIMIT)).toEqual(["included", "overage"]);
+    const subscriptions = Object.values(SOLD)
+      .filter((s) => s.mode === "subscription")
+      .map((s) => s.key);
     for (const entry of await priceCatalogue(PRICES, memoryPriceStore()).catalogue(NOW))
-      expect(Object.keys(entry.limits), entry.key).not.toContain("overageCents");
+      if (Object.keys(entry.limits).includes(LIMIT.overage)) expect(subscriptions, entry.key).toContain(entry.key);
+    const billing = readFileSync(join(ROOT, "lib/billing.ts"), "utf8");
+    expect(billing).toContain("chargeOverage(");
+    expect(billing).toContain("caps.overageCents > 0");
   });
 
   for (const locale of ["en", "fr"] as const) {
@@ -67,16 +74,26 @@ describe("no public page advertises a charge the code does not make (#373)", () 
     expect(billing).toContain('refuse(429, "FAIR_USE"');
   });
 
-  it("no source reads a per-verification price beyond the volume (`overageCents`)", () => {
+  it("only the modules that bill an overage read its rate (`overageCents`)", () => {
     const sources = (dir: string): string[] =>
       readdirSync(dir).flatMap((name) => {
         const path = join(dir, name);
         if (statSync(path).isDirectory()) return name === "node_modules" || name.startsWith(".") ? [] : sources(path);
         return /\.(tsx?|json)$/.test(name) && !/\.test\.tsx?$/.test(name) ? [path] : [];
       });
+    const readers = [
+      "lib/pricing.ts",
+      "lib/prices/plan.ts",
+      "lib/prices/caps.ts",
+      "lib/settings/boundary.ts",
+      "lib/billing.ts",
+      "lib/overage.ts",
+    ];
     const offenders = ["app", "components", "lib", "messages"]
       .flatMap((d) => sources(join(ROOT, d)))
-      .filter((f) => readFileSync(f, "utf8").includes("overageCents"));
+      .filter((f) => readFileSync(f, "utf8").includes("overageCents"))
+      .map((f) => f.slice(ROOT.length + 1))
+      .filter((f) => !readers.includes(f));
     expect(offenders).toEqual([]);
   });
 });

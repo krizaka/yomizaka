@@ -144,3 +144,17 @@ describe("a checkout charges the catalogue's amount, or nothing", () => {
     expect(() => onSale(entry, { amount: 4900, currency: "cad" })).toThrow(expect.objectContaining({ status: 409 }));
   });
 });
+
+describe("the rate of a dossier beyond the included volume is the version's (ADR-0015)", () => {
+  it("is 0 where the entry has none, and a subscription keeps the rate it was sold at", async () => {
+    const { overageFor } = await import("./prices/plan");
+    const c = catalogue();
+    const sold = await soldEntry(c, "agency", NOW);
+    const oldSub = { planKey: PRICE.agency, priceVersionId: sold.versionId };
+    expect(await overageFor(c, oldSub, NOW)).toBe(0);
+    await c.schedule(ADMIN, PRICE.agency, { limits: { [LIMIT.included]: 100, [LIMIT.overage]: 300 } }, LATER, NOW);
+    const fresh = await soldEntry(c, "agency", LATER);
+    expect(await overageFor(c, { planKey: PRICE.agency, priceVersionId: fresh.versionId }, LATER)).toBe(300);
+    expect(await overageFor(c, oldSub, LATER)).toBe(0);
+  });
+});

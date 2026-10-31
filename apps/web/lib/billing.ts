@@ -15,6 +15,7 @@ import {
 import { confirmCoupon, refundCoupon, releaseCoupon } from "./coupons/events";
 import { transaction } from "./db";
 import { refuse } from "./http";
+import { chargeOverage, type OverageBiller, refundOverage } from "./overage";
 import type { AuditCaps } from "./settings/boundary";
 
 /**
@@ -25,8 +26,11 @@ import type { AuditCaps } from "./settings/boundary";
  * the processor's notifications, each applied once.
  */
 type Query = <T extends QueryResultRow>(text: string, values?: unknown[]) => Promise<T[]>;
-/** `dossier`: the document belongs to a dossier already billed this month (the unit is the dossier, not the check): nothing is spent again. */
-export type AuditVia = "exempt" | "free" | "credit" | "pro" | "dossier";
+/**
+ * `dossier`: the document belongs to a dossier already billed this month (the unit is the dossier, not the check): nothing is spent again.
+ * `overage`: a subscription's dossier beyond the included volume, charged at the rate the plan was sold at (ADR-0015).
+ */
+export type AuditVia = "exempt" | "free" | "credit" | "pro" | "dossier" | "overage";
 
 export interface Entitlement {
   selfServe: boolean;
@@ -38,13 +42,15 @@ export interface Entitlement {
   cancelsAtPeriodEnd: boolean;
   subscriptionStatus: string | null;
   hasCustomer: boolean;
+  /** The processor's customer, when there is one: what an overage is charged to. */
+  customerId: string | null;
   /** The catalogue entry and version the subscription was sold at (null: none recorded — one sold before the catalogue). */
   planKey: string | null;
   priceVersionId: string | null;
 }
 
 const ROW = `SELECT (terms_accepted_at IS NOT NULL) AS self_serve, plan,
-  subscription_status, current_period_end, cancel_at_period_end, (payment_customer_id IS NOT NULL) AS has_customer, subscription_price_key, subscription_price_version FROM accounts WHERE id = $1`;
+  subscription_status, current_period_end, cancel_at_period_end, (payment_customer_id IS NOT NULL) AS has_customer, payment_customer_id, subscription_price_key, subscription_price_version FROM accounts WHERE id = $1`;
 
 export async function entitlementOf(query: Query, accountId: string, now: Date): Promise<Entitlement> {
   const [r] = await query<{
@@ -54,6 +60,7 @@ export async function entitlementOf(query: Query, accountId: string, now: Date):
     current_period_end: Date | null;
     cancel_at_period_end: boolean;
     has_customer: boolean;
+    payment_customer_id: string | null;
     subscription_price_key: string | null;
     subscription_price_version: string | null;
   }>(ROW, [accountId]);
@@ -72,6 +79,7 @@ export async function entitlementOf(query: Query, accountId: string, now: Date):
     cancelsAtPeriodEnd: r.cancel_at_period_end,
     subscriptionStatus: r.subscription_status,
     hasCustomer: r.has_customer,
+    customerId: r.payment_customer_id,
     planKey: r.subscription_price_key,
     priceVersionId: r.subscription_price_version,
   };
@@ -133,7 +141,8 @@ async function dossierIsBilled(query: Query, documentId: string, now: Date): Pro
  * Takes the right to one dossier's audit, atomically (two requests cannot spend the same free audit or credit). Throws 402 PAYWALL when
  * there is none, 429 FAIR_USE past the verifications the subscription includes and 429 DAILY_LIMIT past its daily cap. The
  * caps are the configuration's and the catalogue's (`capsOf`); the caller gives the audit back with `releaseAudit` if the run
- * could not start. Given the document, a second check of a dossier already billed this month spends nothing (`dossier`).
+ * could not start. Given the document, a second check of a dossier already billed this month spends nothing (`dossier`). Past the
+ * included volume, a plan with an overage rate (and a processor to charge) bills the dossier (`overage`, ADR-0015) instead of holding it.
  */
 export async function reserveAudit(
   query: Query,
@@ -141,6 +150,7 @@ export async function reserveAudit(
   now: Date,
   capsOf: CapsOf,
   documentId?: string,
+  biller?: OverageBiller | null,
 ): Promise<AuditVia> {
   const e = await entitlementOf(query, accountId, now);
   if (!e.selfServe) {
@@ -159,6 +169,17 @@ export async function reserveAudit(
   }
   if (e.pro) {
     if ((await used("month")) >= caps.perMonth) {
+      if (caps.overageCents > 0 && biller && documentId && e.customerId) {
+        await chargeOverage(query, biller, {
+          accountId,
+          customerId: e.customerId,
+          documentId,
+          cents: caps.overageCents,
+          now,
+          description: "Yomizaka — dossier beyond the included volume",
+        });
+        return "overage";
+      }
       throw refuse(429, "FAIR_USE", "Monthly fair-use limit reached", { limit: caps.perMonth });
     }
     return "pro";
@@ -171,15 +192,34 @@ export async function reserveAudit(
   });
 }
 
-/** Gives the audit back when the run could not start: the free first audit or the paid credit it spent (Pro and exempt spent nothing). */
-export async function releaseAudit(_query: Query, accountId: string, via: AuditVia): Promise<void> {
+/** Gives the audit back when the run could not start: the free first audit or the paid credit it spent, or the overage charged (Pro and exempt spent nothing). */
+export async function releaseAudit(
+  query: Query,
+  accountId: string,
+  via: AuditVia,
+  now: Date,
+  documentId?: string,
+  biller?: OverageBiller | null,
+): Promise<void> {
   if (via === "free" || via === "credit") {
     await transaction((tx) => giveBackAudit(tx, accountId, via));
+  } else if (via === "overage" && documentId && biller) {
+    await refundOverage(query, biller, documentId, now);
   }
 }
 
 /** A run that failed gives its audit back, once: the free audit or the credit it spent (Pro and exempt accounts spent nothing). The mark and the give-back commit together. */
-export async function refundFailedAudit(_query: Query, analysisId: string): Promise<boolean> {
+export async function refundFailedAudit(
+  query: Query,
+  analysisId: string,
+  now: Date,
+  biller?: OverageBiller | null,
+): Promise<boolean> {
+  const [overage] = await query<{ document_id: string }>(
+    "UPDATE analyses SET billed_via = 'overage-refunded' WHERE id = $1 AND billed_via = 'overage' RETURNING document_id",
+    [analysisId],
+  );
+  if (overage) return biller ? refundOverage(query, biller, overage.document_id, now) : false;
   return transaction(async (tx) => {
     const [done] = await tx<{ billed_via: string; document_id: string }>(
       "UPDATE analyses SET billed_via = billed_via || '-refunded' WHERE id = $1 AND billed_via IN ('free', 'credit') RETURNING billed_via, document_id",

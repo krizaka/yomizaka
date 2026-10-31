@@ -49,3 +49,7 @@ export function onSale(
     throw refuse(503, "PRICE_MISMATCH", "The processor's price differs from the catalogue's");
   return { ...entry, amountCents: entry.amountCents };
 }
+
+/** What one dossier beyond the included volume costs, in cents before taxes, at the rate the subscription was sold at (0: none, the account waits). */
+export const overageFor = async (catalogue: PriceCatalogue, sub: SoldSubscription, at: Date): Promise<number> =>
+  (await subscriptionEntry(catalogue, sub, at)).limits[LIMIT.overage] ?? 0;

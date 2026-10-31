@@ -1448,4 +1448,21 @@ ALTER TABLE documents DROP CONSTRAINT documents_storage_check;
 ALTER TABLE documents ADD CONSTRAINT documents_storage_check CHECK (storage IN ('none', 'database', 'bunny', 's3', 'cloud', 'device'));
 `,
   },
+  {
+    version: "0065_overage_charges",
+    // krizaka-internal#45 slice D, ADR-0015: a dossier beyond the included volume is charged once per month; this is the record, so a retry bills nothing twice and a failed check is refunded once.
+    sql: `
+CREATE TABLE overage_charges (
+  dossier_id   uuid        NOT NULL,
+  period       text        NOT NULL CHECK (period ~ '^[0-9]{4}-[0-9]{2}$'),
+  account_id   uuid        NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  charge_ref   text        NOT NULL,
+  amount_cents integer     NOT NULL CHECK (amount_cents > 0),
+  charged_at   timestamptz NOT NULL,
+  refunded_at  timestamptz,
+  PRIMARY KEY (dossier_id, period)
+);
+CREATE INDEX overage_charges_account ON overage_charges (account_id, period);
+`,
+  },
 ];
