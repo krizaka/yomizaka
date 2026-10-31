@@ -16,16 +16,35 @@
   },
   {
     "id": "home-check-and-dossiers",
-    "promise": "A tenant signs in and sees « Check a document » and the dossiers on one screen, then opens a dossier",
+    "promise": "After signing in, Eric's home offers « Check a document » as the one primary action and his dossiers, and a dossier opens",
     "persona": "eric",
     "platforms": ["web"],
     "steps": [
       "sign in as Eric",
-      "see the home titled Accueil with the drop zone and the list of dossiers on the first screen",
-      "open Immeuble Rosemont from the list"
+      "land on the home",
+      "see « Check a document » on the first screen",
+      "open his dossiers and find « Immeuble Laurier (démo) »",
+      "open it"
     ],
     "video": true,
     "budgetSeconds": 60,
-    "tags": []
+    "tags": ["critical"]
+  },
+  {
+    "id": "failed-check-recovery",
+    "promise": "A failed check says why in plain words, with no engine name, and Eric can retry and read a report",
+    "persona": "eric",
+    "platforms": ["web"],
+    "steps": [
+      "sign in as Eric",
+      "open the checks",
+      "open the check that did not finish",
+      "read one plain status without an engine name",
+      "retry",
+      "read the report"
+    ],
+    "video": true,
+    "budgetSeconds": 90,
+    "tags": ["critical"]
   }
 ]
