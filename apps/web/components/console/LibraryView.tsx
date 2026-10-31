@@ -70,7 +70,7 @@ export function LibraryView({
     return (
       <div className="flex flex-col gap-8">
         {header}
-        <LibraryEmpty jurisdictions={jurisdictions} examples={examples} order={order} />
+        <LibraryEmpty jurisdictions={jurisdictions} examples={examples} order={order} credits={credits} />
       </div>
     );
   }
@@ -195,12 +195,14 @@ function LibraryEmpty({
   jurisdictions,
   examples,
   order,
+  credits = null,
 }: Readonly<{
   jurisdictions: readonly Jurisdiction[];
   examples?: ExampleDocuments;
   order: readonly ("tenant" | "landlord")[];
+  credits?: CreditsFigure | null;
 }>) {
-  const { say } = useSay();
+  const { say, locale } = useSay();
   return (
     <section
       className="mx-auto flex w-full max-w-3xl flex-col gap-5"
@@ -213,6 +215,19 @@ function LibraryEmpty({
         description={say("library.emptyPitch")}
       />
       <LibraryDrop zone jurisdictions={jurisdictions} examples={examplesSlot(examples, order, say)} />
+      <p className="m-0 text-center text-sm text-fg-secondary" data-testid="library-empty-dossiers">
+        {say("library.emptyDossiers")}
+      </p>
+      <p className="m-0 text-center text-sm">
+        <Link
+          href={`/${locale}#proof`}
+          className="font-semibold text-fg-accent hover:underline"
+          data-testid="library-sample-report"
+        >
+          {say("library.sampleReport")}
+        </Link>
+      </p>
+      {credits ? <UsageLine figure={credits} /> : null}
     </section>
   );
 }

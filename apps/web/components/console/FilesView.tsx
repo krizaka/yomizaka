@@ -20,6 +20,7 @@ import type { FileSummary } from "@/lib/applicant-file";
 import { documentsFact, linkFact } from "@/lib/applicant-file-face";
 import type { LinkState } from "@/lib/applicant-file-rules";
 import { CONSOLE_ROUTES } from "@/lib/console-nav";
+import { controlsShown } from "@/lib/library-screen";
 import { filesInStates } from "@/lib/home-figures";
 import { useSay } from "@/lib/i18n-client";
 import { pluralKey } from "@/lib/plural";
@@ -204,6 +205,8 @@ export function FilesView({
     }),
     [say],
   );
+  // Tabs, filters and the count only once there is something to filter (krizaka-internal#1902).
+  const controls = controlsShown({ total: all.length, filtering: hasActiveFilter(filters) || states.length > 0 });
   const ask = (variant: "primary" | "secondary") => (
     <RequestDocuments
       types={types}
@@ -222,8 +225,8 @@ export function FilesView({
         description={say("dossiers.lead")}
         actions={all.length ? ask("secondary") : null}
       />
-      {workspace ? <Binder workspace={workspace} base={base} /> : null}
-      {workspace ? (
+      {workspace && controls ? <Binder workspace={workspace} base={base} /> : null}
+      {workspace && controls ? (
         <FilterBar
           label={say("dossiers.filters.bar")}
           active={activeFilters(filters, workspace.tags, decisionLabel, go)}

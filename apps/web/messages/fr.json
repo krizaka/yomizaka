@@ -510,6 +510,8 @@
       "screeningCta": "Vérifier le dossier d'un locataire",
       "examplesTitle": "Ou essayez un exemple",
       "examplesNote": "Documents fictifs, vérifiés comme les vôtres.",
+      "sampleReport": "Voir un exemple de rapport (données de démonstration)",
+      "emptyDossiers": "Vos dossiers apparaissent ici : une collection par immeuble ou par sujet, et les dossiers de candidats que vous ouvrez. Votre première vérification crée le premier.",
       "tryExample": "Essayer cet exemple",
       "exampleTenant": "Un bail offert à un locataire",
       "exampleLandlord": "Un modèle de bail de locateur",
