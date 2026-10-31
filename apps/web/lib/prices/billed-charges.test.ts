@@ -52,7 +52,8 @@ describe("no public page advertises a charge the code does not make (#373)", () 
       ).replaceAll(/<[^>]+>/g, " ");
       const billed = (await catalogue.catalogue(NOW))
         .filter((e) => Object.values(SOLD).some((s) => s.key === e.key))
-        .map((e) => squash(money(e.amountCents!, locale)));
+        .flatMap((e) => [e.amountCents!, e.limits[LIMIT.overage] ?? 0].filter((c) => c > 0))
+        .map((cents) => squash(money(cents, locale)));
       const shown = (html.match(MONEY) ?? []).map(squash);
       expect(shown.length).toBeGreaterThan(0);
       for (const amount of shown) {
