@@ -1,7 +1,7 @@
-# ADR-0001 — Product Boundaries, Multi-Region Residency (Quebec Law 25), and Trust Integration: Yomizaka vs. Orasaka vs. Orochia
+# ADR-0001 — Product Boundaries, Multi-Region Residency (Quebec Law 25), and Trust Integration: Yomizaka vs. Orasaka vs. a client platform
 
 - **Status:** accepted — 2026-10-16 (ratified in krizaka/yomizaka#29 and discussion #30)
-- **Scope:** Yomizaka (`krizaka/yomizaka`), Orasaka (`krizaka/orazaka`, `orazaka-tools`), Orochia (`krizaka/orochia`), Krizaka Platform Kit
+- **Scope:** Yomizaka (`krizaka/yomizaka`), Orasaka (`krizaka/orazaka`, `orazaka-tools`), a client platform (any B2B consumer), Krizaka Platform Kit
 - **Enforced by:** `@yomizaka/core`, `@yomizaka/providers`, HTTP edge `X-Data-Residency-Zone`, 60-second zeroize RAM purge, Ed25519 attestation chain
 
 ## Context
@@ -9,14 +9,14 @@
 Technologies Krizaka Inc. operates a House of Brands architecture with distinct product missions:
 1. **Orasaka (`orazaka-ai-engine`, `orazaka-tools`):** Sovereign enterprise AI platform running locally or on dedicated GPU hardware. `orazaka-tools` acts as an MCP gateway for generic, non-PII agent operations.
 2. **Yomizaka (`krizaka/yomizaka`):** Elevated from an internal document analysis module to Krizaka’s 2nd flagship B2B commercial product. Yomizaka serves the Montreal/Quebec ecosystem (PropTech, FinTech, LegalTech, regulated platforms subject to **Quebec Law 25**) and global markets (PIPEDA, GDPR, CCPA).
-3. **Orochia (`krizaka/orochia`):** High-performance 4K creator platform (ethical 90/10 revenue share) requiring strict 18+ age gating, creator KYC/identity verification (18 U.S.C. § 2257), and partnership contract vaulting.
+3. **A client platform (any B2B consumer):** a platform that needs strict age gating, identity verification and contract vaulting, and must not hold identity documents itself.
 
 ### The Architectural Dilemma
 
 - **Where do external KYC, Age Verification, and Credit connectors live?**
   - Should they live in `orasaka-tools` as generic MCP tools, or in Yomizaka?
-- **How does Orochia consume these verification services?**
-  - Should Orochia bypass Yomizaka and call Orasaka or third-party providers directly, or consume Yomizaka as "Customer Zero"?
+- **How does a client platform consume these verification services?**
+  - Should a client platform bypass Yomizaka and call Orasaka or third-party providers directly, or consume Yomizaka as "Customer Zero"?
 - **How is legal sovereignty and data residency guaranteed across the call chain?**
   - How do we prevent sensitive PII, national ID scans, and biometric liveness photos from leaking into AI model inference layers, LLM logs, or uncertified cloud caches?
 
@@ -30,11 +30,11 @@ Technologies Krizaka Inc. operates a House of Brands architecture with distinct 
   - `CreditBureauProvider` (Flinks Open Banking, CRS Credit API soft pulls)
 - **Hard Invariant:** **NO raw PII, national ID images, or biometrics ever enter Orasaka or `orasaka-tools`.**
 
-### 2. Orochia is "Customer Zero" of Yomizaka
-- Orochia talks **only** to Yomizaka’s B2B API (`/api/v1/verifications/age`, `/api/v1/verifications/id`, `/api/v1/contracts`).
-- Orochia stores **zero** identity documents, selfies, or biometric templates in its database.
-- Orochia receives and stores only tamper-proof, Ed25519-signed cryptographic tokens (`VerificationAttestation`).
-- Human escalation for unclear cases is surfaced directly via Orochia's operator console (in `krizaka/orochia`), backed by Yomizaka audit receipts.
+### 2. A client platform is "Customer Zero" of Yomizaka
+- The client platform talks **only** to Yomizaka’s B2B API (`/api/v1/verifications/age`, `/api/v1/verifications/id`, `/api/v1/contracts`).
+- The client platform stores **zero** identity documents, selfies, or biometric templates in its database.
+- The client platform receives and stores only tamper-proof, Ed25519-signed cryptographic tokens (`VerificationAttestation`).
+- Human escalation for unclear cases is surfaced directly via the client platform's own operator console, backed by Yomizaka audit receipts.
 
 ### 3. Multi-Region Data Residency & Quebec Law 25 Sovereignty
 - Every request carries the mandatory context header `X-Data-Residency-Zone`:
@@ -48,7 +48,7 @@ Technologies Krizaka Inc. operates a House of Brands architecture with distinct 
 
 | Provider | Capability | Unit Cost | Key Strengths & Fit |
 | :--- | :--- | :--- | :--- |
-| **Didit** | Age (18+) & Basic IDV | ~$0.30 / check (500 free/mo) | High speed (<15s), ultra-low unit cost; primary for Orochia 18+ age gating |
+| **Didit** | Age (18+) & Basic IDV | ~$0.30 / check (500 free/mo) | High speed (<15s), ultra-low unit cost; primary for 18+ age gating |
 | **Persona** | Full KYC & AML | ~$1.50 - $2.00 / check | Premier Quebec document parsing (RAMQ, SAAQ); primary for high-risk B2B |
 | **Stripe Identity** | Instant KYC | $1.50 / check | Native integration with creator payouts and Stripe Connect |
 | **Flinks** | Open Banking & Solvency | ~$0.50 - $2.00 CAD / connection | Montreal-based open banking; real-time bank cash-flow for PropTech leasing |
@@ -59,7 +59,7 @@ Technologies Krizaka Inc. operates a House of Brands architecture with distinct 
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│              OROCHIA (18+ Media Platform)               │
+│             A client platform (B2B consumer)            │
 │   Front-end Creator & Consumer · "Customer Zero"       │
 └───────────────────────────┬─────────────────────────────┘
                             │ B2B API (mTLS / Service Token)
@@ -86,7 +86,7 @@ Technologies Krizaka Inc. operates a House of Brands architecture with distinct 
 ## Consequences & Trade-offs
 
 - **Positive:** Complete isolation of PII guarantees compliance with Quebec Law 25 and GDPR.
-- **Positive:** Orochia sheds direct liability by relying on signed cryptographic audit attestations.
+- **Positive:** the client platform sheds direct liability by relying on signed cryptographic audit attestations.
 - **Positive:** Yomizaka establishes commercial viability as a sovereign B2B trust product for Quebec PropTech and FinTech.
 - **Negative / Operational Cost:** Multi-region S3 routing and per-zone KMS key rotation must be configured and monitored.
 
